@@ -1,0 +1,110 @@
+
+
+.number-token,
+.port {
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+
+  position: relative;
+}
+
+
+
+
+.tile {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  /* transform: scale(1); */
+}
+
+
+.edge {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+
+  height: 5px;
+}
+.road {
+  position: absolute;
+  border: 2px solid red;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+}
+
+
+
+.node {
+  position: absolute;
+  height: 10px;
+  width: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.settlement {
+  width: 80%;
+  height: 80%;
+}
+.city {
+  width: 100%;
+  height: 100%;
+}
+.settlement,
+
+
+
+.pulse {
+  cursor: pointer;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+
+  &:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    opacity: 0.4;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border-radius: 100px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    animation: pulse-dot 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;
+  }
+}
+
+@keyframes pulse-dot {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.8);
+  }
+}
+
+.edge .pulse {
+  width: 90%;
+  height: 90%;
+}
+
+.node .pulse {
+  width: 75%;
+  height: 75%;
+}
+
