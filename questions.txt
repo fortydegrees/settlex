@@ -1,0 +1,24 @@
+How do i want to structure my Hex class?
+
+Hex.id
+Hex.location - q,r,s co-ords?
+
+
+
+How do I want to store corners/edges/tiles?
+
+Colonist does
+
+gameState
+    mapState
+        tileState
+            tileCornerState
+            tileCorners. each tileCorner has a hexCorner
+            tileEdgeState
+            tileEdges. each tileEdge has a hexEdge
+            tileHexState
+            tiles
+        portState
+
+
+Catanatron gets 
