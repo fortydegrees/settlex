@@ -4,7 +4,8 @@ import "./Tile.css";
 
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
 import { motion } from "framer-motion"
-
+import { buildSettlement } from "./utils/game";
+import { getBuildableNodes } from "./utils/boardUtils";
 export function NumberToken({ className, children, style, size }) {
   return (
     <div
@@ -13,6 +14,8 @@ export function NumberToken({ className, children, style, size }) {
         "--base-size": `${size}px`, // this var can be overrided via `style` prop
         ...style,
       }}
+      
+    onClick={()=>getBuildableNodes('red')}
     >
       {children}
     </div>
@@ -131,9 +134,10 @@ export function Tile({ center, coordinate, tile, size }) {
     initial={{ opacity: 0, scale: 0.5 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ duration: 0.5 }}
-    class="tile"
+    className="tile"
       key={coordinate}
       style={{
+        
         left: x - w / 2,
         top: y - h / 2,
         width: w,

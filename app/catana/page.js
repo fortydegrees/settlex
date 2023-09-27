@@ -2,7 +2,7 @@
 import { Client } from "boardgame.io/react";
 import { Local } from 'boardgame.io/multiplayer';
 import { Catan } from "./Game";
-import { CatanBoard } from "./Board";
+import { CatanBoard } from "../board-editor/Board";
 
 
 

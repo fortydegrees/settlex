@@ -34,10 +34,9 @@
 }
 .road {
   position: absolute;
-  border: 2px solid red;
+  
   width: 100%;
   height: 100%;
-  border-radius: 2px;
 }
 
 
@@ -99,8 +98,9 @@
 }
 
 .edge .pulse {
-  width: 90%;
-  height: 90%;
+  width: 95%;
+  height: 150%;
+  
 }
 
 .node .pulse {
