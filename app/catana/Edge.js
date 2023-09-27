@@ -14,8 +14,8 @@ export function Edge({
   coordinate,
   direction,
   color,
-  flashing,
   onClick,
+  flashing
 }) {
   const { width } = useWindowSize();
   const [centerX, centerY] = center;
@@ -31,11 +31,12 @@ export function Edge({
         top: tileY,
         width: size * 0.9,
         transform: transform,
+        backgroundColor: color,
       }}
-      onClick={onClick}
+      
     >
-      {color && <Road color={color} />}
-      {/* {flashing && <div className="pulse"></div>} */}
+       {color && <Road color={color} />} 
+      {flashing && <div className="pulse" onClick={onClick}></div>}
     </div>
   );
 }

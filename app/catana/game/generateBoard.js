@@ -22,7 +22,7 @@ const generateStandardHexes = (shape, radius) => {
             // "type": "RESOURCE_TILE", //do we need this?
             // "resource": "WHEAT", 
             // "number": 3
-        }
+        },
     },);
     }
   
@@ -64,7 +64,8 @@ const generateStandardHexes = (shape, radius) => {
   }
 
 
-  const getNodesAndEdges = (tiles, coordinate, nodeAutoinc, mappedNodes) =>{
+  const getNodesAndEdges = (tiles, coordinate, nodeAutoinc,  edgeAutoinc) =>{
+
 
     //idk what these do. port from chatGPT/catanotron python
     const getNodeRef = (name) => name;
@@ -74,7 +75,7 @@ const generateStandardHexes = (shape, radius) => {
         const [u, v, w] = bcoord;
         return [x + u, y + v, z + w];
     }
-
+    console.log(getEdgeRef("EAST"))
     const getEdgeNodes = (edgeRef) => {
         return {
             [getEdgeRef("EAST")]: [getNodeRef("NORTHEAST"), getNodeRef("SOUTHEAST")],
@@ -161,7 +162,9 @@ const generateStandardHexes = (shape, radius) => {
             nodes[getNodeRef("NORTH")] = neighbor.tile.nodes[getNodeRef("SOUTHWEST")];
             nodes[getNodeRef("NORTHEAST")] = neighbor.tile.nodes[getNodeRef("SOUTH")];
             edges[getEdgeRef("NORTHEAST")] = neighbor.tile.edges[getEdgeRef("SOUTHWEST")];
+            
         } 
+       
       }
       //node doesn't exist
       catch{
@@ -180,11 +183,12 @@ const generateStandardHexes = (shape, radius) => {
         if (edges[edgeref] === null) {
             const [a_noderef, b_noderef] = getEdgeNodes(edgeref);
             const edgeNodes = [nodes[a_noderef], nodes[b_noderef]];
-            edges[edgeref] = edgeNodes;
+            edges[edgeref] =edgeNodes
+            edgeAutoinc++
         }
     }
 
-    return {nodes, edges, nodeAutoinc};
+    return {nodes, edges, nodeAutoinc,  edgeAutoinc};
 
   }
 
@@ -199,19 +203,31 @@ export const generateBoard = (spec) => {
     //generates random dice num and resource for each tile
     doNumbersAndResources(tiles, spec);
 
+    //test to make sure grid coords work
+    // tiles.push({coordinate:[-3, 0, 4],
+    //   tile:{
+    //     edges: {},
+    //     id: 19,
+    //     nodes: {},
+    //     number: 3,
+    //     resource: "Sheep"
+    //   }})
     var nodeAutoinc = 0
+    var edgeAutoinc = 0
     var tileAutoinc = 0
     var portAutoinc = 0
     for (let tile of tiles){
-        var { nodes, edges, nodeAutoinc } = getNodesAndEdges(tiles, tile.coordinate, nodeAutoinc);
+        var { nodes, edges, nodeAutoinc, edgeAutoinc } = getNodesAndEdges(tiles, tile.coordinate, nodeAutoinc , edgeAutoinc);
 
             tile.tile.nodes = nodes;
             tile.tile.edges = edges;
     
-        nodeAutoinc++;
+        //nodeAutoinc++;
+
     }
 
-    console.log(nodeAutoinc)
+
+
 
 
     //now generate nodes

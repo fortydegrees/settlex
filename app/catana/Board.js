@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import useWindowSize from "./utils/useWindowSize";
 import { SQRT3 } from "./utils/coordinates";
 import { Tile } from "./Tile";
-import { Node } from "./Node";
-import {Edge } from "./Edge"
+import { Building } from "./Building";
+import {Node } from "./Node"
+import { Edge } from "./Edge";
 import "./Board.css";
 import { motion, useAnimation } from "framer-motion";
+import { BoardContext } from './hooks/useBoardContext';
+
 
 function computeDefaultSize(divWidth, divHeight) {
   const numLevels = 6; // 3 rings + 1/2 a tile for the outer water ring
@@ -24,49 +27,19 @@ function computeDefaultSize(divWidth, divHeight) {
   return size;
 }
 
-export function CatanBoard({
-  isMobile,
-  ctx,
-  G,
-  moves,
-  isActive
-}) {
-  console.log(ctx, moves)
-
-  // const currentPlayerId = ctx.currentPlayer;
-
-  // const isActive = G.players.map((P) => {
-  //   return (!currentPlayerId && !P.isReady) || P.id === currentPlayerId;
-  // });
-
-  // console.log(G.players)
-  // console.log(currentPlayerId)
-  // console.log(ctx.currentPlayer,ctx.activePlayer)
-    //zoom
-  const [scale, setScale] = useState(1);
-  const controls = useAnimation();
-
-  const handleScroll = (event) => {
-    const delta = event.deltaY;
-
-    // Define the scale change factor
-    const scaleFactor = 0.02;
-
-    // Calculate the new scale
-    const newScale = scale + delta * scaleFactor;
-
-    // Limit the scale to a reasonable range (adjust as needed)
-    const minScale = 0.5;
-    const maxScale = 2;
-
-    if (newScale >= minScale && newScale <= maxScale) {
-      setScale(newScale);
-
-      // Animate the scale change smoothly using Framer Motion
-      controls.start({ scale: newScale });
-    }
-    event.preventDefault();
-  };
+//this is our board that simply renders the gameState
+/*
+render all tiles
+render nodes (buildings)
+render edges (roads)
+buildActions
+    place robber
+    place road
+    place settlement
+    upgrade settlement
+robber (and merchant etc)
+*/
+export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
 
 
   const { width, height } = useWindowSize();
@@ -79,7 +52,7 @@ export function CatanBoard({
     return null;
   }
 
-
+  //get all tiles
   const tiles = G.tiles.map(({ coordinate, tile }) => (
     <Tile
       key={coordinate}
@@ -87,43 +60,48 @@ export function CatanBoard({
       coordinate={coordinate}
       tile={tile}
       size={size}
+      
     />
   ));
-  const buildings = Object.keys(G.nodes).map((node)=>{
-    const { color, building, direction, tile_coordinate, id } = G.nodes[node]
-      //don't render if no building or not isActive/canPlaceSettlement
 
-     //if isActive && canPlaceSettlement
-     // show nodes where one can place (e.g. nodes where there is no building & +2 away)
-        return(
-      <Node
+
+  
+  const buildings = Object.keys(G.nodes).map((node) => {
+    const { color, buildingType, direction, tile_coordinate} = G.nodes[node];
+    //don't render if no building or not isActive/canPlaceSettlement
+
+    //if isActive && canPlaceSettlement
+    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
+    if (buildingType){
+    return (
+      <Building
         key={node}
-        nodeId={node}
-        tileId={id} //tileId
         center={center}
         size={size}
         coordinate={tile_coordinate}
         direction={direction}
-        building={building}
+        building={buildingType}
         color={color}
         //flashing={!replayMode && id in nodeActions}
         //flashing={isActive}
         //onClick={buildOnNodeClick(id, nodeActions[id])}
-      />)
-        
+      />
+    );
+    }
   })
-  const nodes = Object.keys(G.valids.nodes).map(
-    (node) => {
-      const { direction, tile_coordinate, id } = G.nodes[node]
-      //don't render if no building or not isActive/canPlaceSettlement
 
-     //if isActive && canPlaceSettlement
-     // show nodes where one can place (e.g. nodes where there is no building & +2 away)
-        return(
+  const actions = []
+  G.valids.nodes.map((node) => {
+    const { direction, tile_coordinate, id , tileId} = node;
+    //don't render if no building or not isActive/canPlaceSettlement
+
+    //if isActive && canPlaceSettlement
+    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
+    actions.push(
       <Node
-        key={node}
-        nodeId={node}
-        tileId={id} //tileId
+        key={id}
+        nodeId={id}
+        tileId={tileId} //tileId
         center={center}
         size={size}
         coordinate={tile_coordinate}
@@ -133,16 +111,43 @@ export function CatanBoard({
         //flashing={!replayMode && id in nodeActions}
         flashing={isActive}
         //onClick={buildOnNodeClick(id, nodeActions[id])}
-        onClick={()=>{console.log(moves)
-          moves.placeSettlement(node)}}
-      />)
-        }
-  );
-  const edges = Object.values(G.edges).map(
-    ({ color, direction, tile_coordinate, id }) => (
+        onClick={() => {
+          moves.placeSettlement(id);
+        }}
+      />
+    );
+  });
+
+  G.valids.edges.map((edge) => {
+    const { color, direction, tile_coordinate, id} = edge;
+    //don't render if no building or not isActive/canPlaceSettlement
+
+    //if isActive && canPlaceSettlement
+    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
+    actions.push(
       <Edge
         id={id}
         key={id}
+        center={center}
+        size={size}
+        coordinate={tile_coordinate}
+        direction={direction}
+        color={color}
+        flashing="true"
+        onClick={() => {
+          moves.placeRoad(id);
+        }}
+        
+      />
+    );
+  });
+  const edges = Object.keys(G.edges).map((edge)=>{
+    const { color, direction, tile_coordinate} = G.edges[edge];
+  
+   return(
+      <Edge
+        id={edge}
+        key={edge}
         center={center}
         size={size}
         coordinate={tile_coordinate}
@@ -152,33 +157,30 @@ export function CatanBoard({
         //onClick={buildOnEdgeClick(id, edgeActions[id])}
       />
     )
-  );
+   })
+
+
+
+
+//make a subgraph of buildable nodes - used in catanatron
+//https://github.com/bcollazo/catanatron/blob/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3/catanatron_core/catanatron/models/board.py#L148
+//but we don't do this as we don't generate water tiles.. yet..
+//const buildable_subgraph = STATIC_GRAPH.subgraph(landNodes)
+
   return (
-    //inertia: https://github.com/pmndrs/use-gesture/issues/132
-    <><motion.div drag class="board-container">
-      <div onWheel={handleScroll}>
-        <motion.div
-          // style={{
-          //   width: '100%',
-          //   height: '100%',
-          // }}
-          initial={{ scale: 1 }} // Initial scale
-          animate={controls} // Animate the scale change
-        >
-          <div class="board">
-            {tiles}
-            
-            {buildings}
-            {nodes}
-            {/* {edges} */}
-        {/* <Robber
+
+            <div className="w-full bg-green-200" >
+              {tiles}
+
+              
+              {actions}
+              {edges} 
+              {buildings}
+              {/* <Robber
           center={center}
           size={size}
           coordinate={G.robber_coordinate}
         />  */}
-          </div>
-        </motion.div>
-      </div>
-    </motion.div><div>PHASE</div></>
+            </div>
   );
 }

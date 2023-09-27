@@ -1,0 +1,28 @@
+
+at the moment, boardGen does:
+uses react-hexgrid to generate a shape/board
+then creates all tiles as blank
+then for each tile, generate edges and nodes
+
+
+
+spec needs a react-hexgrid like function to generate the shape of the board/tiles
+and then we just iterate through all tiles/nodes
+
+so we also need our classic spec of like, ports,
+
+
+
+mapGenFunc - generates shape of map (e.g. hex, custom polygon)
+
+
+
+standard:
+mapGenFunc - ("hexagon", 3)
+
+
+custom:
+mapGenFunc - [some polygon thing] TODO: work out map shape from board-editor
+
+seafarers
+mapGenFunc - [some polygon thing]

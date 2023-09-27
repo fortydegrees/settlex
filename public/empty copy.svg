@@ -1,0 +1,17 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400">
+  <defs>
+    <style>.st2{fill:#7a8f99}.st4{fill:#7b6a58}.st23{fill:#e7fff1}.st27{fill:#e9f4ec}.st47{fill:#b9c7c9}.st60{fill:#bac8ca}.st75{fill:#5b7776}.st199{fill:#94bfac}.st236{display:inline}.st239{fill:#9fa5a5}.st358{display:none}</style>
+  </defs>
+  
+  <g id="Hexagons" transform="matrix(1, 0, 0, 1, 0, -3.552713678800501e-15)">
+    <g id="Ore">
+      <g></g>
+      <g></g>
+      <g></g>
+      <g></g>
+      <g></g>
+      <path d="M 172.956 0.347 L 345.744 100.106 L 345.744 299.624 L 172.956 399.383 L 0.168 299.624 L 0.168 100.106 Z" style="fill: none; stroke: rgb(255, 255, 255); stroke-width: 4px;"></path>
+    </g>
+  </g>
+</svg>
