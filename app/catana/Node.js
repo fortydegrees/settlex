@@ -39,7 +39,7 @@ export function Node({
 
   return (
     <div
-      className={flashing ? "node pulse" : "node"}
+      className={flashing ? "animate-pulse" : "node"}
       // variants={{
         
       //   pulse: {
@@ -49,12 +49,15 @@ export function Node({
       // }}
       //animate={"pulse"}
       style={{
+        position: 'absolute',
+        cursor: 'pointer',
         width: size * 0.4,
         height: size * 0.4,
         left: x ,
         top: y,
         transform: `translateY(-50%) translateX(-50%)`,
-        backgroundColor: color,
+        borderRadius: 100,
+        backgroundColor: 'white',
       }}
       onClick={onClick}
     >

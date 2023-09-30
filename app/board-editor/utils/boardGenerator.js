@@ -1,7 +1,7 @@
 //uses hexGrid to generate a board with a specific shape, then just creates a tile with all those
 
 import { GridGenerator } from "react-hexgrid";
-
+import { TileTypes } from "./types";
 import { add } from "./coordinates";
 
 //do these need to go in coordinates? or rename it to map-utils?
@@ -24,7 +24,7 @@ const UNIT_VECTORS = {
 };
 
 //given a QRS, return true if a tile exists
-//TODO: where to get tiles from?
+//TODO: where to get tiles from? we okay with passing 'map'?
 const getTileByCoord = (map, tileCoordinate) => {
   return (
     map.find(
@@ -34,7 +34,12 @@ const getTileByCoord = (map, tileCoordinate) => {
 };
 
 //for each hex in the grid, generate a tile object
+//tile object has id, coord, type, nodes, edges
+//tile object within tile (e.g. number, resource) comes later
 //this includes generating nodes and edges
+
+//we generate EMPTY ones first, as there might be specific places we want to put certain tiles
+//e.g. if spec says put water tiles round edges
 const generateTilesNodesEdges = (gridHexes) => {
   let tiles = [];
 
@@ -48,7 +53,7 @@ const generateTilesNodesEdges = (gridHexes) => {
     tiles.push({
       id: tileAutoinc++,
       coordinate: [hex.q, hex.r, hex.s],
-      type: TileType.EMPTY, //i.e. landTile, waterTile (can't have number)
+      type: TileTypes.EMPTY, //i.e. landTile, waterTile (can't have number)
       nodes: nodes,
       edges: edges
     });
@@ -119,6 +124,8 @@ const getNodesAndEdges = (hexGrid, coordinate, nodeAutoinc, edgeAutoinc) => {
 
   for (const { coord, neighborDirection } of neighborTiles) {
     const neighbor = getTileByCoord(hexGrid, coord);
+
+    console.log(neighbor)
 
     try {
       if (neighborDirection === Direction.EAST) {

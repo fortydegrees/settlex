@@ -2,8 +2,11 @@
 import { Client } from "boardgame.io/react";
 import { Local } from 'boardgame.io/multiplayer';
 import { Catan } from "./Game";
-import { CatanBoard } from "../board-editor/Board";
-
+import { CatanBoard } from "./Board";
+import {
+  TransformWrapper,
+  TransformComponent,
+} from "../../react-zoom-pan-pinch";
 
 
 const CatanClient = Client({
@@ -15,7 +18,7 @@ const CatanClient = Client({
 const Page = () => {
   return (
     <div
-      className="bg-blue-300"
+      className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600"
       style={{
         width: "100vw", // Use viewport width to take the full screen width
         height: "100vh", // Use viewport height to take the full screen height
@@ -24,8 +27,16 @@ const Page = () => {
         top: 0,
         left: 0,
       }}
-    >
-    <CatanClient playerID="0" />
+    ><TransformWrapper
+    minPositionX={-500}
+    minPositionY={-200}
+    maxPositionX={500}
+    maxPositionY={500}
+    maxScale={6}
+    minScale={0.3}
+  >
+    <TransformComponent>
+    <CatanClient playerID="0" /></TransformComponent></TransformWrapper>
     {/* <CatanClient playerID="1" /> */}
     </div>
   );
