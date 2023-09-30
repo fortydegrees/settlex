@@ -1,10 +1,11 @@
 import { spec } from "./game/spec";
 import { generateBoard } from "./game/generateBoard";
-import { TurnOrder } from "boardgame.io/core";
+import { TurnOrder, PlayerView } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids } from "./Moves";
 //setup board and convert tiles/edges into right format to render
 const tiles = generateBoard(spec);
 
+//console.log(board)
 const nodes = {};
 const edges = {};
 for (let tile of tiles) {
@@ -31,6 +32,18 @@ const playerColors = {
   0: "red",
   1: "blue",
 };
+
+
+const TURN_ORDER_ONCE = {
+  first: 0,
+  next: ({ G, ctx }) => {
+    if (getFirstPlayer(G) === ctx.playOrderPos) {
+      return (ctx.playOrderPos + 1) % ctx.numPlayers;
+    }
+    return undefined;
+  },
+};
+
 export const Catan = {
   //get spec to use (i.e. script to generate board)
   //spec is game rules, e.g. dev cards, vps to win
@@ -46,13 +59,32 @@ export const Catan = {
       resourceCards: [],
       devCards: [],
       color: playerColors[i],
+      numRoads: 15,
+      numSettles: 5,
+      numCities: 4,
     }));
+    const bank = {
+      resourceCards: spec.initialBank(), // TODO: get from spec
+      devCards: [],
+    }
+    const settings = {
+      turnTimer: 60,
+      discardLimit: 7,
+      VPsToWin: 10,
+    }
     const valids = { nodes: [], edges: [], tiles: [] };
     //board: generateBoard(spec),
     //tiles: gameState.tiles,
 
-    return { tiles, nodes, edges, valids, players };
+    return { tiles, nodes, edges, valids, bank, settings, players };
   },
+
+//https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
+//dummy card thing^^
+  // playerView: ({G, ctx, playerID})=>{
+  //   return StripSecrets(G, playerID)
+  // },
+
 
   //on placement phase
   //send active player to placeInitialSettlement phase
@@ -74,10 +106,20 @@ export const Catan = {
   //p2: place settlement
   //p2: place road
   //https://boardgame.io/documentation/#/phases
+
+
+
   phases: {
     placement: {
       turn: {
-        order: TurnOrder.CUSTOM(['0','1','1','0']),
+        order: TurnOrder.CUSTOM(['0','1','1','0']), //TODO: set custom play order
+        // playOrder: (G, ctx) => {
+        //   // generate an array of sequential player IDs ['0', '1', '2', ...]
+        //   const defaultPlayOrder = Array(ctx.numPlayers).fill().map((_, i) => i + '');
+        //   // return a shuffled version of the array
+        //   return ctx.random.Shuffle(defaultPlayOrder);
+        // },
+        //order: TurnOrder.ONCE, //does work, but only goes once.
         activePlayers: { currentPlayer: "settlement" },
         onBegin: ( context) => {
           //TODO: don't think this should be here // updating valids here...
@@ -86,30 +128,51 @@ export const Catan = {
 
             updateValids(context, "settlement")
         },
-        //order: { playOrder: ()=> ['0','1','1','0']} ,// snake
         stages: {
           settlement: { moves: { placeSettlement } },
           road: { moves: { placeRoad } },
         },
       },
 
-      //endIf: ({ G }) => G.settlements > 2, // end if each player has 2 settlements & 2 roads
+      endIf: ({G, ctx }) => ctx.turn > G.players.length * 2, // end if each player has 2 settlements & 2 roads
       next: "main",
       start: true,
       // onBegin: ({ G, ctx }) => { ... },
       // onEnd: ({ G, ctx }) => { ... },
     },
     main: {
-      stages: {
-        placeRobber: { moves: {} },
-        rollDice: { moves: {} },
-        discard: { moves: {} },
-        main: { moves: {} }, //buy dev, buy city, offer trade
+      turn: {
+        order: TurnOrder.CONTINUE,
+        
+        // stages: {
+        //   preRoll: { moves: {
+        //     playDev,
+        //     rollDice, //after roll dice (and no 7) go to main
+        //   }},
+        //   overSeven: { //only available to some. have to manage stage
+        //     moves:{
+        //       discard,
+        //       moveRobber
+        //     }
+        //   },
+        //   main: {
+        //     moves:{
+        //       placeRoad,
+        //       placeSettlement,
+        //       placeCity,
+        //       buyDev,
+        //       offerTrade,
+        //       tradeWithBank,
+        //       playDev,
+        //       endTurn,
+        //     }
+        //   },
+        // },
       },
-    },
-    endgame:{
+      endIf: ()=> {}, //player VPs > VP to win, or resign (if allowed). maybe can just do this somewhere else: https://github.com/mbrinkl/santorini/blob/4d89b4bedbbb8c5cf57a123c42f7febe2fdf0dcb/src/game/index.ts
+      onEnd: () => {}
 
-    }
+    },
   },
 
   // moves: {

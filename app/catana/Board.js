@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useWindowSize from "./utils/useWindowSize";
 import { SQRT3 } from "./utils/coordinates";
 import { Tile } from "./Tile";
 import { Building } from "./Building";
 import {Node } from "./Node"
+import {ActionNode} from "./ActionNode"
 import { Edge } from "./Edge";
 import "./Board.css";
 import { motion, useAnimation } from "framer-motion";
@@ -41,6 +42,24 @@ robber (and merchant etc)
 */
 export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
 
+  const [hoveredNode, setHoveredNode] = useState(null)
+  const [hoveredTiles, setHoveredTiles] = useState([])
+
+
+  useEffect(()=>{
+    if (hoveredNode){
+      const newHoveredTiles = []
+      for (const tile of G.tiles){
+        if (Object.values(tile.tile.nodes).includes(parseInt(hoveredNode))){
+          newHoveredTiles.push(tile.tile.id)
+        }
+      }
+      setHoveredTiles(newHoveredTiles)
+    }
+    else{
+      setHoveredTiles([])
+    }
+  },[hoveredNode])
 
   const { width, height } = useWindowSize();
   // TODO: Keep in sync with CSS
@@ -52,14 +71,25 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
     return null;
   }
 
+
   //get all tiles
   const tiles = G.tiles.map(({ coordinate, tile }) => (
     <Tile
-      key={coordinate}
-      center={center}
+      // key={coordinate}
+      // center={center}
+      // coordinate={coordinate}
+      // tile={tile}
+      // size={size}
+      key={tile.id}
+      id={tile.id}
+      absolute
       coordinate={coordinate}
-      tile={tile}
       size={size}
+      type={tile.type}
+      resource={tile.resource}
+      number={tile.number}
+      boardCenter={center}
+      hoveredTiles={hoveredTiles}
       
     />
   ));
@@ -90,15 +120,16 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
     }
   })
 
+  //TODO: i think we need to just render nodes.
+  //as in, right now we render all nodes and just hide it if it's not actionable
+  //we only need to do this if it's the player's turn
   const actions = []
-  G.valids.nodes.map((node) => {
+  {isActive && G.valids.nodes.map((node) => {
     const { direction, tile_coordinate, id , tileId} = node;
-    //don't render if no building or not isActive/canPlaceSettlement
-
-    //if isActive && canPlaceSettlement
-    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
+    //TODO: get the action type here.
+    //E.g. place settlement, placeCity
     actions.push(
-      <Node
+      <ActionNode
         key={id}
         nodeId={id}
         tileId={tileId} //tileId
@@ -106,7 +137,7 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
         size={size}
         coordinate={tile_coordinate}
         direction={direction}
-        //building={building}
+        building="Settlement"
         //color={color}
         //flashing={!replayMode && id in nodeActions}
         flashing={isActive}
@@ -114,9 +145,11 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
         onClick={() => {
           moves.placeSettlement(id);
         }}
+        setHoveredNode={setHoveredNode}
+        hoveredNode={hoveredNode}
       />
     );
-  });
+  });}
 
   G.valids.edges.map((edge) => {
     const { color, direction, tile_coordinate, id} = edge;
@@ -169,13 +202,15 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
 
   return (
 
-            <div className="w-full bg-green-200" >
+            <div className="h-screen w-screen" >
               {tiles}
 
               
-              {actions}
+
               {edges} 
+
               {buildings}
+              {actions}
               {/* <Robber
           center={center}
           size={size}

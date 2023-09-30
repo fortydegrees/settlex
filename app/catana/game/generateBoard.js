@@ -75,7 +75,7 @@ const generateStandardHexes = (shape, radius) => {
         const [u, v, w] = bcoord;
         return [x + u, y + v, z + w];
     }
-    console.log(getEdgeRef("EAST"))
+
     const getEdgeNodes = (edgeRef) => {
         return {
             [getEdgeRef("EAST")]: [getNodeRef("NORTHEAST"), getNodeRef("SOUTHEAST")],

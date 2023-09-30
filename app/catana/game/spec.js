@@ -26,6 +26,14 @@ export const spec = {
       [ResourceType.WHEAT, 4]
     ),
   hexes: () => generateHexes(spec.map, spec.radius), //probs needs fixing for seafarers etc
+  initialBank: () =>{return    createByCounts(
+      [ResourceType.BRICK, 19],
+      [ResourceType.ORE, 19],
+      [ResourceType.SHEEP, 19],
+      [ResourceType.WOOD, 19],
+      [ResourceType.WHEAT, 19]
+    )
+  },
   requiredResources: [],
   isResourceAllowed: () => true,
   centerCoords: [{ q: 0, r: 0, s: 0 }],
