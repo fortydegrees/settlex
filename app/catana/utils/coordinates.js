@@ -1,3 +1,5 @@
+//https://github.com/bcollazo/catanatron/blob/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3/ui/src/utils/coordinates.js
+
 // Helpers for implementing https://www.redblobgames.com/grids/hexagons/
 
 // Gives center coordinate for tile.
@@ -29,6 +31,25 @@ export function tilePixelVector(coordinate, size, centerX, centerY) {
       default:
         throw Error("Unkown direction " + direction);
     }
+  }
+
+  export function getEdgeDelta(direction, w, h){
+    switch (direction) {
+        case "NORTHEAST":
+          return [w / 4, -h * 0.375];
+        case "EAST":
+          return [w /2, 0];
+        case "SOUTHEAST":
+          return [w /4, h * 0.375];
+        case "SOUTHWEST":
+          return [-w/4, h * 0.375];
+        case "WEST":
+          return [-w / 2, 0];
+        case "NORTHWEST":
+          return [-w/4, -h * 0.375];
+        default:
+          throw Error("Unkown direction " + direction);
+      }
   }
   
   export function getEdgeTransform(direction, size) {

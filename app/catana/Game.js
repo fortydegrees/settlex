@@ -2,8 +2,19 @@ import { spec } from "./game/spec";
 import { generateBoard } from "./game/generateBoard";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids } from "./Moves";
+import { EffectsPlugin } from 'bgio-effects/plugin';
+
 //setup board and convert tiles/edges into right format to render
 const tiles = generateBoard(spec);
+
+const configuredEffectsPlugin = EffectsPlugin({
+  effects: {
+    distributeCardsFromTile: {
+      create: (value) => value,
+      duration: 0,
+    },
+  },
+});
 
 //console.log(board)
 const nodes = {};
@@ -48,6 +59,8 @@ export const Catan = {
   //get spec to use (i.e. script to generate board)
   //spec is game rules, e.g. dev cards, vps to win
   //strategy is how to generate map
+
+  plugins: [configuredEffectsPlugin],
 
   //generate map here
   setup: ({ ctx }) => {

@@ -13,6 +13,7 @@
     "@heroicons/react": "^2.0.18",
     "@react-spring/web": "^9.7.3",
     "autoprefixer": "10.4.15",
+    "bgio-effects": "^0.7.1",
     "boardgame.io": "^0.50.2",
     "framer-motion": "^10.16.4",
     "jsnetworkx": "^0.3.4",

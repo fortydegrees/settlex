@@ -51,6 +51,14 @@ export const TILE_DATA = {
   "Port": {},
 }
 
+export const RESOURCE_ICON_SVGS = {
+  "Wood": "/svgs/icon_wood.svg",
+  "Brick": "/svgs/icon_brick.svg",
+  "Sheep": "/svgs/icon_sheep.svg",
+  "Wheat": "/svgs/icon_wheat.svg",
+  "Ore": "/svgs/icon_ore.svg",
+}
+
 export const RESOURCE_SVGS = {
   "Wood": "https://colonist.io/dist/images/tile_lumber.svg?v168",
   "Brick": "https://colonist.io/dist/images/tile_brick.svg?v168",
