@@ -2,16 +2,11 @@
 import { Client } from "boardgame.io/react";
 import { Local } from 'boardgame.io/multiplayer';
 import { Catan } from "./Game";
-import { CatanBoard } from "./Board";
-import {
-  TransformWrapper,
-  TransformComponent,
-} from "../../react-zoom-pan-pinch";
-
+import { GameScreendWithEffects } from "./GameScreen";
 
 const CatanClient = Client({
   game: Catan,
-  board: CatanBoard,
+  board: GameScreendWithEffects,
   multiplayer: Local(),
 });
 
@@ -27,16 +22,8 @@ const Page = () => {
         top: 0,
         left: 0,
       }}
-    ><TransformWrapper
-    minPositionX={-500}
-    minPositionY={-200}
-    maxPositionX={500}
-    maxPositionY={500}
-    maxScale={6}
-    minScale={0.3}
-  >
-    <TransformComponent>
-    <CatanClient playerID="0" /></TransformComponent></TransformWrapper>
+    >
+    <CatanClient playerID="0" />
     {/* <CatanClient playerID="1" /> */}
     </div>
   );

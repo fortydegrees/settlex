@@ -1,6 +1,6 @@
 import React from "react";
-import { motion, useAnimation } from "framer-motion";
 import { tilePixelVector, getNodeDelta, SQRT3 } from "./utils/coordinates";
+import { Piece } from "./Piece";
 
 function Building({ building, color }) {
   const type = building === "CITY" ? "city" : "settlement";
@@ -31,6 +31,8 @@ export function Node({
   const x = tileX + deltaX;
   const y = tileY + deltaY;
 
+  const width = size * 0.45;
+  const height = size * 0.45;
   //onClick:
   //place settlement
     //then either do immediate road, or not
@@ -38,31 +40,12 @@ export function Node({
   //other CK stuff
 
   return (
-    <div
-      className={flashing ? "animate-pulse" : "node"}
-      // variants={{
-        
-      //   pulse: {
-      //     scale:1.5,
-      //     transition: { repeat: Infinity, repeatType: "reverse" },
-      //   },
-      // }}
-      //animate={"pulse"}
-      style={{
-        position: 'absolute',
-        cursor: 'pointer',
-        width: size * 0.4,
-        height: size * 0.4,
-        left: x ,
-        top: y,
-        transform: `translateY(-50%) translateX(-50%)`,
-        borderRadius: 100,
-        backgroundColor: 'white',
-      }}
-      onClick={onClick}
-    >
-      {color && <Building building={building} color={color} />}
-       {/* <span>{nodeId}</span> */}
-    </div>
+
+        <Piece
+          svg="https://colonist.io/dist/images/settlement_red.svg?v168"
+          size={size * 0.8} //this should really be in Piece.js
+          left={x}
+          top={y}
+        />
   );
 }

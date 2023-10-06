@@ -40,7 +40,7 @@ import { useDrag } from "react-dnd";
 //   }
 // };
 
-export function Piece({ coordinate, size = 50, svg, left, top }) {
+export function Piece({ coordinate, size = 50, svg, left, top, placing=false }) {
   //   if (absolute) {
   //     const [centerX, centerY] = boardCenter;
   //     const [x, y] = tilePixelVector(coordinate, size, centerX, centerY);
@@ -54,18 +54,19 @@ export function Piece({ coordinate, size = 50, svg, left, top }) {
 
   return (
     <div
-      className="animate-bounce"
+      className={placing && "animate-bounce"}
       key={coordinate}
       style={{
         backgroundImage: `url('${svg}')`,
         backgroundSize: "cover",
         position: "absolute",
         pointerEvents: "none",
+        backgroundRepeat: "no-repeat",
         width: size,
         height: size,
         left: left - size * 0.5,
         top: top - size * 0.63,
-        zIndex: 1,
+        zIndex: placing? 2 : 1,
         opacity: 1,
       }}
     ></div>
