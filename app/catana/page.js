@@ -2,11 +2,11 @@
 import { Client } from "boardgame.io/react";
 import { Local } from 'boardgame.io/multiplayer';
 import { Catan } from "./Game";
-import { GameScreendWithEffects } from "./GameScreen";
+import { GameScreenWithEffects } from "./GameScreen";
 
 const CatanClient = Client({
   game: Catan,
-  board: GameScreendWithEffects,
+  board: GameScreenWithEffects,
   multiplayer: Local(),
 });
 
