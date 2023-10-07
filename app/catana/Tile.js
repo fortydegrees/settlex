@@ -9,7 +9,7 @@ import {
 import { useDrag } from "react-dnd";
 import "./Tile.css";
 import { EffectsBoardWrapper, useEffectListener } from "bgio-effects/react";
-import { useSpring, animated, useChain, useSpringRef } from "@react-spring/web";
+import { useSpring, animated, useChain, useSpringRef, useTransition } from "@react-spring/web";
 
 const numberToPips = (number) => {
   switch (number) {
@@ -31,59 +31,6 @@ const numberToPips = (number) => {
     default:
       return "";
   }
-};
-
-export const CardAnim = ({ left, top, size }) => {
-  const width = size * 0.5;
-  const height = size * 0.7;
-
-
- const popRef = useSpringRef()
-  const popSpring = useSpring({
-    ref: popRef,
-    from: { x: 0,  moveX: 0 },
-    to: { x: 1, moveX: 40 },
-    config: { mass: 1, friction: 20 },
-    //config: { duration: 200 }
-  });
-
-
-  const moveRef = useSpringRef();
-  const second = useSpring({
-    ref: moveRef,
-    from: { y: top, x: left - width / 2, },
-    to: { y: 0, x: 1000 },
-    config: { mass: 1, friction: 20 },
-    //config: { duration: 200 }
-  });
-
-
-
-  useChain([popRef, moveRef], [0, 1], 800);
-
-  return (
-    <animated.div
-      className="rounded border-2 border-white p-2 bg-green-500 drop-shadow-lg"
-      style={{
-        position: "absolute",
-        left: second.x,
-        top: second.y,
-        zIndex: 5,
-
-        width: width,
-        height: height,
-        transform: popSpring.x
-          .to({
-            range: [0, 0.5, 0.75, 1],
-            output: [0.01, 0.65, 1.3, 1],
-          })
-          .to((x) => `scale(${x}) translateX(0%) translateY(0%)`),
-
-        //pointerEvents: "none",
-      }}
-      
-    />
-  );
 };
 
 export function NumberToken({ number, style, size }) {
@@ -182,7 +129,7 @@ export function Tile({
 
   return (
     <>
-      <CardAnim left={x} top={y - h / 2} size={size} />
+    
       <div
         className="hex"
         ref={draggable ? drag : null}

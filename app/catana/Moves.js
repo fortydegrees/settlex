@@ -82,16 +82,23 @@ export const placeSettlement = {
       const resourceTiles = getAllTilesConnectedToNode(G.tiles, node);
 
 
-      for (var tile of resourceTiles){
-        tile = current(tile)
-        effects.distributeCardsFromTile({tile, playerID});
-      }
-
+  
       //get the resource of the tile
       const resources = resourceTiles.map((t) => t.tile.resource);
 
       //we want to provide [{tile}]
+      const cardAnims = []
+      for (var tile of resourceTiles){
+        tile = current(tile)
+        //check that it's a resource tile AND not blocked
 
+        //TODO: change this to be an array of tile, playerIDs so animations aren't staggered
+        cardAnims.push({tile, playerID})
+        
+        
+      }
+
+      effects.distributeCardsFromTile(cardAnims);
       takeCardsFromBank(context, resources, playerID);
     }
 

@@ -54,7 +54,7 @@ export function Piece({ coordinate, size = 50, svg, left, top, placing=false }) 
 
   return (
     <div
-      className={placing && "animate-bounce"}
+      className={placing ? "animate-bounce": ""}
       key={coordinate}
       style={{
         backgroundImage: `url('${svg}')`,

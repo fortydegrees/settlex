@@ -11,7 +11,7 @@ const configuredEffectsPlugin = EffectsPlugin({
   effects: {
     distributeCardsFromTile: {
       create: (value) => value,
-      duration: 0,
+      duration: 1,
     },
   },
 });
