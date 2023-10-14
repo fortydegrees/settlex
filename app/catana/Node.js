@@ -2,14 +2,6 @@ import React from "react";
 import { tilePixelVector, getNodeDelta, SQRT3 } from "./utils/coordinates";
 import { Piece } from "./Piece";
 
-function Building({ building, color }) {
-  const type = building === "CITY" ? "city" : "settlement";
-
-  if (type == "settlement"){
-    return <div></div>
-  }
-  return <div className={(color, type)}></div>;
-}
 
 export function Node({
   tileId, //tileId
@@ -18,11 +10,12 @@ export function Node({
   size,
   coordinate,
   direction,
-  building,
-  color,
+  buildingType,
+  buildingColor,
   flashing,
   onClick,
 }) {
+  //TOD remove this, just calculate it once in Board
   const [centerX, centerY] = center;
   const w = SQRT3 * size;
   const h = 2 * size;
@@ -38,11 +31,11 @@ export function Node({
     //then either do immediate road, or not
   //upgrade settlement to city
   //other CK stuff
-
+  const buildingSVG = `/svgs/${buildingType}_${buildingColor}.svg`
   return (
-
+//TODO: make this better
         <Piece
-          svg="https://colonist.io/dist/images/settlement_red.svg?v168"
+          buildingSVG={buildingSVG}
           size={size * 0.8} //this should really be in Piece.js
           left={x}
           top={y}

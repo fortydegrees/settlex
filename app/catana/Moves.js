@@ -1,5 +1,6 @@
 import * as nx from "jsnetworkx";
-import { current } from 'immer';
+import { current } from "immer";
+import { NodeBuildingTypes } from "./game/types";
 function getAllTilesConnectedToNode(tiles, nodeId) {
   // Initialize an array to store the matching tiles
   const matchingTiles = [];
@@ -21,7 +22,6 @@ function getAllTilesConnectedToNode(tiles, nodeId) {
 
   return matchingTiles;
 }
-
 
 //need to allow arrays for both arguments
 export const takeCardsFromBank = (context, cards, playerID) => {
@@ -49,53 +49,31 @@ export const takeCardsFromBank = (context, cards, playerID) => {
     message: `player ${playerID} received ${cardLog}`,
   });
 };
-export const diceRoll = {
-  move: (context) => {
-    //if 7:
-    //move activePlayer to placeRobber stage
-    //event.setStage("placeRobber")
-    //check all resource cards are in bank first
-    //get total resources to distribute
-    //if amount of each resource is >= amount in bank:
-    //for each player, takeCardsFromBank
-    //else, return 'can't distribute as not enough cards in bank'
-  },
-};
-
-
-
 
 export const placeSettlement = {
   move: (context, node) => {
-    const { G, playerID, events, ctx, effects} = context;
+    const { G, playerID, events, ctx, effects } = context;
     console.log("placing settlement");
-    G.nodes[node].buildingType = "settlement";
-    G.nodes[node].color = G.players[playerID].color;
+    G.nodes[node].building = {type: NodeBuildingTypes.SETTLEMENT, owner: playerID};
+    //G.nodes[node].color = G.players[playerID].color;
 
     //IF placement phase && second settle:
     console.log(context);
-    if (
-      ctx.phase == "placement" &&
-      ctx.turn > ctx.numPlayers
-    ) {
+    if (ctx.phase == "placement" && ctx.turn > ctx.numPlayers) {
       //get all tiles connected to node
       const resourceTiles = getAllTilesConnectedToNode(G.tiles, node);
 
-
-  
       //get the resource of the tile
       const resources = resourceTiles.map((t) => t.tile.resource);
 
       //we want to provide [{tile}]
-      const cardAnims = []
-      for (var tile of resourceTiles){
-        tile = current(tile)
+      const cardAnims = [];
+      for (var tile of resourceTiles) {
+        tile = current(tile);
         //check that it's a resource tile AND not blocked
 
         //TODO: change this to be an array of tile, playerIDs so animations aren't staggered
-        cardAnims.push({tile, playerID})
-        
-        
+        cardAnims.push({ tile, playerID });
       }
 
       effects.distributeCardsFromTile(cardAnims);
@@ -115,6 +93,7 @@ export const placeSettlement = {
 };
 
 export const placeRoad = {
+    canDo: ()=>console.log('hi'),
   move: (context, edge) => {
     const { G, playerID, events } = context;
     console.log("placing road", edge);
@@ -125,6 +104,127 @@ export const placeRoad = {
   },
   //   redact: ({ G, ctx }) =>
   //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
+};
+
+export const playDev = {
+  move: (context, edge) => {
+    const { G, playerID, events } = context;
+    console.log("placing road", edge);
+    G.edges[edge].color = G.players[playerID].color;
+
+    events.endTurn();
+    //updateValids(context, stage);
+  },
+  //   redact: ({ G, ctx }) =>
+  //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
+};
+
+export const rollDice = {
+    canDo: ()=>console.log('hi roll dive'),
+  move: (context) => {
+    const { G, random, effects} = context
+    G.diceRoll = random.D6(2); // dieRoll = 1–6
+    effects.roll([G.diceRoll[0], G.diceRoll[1]]);
+
+    const diceScore = G.diceRoll[0] + G.diceRoll[1];
+
+
+    //object of resources to distribution
+    const resourcesToDistribute = {}
+    for (const p of G.players){
+        resourcesToDistribute[p.id] = []
+    }
+    //easy way to count total resources to check that bank has enough
+    //if we're being super legit with our code can infer this from resourcesToDistribute
+    const totalResourcesDistributed = {"Wood": 0, "Brick": 0, "Sheep": 0, "Wheat": 0, "Ore": 0}
+
+    if (diceScore === 7) {
+      //get all players over discardLimit
+      //if numPlayers > 0, for each player, go to discard stage (and wait for completion)
+      //after this, set activePlayer to original player and send to placeRobber phase
+      //(place robber always returns to previous stage)
+      //e.g. can be preRoll if playing knight before turn
+      //or postRoll if played knight in-turn or if 7'd
+      console.log("discard");
+    } else {
+      //distribute cards
+
+      //get all tiles with that number
+      //TODO: check it's not blocked by robber
+      const tilesToProduce = G.tiles.filter((t) => t.tile.number == diceScore);
+
+      const cardAnims = [];
+      for (var tile of tilesToProduce) {
+        tile = current(tile);
+
+        //get all nodes from tile
+        const nodeIDs = Object.values(tile.tile.nodes)
+
+        //check each node to see if building exists
+        for (const node of nodeIDs){
+            if(G.nodes[node].building !== null){
+                const ownerID = G.nodes[node].building.owner
+                cardAnims.push({tile, playerID: ownerID})
+                if (G.nodes[node].building.type === NodeBuildingTypes.CITY){
+                   
+                    resourcesToDistribute[ownerID].push(tile.tile.resource)
+                    resourcesToDistribute[ownerID].push(tile.tile.resource)
+                    totalResourcesDistributed[tile.tile.resource] += 2
+                }
+                else if (G.nodes[node].building.type === NodeBuildingTypes.SETTLEMENT){
+                    resourcesToDistribute[ownerID].push(tile.tile.resource)
+                    totalResourcesDistributed[tile.tile.resource] += 1
+                }
+            }
+
+        }
+
+    
+      }
+
+
+      //check if bank has enough
+      for (const key in totalResourcesDistributed) {
+        if (totalResourcesDistributed.hasOwnProperty(key)) {
+          const requiredCount = totalResourcesDistributed[key];
+          const availableCount = G.bank.resourceCards.filter(card => card === key).length;
+
+          console.log(`Giving out ${requiredCount} ${key}, have ${availableCount} in bank`)
+          
+          // Check if the required count is higher than the available count
+          if (requiredCount > availableCount) {
+            console.log("TOO MANY. NOT GIVING OUT.")
+
+            context.log.setMetadata({
+                message: `Not enough ${key} in bank for all players to receive`,
+              });
+            //TODO: render 'block' animation for the tile here.
+
+            // Remove cards from "resources"
+            for (const playerId in resourcesToDistribute) {
+                resourcesToDistribute[playerId] = resourcesToDistribute[playerId].filter(card => card !== key);
+            }
+
+            for (let i = cardAnims.length - 1; i >= 0; i--) {
+                const anim = cardAnims[i];
+                if (anim.tile.tile.resource === key) {
+                    cardAnims.splice(i, 1);
+                }
+            }
+          }
+        }
+      }
+      effects.distributeCardsFromTile(cardAnims);
+      for (const p in resourcesToDistribute){
+        if (resourcesToDistribute[p].length > 0){
+            takeCardsFromBank(context, resourcesToDistribute[p], p);
+        }
+      }
+      //takeCardsFromBank(context, resources, 0);
+    }
+
+    //then return to postRoll
+  },
 };
 
 //'meta' is a lil ?hack? (is it?) to pass relevant context for the action,
@@ -148,7 +248,7 @@ export const updateValids = (context, stage, meta) => {
         }
       } else {
         for (var edge of Object.keys(G.edges)) {
-          var realedge = G.edges[edge];
+          var realedge = {...G.edges[edge]};
           realedge["id"] = edge;
           if (!realedge.color) {
             validEdges.push(realedge);
@@ -173,14 +273,12 @@ export const updateValids = (context, stage, meta) => {
       for (let node in Object.keys(allNodes)) {
         node = allNodes[node];
 
-        if (node.buildingType !== null) {
-          console.log("node", node);
+
+        if (node.building !== null) {
           //remove node
           invalidNodes.push(node.id);
           //get all neighbors and also remove
-          console.log(STATIC_GRAPH.neighbors(parseInt(node.id)));
           for (const builtNode of STATIC_GRAPH.neighbors(parseInt(node.id))) {
-            console.log(builtNode);
             invalidNodes.push(builtNode.toString());
           }
         }
@@ -194,8 +292,12 @@ export const updateValids = (context, stage, meta) => {
         realnode["id"] = node;
         finalValidNodes.push(realnode);
       }
-      console.log(finalValidNodes);
       G.valids.nodes = finalValidNodes;
+      break;
+    default:
+        G.valids.edges = [];
+        G.valids.nodes = []
+        break;
   }
 };
 
@@ -227,4 +329,9 @@ function removeNodesByIds(nodeObj, idsToRemove) {
   });
 
   return filteredNodes;
+}
+
+
+export const getAvailableMoves = context =>{
+
 }

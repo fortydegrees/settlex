@@ -1,7 +1,7 @@
 import { spec } from "./game/spec";
 import { generateBoard } from "./game/generateBoard";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
-import { placeSettlement, placeRoad, updateValids } from "./Moves";
+import { placeSettlement, placeRoad, updateValids, rollDice } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 
 //setup board and convert tiles/edges into right format to render
@@ -11,8 +11,12 @@ const configuredEffectsPlugin = EffectsPlugin({
   effects: {
     distributeCardsFromTile: {
       create: (value) => value,
-      duration: 1,
+      duration: 2,
     },
+    roll: {
+      create: (value) => value,
+      duration: 1.5
+    }
   },
 });
 
@@ -25,8 +29,8 @@ for (let tile of tiles) {
       tileId: tile.tile.id,
       tile_coordinate: tile.coordinate,
       direction: node[0],
-      buildingType: null,
-      color: null,
+      //building: {type: null, owner: null},
+      building: null
     };
   }
   for (let edge of Object.entries(tile.tile.edges)) {
@@ -64,9 +68,12 @@ export const Catan = {
 
   //generate map here
   setup: ({ ctx }) => {
+    //TODO: set this based on spec e.g. numRoads
+    //TODO: add team?
     const players = new Array(ctx.numPlayers).fill(0).map((_, i) => ({
       //name: "",
       id: i,
+      username: "",
       VPs: 0,
       privateVPs: 0,
       resourceCards: [],
@@ -77,8 +84,8 @@ export const Catan = {
       numCities: 4,
     }));
     const bank = {
-      resourceCards: spec.initialBank(), // TODO: get from spec
-      devCards: [],
+      resourceCards: spec.initialBank(), 
+      devCards: [],// TODO: get from spec
     }
     const settings = {
       turnTimer: 60,
@@ -86,10 +93,11 @@ export const Catan = {
       VPsToWin: 10,
     }
     const valids = { nodes: [], edges: [], tiles: [] };
+    const diceRoll = [3,4]
     //board: generateBoard(spec),
     //tiles: gameState.tiles,
 
-    return { tiles, nodes, edges, valids, bank, settings, players };
+    return { tiles, nodes, edges, valids, bank, settings, players, diceRoll };
   },
 
 //https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
@@ -155,32 +163,37 @@ export const Catan = {
     },
     main: {
       turn: {
+        onBegin: ( context) => {
+          console.log("main phase")
+
+            updateValids(context, "preRoll")
+        },
         order: TurnOrder.CONTINUE,
-        
-        // stages: {
-        //   preRoll: { moves: {
-        //     playDev,
-        //     rollDice, //after roll dice (and no 7) go to main
-        //   }},
-        //   overSeven: { //only available to some. have to manage stage
-        //     moves:{
-        //       discard,
-        //       moveRobber
-        //     }
-        //   },
-        //   main: {
-        //     moves:{
-        //       placeRoad,
-        //       placeSettlement,
-        //       placeCity,
-        //       buyDev,
-        //       offerTrade,
-        //       tradeWithBank,
-        //       playDev,
-        //       endTurn,
-        //     }
-        //   },
-        // },
+        activePlayers: { currentPlayer: "preRoll" },
+        stages: {
+          preRoll: { moves: {
+            //playDev,
+            rollDice, //after roll dice (and no 7) go to main
+          }},
+          // overSeven: { //only available to some. have to manage stage
+          //   moves:{
+          //     discard,
+          //     moveRobber
+          //   }
+          // },
+          postRoll: {
+            moves:{
+              // placeRoad,
+              // placeSettlement,
+              // placeCity,
+              // buyDev,
+              // offerTrade,
+              // tradeWithBank,
+              // playDev,
+              //endTurn,
+            }
+          },
+        },
       },
       endIf: ()=> {}, //player VPs > VP to win, or resign (if allowed). maybe can just do this somewhere else: https://github.com/mbrinkl/santorini/blob/4d89b4bedbbb8c5cf57a123c42f7febe2fdf0dcb/src/game/index.ts
       onEnd: () => {}

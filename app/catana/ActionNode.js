@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion, useAnimation } from "framer-motion";
 import {
   tilePixelVector,
   getNodeDelta,
@@ -7,18 +6,6 @@ import {
   SQRT3,
 } from "./utils/coordinates";
 import { Piece } from "./Piece";
-
-const BouncingSettle = ({ size, x, y }) => {
-  return (
-    <Piece
-      svg="https://colonist.io/dist/images/settlement_red.svg?v168"
-      size={size * 0.8} //this should really be in Piece.js
-      left={x}
-      top={y}
-      placing={true}
-    />
-  );
-};
 
 export function ActionNode({
   nodeId,
@@ -33,6 +20,8 @@ export function ActionNode({
   hoveredNode,
   type = "node",
   piece,
+  buildingType,
+  buildingColor
 }) {
   const [centerX, centerY] = center;
   const w = SQRT3 * size;
@@ -49,6 +38,7 @@ export function ActionNode({
   const width = size * 0.4;
   const height = size * 0.4;
 
+  const buildingSVG = `/svgs/${buildingType}_${buildingColor}.svg`
   //TODO: disable animation for all others when a node is hovered?
   //        tried naive implementation but it restarts animations at different times so looks weird
   return (
@@ -86,7 +76,7 @@ export function ActionNode({
           piece
         ) : (
           <Piece
-            svg="https://colonist.io/dist/images/settlement_red.svg?v168"
+          buildingSVG={buildingSVG}
             size={size * 0.8} //this should really be in Piece.js
             left={x}
             top={y}
