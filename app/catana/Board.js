@@ -5,11 +5,12 @@ import { Building } from "./Building";
 import { Node } from "./Node";
 import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
+import {Card} from "./Card"
 import "./Board.css";
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
 import useWindowSize from "./utils/useWindowSize";
 import { useLatestPropsOnEffect, useEffectListener } from "bgio-effects/react";
-import { useTransition, animated } from "@react-spring/web";
+  import { useTransition, animated } from "@react-spring/web";
 
 let id = 0; //for key id of card aniimations
 
@@ -30,7 +31,6 @@ function computeDefaultSize(divWidth, divHeight) {
   return size;
 }
 
-
 //this is our board that simply renders the gameState
 /*
 render all tiles
@@ -43,10 +43,20 @@ buildActions
     upgrade settlement
 robber (and merchant etc)
 */
-export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
+export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
   //we do this so that the board updates while the cardContainer is waiting to be updated after animation
-  G = useLatestPropsOnEffect('distributeCardsFromTile').G;
-  ctx = useLatestPropsOnEffect('distributeCardsFromTile').ctx
+  G = useLatestPropsOnEffect("distributeCardsFromTile").G;
+  ctx = useLatestPropsOnEffect("distributeCardsFromTile").ctx;
+
+  //from https://github.com/blunket/camelot/blob/master/src/Board.jsx
+  // let isMyTurn = this.props.playerID === this.props.ctx.currentPlayer;
+  // let amISpectating = this.props.playerID !== "0" && this.props.playerID !== "1";
+
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const [hoveredTiles, setHoveredTiles] = useState([]);
+  const [flashingTiles, setFlashingTiles] = useState([])
+
+
   const ref = useRef(null); //ref for card anims
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
   const { width, height } = useWindowSize();
@@ -57,60 +67,70 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
   const center = [containerWidth / 2, containerHeight / 2];
   const size = computeDefaultSize(containerWidth, containerHeight);
 
-
+ 
   useEffectListener(
     "distributeCardsFromTile",
     (cards) => {
-      for (const card of cards){
-        const {tile, playerID} = card
+      //flash tiles
+      setFlashingTiles(cards.map((c)=>c.tile.tile.id))
+      //wait one second (for tiles to flash) then distribute cards
+      setTimeout(() => {
+        for (const card of cards) {
+          const { tile, playerID } = card;
 
-      const [centerX, centerY] = center;
-      const [x, y] = tilePixelVector(tile.coordinate, size, centerX, centerY);
+          const [centerX, centerY] = center;
+          const [x, y] = tilePixelVector(
+            tile.coordinate,
+            size,
+            centerX,
+            centerY
+          );
 
-      const cardWidth = size * 0.5; //TODO: where to properly define/reference this?
+          const cardWidth = size * 0.5; //TODO: where to properly define/reference this?
 
-      const startX = x - cardWidth / 2;
-      const startY = y - size;
+          const startX = (x - cardWidth / 2) + (Math.floor(Math.random() * 5) - 2);
+          const startY = (y - size) + (Math.floor(Math.random() * 10) - 4);
 
-      const cardResource = tile.tile.resource;
 
-      const divRect = divRef.current.getBoundingClientRect();
-      const element = document.getElementById(`p${playerID}-${cardResource}`);
+          const cardResource = tile.tile.resource;
 
-      const rect = element.getBoundingClientRect();
+          const divRect = divRef.current.getBoundingClientRect();
+          const element = document.getElementById(
+            `p${playerID}-${cardResource}`
+          );
 
-      const xRelativeToDiv = rect.left - divRect.left;
-      const yRelativeToDiv = rect.top - divRect.top;
+          const rect = element.getBoundingClientRect();
 
-      const finalX = xRelativeToDiv - startX;
-      const finalY = (yRelativeToDiv - startY) - 15;
+          const xRelativeToDiv = rect.left - divRect.left;
+          const yRelativeToDiv = rect.top - divRect.top;
 
-      ref.current?.({ startX, startY, finalX, finalY });
-      }
+          const finalX = xRelativeToDiv - startX;
+          const finalY = yRelativeToDiv - startY - 15;
+          ref.current?.({ startX, startY, finalX, finalY, cardResource });
+          setFlashingTiles([])
+        }
+      }, 1000);
     },
-    [width, height, size],
+    [width, height, size]
   );
 
-  const [hoveredNode, setHoveredNode] = useState(null);
-  const [hoveredTiles, setHoveredTiles] = useState([]);
 
   useEffect(() => {
-    if (Object.entries(ctx.activePlayers).flat().includes("settlement")){
-    if (hoveredNode) {
-      const newHoveredTiles = [];
-      for (const tile of G.tiles) {
-        if (Object.values(tile.tile.nodes).includes(parseInt(hoveredNode))) {
-          newHoveredTiles.push(tile.tile.id);
+    if (Object.entries(ctx.activePlayers).flat().includes("settlement")) {
+      if (hoveredNode) {
+        const newHoveredTiles = [];
+        for (const tile of G.tiles) {
+          if (Object.values(tile.tile.nodes).includes(parseInt(hoveredNode))) {
+            newHoveredTiles.push(tile.tile.id);
+          }
         }
+        setHoveredTiles(newHoveredTiles);
+      } else {
+        setHoveredTiles([]);
       }
-      setHoveredTiles(newHoveredTiles);
-    } else {
-      setHoveredTiles([]);
     }
-  }
   }, [hoveredNode]);
 
- 
   if (!size) {
     return null;
   }
@@ -133,18 +153,22 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
       number={tile.number}
       boardCenter={center}
       hoveredTiles={hoveredTiles}
+      isFlashing={flashingTiles.includes(tile.id)}
     />
   ));
 
   const buildings = [];
   Object.keys(G.nodes).map((node) => {
-    const { buildingType, direction, tile_coordinate, id, tileId } =
+    const { building, direction, tile_coordinate, id, tileId } =
       G.nodes[node];
     //don't render if no building or not isActive/canPlaceSettlement
 
     //if isActive && canPlaceSettlement
     // show nodes where one can place (e.g. nodes where there is no building & +2 away)
-    if (buildingType) {
+    //TODO: maybe don't render node if buildingType is null?
+    if (building) {
+
+
       buildings.push(
         <Node
           key={id}
@@ -154,7 +178,8 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
           size={size}
           coordinate={tile_coordinate}
           direction={direction}
-          building={buildingType}
+          buildingType={building.type}
+          buildingColor={G.players[building.owner].color}
         />
         // <Building
         //   key={node}
@@ -213,10 +238,12 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
             size={size}
             coordinate={tile_coordinate}
             direction={direction}
-            building="Settlement"
+            player={Object.keys(ctx.activePlayers)[0]}
+            buildingType={ctx.activePlayers[ctx.currentPlayer]}
+            buildingColor={G.players[ctx.currentPlayer].color}
             flashing={isActive}
             onClick={() => {
-              console.log(moves);
+             
               moves.placeSettlement(id);
               setHoveredNode(null);
               setHoveredTiles([]);
@@ -234,7 +261,6 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
       G.valids.edges.map((edge, x) => {
         const { color, direction, tile_coordinate, id } = edge;
         //don't render if no building or not isActive/canPlaceSettlement
-
         //if isActive && canPlaceSettlement
         // show nodes where one can place (e.g. nodes where there is no building & +2 away)
         actions.push(
@@ -248,6 +274,9 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
             direction={direction}
             color={color}
             placing="true"
+            player={Object.keys(ctx.activePlayers)[0]}
+            buildingType={ctx.activePlayers[ctx.currentPlayer]}
+            buildingColor={G.players[ctx.currentPlayer].color}
             moves={moves}
             setHoveredNode={setHoveredNode}
             hoveredNode={hoveredNode}
@@ -261,39 +290,41 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive}) {
   //but we don't do this as we don't generate water tiles.. yet..
   //const buildable_subgraph = STATIC_GRAPH.subgraph(landNodes)
 
-  return (<div ref={divRef}> <CardAnimContainer
-    //style={{ position: "absolute" }}
-    children={(add) => {
-      ref.current = add;
-    }}
-    size={size}
-  />
-    <div className="h-screen w-screen">
-      {tiles}
+  return (
+    <div ref={divRef}>
+      {" "}
+      <CardAnimContainer
+        //style={{ position: "absolute" }}
+        children={(add) => {
+          ref.current = add;
+        }}
+        size={size}
+      />
+      <div className="h-screen w-screen">
+        {tiles}
 
-      {buildings}
-      {actions}
+        {buildings}
+        {actions}
 
-      {/* <Robber
+        {/* <Robber
           center={center}
           size={size}
           coordinate={G.robber_coordinate}
         />  */}
-    </div></div>
+      </div>
+    </div>
   );
 }
 
-
-
 function CardAnimContainer({
-  config = { mass: 1, friction: 20 },
+  config = { mass: 0.5, friction: 20 },
   timeout = 5000,
   children,
-  size
+  size,
 }) {
-    const width = size * 0.5;
-    const height = size * 0.7;
-  
+  const width = size * 0.5;
+  const height = size * 0.7;
+
   const refMap = useMemo(() => new WeakMap(), []);
   const [items, setItems] = useState([]);
 
@@ -313,7 +344,8 @@ function CardAnimContainer({
     keys: (item) => item.key,
     enter: (item) => async (next, cancel) => {
       await next({ opacity: 1, z: 1, x: 0, y: 0 });
-      await next({ x: item.finalX, y: item.finalY });
+      await next({ x: item.finalX, y: item.finalY })
+     
     },
     leave: (item) => async (next) => {
       //x and y are the amount to move item.startX by to get it to where we want
@@ -335,11 +367,11 @@ function CardAnimContainer({
 
   //on load get all children and add them to state
   useEffect(() => {
-    children(({ startX, startY, finalX, finalY }) => {
+    children(({ startX, startY, finalX, finalY, cardResource }) => {
       //TODO: get/calculate startX, startY etc here
       setItems((state) => [
         ...state,
-        { key: id++, startX, startY, finalX, finalY },
+        { key: id++, startX, startY, finalX, finalY, cardResource },
       ]);
     });
   }, []);
@@ -349,8 +381,8 @@ function CardAnimContainer({
       {transitions(({ ...style }, item) => {
         return (
           <div>
-            <animated.div
-              className="rounded border-2 border-white p-2 bg-green-500 drop-shadow-lg"
+            <Card
+              resource={item.cardResource}
               ref={(ref) => ref && refMap.set(item, ref)}
               style={{
                 ...style,
@@ -365,12 +397,11 @@ function CardAnimContainer({
                     output: [0.01, 0.65, 1.3, 1],
                   })
                   .to((z) => `scale(${z})`),
-                  width: width,
-                  height: height,
+                width: width,
+                height: height,
               }}
-            >
+             />
               {/* this is your cardAnim thing */}
-            </animated.div>
           </div>
         );
       })}

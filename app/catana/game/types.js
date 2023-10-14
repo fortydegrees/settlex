@@ -10,7 +10,6 @@ export const ResourceType = {
   //ANY: "Any", // Used for 3:1 ports.
   //GOLD: "Gold",
   //WATER: "Water",
-
 };
 
 export const TileTypes = {
@@ -18,7 +17,6 @@ export const TileTypes = {
   DESERT: "Desert",
   WATER: "Water",
   EMPTY: "Empty",
-
 }
 
 //export const TILE_TYPES = [TileType.EMPTY, TileType.LAND, TileType.WATER]
@@ -36,6 +34,16 @@ export const SPECIAL_TILES = [
   ResourceType.DESERT,
   ResourceType.EMPTY,
 ]
+
+export const NodeBuildingTypes ={
+  SETTLEMENT: "settlement",
+  CITY: "city",
+}
+
+export const EdgeBuildingTypes ={
+  ROAD: 0,
+  BOAT: 1,
+}
 
 
 
@@ -90,4 +98,14 @@ export const PIECE_SVGS = (playerColor) =>{
     City: `https://colonist.io/dist/images/city_${playerColor.toLowerCase()}.svg?v168`,
     Road: `https://colonist.io/dist/images/road_${playerColor.toLowerCase()}.svg?v168`,
   };
+}
+
+
+const playerColors = {
+  0: "red",
+  1: "blue",
+};
+
+const edgeTypes = {
+  0: ""
 }
