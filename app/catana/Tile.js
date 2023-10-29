@@ -9,6 +9,7 @@ import {
 import { useDrag } from "react-dnd";
 import "./Tile.css";
 
+
 const numberToPips = (number) => {
   switch (number) {
     case 2:
@@ -86,7 +87,7 @@ export function Tile({
   droppable,
   number,
   hoveredTiles,
-  isFlashing
+  isFlashing,
 }) {
   const w = SQRT3 * size;
   const h = 2 * size;
@@ -126,38 +127,42 @@ export function Tile({
     });
   }
 
+
   return (
     <>
       <div
         className="hex"
         ref={draggable ? drag : null}
-        key={coordinate}
+        //key={coordinate}
         style={style}
       >
-        
-        {isFlashing && <div
-          style={{
-            content: "",
-            display: "block",
-            position: "absolute",
-            background: "rgba(255, 255, 255, 0.5)",
-            width: "60px",
-            height: "100%",
-            top: "0",
-            left: "-50%",
-            opacity: 1,
-            filter: "blur(30px)",
-            willChange: 'transform',
-            
-            animation: 'flash 1s 1'
-          }}
-        />}
+        {/* {coordinate.join(', ')} */}
+        {isFlashing && (
+          <div
+            style={{
+              content: "",
+              display: "block",
+              position: "absolute",
+              background: "rgba(255, 255, 255, 0.5)",
+              width: "60px",
+              height: "100%",
+              top: "0",
+              left: "-50%",
+              opacity: 1,
+              filter: "blur(30px)",
+              willChange: "transform",
+
+              animation: "flash 1s 1",
+            }}
+          />
+        )}
         {number && <NumberToken size={size} number={number} pips={2} />}
       </div>
     </>
   );
-}
 
+          
+}
 
 /*
 flashing anim: https://codepen.io/h7w/pen/bGGOyyj

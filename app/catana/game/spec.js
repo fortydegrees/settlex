@@ -37,41 +37,76 @@ export const spec = {
   requiredResources: [],
   isResourceAllowed: () => true,
   centerCoords: [{ q: 0, r: 0, s: 0 }],
+  //TODO: something about port numbers and shuffling ports?
+  //e.g. out of 9 ports, 4 should be ANY, then one of each resource
+  portCounts: ()=>
+    createByCounts(
+      [ResourceType.ANY, 4],
+      [ResourceType.BRICK, 1],
+      [ResourceType.ORE, 1],
+      [ResourceType.SHEEP, 1],
+      [ResourceType.WOOD, 1],
+      [ResourceType.WHEAT, 1]
+    ),
   ports: [
     {
-      resource: ResourceType.ANY,
-      corners: [[{ q: 1, r: -2, s: 1 }, "NW"][({ x: 3, y: 0 }, "N")]],
+      //resource: ResourceType.ANY,
+      coordinate: [3,-3,0],
+      nodes: [48,49],
+      direction: "EAST",
+      //NE, SE. so port icon is directly East
+      //planks are SE (\) and NE (/),
     },
-    // {
-    //   resource: ResourceType.SHEEP,
-    //   corners: [{x: 5, y: 0}, {x: 6, y: 0}],
-    // },
-    // {
-    //   resource: ResourceType.ANY,
-    //   corners: [{x: 8, y: 1}, {x: 9, y: 1}],
-    // },
-    // {
-    //   resource: ResourceType.ANY,
-    //   corners: [{x: 10, y: 2}, {x: 10, y: 3}],
-    // }, {
-    //   resource: ResourceType.BRICK,
-    //   corners: [{x: 9, y: 4}, {x: 8, y: 4}],
-    // },
-    // {
-    //   resource: ResourceType.WOOD,
-    //   corners: [{x: 6, y: 5}, {x: 5, y: 5}],
-    // },
-    // {
-    //   resource: ResourceType.ORE,
-    //   corners: [{x: 1, y: 2}, {x: 1, y: 1}],
-    // },
-    // {
-    //   resource: ResourceType.ANY,
-    //   corners: [{x: 3, y: 5}, {x: 2, y: 5}],
-    // }, {
-    //   resource: ResourceType.WHEAT,
-    //   corners: [{x: 1, y: 4}, {x: 1, y: 3}],
-    // }
+    {
+      //resource: ResourceType.ANY,
+      coordinate: [3,-1,-2],
+      nodes: [50,51],
+      direction: "NORTHEAST",
+      //SE, NE
+    },
+    {
+      //resource: ResourceType.SHEEP,
+      coordinate: [2,1,-3],
+      nodes: [46,45],
+      direction: "NORTHEAST",
+    },
+    {
+      //resource: ResourceType.ANY,
+      coordinate: [0,3,-3],
+      nodes: [35,37],
+      direction: "NORTHWEST",
+    },
+    {
+      //resource: ResourceType.ANY,
+      coordinate: [-2,3,-1],
+      nodes: [24,10],
+      direction: "WEST",
+    },
+    {
+      //resource: ResourceType.ANY,
+      coordinate: [-3,2,1],
+      nodes: [9,8],
+      direction: "WEST",
+    },
+    {
+      //resource: ResourceType.ANY,
+      coordinate: [-3,0,3],
+      nodes: [4,3],
+      direction: "SOUTHWEST",
+    },
+    {
+      //resource: ResourceType.ANY,
+      coordinate: [-1,-2,3],
+      nodes: [16,17],
+      direction: "SOUTHEAST",
+    },
+    {
+      //resource: ResourceType.ANY,
+      coordinate: [1,-3,2],
+      nodes: [26,40],
+      direction: "SOUTHEAST",
+    },
+    
   ],
   hasDefaultPortResources: true,
   rollNumbers: () => [

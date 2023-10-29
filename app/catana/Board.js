@@ -5,13 +5,14 @@ import { Building } from "./Building";
 import { Node } from "./Node";
 import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
+import { Port} from "./Port";
 import {Card} from "./Card"
 import "./Board.css";
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
 import useWindowSize from "./utils/useWindowSize";
 import { useLatestPropsOnEffect, useEffectListener } from "bgio-effects/react";
   import { useTransition, animated } from "@react-spring/web";
-
+  import { TileTypes } from "./game/types";
 let id = 0; //for key id of card aniimations
 
 function computeDefaultSize(divWidth, divHeight) {
@@ -136,26 +137,31 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
   }
 
   //get all tiles
-  const tiles = G.tiles.map(({ coordinate, tile }) => (
-    <Tile
-      // key={coordinate}
-      // center={center}
-      // coordinate={coordinate}
-      // tile={tile}
-      // size={size}
-      key={tile.id}
-      id={tile.id}
-      absolute
-      coordinate={coordinate}
-      size={size}
-      type={tile.type}
-      resource={tile.resource}
-      number={tile.number}
-      boardCenter={center}
-      hoveredTiles={hoveredTiles}
-      isFlashing={flashingTiles.includes(tile.id)}
-    />
-  ));
+  const tiles = G.tiles.map(({ coordinate, type, tile }) => {
+    if (type == TileTypes.RESOURCE){
+      return(
+        <Tile
+        key={tile.id}
+        id={tile.id}
+        absolute
+        coordinate={coordinate}
+        size={size}
+        resource={tile.resource}
+        number={tile.number}
+        boardCenter={center}
+        hoveredTiles={hoveredTiles}
+        isFlashing={flashingTiles.includes(tile.id)}
+      />
+      )
+    }
+    else if (type == TileTypes.PORT){
+      return(
+        <Port key={tile.id} boardCenter={center}  size={size} coordinate={coordinate} tile={tile} />
+      )
+    }
+  })
+
+  
 
   const buildings = [];
   Object.keys(G.nodes).map((node) => {

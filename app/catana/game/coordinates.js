@@ -19,6 +19,7 @@ export function tilePixelVector(coordinate, size, centerX, centerY) {
   export function cubeToAxial(cube) {
     return { q: cube[0], r: cube[2] };
   }
+
   export function getNodeDelta(direction, w, h) {
     switch (direction) {
       case "NORTH":
@@ -38,25 +39,8 @@ export function tilePixelVector(coordinate, size, centerX, centerY) {
     }
   }
   
-  export function getEdgeDelta(direction, w, h){
-    switch (direction) {
-        case "NORTHEAST":
-          return `${translate(300)}`;
-        case "EAST":
-          return `${translate(0)}`;
-        case "SOUTHEAST":
-          return `${translate(10)}`;
-        case "SOUTHWEST":
-          return `${translate(20)}`;
-        case "WEST":
-          return `${translate(20)}`;
-        case "NORTHWEST":
-          return `${translate(30)}`;
-        default:
-          throw Error("Unkown direction " + direction);
-      }
-  }
-  
+
+
   export function getEdgeTransform(direction, size) {
     const distanceToEdge = size * 0.865;
     const translate = (deg) =>

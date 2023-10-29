@@ -3,12 +3,14 @@ import {
     GridGenerator,
   } from "react-hexgrid";
   import { RandomQueue } from "../utils/randomQueue";
-  import {ResourceType, STANDARD_RESOURCES} from "./types"
+  import {ResourceType, TileTypes, STANDARD_RESOURCES} from "./types"
+
+  let idCounter = 0; 
 
 const generateStandardHexes = (shape, radius) => {
     const gridHexes = GridGenerator[shape](radius);
   
-    let idCounter = 0; 
+
     let tiles = [];
     for (let hex of gridHexes) {
       tiles.push({
@@ -218,13 +220,36 @@ export const generateBoard = (spec) => {
     var portAutoinc = 0
     for (let tile of tiles){
         var { nodes, edges, nodeAutoinc, edgeAutoinc } = getNodesAndEdges(tiles, tile.coordinate, nodeAutoinc , edgeAutoinc);
-
+        tile.type = TileTypes.RESOURCE
             tile.tile.nodes = nodes;
             tile.tile.edges = edges;
     
         //nodeAutoinc++;
 
     }
+    
+
+
+    //doing ports
+    const portCounts = new RandomQueue(spec.portCounts());
+    for (const port of spec.ports){
+      if (portCounts.length) {
+        
+      tiles.push({
+        coordinate: port.coordinate,
+       
+        //should have type here e.g. port
+        type: TileTypes.PORT,
+        tile:{
+          direction: port.direction,
+          id: idCounter++,
+          nodes: port.nodes, //HORRIBLE. different format. TODO: FIX ALL THIS JANK
+          edges: {},
+          resource: portCounts.pop()
+        }
+      })
+    }
+  }
 
 
 
