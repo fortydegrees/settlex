@@ -6,8 +6,8 @@ export const ResourceType = {
   WHEAT: "Wheat",
   ORE: "Ore",
   DESERT: "Desert",
-  EMPTY: "Empty"
-  //ANY: "Any", // Used for 3:1 ports.
+  EMPTY: "Empty",
+  ANY: "Any", // Used for 3:1 ports.
   //GOLD: "Gold",
   //WATER: "Water",
 };
@@ -15,6 +15,7 @@ export const ResourceType = {
 export const TileTypes = {
   RESOURCE: "Resource",
   DESERT: "Desert",
+  PORT: "Port",
   WATER: "Water",
   EMPTY: "Empty",
 }

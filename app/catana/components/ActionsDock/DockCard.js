@@ -1,132 +1,149 @@
-import * as React from 'react'
-import { animated, useIsomorphicLayoutEffect, useSpringValue } from '@react-spring/web'
+import * as React from "react";
+import {
+  animated,
+  useIsomorphicLayoutEffect,
+  useSpringValue,
+} from "@react-spring/web";
 
-import { useMousePosition } from './hooks/useMousePosition'
-import { useWindowResize } from './hooks/useWindowResize'
+import { useMousePosition } from "./hooks/useMousePosition";
+import { useWindowResize } from "./hooks/useWindowResize";
 
-import { useDock } from './DockContext'
+import { useDock } from "./DockContext";
 
 import "./dockStyles.css";
 
+const INITIAL_WIDTH = 48;
 
-
-const INITIAL_WIDTH = 48
-
-export const DockCard = ({ children }) => {
-  const cardRef = React.useRef(null)
+export const DockCard = ({ action }) => {
+  const cardRef = React.useRef(null);
   /**
    * This doesn't need to be real time, think of it as a static
    * value of where the card should go to at the end.
    */
-  const [elCenterX, setElCenterX] = React.useState(0)
+  const [elCenterX, setElCenterX] = React.useState(0);
 
   const size = useSpringValue(INITIAL_WIDTH, {
     config: {
       mass: 0.1,
       tension: 320,
     },
-  },)
+  });
 
-  const opacity = useSpringValue(0)
+  const opacity = useSpringValue(0);
   const y = useSpringValue(0, {
     config: {
       friction: 29,
       tension: 238,
     },
-  })
+  });
 
-  const dock = useDock()
+  const dock = useDock();
   /**
    * This is just an abstraction around a `useSpring` hook, if you wanted you could do this
    * in the hook above, but these abstractions are useful to demonstrate!
    */
   useMousePosition(
     {
-      
       onChange: ({ value }) => {
-        const mouseX = value.x
+        const mouseX = value.x;
 
         if (dock.width > 0) {
           const transformedValue =
-            INITIAL_WIDTH + 18 * Math.cos((((mouseX - elCenterX) / dock.width) * Math.PI) / 2) ** 60
+            INITIAL_WIDTH +
+            18 *
+              Math.cos((((mouseX - elCenterX) / dock.width) * Math.PI) / 2) **
+                60;
 
           if (dock.hovered) {
-
-            size.start(transformedValue)
-         }
+            size.start(transformedValue);
+          }
         }
       },
     },
     [elCenterX, dock]
-  )
-
+  );
 
   useIsomorphicLayoutEffect(() => {
     if (!dock.hovered) {
-      size.start(INITIAL_WIDTH)
+      size.start(INITIAL_WIDTH);
     }
-    
-  }, [dock.hovered])
+  }, [dock.hovered]);
 
   useWindowResize(() => {
-    const { x } = cardRef.current.getBoundingClientRect()
+    const { x } = cardRef.current.getBoundingClientRect();
 
-    setElCenterX(x + INITIAL_WIDTH / 2)
-  })
+    setElCenterX(x + INITIAL_WIDTH / 2);
+  });
 
-  const timesLooped = React.useRef(0)
-  const timeoutRef = React.useRef()
-  const isAnimating = React.useRef(false)
+  const timesLooped = React.useRef(0);
+  const timeoutRef = React.useRef();
+  const isAnimating = React.useRef(false);
 
   const handleClick = () => {
     if (!isAnimating.current) {
-      isAnimating.current = true
-      opacity.start(0.5)
+      isAnimating.current = true;
+      opacity.start(0.5);
 
-      timesLooped.current = 0
+      timesLooped.current = 0;
 
       y.start(-INITIAL_WIDTH / 2, {
         loop: () => {
           if (3 === timesLooped.current++) {
             timeoutRef.current = setTimeout(() => {
-              opacity.start(0)
-              y.set(0)
-              isAnimating.current = false
-              timeoutRef.current = undefined
-            }, 2000)
-            y.stop()
+              opacity.start(0);
+              y.set(0);
+              isAnimating.current = false;
+              timeoutRef.current = undefined;
+            }, 2000);
+            y.stop();
           }
-          return { reverse: true }
+          return { reverse: true };
         },
-      })
+      });
     } else {
       /**
        * Allow premature exit of animation
        * on a second click if we're currently animating
        */
-      clearTimeout(timeoutRef.current)
-      opacity.start(0)
-      y.start(0)
-      isAnimating.current = false
+      clearTimeout(timeoutRef.current);
+      opacity.start(0);
+      y.start(0);
+      isAnimating.current = false;
     }
-  }
+  };
 
-  React.useEffect(() => () => clearTimeout(timeoutRef.current), [])
+  React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
   return (
-    <div className='dock-card-container'>
+    <div className="dock-card-container">
       <animated.button
         ref={cardRef}
-        className='bg-blue-300 ring-2 ring-slate-200 dock-card'
+        //disabled
+        className="bg-blue-300 ring-2 ring-slate-200 dock-card"
         onClick={handleClick}
         style={{
           width: size,
           height: size,
           y,
-        }}>
-        {children}
+        }}
+      >
+        <span className="card">
+          <img
+            className="card__img"
+            style={action.style}
+            src={action.img}
+            alt=""
+          />
+
+          {(action.count > 0) && (
+            <span className="absolute right-0 top-0 w-6 h-6 block -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50"
+           >
+              <span className="text-sm font-medium">{action.count}</span>
+            </span>
+          )}
+        </span>
       </animated.button>
-      <animated.div className='dock-dot' style={{ opacity }} />
+      <animated.div className="dock-dot" style={{ opacity }} />
     </div>
-  )
-}
+  );
+};

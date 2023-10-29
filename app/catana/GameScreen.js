@@ -16,13 +16,16 @@ import largestArmyIcon from "../../public/svgs/icon_largest_army.svg";
 
 import { Dock } from "./components/ActionsDock/Dock";
 import { DockCard } from "./components/ActionsDock/DockCard";
-import { Card } from "./components/ActionsDock/Card";
+
+import {Card} from './Card'
 
 import {ChevronDoubleRightIcon, ForwardIcon} from '@heroicons/react/24/outline'
 
-const CardIcon = ({ playerCards, resource, player }) => {
+
+//OLD, with numbers and stuff
+const CardIcon = ({ playerCards, resource, player, setIsTrading }) => {
   return (
-    <div className="flex items-center mr-6" id={`p${player}-${resource}`} onClick={()=>console.log(resource)}>
+    <div className="flex items-center mr-6" id={`p${player}-${resource}`} onClick={()=>setIsTrading(resource)}>
       <div className="w-6 select-none text-white mr-1 text-3xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
         {playerCards.filter((item) => item === resource).length}
       </div>
@@ -37,35 +40,34 @@ const CardIcon = ({ playerCards, resource, player }) => {
   );
 };
 
-const ActionButton = ({ text, icon, number, action }) => {
-  return (
-    <button class="inline-flex items-center justify-center p-0.5 mr-2 mb-4 bg-opacity-50 ">
-      <span class="relative p-3 transition-all ease-in duration-75  rounded-full bg-blue-200 bg-opacity-50 hover:bg-blue-400">
-        <div
-          className="w-8 h-8 rotate-90"
-          style={{
-            //display: 'flex',
-            backgroundImage: `url('/svgs/${icon}.svg')`,
-            backgroundSize: "contain",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-      </span>
-    </button>
-  );
-};
+// const CardIcon = ({ playerCards, resource, player, setIsTrading }) => {
+//     return (
+//       <div className="flex items-center mr-6" id={`p${player}-${resource}`} onClick={()=>setIsTrading(resource)}>
+//         <Card style={{
+//                 position: "relative",
+//                 willChange: "transform",
+               
+//                 zIndex: 5,
+//                 width: 50,
+//                 height: 70,
+//               }}
+//               resource={resource} />
+//       </div>
+//     );
+//   };
+
+
 export function GameScreen(bgioProps) {
   const { G, ctx, moves } = bgioProps;
+  const [isTrading, setIsTrading] = useState(null)
   const [Die, rollTo] = useDie(G.diceRoll[0]);
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);
   const playerCards = bgioProps.G.players[0].resourceCards; //TODO: horrible, clean up. might need to check if playerID exists (e.g. what about spectator)
   const otherPlayerCards = bgioProps.G.players[1].resourceCards; //TODO: horrible, clean up. might need to check if playerID exists (e.g. what about spectator)
 
-  if (moves){
-    for (const move in moves){
-        console.log(moves[move])
-    }
-  }
+  
+
+  //dice roll animation
   useEffectListener(
     "roll",
     (dice) => {
@@ -75,36 +77,40 @@ export function GameScreen(bgioProps) {
     []
   );
 
-  const GRADIENTS = [
-    "/svgs/road_red.svg",
 
-    "/svgs/settlement_red.svg",
-    "/svgs/city_red.svg",
-    null,
-    "/svgs/card_devcardback.svg",
-  ];
-
-//   const ACTIONS = {"road":{
-//     action: moves.placeRoad(),
-//     count: 14,
-//     enabled: true
-//   },
-//   "settlement":{
-//     action: moves.placeSettlement(),
-//     count: 4,
-//     enabled: true
-//   },
-//   "city":{
-//     action: moves.placeRoad(),
-//     count: 14,
-//     enabled: false
-//   },
-//   null: null,
-//   "developmentCard":{
-//     action: moves.placeRoad(),
-//     count: 14,
-//     enabled: true
-//   }};
+  const ACTIONS = [{
+    name: 'road',
+    action: ()=>moves.placeRoad(),
+    img: "/svgs/road_red.svg",
+    count: 15,
+    enabled: true,
+    style:{ transform: "rotate(90deg) scale(0.8)"}
+  },
+  {
+    name: 'settlement',
+    action: ()=>moves.placeSettlement(),
+    img:  "/svgs/settlement_red.svg",
+    count: 5,
+    enabled: true,
+    style: null
+  },
+  {
+    name: 'city',
+    action: ()=>moves.placeRoad(),
+    img: "/svgs/city_red.svg",
+    count: 4,
+    enabled: false,
+    style: null
+  },
+  null,
+{
+    name: 'buyDev',
+    action: ()=> moves.placeRoad(),
+    img: "/svgs/card_devcardback.svg",
+    count: null,
+    enabled: true,
+    style: {transform: "scale(0.7)"}
+  }]
 
   return (
     <div
@@ -145,7 +151,7 @@ export function GameScreen(bgioProps) {
             <div className="h-20 w-20 rounded-md bg-gradient-to-t from-red-500 to-red-800 ring-4 ring-white flex justify-center items-center text-6xl">
               🤠
             </div>
-            <span className="absolute right-0 top-0 block h-8 w-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-gray-300 ring-2 ring-white text-xl font-semibold flex items-center justify-center">
+            <span className="absolute right-0 top-0 block h-8 w-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center">
               4
             </span>
           </span>
@@ -173,33 +179,35 @@ export function GameScreen(bgioProps) {
               </span>
             </div>
           </span>
+
         </div>
 
         {/* Centered card container */}
         <div className="grow-0 self-end">
-          <div className="relative ml-4 mr-8 flex pl-4 bg-blue-200 bg-opacity-50 rounded-md h-20 ring-2 ring-slate-300">
+          <div className="relative h-20 ml-4 mr-8 flex pl-4 bg-blue-200 bg-opacity-50 rounded-md ring-2 ring-slate-300">
             <Dock>
-              {GRADIENTS.map((src, index) =>
-                src ? (
-                  <DockCard key={index}>
-                    <Card src={src} />
-                  </DockCard>
+              {ACTIONS.map((action, index) =>
+                action ? (
+                  <DockCard key={index} action={action} />
                 ) : (
                   <span />
                 )
               )}
             </Dock>
+            <div className="flex self-end mb-4">
             {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
               return (
                 <CardIcon
                   playerCards={playerCards}
                   key={resource}
                   resource={resource}
+                  setIsTrading={setIsTrading}
                   //TODO: change this for more players:
                   player={0}
                 />
               );
             })}
+            </div>
           </div>
         </div>
 

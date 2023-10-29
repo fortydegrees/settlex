@@ -1,11 +1,13 @@
 import { spec } from "./game/spec";
 import { generateBoard } from "./game/generateBoard";
+//import { generateBalancedBoard } from "./game/generateBalancedBoard";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids, rollDice } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
-
+import {TileTypes, } from "./game/types"
 //setup board and convert tiles/edges into right format to render
 const tiles = generateBoard(spec);
+//const tiles = generateBalancedBoard(spec);
 
 const configuredEffectsPlugin = EffectsPlugin({
   effects: {
@@ -24,6 +26,7 @@ const configuredEffectsPlugin = EffectsPlugin({
 const nodes = {};
 const edges = {};
 for (let tile of tiles) {
+  if (tile.type == TileTypes.RESOURCE){
   for (let node of Object.entries(tile.tile.nodes)) {
     nodes[node[1]] = {
       tileId: tile.tile.id,
@@ -42,6 +45,9 @@ for (let tile of tiles) {
     };
   }
 }
+}
+
+//tiles.push({coordinate:[-1,0,3], tile:{edges:{}, id:100, nodes: {}, number: 2, resource: "Sheep"}})
 //debug/testing color. atm purely sets css for settlement color
 const playerColors = {
   0: "red",
@@ -97,7 +103,7 @@ export const Catan = {
     //board: generateBoard(spec),
     //tiles: gameState.tiles,
 
-    return { tiles, nodes, edges, valids, bank, settings, players, diceRoll };
+    return { tiles, nodes, edges, ports: spec.ports, valids, bank, settings, players, diceRoll };
   },
 
 //https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
