@@ -9,7 +9,8 @@ function createByCounts(...valueCounts) {
   }
   return vals;
 }
-  
+ 
+//https://github.com/cgagliardi/settlers-setup/blob/master/src/app/board/specs/standard.ts
 export const spec = {
   name: "standard4p",
   map: "hexagon",
@@ -25,7 +26,7 @@ export const spec = {
       [ResourceType.WOOD, 4],
       [ResourceType.WHEAT, 4]
     ),
-  hexes: () => generateHexes(spec.map, spec.radius), //probs needs fixing for seafarers etc
+  hexes: (board) => generateHexes(board), //this gets 'map' and 'dimensions
   initialBank: () =>{return    createByCounts(
       [ResourceType.BRICK, 19],
       [ResourceType.ORE, 19],
@@ -48,6 +49,7 @@ export const spec = {
       [ResourceType.WOOD, 1],
       [ResourceType.WHEAT, 1]
     ),
+    //TODO: if you define a resource here, it won't be overwritten..?
   ports: [
     {
       //resource: ResourceType.ANY,
@@ -112,6 +114,7 @@ export const spec = {
   rollNumbers: () => [
     2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12,
   ],
+  //desertPlacement: "Random", //can be center, off-center, inland etc https://github.com/cgagliardi/settlers-setup/blob/master/src/app/board/strategy/strategy.ts
 };
 
 // //not implemented:

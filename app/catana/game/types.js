@@ -13,8 +13,9 @@ export const ResourceType = {
 };
 
 export const TileTypes = {
-  RESOURCE: "Resource",
-  DESERT: "Desert",
+  // RESOURCE: "Resource",
+  // DESERT: "Desert",
+  LAND: "Land",
   PORT: "Port",
   WATER: "Water",
   EMPTY: "Empty",
