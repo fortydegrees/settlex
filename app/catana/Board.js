@@ -138,7 +138,8 @@ export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
 
   //get all tiles
   const tiles = G.tiles.map(({ coordinate, type, tile }) => {
-    if (type == TileTypes.RESOURCE){
+    //hack. CLEAN
+    if (type == TileTypes.LAND){
       return(
         <Tile
         key={tile.id}

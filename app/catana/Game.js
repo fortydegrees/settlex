@@ -1,11 +1,28 @@
 import { spec } from "./game/spec";
 import { generateBoard } from "./game/generateBoard";
-//import { generateBalancedBoard } from "./game/generateBalancedBoard";
+import { BalancedBoard } from "./game/generateBalancedBoard";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids, rollDice } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 import {TileTypes, } from "./game/types"
 //setup board and convert tiles/edges into right format to render
+
+//   new BalancedBoard({
+//     desertPlacement:
+//     this.desertPlacementEnabled ? state.desertPlacement : DesertPlacement.RANDOM,
+// resourceDistribution:
+//     this.resourceDistributionEnabled ?
+//     state.resourceDistribution / CONFIG_SLIDER_MAX_VALUE : 1,
+// numberDistribution: state.numberDistribution / CONFIG_SLIDER_MAX_VALUE,
+// shufflePorts: this.hasDefaultPorts ? state.shufflePorts : true,
+// allowResourceOnPort: state.allowResourceOnPort,
+// });
+const b = new BalancedBoard({    desertPlacement: 'Random', //Random, Center, Off Center, Inland, Coast
+resourceDistribution: 1,
+numberDistribution: 1,
+shufflePorts: true,
+allowResourceOnPort: true}).generateBoard(spec)
+console.log(b)
 const tiles = generateBoard(spec);
 //const tiles = generateBalancedBoard(spec);
 
@@ -26,7 +43,7 @@ const configuredEffectsPlugin = EffectsPlugin({
 const nodes = {};
 const edges = {};
 for (let tile of tiles) {
-  if (tile.type == TileTypes.RESOURCE){
+  if (tile.type == TileTypes.LAND){
   for (let node of Object.entries(tile.tile.nodes)) {
     nodes[node[1]] = {
       tileId: tile.tile.id,
