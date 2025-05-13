@@ -92,20 +92,27 @@ export const placeSettlement = {
   move: (context, node) => {
     const { G, playerID, events, ctx, effects } = context;
 
-    const buildable = getBuildableNodes(playerID, G)
+    const buildable = getBuildableNodes(playerID, G, ctx);
 
-
-    console.log('buildable nodes', buildable)
+    console.log('buildable nodes', buildable);
+    
+    // Validate node is buildable
+    const nodeId = parseInt(node);
+    if (!buildable.includes(nodeId)) {
+      console.log(`Invalid settlement placement at node ${node}`);
+      return; // Return without placing if invalid
+    }
+    
     G.nodes[node].building = {
       type: NodeBuildingTypes.SETTLEMENT,
       owner: playerID,
     };
     G.players[playerID].numSettlements--;
-    if (ctx.phase == "placement"){
-      G.connectedComponents[playerID].push([node])
+    
+    if (ctx.phase === "placement") {
+      G.connectedComponents[playerID].push([node]);
     }
-
-    else{
+    else {
       let edgesByColor = {};
       STATIC_GRAPH.edges(node).forEach(edge => {
           let edgeColor = this.roads.get(edge) || null;
@@ -222,30 +229,67 @@ return sorted(list(nodes.intersection(self.board_buildable_ids)))
 //like storing buildable edges/nodes in a cache and only changing when boardState changes
 //but that doesn't seem like data that should stay in _my_ gamestate.
 //should be with client
-export const getBuildableNodes = (playerID, G) => {
-  //TODO: if initial_build_phase
+export const getBuildableNodes = (playerID, G, ctx) => {
+  // Check if we're in placement phase
+  const isPlacementPhase = ctx && ctx.phase === "placement";
 
-  let expandableNodes  = new Set()
+  // Special handling for placement phase
+  if (isPlacementPhase) {
+    // In placement phase, all nodes are potentially buildable
+    // except those with buildings or adjacent to buildings
+    const invalidNodeIds = new Set();
+  
+    // Find all nodes with buildings and their neighbors
+    for (const nodeId in G.nodes) {
+      const node = G.nodes[nodeId];
+      if (node.building !== null) {
+        // Add the node with a building
+        const id = parseInt(nodeId);
+        invalidNodeIds.add(id);
+        
+        // Add all neighboring nodes (distance rule)
+        for (const neighborId of STATIC_GRAPH.neighbors(id)) {
+          invalidNodeIds.add(neighborId);
+        }
+      }
+    }
+    
+    // Directly collect valid nodes in a single pass
+    const validNodeIds = [];
+    for (const nodeId in G.nodes) {
+      const id = parseInt(nodeId);
+      if (!invalidNodeIds.has(id)) {
+        validNodeIds.push(id);
+      }
+    }
+    
+    // Sort and return
+    return validNodeIds.sort((a, b) => a - b);
+    
+  }
+  
+  // Regular gameplay - use connected components
+  let expandableNodes = new Set();
 
   G.connectedComponents[playerID].forEach(connectedComponent => {
-    if (Array.isArray(connectedComponent)){
-    connectedComponent.forEach(node=>{
-      expandableNodes.add(parseInt(node))
-    })
-  }
-  else{
-    expandableNodes.add(parseInt(connectedComponent))
-  }
+    if (Array.isArray(connectedComponent)) {
+      connectedComponent.forEach(node => {
+        expandableNodes.add(parseInt(node));
+      });
+    } else {
+      expandableNodes.add(parseInt(connectedComponent));
+    }
   });
 
+  // Filter out nodes that already have buildings
   const buildableNodes = Array.from(expandableNodes)
-    .filter(node => G.boardBuildableIds.includes(node))
+    .filter(node => {
+      const nodeObj = G.nodes[node];
+      return nodeObj && nodeObj.building === null;
+    })
     .sort((a, b) => a - b);
 
   return buildableNodes;
-
-  //nodes = set().union(*subgraphs)
-  //return sorted(list(nodes.intersection(self.board_buildable_ids)))
 }
 
 function removeResource(G, playerID, resource) {
