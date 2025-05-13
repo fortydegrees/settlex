@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import ReactDOM from "react-dom"; // Added for createPortal
 
 import { Tile } from "./Tile";
 import { Building } from "./Building";
@@ -70,6 +71,23 @@ export function CatanBoard({
   const buildings = [];
   const actions = [];
 
+  const [portalNode, setPortalNode] = useState(null); // State to hold the portal DOM node
+
+  useEffect(() => {
+    // Create a div to be the portal target
+    const node = document.createElement("div");
+    node.id = "card-animation-portal-root"; // Optional: for easier debugging
+    document.body.appendChild(node);
+    setPortalNode(node);
+
+    // Cleanup function to remove the div when the component unmounts
+    return () => {
+      if (node.parentNode) {
+        node.parentNode.removeChild(node);
+      }
+      setPortalNode(null);
+    };
+  }, []); // Empty dependency array ensures this runs only on mount and unmount
 
   //we do this so that the board updates while the cardContainer is waiting to be updated after animation
   G = useLatestPropsOnEffect("distributeCardsFromTile").G;
@@ -171,43 +189,53 @@ export function CatanBoard({
       setFlashingTiles(cards.map((c) => c.tile.tile.id));
       //wait one second (for tiles to flash) then distribute cards
       setTimeout(() => {
+        const divRect = divRef.current.getBoundingClientRect(); // Get board's viewport offset and size
+
         for (const card of cards) {
           const { tile, playerID } = card;
 
           const [centerX, centerY] = center;
-          const [x, y] = tilePixelVector(
+          const [tilePosX, tilePosY] = tilePixelVector( // tilePos X,Y relative to board's center
             tile.coordinate,
             size,
             centerX,
             centerY
           );
 
-          const cardWidth = size * 0.5; //TODO: where to properly define/reference this?
+          const cardWidth = size * 0.5;
 
-          const startX =
-            x - cardWidth / 2 + (Math.floor(Math.random() * 5) - 2);
-          const startY = y - size + (Math.floor(Math.random() * 10) - 4);
+          // Calculate card's initial X,Y relative to the board's origin (divRef)
+          const initialCardXRelToBoard = tilePosX - cardWidth / 2 + (Math.floor(Math.random() * 5) - 2);
+          const initialCardYRelToBoard = tilePosY - size + (Math.floor(Math.random() * 10) - 4);
+          
+          // Convert to viewport-absolute coordinates
+          const viewportStartX = divRect.left + initialCardXRelToBoard;
+          const viewportStartY = divRect.top + initialCardYRelToBoard;
 
           const cardResource = tile.tile.resource;
 
-          const divRect = divRef.current.getBoundingClientRect();
           const element = document.getElementById(
             `p${playerID}-${cardResource}`
           );
 
-          const rect = element.getBoundingClientRect();
-
+          const rect = element.getBoundingClientRect(); // Target element's viewport coordinates
+          
           const xRelativeToDiv = rect.left - divRect.left;
           const yRelativeToDiv = rect.top - divRect.top;
 
-          const finalX = xRelativeToDiv - startX;
-          const finalY = yRelativeToDiv - startY - 15;
-          ref.current?.({ startX, startY, finalX, finalY, cardResource });
-          setFlashingTiles([]);
+          // finalX and finalY are deltas relative to the card's starting position.
+          // These are calculated based on the target's position relative to the board,
+          // and the card's initial position relative to the board.
+          // This logic remains correct as it calculates the difference needed.
+          const finalX = xRelativeToDiv - initialCardXRelToBoard;
+          const finalY = yRelativeToDiv - initialCardYRelToBoard - 15;
+
+          ref.current?.({ startX: viewportStartX, startY: viewportStartY, finalX, finalY, cardResource });
         }
+        setFlashingTiles([]); // Moved outside the loop
       }, 1000);
     },
-    [width, height, size]
+    [width, height, size, center] // Added center to dependencies
   );
 
   //for displaying actionNodes based on stage the player is in (e.g. moving robber)
@@ -438,13 +466,16 @@ export function CatanBoard({
   return (
     <div ref={divRef}>
       {" "}
-      <CardAnimContainer
-        //style={{ position: "absolute" }}
-        children={(add) => {
-          ref.current = add;
-        }}
-        size={size}
-      />
+      {portalNode && ( // Only render CardAnimContainer if portalNode exists
+        <CardAnimContainer
+          portalNode={portalNode} // Pass the portal node as a prop
+          //style={{ position: "absolute" }}
+          children={(add) => {
+            ref.current = add;
+          }}
+          size={size}
+        />
+      )}
       <div className="h-screen w-screen">
         {tiles}
 
@@ -466,6 +497,7 @@ function CardAnimContainer({
   timeout = 5000,
   children,
   size,
+  portalNode, // Added portalNode prop
 }) {
   const width = size * 0.5;
   const height = size * 0.7;
@@ -520,8 +552,8 @@ function CardAnimContainer({
     });
   }, []);
 
-  return (
-    <div>
+  const cardAnimations = (
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 100, pointerEvents: 'none' }}>
       {transitions(({ ...style }, item) => {
         return (
           <div>
@@ -531,10 +563,10 @@ function CardAnimContainer({
               style={{
                 ...style,
                 position: "absolute",
-                left: item.startX,
-                top: item.startY,
+                left: item.startX, // Will now be viewport-absolute
+                top: item.startY,  // Will now be viewport-absolute
                 willChange: "transform",
-                zIndex: 5,
+                zIndex: 5, // zIndex within this fixed container
                 transform: style.z
                   .to({
                     range: [0, 0.5, 0.75, 1],
@@ -543,6 +575,7 @@ function CardAnimContainer({
                   .to((z) => `scale(${z})`),
                 width: width,
                 height: height,
+                // pointerEvents: 'auto', // Add if cards themselves need to be interactive
               }}
             />
             {/* this is your cardAnim thing */}
@@ -551,6 +584,12 @@ function CardAnimContainer({
       })}
     </div>
   );
+
+  if (!portalNode) {
+    return null; // Or some fallback if needed, though CatanBoard should prevent this
+  }
+
+  return ReactDOM.createPortal(cardAnimations, portalNode);
 }
 
 // export const CatanBoardWithEffects = EffectsBoardWrapper(CatanBoard, {
