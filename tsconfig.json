@@ -27,7 +27,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "app/catana/game/collections.js", "app/catana/utils/randomQueue.js", "app/catana/components/ActionsDock/hooks/useMousePosition.js"  ],
   "exclude": [
     "node_modules"
   ]

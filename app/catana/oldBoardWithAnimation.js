@@ -3,7 +3,7 @@ import useWindowSize from "./utils/useWindowSize";
 import { SQRT3 } from "./utils/coordinates";
 import { Tile } from "./Tile";
 import { Node } from "./Node";
-import {Edge } from "./Edge"
+import { Edge } from "./Edge";
 import "./Board.css";
 import { motion, useAnimation } from "framer-motion";
 
@@ -24,25 +24,8 @@ function computeDefaultSize(divWidth, divHeight) {
   return size;
 }
 
-export function CatanBoard({
-  isMobile,
-  ctx,
-  G,
-  moves,
-  isActive
-}) {
-  console.log(ctx, moves)
+export function CatanBoard({ isMobile, ctx, G, moves, isActive }) {
 
-  // const currentPlayerId = ctx.currentPlayer;
-
-  // const isActive = G.players.map((P) => {
-  //   return (!currentPlayerId && !P.isReady) || P.id === currentPlayerId;
-  // });
-
-  // console.log(G.players)
-  // console.log(currentPlayerId)
-  // console.log(ctx.currentPlayer,ctx.activePlayer)
-    //zoom
   const [scale, setScale] = useState(1);
   const controls = useAnimation();
 
@@ -68,7 +51,6 @@ export function CatanBoard({
     event.preventDefault();
   };
 
-
   const { width, height } = useWindowSize();
   // TODO: Keep in sync with CSS
   const containerHeight = height - 144 - 38 - 40;
@@ -79,7 +61,6 @@ export function CatanBoard({
     return null;
   }
 
-
   const tiles = G.tiles.map(({ coordinate, tile }) => (
     <Tile
       key={coordinate}
@@ -89,13 +70,13 @@ export function CatanBoard({
       size={size}
     />
   ));
-  const buildings = Object.keys(G.nodes).map((node)=>{
-    const { color, building, direction, tile_coordinate, id } = G.nodes[node]
-      //don't render if no building or not isActive/canPlaceSettlement
+  const buildings = Object.keys(G.nodes).map((node) => {
+    const { color, building, direction, tile_coordinate, id } = G.nodes[node];
+    //don't render if no building or not isActive/canPlaceSettlement
 
-     //if isActive && canPlaceSettlement
-     // show nodes where one can place (e.g. nodes where there is no building & +2 away)
-        return(
+    //if isActive && canPlaceSettlement
+    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
+    return (
       <Node
         key={node}
         nodeId={node}
@@ -109,17 +90,16 @@ export function CatanBoard({
         //flashing={!replayMode && id in nodeActions}
         //flashing={isActive}
         //onClick={buildOnNodeClick(id, nodeActions[id])}
-      />)
-        
-  })
-  const nodes = Object.keys(G.valids.nodes).map(
-    (node) => {
-      const { direction, tile_coordinate, id } = G.nodes[node]
-      //don't render if no building or not isActive/canPlaceSettlement
+      />
+    );
+  });
+  const nodes = Object.keys(G.valids.nodes).map((node) => {
+    const { direction, tile_coordinate, id } = G.nodes[node];
+    //don't render if no building or not isActive/canPlaceSettlement
 
-     //if isActive && canPlaceSettlement
-     // show nodes where one can place (e.g. nodes where there is no building & +2 away)
-        return(
+    //if isActive && canPlaceSettlement
+    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
+    return (
       <Node
         key={node}
         nodeId={node}
@@ -133,11 +113,13 @@ export function CatanBoard({
         //flashing={!replayMode && id in nodeActions}
         flashing={isActive}
         //onClick={buildOnNodeClick(id, nodeActions[id])}
-        onClick={()=>{console.log(moves)
-          moves.placeSettlement(node)}}
-      />)
-        }
-  );
+        onClick={() => {
+          console.log(moves);
+          moves.placeSettlement(node);
+        }}
+      />
+    );
+  });
   const edges = Object.values(G.edges).map(
     ({ color, direction, tile_coordinate, id }) => (
       <Edge
@@ -155,30 +137,33 @@ export function CatanBoard({
   );
   return (
     //inertia: https://github.com/pmndrs/use-gesture/issues/132
-    <><motion.div drag class="board-container">
-      <div onWheel={handleScroll}>
-        <motion.div
-          // style={{
-          //   width: '100%',
-          //   height: '100%',
-          // }}
-          initial={{ scale: 1 }} // Initial scale
-          animate={controls} // Animate the scale change
-        >
-          <div class="board">
-            {tiles}
-            
-            {buildings}
-            {nodes}
-            {/* {edges} */}
-        {/* <Robber
+    <>
+      <motion.div drag class="board-container">
+        <div onWheel={handleScroll}>
+          <motion.div
+            // style={{
+            //   width: '100%',
+            //   height: '100%',
+            // }}
+            initial={{ scale: 1 }} // Initial scale
+            animate={controls} // Animate the scale change
+          >
+            <div class="board">
+              {tiles}
+
+              {buildings}
+              {nodes}
+              {/* {edges} */}
+              {/* <Robber
           center={center}
           size={size}
           coordinate={G.robber_coordinate}
         />  */}
-          </div>
-        </motion.div>
-      </div>
-    </motion.div><div>PHASE</div></>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+      <div>PHASE</div>
+    </>
   );
 }

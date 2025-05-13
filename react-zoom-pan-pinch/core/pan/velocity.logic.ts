@@ -117,7 +117,6 @@ export function handleVelocityPanning(
       const newPositionX = positionX + velocityX * customStep;
       const newPositionY = positionY + velocityY * customStep;
 
-      console.log('mpx', minPositionX)
 
       const currentPositionX = getVelocityPosition(
         newPositionX,

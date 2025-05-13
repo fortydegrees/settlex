@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
-
+import Image from "next/image";
+import robberIcon from "../../public/svgs/icon_robber.svg";
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
 import {
   STANDARD_RESOURCES,
@@ -8,7 +9,7 @@ import {
 } from "../board-editor/utils/types";
 import { useDrag } from "react-dnd";
 import "./Tile.css";
-
+import { ActionNode } from "./ActionNode";
 
 const numberToPips = (number) => {
   switch (number) {
@@ -40,7 +41,7 @@ export function NumberToken({ number, style, size }) {
   }
   return (
     <div
-      className={`noselect drop-shadow-md bg-slate-100 ${
+      className={`drop-shadow-md bg-slate-100 ${
         size >= 60 ? "rounded-md" : "rounded-sm"
       }`}
       style={{
@@ -49,7 +50,7 @@ export function NumberToken({ number, style, size }) {
         marginTop: size / 1.66,
       }}
     >
-      <div className="flex flex-col items-center">
+      <div className="select-none flex flex-col items-center cursor-default">
         <span
           className={`${numberColor} font-black`}
           style={{
@@ -88,6 +89,9 @@ export function Tile({
   number,
   hoveredTiles,
   isFlashing,
+  hasRobber,
+  canPlaceRobber,
+  moves,
 }) {
   const w = SQRT3 * size;
   const h = 2 * size;
@@ -109,6 +113,8 @@ export function Tile({
           ? 1
           : 0.8
         : 1,
+    filter:
+      hasRobber && resource !== "Desert" && `saturate(0.85) brightness(0.85)`,
   };
 
   if (draggable) {
@@ -126,7 +132,6 @@ export function Tile({
       top: y - h / 2,
     });
   }
-
 
   return (
     <>
@@ -156,12 +161,44 @@ export function Tile({
             }}
           />
         )}
-        {number && <NumberToken size={size} number={number} pips={2} />}
+        {number && <NumberToken size={size} number={number} />}
+        {hasRobber && (
+          <Image
+            src={robberIcon}
+            alt="Robber"
+            style={{ position: 'absolute', transform: `translateX(-60%)` }}
+            width={size / 1.5}
+            height={size / 1.5}
+          />
+        )}
+        {canPlaceRobber && (
+          <div
+            //add shadow when placing settlement
+            className={`[background-image:radial-gradient(50%_50%_at_50%_50%,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_100%)] animation-pulse`}
+            //className={flashing ? "hover-opacity bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-300 to-transparent animation-pulse" : "hover-opacity"}
+
+            style={{
+              position: "absolute",
+              cursor: "pointer",
+              width: size/1.5,
+              height: size/1.5,
+              borderRadius: 100,
+              borderColor: "#FFFFFF",
+              borderWidth: 1.2,
+              opacity: 0.8,
+              //fillOpacity:0.2
+              //opacity: hoveredNode ? (hoveredNode == nodeId ? 1 : 0.4) : 0.8,
+              zIndex: 2,
+              //opacity: (hoveredNode ? 1 : 0.5),
+            }}
+            onClick={()=>moves.moveRobber(id)}
+            // onMouseEnter={() => setHoveredNode(nodeId)}
+            // onMouseLeave={() => setHoveredNode(null)}
+          ></div>
+        )}
       </div>
     </>
   );
-
-          
 }
 
 /*

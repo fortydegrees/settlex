@@ -70,7 +70,9 @@ export const ResourceType = {
         q,
         r,
         s,
-        board) {}
+        board) {
+          this.l
+        }
   
     reset() {
       this.resource = null;

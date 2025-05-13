@@ -21,4 +21,11 @@ gameState
         portState
 
 
-Catanatron gets 
+Catanatron just has all the co-ordinates and tiles, and defines based on that
+e.g. when setting up map: https://github.com/bcollazo/catanatron/blob/master/catanatron_core/catanatron/models/map.py
+(3, -3, 0): (Port, Direction.WEST),
+
+but then how does it work out settle distance etc?
+
+https://github.com/bcollazo/catanatron/blob/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3/catanatron_core/catanatron/models/map.py
+Catanatron has each tile that contains ID, resource, nodes, edges

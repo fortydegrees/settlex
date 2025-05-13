@@ -125,7 +125,7 @@ const getNodesAndEdges = (hexGrid, coordinate, nodeAutoinc, edgeAutoinc) => {
   for (const { coord, neighborDirection } of neighborTiles) {
     const neighbor = getTileByCoord(hexGrid, coord);
 
-    console.log(neighbor)
+    console.log
 
     try {
       if (neighborDirection === Direction.EAST) {

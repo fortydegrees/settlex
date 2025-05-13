@@ -81,6 +81,7 @@ export const DockCard = ({ action }) => {
 
   const handleClick = () => {
     if (!isAnimating.current) {
+      action.action()
       isAnimating.current = true;
       opacity.start(0.5);
 
@@ -116,10 +117,11 @@ export const DockCard = ({ action }) => {
 
   return (
     <div className="dock-card-container">
-      <animated.button
+      {action.enabled ?<animated.button
         ref={cardRef}
         //disabled
-        className="bg-blue-300 ring-2 ring-slate-200 dock-card"
+        className={`bg-blue-300 ring-2 ring-slate-200 dock-card ${action.enabled ? 'enabled' : ''}`}
+        disabled={!action.enabled}
         onClick={handleClick}
         style={{
           width: size,
@@ -142,8 +144,35 @@ export const DockCard = ({ action }) => {
             </span>
           )}
         </span>
-      </animated.button>
-      <animated.div className="dock-dot" style={{ opacity }} />
+      </animated.button> : <button
+        ref={cardRef}
+        disabled
+        className={`bg-blue-300 ring-2 ring-slate-200 dock-card`}
+       
+        //onClick={handleClick}
+        style={{
+          width: 48,
+          height: 48,
+        }}
+      >
+        <span className="card">
+          <img
+            className="card__img"
+            style={action.style}
+            src={action.img}
+            alt=""
+          />
+
+          {(action.count > 0) && (
+            <span className="absolute right-0 top-0 w-6 h-6 block -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50"
+           >
+              <span className="text-sm font-medium">{action.count}</span>
+            </span>
+          )}
+        </span>
+      </button> }
+      
+      {/* <animated.div className="dock-dot" style={{ opacity }} /> */}
     </div>
   );
 };

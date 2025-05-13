@@ -44,7 +44,8 @@ export function Edge({
   moves,
   player,
   buildingType,
-  buildingColor
+  buildingColor,
+  setPlayerAction
 }) {
   const { width } = useWindowSize();
   const [centerX, centerY] = center;
@@ -84,9 +85,11 @@ export function Edge({
             />
           }
           color={color}
-          onClick={() => {
+          onClick={(event) => {
+            event.stopPropagation();
             moves.placeRoad(id);
             setHoveredNode(null);
+            setPlayerAction(null)
           }}
           type="edge"
           setHoveredNode={setHoveredNode}

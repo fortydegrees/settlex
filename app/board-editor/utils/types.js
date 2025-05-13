@@ -52,12 +52,12 @@ export const ResourceType = {
   }
 
   export const RESOURCE_SVGS = {
-    "Wood": "https://colonist.io/dist/images/tile_lumber.svg?v168",
-    "Brick": "https://colonist.io/dist/images/tile_brick.svg?v168",
-    "Sheep": "https://colonist.io/dist/images/tile_wool.svg?v168",
-    "Wheat": "https://colonist.io/dist/images/tile_grain.svg?v168",
-    "Ore": "https://colonist.io/dist/images/tile_ore.svg?v168",
-    "Desert": "https://colonist.io/dist/images/tile_desert.svg?v168",
+    "Wood": "/svgs/tile_lumber.svg",
+    "Brick": "/svgs/tile_brick.svg",
+    "Sheep": "/svgs/tile_wool.svg",
+    "Wheat": "/svgs/tile_grain.svg",
+    "Ore": "/svgs/tile_ore.svg",
+    "Desert": "/svgs/tile_desert.svg",
     //"Ore": "/ore.svg",
     "Empty": '/empty.svg'
 }
