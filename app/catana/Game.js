@@ -1,10 +1,12 @@
 import { spec } from "./game/spec";
 import { generateBoard } from "./game/generateBoard";
+import { Board } from './game/generateBoardClass'
 import { BalancedBoard } from "./game/generateBalancedBoard";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
-import { placeSettlement, placeRoad, updateValids, rollDice } from "./Moves";
+import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 import {TileTypes, } from "./game/types"
+import * as nx from "jsnetworkx";
 //setup board and convert tiles/edges into right format to render
 
 //   new BalancedBoard({
@@ -17,14 +19,13 @@ import {TileTypes, } from "./game/types"
 // shufflePorts: this.hasDefaultPorts ? state.shufflePorts : true,
 // allowResourceOnPort: state.allowResourceOnPort,
 // });
-const b = new BalancedBoard({    desertPlacement: 'Random', //Random, Center, Off Center, Inland, Coast
-resourceDistribution: 1,
-numberDistribution: 1,
-shufflePorts: true,
-allowResourceOnPort: true}).generateBoard(spec)
-console.log(b)
-const tiles = generateBoard(spec);
-//const tiles = generateBalancedBoard(spec);
+
+
+// const b = new Board(spec, true)
+
+
+export const STATIC_GRAPH = new nx.Graph();
+
 
 const configuredEffectsPlugin = EffectsPlugin({
   effects: {
@@ -39,36 +40,12 @@ const configuredEffectsPlugin = EffectsPlugin({
   },
 });
 
-//console.log(board)
-const nodes = {};
-const edges = {};
-for (let tile of tiles) {
-  if (tile.type == TileTypes.LAND){
-  for (let node of Object.entries(tile.tile.nodes)) {
-    nodes[node[1]] = {
-      tileId: tile.tile.id,
-      tile_coordinate: tile.coordinate,
-      direction: node[0],
-      //building: {type: null, owner: null},
-      building: null
-    };
-  }
-  for (let edge of Object.entries(tile.tile.edges)) {
-    edges[edge[1]] = {
-      tileId: tile.tile.id,
-      tile_coordinate: tile.coordinate,
-      direction: edge[0],
-      color: null,
-    };
-  }
-}
-}
-
 //tiles.push({coordinate:[-1,0,3], tile:{edges:{}, id:100, nodes: {}, number: 2, resource: "Sheep"}})
 //debug/testing color. atm purely sets css for settlement color
 const playerColors = {
   0: "red",
   1: "blue",
+  2: "green",
 };
 
 
@@ -82,30 +59,44 @@ const TURN_ORDER_ONCE = {
   },
 };
 
-export const Catan = {
+const players = new Array(2).fill(0).map((_, i) => ({
+  //name: "",
+  id: i.toString(), //TODO: doesn't this make things hard?
+  username: "",
+  VPs: 0,
+  privateVPs: 0,
+  resourceCards: [],
+  devCards: [],
+  color: playerColors[i],
+  numRoads: 15,
+  numSettlements: 5,
+  numCities: 4,
+}));
+
+export const Catan =  {
   //get spec to use (i.e. script to generate board)
   //spec is game rules, e.g. dev cards, vps to win
   //strategy is how to generate map
 
+  name: 'catan',
   plugins: [configuredEffectsPlugin],
+  minPlayers: 2,
 
+  maxPlayers: 4,
+  //seed:Date.now(),
   //generate map here
-  setup: ({ ctx }) => {
+  setup: ({ctx}) => {
+    //ctx.numPlayers = 3
+    const b = new BalancedBoard({    desertPlacement: 'Random', //Random, Center, Off Center, Inland, Coast
+    resourceDistribution: 0.85,
+    numberDistribution: 0.85,
+    shufflePorts: true,
+    allowResourceOnPort: true}).generateBoard(spec).board
+    
+    
     //TODO: set this based on spec e.g. numRoads
     //TODO: add team?
-    const players = new Array(ctx.numPlayers).fill(0).map((_, i) => ({
-      //name: "",
-      id: i,
-      username: "",
-      VPs: 0,
-      privateVPs: 0,
-      resourceCards: [],
-      devCards: [],
-      color: playerColors[i],
-      numRoads: 15,
-      numSettles: 5,
-      numCities: 4,
-    }));
+    
     const bank = {
       resourceCards: spec.initialBank(), 
       devCards: [],// TODO: get from spec
@@ -117,10 +108,22 @@ export const Catan = {
     }
     const valids = { nodes: [], edges: [], tiles: [] };
     const diceRoll = [3,4]
+    //TODO: improve/abstract. get from spec.
+    const robberTile = b.tiles.find(tile => tile.tile.resource === 'Desert').tile.id;
     //board: generateBoard(spec),
     //tiles: gameState.tiles,
 
-    return { tiles, nodes, edges, ports: spec.ports, valids, bank, settings, players, diceRoll };
+    const connectedComponents = players.reduce((acc, _, index) => {
+      acc[index] = [];
+      return acc;
+  }, {});
+
+    for (const tile of Object.values(b.tiles)) {
+      STATIC_GRAPH.addNodesFrom(Object.values(tile.tile.nodes));
+      STATIC_GRAPH.addEdgesFrom(Object.values(tile.tile.edges));
+    }
+
+    return { connectedComponents, tiles:b.tiles, nodes:b.nodes, edges:b.edges, ports: spec.ports, valids, bank, settings, players, diceRoll, robberTile };
   },
 
 //https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
@@ -206,16 +209,23 @@ export const Catan = {
           // },
           postRoll: {
             moves:{
-              // placeRoad,
-              // placeSettlement,
+              placeRoad,
+              placeSettlement,
+              DEBUG_takeCardsFromBank,
               // placeCity,
-              // buyDev,
+              // buyDev,55
               // offerTrade,
               // tradeWithBank,
               // playDev,
               //endTurn,
+              endTurn: (context)=>context.events.endTurn()
             }
           },
+          moveRobber: {
+            moves:{
+              moveRobber
+            }
+          }
         },
       },
       endIf: ()=> {}, //player VPs > VP to win, or resign (if allowed). maybe can just do this somewhere else: https://github.com/mbrinkl/santorini/blob/4d89b4bedbbb8c5cf57a123c42f7febe2fdf0dcb/src/game/index.ts

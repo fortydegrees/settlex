@@ -1,0 +1,125 @@
+
+settlers-setup:
+
+in app.component:
+gets config: this.saveConfig(this.boardConfig.getConfig()), calls this.generateBoard()
+
+getConfig:
+    in /components/board-config/component, getConfig returns: 
+        const strategy =
+            new BalancedStrategy({
+            desertPlacement:
+                this.desertPlacementEnabled ? state.desertPlacement : DesertPlacement.RANDOM,
+            resourceDistribution:
+                this.resourceDistributionEnabled ?
+                state.resourceDistribution / CONFIG_SLIDER_MAX_VALUE : 1,
+            numberDistribution: state.numberDistribution / CONFIG_SLIDER_MAX_VALUE,
+            shufflePorts: this.hasDefaultPorts ? state.shufflePorts : true,
+            allowResourceOnPort: state.allowResourceOnPort,
+            });
+        return {
+        formState: state,
+        strategy,
+        spec: BOARD_SPECS[state.boardShape],
+        };
+    }
+
+generateBoard()
+    const { board } = this.config.strategy.generateBoard(this.config.spec);
+    this.board = board;
+
+config.strategy.generateBoard is our main thing. it:
+    creates a new board instance
+    then assigns rollNumbers and Resources
+
+
+creating new Board instanced based on spec:
+    calls spec.hexes(this)
+    which is generateStandardShapedBoard(board)
+        which is just generating and returning a 3d array of Hex classes
+        hexes[r][c] = new Hex(c, r, board);
+SO WE NEED TO PROVIDE CO-ORD. his uses an array to lookup hexes to modify.
+
+
+
+.strategy - generates the board, creates new instance of Board, assigns numbers/resources:
+    found in /board/strategy/
+    generateBoard takes in a boardSpec and returns a board and 'score'
+        creates a new instance of Board class with spec
+        then loops board.mutableHexes and changes resource and rollNumber
+
+
+Board Class - takes spec as constructor
+
+                
+
+.spec - essentially the file passed to board to help it generate
+    e.g. shape of map, how many of each resource, ports, dice numbers.
+    of importance is generating the hexGrid
+
+
+
+  
+
+=== NODES AND EDGES ===
+
+CATANATRON:
+
+Node Component in JS:
+  const [centerX, centerY] = center;
+  const w = SQRT3 * size;
+  const h = 2 * size;
+  const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY); // gives center co-ord for tile
+  const [deltaX, deltaY] = getNodeDelta(direction, w, h);
+  const x = tileX + deltaX;
+  const y = tileY + deltaY;
+
+  return (
+    <div
+      className="node"
+      style={{
+        width: size * 0.5,
+        height: size * 0.5,
+        left: x,
+        top: y,
+        transform: `translateY(-50%) translateX(-50%)`,
+      }}
+      onClick={onClick}
+    >
+      {color && <Building building={building} color={color} />}
+      {flashing && <div className="pulse"></div>}
+      {/* {id} */}
+    </div>
+  );
+
+  // Gives center coordinate for tile.
+export function tilePixelVector(coordinate, size, centerX, centerY) {
+  const hex = cubeToAxial(coordinate);
+  return [
+    size * (SQRT3 * hex.q + (SQRT3 / 2) * hex.r) + centerX,
+    size * (3 / 2) * hex.r + centerY,
+  ];
+}
+
+export function cubeToAxial(cube) {
+  return { q: cube[0], r: cube[2] };
+}
+
+export function getNodeDelta(direction, w, h) {
+  switch (direction) {
+    case "NORTH":
+      return [0, -h / 2];
+    case "NORTHEAST":
+      return [w / 2, -h / 4];
+    case "SOUTHEAST":
+      return [w / 2, h / 4];
+    case "SOUTH":
+      return [0, h / 2];
+    case "SOUTHWEST":
+      return [-w / 2, h / 4];
+    case "NORTHWEST":
+      return [-w / 2, -h / 4];
+    default:
+      throw Error("Unkown direction " + direction);
+  }
+}

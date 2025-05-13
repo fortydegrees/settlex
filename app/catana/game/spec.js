@@ -1,4 +1,5 @@
 import {ResourceType, STANDARD_RESOURCES} from "./types"
+import {generateStandardHexes} from './board-utils'
 
 function createByCounts(...valueCounts) {
   const vals = [];
@@ -14,9 +15,10 @@ function createByCounts(...valueCounts) {
 export const spec = {
   name: "standard4p",
   map: "hexagon",
+  radius: 2,
   //map: ()=> generateStandardHexes("hexagon", 3),
-  shape: ["hexagon", 2],
-  dimensions: { width: 5, height: 5 },
+  //shape: ["hexagon", 2],
+  //dimensions: { width: 5, height: 5 },
   resources: () =>
     createByCounts(
       [ResourceType.BRICK, 3],
@@ -26,7 +28,7 @@ export const spec = {
       [ResourceType.WOOD, 4],
       [ResourceType.WHEAT, 4]
     ),
-  hexes: (board) => generateHexes(board), //this gets 'map' and 'dimensions
+  hexes: (board) => generateStandardHexes(board), //this gets 'map' and 'radius'
   initialBank: () =>{return    createByCounts(
       [ResourceType.BRICK, 19],
       [ResourceType.ORE, 19],
@@ -38,6 +40,8 @@ export const spec = {
   requiredResources: [],
   isResourceAllowed: () => true,
   centerCoords: [{ q: 0, r: 0, s: 0 }],
+  //TODO: make this a function (e.g. can place 2 robbers on any random tiles, place 1 on desert)
+  defaultRobber: "desert",
   //TODO: something about port numbers and shuffling ports?
   //e.g. out of 9 ports, 4 should be ANY, then one of each resource
   portCounts: ()=>

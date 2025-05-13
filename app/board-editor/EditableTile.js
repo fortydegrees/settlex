@@ -28,8 +28,7 @@ const numberToPips = (number) => {
 };
 
 export function NumberToken({ number, style, size }) {
-
-    const pips = numberToPips(number)
+  const pips = numberToPips(number);
   let numberColor = "text-black";
   if (number == 6 || number == 8) {
     numberColor = "text-red-600";
@@ -52,7 +51,6 @@ export function NumberToken({ number, style, size }) {
             fontSize: size * 0.4 + "px",
             lineHeight: 0,
             marginTop: size * 0.25 + "px",
-
           }}
         >
           {number}
@@ -71,8 +69,6 @@ export function NumberToken({ number, style, size }) {
     </div>
   );
 }
-
-
 
 export function EditableTile({
   coordinate,
@@ -131,8 +127,7 @@ export function EditableTile({
       key={coordinate}
       style={style}
     >
-     <NumberToken size={size} number={number} />
-     
+      <NumberToken size={size} number={number} />
     </div>
   );
 }

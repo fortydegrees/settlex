@@ -1,0 +1,28 @@
+For each node, would be useful to have which tiles it's touching
+e.g. G.nodes={0:{"id": 0, tiles: [1,4,12]}}
+this would be useful when distributing resources
+e.g. can have function getResourcesForNode(23)
+
+then i won't need direction or tileCoordinate
+
+could also do the same for edges (when working out where to place roads)
+
+BUT - this is only called once in the starting placement phase, so might not be worth it?
+
+===
+
+STARTING SETTLEMENT/PLACEMENT PHASE - not handled super well by current structure
+getResourcesForNode(nodeID)
+    each node has the tiles it's connected to
+    only used at starting placement to work out what resources to distribut
+getEdgesForNode(nodeID)
+    get connected edges to node
+    only used at start for placing road after settlement
+
+
+Dice roll - All handled well by current structure:
+getTilesWithNumber(diceRollNum) - used when a dice is rolled for distributing resources
+    handled by current structure
+check that tile does not have robber
+getNodesFromTile(tileID) - then for each of those tiles, get the nodes it's connected to
+then check for building on each of those nodes

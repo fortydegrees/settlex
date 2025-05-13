@@ -1,0 +1,20 @@
+
+hex styles
+
+background style
+
+board intro animation
+
+card styles
+
+UI style
+    e.g. boxes displaying player info, like num cards etc
+
+
+number styles
+
+
+
+dice
+
+dice roll animation

@@ -2,7 +2,6 @@ import React from "react";
 import { motion, useAnimation } from "framer-motion";
 import { tilePixelVector, getNodeDelta, SQRT3 } from "./utils/coordinates";
 
-
 export function Building({
   center,
   size,
@@ -22,7 +21,7 @@ export function Building({
 
   //onClick:
   //place settlement
-    //then either do immediate road, or not
+  //then either do immediate road, or not
   //upgrade settlement to city
   //other CK stuff
 
@@ -32,14 +31,14 @@ export function Building({
       style={{
         width: size * 0.45,
         height: size * 0.45,
-        left: x ,
+        left: x,
         top: y,
         transform: `translateY(-50%) translateX(-50%)`,
         backgroundColor: color,
       }}
       onClick={onClick}
     >
-        <div></div>
+      <div></div>
     </div>
   );
 }

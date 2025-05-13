@@ -1,0 +1,3 @@
+Bug checking / edge cases:
+when in placement phase (Moves.js), check if there are valid settle/build places
+    otherwise game will wait for a building that the user cannot place

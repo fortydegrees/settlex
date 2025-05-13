@@ -1,3 +1,6 @@
+I think spec is also essentially board State?
+    like what i'll need to save the board state as to import/export
+    e.g. tiles, numbers, robber location
 
 at the moment, boardGen does:
 uses react-hexgrid to generate a shape/board
@@ -15,6 +18,9 @@ so we also need our classic spec of like, ports,
 
 mapGenFunc - generates shape of map (e.g. hex, custom polygon)
 
+
+placementMoves: [[placeSettle, placeRoad], [placeSettle, placeRoad]]
+                e.g. for CK would be [[placeSettle, placeRoad], [placeCity, placeRoad]]
 
 
 standard:

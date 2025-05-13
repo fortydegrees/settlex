@@ -6,17 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "serve": "node -r esm server/server.js"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@react-spring/web": "^9.7.3",
+    "assert": "^2.1.0",
     "autoprefixer": "10.4.15",
     "bgio-effects": "^0.7.1",
     "boardgame.io": "^0.50.2",
+    "esm": "^3.2.25",
     "framer-motion": "^10.16.4",
     "jsnetworkx": "^0.3.4",
+    "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "next": "^13.5.4",
     "next-images": "^1.8.5",
