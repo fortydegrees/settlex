@@ -84,3 +84,22 @@ it("applyBuildCity upgrades settlement and adjusts pieces", () => {
     state.ruleset.pieceLimits.settlements + 1
   );
 });
+
+import { applyPlaceSettlement, applyPlaceRoad } from "./apply";
+
+it("applyPlaceSettlement fails when no settlements remain", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].settlementsRemaining = 0;
+  const result = applyPlaceSettlement(state, board, 1, "0", { initialPlacement: true });
+  expect(result.ok).toBe(false);
+});
+
+it("applyPlaceRoad fails when no roads remain", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].roadsRemaining = 0;
+  const node = 1;
+  state.pendingRoadFromNodeIdByPlayer["0"] = node;
+  const edgeId = "1,2";
+  const result = applyPlaceRoad(state, board, edgeId, "0", { initialPlacement: true });
+  expect(result.ok).toBe(false);
+});
