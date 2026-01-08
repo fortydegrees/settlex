@@ -4,9 +4,10 @@
 - Phase 0: added AI harness files (`AGENTS.md`, `game-core/AGENTS.md`, `docs/agent/*`).
 - Phase 1: created pnpm workspace + `game-core` scaffold, added Vitest config, and moved core types/spec/board generation into `game-core`.
 - Fixed Next import/export issue for `@settlex/game-core`, removed duplicate `PlayerColor` export, and updated board generation RNG to use boardgame.io `random.Number()`; `/catana` now renders.
+- Added deterministic RNG helper and board-generation invariant tests in `game-core`.
 
 ## Next
-- Add initial `game-core` tests (Vitest).
+- Expand `game-core` tests beyond board-generation invariants.
 - Continue core extraction (moves/validation) into `game-core`.
 - Clean up legacy duplicates in `app/catana/game`, `spec/`, `strategy/`, `utils/`.
 - Address React list key warnings in `app/catana/Board.js`.
