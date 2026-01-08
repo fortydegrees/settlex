@@ -127,30 +127,72 @@ export function applyResourceDistribution(
   return { ok: true };
 }
 
-// Placeholder exports for later tasks in this slice
 export function canPlaceRobber(
-  _state: GameState,
-  _board: BoardTopology,
-  _tileId: number
+  state: GameState,
+  board: BoardTopology,
+  tileId: number
 ): boolean {
+  const tile = board.tiles.find((t) => t.tile.id === tileId);
+  if (!tile) {
+    return false;
+  }
+
+  if (!state.ruleset.friendlyRobber.enabled) {
+    return true;
+  }
+
+  const nodes = tile.tile.nodes ?? {};
+  for (const nodeId of Object.values(nodes)) {
+    const building = state.buildingsByNodeId[nodeId];
+    if (!building) {
+      continue;
+    }
+    const owner = building.ownerId;
+    const vp = state.playerStateById[owner]?.victoryPoints ?? 0;
+    if (vp <= state.ruleset.friendlyRobber.vpThreshold) {
+      return false;
+    }
+  }
+
   return true;
 }
 
 export function getRobberVictims(
-  _state: GameState,
-  _board: BoardTopology,
-  _tileId: number,
-  _actingPlayerId: string
+  state: GameState,
+  board: BoardTopology,
+  tileId: number,
+  actingPlayerId: string
 ): string[] {
-  return [];
+  const tile = board.tiles.find((t) => t.tile.id === tileId);
+  if (!tile) {
+    return [];
+  }
+
+  const victims = new Set<string>();
+  const nodes = tile.tile.nodes ?? {};
+  for (const nodeId of Object.values(nodes)) {
+    const building = state.buildingsByNodeId[nodeId];
+    if (!building) {
+      continue;
+    }
+    if (building.ownerId === actingPlayerId) {
+      continue;
+    }
+    victims.add(building.ownerId);
+  }
+
+  return Array.from(victims);
 }
 
 export function applyMoveRobber(
   state: GameState,
-  _board: BoardTopology,
+  board: BoardTopology,
   tileId: number,
   _actingPlayerId: string
 ): { ok: true } | { ok: false; error: string } {
+  if (!canPlaceRobber(state, board, tileId)) {
+    return { ok: false, error: "illegal-robber" };
+  }
   state.robberTileId = tileId;
   return { ok: true };
 }
