@@ -92,7 +92,10 @@ TODO: accurately colour it
       )}
 
       {opponents.map((player) => (
-        <div className="fixed left-1/2 -translate-x-1/2 flex items-center pl-4 top-4 bg-blue-200 bg-opacity-50 rounded-md h-20">
+        <div
+          key={player.id}
+          className="fixed left-1/2 -translate-x-1/2 flex items-center pl-4 top-4 bg-blue-200 bg-opacity-50 rounded-md h-20"
+        >
           {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
             return (
               <CardIcon

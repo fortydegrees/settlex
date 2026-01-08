@@ -470,11 +470,12 @@ export function CatanBoard({
         <CardAnimContainer
           portalNode={portalNode} // Pass the portal node as a prop
           //style={{ position: "absolute" }}
-          children={(add) => {
+          size={size}
+        >
+          {(add) => {
             ref.current = add;
           }}
-          size={size}
-        />
+        </CardAnimContainer>
       )}
       <div className="h-screen w-screen">
         {tiles}
@@ -556,7 +557,7 @@ function CardAnimContainer({
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 100, pointerEvents: 'none' }}>
       {transitions(({ ...style }, item) => {
         return (
-          <div>
+          <div key={item.key}>
             <Card
               resource={item.cardResource}
               ref={(ref) => ref && refMap.set(item, ref)}

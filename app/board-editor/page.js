@@ -43,13 +43,13 @@ export default function Example() {
             <span className="mt-0 mb-4">Resource Tiles</span>
             <div className="grid grid-cols-2 gap-8 inline-block">
               {STANDARD_RESOURCES.map((resource) => {
-                return <Tile resource={resource} draggable />;
+                return <Tile key={resource} resource={resource} draggable />;
               })}
             </div>
             <span className="mt-4 mb-4">Other Tiles</span>
             <div className="grid grid-cols-2 gap-8 inline-block">
               {SPECIAL_TILES.map((resource) => {
-                return <Tile resource={resource} draggable />;
+                return <Tile key={resource} resource={resource} draggable />;
               })}
             </div>
             <span className="mt-8 mb-4">Pieces</span>
@@ -57,7 +57,7 @@ export default function Example() {
               {PLAYER_COLORS.map((color) => {
                 const COLOR_PIECES = PIECE_SVGS(color)
                 return Object.entries(COLOR_PIECES).map((piece)=>{
-                    return <Piece type={piece[0]} svg={piece[1]} size={40}/>;
+                    return <Piece key={`${color}-${piece[0]}`} type={piece[0]} svg={piece[1]} size={40}/>;
                 })
                
               })}
