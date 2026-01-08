@@ -45,3 +45,33 @@ describe("turnFlow - discard", () => {
     expect(state.turn.phase).toBe("robberMove");
   });
 });
+
+import { applyResourceDistribution } from "./turnFlow";
+
+it("distributes resources for matching roll when bank has enough", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD, ResourceType.WOOD];
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([ResourceType.WOOD]);
+  expect(state.bank.resources).toHaveLength(1);
+});
+
+it("gives none if bank lacks enough of a resource", () => {
+  const state = createEmptyState(["0", "1"]);
+  state.bank.resources = [ResourceType.WOOD];
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+  state.buildingsByNodeId[2] = { ownerId: "1", type: "settlement" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([]);
+  expect(state.playerStateById["1"].resources).toEqual([]);
+  expect(state.bank.resources).toHaveLength(1);
+});
