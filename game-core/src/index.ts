@@ -8,6 +8,7 @@ export * from "./core/state";
 export * from "./ruleset";
 export * from "./rules/buildability";
 export * from "./rules/apply";
+export * from "./rules/buildActions";
 export * from "./rules/turnFlow";
 export * from "./testUtils";
 export * from "./board/boardUtils";
