@@ -9,7 +9,8 @@
       "acceptance": [
         "game-core is pure TypeScript with no React/Next imports",
         "Board generation and rules are deterministic",
-        "Server and UI import the same core package"
+        "Server and UI import the same core package",
+        "Placement moves route through core GameState"
       ]
     },
     {
