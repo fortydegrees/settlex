@@ -55,15 +55,79 @@ export function applyDiscard(
   return { ok: true };
 }
 
-// Placeholder exports for later tasks in this slice
 export function applyResourceDistribution(
-  _state: GameState,
-  _board: BoardTopology,
-  _rollTotal: number
+  state: GameState,
+  board: BoardTopology,
+  rollTotal: number
 ): { ok: true } | { ok: false; error: string } {
+  if (rollTotal === 7) {
+    return { ok: true };
+  }
+
+  const requiredByResource: Record<string, number> = {};
+  const allocations: Record<string, Resource[]> = {};
+
+  for (const playerId of state.players) {
+    allocations[playerId] = [];
+  }
+
+  for (const tile of board.tiles) {
+    if (tile.tile.number !== rollTotal) {
+      continue;
+    }
+    if (state.robberTileId !== null && tile.tile.id === state.robberTileId) {
+      continue;
+    }
+    if (!tile.tile.resource) {
+      continue;
+    }
+
+    const resource = tile.tile.resource as Resource;
+    const nodes = tile.tile.nodes ?? {};
+    for (const nodeId of Object.values(nodes)) {
+      const building = state.buildingsByNodeId[nodeId];
+      if (!building) {
+        continue;
+      }
+      const owner = building.ownerId;
+      const amount = building.type === "city" ? 2 : 1;
+      for (let i = 0; i < amount; i += 1) {
+        allocations[owner].push(resource);
+      }
+      requiredByResource[resource] = (requiredByResource[resource] ?? 0) + amount;
+    }
+  }
+
+  if (state.ruleset.bank.finite) {
+    for (const [resource, required] of Object.entries(requiredByResource)) {
+      const available = state.bank.resources.filter((r) => r === resource).length;
+      if (required > available) {
+        for (const playerId of Object.keys(allocations)) {
+          allocations[playerId] = allocations[playerId].filter(
+            (r) => r !== resource
+          );
+        }
+      }
+    }
+  }
+
+  for (const [playerId, resources] of Object.entries(allocations)) {
+    const player = state.playerStateById[playerId];
+    if (!player) {
+      continue;
+    }
+    for (const resource of resources) {
+      player.resources.push(resource);
+      if (state.ruleset.bank.finite) {
+        removeCardOnce(state.bank.resources, resource);
+      }
+    }
+  }
+
   return { ok: true };
 }
 
+// Placeholder exports for later tasks in this slice
 export function canPlaceRobber(
   _state: GameState,
   _board: BoardTopology,
