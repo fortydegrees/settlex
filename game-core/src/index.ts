@@ -2,6 +2,7 @@ export * from "./types";
 export * from "./spec";
 export * from "./randomQueue";
 export * from "./collections";
+export * from "./testUtils";
 export * from "./board/boardUtils";
 export * from "./board/generateBoard";
 export * from "./board/generateBoardClass";
