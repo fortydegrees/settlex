@@ -1,7 +1,12 @@
 
 import { current } from "immer";
 import { NodeBuildingTypes } from "./game/types";
-import { STATIC_GRAPH }  from "./Game";
+import {
+  applyPlaceRoad,
+  applyPlaceSettlement,
+  buildableEdges,
+  buildableNodes
+} from "@settlex/game-core";
 
 //used for giving cards to a player by clicking on icon for testing
 //TODO: remove
@@ -91,40 +96,25 @@ export const takeCardsFromBank = (context, cards, playerID) => {
 export const placeSettlement = {
   move: (context, node) => {
     const { G, playerID, events, ctx, effects } = context;
-
-    const buildable = getBuildableNodes(playerID, G, ctx);
-
-    console.log('buildable nodes', buildable);
-    
-    // Validate node is buildable
     const nodeId = parseInt(node);
-    if (!buildable.includes(nodeId)) {
-      console.log(`Invalid settlement placement at node ${node}`);
-      return; // Return without placing if invalid
+    const isPlacement = ctx.phase === "placement";
+    if (G.core) {
+      G.core.phase = isPlacement ? "placement" : "normal";
     }
-    
-    G.nodes[node].building = {
-      type: NodeBuildingTypes.SETTLEMENT,
-      owner: playerID,
-    };
-    G.players[playerID].numSettlements--;
-    
-    if (ctx.phase === "placement") {
-      G.connectedComponents[playerID].push([node]);
-    }
-    else {
-      let edgesByColor = {};
-      STATIC_GRAPH.edges(node).forEach(edge => {
-          let edgeColor = this.roads.get(edge) || null;
-          if (!edgesByColor[edgeColor]) {
-              edgesByColor[edgeColor] = [];
-          }
-          edgesByColor[edgeColor].push(edge);
-      });
 
-      // for edge in STATIC_GRAPH.edges(node_id):
-      //           edges_by_color[self.roads.get(edge, None)].append(edge)
+    const result = applyPlaceSettlement(
+      G.core,
+      G.coreTopology,
+      nodeId,
+      playerID,
+      { initialPlacement: isPlacement }
+    );
+    if (!result.ok) {
+      console.log(`Invalid settlement placement at node ${node}`);
+      return;
     }
+
+    G.players[playerID].numSettlements--;
 
 
 
@@ -155,7 +145,7 @@ export const placeSettlement = {
       takeCardsFromBank(context, resources, playerID);
     }
 
-    updateValids(context, "road", node);
+    updateValids(context, "road", nodeId);
 
     //if initial placement
     events.setStage("road");
@@ -180,37 +170,10 @@ export const placeRoadOld = {
 };
 
 export const getBuildableEdges = (playerID, G) =>{
-  //TODO: this shouldn't be here but i'm hacking it together to make it work
-  //v inefficient doing this every time
-  const buildableSubgraph = STATIC_GRAPH.subgraph(Object.keys(G.nodes).map(a=>parseInt(a))) //what does land_nodes look like? atm just getting all numbers of nodes
-  
-  
-  let expandable = new Set();
-
-  let expandableNodes = new Set();
-    G.connectedComponents[playerID].forEach(connectedComponent => {
-      if (Array.isArray(connectedComponent)){
-      connectedComponent.forEach(node=>{
-        expandableNodes.add(parseInt(node))
-      })
-    }
-    else{
-      expandableNodes.add(parseInt(connectedComponent))
-    }
-    });
-
-
-    let candidateEdges = buildableSubgraph.edges(expandableNodes);
-
-    candidateEdges.forEach(edge => {
-      let sortedEdge = edge.slice().sort();
-        if (G.edges[sortedEdge].color === null) {
-            
-            expandable.add(sortedEdge.join(',')); // Store as a string to ensure uniqueness
-        }
-    });
-
-    return Array.from(expandable).map(e => e.split(',').map(Number));
+  const isPlacement = G.core?.phase === "placement";
+  return buildableEdges(G.core, G.coreTopology, playerID, {
+    initialPlacement: Boolean(isPlacement)
+  });
 
 }
 
@@ -230,66 +193,13 @@ return sorted(list(nodes.intersection(self.board_buildable_ids)))
 //but that doesn't seem like data that should stay in _my_ gamestate.
 //should be with client
 export const getBuildableNodes = (playerID, G, ctx) => {
-  // Check if we're in placement phase
-  const isPlacementPhase = ctx && ctx.phase === "placement";
-
-  // Special handling for placement phase
-  if (isPlacementPhase) {
-    // In placement phase, all nodes are potentially buildable
-    // except those with buildings or adjacent to buildings
-    const invalidNodeIds = new Set();
-  
-    // Find all nodes with buildings and their neighbors
-    for (const nodeId in G.nodes) {
-      const node = G.nodes[nodeId];
-      if (node.building !== null) {
-        // Add the node with a building
-        const id = parseInt(nodeId);
-        invalidNodeIds.add(id);
-        
-        // Add all neighboring nodes (distance rule)
-        for (const neighborId of STATIC_GRAPH.neighbors(id)) {
-          invalidNodeIds.add(neighborId);
-        }
-      }
-    }
-    
-    // Directly collect valid nodes in a single pass
-    const validNodeIds = [];
-    for (const nodeId in G.nodes) {
-      const id = parseInt(nodeId);
-      if (!invalidNodeIds.has(id)) {
-        validNodeIds.push(id);
-      }
-    }
-    
-    // Sort and return
-    return validNodeIds.sort((a, b) => a - b);
-    
+  const isPlacement = ctx && ctx.phase === "placement";
+  if (G.core) {
+    G.core.phase = isPlacement ? "placement" : "normal";
   }
-  
-  // Regular gameplay - use connected components
-  let expandableNodes = new Set();
-
-  G.connectedComponents[playerID].forEach(connectedComponent => {
-    if (Array.isArray(connectedComponent)) {
-      connectedComponent.forEach(node => {
-        expandableNodes.add(parseInt(node));
-      });
-    } else {
-      expandableNodes.add(parseInt(connectedComponent));
-    }
+  return buildableNodes(G.core, G.coreTopology, playerID, {
+    initialPlacement: Boolean(isPlacement)
   });
-
-  // Filter out nodes that already have buildings
-  const buildableNodes = Array.from(expandableNodes)
-    .filter(node => {
-      const nodeObj = G.nodes[node];
-      return nodeObj && nodeObj.building === null;
-    })
-    .sort((a, b) => a - b);
-
-  return buildableNodes;
 }
 
 function removeResource(G, playerID, resource) {
@@ -304,80 +214,35 @@ function removeResource(G, playerID, resource) {
 
 export const placeRoad = {
   move: (context, edge) => {
-    const { G, playerID, events } = context;
-    const opponentID = (playerID == "0" ? "1" : "0") //hack
-   
+    const { G, playerID, events, ctx } = context;
+    const isPlacement = ctx.phase === "placement";
+    if (G.core) {
+      G.core.phase = isPlacement ? "placement" : "normal";
+    }
 
-    //get buildable edges based on colour
-    const buildable = getBuildableEdges(playerID, G)
+    const result = applyPlaceRoad(
+      G.core,
+      G.coreTopology,
+      edge,
+      playerID,
+      { initialPlacement: isPlacement }
+    );
+    if (!result.ok) {
+      console.log(`Invalid road placement at edge ${edge}`);
+      return;
+    }
 
-    console.log('buildable', buildable) //this returns valid buildable edges (for initial placement)
-
-    //TODO: check if edge not in 'buildable'
-
-    console.log('edge before split', edge)
-
-    //place road
-    G.edges[edge].color = G.players[playerID].color;
     G.players[playerID].numRoads--;
 
     //remove resources
     //TODO: check user not playing RB card
-    if (context.ctx.phase !== "placement"){
+    if (!isPlacement){
     removeResource(G, playerID, "Wood");
     removeResource(G, playerID, "Brick");
     }
 
-    //update connected components
-    //get each nodeId of the edge
-    const [a, b] = edge.split(",")
-
-    //get the connected components graph and see which connectedComponent graph the node is in. it will be in one of them.
-    const aIndex = G.connectedComponents[playerID].findIndex(group => group.includes(a));
-    const bIndex = G.connectedComponents[playerID].findIndex(group => group.includes(b));
-
-
-    if (aIndex < 0 && G.nodes[a].building?.owner !== opponentID ){
-      G.connectedComponents[playerID][bIndex].push(a)
-    }
-    else if (bIndex < 0 && G.nodes[b].building?.owner !== opponentID ){
-      G.connectedComponents[playerID][aIndex].push(b)
-    }
-    //merge
-    else if (aIndex > -1 && bIndex > -1 && aIndex !== bIndex){
-      //TODO: might need testing as not sure if we want to remove duplicate values or if it should be stored in another format...
-      
-      //UPDATE: AI Told me to take this out (see ai_review/A/quick_fixes.js)
-      //G.connectedComponents[playerID] = Array.from(new Set(G.connectedComponents[playerID].flat()));
-        // Properly merge the two components
-      const mergedComponent = [
-        ...G.connectedComponents[playerID][aIndex],
-        ...G.connectedComponents[playerID][bIndex]
-      ];
-      
-      // Remove the old components
-      const newComponents = G.connectedComponents[playerID].filter(
-        (comp, index) => index !== aIndex && index !== bIndex
-      );
-      
-      // Add the merged component
-      newComponents.push(mergedComponent);
-      
-      G.connectedComponents[playerID] = newComponents;
-    }
-    else{
-      // # In this case, a_index == b_index, which means that the edge
-      // # is already part of one component. No actions needed.
-      // chosen_index = a_index if a_index is not None else b_index
-      // component = self.connected_components[color][chosen_index]
-    }
-
-    //TODO: longest road
-
-
-
     //if we're in placement phase, end turn after placing road
-    if (context.ctx.phase == "placement"){
+    if (isPlacement){
     events.endTurn();
     }
     //updateValids(context, stage);
@@ -610,64 +475,18 @@ export const updateValids = (context, stage, meta) => {
   const { G, ctx, playerID } = context;
   G.valids.nodes = [];
   G.valids.edges = [];
+  const isPlacement = ctx.phase === "placement";
   switch (stage) {
     case "road":
-      var validEdges = [];
-      //cheap way of getting the edges. if starting settlement just find edges with that nodeId
-      if (meta) {
-        for (var edge of Object.keys(G.edges)) {
-          const nodeId = parseInt(meta);
-          const edgeIds = edge.split(",").map(Number);
-          if (edgeIds.includes(nodeId)) {
-            validEdges.push({ ...G.edges[edge], id: edge });
-          }
-        }
-      } else {
-        for (var edge of Object.keys(G.edges)) {
-          var realedge = { ...G.edges[edge] };
-          realedge["id"] = edge;
-          if (!realedge.color) {
-            validEdges.push(realedge);
-          }
-        }
-      }
-      G.valids.edges = validEdges;
+      G.valids.edges = buildableEdges(G.core, G.coreTopology, playerID, {
+        initialPlacement: isPlacement,
+        fromNodeId: meta ?? undefined
+      });
       break;
     case "settlement":
-      //TODO: this is only for initial settlements. doesn't do road detection
-      //TODO: return invalid move?
-      var allNodes = G.nodes;
-
-      //for each tile, get its nodes
-      
-
-
-      var invalidNodes = [];
-      for (let node in Object.keys(allNodes)) {
-        node = allNodes[node];
-
-        if (node.building !== null) {
-          //remove node
-          invalidNodes.push(node.id);
-          //get all neighbors and also remove
-          // console.log(STATIC_GRAPH.edges)
-          // STATIC_GRAPH.edges(node.id).forEach(edge => console.log(edge))
-
-          for (const builtNode of STATIC_GRAPH.neighbors(parseInt(node.id))) {
-            invalidNodes.push(builtNode.toString());
-          }
-        }
-      }
-
-      const validNodes = removeNodesByIds(allNodes, invalidNodes);
-
-      let finalValidNodes = [];
-      for (const node of Object.keys(validNodes)) {
-        var realnode = validNodes[node];
-        realnode["id"] = node;
-        finalValidNodes.push(realnode);
-      }
-      G.valids.nodes = finalValidNodes;
+      G.valids.nodes = buildableNodes(G.core, G.coreTopology, playerID, {
+        initialPlacement: isPlacement
+      });
       break;
     default:
       G.valids.edges = [];
@@ -675,35 +494,5 @@ export const updateValids = (context, stage, meta) => {
       break;
   }
 };
-
-const filterObjectsWithNotNullBuildingType = (obj) => {
-  // Initialize an array to store the filtered objects
-  const filteredObjects = [];
-
-  // Iterate through the object properties and values
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      const item = obj[key];
-
-      // Check if the "buildingType" property is null
-      if (item.buildingType !== null) {
-        // Add the object to the filtered array
-        filteredObjects.push(item);
-      }
-    }
-  }
-
-  return filteredObjects;
-};
-
-function removeNodesByIds(nodeObj, idsToRemove) {
-  const filteredNodes = Object.assign({}, nodeObj); // Create a copy of the original object
-
-  idsToRemove.forEach((id) => {
-    delete filteredNodes[id]; // Remove the object with the specified ID
-  });
-
-  return filteredNodes;
-}
 
 export const getAvailableMoves = (context) => {};
