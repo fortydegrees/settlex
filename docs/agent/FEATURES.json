@@ -15,9 +15,10 @@
     {
       "id": "core-tests",
       "title": "Add core rule tests",
-      "status": "planned",
+      "status": "in_progress",
       "acceptance": [
         "Vitest is configured for game-core",
+        "Board generation invariants are tested",
         "Core tests cover buildable nodes/edges, resource distribution, and robber"
       ]
     }
