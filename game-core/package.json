@@ -1,0 +1,23 @@
+{
+  "name": "@settlex/game-core",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "typescript": "5.2.2",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "react-hexgrid": "^2.0.1"
+  }
+}

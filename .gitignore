@@ -14,10 +14,12 @@
 
 # production
 /build
+/game-core/dist
 
 # misc
 .DS_Store
 *.pem
+.logs/
 
 # debug
 npm-debug.log*

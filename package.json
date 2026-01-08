@@ -3,13 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "pnpm -C game-core build",
     "dev": "next dev",
+    "dev:log": "mkdir -p .logs && pnpm dev 2>&1 | tee .logs/dev.log",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "verify": "pnpm -C game-core build && pnpm -C game-core test && pnpm lint",
     "serve": "node -r esm server/server.js"
   },
   "dependencies": {
+    "@settlex/game-core": "workspace:*",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@react-spring/web": "^9.7.3",
@@ -36,7 +40,9 @@
   },
   "devDependencies": {
     "@types/react": "18.2.21",
+    "@types/node": "^20.11.30",
     "tailwind-clip-path": "^1.0.0",
-    "typescript": "5.2.2"
+    "typescript": "5.2.2",
+    "vitest": "^1.6.0"
   }
 }
