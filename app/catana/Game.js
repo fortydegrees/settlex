@@ -1,11 +1,7 @@
-import { spec } from "./game/spec";
-import { generateBoard } from "./game/generateBoard";
-import { Board } from './game/generateBoardClass'
-import { BalancedBoard } from "./game/generateBalancedBoard";
+import { spec, BalancedBoard } from "@settlex/game-core";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
-import {TileTypes, } from "./game/types"
 import * as nx from "jsnetworkx";
 //setup board and convert tiles/edges into right format to render
 
@@ -85,13 +81,21 @@ export const Catan =  {
   maxPlayers: 4,
   //seed:Date.now(),
   //generate map here
-  setup: ({ctx}) => {
+  setup: ({ ctx, random }) => {
     //ctx.numPlayers = 3
-    const b = new BalancedBoard({    desertPlacement: 'Random', //Random, Center, Off Center, Inland, Coast
-    resourceDistribution: 0.85,
-    numberDistribution: 0.85,
-    shufflePorts: true,
-    allowResourceOnPort: true}).generateBoard(spec).board
+    const rng = () => {
+      if (!random || typeof random.Number !== "function") {
+        throw new Error("random.Number is required for deterministic board generation.");
+      }
+      return random.Number();
+    };
+    const b = new BalancedBoard({
+      desertPlacement: 'Random', //Random, Center, Off Center, Inland, Coast
+      resourceDistribution: 0.85,
+      numberDistribution: 0.85,
+      shufflePorts: true,
+      allowResourceOnPort: true
+    }, rng).generateBoard(spec).board
     
     
     //TODO: set this based on spec e.g. numRoads
