@@ -30,4 +30,17 @@ describe("board generation invariants", () => {
       spec.rollNumbers().slice().sort((a: number, b: number) => a - b)
     );
   });
+
+  it("creates the expected number of ports and preserves port coordinates", () => {
+    const tiles = generateBoard(spec, makeDeterministicRng(2));
+    const ports = tiles.filter((tile) => tile.type === TileTypes.PORT);
+
+    expect(ports).toHaveLength(spec.ports.length);
+    for (const port of spec.ports) {
+      const match = ports.find(
+        (tile) => JSON.stringify(tile.coordinate) === JSON.stringify(port.coordinate)
+      );
+      expect(match).toBeTruthy();
+    }
+  });
 });
