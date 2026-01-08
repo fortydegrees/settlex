@@ -32,11 +32,19 @@ export function applyPlaceSettlement(
   playerId: string,
   { initialPlacement }: { initialPlacement: boolean }
 ) {
+  const playerState = state.playerStateById[playerId];
+  if (!playerState) {
+    return { ok: false, state, error: "unknown-player" } as const;
+  }
+  if (playerState.settlementsRemaining <= 0) {
+    return { ok: false, state, error: "no-pieces-left" } as const;
+  }
   const legal = buildableNodes(state, board, playerId, { initialPlacement });
   if (!legal.includes(nodeId)) {
     return { ok: false, state, error: "illegal-settlement" } as const;
   }
   state.buildingsByNodeId[nodeId] = { ownerId: playerId, type: "settlement" };
+  playerState.settlementsRemaining -= 1;
   if (initialPlacement) {
     state.pendingRoadFromNodeIdByPlayer[playerId] = nodeId;
   }
@@ -51,6 +59,13 @@ export function applyPlaceRoad(
   playerId: string,
   { initialPlacement }: { initialPlacement: boolean }
 ) {
+  const playerState = state.playerStateById[playerId];
+  if (!playerState) {
+    return { ok: false, state, error: "unknown-player" } as const;
+  }
+  if (playerState.roadsRemaining <= 0) {
+    return { ok: false, state, error: "no-pieces-left" } as const;
+  }
   const legal = buildableEdges(state, board, playerId, {
     initialPlacement,
     fromNodeId: initialPlacement
@@ -61,6 +76,7 @@ export function applyPlaceRoad(
     return { ok: false, state, error: "illegal-road" } as const;
   }
   state.roadsByEdgeId[edgeId] = playerId;
+  playerState.roadsRemaining -= 1;
   if (initialPlacement) {
     state.pendingRoadFromNodeIdByPlayer[playerId] = null;
   }
