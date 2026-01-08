@@ -13,10 +13,10 @@
     "serve": "node -r esm server/server.js"
   },
   "dependencies": {
-    "@settlex/game-core": "workspace:*",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@react-spring/web": "^9.7.3",
+    "@settlex/game-core": "workspace:*",
     "assert": "^2.1.0",
     "autoprefixer": "10.4.15",
     "bgio-effects": "^0.7.1",
@@ -39,8 +39,10 @@
     "tailwindcss": "3.3.3"
   },
   "devDependencies": {
-    "@types/react": "18.2.21",
     "@types/node": "^20.11.30",
+    "@types/react": "18.2.21",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^13.5.11",
     "tailwind-clip-path": "^1.0.0",
     "typescript": "5.2.2",
     "vitest": "^1.6.0"

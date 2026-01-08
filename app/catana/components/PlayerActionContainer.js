@@ -206,8 +206,12 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
         <div className="relative h-20 ml-4 mr-8 flex pl-4 bg-blue-200 bg-opacity-50 rounded-md ring-2 ring-slate-300">
           <Dock>
           {dynamicActions.map((action, index) =>
-        action ? <DockCard key={index} action={action} /> : <span />
-      )}
+            action ? (
+              <DockCard key={action.name ?? index} action={action} />
+            ) : (
+              <span key={`empty-${index}`} />
+            )
+          )}
           </Dock>
           <div className="flex self-end mb-4">
             {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {

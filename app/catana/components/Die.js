@@ -16,32 +16,32 @@ const pips = {
  * Die face tuple for classic 6-sided dice with value displayed with pips.
  */
 const PipFaces = [
-  <svg viewBox="0 0 100 100" className="jk-pip-face">
+  <svg key="face-1" viewBox="0 0 100 100" className="jk-pip-face">
     {pips.centre}
   </svg>,
-  <svg viewBox="0 0 100 100" className="jk-pip-face">
+  <svg key="face-2" viewBox="0 0 100 100" className="jk-pip-face">
     {pips.bottomLeft}
     {pips.topRight}
   </svg>,
-  <svg viewBox="0 0 100 100" className="jk-pip-face">
+  <svg key="face-3" viewBox="0 0 100 100" className="jk-pip-face">
     {pips.bottomLeft}
     {pips.centre}
     {pips.topRight}
   </svg>,
-  <svg viewBox="0 0 100 100" className="jk-pip-face">
+  <svg key="face-4" viewBox="0 0 100 100" className="jk-pip-face">
     {pips.topLeft}
     {pips.topRight}
     {pips.bottomLeft}
     {pips.bottomRight}
   </svg>,
-  <svg viewBox="0 0 100 100" className="jk-pip-face">
+  <svg key="face-5" viewBox="0 0 100 100" className="jk-pip-face">
     {pips.topLeft}
     {pips.topRight}
     {pips.centre}
     {pips.bottomLeft}
     {pips.bottomRight}
   </svg>,
-  <svg viewBox="0 0 100 100" className="jk-pip-face">
+  <svg key="face-6" viewBox="0 0 100 100" className="jk-pip-face">
     {pips.topLeft}
     {pips.topRight}
     <circle r="7" cx="25" cy="50" />

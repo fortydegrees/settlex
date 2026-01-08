@@ -4,6 +4,7 @@
 - Phase 0: added AI harness files (`AGENTS.md`, `game-core/AGENTS.md`, `docs/agent/*`).
 - Phase 1: created pnpm workspace + `game-core` scaffold, added Vitest config, and moved core types/spec/board generation into `game-core`.
 - Fixed Next import/export issue for `@settlex/game-core`, removed duplicate `PlayerColor` export, and updated board generation RNG to use boardgame.io `random.Number()`; `/catana` now renders.
+- Added ESLint config with `react/jsx-key` enforcement, installed lint deps, and fixed missing keys plus a `children` prop lint error in UI files.
 
 ## Next
 - Add initial `game-core` tests (Vitest).
