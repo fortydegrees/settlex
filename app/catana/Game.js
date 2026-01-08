@@ -1,4 +1,4 @@
-import { spec, BalancedBoard } from "@settlex/game-core";
+import { spec, BalancedBoard, buildTopology, createEmptyState } from "@settlex/game-core";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
@@ -127,7 +127,22 @@ export const Catan =  {
       STATIC_GRAPH.addEdgesFrom(Object.values(tile.tile.edges));
     }
 
-    return { connectedComponents, tiles:b.tiles, nodes:b.nodes, edges:b.edges, ports: spec.ports, valids, bank, settings, players, diceRoll, robberTile };
+    const coreTopology = buildTopology(b.tiles);
+    const core = createEmptyState(players.map((p) => p.id));
+    core.phase = ctx.phase === "placement" ? "placement" : "normal";
+
+    return {
+      core,
+      coreTopology,
+      tiles: b.tiles,
+      ports: spec.ports,
+      valids,
+      bank,
+      settings,
+      players,
+      diceRoll,
+      robberTile
+    };
   },
 
 //https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
