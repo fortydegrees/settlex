@@ -102,3 +102,32 @@ it("applyMoveRobber updates tile when legal", () => {
   expect(result.ok).toBe(true);
   expect(state.robberTileId).toBe(1);
 });
+
+import { applyRollDice } from "./turnFlow";
+
+it("sets postRoll and distributes on non-7", () => {
+  const state = createEmptyState(["0"]);
+  state.turn.phase = "preRoll";
+  state.bank.resources = [ResourceType.WOOD];
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyRollDice(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  expect(state.turn.phase).toBe("postRoll");
+  expect(state.turn.hasRolled).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([ResourceType.WOOD]);
+});
+
+it("enters robberDiscard on 7 and tracks pending discards", () => {
+  const state = createEmptyState(["0"]);
+  state.turn.phase = "preRoll";
+  state.playerStateById["0"].resources = Array(8).fill(ResourceType.WOOD);
+  state.ruleset.discardLimit = 7;
+
+  const result = applyRollDice(state, board, 7);
+
+  expect(result.ok).toBe(true);
+  expect(state.turn.phase).toBe("robberDiscard");
+  expect(state.turn.pendingDiscards).toEqual(["0"]);
+});

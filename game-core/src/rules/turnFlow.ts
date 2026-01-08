@@ -198,9 +198,21 @@ export function applyMoveRobber(
 }
 
 export function applyRollDice(
-  _state: GameState,
-  _board: BoardTopology,
-  _rollTotal: number
+  state: GameState,
+  board: BoardTopology,
+  rollTotal: number
 ): { ok: true } | { ok: false; error: string } {
+  state.turn.hasRolled = true;
+  state.turn.lastRollTotal = rollTotal;
+
+  if (rollTotal === 7) {
+    const pending = playersNeedingDiscard(state);
+    state.turn.pendingDiscards = pending;
+    state.turn.phase = pending.length > 0 ? "robberDiscard" : "robberMove";
+    return { ok: true };
+  }
+
+  applyResourceDistribution(state, board, rollTotal);
+  state.turn.phase = "postRoll";
   return { ok: true };
 }
