@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import ReactDOM from "react-dom"; // Added for createPortal
 
 import { Tile } from "./Tile";
-import { Building } from "./Building";
 import { Node } from "./Node";
 import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
@@ -15,6 +14,7 @@ import { useLatestPropsOnEffect, useEffectListener } from "bgio-effects/react";
 import { useTransition, animated } from "@react-spring/web";
 import { TileTypes } from "./game/types";
 import { getBuildableEdges } from "./Moves";
+import { buildRenderMaps } from "./utils/renderMaps";
 
 const getValidRobberTiles = (G) => {
   //TODO: friendly robber
@@ -114,6 +114,17 @@ export function CatanBoard({
   const containerWidth = width;
   const center = [containerWidth / 2, containerHeight / 2];
   const size = computeDefaultSize(containerWidth, containerHeight);
+  const { nodeRenderById, edgeRenderById } = useMemo(
+    () => buildRenderMaps(G.tiles),
+    [G.tiles]
+  );
+  const playerById = useMemo(() => {
+    const map = {};
+    for (const player of G.players ?? []) {
+      map[player.id] = player;
+    }
+    return map;
+  }, [G.players]);
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -306,63 +317,48 @@ export function CatanBoard({
   });
 
 
-  Object.keys(G.nodes).map((node) => {
-    const { building, direction, tile_coordinate, id, tileId } = G.nodes[node];
-    //don't render if no building or not isActive/canPlaceSettlement
+  Object.entries(G.core?.buildingsByNodeId ?? {}).forEach(
+    ([nodeId, building]) => {
+      const renderNode = nodeRenderById[String(nodeId)];
+      const owner = playerById[building.ownerId];
+      if (!renderNode || !owner) {
+        return;
+      }
 
-    //if isActive && canPlaceSettlement
-    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
-    //TODO: maybe don't render node if buildingType is null?
-    if (building) {
       buildings.push(
         <Node
-          key={id}
-          nodeId={id}
-          tileId={tileId} //tileId
+          key={nodeId}
+          nodeId={nodeId}
+          tileId={renderNode.tileId}
           center={center}
           size={size}
-          coordinate={tile_coordinate}
-          direction={direction}
+          coordinate={renderNode.tile_coordinate}
+          direction={renderNode.direction}
           buildingType={building.type}
-          buildingColor={G.players[building.owner].color}
+          buildingColor={owner.color}
         />
-        // <Building
-        //   key={node}
-        //   center={center}
-        //   size={size}
-        //   coordinate={tile_coordinate}
-        //   direction={direction}
-        //   building={buildingType}
-        //   color={color}
-        //   //flashing={!replayMode && id in nodeActions}
-        //   //flashing={isActive}
-        //   //onClick={buildOnNodeClick(id, nodeActions[id])}
-        // />
-        //   <Piece
-        //   svg="https://colonist.io/dist/images/settlement_red.svg?v168"
-        //   size={40}
-        //   left={x}
-        //   top={y}
-        // />
       );
     }
-  });
+  );
 
-  Object.keys(G.edges).map((edge) => {
-    const { color, direction, tile_coordinate } = G.edges[edge];
-    if (color) {
-      buildings.push(
-        <Edge
-          key={edge}
-          id={edge}
-          center={center}
-          size={size}
-          coordinate={tile_coordinate}
-          direction={direction}
-          color={color}
-        />
-      );
+  Object.entries(G.core?.roadsByEdgeId ?? {}).forEach(([edgeId, ownerId]) => {
+    const renderEdge = edgeRenderById[edgeId];
+    const owner = playerById[ownerId];
+    if (!renderEdge || !owner) {
+      return;
     }
+
+    buildings.push(
+      <Edge
+        key={edgeId}
+        id={edgeId}
+        center={center}
+        size={size}
+        coordinate={renderEdge.tile_coordinate}
+        direction={renderEdge.direction}
+        color={owner.color}
+      />
+    );
   });
 
   //TODO: i think we need to just render nodes.
@@ -371,23 +367,25 @@ export function CatanBoard({
   
   {
     isActive &&
-      G.valids.nodes.map((node) => {
-        const { direction, tile_coordinate, id, tileId } = node;
-        //TODO: get the action type here.
-        //E.g. place settlement, placeCity
+      G.valids.nodes.map((nodeId) => {
+        const renderNode = nodeRenderById[String(nodeId)];
+        if (!renderNode) {
+          return null;
+        }
+
         actions.push(
           <ActionNode
-            key={id}
-            nodeId={id}
+            key={nodeId}
+            nodeId={nodeId}
             center={center}
             size={size}
-            coordinate={tile_coordinate}
-            direction={direction}
+            coordinate={renderNode.tile_coordinate}
+            direction={renderNode.direction}
             buildingType={ctx.activePlayers[ctx.currentPlayer]}
             buildingColor={G.players[ctx.currentPlayer].color}
             flashing={isActive}
             onClick={() => {
-              moves.placeSettlement(id);
+              moves.placeSettlement(nodeId);
               setHoveredNode(null);
               setHoveredTiles([]);
             }}
@@ -395,27 +393,29 @@ export function CatanBoard({
             hoveredNode={hoveredNode}
           />
         );
+        return null;
       });
   }
 
   //editable edges e.g placing road
   {
     isActive &&
-      G.valids.edges.map((edge, x) => {
-        const { color, direction, tile_coordinate, id } = edge;
-        //don't render if no building or not isActive/canPlaceSettlement
-        //if isActive && canPlaceSettlement
-        // show nodes where one can place (e.g. nodes where there is no building & +2 away)
+      G.valids.edges.map((edgeId, x) => {
+        const renderEdge = edgeRenderById[edgeId];
+        if (!renderEdge) {
+          return null;
+        }
+
         actions.push(
           <Edge
-            id={id}
+            id={edgeId}
             actionNodeId={x}
-            key={id}
+            key={edgeId}
             center={center}
             size={size}
-            coordinate={tile_coordinate}
-            direction={direction}
-            color={color}
+            coordinate={renderEdge.tile_coordinate}
+            direction={renderEdge.direction}
+            color={G.players[ctx.currentPlayer].color}
             placing="true"
             player={Object.keys(ctx.activePlayers)[0]}
             buildingType={ctx.activePlayers[ctx.currentPlayer]}
@@ -426,25 +426,25 @@ export function CatanBoard({
             hoveredNode={hoveredNode}
           />
         );
+        return null;
       });
   }
 
-  buildableRoads.map((edge, x) => {
-    const { color, direction, tile_coordinate } = G.edges[edge];
-    //don't render if no building or not isActive/canPlaceSettlement
-    //if isActive && canPlaceSettlement
-    // show nodes where one can place (e.g. nodes where there is no building & +2 away)
-    edge = edge[0].toString() + "," + edge[1].toString()
+  buildableRoads.map((edgeId, x) => {
+    const renderEdge = edgeRenderById[edgeId];
+    if (!renderEdge) {
+      return null;
+    }
     actions.push(
       <Edge
-        id={edge}
+        id={edgeId}
         actionNodeId={x}
-        key={edge}
+        key={`buildable-${edgeId}`}
         center={center}
         size={size}
-        coordinate={tile_coordinate}
-        direction={direction}
-        color={color}
+        coordinate={renderEdge.tile_coordinate}
+        direction={renderEdge.direction}
+        color={G.players[ctx.currentPlayer].color}
         placing="true"
         player={Object.keys(ctx.activePlayers)[0]}
         buildingType={ctx.activePlayers[ctx.currentPlayer]}
@@ -455,6 +455,7 @@ export function CatanBoard({
         hoveredNode={hoveredNode}
       />
     );
+    return null;
   });
 
   //make a subgraph of buildable nodes - used in catanatron
