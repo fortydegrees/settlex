@@ -36,3 +36,21 @@ describe("buildability - initial placement", () => {
     }
   });
 });
+
+describe("buildability - normal play", () => {
+  it("requires road connectivity in normal play", () => {
+    const tiles = generateBoard(spec, makeDeterministicRng(3));
+    const board = buildTopology(tiles);
+    const state = createEmptyState(["0", "1"]);
+    state.phase = "normal";
+
+    const [edgeId] = board.edgeIds;
+    state.roadsByEdgeId[edgeId] = "0";
+
+    const nodes = buildableNodes(state, board, "0", { initialPlacement: false });
+    const [a, b] = board.edgeNodes[edgeId];
+
+    expect(nodes).toContain(a);
+    expect(nodes).toContain(b);
+  });
+});
