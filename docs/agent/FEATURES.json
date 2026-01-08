@@ -19,7 +19,8 @@
       "acceptance": [
         "Vitest is configured for game-core",
         "Board generation invariants are tested",
-        "Core tests cover buildable nodes/edges, resource distribution, and robber"
+        "Buildability rules (setup + normal) are tested",
+        "Core tests cover resource distribution and robber"
       ]
     }
   ]

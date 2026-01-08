@@ -5,9 +5,10 @@
 - Phase 1: created pnpm workspace + `game-core` scaffold, added Vitest config, and moved core types/spec/board generation into `game-core`.
 - Fixed Next import/export issue for `@settlex/game-core`, removed duplicate `PlayerColor` export, and updated board generation RNG to use boardgame.io `random.Number()`; `/catana` now renders.
 - Added deterministic RNG helper and board-generation invariant tests in `game-core`.
+- Added core topology/state scaffolding and buildability rule tests (setup + normal placement).
 
 ## Next
-- Expand `game-core` tests beyond board-generation invariants.
+- Expand `game-core` tests beyond buildability (robber, resource distribution, longest road).
 - Continue core extraction (moves/validation) into `game-core`.
 - Clean up legacy duplicates in `app/catana/game`, `spec/`, `strategy/`, `utils/`.
 - Address React list key warnings in `app/catana/Board.js`.
