@@ -18,4 +18,21 @@ describe("buildability - initial placement", () => {
       board.landNodeIds.slice().sort((a, b) => a - b)
     );
   });
+
+  it("excludes nodes adjacent to an existing settlement", () => {
+    const tiles = generateBoard(spec, makeDeterministicRng(2));
+    const board = buildTopology(tiles);
+    const state = createEmptyState(["0", "1"]);
+
+    const occupied = board.landNodeIds[0];
+    state.buildingsByNodeId[occupied] = { ownerId: "0", type: "settlement" };
+
+    const nodes = buildableNodes(state, board, "0", { initialPlacement: true });
+    const neighbors = board.nodeNeighbors[occupied] ?? [];
+
+    expect(nodes).not.toContain(occupied);
+    for (const n of neighbors) {
+      expect(nodes).not.toContain(n);
+    }
+  });
 });
