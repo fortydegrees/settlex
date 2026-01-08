@@ -1,4 +1,5 @@
 import { ResourceType, TileTypes } from "../types";
+import type { Resource } from "../types";
 import { EdgeId, NodeId, edgeId } from "./ids";
 
 export type BoardTile = {
@@ -22,7 +23,7 @@ export type BoardTopology = {
   edgeNodes: Record<EdgeId, [NodeId, NodeId]>;
   nodeEdges: Record<NodeId, EdgeId[]>;
   nodeNeighbors: Record<NodeId, NodeId[]>;
-  portsByNodeId: Record<NodeId, ResourceType>;
+  portsByNodeId: Record<NodeId, Resource>;
 };
 
 export function buildTopology(tiles: BoardTile[]): BoardTopology {
@@ -31,7 +32,7 @@ export function buildTopology(tiles: BoardTile[]): BoardTopology {
   const edgeNodes: Record<EdgeId, [NodeId, NodeId]> = {};
   const nodeEdges: Record<NodeId, EdgeId[]> = {};
   const nodeNeighbors: Record<NodeId, NodeId[]> = {};
-  const portsByNodeId: Record<NodeId, ResourceType> = {};
+  const portsByNodeId: Record<NodeId, Resource> = {};
 
   for (const tile of tiles) {
     const nodes = tile.tile.nodes ?? {};
@@ -58,7 +59,7 @@ export function buildTopology(tiles: BoardTile[]): BoardTopology {
 
     if (tile.type === TileTypes.PORT && tile.tile.nodes && tile.tile.resource) {
       for (const node of Object.values(tile.tile.nodes)) {
-        portsByNodeId[node] = tile.tile.resource as ResourceType;
+        portsByNodeId[node] = tile.tile.resource as Resource;
       }
     }
   }

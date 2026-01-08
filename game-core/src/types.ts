@@ -11,6 +11,8 @@ export const ResourceType = {
   ANY: "Any"
 } as const;
 
+export type Resource = (typeof ResourceType)[keyof typeof ResourceType];
+
 export const TileTypes = {
   LAND: "Land",
   PORT: "Port",
