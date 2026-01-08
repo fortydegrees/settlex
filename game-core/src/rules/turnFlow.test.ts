@@ -75,3 +75,30 @@ it("gives none if bank lacks enough of a resource", () => {
   expect(state.playerStateById["1"].resources).toEqual([]);
   expect(state.bank.resources).toHaveLength(1);
 });
+
+import { canPlaceRobber, applyMoveRobber, getRobberVictims } from "./turnFlow";
+
+it("blocks robber placement on tiles adjacent to players <= vp threshold", () => {
+  const state = createEmptyState(["0"]);
+  state.ruleset.friendlyRobber.enabled = true;
+  state.ruleset.friendlyRobber.vpThreshold = 2;
+  state.playerStateById["0"].victoryPoints = 2;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  expect(canPlaceRobber(state, board, 1)).toBe(false);
+});
+
+it("returns eligible victims on robber tile", () => {
+  const state = createEmptyState(["0", "1"]);
+  state.buildingsByNodeId[1] = { ownerId: "1", type: "settlement" };
+
+  const victims = getRobberVictims(state, board, 1, "0");
+  expect(victims).toEqual(["1"]);
+});
+
+it("applyMoveRobber updates tile when legal", () => {
+  const state = createEmptyState(["0", "1"]);
+  const result = applyMoveRobber(state, board, 1, "0");
+  expect(result.ok).toBe(true);
+  expect(state.robberTileId).toBe(1);
+});
