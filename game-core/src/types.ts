@@ -13,6 +13,8 @@ export const ResourceType = {
 
 export type Resource = (typeof ResourceType)[keyof typeof ResourceType];
 
+export type Cost = Partial<Record<Resource, number>>;
+
 export const TileTypes = {
   LAND: "Land",
   PORT: "Port",

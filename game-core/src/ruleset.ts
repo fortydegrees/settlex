@@ -1,9 +1,11 @@
-import { ResourceType, type Resource } from "./types";
+import { ResourceType, type Resource, type Cost } from "./types";
 
 export type Ruleset = {
   discardLimit: number;
   friendlyRobber: { enabled: boolean; vpThreshold: number };
   bank: { finite: boolean; resourceCounts: Record<Resource, number> };
+  pieceLimits: { roads: number; settlements: number; cities: number };
+  buildCosts: { road: Cost; settlement: Cost; city: Cost };
 };
 
 export function createStandardRuleset(): Ruleset {
@@ -23,6 +25,27 @@ export function createStandardRuleset(): Ruleset {
         [ResourceType.WATER]: 0,
         [ResourceType.EMPTY]: 0,
         [ResourceType.ANY]: 0
+      }
+    },
+    pieceLimits: {
+      roads: 15,
+      settlements: 5,
+      cities: 4
+    },
+    buildCosts: {
+      road: {
+        [ResourceType.WOOD]: 1,
+        [ResourceType.BRICK]: 1
+      },
+      settlement: {
+        [ResourceType.WOOD]: 1,
+        [ResourceType.BRICK]: 1,
+        [ResourceType.SHEEP]: 1,
+        [ResourceType.WHEAT]: 1
+      },
+      city: {
+        [ResourceType.WHEAT]: 2,
+        [ResourceType.ORE]: 3
       }
     }
   };
