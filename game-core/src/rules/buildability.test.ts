@@ -5,6 +5,7 @@ import { makeDeterministicRng } from "../testUtils";
 import { buildTopology } from "../core/topology";
 import { createEmptyState } from "../core/state";
 import { buildableNodes, buildableEdges } from "./buildability";
+import { applyPlaceSettlement, applyPlaceRoad } from "./apply";
 
 describe("buildability - initial placement", () => {
   it("returns all land nodes when no buildings exist", () => {
@@ -90,5 +91,37 @@ describe("buildability - normal play", () => {
     for (const e of expected) {
       expect(edges).toContain(e);
     }
+  });
+});
+
+describe("apply placement", () => {
+  it("applyPlaceSettlement adds building and updates caches", () => {
+    const tiles = generateBoard(spec, makeDeterministicRng(6));
+    const board = buildTopology(tiles);
+    const state = createEmptyState(["0", "1"]);
+
+    const node = board.landNodeIds[0];
+    const result = applyPlaceSettlement(state, board, node, "0", { initialPlacement: true });
+
+    expect(result.ok).toBe(true);
+    expect(result.state.buildingsByNodeId[node]).toBeTruthy();
+    expect(result.state.pendingRoadFromNodeIdByPlayer["0"]).toBe(node);
+    expect(result.state.caches.buildableNodeIdsByPlayer["0"].length).toBeGreaterThan(0);
+  });
+
+  it("applyPlaceRoad adds road and clears pending placement", () => {
+    const tiles = generateBoard(spec, makeDeterministicRng(7));
+    const board = buildTopology(tiles);
+    const state = createEmptyState(["0", "1"]);
+
+    const node = board.landNodeIds[0];
+    const edge = board.nodeEdges[node][0];
+    state.pendingRoadFromNodeIdByPlayer["0"] = node;
+
+    const result = applyPlaceRoad(state, board, edge, "0", { initialPlacement: true });
+
+    expect(result.ok).toBe(true);
+    expect(result.state.roadsByEdgeId[edge]).toBe("0");
+    expect(result.state.pendingRoadFromNodeIdByPlayer["0"]).toBe(null);
   });
 });
