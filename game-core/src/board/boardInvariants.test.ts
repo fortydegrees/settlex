@@ -43,4 +43,22 @@ describe("board generation invariants", () => {
       expect(match).toBeTruthy();
     }
   });
+
+  it("assigns 6 node ids and 6 edge node pairs per land tile", () => {
+    const tiles = generateBoard(spec, makeDeterministicRng(3));
+    const land = tiles.filter((tile) => tile.type === TileTypes.LAND);
+
+    for (const tile of land) {
+      const nodes = Object.values(tile.tile.nodes ?? {});
+      const edges = Object.values(tile.tile.edges ?? {});
+
+      expect(nodes).toHaveLength(6);
+      expect(edges).toHaveLength(6);
+      for (const edge of edges) {
+        expect(edge).toHaveLength(2);
+        expect(edge[0]).not.toBeNull();
+        expect(edge[1]).not.toBeNull();
+      }
+    }
+  });
 });
