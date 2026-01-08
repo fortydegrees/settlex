@@ -1,6 +1,6 @@
 import { BoardTopology } from "../core/topology";
 import { GameState } from "../core/state";
-import { NodeId } from "../core/ids";
+import { EdgeId, NodeId } from "../core/ids";
 
 export function buildableNodes(
   state: GameState,
@@ -22,6 +22,37 @@ export function buildableNodes(
     : nodesConnectedToPlayerRoads(state, board, playerId);
 
   return candidates.filter((n) => !blocked.has(n));
+}
+
+export function buildableEdges(
+  state: GameState,
+  board: BoardTopology,
+  playerId: string,
+  { initialPlacement, fromNodeId }: { initialPlacement: boolean; fromNodeId?: NodeId }
+): EdgeId[] {
+  const occupied = new Set(Object.keys(state.roadsByEdgeId));
+  const candidates = new Set<EdgeId>();
+
+  if (initialPlacement) {
+    if (fromNodeId === undefined) return [];
+    for (const e of board.nodeEdges[fromNodeId] ?? []) candidates.add(e);
+  } else {
+    const nodes = new Set<NodeId>();
+    for (const [edgeId, ownerId] of Object.entries(state.roadsByEdgeId)) {
+      if (ownerId !== playerId) continue;
+      const [a, b] = board.edgeNodes[edgeId];
+      nodes.add(a);
+      nodes.add(b);
+    }
+    for (const [nodeId, building] of Object.entries(state.buildingsByNodeId)) {
+      if (building.ownerId === playerId) nodes.add(Number(nodeId));
+    }
+    for (const nodeId of nodes) {
+      for (const e of board.nodeEdges[nodeId] ?? []) candidates.add(e);
+    }
+  }
+
+  return Array.from(candidates).filter((e) => !occupied.has(e));
 }
 
 function nodesConnectedToPlayerRoads(
