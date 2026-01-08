@@ -7,6 +7,9 @@ export type Building = { ownerId: string; type: string };
 export type PlayerState = {
   resources: Resource[];
   victoryPoints: number;
+  roadsRemaining: number;
+  settlementsRemaining: number;
+  citiesRemaining: number;
 };
 
 export type BankState = {
@@ -60,7 +63,13 @@ export function createEmptyState(players: string[]): GameState {
     pending[p] = null;
     buildableNodes[p] = [];
     buildableEdges[p] = [];
-    playerStateById[p] = { resources: [], victoryPoints: 0 };
+    playerStateById[p] = {
+      resources: [],
+      victoryPoints: 0,
+      roadsRemaining: ruleset.pieceLimits.roads,
+      settlementsRemaining: ruleset.pieceLimits.settlements,
+      citiesRemaining: ruleset.pieceLimits.cities
+    };
   }
 
   return {
