@@ -6,6 +6,12 @@ import { canAfford, spendResources } from "./buildActions";
 import { recomputeCaches } from "./apply";
 import { recomputeLargestArmy, recomputeLongestRoad } from "./victory";
 
+function isSpendError(
+  result: { ok: true } | { ok: false; error: string }
+): result is { ok: false; error: string } {
+  return result.ok === false;
+}
+
 export function createStandardDevDeck(): DevCardType[] {
   return [
     ...Array(14).fill("knight"),
@@ -40,7 +46,7 @@ export function buyDevCard(
     state.bank.resources,
     state.ruleset.bank.finite
   );
-  if (!spent.ok) {
+  if (isSpendError(spent)) {
     return { ok: false, error: spent.error };
   }
 

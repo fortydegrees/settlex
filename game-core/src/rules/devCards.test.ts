@@ -43,14 +43,17 @@ describe("dev cards - purchase", () => {
 });
 const tiles = [
   {
-    coordinate: [0, 0, 0],
+    coordinate: [0, 0, 0] as [number, number, number],
     type: TileTypes.LAND,
     tile: {
       id: 1,
       resource: ResourceType.WOOD,
       number: 8,
       nodes: { NORTH: 1, SOUTH: 2, SOUTHEAST: 3 },
-      edges: { EAST: [1, 2], WEST: [1, 3] }
+      edges: {
+        EAST: [1, 2] as [number, number],
+        WEST: [1, 3] as [number, number]
+      }
     }
   }
 ];
@@ -58,14 +61,17 @@ const tiles = [
 const board = buildTopology(tiles);
 const chainBoard = buildTopology([
   {
-    coordinate: [0, 0, 0],
+    coordinate: [0, 0, 0] as [number, number, number],
     type: TileTypes.LAND,
     tile: {
       id: 2,
       resource: ResourceType.WOOD,
       number: 6,
       nodes: { NORTH: 1, SOUTH: 2, SOUTHEAST: 3 },
-      edges: { EAST: [1, 2], SOUTH: [2, 3] }
+      edges: {
+        EAST: [1, 2] as [number, number],
+        SOUTH: [2, 3] as [number, number]
+      }
     }
   }
 ]);

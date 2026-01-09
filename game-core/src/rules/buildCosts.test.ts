@@ -16,14 +16,14 @@ import { applyBuildRoad, applyBuildSettlement, applyBuildCity } from "./buildAct
 
 const tiles = [
   {
-    coordinate: [0, 0, 0],
+    coordinate: [0, 0, 0] as [number, number, number],
     type: TileTypes.LAND,
     tile: {
       id: 1,
       resource: ResourceType.WOOD,
       number: 8,
       nodes: { NORTH: 1, SOUTH: 2 },
-      edges: { EAST: [1, 2] }
+      edges: { EAST: [1, 2] as [number, number] }
     }
   }
 ];

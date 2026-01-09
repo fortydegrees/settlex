@@ -54,6 +54,12 @@ export function spendResources(
   return { ok: true };
 }
 
+function isSpendError(
+  result: { ok: true } | { ok: false; error: string }
+): result is { ok: false; error: string } {
+  return result.ok === false;
+}
+
 export function applyBuildRoad(
   state: GameState,
   board: BoardTopology,
@@ -82,7 +88,7 @@ export function applyBuildRoad(
     state.bank.resources,
     state.ruleset.bank.finite
   );
-  if (!spent.ok) {
+  if (isSpendError(spent)) {
     return { ok: false, state, error: spent.error } as const;
   }
 
@@ -121,7 +127,7 @@ export function applyBuildSettlement(
     state.bank.resources,
     state.ruleset.bank.finite
   );
-  if (!spent.ok) {
+  if (isSpendError(spent)) {
     return { ok: false, state, error: spent.error } as const;
   }
 
@@ -160,7 +166,7 @@ export function applyBuildCity(
     state.bank.resources,
     state.ruleset.bank.finite
   );
-  if (!spent.ok) {
+  if (isSpendError(spent)) {
     return { ok: false, state, error: spent.error } as const;
   }
 

@@ -6,7 +6,7 @@ import { applyMaritimeTrade, applyPlayerTrade, canUsePort } from "./trading";
 
 const tiles = [
   {
-    coordinate: [0, 0, 0],
+    coordinate: [0, 0, 0] as [number, number, number],
     type: TileTypes.PORT,
     tile: {
       id: 1,
