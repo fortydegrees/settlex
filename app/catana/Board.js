@@ -166,44 +166,14 @@ export function CatanBoard({
   console.log(playerAction)
 
   useEffect(()=>{
-    if (playerAction === "placeRoad") {
-      //basic: get all immediate edges connected to our road color that do not have roads on them
-      //(this is what buildable_edges does)
-      //then just need to solve for plow
-      //get buildable_edges - i think is just edges connected to all roads
-  
-        const buildable = getBuildableEdges(ctx.currentPlayer, G)
-  
-        setBuildableRoads(buildable)
-  
-        
-  
-        
-  
-        // setHoveredNode
-        //don't think any checks should be here
-        
-          //do we want to memoize?
-          //get all edges where we can place a road
-          
-          //method one. inefficient but good for checking given edge. can't do this for each edge efficiently.
-          //given an edge..
-          //if edge is empty
-            //get both nodes.
-            //if one of them has a building of player's color on it, can build
-            //or,
-            //for each node
-              //get connected edges. if edge has player's road, can build
-  
-          //method two is to do what catanatron does. create cache of buildable_edges
-          //get connected_components[color]
-              //connected_components is built during the game, stored in a class
-          //from this get expandable_nodes 
+    if (playerAction === "placeRoad" && G.core && G.coreTopology) {
+      const buildable = getBuildableEdges(ctx.currentPlayer, G)
+      setBuildableRoads(buildable)
     }
     else{
       setBuildableRoads([])
     }
-  }, [playerAction])
+  }, [playerAction, G, ctx.currentPlayer])
 
   
 
