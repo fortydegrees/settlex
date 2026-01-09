@@ -1,5 +1,5 @@
-import { spec, buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
-import { TurnOrder, PlayerView } from "boardgame.io/core";
+import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
+import { TurnOrder } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 import * as nx from "jsnetworkx";
@@ -37,12 +37,6 @@ const configuredEffectsPlugin = EffectsPlugin({
 });
 
 //tiles.push({coordinate:[-1,0,3], tile:{edges:{}, id:100, nodes: {}, number: 2, resource: "Sheep"}})
-//debug/testing color. atm purely sets css for settlement color
-const playerColors = {
-  0: "red",
-  1: "blue",
-  2: "green",
-};
 
 
 const TURN_ORDER_ONCE = {
@@ -54,20 +48,6 @@ const TURN_ORDER_ONCE = {
     return undefined;
   },
 };
-
-const players = new Array(2).fill(0).map((_, i) => ({
-  //name: "",
-  id: i.toString(), //TODO: doesn't this make things hard?
-  username: "",
-  VPs: 0,
-  privateVPs: 0,
-  resourceCards: [],
-  devCards: [],
-  color: playerColors[i],
-  numRoads: 15,
-  numSettlements: 5,
-  numCities: 4,
-}));
 
 export const Catan =  {
   //get spec to use (i.e. script to generate board)
@@ -92,53 +72,28 @@ export const Catan =  {
     const boardPresetId = "standard-random";
     const boardPreset = resolveBoardPreset(boardPresetId);
     const tiles = generateBoard(boardPreset, rng);
-    
-    
-    //TODO: set this based on spec e.g. numRoads
-    //TODO: add team?
-    
-    const bank = {
-      resourceCards: spec.initialBank(), 
-      devCards: [],// TODO: get from spec
-    }
-    const settings = {
-      turnTimer: 60,
-      discardLimit: 7,
-      VPsToWin: 10,
-    }
     const valids = { nodes: [], edges: [], tiles: [] };
     const diceRoll = [3,4]
-    //TODO: improve/abstract. get from spec.
     const robberTile = tiles.find((tile) => tile.tile.resource === ResourceType.DESERT)?.tile.id ?? null;
-    //board: generateBoard(spec),
-    //tiles: gameState.tiles,
-
-    const connectedComponents = players.reduce((acc, _, index) => {
-      acc[index] = [];
-      return acc;
-  }, {});
-
     for (const tile of tiles) {
       STATIC_GRAPH.addNodesFrom(Object.values(tile.tile.nodes));
       STATIC_GRAPH.addEdgesFrom(Object.values(tile.tile.edges));
     }
 
     const coreTopology = buildTopology(tiles);
-    const core = createEmptyState(players.map((p) => p.id));
+    const playerIds = Array.from({ length: ctx.numPlayers }, (_, i) => i.toString());
+    const core = createEmptyState(playerIds);
     core.phase = ctx.phase === "placement" ? "placement" : "normal";
+    core.robberTileId = robberTile;
 
     return {
       core,
       coreTopology,
       boardPresetId,
       tiles,
-      ports: spec.ports,
       valids,
-      bank,
-      settings,
-      players,
       diceRoll,
-      robberTile
+      robberTileId: robberTile
     };
   },
 
@@ -197,7 +152,7 @@ export const Catan =  {
         },
       },
 
-      endIf: ({G, ctx }) => ctx.turn > G.players.length * 2, // end if each player has 2 settlements & 2 roads
+      endIf: ({G, ctx }) => ctx.turn > G.core.players.length * 2, // end if each player has 2 settlements & 2 roads
       next: "main",
       start: true,
       // onBegin: ({ G, ctx }) => { ... },
