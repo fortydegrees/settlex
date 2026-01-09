@@ -32,3 +32,21 @@ describe("dev cards - purchase", () => {
     expect(state.playerStateById["0"].devCards).toEqual(["knight"]);
   });
 });
+
+import { canPlayDevCard } from "./devCards";
+
+it("prevents playing more than one dev card per turn", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].devCards = ["knight"];
+  state.playerStateById["0"].devCardsPlayedThisTurn = 1;
+
+  expect(canPlayDevCard(state, "0", "knight")).toBe(false);
+});
+
+it("prevents playing a dev card bought this turn", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].devCards = ["knight"];
+  state.playerStateById["0"].devCardsBoughtThisTurn = ["knight"];
+
+  expect(canPlayDevCard(state, "0", "knight")).toBe(false);
+});
