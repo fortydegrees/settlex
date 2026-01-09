@@ -15,6 +15,7 @@ export * from "./rules/trading";
 export * from "./rules/victory";
 export * from "./testUtils";
 export * from "./board/boardUtils";
+export * from "./board/boardPresets";
 export * from "./board/generateBoard";
 export * from "./board/generateBoardClass";
 export * from "./board/generateBalancedBoard";
