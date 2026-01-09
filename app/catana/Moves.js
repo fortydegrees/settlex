@@ -1,9 +1,14 @@
 
 import { current } from "immer";
-import { NodeBuildingTypes } from "./game/types";
+import { ResourceType } from "./game/types";
 import {
+  applyBuildCity,
+  applyBuildRoad,
+  applyBuildSettlement,
+  applyMoveRobber,
   applyPlaceRoad,
   applyPlaceSettlement,
+  applyRollDice,
   buildableEdges,
   buildableNodes
 } from "@settlex/game-core";
@@ -13,9 +18,12 @@ import {
 export const DEBUG_takeCardsFromBank = {
   move: (context, playerID, cards) => {
     const { G } = context;
-    const bank = G.bank.resourceCards;
-
-    const playerHand = G.players[playerID].resourceCards;
+    const bank = G.core?.bank?.resources ?? [];
+    const playerState = G.core?.playerStateById?.[playerID];
+    if (!playerState) {
+      return;
+    }
+    const playerHand = playerState.resources;
     const cardLog = [];
     for (const card of cards) {
       const cardIndex = bank.indexOf(card);
@@ -24,7 +32,7 @@ export const DEBUG_takeCardsFromBank = {
       if (cardIndex !== -1) {
         // Remove the card from the bank
         bank.splice(cardIndex, 1);
-  
+
         // Add the card to the player's hand (assuming playerId is an identifier)
         playerHand.push(card);
         cardLog.push(card);
@@ -71,9 +79,12 @@ export const takeCardsFromBank = (context, cards, playerID) => {
   const { G } = context;
   console.log("giving cards", G, cards, playerID);
 
-  const bank = G.bank.resourceCards;
-
-  const playerHand = G.players[playerID].resourceCards;
+  const bank = G.core?.bank?.resources ?? [];
+  const playerState = G.core?.playerStateById?.[playerID];
+  if (!playerState) {
+    return;
+  }
+  const playerHand = playerState.resources;
   const cardLog = [];
   for (const card of cards) {
     const cardIndex = bank.indexOf(card);
@@ -102,30 +113,23 @@ export const placeSettlement = {
       G.core.phase = isPlacement ? "placement" : "normal";
     }
 
-    const result = applyPlaceSettlement(
-      G.core,
-      G.coreTopology,
-      nodeId,
-      playerID,
-      { initialPlacement: isPlacement }
-    );
+    const result = isPlacement
+      ? applyPlaceSettlement(G.core, G.coreTopology, nodeId, playerID, {
+          initialPlacement: true
+        })
+      : applyBuildSettlement(G.core, G.coreTopology, nodeId, playerID);
     if (!result.ok) {
       console.log(`Invalid settlement placement at node ${node}`);
       return;
     }
-
-    G.players[playerID].numSettlements--;
-
-
-
     //distribute initial resource cards IF placement phase && second settle:
-    if (ctx.phase == "placement" && ctx.turn > ctx.numPlayers) {
+    if (isPlacement && ctx.turn > ctx.numPlayers) {
       //get all tiles connected to node
       const resourceTiles = getAllTilesConnectedToNode(G.tiles, node);
 
       //get the resource of the tile
       const resources = resourceTiles
-      .filter(t => t.tile.resource !== "Desert")
+      .filter(t => t.tile.resource !== ResourceType.DESERT)
       .map(t => t.tile.resource);
 
       //we want to provide [{tile}]
@@ -133,7 +137,7 @@ export const placeSettlement = {
       for (var tile of resourceTiles) {
         tile = current(tile);
         //check that it's a resource tile AND not blocked
-        if (tile.tile.resource !== "Desert"){
+        if (tile.tile.resource !== ResourceType.DESERT){
         //TODO: change this to be an array of tile, playerIDs so animations aren't staggered
         cardAnims.push({ tile, playerID });
         }
@@ -145,10 +149,14 @@ export const placeSettlement = {
       takeCardsFromBank(context, resources, playerID);
     }
 
-    updateValids(context, "road", nodeId);
+    if (isPlacement) {
+      updateValids(context, "road", nodeId);
+    }
 
     //if initial placement
-    events.setStage("road");
+    if (isPlacement) {
+      events.setStage("road");
+    }
     //events.endTurn();
 
     //updateValids(context, stage);
@@ -157,17 +165,6 @@ export const placeSettlement = {
   //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
 };
 
-export const placeRoadOld = {
-  move: (context, edge) => {
-    const { G, playerID, events } = context;
-    G.edges[edge].color = G.players[playerID].color;
-    G.players[playerID].numRoads--;
-    events.endTurn();
-    //updateValids(context, stage);
-  },
-  //   redact: ({ G, ctx }) =>
-  //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
-};
 
 export const getBuildableEdges = (playerID, G) =>{
   const isPlacement = G.core?.phase === "placement";
@@ -202,15 +199,6 @@ export const getBuildableNodes = (playerID, G, ctx) => {
   });
 }
 
-function removeResource(G, playerID, resource) {
-  // Find the index of the first occurrence of the resource
-  const index = G.players[playerID].resourceCards.indexOf(resource);
-
-  // If the resource is found, remove it
-  if (index !== -1) {
-    G.players[playerID].resourceCards.splice(index, 1);
-  }
-}
 
 export const placeRoad = {
   move: (context, edge) => {
@@ -220,25 +208,14 @@ export const placeRoad = {
       G.core.phase = isPlacement ? "placement" : "normal";
     }
 
-    const result = applyPlaceRoad(
-      G.core,
-      G.coreTopology,
-      edge,
-      playerID,
-      { initialPlacement: isPlacement }
-    );
+    const result = isPlacement
+      ? applyPlaceRoad(G.core, G.coreTopology, edge, playerID, {
+          initialPlacement: true
+        })
+      : applyBuildRoad(G.core, G.coreTopology, edge, playerID);
     if (!result.ok) {
       console.log(`Invalid road placement at edge ${edge}`);
       return;
-    }
-
-    G.players[playerID].numRoads--;
-
-    //remove resources
-    //TODO: check user not playing RB card
-    if (!isPlacement){
-    removeResource(G, playerID, "Wood");
-    removeResource(G, playerID, "Brick");
     }
 
     //if we're in placement phase, end turn after placing road
@@ -251,82 +228,35 @@ export const placeRoad = {
   //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
 }
 
-export const playDev = {
-  move: (context, edge) => {
-    const { G, playerID, events } = context;
-    console.log("placing road", edge);
-    G.edges[edge].color = G.players[playerID].color;
-
-    events.endTurn();
-    //updateValids(context, stage);
-  },
-  //   redact: ({ G, ctx }) =>
-  //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
+export const placeCity = {
+  move: (context, node) => {
+    const { G, playerID, ctx } = context;
+    if (ctx.phase === "placement") {
+      return;
+    }
+    const nodeId = parseInt(node);
+    const result = applyBuildCity(G.core, G.coreTopology, nodeId, playerID);
+    if (!result.ok) {
+      console.log(`Invalid city placement at node ${node}`);
+    }
+  }
 };
 
-const stealCard = (G, random, victim, stealer) => {
-  // console.log("Victim's cards before: ", G.players[victim].resourceCards)
-  // console.log("Stealer's cards before: ", G.players[stealer].resourceCards)
-  if (G.players[victim].resourceCards.length > 0){
-    const stolenCard = random.Shuffle(G.players[victim].resourceCards)[0];
-    //console.log("Stealing", stolenCard)
-
-
-    const index = G.players[victim].resourceCards.indexOf(stolenCard);
-
-    if (index > -1) {
-      G.players[victim].resourceCards.splice(index, 1);
-    }
-    //console.log("Victim's cards after steal: ", G.players[victim].resourceCards)
-    //G.players[victim].resourceCards
-    G.players[stealer].resourceCards.push(stolenCard)
-    //console.log("Stealer's cards after: ", G.players[stealer].resourceCards)
-
-  }
-  else{
-    console.log(`Player ${victim} has no cards to steal`)
-
-  }
-  return
-}
 
 //we need to either return to preRoll (if robber moved from knight played before rolling dice)
 //or postRoll (if played from rolling a 7 or knight mid-turn)
 export const moveRobber = {
   move: (context, tileID) =>{
-    const { G, events, random,  ctx } = context;
-    G.robberTile = tileID
-    console.log("context:", context)
+    const { G, events, ctx } = context;
+    const result = applyMoveRobber(G.core, G.coreTopology, tileID, ctx.currentPlayer);
+    if (!result.ok) {
+      console.log(`Invalid robber placement on tile ${tileID}`);
+      return;
+    }
 
-    //TODO: steal option (for >2 players)
-    //if there's a building on tile and player is not us
-    //take a random card from opponent's hand
-    //give same card to us
-
-    const tile = G.tiles.find(t => t.tile.id === tileID);
-
-    //get nodes of tile
-    const nodeIDs = Object.values(tile.tile.nodes)
-    //getTileBuildings
-    for (const node of nodeIDs) {
-      //check if has a building
-      if (G.nodes[node].building !== null) {
-        //if building owner is not current player, steal a card
-        if (G.nodes[node].building.owner !== ctx.currentPlayer){
-          stealCard(G, random, G.nodes[node].building.owner, ctx.currentPlayer)
-          break
-        }
-      }
-  }
-  //events.endStage()
-  //TODO: if it's a knight and played before turn, we need to go back to preRoll
-  
-  //UPDATE: I commented out this becuase AI suggested a fix where we can return to e.g. preRoll if knight played
-  //events.setStage('postRoll');
-
-
-  const returnTo = context.ctx.activePlayers[context.ctx.currentPlayer].returnTo || 'postRoll';
-events.setStage(returnTo);
+    const returnTo =
+      context.ctx.activePlayers[context.ctx.currentPlayer].returnTo || "postRoll";
+    events.setStage(returnTo);
 }
 }
 
@@ -334,137 +264,24 @@ export const rollDice = {
   canDo: () => console.log("hi roll dive"),
   move: (context) => {
     const { G, random, effects, events } = context;
-    G.diceRoll = random.D6(2); // dieRoll = 1–6
-    effects.roll([G.diceRoll[0], G.diceRoll[1]]);
+    const roll = random.D6(2);
+    G.diceRoll = roll;
+    effects.roll([roll[0], roll[1]]);
 
-    const diceScore = G.diceRoll[0] + G.diceRoll[1];
-
-    //object of resources to distribution
-    const resourcesToDistribute = {};
-    for (const p of G.players) {
-      resourcesToDistribute[p.id] = [];
+    const diceScore = roll[0] + roll[1];
+    const result = applyRollDice(G.core, G.coreTopology, diceScore);
+    if (!result.ok) {
+      console.log("Invalid dice roll");
+      return;
     }
-    //easy way to count total resources to check that bank has enough
-    //if we're being super legit with our code can infer this from resourcesToDistribute
-    const totalResourcesDistributed = {
-      Wood: 0,
-      Brick: 0,
-      Sheep: 0,
-      Wheat: 0,
-      Ore: 0,
-    };
 
     if (diceScore === 7) {
-      //get all players over discardLimit
-      //if numPlayers > 0, for each player, go to discard stage (and wait for completion)
-      //after this, set activePlayer to original player and send to placeRobber phase
-      //(place robber always returns to previous stage)
-      //e.g. can be preRoll if playing knight before turn
-      //or postRoll if played knight in-turn or if 7'd
-      console.log("discard");
-
-      //place Robber
-      //got to move current player to a stage/phase where UI highlights all tiles
-      
-      // UPDATE: AI suggested edit. to be able to handle if a knight is played before turn
-      //events.setStage("moveRobber")
-      
-      events.setStage({
-        moveRobber: {
-        returnTo: 'postRoll'
-        }
-        });
-      console.log('returned to diceRoll after moveRobber')
-      //events.setStage('postRoll');
-
-      //then move to steal (if appropriate)
-
-    } else {
-      //distribute cards
-
-      //get all tiles with that number
-      //TODO: check it's not blocked by robber
-      const tilesToProduce = G.tiles.filter((t) => t.tile.number == diceScore);
-
-      const cardAnims = [];
-      for (var tile of tilesToProduce) {
-        tile = current(tile);
-        if (tile.tile.id !== G.robberTile){
-        //get all nodes from tile
-        const nodeIDs = Object.values(tile.tile.nodes);
-
-        //check each node to see if building exists
-        for (const node of nodeIDs) {
-          if (G.nodes[node].building !== null) {
-            const ownerID = G.nodes[node].building.owner;
-            cardAnims.push({ tile, playerID: ownerID });
-            if (G.nodes[node].building.type === NodeBuildingTypes.CITY) {
-              resourcesToDistribute[ownerID].push(tile.tile.resource);
-              resourcesToDistribute[ownerID].push(tile.tile.resource);
-              totalResourcesDistributed[tile.tile.resource] += 2;
-            } else if (
-              G.nodes[node].building.type === NodeBuildingTypes.SETTLEMENT
-            ) {
-              resourcesToDistribute[ownerID].push(tile.tile.resource);
-              totalResourcesDistributed[tile.tile.resource] += 1;
-            }
-          }
-        }
-      }
-      else{
-        console.log("Not producing as tile is blocked!")
-      }
-      }
-
-      //check if bank has enough
-      for (const key in totalResourcesDistributed) {
-        if (totalResourcesDistributed.hasOwnProperty(key)) {
-          const requiredCount = totalResourcesDistributed[key];
-          const availableCount = G.bank.resourceCards.filter(
-            (card) => card === key
-          ).length;
-
-          console.log(
-            `Giving out ${requiredCount} ${key}, have ${availableCount} in bank`
-          );
-
-          // Check if the required count is higher than the available count
-          if (requiredCount > availableCount) {
-            console.log("TOO MANY. NOT GIVING OUT.");
-
-            context.log.setMetadata({
-              message: `Not enough ${key} in bank for all players to receive`,
-            });
-            //TODO: render 'block' animation for the tile here.
-
-            // Remove cards from "resources"
-            for (const playerId in resourcesToDistribute) {
-              resourcesToDistribute[playerId] = resourcesToDistribute[
-                playerId
-              ].filter((card) => card !== key);
-            }
-
-            for (let i = cardAnims.length - 1; i >= 0; i--) {
-              const anim = cardAnims[i];
-              if (anim.tile.tile.resource === key) {
-                cardAnims.splice(i, 1);
-              }
-            }
-          }
-        }
-      }
-      effects.distributeCardsFromTile(cardAnims);
-      for (const p in resourcesToDistribute) {
-        if (resourcesToDistribute[p].length > 0) {
-          takeCardsFromBank(context, resourcesToDistribute[p], p);
-        }
-      }
-      context.events.setStage('postRoll');
-      //takeCardsFromBank(context, resources, 0);
+      // Temporary: skip robber UI and continue so the game doesn't stall.
+      events.setStage("postRoll");
+      return;
     }
 
-    
-
+    events.setStage("postRoll");
   },
 };
 
