@@ -1,5 +1,5 @@
 import { EdgeId, NodeId } from "./ids";
-import type { Resource } from "../types";
+import type { Resource, DevCardType } from "../types";
 import { createStandardRuleset, type Ruleset } from "../ruleset";
 
 export type Building = { ownerId: string; type: string };
@@ -10,6 +10,10 @@ export type PlayerState = {
   roadsRemaining: number;
   settlementsRemaining: number;
   citiesRemaining: number;
+  devCards: DevCardType[];
+  devCardsBoughtThisTurn: DevCardType[];
+  devCardsPlayedThisTurn: number;
+  knightsPlayed: number;
 };
 
 export type BankState = {
@@ -39,6 +43,7 @@ export type GameState = {
   playerStateById: Record<string, PlayerState>;
   turn: TurnState;
   robberTileId: number | null;
+  devDeck: DevCardType[];
 };
 
 function expandResources(counts: Record<Resource, number>): Resource[] {
@@ -68,7 +73,11 @@ export function createEmptyState(players: string[]): GameState {
       victoryPoints: 0,
       roadsRemaining: ruleset.pieceLimits.roads,
       settlementsRemaining: ruleset.pieceLimits.settlements,
-      citiesRemaining: ruleset.pieceLimits.cities
+      citiesRemaining: ruleset.pieceLimits.cities,
+      devCards: [],
+      devCardsBoughtThisTurn: [],
+      devCardsPlayedThisTurn: 0,
+      knightsPlayed: 0
     };
   }
 
@@ -92,6 +101,7 @@ export function createEmptyState(players: string[]): GameState {
       pendingDiscards: [],
       currentPlayerId: firstPlayer
     },
-    robberTileId: null
+    robberTileId: null,
+    devDeck: []
   };
 }
