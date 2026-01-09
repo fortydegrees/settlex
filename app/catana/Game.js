@@ -1,4 +1,4 @@
-import { spec, BalancedBoard, buildTopology, createEmptyState } from "@settlex/game-core";
+import { spec, buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
 import { TurnOrder, PlayerView } from "boardgame.io/core";
 import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
@@ -89,13 +89,9 @@ export const Catan =  {
       }
       return random.Number();
     };
-    const b = new BalancedBoard({
-      desertPlacement: 'Random', //Random, Center, Off Center, Inland, Coast
-      resourceDistribution: 0.85,
-      numberDistribution: 0.85,
-      shufflePorts: true,
-      allowResourceOnPort: true
-    }, rng).generateBoard(spec).board
+    const boardPresetId = "standard-random";
+    const boardPreset = resolveBoardPreset(boardPresetId);
+    const tiles = generateBoard(boardPreset, rng);
     
     
     //TODO: set this based on spec e.g. numRoads
@@ -113,7 +109,7 @@ export const Catan =  {
     const valids = { nodes: [], edges: [], tiles: [] };
     const diceRoll = [3,4]
     //TODO: improve/abstract. get from spec.
-    const robberTile = b.tiles.find(tile => tile.tile.resource === 'Desert').tile.id;
+    const robberTile = tiles.find((tile) => tile.tile.resource === ResourceType.DESERT)?.tile.id ?? null;
     //board: generateBoard(spec),
     //tiles: gameState.tiles,
 
@@ -122,19 +118,20 @@ export const Catan =  {
       return acc;
   }, {});
 
-    for (const tile of Object.values(b.tiles)) {
+    for (const tile of tiles) {
       STATIC_GRAPH.addNodesFrom(Object.values(tile.tile.nodes));
       STATIC_GRAPH.addEdgesFrom(Object.values(tile.tile.edges));
     }
 
-    const coreTopology = buildTopology(b.tiles);
+    const coreTopology = buildTopology(tiles);
     const core = createEmptyState(players.map((p) => p.id));
     core.phase = ctx.phase === "placement" ? "placement" : "normal";
 
     return {
       core,
       coreTopology,
-      tiles: b.tiles,
+      boardPresetId,
+      tiles,
       ports: spec.ports,
       valids,
       bank,
