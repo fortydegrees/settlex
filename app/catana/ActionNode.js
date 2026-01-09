@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   tilePixelVector,
   getNodeDelta,
@@ -13,15 +13,13 @@ export function ActionNode({
   size,
   coordinate,
   direction,
-  building,
-  color,
   onClick,
   setHoveredNode,
   hoveredNode,
   type = "node",
   piece,
   buildingType,
-  buildingColor
+  buildingColor,
 }) {
   const [centerX, centerY] = center;
   const w = SQRT3 * size;
@@ -31,58 +29,51 @@ export function ActionNode({
     type === "node"
       ? getNodeDelta(direction, w, h)
       : getEdgeDelta(direction, w, h);
-  //const [deltaX, deltaY] = getNodeDelta(direction, w, h)
   const x = tileX + deltaX;
   const y = tileY + deltaY;
 
-  const width = size * 0.4;
-  const height = size * 0.4;
+  const actionSize = size * 0.4;
+  const isHovered = hoveredNode === nodeId;
+  const isNodeType = type === "node";
 
-  const buildingSVG = `/svgs/${buildingType}_${buildingColor}.svg`
-  //TODO: disable animation for all others when a node is hovered?
-  //        tried naive implementation but it restarts animations at different times so looks weird
+  const gradientClass = isHovered && isNodeType
+    ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
+    : "[background-image:radial-gradient(50%_50%_at_50%_50%,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_100%)]";
+
   return (
     <>
       <div
-        //add shadow when placing settlement
-        className={`${
-          (hoveredNode == nodeId) && type==="node"
-            ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
-            : "[background-image:radial-gradient(50%_50%_at_50%_50%,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_100%)] "
-        } animation-pulse`}
-        //className={flashing ? "hover-opacity bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-300 to-transparent animation-pulse" : "hover-opacity"}
-
+        className={`${gradientClass} animation-pulse`}
         style={{
           position: "absolute",
           cursor: "pointer",
-          width: width,
-          height: height,
-          left: x - width / 2,
-          top: y - height / 2,
+          width: actionSize,
+          height: actionSize,
+          left: x - actionSize / 2,
+          top: y - actionSize / 2,
           borderRadius: 100,
           borderColor: "#FFFFFF",
           borderWidth: 1.2,
-          //fillOpacity:0.2
-          opacity: hoveredNode ? (hoveredNode == nodeId ? 1 : 0.4) : 0.8,
+          opacity: hoveredNode ? (isHovered ? 1 : 0.4) : 0.8,
           zIndex: 2,
-          //opacity: (hoveredNode ? 1 : 0.5),
         }}
         onClick={onClick}
         onMouseEnter={() => setHoveredNode(nodeId)}
         onMouseLeave={() => setHoveredNode(null)}
-      ></div>
-      {hoveredNode == nodeId &&
-        (type === "edge" ? (
-          piece
-        ) : (
+      />
+      {isHovered && (
+        isNodeType ? (
           <Piece
-          buildingSVG={buildingSVG}
-            size={size * 0.8} //this should really be in Piece.js
+            buildingSVG={`/svgs/${buildingType}_${buildingColor}.svg`}
+            size={size * 0.8}
             left={x}
             top={y}
-            placing={true}
+            placing
           />
-        ))}
+        ) : (
+          piece
+        )
+      )}
     </>
   );
 }

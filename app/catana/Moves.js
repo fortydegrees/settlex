@@ -167,8 +167,8 @@ export const placeSettlement = {
 };
 
 
-export const getBuildableEdges = (playerID, G) =>{
-  const isPlacement = G.core?.phase === "placement";
+export const getBuildableEdges = (playerID, G, ctx) =>{
+  const isPlacement = ctx?.phase === "placement";
   return buildableEdges(G.core, G.coreTopology, playerID, {
     initialPlacement: Boolean(isPlacement)
   });

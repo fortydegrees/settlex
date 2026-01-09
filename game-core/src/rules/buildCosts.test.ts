@@ -12,7 +12,14 @@ describe("build costs - state init", () => {
 
 import { TileTypes, ResourceType } from "../types";
 import { buildTopology } from "../core/topology";
-import { applyBuildRoad, applyBuildSettlement, applyBuildCity } from "./buildActions";
+import {
+  applyBuildRoad,
+  applyBuildSettlement,
+  applyBuildCity,
+  canBuildRoad,
+  canBuildSettlement,
+  canBuildCity
+} from "./buildActions";
 
 const tiles = [
   {
@@ -102,4 +109,96 @@ it("applyPlaceRoad fails when no roads remain", () => {
   const edgeId = "1,2";
   const result = applyPlaceRoad(state, board, edgeId, "0", { initialPlacement: true });
   expect(result.ok).toBe(false);
+});
+
+describe("canBuild* functions", () => {
+  describe("canBuildRoad", () => {
+    it("returns ok when player has resources and pieces", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [ResourceType.WOOD, ResourceType.BRICK];
+      expect(canBuildRoad(state, "0")).toEqual({ ok: true });
+    });
+
+    it("returns error when player lacks resources", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [ResourceType.WOOD]; // missing brick
+      expect(canBuildRoad(state, "0")).toEqual({ ok: false, error: "insufficient-resources" });
+    });
+
+    it("returns error when player has no roads left", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [ResourceType.WOOD, ResourceType.BRICK];
+      state.playerStateById["0"].roadsRemaining = 0;
+      expect(canBuildRoad(state, "0")).toEqual({ ok: false, error: "no-pieces-left" });
+    });
+
+    it("returns error for unknown player", () => {
+      const state = createEmptyState(["0"]);
+      expect(canBuildRoad(state, "unknown")).toEqual({ ok: false, error: "unknown-player" });
+    });
+  });
+
+  describe("canBuildSettlement", () => {
+    it("returns ok when player has resources and pieces", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [
+        ResourceType.WOOD,
+        ResourceType.BRICK,
+        ResourceType.SHEEP,
+        ResourceType.WHEAT
+      ];
+      expect(canBuildSettlement(state, "0")).toEqual({ ok: true });
+    });
+
+    it("returns error when player lacks resources", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [ResourceType.WOOD, ResourceType.BRICK];
+      expect(canBuildSettlement(state, "0")).toEqual({ ok: false, error: "insufficient-resources" });
+    });
+
+    it("returns error when player has no settlements left", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [
+        ResourceType.WOOD,
+        ResourceType.BRICK,
+        ResourceType.SHEEP,
+        ResourceType.WHEAT
+      ];
+      state.playerStateById["0"].settlementsRemaining = 0;
+      expect(canBuildSettlement(state, "0")).toEqual({ ok: false, error: "no-pieces-left" });
+    });
+  });
+
+  describe("canBuildCity", () => {
+    it("returns ok when player has resources and pieces", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE
+      ];
+      expect(canBuildCity(state, "0")).toEqual({ ok: true });
+    });
+
+    it("returns error when player lacks resources", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [ResourceType.WHEAT, ResourceType.ORE];
+      expect(canBuildCity(state, "0")).toEqual({ ok: false, error: "insufficient-resources" });
+    });
+
+    it("returns error when player has no cities left", () => {
+      const state = createEmptyState(["0"]);
+      state.playerStateById["0"].resources = [
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE
+      ];
+      state.playerStateById["0"].citiesRemaining = 0;
+      expect(canBuildCity(state, "0")).toEqual({ ok: false, error: "no-pieces-left" });
+    });
+  });
 });

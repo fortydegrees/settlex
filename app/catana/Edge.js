@@ -4,30 +4,157 @@ import { tilePixelVector, getEdgeTransform } from "./utils/coordinates";
 import useWindowSize from "./utils/useWindowSize";
 import { ActionNode } from "./ActionNode";
 
-const Road = ({ id, color, size, tileX, tileY, transform }) => {
+function Road({ color, size, tileX, tileY, transform }) {
   return (
     <div
-      id={id}
       className="opacity-animation"
       style={{
-        //display: 'flex',
-        transform: transform,
+        transform,
         backgroundImage: `url('/svgs/road_${color}.svg')`,
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
-        // filter: 'grayscale(1)',
-        // transition: "filter 0.5s ease-in-out infinite",
         position: "absolute",
-        //pointerEvents: "none",
         width: size,
         height: size * 0.2,
         left: tileX,
         top: tileY,
-        //opacity: 0.7,
       }}
     />
   );
-};
+}
+
+function PlacedRoad({ id, color, size, tileX, tileY, transform }) {
+  return (
+    <div
+      id={id}
+      style={{
+        transform,
+        backgroundImage: `url('/svgs/road_${color}.svg')`,
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        position: "absolute",
+        pointerEvents: "none",
+        width: size,
+        height: size * 0.2,
+        left: tileX,
+        top: tileY,
+      }}
+    />
+  );
+}
+
+function PlaceableEdge({
+  id,
+  center,
+  size,
+  coordinate,
+  direction,
+  color,
+  initialPlacement,
+  hoveredNode,
+  setHoveredNode,
+  onPlace,
+}) {
+  const { width } = useWindowSize();
+  const [centerX, centerY] = center;
+  const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
+  const transform = getEdgeTransform(direction, size, width);
+
+  const showRoadOutline = initialPlacement && !hoveredNode;
+  const isHovered = hoveredNode === id;
+
+  return (
+    <>
+      {showRoadOutline && (
+        <Road
+          color={color}
+          size={size}
+          tileX={tileX}
+          tileY={tileY}
+          transform={transform}
+        />
+      )}
+
+      <ActionNode
+        nodeId={id}
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        type="edge"
+        piece={
+          isHovered ? (
+            <Road
+              color={color}
+              size={size}
+              tileX={tileX}
+              tileY={tileY}
+              transform={transform}
+            />
+          ) : null
+        }
+        onClick={(event) => {
+          event.stopPropagation();
+          onPlace(id);
+        }}
+        setHoveredNode={setHoveredNode}
+        hoveredNode={hoveredNode}
+      />
+    </>
+  );
+}
+
+// HoverableEdge: shows preview only when this specific edge is hovered
+// Used for passive "hover to preview, click to build" interaction
+function HoverableEdge({
+  id,
+  center,
+  size,
+  coordinate,
+  direction,
+  color,
+  hoveredEdge,
+  setHoveredEdge,
+  onPlace,
+}) {
+  const { width } = useWindowSize();
+  const [centerX, centerY] = center;
+  const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
+  const transform = getEdgeTransform(direction, size, width);
+
+  const isHovered = hoveredEdge === id;
+
+  // Only render the ActionNode (invisible hit area), show road preview only when hovered
+  return (
+    <>
+      {isHovered && (
+        <Road
+          color={color}
+          size={size}
+          tileX={tileX}
+          tileY={tileY}
+          transform={transform}
+        />
+      )}
+
+      <ActionNode
+        nodeId={id}
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        type="edge"
+        piece={null}
+        onClick={(event) => {
+          event.stopPropagation();
+          onPlace(id);
+        }}
+        setHoveredNode={setHoveredEdge}
+        hoveredNode={hoveredEdge}
+      />
+    </>
+  );
+}
 
 export function Edge({
   id,
@@ -36,16 +163,13 @@ export function Edge({
   coordinate,
   direction,
   color,
-  onClick,
-  placing,
-  actionNodeId,
-  setHoveredNode,
+  placing = false,
+  initialPlacement = false,
+  hoverable = false,
   hoveredNode,
+  setHoveredNode,
   moves,
-  player,
-  buildingType,
-  buildingColor,
-  setPlayerAction
+  setPlayerAction,
 }) {
   const { width } = useWindowSize();
   const [centerX, centerY] = center;
@@ -53,69 +177,53 @@ export function Edge({
   const transform = getEdgeTransform(direction, size, width);
 
   if (placing) {
-
     return (
-      <>
-        {!hoveredNode && (
-          <Road
-            id={id}
-            size={size}
-            tileX={tileX}
-            tileY={tileY}
-            transform={transform}
-            color={buildingColor}
-          />
-        )}
-
-        <ActionNode
-          key={id}
-          nodeId={id}
-          center={center}
-          size={size}
-          coordinate={coordinate}
-          direction={direction}
-          piece={
-            <Road
-              id={id}
-              size={size}
-              tileX={tileX}
-              tileY={tileY}
-              transform={transform}
-              color={buildingColor}
-            />
-          }
-          color={color}
-          onClick={(event) => {
-            event.stopPropagation();
-            moves.placeRoad(id);
-            setHoveredNode(null);
-            setPlayerAction(null)
-          }}
-          type="edge"
-          setHoveredNode={setHoveredNode}
-          hoveredNode={hoveredNode}
-        />
-      </>
-    );
-  } else {
-    return (
-      <div
+      <PlaceableEdge
         id={id}
-        style={{
-          display: "flex",
-          transform: transform,
-          backgroundImage: `url('/svgs/road_${color}.svg')`,
-          backgroundSize: "contain",
-          backgroundRepeat: "no-repeat",
-          position: "absolute",
-          pointerEvents: "none",
-          width: size,
-          height: size * 0.2,
-          left: tileX,
-          top: tileY,
-          opacity: 1,
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        color={color}
+        initialPlacement={initialPlacement}
+        hoveredNode={hoveredNode}
+        setHoveredNode={setHoveredNode}
+        onPlace={(edgeId) => {
+          moves.placeRoad(edgeId);
+          setHoveredNode(null);
+          if (setPlayerAction) setPlayerAction(null);
         }}
-      ></div>
+      />
     );
   }
+
+  if (hoverable) {
+    return (
+      <HoverableEdge
+        id={id}
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        color={color}
+        hoveredEdge={hoveredNode}
+        setHoveredEdge={setHoveredNode}
+        onPlace={(edgeId) => {
+          moves.placeRoad(edgeId);
+          setHoveredNode(null);
+        }}
+      />
+    );
+  }
+
+  return (
+    <PlacedRoad
+      id={id}
+      color={color}
+      size={size}
+      tileX={tileX}
+      tileY={tileY}
+      transform={transform}
+    />
+  );
 }
