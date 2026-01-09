@@ -15,11 +15,12 @@ import { useTransition, animated } from "@react-spring/web";
 import { TileTypes } from "./game/types";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
+import { buildPlayerViewMap } from "./utils/playerView";
 
 const getValidRobberTiles = (G) => {
   //TODO: friendly robber
   const tileIdsExceptRobber = G.tiles
-    .filter((tile) => tile.tile.id !== G.robberTile)
+    .filter((tile) => tile.tile.id !== G.core?.robberTileId)
     .map((tile) => tile.tile.id);
   return tileIdsExceptRobber;
 };
@@ -118,13 +119,8 @@ export function CatanBoard({
     () => buildRenderMaps(G.tiles),
     [G.tiles]
   );
-  const playerById = useMemo(() => {
-    const map = {};
-    for (const player of G.players ?? []) {
-      map[player.id] = player;
-    }
-    return map;
-  }, [G.players]);
+  const playerViewMap = useMemo(() => buildPlayerViewMap(G.core), [G.core]);
+  const currentPlayerView = playerViewMap[ctx.currentPlayer];
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -298,7 +294,7 @@ export function CatanBoard({
           boardCenter={center}
           hoveredTiles={hoveredTiles}
           isFlashing={flashingTiles.includes(tile.id)}
-          hasRobber={tile.id == G.robberTile}
+          hasRobber={tile.id == G.core?.robberTileId}
           canPlaceRobber={robberTiles && robberTiles.includes(tile.id)}
           moves={moves}
         />
@@ -320,7 +316,7 @@ export function CatanBoard({
   Object.entries(G.core?.buildingsByNodeId ?? {}).forEach(
     ([nodeId, building]) => {
       const renderNode = nodeRenderById[String(nodeId)];
-      const owner = playerById[building.ownerId];
+      const owner = playerViewMap[building.ownerId];
       if (!renderNode || !owner) {
         return;
       }
@@ -343,7 +339,7 @@ export function CatanBoard({
 
   Object.entries(G.core?.roadsByEdgeId ?? {}).forEach(([edgeId, ownerId]) => {
     const renderEdge = edgeRenderById[edgeId];
-    const owner = playerById[ownerId];
+    const owner = playerViewMap[ownerId];
     if (!renderEdge || !owner) {
       return;
     }
@@ -382,7 +378,7 @@ export function CatanBoard({
             coordinate={renderNode.tile_coordinate}
             direction={renderNode.direction}
             buildingType={ctx.activePlayers[ctx.currentPlayer]}
-            buildingColor={G.players[ctx.currentPlayer].color}
+            buildingColor={currentPlayerView?.color ?? "red"}
             flashing={isActive}
             onClick={() => {
               moves.placeSettlement(nodeId);
@@ -415,11 +411,11 @@ export function CatanBoard({
             size={size}
             coordinate={renderEdge.tile_coordinate}
             direction={renderEdge.direction}
-            color={G.players[ctx.currentPlayer].color}
+            color={currentPlayerView?.color ?? "red"}
             placing="true"
             player={Object.keys(ctx.activePlayers)[0]}
             buildingType={ctx.activePlayers[ctx.currentPlayer]}
-            buildingColor={G.players[ctx.currentPlayer].color}
+            buildingColor={currentPlayerView?.color ?? "red"}
             moves={moves}
             setHoveredNode={setHoveredNode}
             setPlayerAction={setPlayerAction}
@@ -444,11 +440,11 @@ export function CatanBoard({
         size={size}
         coordinate={renderEdge.tile_coordinate}
         direction={renderEdge.direction}
-        color={G.players[ctx.currentPlayer].color}
+        color={currentPlayerView?.color ?? "red"}
         placing="true"
         player={Object.keys(ctx.activePlayers)[0]}
         buildingType={ctx.activePlayers[ctx.currentPlayer]}
-        buildingColor={G.players[ctx.currentPlayer].color}
+        buildingColor={currentPlayerView?.color ?? "red"}
         moves={moves}
         setHoveredNode={setHoveredNode}
         setPlayerAction={setPlayerAction}
