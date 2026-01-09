@@ -4,6 +4,8 @@ export type Ruleset = {
   discardLimit: number;
   friendlyRobber: { enabled: boolean; vpThreshold: number };
   bank: { finite: boolean; resourceCounts: Record<Resource, number> };
+  allowPlayerTrades: boolean;
+  tradeRates: { bank: number; genericPort: number; specificPort: number };
   devCardsEnabled: boolean;
   devCardCounts: Record<DevCardType, number>;
   pieceLimits: { roads: number; settlements: number; cities: number };
@@ -29,6 +31,8 @@ export function createStandardRuleset(): Ruleset {
         [ResourceType.ANY]: 0
       }
     },
+    allowPlayerTrades: true,
+    tradeRates: { bank: 4, genericPort: 3, specificPort: 2 },
     devCardsEnabled: true,
     devCardCounts: {
       knight: 14,
