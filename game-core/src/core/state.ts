@@ -38,6 +38,10 @@ export type GameState = {
     buildableNodeIdsByPlayer: Record<string, NodeId[]>;
     buildableEdgeIdsByPlayer: Record<string, EdgeId[]>;
   };
+  awards: {
+    longestRoadOwnerId: string | null;
+    largestArmyOwnerId: string | null;
+  };
   ruleset: Ruleset;
   bank: BankState;
   playerStateById: Record<string, PlayerState>;
@@ -90,6 +94,10 @@ export function createEmptyState(players: string[]): GameState {
     caches: {
       buildableNodeIdsByPlayer: buildableNodes,
       buildableEdgeIdsByPlayer: buildableEdges
+    },
+    awards: {
+      longestRoadOwnerId: null,
+      largestArmyOwnerId: null
     },
     ruleset,
     bank: { resources: expandResources(ruleset.bank.resourceCounts) },

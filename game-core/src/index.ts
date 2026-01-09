@@ -12,6 +12,7 @@ export * from "./rules/buildActions";
 export * from "./rules/turnFlow";
 export * from "./rules/devCards";
 export * from "./rules/trading";
+export * from "./rules/victory";
 export * from "./testUtils";
 export * from "./board/boardUtils";
 export * from "./board/generateBoard";

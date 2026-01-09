@@ -1,6 +1,7 @@
 import { ResourceType, type Resource, type Cost, type DevCardType } from "./types";
 
 export type Ruleset = {
+  victoryPointsToWin: number;
   discardLimit: number;
   friendlyRobber: { enabled: boolean; vpThreshold: number };
   bank: { finite: boolean; resourceCounts: Record<Resource, number> };
@@ -8,12 +9,15 @@ export type Ruleset = {
   tradeRates: { bank: number; genericPort: number; specificPort: number };
   devCardsEnabled: boolean;
   devCardCounts: Record<DevCardType, number>;
+  longestRoadMinLength: number;
+  largestArmyMinKnights: number;
   pieceLimits: { roads: number; settlements: number; cities: number };
   buildCosts: { road: Cost; settlement: Cost; city: Cost; devCard: Cost };
 };
 
 export function createStandardRuleset(): Ruleset {
   return {
+    victoryPointsToWin: 10,
     discardLimit: 7,
     friendlyRobber: { enabled: false, vpThreshold: 2 },
     bank: {
@@ -41,6 +45,8 @@ export function createStandardRuleset(): Ruleset {
       yearOfPlenty: 2,
       monopoly: 2
     },
+    longestRoadMinLength: 5,
+    largestArmyMinKnights: 3,
     pieceLimits: {
       roads: 15,
       settlements: 5,
