@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { createEmptyState } from "../core/state";
-import { recomputeLargestArmy, recomputeLongestRoad } from "./victory";
+import {
+  recomputeLargestArmy,
+  recomputeLongestRoad,
+  getVictoryPoints,
+  checkWin
+} from "./victory";
 import { BoardTopology } from "../core/topology";
 
 function makeBoard(edges: Array<[number, number]>): BoardTopology {
@@ -133,5 +138,26 @@ describe("longest road", () => {
     recomputeLongestRoad(state, board);
 
     expect(state.awards.longestRoadOwnerId).toBe(null);
+  });
+});
+
+describe("victory points", () => {
+  it("computes victory points from board, dev cards, and awards", () => {
+    const state = createEmptyState(["0"]);
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+    state.buildingsByNodeId[2] = { ownerId: "0", type: "city" };
+    state.playerStateById["0"].devCards = ["victoryPoint"];
+    state.awards.longestRoadOwnerId = "0";
+
+    expect(getVictoryPoints(state, "0")).toBe(6);
+  });
+
+  it("checks win immediately", () => {
+    const state = createEmptyState(["0"]);
+    state.ruleset.victoryPointsToWin = 3;
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "city" };
+    state.awards.largestArmyOwnerId = "0";
+
+    expect(checkWin(state, "0")).toBe(true);
   });
 });
