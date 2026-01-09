@@ -13,6 +13,7 @@ import useWindowSize from "./utils/useWindowSize";
 import { useLatestPropsOnEffect, useEffectListener } from "bgio-effects/react";
 import { useTransition, animated } from "@react-spring/web";
 import { TileTypes } from "./game/types";
+import { buildableNodes } from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
@@ -105,6 +106,23 @@ export function CatanBoard({
   const [robberTiles, setRobberTiles] = useState([]);
 
   const [buildableRoads, setBuildableRoads] = useState([])
+  const mainBuildableNodes = useMemo(() => {
+    if (!G.core) return [];
+    if (playerAction === "placeSettlement") {
+      return buildableNodes(G.core, G.coreTopology, ctx.currentPlayer, {
+        initialPlacement: false
+      });
+    }
+    if (playerAction === "placeCity") {
+      return Object.entries(G.core.buildingsByNodeId ?? {}).flatMap(
+        ([nodeId, building]) =>
+          building.ownerId === ctx.currentPlayer && building.type === "settlement"
+            ? [Number(nodeId)]
+            : []
+      );
+    }
+    return [];
+  }, [G.core, G.coreTopology, ctx.currentPlayer, playerAction]);
 
   const ref = useRef(null); //ref for card anims
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
@@ -363,34 +381,54 @@ export function CatanBoard({
   
   {
     isActive &&
-      G.valids.nodes.map((nodeId) => {
-        const renderNode = nodeRenderById[String(nodeId)];
-        if (!renderNode) {
+      (() => {
+        const isPlacement = ctx.phase === "placement";
+        const showMainNodes =
+          playerAction === "placeSettlement" || playerAction === "placeCity";
+        const nodeActionIds = isPlacement ? G.valids.nodes : mainBuildableNodes;
+        const nodeActionType = isPlacement
+          ? ctx.activePlayers[ctx.currentPlayer]
+          : playerAction === "placeCity"
+            ? "city"
+            : "settlement";
+
+        if (!isPlacement && !showMainNodes) {
           return null;
         }
 
-        actions.push(
-          <ActionNode
-            key={nodeId}
-            nodeId={nodeId}
-            center={center}
-            size={size}
-            coordinate={renderNode.tile_coordinate}
-            direction={renderNode.direction}
-            buildingType={ctx.activePlayers[ctx.currentPlayer]}
-            buildingColor={currentPlayerView?.color ?? "red"}
-            flashing={isActive}
-            onClick={() => {
-              moves.placeSettlement(nodeId);
-              setHoveredNode(null);
-              setHoveredTiles([]);
-            }}
-            setHoveredNode={setHoveredNode}
-            hoveredNode={hoveredNode}
-          />
-        );
+        nodeActionIds.forEach((nodeId) => {
+          const renderNode = nodeRenderById[String(nodeId)];
+          if (!renderNode) {
+            return;
+          }
+
+          actions.push(
+            <ActionNode
+              key={nodeId}
+              nodeId={nodeId}
+              center={center}
+              size={size}
+              coordinate={renderNode.tile_coordinate}
+              direction={renderNode.direction}
+              buildingType={nodeActionType}
+              buildingColor={currentPlayerView?.color ?? "red"}
+              flashing={isActive}
+              onClick={() => {
+                if (nodeActionType === "city") {
+                  moves.placeCity(nodeId);
+                } else {
+                  moves.placeSettlement(nodeId);
+                }
+                setHoveredNode(null);
+                setHoveredTiles([]);
+              }}
+              setHoveredNode={setHoveredNode}
+              hoveredNode={hoveredNode}
+            />
+          );
+        });
         return null;
-      });
+      })();
   }
 
   //editable edges e.g placing road
