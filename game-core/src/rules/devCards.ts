@@ -161,11 +161,19 @@ export function applyRoadBuilding(
   }
 
   const legal = buildableEdges(state, board, playerId, { initialPlacement: false });
-  if (!legal.includes(first) || !legal.includes(second)) {
+  if (!legal.includes(first)) {
     return { ok: false, error: "illegal-road" };
   }
 
   state.roadsByEdgeId[first] = playerId;
+  const legalAfterFirst = buildableEdges(state, board, playerId, {
+    initialPlacement: false
+  });
+  if (!legalAfterFirst.includes(second)) {
+    delete state.roadsByEdgeId[first];
+    return { ok: false, error: "illegal-road" };
+  }
+
   state.roadsByEdgeId[second] = playerId;
   player.roadsRemaining -= 2;
   recomputeCaches(state, board);
