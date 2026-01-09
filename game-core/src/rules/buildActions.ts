@@ -4,6 +4,7 @@ import type { Cost, Resource } from "../types";
 import type { EdgeId, NodeId } from "../core/ids";
 import { buildableEdges, buildableNodes } from "./buildability";
 import { recomputeCaches } from "./apply";
+import { recomputeLongestRoad } from "./victory";
 
 function countResources(resources: Resource[]): Record<Resource, number> {
   const counts: Record<Resource, number> = {} as Record<Resource, number>;
@@ -88,6 +89,7 @@ export function applyBuildRoad(
   state.roadsByEdgeId[edgeId] = playerId;
   player.roadsRemaining -= 1;
   recomputeCaches(state, board);
+  recomputeLongestRoad(state, board);
   return { ok: true, state } as const;
 }
 
@@ -126,6 +128,7 @@ export function applyBuildSettlement(
   state.buildingsByNodeId[nodeId] = { ownerId: playerId, type: "settlement" };
   player.settlementsRemaining -= 1;
   recomputeCaches(state, board);
+  recomputeLongestRoad(state, board);
   return { ok: true, state } as const;
 }
 
@@ -165,5 +168,6 @@ export function applyBuildCity(
   player.citiesRemaining -= 1;
   player.settlementsRemaining += 1;
   recomputeCaches(state, board);
+  recomputeLongestRoad(state, board);
   return { ok: true, state } as const;
 }

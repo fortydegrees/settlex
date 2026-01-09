@@ -2,6 +2,7 @@ import { BoardTopology } from "../core/topology";
 import { GameState } from "../core/state";
 import { buildableNodes, buildableEdges } from "./buildability";
 import { NodeId, EdgeId } from "../core/ids";
+import { recomputeLongestRoad } from "./victory";
 
 export function recomputeCaches(state: GameState, board: BoardTopology): GameState {
   const isPlacement = state.phase === "placement";
@@ -49,6 +50,7 @@ export function applyPlaceSettlement(
     state.pendingRoadFromNodeIdByPlayer[playerId] = nodeId;
   }
   recomputeCaches(state, board);
+  recomputeLongestRoad(state, board);
   return { ok: true, state } as const;
 }
 
@@ -81,5 +83,6 @@ export function applyPlaceRoad(
     state.pendingRoadFromNodeIdByPlayer[playerId] = null;
   }
   recomputeCaches(state, board);
+  recomputeLongestRoad(state, board);
   return { ok: true, state } as const;
 }
