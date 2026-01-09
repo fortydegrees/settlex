@@ -6,6 +6,9 @@ import {
   getVictoryPoints,
   checkWin
 } from "./victory";
+import { applyBuildRoad } from "./buildActions";
+import { applyKnight } from "./devCards";
+import { ResourceType } from "../types";
 import { BoardTopology } from "../core/topology";
 
 function makeBoard(edges: Array<[number, number]>): BoardTopology {
@@ -159,5 +162,50 @@ describe("victory points", () => {
     state.awards.largestArmyOwnerId = "0";
 
     expect(checkWin(state, "0")).toBe(true);
+  });
+});
+
+describe("award updates", () => {
+  it("updates longest road after building roads", () => {
+    const board = makeBoard([
+      [1, 2],
+      [2, 3],
+      [3, 4],
+      [4, 5],
+      [5, 6]
+    ]);
+    const state = createEmptyState(["0"]);
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+    state.playerStateById["0"].resources = [
+      ResourceType.WOOD,
+      ResourceType.BRICK,
+      ResourceType.WOOD,
+      ResourceType.BRICK,
+      ResourceType.WOOD,
+      ResourceType.BRICK,
+      ResourceType.WOOD,
+      ResourceType.BRICK,
+      ResourceType.WOOD,
+      ResourceType.BRICK
+    ];
+
+    applyBuildRoad(state, board, "1,2", "0");
+    applyBuildRoad(state, board, "2,3", "0");
+    applyBuildRoad(state, board, "3,4", "0");
+    applyBuildRoad(state, board, "4,5", "0");
+    applyBuildRoad(state, board, "5,6", "0");
+
+    expect(state.awards.longestRoadOwnerId).toBe("0");
+  });
+
+  it("updates largest army after knight play", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["knight"];
+    state.playerStateById["0"].devCardsBoughtThisTurn = [];
+    state.playerStateById["0"].knightsPlayed = 2;
+
+    applyKnight(state, "0");
+
+    expect(state.awards.largestArmyOwnerId).toBe("0");
   });
 });

@@ -4,6 +4,7 @@ import type { BoardTopology } from "../core/topology";
 import { buildableEdges } from "./buildability";
 import { canAfford, spendResources } from "./buildActions";
 import { recomputeCaches } from "./apply";
+import { recomputeLargestArmy, recomputeLongestRoad } from "./victory";
 
 export function createStandardDevDeck(): DevCardType[] {
   return [
@@ -137,6 +138,7 @@ export function applyKnight(
     return { ok: false, error: "unknown-player" };
   }
   player.knightsPlayed += 1;
+  recomputeLargestArmy(state);
   return { ok: true };
 }
 
@@ -167,6 +169,7 @@ export function applyRoadBuilding(
   state.roadsByEdgeId[second] = playerId;
   player.roadsRemaining -= 2;
   recomputeCaches(state, board);
+  recomputeLongestRoad(state, board);
   return { ok: true };
 }
 
