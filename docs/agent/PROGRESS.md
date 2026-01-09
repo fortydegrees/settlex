@@ -11,6 +11,7 @@
 - Added trading rules to `game-core` (maritime + player trades), including port eligibility and trade-rate enforcement.
 - Added victory/awards helpers in `game-core` (Longest Road, Largest Army, VP calculation) with tests and recompute hooks.
 - Added ruleset specs/factory and minimal validation enforced in `createEmptyState`.
+- Added a board preset resolver (`standard-random`) and switched UI setup to use random board generation with a stored `boardPresetId`.
 
 ## Next
 - Expand `game-core` tests beyond buildability (robber, resource distribution, longest road).
