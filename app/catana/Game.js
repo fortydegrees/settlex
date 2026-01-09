@@ -1,6 +1,6 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/core";
-import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank } from "./Moves";
+import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 import * as nx from "jsnetworkx";
 //setup board and convert tiles/edges into right format to render
@@ -189,7 +189,7 @@ export const Catan =  {
               // tradeWithBank,
               // playDev,
               //endTurn,
-              endTurn: (context)=>context.events.endTurn()
+              endTurn
             }
           },
           moveRobber: {
