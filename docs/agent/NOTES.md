@@ -9,3 +9,5 @@
 - Board presets live in `game-core/src/board/boardPresets.ts`; UI setup resolves `"standard-random"` and uses `generateBoard` to create tiles.
 - UI now renders from `G.core` and uses `app/catana/utils/playerView.js` to map core players to UI colors and counts.
 - Added applyEndTurn behavior coverage in `game-core/src/rules/turnFlow.test.ts` to specify end-turn resets/validation.
+- Root `vitest.config.ts` aliases `@settlex/game-core` to `game-core/src/index.ts` for app-level tests.
+- `rollDice` now routes 7s to `moveRobber` stage; `moveRobber` resets core turn phase to `postRoll`.

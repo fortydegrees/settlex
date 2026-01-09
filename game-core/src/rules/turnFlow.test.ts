@@ -136,6 +136,7 @@ import { applyEndTurn } from "./turnFlow";
 
 it("advances the current player and resets turn state", () => {
   const state = createEmptyState(["0", "1"]);
+  state.phase = "normal";
   state.turn.currentPlayerId = "0";
   state.turn.phase = "postRoll";
   state.turn.hasRolled = true;
@@ -158,6 +159,7 @@ it("advances the current player and resets turn state", () => {
 
 it("wraps to the first player when ending the last player's turn", () => {
   const state = createEmptyState(["0", "1"]);
+  state.phase = "normal";
   state.turn.currentPlayerId = "1";
   state.turn.phase = "postRoll";
   state.turn.hasRolled = true;
@@ -170,6 +172,7 @@ it("wraps to the first player when ending the last player's turn", () => {
 
 it("rejects end turn before rolling", () => {
   const state = createEmptyState(["0"]);
+  state.phase = "normal";
   state.turn.phase = "preRoll";
   state.turn.hasRolled = false;
 
@@ -180,6 +183,7 @@ it("rejects end turn before rolling", () => {
 
 it("rejects end turn when robber flow is active", () => {
   const state = createEmptyState(["0"]);
+  state.phase = "normal";
   state.turn.phase = "robberMove";
   state.turn.hasRolled = true;
 
@@ -190,6 +194,7 @@ it("rejects end turn when robber flow is active", () => {
 
 it("rejects end turn when discards are pending", () => {
   const state = createEmptyState(["0"]);
+  state.phase = "normal";
   state.turn.phase = "postRoll";
   state.turn.hasRolled = true;
   state.turn.pendingDiscards = ["0"];

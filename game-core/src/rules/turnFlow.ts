@@ -216,3 +216,42 @@ export function applyRollDice(
   state.turn.phase = "postRoll";
   return { ok: true };
 }
+
+export function applyEndTurn(
+  state: GameState
+): { ok: true } | { ok: false; error: string } {
+  if (state.phase !== "normal") {
+    return { ok: false, error: "not-in-normal-phase" };
+  }
+  if (!state.turn.hasRolled) {
+    return { ok: false, error: "not-rolled" };
+  }
+  if (state.turn.phase !== "postRoll") {
+    return { ok: false, error: "turn-not-finished" };
+  }
+  if (state.turn.pendingDiscards.length > 0) {
+    return { ok: false, error: "discard-pending" };
+  }
+
+  const currentIndex = state.players.indexOf(state.turn.currentPlayerId);
+  const nextIndex =
+    currentIndex === -1
+      ? 0
+      : (currentIndex + 1) % state.players.length;
+  const currentId = state.turn.currentPlayerId;
+  const nextId = state.players[nextIndex] ?? currentId;
+
+  state.turn.currentPlayerId = nextId;
+  state.turn.phase = "preRoll";
+  state.turn.hasRolled = false;
+  state.turn.lastRollTotal = null;
+  state.turn.pendingDiscards = [];
+
+  const currentPlayer = state.playerStateById[currentId];
+  if (currentPlayer) {
+    currentPlayer.devCardsBoughtThisTurn = [];
+    currentPlayer.devCardsPlayedThisTurn = 0;
+  }
+
+  return { ok: true };
+}

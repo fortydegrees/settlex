@@ -18,9 +18,13 @@
 - Expand `game-core` tests beyond buildability (robber, resource distribution, longest road).
 - Clean up legacy duplicates in `app/catana/game`, `spec/`, `strategy/`, `utils/`.
 - Address React list key warnings in `app/catana/Board.js`.
+- Add discard/robber-steal UI to avoid stalling when 7s require discards.
 
 ## Notes
 - Keep Next as the UI shell; multiplayer runs in the separate boardgame.io server.
 
 ## Status (2026-01-09)
-- Added failing applyEndTurn test coverage in `game-core/src/rules/turnFlow.test.ts` to drive end-turn behavior.
+- Added `applyEndTurn` core logic in `game-core/src/rules/turnFlow.ts` with coverage for turn resets and guardrails.
+- Wired `endTurn` move in `app/catana/Moves.js` to `applyEndTurn` and synced boardgame.io turn order.
+- Added app-level Vitest config (`vitest.config.ts`) and tests for end-turn wiring plus robber flow stage transitions.
+- Updated `rollDice` to send 7s to `moveRobber` stage; `moveRobber` now advances the core turn phase back to post-roll.

@@ -5,6 +5,7 @@ import {
   applyBuildCity,
   applyBuildRoad,
   applyBuildSettlement,
+  applyEndTurn,
   applyMoveRobber,
   applyPlaceRoad,
   applyPlaceSettlement,
@@ -256,6 +257,9 @@ export const moveRobber = {
 
     const returnTo =
       context.ctx.activePlayers[context.ctx.currentPlayer].returnTo || "postRoll";
+    if (G.core) {
+      G.core.turn.phase = returnTo === "preRoll" ? "preRoll" : "postRoll";
+    }
     events.setStage(returnTo);
 }
 }
@@ -275,9 +279,8 @@ export const rollDice = {
       return;
     }
 
-    if (diceScore === 7) {
-      // Temporary: skip robber UI and continue so the game doesn't stall.
-      events.setStage("postRoll");
+    if (G.core.turn.phase.startsWith("robber")) {
+      events.setStage("moveRobber");
       return;
     }
 
@@ -313,3 +316,20 @@ export const updateValids = (context, stage, meta) => {
 };
 
 export const getAvailableMoves = (context) => {};
+
+export const endTurn = {
+  move: (context) => {
+    const { G, ctx, events } = context;
+    if (G.core) {
+      G.core.phase = ctx.phase === "placement" ? "placement" : "normal";
+    }
+    const result = applyEndTurn(G.core);
+    if (!result.ok) {
+      console.log(`Invalid end turn: ${result.error}`);
+      return;
+    }
+
+    const nextPlayerId = G.core.turn.currentPlayerId;
+    events.endTurn({ next: nextPlayerId });
+  }
+};
