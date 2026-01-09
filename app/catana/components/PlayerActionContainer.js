@@ -108,7 +108,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
     //if we have less than 2 cards, can't do anything
     if (player.resources.length < 2) return false
     //if we're not in 'postRoll', can't do anything here
-    if (ctx.activePlayers[0] !== "postRoll") return false
+    if (ctx.activePlayers[player.id] !== "postRoll") return false
 
     const resourceCount = countResources(player.resources);
     switch (actionName) {
