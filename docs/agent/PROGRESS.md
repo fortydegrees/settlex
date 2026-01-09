@@ -8,6 +8,7 @@
 - Added core topology/state scaffolding and buildability rule tests (setup + normal placement).
 - Migrated placement moves to core `GameState`.
 - Updated `Board.js` to render settlements/roads/actions from core state via render maps (no `G.nodes`/`G.edges`).
+- Added trading rules to `game-core` (maritime + player trades), including port eligibility and trade-rate enforcement.
 
 ## Next
 - Expand `game-core` tests beyond buildability (robber, resource distribution, longest road).
