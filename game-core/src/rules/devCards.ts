@@ -1,6 +1,9 @@
 import type { DevCardType, Resource } from "../types";
 import type { GameState } from "../core/state";
+import type { BoardTopology } from "../core/topology";
+import { buildableEdges } from "./buildability";
 import { canAfford, spendResources } from "./buildActions";
+import { recomputeCaches } from "./apply";
 
 export function createStandardDevDeck(): DevCardType[] {
   return [
@@ -77,9 +80,14 @@ export function applyYearOfPlenty(
     return { ok: false, error: "unknown-player" };
   }
   if (state.ruleset.bank.finite) {
+    const availableByResource: Record<string, number> = {};
     for (const resource of resources) {
+      availableByResource[resource] =
+        (availableByResource[resource] ?? 0) + 1;
+    }
+    for (const [resource, required] of Object.entries(availableByResource)) {
       const available = state.bank.resources.filter((r) => r === resource).length;
-      if (available <= 0) {
+      if (available < required) {
         return { ok: false, error: "bank-empty" };
       }
     }
@@ -133,11 +141,33 @@ export function applyKnight(
 }
 
 export function applyRoadBuilding(
-  _state: GameState,
-  _playerId: string,
-  _edgeIds: [string, string]
+  state: GameState,
+  board: BoardTopology,
+  playerId: string,
+  edgeIds: [string, string]
 ): { ok: true } | { ok: false; error: string } {
-  return { ok: false, error: "not-implemented" };
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ok: false, error: "unknown-player" };
+  }
+  if (player.roadsRemaining < 2) {
+    return { ok: false, error: "no-pieces-left" };
+  }
+  const [first, second] = edgeIds;
+  if (first === second) {
+    return { ok: false, error: "duplicate-road" };
+  }
+
+  const legal = buildableEdges(state, board, playerId, { initialPlacement: false });
+  if (!legal.includes(first) || !legal.includes(second)) {
+    return { ok: false, error: "illegal-road" };
+  }
+
+  state.roadsByEdgeId[first] = playerId;
+  state.roadsByEdgeId[second] = playerId;
+  player.roadsRemaining -= 2;
+  recomputeCaches(state, board);
+  return { ok: true };
 }
 
 export function playDevCard(

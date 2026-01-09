@@ -1,7 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { createEmptyState } from "../core/state";
-import { ResourceType } from "../types";
-import { createStandardDevDeck, buyDevCard } from "./devCards";
+import { ResourceType, TileTypes } from "../types";
+import { buildTopology } from "../core/topology";
+import {
+  createStandardDevDeck,
+  buyDevCard,
+  canPlayDevCard,
+  applyYearOfPlenty,
+  applyMonopoly,
+  applyKnight,
+  applyRoadBuilding
+} from "./devCards";
 
 describe("dev cards - deck", () => {
   it("creates a 25-card deck with standard counts", () => {
@@ -32,8 +41,21 @@ describe("dev cards - purchase", () => {
     expect(state.playerStateById["0"].devCards).toEqual(["knight"]);
   });
 });
+const tiles = [
+  {
+    coordinate: [0, 0, 0],
+    type: TileTypes.LAND,
+    tile: {
+      id: 1,
+      resource: ResourceType.WOOD,
+      number: 8,
+      nodes: { NORTH: 1, SOUTH: 2, SOUTHEAST: 3 },
+      edges: { EAST: [1, 2], WEST: [1, 3] }
+    }
+  }
+];
 
-import { canPlayDevCard } from "./devCards";
+const board = buildTopology(tiles);
 
 it("prevents playing more than one dev card per turn", () => {
   const state = createEmptyState(["0"]);
@@ -49,4 +71,52 @@ it("prevents playing a dev card bought this turn", () => {
   state.playerStateById["0"].devCardsBoughtThisTurn = ["knight"];
 
   expect(canPlayDevCard(state, "0", "knight")).toBe(false);
+});
+
+it("year of plenty takes two resources if bank has them", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD, ResourceType.BRICK];
+  const result = applyYearOfPlenty(state, "0", [ResourceType.WOOD, ResourceType.BRICK]);
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([ResourceType.WOOD, ResourceType.BRICK]);
+});
+
+it("monopoly transfers resources from other players", () => {
+  const state = createEmptyState(["0", "1"]);
+  state.playerStateById["1"].resources = [ResourceType.WOOD, ResourceType.WOOD];
+  const result = applyMonopoly(state, "0", ResourceType.WOOD);
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([ResourceType.WOOD, ResourceType.WOOD]);
+  expect(state.playerStateById["1"].resources).toEqual([]);
+});
+
+it("knight increments knightsPlayed", () => {
+  const state = createEmptyState(["0"]);
+  const result = applyKnight(state, "0");
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].knightsPlayed).toBe(1);
+});
+
+it("road building rejects duplicate edges", () => {
+  const state = createEmptyState(["0"]);
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+  const result = applyRoadBuilding(state, board, "0", ["1,2", "1,2"]);
+  expect(result.ok).toBe(false);
+});
+
+it("road building places two distinct roads when legal", () => {
+  const state = createEmptyState(["0"]);
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+  const result = applyRoadBuilding(state, board, "0", ["1,2", "1,3"]);
+  expect(result.ok).toBe(true);
+  expect(state.roadsByEdgeId["1,2"]).toBe("0");
+  expect(state.roadsByEdgeId["1,3"]).toBe("0");
+});
+
+it("year of plenty fails when bank lacks a requested resource", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD];
+  const result = applyYearOfPlenty(state, "0", [ResourceType.WOOD, ResourceType.BRICK]);
+  expect(result.ok).toBe(false);
+  expect(state.playerStateById["0"].resources).toEqual([]);
 });
