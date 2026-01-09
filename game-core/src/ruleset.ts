@@ -109,3 +109,74 @@ export function createRuleset(spec: Ruleset): Ruleset {
 export function createStandardRuleset(): Ruleset {
   return createRuleset(STANDARD_RULESET);
 }
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+export function validateRuleset(
+  ruleset: Ruleset
+): { ok: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (!isFiniteNumber(ruleset.victoryPointsToWin) || ruleset.victoryPointsToWin < 1) {
+    errors.push("victoryPointsToWin must be >= 1");
+  }
+  if (!isFiniteNumber(ruleset.longestRoadMinLength) || ruleset.longestRoadMinLength < 1) {
+    errors.push("longestRoadMinLength must be >= 1");
+  }
+  if (!isFiniteNumber(ruleset.largestArmyMinKnights) || ruleset.largestArmyMinKnights < 1) {
+    errors.push("largestArmyMinKnights must be >= 1");
+  }
+  if (!isFiniteNumber(ruleset.discardLimit) || ruleset.discardLimit < 0) {
+    errors.push("discardLimit must be >= 0");
+  }
+
+  const tradeRates = ruleset.tradeRates ?? { bank: NaN, genericPort: NaN, specificPort: NaN };
+  for (const [key, value] of Object.entries(tradeRates)) {
+    if (!isFiniteNumber(value) || value < 1) {
+      errors.push(`tradeRates.${key} must be >= 1`);
+    }
+  }
+
+  const limits = ruleset.pieceLimits ?? { roads: NaN, settlements: NaN, cities: NaN };
+  for (const [key, value] of Object.entries(limits)) {
+    if (!isFiniteNumber(value) || value < 0) {
+      errors.push(`pieceLimits.${key} must be >= 0`);
+    }
+  }
+
+  const requiredResources = Object.values(ResourceType);
+  const counts = ruleset.bank?.resourceCounts ?? {};
+  for (const resource of requiredResources) {
+    const value = counts[resource as Resource];
+    if (!isFiniteNumber(value) || value < 0) {
+      errors.push(`bank.resourceCounts.${resource} must be >= 0`);
+    }
+  }
+
+  const devCardCounts = ruleset.devCardCounts ?? {};
+  const devTypes: DevCardType[] = [
+    "knight",
+    "victoryPoint",
+    "roadBuilding",
+    "yearOfPlenty",
+    "monopoly"
+  ];
+  for (const card of devTypes) {
+    const value = devCardCounts[card];
+    if (!isFiniteNumber(value) || value < 0) {
+      errors.push(`devCardCounts.${card} must be >= 0`);
+    }
+  }
+
+  for (const [costKey, cost] of Object.entries(ruleset.buildCosts ?? {})) {
+    for (const [resource, amount] of Object.entries(cost)) {
+      if (!isFiniteNumber(amount) || amount < 0) {
+        errors.push(`buildCosts.${costKey}.${resource} must be >= 0`);
+      }
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
+}

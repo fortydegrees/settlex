@@ -1,6 +1,11 @@
 import { EdgeId, NodeId } from "./ids";
 import type { Resource, DevCardType } from "../types";
-import { createStandardRuleset, type Ruleset } from "../ruleset";
+import {
+  createStandardRuleset,
+  createRuleset,
+  validateRuleset,
+  type Ruleset
+} from "../ruleset";
 
 export type Building = { ownerId: string; type: string };
 
@@ -60,12 +65,16 @@ function expandResources(counts: Record<Resource, number>): Resource[] {
   return resources;
 }
 
-export function createEmptyState(players: string[]): GameState {
+export function createEmptyState(players: string[], rulesetSpec?: Ruleset): GameState {
   const pending: Record<string, NodeId | null> = {};
   const buildableNodes: Record<string, NodeId[]> = {};
   const buildableEdges: Record<string, EdgeId[]> = {};
   const playerStateById: Record<string, PlayerState> = {};
-  const ruleset = createStandardRuleset();
+  const ruleset = rulesetSpec ? createRuleset(rulesetSpec) : createStandardRuleset();
+  const validation = validateRuleset(ruleset);
+  if (!validation.ok) {
+    throw new Error(validation.errors.join("\n"));
+  }
   const firstPlayer = players[0] ?? "0";
 
   for (const p of players) {
