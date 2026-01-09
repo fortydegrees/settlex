@@ -9,6 +9,7 @@
 - Migrated placement moves to core `GameState`.
 - Updated `Board.js` to render settlements/roads/actions from core state via render maps (no `G.nodes`/`G.edges`).
 - Added trading rules to `game-core` (maritime + player trades), including port eligibility and trade-rate enforcement.
+- Added victory/awards helpers in `game-core` (Longest Road, Largest Army, VP calculation) with tests and recompute hooks.
 
 ## Next
 - Expand `game-core` tests beyond buildability (robber, resource distribution, longest road).
