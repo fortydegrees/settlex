@@ -6,7 +6,7 @@ import { playersNeedingDiscard, applyDiscard } from "./turnFlow";
 
 const tiles = [
   {
-    coordinate: [0, 0, 0],
+    coordinate: [0, 0, 0] as [number, number, number],
     type: TileTypes.LAND,
     tile: {
       id: 1,
