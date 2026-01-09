@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { createEmptyState } from "../core/state";
 import { buildTopology } from "../core/topology";
 import { ResourceType, TileTypes } from "../types";
-import { applyMaritimeTrade, canUsePort } from "./trading";
+import { applyMaritimeTrade, applyPlayerTrade, canUsePort } from "./trading";
 
 const tiles = [
   {
@@ -42,5 +42,28 @@ describe("trading", () => {
 
     expect(result.ok).toBe(true);
     expect(state.playerStateById["0"].resources).toEqual([ResourceType.BRICK]);
+  });
+
+  it("rejects bank trade when player lacks resources", () => {
+    const state = createEmptyState(["0"]);
+
+    const result = applyMaritimeTrade(state, board, "0", {
+      give: ResourceType.WOOD,
+      receive: ResourceType.BRICK
+    });
+
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects player trade when ruleset disallows it", () => {
+    const state = createEmptyState(["0", "1"]);
+    state.ruleset.allowPlayerTrades = false;
+
+    const result = applyPlayerTrade(state, "0", "1", {
+      give: [ResourceType.WOOD],
+      receive: [ResourceType.BRICK]
+    });
+
+    expect(result.ok).toBe(false);
   });
 });
