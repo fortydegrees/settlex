@@ -78,35 +78,27 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
       name: "road",
       action: () => setPlayerAction("placeRoad"),
       img: "/svgs/road_red.svg",
-      count: player.numRoads,
+      count: player.roadsRemaining,
       enabled: false,
       style: { transform: "rotate(90deg) scale(0.9)" },
     },
     {
       name: "settlement",
-      action: () => moves.placeSettlement(),
+      action: () => setPlayerAction("placeSettlement"),
       img: "/svgs/settlement_red.svg",
-      count: player.numSettlements,
+      count: player.settlementsRemaining,
       enabled: false,
       style: null,
     },
     {
       name: "city",
-      action: () => moves.placeRoad(),
+      action: () => setPlayerAction("placeCity"),
       img: "/svgs/city_red.svg",
-      count: player.numCities,
+      count: player.citiesRemaining,
       enabled: false,
       style: null,
     },
-    null,
-    {
-      name: "buyDev",
-      action: () => moves.placeRoad(),
-      img: "/svgs/card_devcardback.svg",
-      count: null,
-      enabled: true,
-      style: { transform: "scale(0.7)" },
-    },
+    null
   ];
 
   //TODO: might be better/easier to put this in isActionValid/moves 
@@ -114,35 +106,30 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
     //if it's not our turn, can't do anything
     if (ctx.currentPlayer !== player.id.toString()) return false
     //if we have less than 2 cards, can't do anything
-    if (player.resourceCards.length < 2) return false
+    if (player.resources.length < 2) return false
     //if we're not in 'postRoll', can't do anything here
     if (ctx.activePlayers[0] !== "postRoll") return false
 
-    const resourceCount = countResources(player.resourceCards);
+    const resourceCount = countResources(player.resources);
     switch (actionName) {
         //if not user's turn, return false
       case 'road':
         if (resourceCount["Wood"]  < 1 || resourceCount["Brick"] < 1) return false
-        if (player.numRoads < 1) return false
+        if (player.roadsRemaining < 1) return false
         //if roads left > 0
         // & canPlaceRoad
         //return bgioProps.G.someConditionForRoad;
         return true
       case 'settlement':
         if (resourceCount["Wood"]  < 1 || resourceCount["Brick"] < 1 || resourceCount["Wheat"]  < 1 || resourceCount["Sheep"] < 1) return false
-        if (player.numSettlements < 1) return false
+        if (player.settlementsRemaining < 1) return false
         return true
       // Add cases for other actions
       case 'city':
         if (resourceCount["Wheat"]  < 2 || resourceCount["Ore"] < 3) return false
-        if (player.numCities < 1) return false
+        if (player.citiesRemaining < 1) return false
 
         return true;
-        case 'buyDev':
-            if (resourceCount["Wheat"]  < 1 || resourceCount["Sheep"] < 1 || resourceCount["Ore"] < 1) return false
-            if (G.bank.devCards.length < 1) return false
-    
-            return true;
     default:
         return false
     }
@@ -217,7 +204,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
             {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
               return (
                 <CardIcon
-                  playerCards={player.resourceCards}
+                  playerCards={player.resources}
                   key={resource}
                   resource={resource}
                   setIsTrading={setIsTrading}
