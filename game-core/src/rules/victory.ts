@@ -127,3 +127,35 @@ export function recomputeLongestRoad(state: GameState, board: BoardTopology) {
   state.awards.longestRoadOwnerId =
     current && leaders.includes(current) ? current : null;
 }
+
+export function getVictoryPoints(state: GameState, playerId: string): number {
+  let points = 0;
+  for (const building of Object.values(state.buildingsByNodeId)) {
+    if (building.ownerId !== playerId) {
+      continue;
+    }
+    if (building.type === "settlement") {
+      points += 1;
+    } else if (building.type === "city") {
+      points += 2;
+    }
+  }
+
+  const player = state.playerStateById[playerId];
+  if (player) {
+    points += player.devCards.filter((card) => card === "victoryPoint").length;
+  }
+
+  if (state.awards.longestRoadOwnerId === playerId) {
+    points += 2;
+  }
+  if (state.awards.largestArmyOwnerId === playerId) {
+    points += 2;
+  }
+
+  return points;
+}
+
+export function checkWin(state: GameState, playerId: string): boolean {
+  return getVictoryPoints(state, playerId) >= state.ruleset.victoryPointsToWin;
+}
