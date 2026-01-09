@@ -7,6 +7,7 @@ import {
 import React, { useState, useEffect } from "react";
 
 import { RESOURCE_ICON_SVGS, ResourceType } from "./game/types";
+import { buildPlayerViewMap } from "./utils/playerView";
 
 import { EffectsBoardWrapper, useEffectListener } from "bgio-effects/react";
 
@@ -27,12 +28,13 @@ export function GameScreen(bgioProps) {
   //TODO: handle null/spectator
   const playerID = bgioProps.playerID;
 
-  const player = bgioProps.G.players.find((player) => player.id === playerID);
+  const playerViewMap = buildPlayerViewMap(bgioProps.G.core);
+  const player = playerViewMap[playerID];
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
-  const opponents = bgioProps.G.players.filter(
-    (player) => player.id !== playerID
+  const opponents = Object.values(playerViewMap).filter(
+    (view) => view.id !== playerID
   );
 
   //const otherPlayerCards = bgioProps.G.players[opponentID].resourceCards; //TODO: horrible, clean up. might need to check if playerID exists (e.g. what about spectator)
@@ -99,7 +101,7 @@ TODO: accurately colour it
           {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
             return (
               <CardIcon
-                playerCards={player.resourceCards}
+                playerCards={player.resources}
                 key={resource}
                 resource={resource}
                 player={player.id}
