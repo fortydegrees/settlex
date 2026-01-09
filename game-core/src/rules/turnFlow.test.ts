@@ -131,3 +131,70 @@ it("enters robberDiscard on 7 and tracks pending discards", () => {
   expect(state.turn.phase).toBe("robberDiscard");
   expect(state.turn.pendingDiscards).toEqual(["0"]);
 });
+
+import { applyEndTurn } from "./turnFlow";
+
+it("advances the current player and resets turn state", () => {
+  const state = createEmptyState(["0", "1"]);
+  state.turn.currentPlayerId = "0";
+  state.turn.phase = "postRoll";
+  state.turn.hasRolled = true;
+  state.turn.lastRollTotal = 9;
+  state.turn.pendingDiscards = [];
+  state.playerStateById["0"].devCardsBoughtThisTurn = ["knight"];
+  state.playerStateById["0"].devCardsPlayedThisTurn = 1;
+
+  const result = applyEndTurn(state);
+
+  expect(result.ok).toBe(true);
+  expect(state.turn.currentPlayerId).toBe("1");
+  expect(state.turn.phase).toBe("preRoll");
+  expect(state.turn.hasRolled).toBe(false);
+  expect(state.turn.lastRollTotal).toBeNull();
+  expect(state.turn.pendingDiscards).toEqual([]);
+  expect(state.playerStateById["0"].devCardsBoughtThisTurn).toEqual([]);
+  expect(state.playerStateById["0"].devCardsPlayedThisTurn).toBe(0);
+});
+
+it("wraps to the first player when ending the last player's turn", () => {
+  const state = createEmptyState(["0", "1"]);
+  state.turn.currentPlayerId = "1";
+  state.turn.phase = "postRoll";
+  state.turn.hasRolled = true;
+
+  const result = applyEndTurn(state);
+
+  expect(result.ok).toBe(true);
+  expect(state.turn.currentPlayerId).toBe("0");
+});
+
+it("rejects end turn before rolling", () => {
+  const state = createEmptyState(["0"]);
+  state.turn.phase = "preRoll";
+  state.turn.hasRolled = false;
+
+  const result = applyEndTurn(state);
+
+  expect(result.ok).toBe(false);
+});
+
+it("rejects end turn when robber flow is active", () => {
+  const state = createEmptyState(["0"]);
+  state.turn.phase = "robberMove";
+  state.turn.hasRolled = true;
+
+  const result = applyEndTurn(state);
+
+  expect(result.ok).toBe(false);
+});
+
+it("rejects end turn when discards are pending", () => {
+  const state = createEmptyState(["0"]);
+  state.turn.phase = "postRoll";
+  state.turn.hasRolled = true;
+  state.turn.pendingDiscards = ["0"];
+
+  const result = applyEndTurn(state);
+
+  expect(result.ok).toBe(false);
+});

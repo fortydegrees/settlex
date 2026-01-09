@@ -21,3 +21,6 @@
 
 ## Notes
 - Keep Next as the UI shell; multiplayer runs in the separate boardgame.io server.
+
+## Status (2026-01-09)
+- Added failing applyEndTurn test coverage in `game-core/src/rules/turnFlow.test.ts` to drive end-turn behavior.
