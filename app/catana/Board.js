@@ -108,9 +108,10 @@ export function CatanBoard({
   const [buildableRoads, setBuildableRoads] = useState([])
   const mainBuildableNodes = useMemo(() => {
     if (!G.core) return [];
+    const isPlacement = ctx.phase === "placement";
     if (playerAction === "placeSettlement") {
       return buildableNodes(G.core, G.coreTopology, ctx.currentPlayer, {
-        initialPlacement: false
+        initialPlacement: isPlacement
       });
     }
     if (playerAction === "placeCity") {
@@ -122,7 +123,7 @@ export function CatanBoard({
       );
     }
     return [];
-  }, [G.core, G.coreTopology, ctx.currentPlayer, playerAction]);
+  }, [G.core, G.coreTopology, ctx.currentPlayer, ctx.phase, playerAction]);
 
   const ref = useRef(null); //ref for card anims
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
@@ -160,20 +161,37 @@ export function CatanBoard({
   //   }
   // }
 
-  //get all roads
-  //you can build a road
+  // Check if player can build a road (has resources, is their turn, in postRoll)
+  const canBuildRoad = useMemo(() => {
+    if (!isActive || ctx.phase !== "main") return false;
+    if (ctx.activePlayers?.[ctx.currentPlayer] !== "postRoll") return false;
+    
+    const playerState = G.core?.playerStateById?.[ctx.currentPlayer];
+    if (!playerState) return false;
+    if (playerState.roadsRemaining < 1) return false;
+    
+    const resources = playerState.resources ?? [];
+    const hasWood = resources.includes("Wood");
+    const hasBrick = resources.includes("Brick");
+    return hasWood && hasBrick;
+  }, [isActive, ctx.phase, ctx.activePlayers, ctx.currentPlayer, G.core]);
 
-  console.log(playerAction)
+  // Passive hoverable edges - shown when player CAN build but hasn't clicked the button
+  const passiveBuildableEdges = useMemo(() => {
+    if (!canBuildRoad || playerAction === "placeRoad") return [];
+    if (!G.core || !G.coreTopology) return [];
+    return getBuildableEdges(ctx.currentPlayer, G, ctx);
+  }, [canBuildRoad, playerAction, G, ctx]);
 
   useEffect(()=>{
     if (playerAction === "placeRoad" && G.core && G.coreTopology) {
-      const buildable = getBuildableEdges(ctx.currentPlayer, G)
+      const buildable = getBuildableEdges(ctx.currentPlayer, G, ctx)
       setBuildableRoads(buildable)
     }
     else{
       setBuildableRoads([])
     }
-  }, [playerAction, G, ctx.currentPlayer])
+  }, [playerAction, G, ctx])
 
   
 
@@ -391,6 +409,7 @@ export function CatanBoard({
                 }
                 setHoveredNode(null);
                 setHoveredTiles([]);
+                setPlayerAction(null);
               }}
               setHoveredNode={setHoveredNode}
               hoveredNode={hoveredNode}
@@ -401,7 +420,7 @@ export function CatanBoard({
       })();
   }
 
-  //editable edges e.g placing road
+  //editable edges e.g placing road during initial placement
   {
     isActive &&
       G.valids.edges.map((edgeId, x) => {
@@ -412,18 +431,15 @@ export function CatanBoard({
 
         actions.push(
           <Edge
-            id={edgeId}
-            actionNodeId={x}
             key={edgeId}
+            id={edgeId}
             center={center}
             size={size}
             coordinate={renderEdge.tile_coordinate}
             direction={renderEdge.direction}
             color={currentPlayerView?.color ?? "red"}
-            placing="true"
-            player={Object.keys(ctx.activePlayers)[0]}
-            buildingType={ctx.activePlayers[ctx.currentPlayer]}
-            buildingColor={currentPlayerView?.color ?? "red"}
+            placing
+            initialPlacement
             moves={moves}
             setHoveredNode={setHoveredNode}
             setPlayerAction={setPlayerAction}
@@ -441,18 +457,15 @@ export function CatanBoard({
     }
     actions.push(
       <Edge
-        id={edgeId}
-        actionNodeId={x}
         key={`buildable-${edgeId}`}
+        id={edgeId}
         center={center}
         size={size}
         coordinate={renderEdge.tile_coordinate}
         direction={renderEdge.direction}
         color={currentPlayerView?.color ?? "red"}
-        placing="true"
-        player={Object.keys(ctx.activePlayers)[0]}
-        buildingType={ctx.activePlayers[ctx.currentPlayer]}
-        buildingColor={currentPlayerView?.color ?? "red"}
+        placing
+        initialPlacement={false}
         moves={moves}
         setHoveredNode={setHoveredNode}
         setPlayerAction={setPlayerAction}

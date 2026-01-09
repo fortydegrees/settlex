@@ -152,11 +152,24 @@ export const Catan =  {
         },
       },
 
-      endIf: ({G, ctx }) => ctx.turn > G.core.players.length * 2, // end if each player has 2 settlements & 2 roads
+      endIf: ({ G }) => {
+        // End placement when all players have placed 2 settlements AND 2 roads
+        const ruleset = G.core.ruleset;
+        const startingSettlements = ruleset.pieceLimits.settlements;
+        const startingRoads = ruleset.pieceLimits.roads;
+        return G.core.players.every(id => {
+          const playerState = G.core.playerStateById[id];
+          return playerState.settlementsRemaining === startingSettlements - 2 &&
+                 playerState.roadsRemaining === startingRoads - 2;
+        });
+      },
       next: "main",
       start: true,
-      // onBegin: ({ G, ctx }) => { ... },
-      // onEnd: ({ G, ctx }) => { ... },
+      onEnd: ({ G }) => {
+        if (G.core) {
+          G.core.phase = "normal";
+        }
+      },
     },
     main: {
       turn: {
@@ -165,7 +178,7 @@ export const Catan =  {
 
             updateValids(context, "preRoll")
         },
-        order: TurnOrder.CONTINUE,
+        order: TurnOrder.DEFAULT,
         activePlayers: { currentPlayer: "preRoll" },
         stages: {
           preRoll: { moves: {

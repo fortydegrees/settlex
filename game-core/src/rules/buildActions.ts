@@ -60,21 +60,86 @@ function isSpendError(
   return result.ok === false;
 }
 
+type CanBuildResult = { ok: true } | { ok: false; error: string };
+
+function isCanBuildError(
+  result: CanBuildResult
+): result is { ok: false; error: string } {
+  return !result.ok;
+}
+
+/**
+ * Check if a player can afford to build a road (has resources and pieces).
+ * Does NOT check placement legality - use buildableEdges() for that.
+ */
+export function canBuildRoad(
+  state: GameState,
+  playerId: string
+): CanBuildResult {
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ok: false, error: "unknown-player" };
+  }
+  if (player.roadsRemaining <= 0) {
+    return { ok: false, error: "no-pieces-left" };
+  }
+  if (!canAfford(state.ruleset.buildCosts.road, player.resources)) {
+    return { ok: false, error: "insufficient-resources" };
+  }
+  return { ok: true };
+}
+
+/**
+ * Check if a player can afford to build a settlement (has resources and pieces).
+ * Does NOT check placement legality - use buildableNodes() for that.
+ */
+export function canBuildSettlement(
+  state: GameState,
+  playerId: string
+): CanBuildResult {
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ok: false, error: "unknown-player" };
+  }
+  if (player.settlementsRemaining <= 0) {
+    return { ok: false, error: "no-pieces-left" };
+  }
+  if (!canAfford(state.ruleset.buildCosts.settlement, player.resources)) {
+    return { ok: false, error: "insufficient-resources" };
+  }
+  return { ok: true };
+}
+
+/**
+ * Check if a player can afford to build a city (has resources and pieces).
+ * Does NOT check if they have a settlement to upgrade - that's placement logic.
+ */
+export function canBuildCity(
+  state: GameState,
+  playerId: string
+): CanBuildResult {
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ok: false, error: "unknown-player" };
+  }
+  if (player.citiesRemaining <= 0) {
+    return { ok: false, error: "no-pieces-left" };
+  }
+  if (!canAfford(state.ruleset.buildCosts.city, player.resources)) {
+    return { ok: false, error: "insufficient-resources" };
+  }
+  return { ok: true };
+}
+
 export function applyBuildRoad(
   state: GameState,
   board: BoardTopology,
   edgeId: EdgeId,
   playerId: string
 ) {
-  const player = state.playerStateById[playerId];
-  if (!player) {
-    return { ok: false, state, error: "unknown-player" } as const;
-  }
-  if (player.roadsRemaining <= 0) {
-    return { ok: false, state, error: "no-pieces-left" } as const;
-  }
-  if (!canAfford(state.ruleset.buildCosts.road, player.resources)) {
-    return { ok: false, state, error: "insufficient-resources" } as const;
+  const canBuild = canBuildRoad(state, playerId);
+  if (isCanBuildError(canBuild)) {
+    return { ok: false, state, error: canBuild.error } as const;
   }
 
   const legal = buildableEdges(state, board, playerId, { initialPlacement: false });
@@ -82,6 +147,7 @@ export function applyBuildRoad(
     return { ok: false, state, error: "illegal-road" } as const;
   }
 
+  const player = state.playerStateById[playerId]!;
   const spent = spendResources(
     state.ruleset.buildCosts.road,
     player.resources,
@@ -105,15 +171,9 @@ export function applyBuildSettlement(
   nodeId: NodeId,
   playerId: string
 ) {
-  const player = state.playerStateById[playerId];
-  if (!player) {
-    return { ok: false, state, error: "unknown-player" } as const;
-  }
-  if (player.settlementsRemaining <= 0) {
-    return { ok: false, state, error: "no-pieces-left" } as const;
-  }
-  if (!canAfford(state.ruleset.buildCosts.settlement, player.resources)) {
-    return { ok: false, state, error: "insufficient-resources" } as const;
+  const canBuild = canBuildSettlement(state, playerId);
+  if (isCanBuildError(canBuild)) {
+    return { ok: false, state, error: canBuild.error } as const;
   }
 
   const legal = buildableNodes(state, board, playerId, { initialPlacement: false });
@@ -121,6 +181,7 @@ export function applyBuildSettlement(
     return { ok: false, state, error: "illegal-settlement" } as const;
   }
 
+  const player = state.playerStateById[playerId]!;
   const spent = spendResources(
     state.ruleset.buildCosts.settlement,
     player.resources,
@@ -144,15 +205,9 @@ export function applyBuildCity(
   nodeId: NodeId,
   playerId: string
 ) {
-  const player = state.playerStateById[playerId];
-  if (!player) {
-    return { ok: false, state, error: "unknown-player" } as const;
-  }
-  if (player.citiesRemaining <= 0) {
-    return { ok: false, state, error: "no-pieces-left" } as const;
-  }
-  if (!canAfford(state.ruleset.buildCosts.city, player.resources)) {
-    return { ok: false, state, error: "insufficient-resources" } as const;
+  const canBuild = canBuildCity(state, playerId);
+  if (isCanBuildError(canBuild)) {
+    return { ok: false, state, error: canBuild.error } as const;
   }
 
   const building = state.buildingsByNodeId[nodeId];
@@ -160,6 +215,7 @@ export function applyBuildCity(
     return { ok: false, state, error: "illegal-city" } as const;
   }
 
+  const player = state.playerStateById[playerId]!;
   const spent = spendResources(
     state.ruleset.buildCosts.city,
     player.resources,

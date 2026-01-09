@@ -3,7 +3,7 @@ import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
 import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
-import { RESOURCE_ICON_SVGS, ResourceType, STANDARD_RESOURCES } from "../game/types";
+import { RESOURCE_ICON_SVGS, ResourceType } from "../game/types";
 import React, { useState, useMemo } from "react";
 import {
   ChevronDoubleRightIcon,
@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
+import { canBuildRoad, canBuildSettlement, canBuildCity } from "@settlex/game-core";
 
 
 export const CardIcon = ({ playerCards, resource, player, setIsTrading, ctx }) => {
@@ -46,23 +47,6 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);
 
   const [isTrading, setIsTrading] = useState(null);
-
-  function countResources(resourceArray) {
-    const initialCount = STANDARD_RESOURCES.reduce((acc, resource) => {
-        acc[resource] = 0;
-        return acc;
-    }, {});
-    
-
-    return resourceArray.reduce((acc, resource) => {
-        if (acc.hasOwnProperty(resource)) {
-            acc[resource] += 1;
-        }
-        return acc;
-    }, initialCount);
-}
-
-  
 
   //dice roll animation
   useEffectListener(
@@ -101,37 +85,21 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
     null
   ];
 
-  //TODO: might be better/easier to put this in isActionValid/moves 
   const isActionEnabled = (actionName) => {
-    //if it's not our turn, can't do anything
-    if (ctx.currentPlayer !== player.id.toString()) return false
-    //if we have less than 2 cards, can't do anything
-    if (player.resources.length < 2) return false
-    //if we're not in 'postRoll', can't do anything here
-    if (ctx.activePlayers[player.id] !== "postRoll") return false
+    // UI-level checks (boardgame.io state)
+    if (ctx.currentPlayer !== player.id.toString()) return false;
+    if (ctx.activePlayers?.[player.id] !== "postRoll") return false;
 
-    const resourceCount = countResources(player.resources);
+    // Game rule checks (from game-core)
     switch (actionName) {
-        //if not user's turn, return false
       case 'road':
-        if (resourceCount["Wood"]  < 1 || resourceCount["Brick"] < 1) return false
-        if (player.roadsRemaining < 1) return false
-        //if roads left > 0
-        // & canPlaceRoad
-        //return bgioProps.G.someConditionForRoad;
-        return true
+        return canBuildRoad(G.core, player.id).ok;
       case 'settlement':
-        if (resourceCount["Wood"]  < 1 || resourceCount["Brick"] < 1 || resourceCount["Wheat"]  < 1 || resourceCount["Sheep"] < 1) return false
-        if (player.settlementsRemaining < 1) return false
-        return true
-      // Add cases for other actions
+        return canBuildSettlement(G.core, player.id).ok;
       case 'city':
-        if (resourceCount["Wheat"]  < 2 || resourceCount["Ore"] < 3) return false
-        if (player.citiesRemaining < 1) return false
-
-        return true;
-    default:
-        return false
+        return canBuildCity(G.core, player.id).ok;
+      default:
+        return false;
     }
   };
 
@@ -221,9 +189,9 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
       <div className="flex-1 items-center justify-start self-end ">
         {ctx.phase === "main" && (
         <div className="ml-12 flex-col grow-0 w-36">
-          <div className={`flex ${ctx.currentPlayer === player.id && ctx.activePlayers[player.id] === 'preRoll' ? 'opacity-100' : 'opacity-50'}`} 
+          <div className={`flex ${ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? 'opacity-100' : 'opacity-50'}`} 
           
-          onClick={ctx.currentPlayer === player.id && ctx.activePlayers[player.id] === 'preRoll' ? () => moves.rollDice() : ()=>{}}>
+          onClick={ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? () => moves.rollDice() : ()=>{}}>
             <Die dieSize="3.5rem" />
             <div className="px-4" />
             <Die2 dieSize="3.5rem" />
