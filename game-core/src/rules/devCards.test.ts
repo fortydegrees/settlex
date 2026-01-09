@@ -56,6 +56,19 @@ const tiles = [
 ];
 
 const board = buildTopology(tiles);
+const chainBoard = buildTopology([
+  {
+    coordinate: [0, 0, 0],
+    type: TileTypes.LAND,
+    tile: {
+      id: 2,
+      resource: ResourceType.WOOD,
+      number: 6,
+      nodes: { NORTH: 1, SOUTH: 2, SOUTHEAST: 3 },
+      edges: { EAST: [1, 2], SOUTH: [2, 3] }
+    }
+  }
+]);
 
 it("prevents playing more than one dev card per turn", () => {
   const state = createEmptyState(["0"]);
@@ -111,6 +124,15 @@ it("road building places two distinct roads when legal", () => {
   expect(result.ok).toBe(true);
   expect(state.roadsByEdgeId["1,2"]).toBe("0");
   expect(state.roadsByEdgeId["1,3"]).toBe("0");
+});
+
+it("road building allows chaining the second road", () => {
+  const state = createEmptyState(["0"]);
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+  const result = applyRoadBuilding(state, chainBoard, "0", ["1,2", "2,3"]);
+  expect(result.ok).toBe(true);
+  expect(state.roadsByEdgeId["1,2"]).toBe("0");
+  expect(state.roadsByEdgeId["2,3"]).toBe("0");
 });
 
 it("year of plenty fails when bank lacks a requested resource", () => {
