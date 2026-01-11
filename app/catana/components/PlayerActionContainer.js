@@ -3,7 +3,7 @@ import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
 import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
-import { RESOURCE_ICON_SVGS, ResourceType } from "../game/types";
+import { RESOURCE_ICON_SVGS } from "../game/types";
 import React, { useState, useMemo } from "react";
 import {
   ChevronDoubleRightIcon,
@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
-import { canBuildRoad, canBuildSettlement, canBuildCity } from "@settlex/game-core";
+import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, ResourceType } from "@settlex/game-core";
 
 
 export const CardIcon = ({ playerCards, resource, player, setIsTrading, ctx }) => {
@@ -38,7 +38,7 @@ export const CardIcon = ({ playerCards, resource, player, setIsTrading, ctx }) =
   );
 };
 
-export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) => {
+export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTradeClick }) => {
 
   
   const { G, ctx, moves } = bgioProps;
@@ -58,6 +58,14 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
     []
   );
   const ACTIONS = [
+    {
+      name: "trade",
+      action: onTradeClick, // Opens the modal
+      img: "/svgs/icon_trade.svg", // Placeholder icon for trade, maybe use a custom one later
+      count: 0,
+      enabled: ctx.currentPlayer === player.id && ctx.phase === 'main', // Only enable trade during main phase & turn
+      style: null, 
+    },
     {
       name: "road",
       action: () => setPlayerAction("placeRoad"),
@@ -98,6 +106,10 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player }) =>
         return canBuildSettlement(G.core, player.id).ok;
       case 'city':
         return canBuildCity(G.core, player.id).ok;
+      case 'trade':
+        // Check if player has enough resources to trade at ANY rate
+        if (!G.core) return false;
+        return canMaritimeTrade(G.core, G.coreTopology, player.id).ok;
       default:
         return false;
     }
