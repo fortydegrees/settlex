@@ -1,6 +1,6 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/core";
-import { placeSettlement, placeRoad, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn } from "./Moves";
+import { placeSettlement, placeRoad, placeCity, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, discardResources, maritimeTrade } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 import * as nx from "jsnetworkx";
 //setup board and convert tiles/edges into right format to render
@@ -185,6 +185,11 @@ export const Catan =  {
             //playDev,
             rollDice, //after roll dice (and no 7) go to main
           }},
+          robberDiscard: { // Explicit phase for discarding
+             moves: {
+               discardResources,
+             }
+          },
           // overSeven: { //only available to some. have to manage stage
           //   moves:{
           //     discard,
@@ -195,8 +200,9 @@ export const Catan =  {
             moves:{
               placeRoad,
               placeSettlement,
+              placeCity,
               DEBUG_takeCardsFromBank,
-              // placeCity,
+              maritimeTrade,
               // buyDev,55
               // offerTrade,
               // tradeWithBank,

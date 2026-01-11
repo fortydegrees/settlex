@@ -10,6 +10,8 @@ import {
   applyPlaceRoad,
   applyPlaceSettlement,
   applyRollDice,
+  applyDiscard,
+  applyMaritimeTrade,
   buildableEdges,
   buildableNodes
 } from "@settlex/game-core";
@@ -280,7 +282,30 @@ export const rollDice = {
     }
 
     if (G.core.turn.phase.startsWith("robber")) {
-      events.setStage("moveRobber");
+      // Need to determine if we go to discard or moveRobber directly
+      // applyRollDice sets G.core.turn.phase to "robberDiscard" or "robberMove"
+      
+      if (G.core.turn.phase === "robberDiscard") {
+        // Activate all players in pendingDiscards list
+        const pendingPlayers = G.core.turn.pendingDiscards;
+        const activePlayersConfig = {};
+        
+        pendingPlayers.forEach(pid => {
+          activePlayersConfig[pid] = "robberDiscard";
+        });
+
+        // Use setActivePlayers to allow multiple players to act
+        // minMoves: 1 ensures they must discard before stage ends for them? 
+        // Actually we handle endStage manually in discardResources so we can just set the active mapping.
+        events.setActivePlayers({
+          value: activePlayersConfig,
+          // When all active players are done (handled by our logic or automatic?), 
+          // we might want to go to next stage, but we'll control it manually in discardResources
+        });
+
+      } else {
+        events.setStage("moveRobber");
+      }
       return;
     }
 
@@ -331,5 +356,69 @@ export const endTurn = {
 
     const nextPlayerId = G.core.turn.currentPlayerId;
     events.endTurn({ next: nextPlayerId });
+  }
+};
+
+export const discardResources = {
+  move: (context, resources) => {
+    const { G, playerID, events } = context;
+    // Assume core G structure
+    const result = applyDiscard(G.core, playerID, resources);
+    if (!result.ok) {
+      console.log(`Invalid discard: ${result.error}`);
+      return;
+    }
+
+    // After a successful discard, this player is done with this stage.
+    // We remove them from the active players.
+    events.endStage();
+
+    // Check if we need to advance phase/stage for the *game*
+    // applyDiscard updates pendingDiscards and potentially state.turn.phase to 'robberMove'
+    if (G.core.turn.phase === "robberMove") {
+       // Everyone has discarded. Now the CURRENT PLAYER needs to move the robber.
+       // We explicitly set the active player back to the current player for the moveRobber stage.
+       events.setActivePlayers({
+         currentPlayer: "moveRobber",
+         // ensure others are not active? setActivePlayers overwrites previous configuration by default unless strictly additive?
+         // Documentation says "This takes the stage configuration to the value..." implying it sets the state.
+       });
+    }
+  }
+};
+
+export const maritimeTrade = {
+  move: (context, trade) => {
+    // trade = { give: [Resource], receive: Resource }
+    // The UI sends an array for give, but core expects single resource for 'give' if using applyMaritimeTrade
+    // Wait, the core applyMaritimeTrade function takes: 
+    //   trade: { give: Resource; receive: Resource }
+    // This implies it only handles ONE trade at a time, e.g. give 4 wood for 1 brick.
+    // If the UI sends { give: ['Wood','Wood','Wood','Wood'], receive: 'Brick' }, we need to parse it.
+    
+    const { G, playerID } = context;
+    
+    // Validate input format
+    if (!trade || !trade.give || !Array.isArray(trade.give) || !trade.receive) {
+        console.log("Invalid trade format");
+        return;
+    }
+    
+    // Ensure all given resources are the same type (maritime trade rule)
+    const resourceType = trade.give[0];
+    if (trade.give.some(r => r !== resourceType)) {
+        console.log("Maritime trade requires giving homogenous resources");
+        return;
+    }
+    
+    // Call core function
+    const result = applyMaritimeTrade(G.core, G.coreTopology, playerID, {
+        give: resourceType,
+        receive: trade.receive
+    });
+    
+    if (!result.ok) {
+        console.log(`Invalid maritime trade: ${result.error}`);
+    }
   }
 };

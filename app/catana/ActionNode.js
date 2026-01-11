@@ -71,6 +71,9 @@ export function ActionNode({
             placing
           />
         ) : (
+          // this is actually used for roads (ActionNode is reused)
+          // though usually roads use Edge component with placing=true
+          // if we ever use ActionNode for edges, we need to handle SVG logic
           piece
         )
       )}

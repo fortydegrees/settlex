@@ -15,6 +15,7 @@ import {
   PlayerActionContainer,
   CardIcon,
 } from "./components/PlayerActionContainer";
+import { TradeDiscardModal } from "./components/TradeDiscardModal";
 
 export function GameScreen(bgioProps) {
   //playerAction is things that appear to the user (not spectator)
@@ -22,6 +23,7 @@ export function GameScreen(bgioProps) {
   //but i think we want this controlled by server/gameState
     //e.g. if disconnect after placing one road of RB, reconnect will want to prompt to place second road
   const [playerAction, setPlayerAction] = useState(null);
+  const [showTradeModal, setShowTradeModal] = useState(false);
 
   //get the active playerID of who's watching
   //can be null for spectator?
@@ -30,6 +32,30 @@ export function GameScreen(bgioProps) {
 
   const playerViewMap = buildPlayerViewMap(bgioProps.G.core);
   const player = playerViewMap[playerID];
+
+  // Discard Logic
+  // Check if pendingDiscards list includes the current player
+  // NOTE: We used to check bgioProps.ctx.phase === 'robberDiscard' but sometimes
+  // the client-side derived ctx.phase might lag or differ if the game engine isn't strictly mapping G to ctx phases 1:1.
+  // Relying on G.core.turn.pendingDiscards is more robust because that IS the source of truth for "who needs to discard".
+  // Also, G.core.turn.phase should be 'robberDiscard' if pendingDiscards > 0, but let's be safe.
+  const needsToDiscard = bgioProps.G.core.turn.pendingDiscards.includes(playerID);
+  
+  const discardCount = needsToDiscard ? Math.floor(player.resources.length / 2) : 0;
+
+  const handleDiscardConfirm = (resourcesToDiscard) => {
+    bgioProps.moves.discardResources(resourcesToDiscard);
+    // Modal will auto-close when phase/state updates
+  };
+
+  const handleTradeConfirm = (tradeData) => {
+    // console.log("Trade:", tradeData);
+    // Connect to actual move:
+    bgioProps.moves.maritimeTrade(tradeData);
+    // For now just close
+    setShowTradeModal(false);
+  };
+
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
@@ -90,6 +116,30 @@ TODO: accurately colour it
           bgioProps={bgioProps}
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
+          onTradeClick={() => setShowTradeModal(true)}
+        />
+      )}
+
+      {/* MODALS */}
+      {/* 1. Force Discard Modal */}
+      {!!player && needsToDiscard && (
+        <TradeDiscardModal
+          mode="discard"
+          player={player}
+          requiredDiscardCount={discardCount}
+          onConfirm={handleDiscardConfirm}
+          // No cancel for forced discard
+        />
+      )}
+
+      {/* 2. Manual Trade Modal */}
+      {!!player && showTradeModal && !needsToDiscard && (
+        <TradeDiscardModal
+          mode="trade"
+          player={player}
+          onConfirm={handleTradeConfirm}
+          onCancel={() => setShowTradeModal(false)}
+          G={bgioProps.G}
         />
       )}
 

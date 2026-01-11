@@ -38,7 +38,7 @@ export function canUsePort(
   return false;
 }
 
-function bestTradeRate(
+export function bestTradeRate(
   state: GameState,
   board: BoardTopology,
   playerId: string,
@@ -61,6 +61,38 @@ function bestTradeRate(
   if (hasSpecific) return state.ruleset.tradeRates.specificPort;
   if (hasGeneric) return state.ruleset.tradeRates.genericPort;
   return state.ruleset.tradeRates.bank;
+}
+
+/**
+ * Check if a player can perform any maritime trade.
+ * Returns true if they have enough resources to meet the best available trade rate for at least one resource type they own.
+ */
+export function canMaritimeTrade(
+  state: GameState,
+  board: BoardTopology,
+  playerId: string
+): { ok: true } | { ok: false; error: string } {
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ok: false, error: "unknown-player" };
+  }
+
+  const resourceCounts = countResources(player.resources);
+  
+  // Iterate through all resource types the player owns
+  for (const [resource, count] of Object.entries(resourceCounts)) {
+    if (count <= 0) continue;
+    
+    // Check the rate for this specific resource
+    const rate = bestTradeRate(state, board, playerId, resource as Resource);
+    
+    // If they have enough to trade even once, it's a valid action
+    if (count >= rate) {
+      return { ok: true };
+    }
+  }
+
+  return { ok: false, error: "insufficient-resources" };
 }
 
 export function applyMaritimeTrade(
