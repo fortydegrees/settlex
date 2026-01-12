@@ -188,7 +188,7 @@ export function CatanBoard({
   }, [canBuildRoad, playerAction, G, ctx]);
 
   useEffect(()=>{
-    if (playerAction === "placeRoad" && G.core && G.coreTopology) {
+    if ((playerAction === "placeRoad" || playerAction === "roadBuilding") && G.core && G.coreTopology) {
       const buildable = getBuildableEdges(ctx.currentPlayer, G, ctx)
       setBuildableRoads(buildable)
     }
@@ -487,6 +487,7 @@ export function CatanBoard({
         color={currentPlayerView?.color ?? "red"}
         placing
         initialPlacement={false}
+        roadBuilding={playerAction === "roadBuilding"}
         moves={moves}
         setHoveredNode={setHoveredNode}
         setPlayerAction={setPlayerAction}
