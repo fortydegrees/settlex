@@ -16,6 +16,7 @@ import {
   applyBuildRoad,
   applyBuildSettlement,
   applyBuildCity,
+  applyFreeRoad,
   canBuildRoad,
   canBuildSettlement,
   canBuildCity
@@ -46,6 +47,23 @@ it("applyBuildRoad spends resources and decrements pieces", () => {
 
   expect(result.ok).toBe(true);
   expect(state.playerStateById["0"].resources).toEqual([]);
+  expect(state.playerStateById["0"].roadsRemaining).toBe(
+    state.ruleset.pieceLimits.roads - 1
+  );
+});
+
+it("applyFreeRoad places a road without spending resources", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].resources = [ResourceType.WOOD, ResourceType.BRICK];
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyFreeRoad(state, board, "1,2", "0");
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([
+    ResourceType.WOOD,
+    ResourceType.BRICK
+  ]);
   expect(state.playerStateById["0"].roadsRemaining).toBe(
     state.ruleset.pieceLimits.roads - 1
   );
