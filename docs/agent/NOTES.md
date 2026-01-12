@@ -24,3 +24,4 @@
 - Dev-card play UI test plan lives in `docs/future_plans/dev-card-play-tests.md`.
 - Dock button sizing/hover uses react-spring in `app/catana/components/ActionsDock/DockCard.js`.
 - Build-action cancel UX design lives in `docs/plans/2026-01-12-ui-build-cancel-design.md`.
+- Build-action cancel helper lives in `app/catana/utils/cancelBuildAction.js` with UI wiring tests in `app/catana/__tests__/ActionNode.test.js` and `app/catana/__tests__/GameScreen.cancelBuildAction.test.js`.
