@@ -1,6 +1,8 @@
 import type { Resource } from "../types";
+import { TileTypes } from "../types";
 import type { BoardTopology } from "../core/topology";
 import type { GameState } from "../core/state";
+import { getPublicVictoryPoints } from "./victory";
 
 export function playersNeedingDiscard(state: GameState): string[] {
   return state.players.filter(
@@ -136,6 +138,9 @@ export function canPlaceRobber(
   if (!tile) {
     return false;
   }
+  if (tile.type !== TileTypes.LAND) {
+    return false;
+  }
 
   if (!state.ruleset.friendlyRobber.enabled) {
     return true;
@@ -148,7 +153,7 @@ export function canPlaceRobber(
       continue;
     }
     const owner = building.ownerId;
-    const vp = state.playerStateById[owner]?.victoryPoints ?? 0;
+    const vp = getPublicVictoryPoints(state, owner);
     if (vp <= state.ruleset.friendlyRobber.vpThreshold) {
       return false;
     }
@@ -178,6 +183,15 @@ export function getRobberVictims(
     if (building.ownerId === actingPlayerId) {
       continue;
     }
+    
+    // Check Friendly Robber protection: cannot steal from player with too few VPs
+    if (state.ruleset.friendlyRobber.enabled) {
+        const vp = getPublicVictoryPoints(state, building.ownerId);
+        if (vp <= state.ruleset.friendlyRobber.vpThreshold) {
+            continue;
+        }
+    }
+    
     victims.add(building.ownerId);
   }
 
@@ -188,12 +202,58 @@ export function applyMoveRobber(
   state: GameState,
   board: BoardTopology,
   tileId: number,
-  _actingPlayerId: string
+  actingPlayerId: string,
+  stolenCardIndex?: number,
+  targetVictimId?: string
 ): { ok: true } | { ok: false; error: string } {
   if (!canPlaceRobber(state, board, tileId)) {
     return { ok: false, error: "illegal-robber" };
   }
+
+  // Handle stealing
+  const victims = getRobberVictims(state, board, tileId, actingPlayerId);
+  
+  const potentialVictims = victims.filter(id => {
+      const p = state.playerStateById[id];
+      return p && p.resources.length > 0;
+  });
+
+  let victimId = targetVictimId;
+  if (potentialVictims.length > 0) {
+    // If target specified, validate it
+    if (victimId) {
+      if (!potentialVictims.includes(victimId)) {
+        return { ok: false, error: "invalid-victim" };
+      }
+    } else {
+      // If only one victim, auto-select
+      if (potentialVictims.length === 1) {
+        victimId = potentialVictims[0];
+      } else {
+        // If multiple victims and no target specified, return error (UI needs to ask user)
+        return { ok: false, error: "ambiguous-victim" };
+      }
+    }
+  }
+
   state.robberTileId = tileId;
+
+  // Execute steal
+  if (victimId) {
+    const victim = state.playerStateById[victimId];
+    const thief = state.playerStateById[actingPlayerId];
+    if (victim && thief && victim.resources.length > 0) {
+      // Use provided index (0-1 float) to select card
+      // random.Number() returns 0..1, so we map it to 0..length-1
+      const rand = stolenCardIndex !== undefined ? stolenCardIndex : 0;
+      const index = Math.floor(rand * victim.resources.length);
+      const stolenResource = victim.resources[index];
+
+      removeCardOnce(victim.resources, stolenResource);
+      thief.resources.push(stolenResource);
+    }
+  }
+
   return { ok: true };
 }
 

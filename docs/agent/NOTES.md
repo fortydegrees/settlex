@@ -11,3 +11,8 @@
 - Added applyEndTurn behavior coverage in `game-core/src/rules/turnFlow.test.ts` to specify end-turn resets/validation.
 - Root `vitest.config.ts` aliases `@settlex/game-core` to `game-core/src/index.ts` for app-level tests.
 - `rollDice` now routes 7s to `moveRobber` stage; `moveRobber` resets core turn phase to `postRoll`.
+- Dev-card UI sizing/animation lives in `app/catana/components/DevCardDisplay.js` + `app/catana/components/DevCardDisplay.css`; display groups duplicates by first-seen order.
+- Bottom-right dice/end-turn layout is controlled in `app/catana/components/PlayerActionContainer.js`.
+- Victory point dev cards now render as a stacked pile with a count badge when there are 3+.
+- Dev-card UX backlog lives in `docs/future_plans/dev-card-box.md`.
+- Dock button sizing/hover uses react-spring in `app/catana/components/ActionsDock/DockCard.js`.

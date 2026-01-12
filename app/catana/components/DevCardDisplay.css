@@ -1,0 +1,28 @@
+.devcard-box {
+  transition: width 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+.devcard-pop {
+  animation: devcard-pop 180ms ease-out;
+}
+
+@keyframes devcard-pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .devcard-box {
+    transition: none;
+  }
+
+  .devcard-pop {
+    animation: none;
+  }
+}

@@ -1,6 +1,6 @@
 
 import { current } from "immer";
-import { ResourceType } from "./game/types";
+import { ResourceType, TileTypes } from "./game/types";
 import {
   applyBuildCity,
   applyBuildRoad,
@@ -13,7 +13,8 @@ import {
   applyDiscard,
   applyMaritimeTrade,
   buildableEdges,
-  buildableNodes
+  buildableNodes,
+  buyDevCard as applyBuyDevCard
 } from "@settlex/game-core";
 
 //used for giving cards to a player by clicking on icon for testing
@@ -132,7 +133,7 @@ export const placeSettlement = {
 
       //get the resource of the tile
       const resources = resourceTiles
-      .filter(t => t.tile.resource !== ResourceType.DESERT)
+      .filter(t => t.type === TileTypes.LAND && t.tile.resource !== ResourceType.DESERT)
       .map(t => t.tile.resource);
 
       //we want to provide [{tile}]
@@ -140,7 +141,7 @@ export const placeSettlement = {
       for (var tile of resourceTiles) {
         tile = current(tile);
         //check that it's a resource tile AND not blocked
-        if (tile.tile.resource !== ResourceType.DESERT){
+        if (tile.type === TileTypes.LAND && tile.tile.resource !== ResourceType.DESERT){
         //TODO: change this to be an array of tile, playerIDs so animations aren't staggered
         cardAnims.push({ tile, playerID });
         }
@@ -250,10 +251,15 @@ export const placeCity = {
 //or postRoll (if played from rolling a 7 or knight mid-turn)
 export const moveRobber = {
   move: (context, tileID) =>{
-    const { G, events, ctx } = context;
-    const result = applyMoveRobber(G.core, G.coreTopology, tileID, ctx.currentPlayer);
+    const { G, events, ctx, random } = context;
+    
+    // Generate a random number for stealing (deterministic)
+    // We pass this to the core logic, which will use modulo to select the actual card if needed
+    const stolenCardIndex = random.Number(); 
+    
+    const result = applyMoveRobber(G.core, G.coreTopology, tileID, ctx.currentPlayer, stolenCardIndex);
     if (!result.ok) {
-      console.log(`Invalid robber placement on tile ${tileID}`);
+      console.log(`Invalid robber placement on tile ${tileID}: ${result.error}`);
       return;
     }
 
@@ -420,5 +426,59 @@ export const maritimeTrade = {
     if (!result.ok) {
         console.log(`Invalid maritime trade: ${result.error}`);
     }
+  }
+};
+
+export const buyDevCard = {
+  move: (context) => {
+    const { G, playerID } = context;
+    const result = applyBuyDevCard(G.core, playerID);
+    if (!result.ok) {
+      console.log(`Invalid buy dev card: ${result.error}`);
+    }
+  }
+};
+
+
+export const DEBUG_loadState = {
+  move: (context, newState) => {
+    // newState should contain the G object
+    if (newState && newState.G) {
+       // Returning the new state tells boardgame.io to replace G entirely
+       return newState.G;
+    }
+  }
+};
+
+export const DEBUG_setScenario = {
+  move: (context, scenarioId) => {
+      console.log("DEBUG_setScenario execution started", scenarioId);
+      const { G, playerID } = context;
+      if (!G.core || !G.core.playerStateById[playerID]) {
+          console.error("DEBUG_setScenario: Missing core or playerState", playerID);
+          return;
+      }
+      
+      const player = G.core.playerStateById[playerID];
+
+      switch (scenarioId) {
+          case 'rich':
+              // Give lots of resources
+              player.resources = ["Wood", "Wood", "Wood", "Wood", "Brick", "Brick", "Brick", "Brick", "Sheep", "Sheep", "Sheep", "Sheep", "Wheat", "Wheat", "Wheat", "Wheat", "Ore", "Ore", "Ore", "Ore"];
+              break;
+          case 'devCardReady':
+              // Exact cards for a few dev cards
+              player.resources = ["Sheep", "Wheat", "Ore", "Sheep", "Wheat", "Ore", "Sheep", "Wheat", "Ore"];
+              break;
+         case 'midGame':
+               // 5 of each
+              player.resources = []; // Reset first? Or add? Let's reset for scenario consistency
+              ["Wood", "Brick", "Sheep", "Wheat", "Ore"].forEach(r => {
+                  for(let i=0; i<5; i++) player.resources.push(r);
+              });
+             break;
+          default:
+              console.log("Unknown scenario", scenarioId);
+      }
   }
 };

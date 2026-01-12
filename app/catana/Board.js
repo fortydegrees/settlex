@@ -13,16 +13,20 @@ import useWindowSize from "./utils/useWindowSize";
 import { useLatestPropsOnEffect, useEffectListener } from "bgio-effects/react";
 import { useTransition, animated } from "@react-spring/web";
 import { TileTypes } from "./game/types";
-import { buildableNodes } from "@settlex/game-core";
+import { buildableNodes, canPlaceRobber } from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
 
 const getValidRobberTiles = (G) => {
-  //TODO: friendly robber
+  // Use core function for validation
+  if (!G.core) return [];
+  
   const tileIdsExceptRobber = G.tiles
     .filter((tile) => tile.tile.id !== G.core?.robberTileId)
+    .filter((tile) => canPlaceRobber(G.core, G.coreTopology, tile.tile.id))
     .map((tile) => tile.tile.id);
+  
   return tileIdsExceptRobber;
 };
 
@@ -254,15 +258,32 @@ export function CatanBoard({
   //for displaying actionNodes based on stage the player is in (e.g. moving robber)
   //NOT for building road, as this is not a stage
   useEffect(() => {
-    if (Object.entries(ctx.activePlayers).flat().includes("moveRobber")) {
+    // Only show robber tiles if it's the CURRENT player's turn and they are in the moveRobber stage
+    const isCurrentPlayerActive = ctx.currentPlayer === ctx.playerID; // Or however playerID is passed. Wait, `ctx.playerID` isn't standard bgio.
+    // In bgio-client, props include `playerID` (the viewer).
+    // The `ctx.currentPlayer` is the player whose turn it is.
+    
+    // We need to know who is VIEWING the board.
+    // The component receives `playerID` from props (if using Client).
+    // But `CatanBoard` props destructuring didn't include `playerID`.
+    // Let's check props.
+    
+    // Actually, `ctx.activePlayers` logic below was:
+    // if (Object.entries(ctx.activePlayers).flat().includes("moveRobber"))
+    
+    // This is true if ANYONE is in moveRobber stage.
+    // We want to show it ONLY if the VIEWING player is in moveRobber stage.
+    
+    // Let's assume `isActive` prop handles "is this player able to move".
+    // `isActive` is passed by boardgame.io Client. It is true if it's your turn (or you are active in a stage).
+    
+    if (isActive && Object.entries(ctx.activePlayers || {}).flat().includes("moveRobber")) {
       var robberTiles = getValidRobberTiles(G);
       setRobberTiles(robberTiles);
-    }
-    
-    else {
+    } else {
       setRobberTiles([]);
     }
-  }, [ctx.activePlayers]);
+  }, [ctx.activePlayers, isActive, G]);
 
   useEffect(() => {
     if (Object.entries(ctx.activePlayers).flat().includes("settlement")) {

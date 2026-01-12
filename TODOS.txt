@@ -1,8 +1,78 @@
 Personal TODO
 
-==potential bugs==
+friendly robber - atm can place on any hex/tile no matter user's VPs
+robber/knight steals random card 
+    dialog box to choose which player if > 2
 
+bank resource display
+
+user/opponent score display
+    accurate longest road, VPs, card count etc tracking
+
+dev cards
+    design
+    buying and display in user's action box.
+    dev card playing
+
+
+game win/end
+
+post-game stats
+
+turn timer
+    need default moves e.g. settlement placing, cards to discard
+
+
+animations
+    game start - tile reveal/drop
+    game win/end
+    card distribution on roll
+    longest road
+    robber Moves
+    dev card playing
+    building
+    mouse roll
+    better indication of which hexes produced/rolled (colonist makes them darker)
+
+sounds
+
+hotkeys
+    spacebar to roll/end turn
+    ideally can play it all via keyboard
+
+proper board generation
+
+
+
+==potential bugs==
+getting 3 resource cards at the start when only placing on 2...
+    card animation when user places settlement on only two tiles throws error in initial phase
+    
+weird legacy bounce animation when placing roads doesn't stop/makes it difficult to place multiple in one turn 
 
 ==minor==
 improve the trade/discard modal/dialog/popup design
 easy build roads (by just clicking on available edge)
+settlement still shows when hovering to place city. looks a bit janky. settle/city placement in general could be better
+
+
+==long term==
+profiles, game history etc
+
+two player, see other person's mouse live
+achievements
+
+settings
+    'pro mode' / no animations 
+
+themes
+    different tile designs
+
+
+
+===questions===
+
+trade button disabled if can't trade. is this ok? is this good UX for 1v1? or should we allow user to open trade window to find out why they can't trade?
+
+==features etc==
+custom rules. e.g. custom friendly robber. can't be robbed/blocked on 2VP, but also like 5 and 7 VP?

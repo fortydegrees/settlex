@@ -28,3 +28,10 @@
 - Wired `endTurn` move in `app/catana/Moves.js` to `applyEndTurn` and synced boardgame.io turn order.
 - Added app-level Vitest config (`vitest.config.ts`) and tests for end-turn wiring plus robber flow stage transitions.
 - Updated `rollDice` to send 7s to `moveRobber` stage; `moveRobber` now advances the core turn phase back to post-roll.
+
+## Status (2026-01-12)
+- Polished the dev-card UI container to match the bottom bar (sizing, spacing, and grouping order), with a pop-in animation and smooth width changes as cards are added.
+- Tweaked dev-card spacing/alignment and anchored the dice/end-turn controls to the bottom-right.
+- Adjusted right-side padding for the dice/end-turn stack and added VP card stacking with count badges.
+- Added a future-notes doc for dev-card box UX experiments and open questions.
+- Smoothed action-dock enable transitions by keeping DockCard animated state consistent on enable/disable.
