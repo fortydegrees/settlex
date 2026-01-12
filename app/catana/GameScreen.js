@@ -8,6 +8,7 @@ import React, { useState, useEffect } from "react";
 
 import { RESOURCE_ICON_SVGS, ResourceType } from "./game/types";
 import { buildPlayerViewMap } from "./utils/playerView";
+import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 
 import { EffectsBoardWrapper, useEffectListener } from "bgio-effects/react";
 
@@ -102,18 +103,21 @@ export function GameScreen(bgioProps) {
 
   //we get a username here, being 'playerID' currently..
 
-  // UNTESTED, but meant to cancel player action
-  const handleScreenClick = () => {
-    setPlayerAction(null);
+  const handleScreenClickCapture = (event) => {
+    const target = event?.target;
+    const targetIsActionCircle = Boolean(
+      target?.closest?.('[data-action-circle="true"]')
+    );
+    if (
+      shouldCancelBuildAction({
+        playerAction,
+        phase: bgioProps.ctx.phase,
+        targetIsActionCircle
+      })
+    ) {
+      setPlayerAction(null);
+    }
   };
-
-  // Setup and cleanup of the click event listener
-  // useEffect(() => {
-  //   document.addEventListener("click", handleScreenClick);
-  //   return () => {
-  //     document.removeEventListener("click", handleScreenClick);
-  //   };
-  // }, []);
   // console.log('p', player)
   // console.log('opps', opponents)
   return (
@@ -127,6 +131,7 @@ export function GameScreen(bgioProps) {
         top: 0,
         left: 0,
       }}
+      onClickCapture={handleScreenClickCapture}
     >
       {/* board in zoom/pan/pinch wrapper  */}
       <TransformWrapper
