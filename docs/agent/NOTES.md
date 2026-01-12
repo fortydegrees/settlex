@@ -14,6 +14,8 @@
 - Dev-card UI sizing/animation lives in `app/catana/components/DevCardDisplay.js` + `app/catana/components/DevCardDisplay.css`; display groups duplicates by first-seen order.
 - Dev-card play UI hooks live in `app/catana/components/PlayerActionContainer.js`; playable cards invoke `moves.playDevCardStart`.
 - `TradeDiscardModal` now supports dev-card modes (`dev-yop`, `dev-monopoly`) for resource selection.
+- Maritime trade quick-open uses `app/catana/utils/trade.js` to compute per-resource trade rate eligibility.
+- `TradeDiscardModal` accepts `tradePresetResource` to prefill maritime give selections on open.
 - Bottom-right dice/end-turn layout is controlled in `app/catana/components/PlayerActionContainer.js`.
 - Victory point dev cards now render as a stacked pile with a count badge when there are 3+.
 - Dev-card UX backlog lives in `docs/future_plans/dev-card-box.md`.
