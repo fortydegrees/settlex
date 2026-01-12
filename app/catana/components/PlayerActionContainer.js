@@ -1,17 +1,19 @@
 import Image from "next/image";
 import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
+import resCardBackIcon from "../../../public/svgs/card_rescardback.svg";
+import devCardBackIcon from "../../../public/svgs/card_devcardback.svg";
 import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
+import { DevCardDisplay } from "./DevCardDisplay";
 import { RESOURCE_ICON_SVGS } from "../game/types";
 import React, { useState, useMemo } from "react";
 import {
-  ChevronDoubleRightIcon,
   ForwardIcon,
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
-import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, ResourceType } from "@settlex/game-core";
+import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, ResourceType, buildableNodes, buildableEdges, getLongestRoadLength, getVictoryPoints, getPublicVictoryPoints } from "@settlex/game-core";
 
 
 export const CardIcon = ({ playerCards, resource, player, setIsTrading, ctx }) => {
@@ -88,6 +90,15 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
       img: "/svgs/city_red.svg",
       count: player.citiesRemaining,
       enabled: false,
+      enabled: false,
+      style: null,
+    },
+    {
+      name: "devCard",
+      action: () => moves.buyDevCard(),
+      img: "/svgs/icon_devcard.svg",
+      count: 0,
+      enabled: false,
       style: null,
     },
     null
@@ -96,20 +107,43 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
   const isActionEnabled = (actionName) => {
     // UI-level checks (boardgame.io state)
     if (ctx.currentPlayer !== player.id.toString()) return false;
-    if (ctx.activePlayers?.[player.id] !== "postRoll") return false;
+    if (ctx.activePlayers?.[player.id] !== "postRoll") {
+        if (actionName === 'devCard') console.log(`DevCard disabled: Wrong phase/stage. Current: ${ctx.activePlayers?.[player.id]}`);
+        return false;
+    }
+    if (!G.core) return false;
 
     // Game rule checks (from game-core)
     switch (actionName) {
       case 'road':
-        return canBuildRoad(G.core, player.id).ok;
+        if (!canBuildRoad(G.core, player.id).ok) return false;
+        // Check if there are any buildable edges
+        return buildableEdges(G.core, G.coreTopology, player.id, { initialPlacement: false }).length > 0;
       case 'settlement':
-        return canBuildSettlement(G.core, player.id).ok;
+        if (!canBuildSettlement(G.core, player.id).ok) return false;
+        // Check if there are any buildable nodes
+        return buildableNodes(G.core, G.coreTopology, player.id, { initialPlacement: false }).length > 0;
       case 'city':
-        return canBuildCity(G.core, player.id).ok;
+        if (!canBuildCity(G.core, player.id).ok) return false;
+        // Check if player has any settlements to upgrade
+        // City build rule: must replace an existing settlement of the player
+        const settlements = Object.values(G.core.buildingsByNodeId).filter(
+          b => b.ownerId === player.id && b.type === 'settlement'
+        );
+        return settlements.length > 0;
       case 'trade':
         // Check if player has enough resources to trade at ANY rate
-        if (!G.core) return false;
         return canMaritimeTrade(G.core, G.coreTopology, player.id).ok;
+      case 'devCard':
+        if (!G.core.devDeck.length) {
+            console.log("DevCard disabled: Deck empty");
+            return false;
+        }
+        const affordable = canAfford(G.core.ruleset.buildCosts.devCard, player.resources);
+        if (!affordable) {
+             console.log("DevCard disabled: Cant afford", { cost: G.core.ruleset.buildCosts.devCard, resources: player.resources });
+        }
+        return affordable;
       default:
         return false;
     }
@@ -127,8 +161,44 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
   
   const avatarColor = `from-${player.color}-500 to-${player.color}-800`
 
+  // Calculate if player is over discard limit
+  const totalResources = player.resources.length;
+  const discardLimit = G.core?.ruleset?.discardLimit ?? 7;
+  const isOverLimit = totalResources > discardLimit;
+
+  // Calculate victory stats
+  const currentRoadLength = G.core ? getLongestRoadLength(G.core, G.coreTopology, player.id) : 0;
+  const currentArmySize = player.knightsPlayed || 0;
+  const hasLongestRoad = G.core?.awards?.longestRoadOwnerId === player.id;
+  const hasLargestArmy = G.core?.awards?.largestArmyOwnerId === player.id;
+
+  // Victory Points Logic
+  const totalPoints = G.core ? getVictoryPoints(G.core, player.id) : 0;
+  const publicPoints = G.core ? getPublicVictoryPoints(G.core, player.id) : 0;
+  
+  const isCurrentPlayer = ctx.currentPlayer === player.id; // Or use spectator logic if needed
+  // If we are looking at our OWN player (or spectator sees all?), show simplified hidden logic
+  // Actually, standard is: show public points. If I am the player, I can see my hidden points.
+  // The 'player' prop here defines WHICH player card we are rendering. 
+  // 'ctx.currentPlayer' defines whose TURN it is, but we need to know who the CLIENT is.
+  // We don't strictly know 'who the client is' in this component except maybe via `bgioProps.playerID`.
+  
+  const clientPlayerID = bgioProps.playerID;
+  const isMe = clientPlayerID === player.id;
+
+  let vpDisplay = `${publicPoints}`;
+  if (isMe && totalPoints > publicPoints) {
+    const hidden = totalPoints - publicPoints;
+    vpDisplay = `${publicPoints} (+${hidden})`;
+  }
+
+  // Determine container styling based on limit status
+  const containerStyle = isOverLimit 
+    ? "bg-rose-500 bg-opacity-40 ring-rose-500" 
+    : "bg-blue-200 bg-opacity-50 ring-slate-300";
+
   return (
-    <div className="flex fixed w-full bottom-4 px-4 ">
+    <div className="flex fixed w-full bottom-4 px-4 items-end">
       {/* Other elements */}
       <div className="flex flex-1 items-center justify-end self-end">
         {/* Add other divs here */}
@@ -138,39 +208,77 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
           <div className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${avatarColor}`}>
             🤠
           </div>
-          <span className="absolute right-0 top-0 block h-8 w-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center">
-            4
+          <span className="absolute right-0 top-0 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
+            {vpDisplay}
           </span>
         </span>
-        <span className="bg-blue-200 bg-opacity-50 rounded-r-md flex flex-col h-20 w-20 pt-1 ring-2 ring-slate-300">
-          <div className="flex ml-3 items-center">
-            <Image
-              src={longestRoadIcon}
-              alt="Longest road"
-              width={35}
-              height={35}
-            />
-            <span className="mx-3 text-white text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-              1
-            </span>
+        <span className="bg-blue-200 bg-opacity-50 rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300">
+          <div className="flex flex-col gap-y-1">
+            <div className="flex items-center">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src={longestRoadIcon}
+                  alt="Longest road"
+                  width={28}
+                  height={28}
+                  className="object-contain"
+                />
+              </div>
+              <span className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${hasLongestRoad ? "text-yellow-400 font-bold" : "text-white"}`}>
+                {currentRoadLength}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src={largestArmyIcon}
+                  alt="Largest army"
+                  width={28}
+                  height={28}
+                  className="object-contain"
+                />
+              </div>
+              <span className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${hasLargestArmy ? "text-yellow-400 font-bold" : "text-white"}`}>
+                {currentArmySize}
+              </span>
+            </div>
           </div>
-          <div className="flex ml-3 items-center">
-            <Image
-              src={largestArmyIcon}
-              alt="Largest army"
-              width={35}
-              height={35}
-            />
-            <span className="mx-3 text-white text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-              1
-            </span>
+          <div className="flex flex-col gap-y-1">
+            <div className="flex items-center">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src={resCardBackIcon}
+                  alt="Resource cards"
+                  width={20}
+                  height={28}
+                  className="object-contain"
+                />
+              </div>
+              <span className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${isOverLimit ? "text-rose-500 font-bold" : "text-white"}`}>
+                {player.resources.length}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src={devCardBackIcon}
+                  alt="Dev cards"
+                  width={20}
+                  height={28}
+                  className="object-contain"
+                />
+              </div>
+              <span className="w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] text-white">
+                {player.devCards?.length ?? 0}
+              </span>
+            </div>
           </div>
         </span>
       </div>
 
       {/* Centered card container */}
-      <div className="grow-0 self-end">
-        <div className="relative h-20 ml-4 mr-8 flex pl-4 bg-blue-200 bg-opacity-50 rounded-md ring-2 ring-slate-300">
+      <div className="grow-0 self-end relative">
+        <div className={`relative h-20 ml-4 mr-4 flex pl-4 rounded-md ring-2 transition-colors duration-300 ${containerStyle}`}>
           <Dock>
           {dynamicActions.map((action, index) =>
             action ? (
@@ -196,12 +304,17 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
             })}
           </div>
         </div>
+        {/* Dev Card Display */}
+        <div className="absolute left-full ml-0 bottom-[-2px]">
+          <DevCardDisplay cards={player.devCards} />
+        </div>
       </div>
 
-      <div className="flex-1 items-center justify-start self-end ">
+
+      <div className="flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
         {ctx.phase === "main" && (
-        <div className="ml-12 flex-col grow-0 w-36">
-          <div className={`flex ${ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? 'opacity-100' : 'opacity-50'}`} 
+        <div className="flex w-36 flex-col items-center">
+          <div className={`flex ${ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? 'opacity-100' : 'opacity-50'}`}
           
           onClick={ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? () => moves.rollDice() : ()=>{}}>
             <Die dieSize="3.5rem" />
@@ -210,7 +323,10 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
           </div>
           <button
             className={`bg-opacity-50 bg-blue-200 hover:bg-blue-300 mx-auto rounded-md flex h-20 w-20 ring-2 ring-slate-300 hover:fill-blue-200 hover:stroke-black`}
-            onClick={() => moves.endTurn()}
+            onClick={() => {
+              setPlayerAction(null);
+              moves.endTurn();
+            }}
           >
             <ForwardIcon className="w-16 h-16 mx-auto stroke-[0.6px] stroke-blue-200 my-auto" />
           </button>

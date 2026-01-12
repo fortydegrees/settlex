@@ -88,12 +88,44 @@ it("blocks robber placement on tiles adjacent to players <= vp threshold", () =>
   expect(canPlaceRobber(state, board, 1)).toBe(false);
 });
 
+it("rejects robber placement on non-land tiles", () => {
+  const portTiles = [
+    {
+      coordinate: [0, 0, 0] as [number, number, number],
+      type: TileTypes.PORT,
+      tile: {
+        id: 2,
+        resource: ResourceType.BRICK,
+        nodes: { NORTH: 1, SOUTH: 2 },
+        edges: {}
+      }
+    }
+  ];
+  const portBoard = buildTopology(portTiles);
+  const state = createEmptyState(["0"]);
+
+  expect(canPlaceRobber(state, portBoard, 2)).toBe(false);
+});
+
 it("returns eligible victims on robber tile", () => {
   const state = createEmptyState(["0", "1"]);
   state.buildingsByNodeId[1] = { ownerId: "1", type: "settlement" };
 
   const victims = getRobberVictims(state, board, 1, "0");
   expect(victims).toEqual(["1"]);
+});
+
+it("does not move robber when victim selection is ambiguous", () => {
+  const state = createEmptyState(["0", "1", "2"]);
+  state.buildingsByNodeId[1] = { ownerId: "1", type: "settlement" };
+  state.buildingsByNodeId[2] = { ownerId: "2", type: "settlement" };
+  state.playerStateById["1"].resources = [ResourceType.WOOD];
+  state.playerStateById["2"].resources = [ResourceType.BRICK];
+
+  const result = applyMoveRobber(state, board, 1, "0");
+
+  expect(result.ok).toBe(false);
+  expect(state.robberTileId).toBe(null);
 });
 
 it("applyMoveRobber updates tile when legal", () => {

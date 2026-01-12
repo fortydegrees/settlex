@@ -1,7 +1,13 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/core";
-import { placeSettlement, placeRoad, placeCity, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, discardResources, maritimeTrade } from "./Moves";
+import { placeSettlement, placeRoad, placeCity, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, discardResources, maritimeTrade, buyDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
+
+const DEBUG_MOVES = {
+  DEBUG_takeCardsFromBank,
+  DEBUG_loadState,
+  DEBUG_setScenario
+};
 import * as nx from "jsnetworkx";
 //setup board and convert tiles/edges into right format to render
 
@@ -21,6 +27,14 @@ import * as nx from "jsnetworkx";
 
 
 export const STATIC_GRAPH = new nx.Graph();
+
+export const getPlacementOrder = (numPlayers) => {
+  const ids = Array.from({ length: numPlayers }, (_, i) => i.toString());
+  if (ids.length <= 1) {
+    return ids;
+  }
+  return ids.concat([...ids].reverse());
+};
 
 
 const configuredEffectsPlugin = EffectsPlugin({
@@ -85,6 +99,15 @@ export const Catan =  {
     const core = createEmptyState(playerIds);
     core.phase = ctx.phase === "placement" ? "placement" : "normal";
     core.robberTileId = robberTile;
+    const placementOrder = getPlacementOrder(ctx.numPlayers);
+    
+    // Enable Friendly Robber by default for testing/deployment
+    core.ruleset.friendlyRobber = { enabled: true, vpThreshold: 2 };
+
+    // Shuffle Dev Deck
+    if (core.devDeck && core.devDeck.length > 0) {
+      core.devDeck = random.Shuffle(core.devDeck);
+    }
 
     return {
       core,
@@ -93,7 +116,8 @@ export const Catan =  {
       tiles,
       valids,
       diceRoll,
-      robberTileId: robberTile
+      robberTileId: robberTile,
+      placementOrder
     };
   },
 
@@ -130,7 +154,7 @@ export const Catan =  {
   phases: {
     placement: {
       turn: {
-        order: TurnOrder.CUSTOM(['0','1','1','0']), //TODO: set custom play order
+        order: TurnOrder.CUSTOM_FROM("placementOrder"),
         // playOrder: (G, ctx) => {
         //   // generate an array of sequential player IDs ['0', '1', '2', ...]
         //   const defaultPlayOrder = Array(ctx.numPlayers).fill().map((_, i) => i + '');
@@ -147,8 +171,8 @@ export const Catan =  {
             updateValids(context, "settlement")
         },
         stages: {
-          settlement: { moves: { placeSettlement } },
-          road: { moves: { placeRoad } },
+          settlement: { moves: { placeSettlement, ...DEBUG_MOVES } },
+          road: { moves: { placeRoad, ...DEBUG_MOVES } },
         },
       },
 
@@ -182,12 +206,13 @@ export const Catan =  {
         activePlayers: { currentPlayer: "preRoll" },
         stages: {
           preRoll: { moves: {
-            //playDev,
             rollDice, //after roll dice (and no 7) go to main
+            ...DEBUG_MOVES
           }},
           robberDiscard: { // Explicit phase for discarding
              moves: {
                discardResources,
+               ...DEBUG_MOVES
              }
           },
           // overSeven: { //only available to some. have to manage stage
@@ -201,19 +226,21 @@ export const Catan =  {
               placeRoad,
               placeSettlement,
               placeCity,
-              DEBUG_takeCardsFromBank,
               maritimeTrade,
+              buyDevCard,
               // buyDev,55
               // offerTrade,
               // tradeWithBank,
               // playDev,
               //endTurn,
-              endTurn
+              endTurn,
+              ...DEBUG_MOVES
             }
           },
           moveRobber: {
             moves:{
-              moveRobber
+              moveRobber,
+              ...DEBUG_MOVES
             }
           }
         },
@@ -224,9 +251,9 @@ export const Catan =  {
     },
   },
 
-  // moves: {
-  //   clickCell: ({ G, playerID }, id) => {
-  //     G.cells[id] = playerID;
-  //   },
-  // },
+  moves: {
+    DEBUG_loadState,
+    DEBUG_setScenario,
+    DEBUG_takeCardsFromBank
+  },
 };

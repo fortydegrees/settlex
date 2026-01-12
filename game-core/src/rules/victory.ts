@@ -70,7 +70,7 @@ function dfsLongestFromNode(
   return max;
 }
 
-function longestRoadLengthForPlayer(
+export function getLongestRoadLength(
   state: GameState,
   board: BoardTopology,
   playerId: string
@@ -106,7 +106,7 @@ export function recomputeLongestRoad(state: GameState, board: BoardTopology) {
   let leaders: string[] = [];
 
   for (const playerId of state.players) {
-    const length = longestRoadLengthForPlayer(state, board, playerId);
+    const length = getLongestRoadLength(state, board, playerId);
     if (length > max) {
       max = length;
       leaders = [playerId];
@@ -145,6 +145,31 @@ export function getVictoryPoints(state: GameState, playerId: string): number {
   if (player) {
     points += player.devCards.filter((card) => card === "victoryPoint").length;
   }
+
+  if (state.awards.longestRoadOwnerId === playerId) {
+    points += 2;
+  }
+  if (state.awards.largestArmyOwnerId === playerId) {
+    points += 2;
+  }
+
+  return points;
+}
+
+export function getPublicVictoryPoints(state: GameState, playerId: string): number {
+  let points = 0;
+  for (const building of Object.values(state.buildingsByNodeId)) {
+    if (building.ownerId !== playerId) {
+      continue;
+    }
+    if (building.type === "settlement") {
+      points += 1;
+    } else if (building.type === "city") {
+      points += 2;
+    }
+  }
+
+  // Hidden VP cards (devCards) are NOT counted in public VPs
 
   if (state.awards.longestRoadOwnerId === playerId) {
     points += 2;

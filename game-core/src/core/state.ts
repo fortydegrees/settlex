@@ -94,6 +94,16 @@ export function createEmptyState(players: string[], rulesetSpec?: Ruleset): Game
     };
   }
 
+
+  const devDeck: DevCardType[] = [];
+  if (ruleset.devCardsEnabled) {
+    for (const [type, count] of Object.entries(ruleset.devCardCounts ?? {})) {
+       for (let i = 0; i < count; i++) {
+         devDeck.push(type as DevCardType);
+       }
+    }
+  }
+
   return {
     phase: "placement",
     players,
@@ -119,6 +129,6 @@ export function createEmptyState(players: string[], rulesetSpec?: Ruleset): Game
       currentPlayerId: firstPlayer
     },
     robberTileId: null,
-    devDeck: []
+    devDeck
   };
 }

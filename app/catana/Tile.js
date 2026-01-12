@@ -96,6 +96,16 @@ export function Tile({
   const w = SQRT3 * size;
   const h = 2 * size;
 
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Reset hover state when the ability to place a robber changes
+  // This prevents stale "true" hover states from persisting when a tile becomes valid again later
+  React.useEffect(() => {
+    if (!canPlaceRobber) {
+      setIsHovered(false);
+    }
+  }, [canPlaceRobber]);
+
   var style = {
     display: "flex",
     justifyContent: "center",
@@ -114,7 +124,7 @@ export function Tile({
           : 0.8
         : 1,
     filter:
-      hasRobber && resource !== "Desert" && `saturate(0.85) brightness(0.85)`,
+      (hasRobber || isHovered) && resource !== "Desert" && `saturate(0.85) brightness(0.85)`,
   };
 
   if (draggable) {
@@ -171,6 +181,29 @@ export function Tile({
             height={size / 1.5}
           />
         )}
+        {canPlaceRobber && isHovered && (
+           <div
+             style={{ 
+               position: 'absolute', 
+               left: '50%',
+               top: '50%',
+               transform: 'translate(-50%, -50%)',
+               width: size / 1.5,
+               height: size / 1.5,
+               pointerEvents: 'none', // Ensure clicks pass through to the action circle
+               zIndex: 3 // Ensure it's above the tile but below/same level as action
+             }}
+           >
+             <Image
+               src={robberIcon}
+               alt="Robber Ghost"
+               className="animate-bounce"
+               style={{ width: '100%', height: '100%' }} // Fill the wrapper
+               width={size / 1.5}
+               height={size / 1.5}
+             />
+           </div>
+        )}
         {canPlaceRobber && (
           <div
             //add shadow when placing settlement
@@ -185,15 +218,15 @@ export function Tile({
               borderRadius: 100,
               borderColor: "#FFFFFF",
               borderWidth: 1.2,
-              opacity: 0.8,
+              opacity: isHovered ? 0 : 0.8, // Hide the circle when hovering (since we show the ghost robber)
               //fillOpacity:0.2
               //opacity: hoveredNode ? (hoveredNode == nodeId ? 1 : 0.4) : 0.8,
               zIndex: 2,
               //opacity: (hoveredNode ? 1 : 0.5),
             }}
             onClick={()=>moves.moveRobber(id)}
-            // onMouseEnter={() => setHoveredNode(nodeId)}
-            // onMouseLeave={() => setHoveredNode(null)}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           ></div>
         )}
       </div>

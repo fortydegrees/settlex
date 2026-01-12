@@ -16,6 +16,7 @@ import {
   CardIcon,
 } from "./components/PlayerActionContainer";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
+import { DebugPanel } from "./components/DebugPanel";
 
 export function GameScreen(bgioProps) {
   //playerAction is things that appear to the user (not spectator)
@@ -161,14 +162,7 @@ TODO: accurately colour it
         </div>
       ))}
 
-<div className="fixed left-0 w-48 ml-4 flex px-4 top-4 bg-blue-200 bg-opacity-50 rounded-md py-4">
-  <div className="flex flex-col mx-auto gap-y-2">
-<span className="mx-auto mb-2 ">DEBUG PANEL</span>
-<button className="rounded bg-white px-2 py-1 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" onClick={()=> localStorage.setItem('gameState', JSON.stringify(bgioProps))}>Save State</button>
-<button className="rounded bg-white px-2 py-1 text-sm text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" onClick={()=> localStorage.setItem('gameState', JSON.stringify(bgioProps))}>Load State</button>
-
-        </div>
-        </div>
+      <DebugPanel bgioProps={bgioProps} />
     </div>
   );
 }

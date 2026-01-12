@@ -11,7 +11,9 @@ export function buildPlayerViewMap(core) {
       resources: state?.resources ?? [],
       roadsRemaining: state?.roadsRemaining ?? 0,
       settlementsRemaining: state?.settlementsRemaining ?? 0,
-      citiesRemaining: state?.citiesRemaining ?? 0
+      citiesRemaining: state?.citiesRemaining ?? 0,
+      devCards: state?.devCards ?? [],
+      knightsPlayed: state?.knightsPlayed ?? 0
     };
   });
   return map;

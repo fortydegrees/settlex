@@ -45,6 +45,7 @@ export const DockCard = ({ action }) => {
   useMousePosition(
     {
       onChange: ({ value }) => {
+        if (!action.enabled) return;
         const mouseX = value.x;
 
         if (dock.width > 0) {
@@ -80,6 +81,7 @@ export const DockCard = ({ action }) => {
   const isAnimating = React.useRef(false);
 
   const handleClick = () => {
+    if (!action.enabled) return;
     if (!isAnimating.current) {
       action.action()
       isAnimating.current = true;
@@ -115,12 +117,27 @@ export const DockCard = ({ action }) => {
 
   React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
 
+  React.useEffect(() => {
+    if (!action.enabled) {
+      clearTimeout(timeoutRef.current);
+      opacity.set(0);
+      y.set(0);
+      size.set(INITIAL_WIDTH);
+      isAnimating.current = false;
+      return;
+    }
+    y.set(0);
+    size.set(INITIAL_WIDTH);
+  }, [action.enabled, opacity, size, y]);
+
   return (
     <div className="dock-card-container">
-      {action.enabled ?<animated.button
+      <animated.button
         ref={cardRef}
         //disabled
-        className={`bg-blue-300 ring-2 ring-slate-200 dock-card ${action.enabled ? 'enabled' : ''}`}
+        className={`bg-blue-300 ring-2 ring-slate-200 dock-card ${
+          action.enabled ? "enabled" : ""
+        }`}
         disabled={!action.enabled}
         onClick={handleClick}
         style={{
@@ -144,33 +161,7 @@ export const DockCard = ({ action }) => {
             </span>
           )}
         </span>
-      </animated.button> : <button
-        ref={cardRef}
-        disabled
-        className={`bg-blue-300 ring-2 ring-slate-200 dock-card`}
-       
-        //onClick={handleClick}
-        style={{
-          width: 48,
-          height: 48,
-        }}
-      >
-        <span className="card">
-          <img
-            className="card__img"
-            style={action.style}
-            src={action.img}
-            alt=""
-          />
-
-          {(action.count > 0) && (
-            <span className="absolute right-0 top-0 w-6 h-6 block -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50"
-           >
-              <span className="text-sm font-medium">{action.count}</span>
-            </span>
-          )}
-        </span>
-      </button> }
+      </animated.button>
       
       {/* <animated.div className="dock-dot" style={{ opacity }} /> */}
     </div>
