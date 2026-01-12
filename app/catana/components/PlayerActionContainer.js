@@ -177,9 +177,22 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
     };
   }), [bgioProps]);
 
+  const canTradeNow = isActionEnabled("trade");
+
+  const canQuickTradeResource = (resource) => {
+    if (!onTradeClick || !canTradeNow) return false;
+    return !!getMaritimeTradeRateIfTradable({
+      core: G.core,
+      coreTopology: G.coreTopology,
+      playerId: player.id,
+      resource,
+      playerResources: player.resources
+    });
+  };
+
   const handleResourceClick = (resource) => {
     if (!onTradeClick) return;
-    if (!isActionEnabled("trade")) return;
+    if (!canTradeNow) return;
 
     const rate = getMaritimeTradeRateIfTradable({
       core: G.core,
@@ -323,6 +336,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
           </Dock>
           <div className="flex self-end mb-4">
             {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
+              const canQuickTrade = canQuickTradeResource(resource);
               return (
                 <CardIcon
                   playerCards={player.resources}
@@ -330,7 +344,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
                   resource={resource}
                   //TODO: change this for more players:
                   player={player.id}
-                  onResourceClick={handleResourceClick}
+                  onResourceClick={canQuickTrade ? handleResourceClick : null}
                 />
               );
             })}

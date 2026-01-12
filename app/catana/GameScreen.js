@@ -87,6 +87,11 @@ export function GameScreen(bgioProps) {
     bgioProps.moves.cancelDevCardPlay();
   };
 
+  const handleTradeOpen = (resource) => {
+    setTradePresetResource(resource ?? null);
+    setShowTradeModal(true);
+  };
+
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
   const opponents = Object.values(playerViewMap).filter(
@@ -214,7 +219,3 @@ export const GameScreenWithEffects = EffectsBoardWrapper(GameScreen, {
   // Wait until all effects have finished before updating state.
   updateStateAfterEffects: true,
 });
-  const handleTradeOpen = (resource) => {
-    setTradePresetResource(resource ?? null);
-    setShowTradeModal(true);
-  };
