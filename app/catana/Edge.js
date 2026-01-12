@@ -165,6 +165,7 @@ export function Edge({
   color,
   placing = false,
   initialPlacement = false,
+  roadBuilding = false,
   hoverable = false,
   hoveredNode,
   setHoveredNode,
@@ -189,9 +190,13 @@ export function Edge({
         hoveredNode={hoveredNode}
         setHoveredNode={setHoveredNode}
         onPlace={(edgeId) => {
-          moves.placeRoad(edgeId);
+          if (roadBuilding) {
+            moves.placeRoadFromDevCard(edgeId);
+          } else {
+            moves.placeRoad(edgeId);
+          }
           setHoveredNode(null);
-          if (setPlayerAction) setPlayerAction(null);
+          if (setPlayerAction && !roadBuilding) setPlayerAction(null);
         }}
       />
     );

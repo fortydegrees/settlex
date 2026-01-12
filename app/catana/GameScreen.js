@@ -34,6 +34,19 @@ export function GameScreen(bgioProps) {
   const playerViewMap = buildPlayerViewMap(bgioProps.G.core);
   const player = playerViewMap[playerID];
 
+  useEffect(() => {
+    const devPlay = bgioProps.G.devCardPlay;
+    if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
+      if (playerAction !== "roadBuilding") {
+        setPlayerAction("roadBuilding");
+      }
+      return;
+    }
+    if (playerAction === "roadBuilding") {
+      setPlayerAction(null);
+    }
+  }, [bgioProps.G.devCardPlay, playerID, playerAction]);
+
   // Discard Logic
   // Check if pendingDiscards list includes the current player
   // NOTE: We used to check bgioProps.ctx.phase === 'robberDiscard' but sometimes
