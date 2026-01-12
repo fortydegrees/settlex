@@ -41,3 +41,4 @@
 - Added a design doc for cancelling normal build actions via outside clicks.
 - Added resource-bar click shortcut to open maritime trade with a preselected give resource when tradable.
 - Added a UI helper + test to compute per-resource maritime trade eligibility for quick-open.
+- Fixed quick-trade modal open handler scope and gated resource cursor to tradable resources only.
