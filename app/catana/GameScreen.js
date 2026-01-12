@@ -33,9 +33,16 @@ export function GameScreen(bgioProps) {
 
   const playerViewMap = buildPlayerViewMap(bgioProps.G.core);
   const player = playerViewMap[playerID];
+  const devPlay = bgioProps.G.devCardPlay;
+  const devPlayForMe = devPlay?.playerId === playerID;
+  const devPlayMode =
+    devPlay?.type === "yearOfPlenty"
+      ? "dev-yop"
+      : devPlay?.type === "monopoly"
+      ? "dev-monopoly"
+      : null;
 
   useEffect(() => {
-    const devPlay = bgioProps.G.devCardPlay;
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
       if (playerAction !== "roadBuilding") {
         setPlayerAction("roadBuilding");
@@ -70,6 +77,13 @@ export function GameScreen(bgioProps) {
     setShowTradeModal(false);
   };
 
+  const handleDevPlayConfirm = (payload) => {
+    bgioProps.moves.confirmDevCardPlay(payload);
+  };
+
+  const handleDevPlayCancel = () => {
+    bgioProps.moves.cancelDevCardPlay();
+  };
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
@@ -153,6 +167,16 @@ TODO: accurately colour it
           player={player}
           onConfirm={handleTradeConfirm}
           onCancel={() => setShowTradeModal(false)}
+          G={bgioProps.G}
+        />
+      )}
+
+      {!!player && devPlayForMe && devPlayMode && !needsToDiscard && (
+        <TradeDiscardModal
+          mode={devPlayMode}
+          player={player}
+          onConfirm={handleDevPlayConfirm}
+          onCancel={handleDevPlayCancel}
           G={bgioProps.G}
         />
       )}

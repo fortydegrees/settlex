@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
-import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, ResourceType, buildableNodes, buildableEdges, getLongestRoadLength, getVictoryPoints, getPublicVictoryPoints } from "@settlex/game-core";
+import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, canPlayDevCard, ResourceType, buildableNodes, buildableEdges, getLongestRoadLength, getVictoryPoints, getPublicVictoryPoints } from "@settlex/game-core";
 
 
 export const CardIcon = ({ playerCards, resource, player, setIsTrading, ctx }) => {
@@ -49,6 +49,23 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);
 
   const [isTrading, setIsTrading] = useState(null);
+  const clientPlayerID = bgioProps.playerID;
+  const isMe = clientPlayerID === player.id;
+  const stage = ctx.activePlayers?.[player.id];
+  const isDevStage = stage === "preRoll" || stage === "postRoll";
+  const devPlayActive = G.devCardPlay && G.devCardPlay.playerId === player.id;
+  const canStartDev =
+    isMe && ctx.currentPlayer === player.id && isDevStage && !devPlayActive;
+  const devPlayableByType = useMemo(() => {
+    const playable = {};
+    if (!G.core || !player?.devCards) return playable;
+    player.devCards.forEach((card) => {
+      if (card === "victoryPoint") return;
+      playable[card] = canStartDev && canPlayDevCard(G.core, player.id, card);
+    });
+    return playable;
+  }, [G.core, player?.devCards, player.id, canStartDev]);
+  const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
 
   //dice roll animation
   useEffectListener(
@@ -183,9 +200,6 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
   // 'ctx.currentPlayer' defines whose TURN it is, but we need to know who the CLIENT is.
   // We don't strictly know 'who the client is' in this component except maybe via `bgioProps.playerID`.
   
-  const clientPlayerID = bgioProps.playerID;
-  const isMe = clientPlayerID === player.id;
-
   let vpDisplay = `${publicPoints}`;
   if (isMe && totalPoints > publicPoints) {
     const hidden = totalPoints - publicPoints;
@@ -306,7 +320,12 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
         </div>
         {/* Dev Card Display */}
         <div className="absolute left-full ml-0 bottom-[-2px]">
-          <DevCardDisplay cards={player.devCards} />
+          <DevCardDisplay
+            cards={player.devCards}
+            playableByType={devPlayableByType}
+            onPlayCard={(card) => moves.playDevCardStart(card)}
+            activeCardType={activeDevCardType}
+          />
         </div>
       </div>
 

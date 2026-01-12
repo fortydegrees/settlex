@@ -11,7 +11,12 @@ const DEV_CARD_SVGS = {
   monopoly: "/svgs/card_devcard_monopoloy.svg", // Typo in filename 'monopoloy' preserved
 };
 
-export const DevCardDisplay = ({ cards = [] }) => {
+export const DevCardDisplay = ({
+  cards = [],
+  playableByType = {},
+  onPlayCard,
+  activeCardType,
+}) => {
   const { nonPlayable, playable, boxWidth, vpStackWidth, vpStackOffset } =
     useMemo(() => {
       const vps = [];
@@ -66,7 +71,8 @@ export const DevCardDisplay = ({ cards = [] }) => {
     return null;
   }
 
-  const cardStyle = "h-[72px] w-[52px] shrink-0 object-contain drop-shadow-md";
+  const cardStyle =
+    "h-[72px] w-[52px] shrink-0 object-contain drop-shadow-md";
   const hasBoth = nonPlayable.length > 0 && playable.length > 0;
 
   return (
@@ -103,17 +109,37 @@ export const DevCardDisplay = ({ cards = [] }) => {
 
       {/* Playable Cards */}
       <div className="flex items-center gap-[6px]">
-        {playable.map((card, i) => (
-          <div key={`playable-${i}`} className="relative">
-            <Image
-              src={DEV_CARD_SVGS[card]}
-              alt={card}
-              width={52}
-              height={72}
-              className={cardStyle}
-            />
-          </div>
-        ))}
+        {playable.map((card, i) => {
+          const isPlayable = Boolean(playableByType[card]);
+          const isActive = activeCardType === card;
+          const wrapperClass = [
+            "relative devcard-card",
+            isPlayable ? "devcard-playable" : "devcard-disabled",
+            isActive ? "devcard-active" : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+          return (
+            <button
+              key={`playable-${i}`}
+              type="button"
+              className={wrapperClass}
+              onClick={() => {
+                if (isPlayable && onPlayCard) onPlayCard(card);
+              }}
+              disabled={!isPlayable}
+            >
+              <Image
+                src={DEV_CARD_SVGS[card]}
+                alt={card}
+                width={52}
+                height={72}
+                className={cardStyle}
+              />
+            </button>
+          );
+        })}
       </div>
     </div>
   );

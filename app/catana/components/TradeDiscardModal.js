@@ -12,7 +12,7 @@ const countResources = (resources) => {
 };
 
 export const TradeDiscardModal = ({ 
-  mode, // 'discard' | 'trade'
+  mode, // 'discard' | 'trade' | 'dev-yop' | 'dev-monopoly'
   player, // The current player object (with resources)
   onConfirm, 
   onCancel,
@@ -26,6 +26,13 @@ export const TradeDiscardModal = ({
   // Trade specific: "Receive" selection
   const [receiveResource, setReceiveResource] = useState(null);
 
+  const isDiscard = mode === "discard";
+  const isTrade = mode === "trade";
+  const isDevYop = mode === "dev-yop";
+  const isDevMonopoly = mode === "dev-monopoly";
+  const isDevMode = isDevYop || isDevMonopoly;
+  const devMaxSelections = isDevYop ? 2 : isDevMonopoly ? 1 : 0;
+
   // Reset state when mode changes
   useEffect(() => {
     setSelected({});
@@ -33,6 +40,11 @@ export const TradeDiscardModal = ({
   }, [mode, requiredDiscardCount]);
 
   const playerResourceCounts = useMemo(() => countResources(player.resources), [player.resources]);
+  const bankResourceCounts = useMemo(
+    () => countResources(G?.core?.bank?.resources ?? []),
+    [G?.core?.bank?.resources]
+  );
+  const bankFinite = !!G?.core?.ruleset?.bank?.finite;
 
   // Derived totals
   const totalSelected = Object.values(selected).reduce((a, b) => a + b, 0);
@@ -41,11 +53,13 @@ export const TradeDiscardModal = ({
   // Maritime trade implies giving ONE type of resource for ONE type of receive resource.
   // So if we select multiple types in "Give", it's invalid for maritime trade usually.
   // But let's check what the user has selected.
-  const selectedGiveTypes = Object.keys(selected).filter(r => selected[r] > 0);
+  const selectedGiveTypes = isTrade
+    ? Object.keys(selected).filter((r) => selected[r] > 0)
+    : [];
   const givingResource = selectedGiveTypes.length === 1 ? selectedGiveTypes[0] : null;
   
   const currentTradeRate = useMemo(() => {
-    if (mode !== 'trade') return 0;
+    if (!isTrade) return 0;
     if (!givingResource) return 0; // Or 4 as default?
     
     // Use core function to get best rate
@@ -56,50 +70,59 @@ export const TradeDiscardModal = ({
     if (!G || !G.core || !G.coreTopology) return 4; // Fallback default
     
     return bestTradeRate(G.core, G.coreTopology, player.id, givingResource);
-  }, [mode, givingResource, G, player.id]);
+  }, [isTrade, givingResource, G, player.id]);
 
   // Handlers for +/- buttons
   const increment = (resource, maxAvailable) => {
     const current = selected[resource] || 0;
-    
+
+    if (isDevMonopoly) {
+      setSelected({ [resource]: 1 });
+      return;
+    }
+
+    if (isDevYop && totalSelected >= devMaxSelections) return;
+
     // Validation for Trade Mode:
     // If giving a DIFFERENT resource, clear others? Or prevent?
     // Maritime trade usually is X of ONE resource for 1 of ANY.
     // So if I have Wood selected, I can't select Brick.
-    if (mode === 'trade') {
-        const otherSelected = Object.keys(selected).find(r => r !== resource && selected[r] > 0);
-        if (otherSelected) {
-            // Option A: Auto-clear others
-            // setSelected({ [resource]: 1 });
-            // return;
-            
-            // Option B: Prevent
-            return; 
+    if (isTrade) {
+      const otherSelected = Object.keys(selected).find(
+        (r) => r !== resource && selected[r] > 0
+      );
+      if (otherSelected) {
+        // Option A: Auto-clear others
+        // setSelected({ [resource]: 1 });
+        // return;
+
+        // Option B: Prevent
+        return;
+      }
+
+      // Auto-select max required?
+      // If I click +, and I have enough for the trade rate, maybe jump to that?
+      // Or just let user click. 
+      // User asked: "if i click 'brick' ... it automatically selects 4 brick"
+      // Let's implement this behavior: Clicking + on 0 -> sets to Rate.
+      if (current === 0) {
+        // We need to calculate rate for THIS resource
+        let rate = 4;
+        if (G && G.core && G.coreTopology) {
+          rate = bestTradeRate(G.core, G.coreTopology, player.id, resource);
         }
-        
-        // Auto-select max required?
-        // If I click +, and I have enough for the trade rate, maybe jump to that?
-        // Or just let user click. 
-        // User asked: "if i click 'brick' ... it automatically selects 4 brick"
-        // Let's implement this behavior: Clicking + on 0 -> sets to Rate.
-        if (current === 0) {
-             // We need to calculate rate for THIS resource
-             let rate = 4;
-             if (G && G.core && G.coreTopology) {
-                 rate = bestTradeRate(G.core, G.coreTopology, player.id, resource);
-             }
-             
-             if (maxAvailable >= rate) {
-                 setSelected({ ...selected, [resource]: rate });
-                 return;
-             }
-             // If not enough, maybe select max? or 1?
-             // Let's just select 1 and let them see they don't have enough later/now?
+
+        if (maxAvailable >= rate) {
+          setSelected({ ...selected, [resource]: rate });
+          return;
         }
+        // If not enough, maybe select max? or 1?
+        // Let's just select 1 and let them see they don't have enough later/now?
+      }
     }
 
     if (current < maxAvailable) {
-      if (mode === 'discard' && totalSelected >= requiredDiscardCount) return;
+      if (isDiscard && totalSelected >= requiredDiscardCount) return;
       setSelected({ ...selected, [resource]: current + 1 });
     }
   };
@@ -112,19 +135,37 @@ export const TradeDiscardModal = ({
   };
 
   const canConfirm = useMemo(() => {
-    if (mode === 'discard') {
+    if (isDiscard) {
       return totalSelected === requiredDiscardCount;
-    } 
-    if (mode === 'trade') {
+    }
+    if (isTrade) {
       // Must give exactly Rate of ONE resource
       if (!givingResource) return false;
       if (!receiveResource) return false;
-      
+
       const count = selected[givingResource];
       return count === currentTradeRate;
     }
+    if (isDevYop) {
+      return totalSelected === devMaxSelections;
+    }
+    if (isDevMonopoly) {
+      return totalSelected === devMaxSelections;
+    }
     return false;
-  }, [mode, totalSelected, requiredDiscardCount, receiveResource, givingResource, currentTradeRate, selected]);
+  }, [
+    isDiscard,
+    isTrade,
+    isDevYop,
+    isDevMonopoly,
+    totalSelected,
+    requiredDiscardCount,
+    receiveResource,
+    givingResource,
+    currentTradeRate,
+    selected,
+    devMaxSelections,
+  ]);
 
   const handleConfirm = () => {
     // Convert selected map back to array of resources if needed by the handler
@@ -132,17 +173,25 @@ export const TradeDiscardModal = ({
     Object.entries(selected).forEach(([res, count]) => {
       for (let i = 0; i < count; i++) selectedResources.push(res);
     });
-    
-    if (mode === 'discard') {
+
+    if (isDiscard) {
       onConfirm(selectedResources);
-    } else {
+    } else if (isTrade) {
       onConfirm({ give: selectedResources, receive: receiveResource });
+    } else if (isDevYop) {
+      onConfirm(selectedResources);
+    } else if (isDevMonopoly) {
+      onConfirm(selectedResources[0]);
     }
   };
 
-  const title = mode === 'discard' 
+  const title = isDiscard
     ? `Discard ${requiredDiscardCount} Cards`
-    : 'Maritime Trade';
+    : isTrade
+    ? "Maritime Trade"
+    : isDevYop
+    ? "Select Two Resources"
+    : "Select a Resource to Claim";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 pointer-events-auto">
@@ -157,63 +206,93 @@ export const TradeDiscardModal = ({
         <div className="flex flex-col gap-4">
           
           {/* GIVE SECTION */}
-          <div className={`bg-white bg-opacity-40 rounded p-4 ${mode === 'trade' ? 'order-2' : ''}`}>
-            <h3 className="font-semibold text-lg mb-2 text-slate-700">
-              {mode === 'discard' ? 'Select Cards to Discard' : `Give ${givingResource && currentTradeRate ? `(${currentTradeRate}:1)` : ''}`}
-            </h3>
-            <div className="grid grid-cols-5 gap-2">
-              {STANDARD_RESOURCES.map((res) => {
-                const count = playerResourceCounts[res] || 0;
-                const selectedCount = selected[res] || 0;
-                const available = count; // Start with total owned
-                
-                // Gray out logic for Trade
-                let isDisabled = false;
-                if (mode === 'trade') {
+          {(isDiscard || isTrade) && (
+            <div
+              className={`bg-white bg-opacity-40 rounded p-4 ${
+                isTrade ? "order-2" : ""
+              }`}
+            >
+              <h3 className="font-semibold text-lg mb-2 text-slate-700">
+                {isDiscard
+                  ? "Select Cards to Discard"
+                  : `Give ${
+                      givingResource && currentTradeRate
+                        ? `(${currentTradeRate}:1)`
+                        : ""
+                    }`}
+              </h3>
+              <div className="grid grid-cols-5 gap-2">
+                {STANDARD_RESOURCES.map((res) => {
+                  const count = playerResourceCounts[res] || 0;
+                  const selectedCount = selected[res] || 0;
+                  const available = count; // Start with total owned
+
+                  // Gray out logic for Trade
+                  let isDisabled = false;
+                  if (isTrade) {
                     // Disable if another type is already selected
                     if (givingResource && givingResource !== res) isDisabled = true;
                     // Disable if we don't have enough for even the best possible rate (2)?
                     // Actually let's be more specific. 
                     // We can calculate rate for this resource.
-                    let rate = 4; 
-                    if (G && G.core) rate = bestTradeRate(G.core, G.coreTopology, player.id, res);
-                    if (available < rate) isDisabled = true; 
-                }
+                    let rate = 4;
+                    if (G && G.core) {
+                      rate = bestTradeRate(G.core, G.coreTopology, player.id, res);
+                    }
+                    if (available < rate) isDisabled = true;
+                  }
 
-                return (
-                  <div key={res} className={`flex flex-col items-center ${isDisabled ? 'opacity-40 grayscale' : ''}`}>
-                    <div className="relative mb-1">
-                      <img src={RESOURCE_ICON_SVGS[res]} alt={res} className="h-10 w-10 drop-shadow-md" />
-                      <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {available}
-                      </span>
+                  return (
+                    <div
+                      key={res}
+                      className={`flex flex-col items-center ${
+                        isDisabled ? "opacity-40 grayscale" : ""
+                      }`}
+                    >
+                      <div className="relative mb-1">
+                        <img
+                          src={RESOURCE_ICON_SVGS[res]}
+                          alt={res}
+                          className="h-10 w-10 drop-shadow-md"
+                        />
+                        <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {available}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-slate-100 rounded-full px-1 shadow-inner">
+                        <button
+                          onClick={() => decrement(res)}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-red-600 font-bold disabled:opacity-30"
+                          disabled={selectedCount === 0}
+                        >
+                          -
+                        </button>
+                        <span className="w-4 text-center font-medium text-sm">
+                          {selectedCount}
+                        </span>
+                        <button
+                          onClick={() => increment(res, available)}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-green-600 font-bold disabled:opacity-30"
+                          disabled={
+                            selectedCount >= available ||
+                            (isDiscard &&
+                              totalSelected >= requiredDiscardCount) ||
+                            isDisabled
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                    
-                    <div className="flex items-center gap-1 bg-slate-100 rounded-full px-1 shadow-inner">
-                      <button 
-                        onClick={() => decrement(res)}
-                        className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-red-600 font-bold disabled:opacity-30"
-                        disabled={selectedCount === 0}
-                      >
-                        -
-                      </button>
-                      <span className="w-4 text-center font-medium text-sm">{selectedCount}</span>
-                      <button 
-                        onClick={() => increment(res, available)}
-                        className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-green-600 font-bold disabled:opacity-30"
-                        disabled={selectedCount >= available || (mode === 'discard' && totalSelected >= requiredDiscardCount) || isDisabled}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* RECEIVE SECTION (Trade Only) */}
-          {mode === 'trade' && (
+          {isTrade && (
             <div className="bg-white bg-opacity-40 rounded p-4 order-1">
               <h3 className="font-semibold text-lg mb-2 text-slate-700">Receive</h3>
               <div className="grid grid-cols-5 gap-2">
@@ -241,10 +320,91 @@ export const TradeDiscardModal = ({
             </div>
           )}
 
+          {/* DEV CARD SELECT SECTION */}
+          {isDevMode && (
+            <div className="bg-white bg-opacity-40 rounded p-4">
+              <h3 className="font-semibold text-lg mb-2 text-slate-700">
+                {isDevYop ? "Select Two Resources" : "Select a Resource"}
+              </h3>
+              <div className="grid grid-cols-5 gap-2">
+                {STANDARD_RESOURCES.map((res) => {
+                  const selectedCount = selected[res] || 0;
+                  const available = isDevYop
+                    ? bankFinite
+                      ? bankResourceCounts[res] || 0
+                      : devMaxSelections
+                    : devMaxSelections;
+                  const isDisabled = isDevYop && bankFinite && available === 0;
+                  const disableIncrement = isDevYop
+                    ? totalSelected >= devMaxSelections ||
+                      selectedCount >= available
+                    : selectedCount >= devMaxSelections;
+
+                  return (
+                    <div
+                      key={res}
+                      className={`flex flex-col items-center ${
+                        isDisabled ? "opacity-40 grayscale" : ""
+                      }`}
+                    >
+                      <div className="relative mb-1">
+                        <img
+                          src={RESOURCE_ICON_SVGS[res]}
+                          alt={res}
+                          className="h-10 w-10 drop-shadow-md"
+                        />
+                        {isDevYop && bankFinite && (
+                          <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            {available}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-slate-100 rounded-full px-1 shadow-inner">
+                        <button
+                          onClick={() => decrement(res)}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-red-600 font-bold disabled:opacity-30"
+                          disabled={selectedCount === 0}
+                        >
+                          -
+                        </button>
+                        <span className="w-4 text-center font-medium text-sm">
+                          {selectedCount}
+                        </span>
+                        <button
+                          onClick={() => increment(res, available)}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-green-600 font-bold disabled:opacity-30"
+                          disabled={disableIncrement || isDisabled}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* SUMMARY / STATUS */}
-          {mode === 'discard' && (
+          {isDiscard && (
             <div className="text-center font-medium text-slate-700">
               Selected: <span className={totalSelected === requiredDiscardCount ? "text-green-700 font-bold" : "text-red-700"}>{totalSelected}</span> / {requiredDiscardCount}
+            </div>
+          )}
+          {isDevMode && (
+            <div className="text-center font-medium text-slate-700">
+              Selected:{" "}
+              <span
+                className={
+                  totalSelected === devMaxSelections
+                    ? "text-green-700 font-bold"
+                    : "text-red-700"
+                }
+              >
+                {totalSelected}
+              </span>{" "}
+              / {devMaxSelections}
             </div>
           )}
 
