@@ -25,6 +25,7 @@ export function GameScreen(bgioProps) {
     //e.g. if disconnect after placing one road of RB, reconnect will want to prompt to place second road
   const [playerAction, setPlayerAction] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
+  const [tradePresetResource, setTradePresetResource] = useState(null);
 
   //get the active playerID of who's watching
   //can be null for spectator?
@@ -75,6 +76,7 @@ export function GameScreen(bgioProps) {
     bgioProps.moves.maritimeTrade(tradeData);
     // For now just close
     setShowTradeModal(false);
+    setTradePresetResource(null);
   };
 
   const handleDevPlayConfirm = (payload) => {
@@ -144,7 +146,7 @@ TODO: accurately colour it
           bgioProps={bgioProps}
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
-          onTradeClick={() => setShowTradeModal(true)}
+          onTradeClick={handleTradeOpen}
         />
       )}
 
@@ -166,8 +168,12 @@ TODO: accurately colour it
           mode="trade"
           player={player}
           onConfirm={handleTradeConfirm}
-          onCancel={() => setShowTradeModal(false)}
+          onCancel={() => {
+            setShowTradeModal(false);
+            setTradePresetResource(null);
+          }}
           G={bgioProps.G}
+          tradePresetResource={tradePresetResource}
         />
       )}
 
@@ -208,3 +214,7 @@ export const GameScreenWithEffects = EffectsBoardWrapper(GameScreen, {
   // Wait until all effects have finished before updating state.
   updateStateAfterEffects: true,
 });
+  const handleTradeOpen = (resource) => {
+    setTradePresetResource(resource ?? null);
+    setShowTradeModal(true);
+  };

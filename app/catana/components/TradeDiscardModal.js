@@ -18,6 +18,7 @@ export const TradeDiscardModal = ({
   onCancel,
   requiredDiscardCount, // For discard mode: how many cards MUST be discarded
   G, // Need access to G and topology for trade rates
+  tradePresetResource,
   bgioProps, // Or entire bgioProps
 }) => {
   // State for tracking selected resources
@@ -37,7 +38,21 @@ export const TradeDiscardModal = ({
   useEffect(() => {
     setSelected({});
     setReceiveResource(null);
-  }, [mode, requiredDiscardCount]);
+    if (mode !== "trade") return;
+    if (!tradePresetResource) return;
+    if (!G || !G.core || !G.coreTopology) return;
+
+    const rate = bestTradeRate(
+      G.core,
+      G.coreTopology,
+      player.id,
+      tradePresetResource
+    );
+
+    if (rate > 0) {
+      setSelected({ [tradePresetResource]: rate });
+    }
+  }, [mode, requiredDiscardCount, tradePresetResource, G, player.id]);
 
   const playerResourceCounts = useMemo(() => countResources(player.resources), [player.resources]);
   const bankResourceCounts = useMemo(

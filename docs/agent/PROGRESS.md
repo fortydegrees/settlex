@@ -39,3 +39,5 @@
 - Reused the trade/discard modal for Year of Plenty and Monopoly selection flows with confirm/cancel wiring.
 - Added future testing notes for dev-card play UI coverage in `docs/future_plans/dev-card-play-tests.md`.
 - Added a design doc for cancelling normal build actions via outside clicks.
+- Added resource-bar click shortcut to open maritime trade with a preselected give resource when tradable.
+- Added a UI helper + test to compute per-resource maritime trade eligibility for quick-open.
