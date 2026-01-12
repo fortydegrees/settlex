@@ -44,6 +44,7 @@ export function ActionNode({
     <>
       <div
         className={`${gradientClass} animation-pulse`}
+        data-action-circle="true"
         style={{
           position: "absolute",
           cursor: "pointer",
