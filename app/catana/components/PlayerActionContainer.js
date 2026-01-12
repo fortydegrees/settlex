@@ -7,23 +7,28 @@ import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { RESOURCE_ICON_SVGS } from "../game/types";
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   ForwardIcon,
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
 import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, canPlayDevCard, ResourceType, buildableNodes, buildableEdges, getLongestRoadLength, getVictoryPoints, getPublicVictoryPoints } from "@settlex/game-core";
+import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 
 
-export const CardIcon = ({ playerCards, resource, player, setIsTrading, ctx }) => {
+export const CardIcon = ({ playerCards, resource, player, onResourceClick }) => {
+  const handleClick = () => {
+    if (onResourceClick) {
+      onResourceClick(resource);
+    }
+  };
+
   return (
     <div
-      className="flex items-center mr-6"
+      className={`flex items-center mr-6 ${onResourceClick ? "cursor-pointer" : ""}`}
       id={`p${player}-${resource}`}
-      //onClick={() => setIsTrading(resource)}
-      //TODO: remove
-      onClick={() => ctx.moves.DEBUG_takeCardsFromBank(player, [resource])}
+      onClick={onResourceClick ? handleClick : undefined}
       
     >
       <div className="w-6 select-none text-white mr-1 text-3xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
@@ -47,8 +52,6 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
 
   const [Die, rollTo] = useDie(G.diceRoll[0]);
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);
-
-  const [isTrading, setIsTrading] = useState(null);
   const clientPlayerID = bgioProps.playerID;
   const isMe = clientPlayerID === player.id;
   const stage = ctx.activePlayers?.[player.id];
@@ -173,6 +176,22 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
       enabled: isActionEnabled(action.name),
     };
   }), [bgioProps]);
+
+  const handleResourceClick = (resource) => {
+    if (!onTradeClick) return;
+    if (!isActionEnabled("trade")) return;
+
+    const rate = getMaritimeTradeRateIfTradable({
+      core: G.core,
+      coreTopology: G.coreTopology,
+      playerId: player.id,
+      resource,
+      playerResources: player.resources
+    });
+
+    if (!rate) return;
+    onTradeClick(resource);
+  };
 
   //
   
@@ -309,10 +328,9 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
                   playerCards={player.resources}
                   key={resource}
                   resource={resource}
-                  setIsTrading={setIsTrading}
                   //TODO: change this for more players:
                   player={player.id}
-                  ctx={bgioProps}
+                  onResourceClick={handleResourceClick}
                 />
               );
             })}
