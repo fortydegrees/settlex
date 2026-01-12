@@ -5,16 +5,22 @@ import {
   applyBuildCity,
   applyBuildRoad,
   applyBuildSettlement,
+  applyFreeRoad,
   applyEndTurn,
+  applyKnight,
+  applyMonopoly,
   applyMoveRobber,
   applyPlaceRoad,
   applyPlaceSettlement,
   applyRollDice,
+  applyYearOfPlenty,
   applyDiscard,
   applyMaritimeTrade,
   buildableEdges,
   buildableNodes,
-  buyDevCard as applyBuyDevCard
+  buyDevCard as applyBuyDevCard,
+  canPlayDevCard,
+  playDevCard
 } from "@settlex/game-core";
 
 //used for giving cards to a player by clicking on icon for testing
@@ -264,10 +270,13 @@ export const moveRobber = {
     }
 
     const returnTo =
-      context.ctx.activePlayers[context.ctx.currentPlayer].returnTo || "postRoll";
+      G.robberReturnToStage ||
+      context.ctx.activePlayers?.[context.ctx.currentPlayer]?.returnTo ||
+      "postRoll";
     if (G.core) {
       G.core.turn.phase = returnTo === "preRoll" ? "preRoll" : "postRoll";
     }
+    G.robberReturnToStage = null;
     events.setStage(returnTo);
 }
 }
@@ -435,6 +444,117 @@ export const buyDevCard = {
     const result = applyBuyDevCard(G.core, playerID);
     if (!result.ok) {
       console.log(`Invalid buy dev card: ${result.error}`);
+    }
+  }
+};
+
+const isDevCardStage = (ctx, playerID) => {
+  const stage = ctx.activePlayers?.[playerID];
+  return stage === "preRoll" || stage === "postRoll";
+};
+
+export const playDevCardStart = {
+  move: (context, cardType) => {
+    const { G, playerID, ctx, events } = context;
+    if (playerID !== ctx.currentPlayer) return;
+    if (!isDevCardStage(ctx, playerID)) return;
+    if (G.devCardPlay) return;
+    if (cardType === "victoryPoint") return;
+    if (!canPlayDevCard(G.core, playerID, cardType)) return;
+
+    const currentStage = ctx.activePlayers?.[playerID] ?? "postRoll";
+    if (cardType === "knight") {
+      const played = playDevCard(G.core, playerID, "knight");
+      if (!played.ok) {
+        console.log(`Invalid play dev card: ${played.error}`);
+        return;
+      }
+      const result = applyKnight(G.core, playerID);
+      if (!result.ok) {
+        console.log(`Invalid knight: ${result.error}`);
+        return;
+      }
+      G.robberReturnToStage = currentStage;
+      events.setStage("moveRobber");
+      return;
+    }
+
+    if (cardType === "roadBuilding") {
+      const player = G.core?.playerStateById?.[playerID];
+      if (!player || player.roadsRemaining <= 0) return;
+      const pendingRoads = player.roadsRemaining >= 2 ? 2 : 1;
+      G.devCardPlay = { type: "roadBuilding", playerId: playerID, pendingRoads };
+      return;
+    }
+
+    if (cardType === "yearOfPlenty" || cardType === "monopoly") {
+      G.devCardPlay = { type: cardType, playerId: playerID };
+    }
+  }
+};
+
+export const confirmDevCardPlay = {
+  move: (context, payload) => {
+    const { G, playerID, ctx } = context;
+    const devPlay = G.devCardPlay;
+    if (!devPlay || devPlay.playerId !== playerID) return;
+    if (playerID !== ctx.currentPlayer) return;
+    if (!isDevCardStage(ctx, playerID)) return;
+
+    let applied = { ok: false, error: "unknown" };
+    if (devPlay.type === "yearOfPlenty") {
+      applied = applyYearOfPlenty(G.core, playerID, payload);
+    } else if (devPlay.type === "monopoly") {
+      applied = applyMonopoly(G.core, playerID, payload);
+    } else {
+      return;
+    }
+
+    if (!applied.ok) {
+      console.log(`Invalid dev card play: ${applied.error}`);
+      return;
+    }
+
+    const played = playDevCard(G.core, playerID, devPlay.type);
+    if (!played.ok) {
+      console.log(`Invalid play dev card: ${played.error}`);
+      return;
+    }
+
+    G.devCardPlay = null;
+  }
+};
+
+export const cancelDevCardPlay = {
+  move: (context) => {
+    const { G, playerID } = context;
+    if (!G.devCardPlay || G.devCardPlay.playerId !== playerID) return;
+    G.devCardPlay = null;
+  }
+};
+
+export const placeRoadFromDevCard = {
+  move: (context, edge) => {
+    const { G, playerID, ctx } = context;
+    const devPlay = G.devCardPlay;
+    if (!devPlay || devPlay.type !== "roadBuilding") return;
+    if (devPlay.playerId !== playerID) return;
+    if (!isDevCardStage(ctx, playerID)) return;
+
+    const result = applyFreeRoad(G.core, G.coreTopology, edge, playerID);
+    if (!result.ok) {
+      console.log(`Invalid dev road: ${result.error}`);
+      return;
+    }
+
+    devPlay.pendingRoads -= 1;
+    if (devPlay.pendingRoads <= 0) {
+      const played = playDevCard(G.core, playerID, "roadBuilding");
+      if (!played.ok) {
+        console.log(`Invalid play dev card: ${played.error}`);
+        return;
+      }
+      G.devCardPlay = null;
     }
   }
 };

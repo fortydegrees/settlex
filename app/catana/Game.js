@@ -1,6 +1,6 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/core";
-import { placeSettlement, placeRoad, placeCity, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, discardResources, maritimeTrade, buyDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves";
+import { placeSettlement, placeRoad, placeCity, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, discardResources, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, cancelDevCardPlay, placeRoadFromDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 
 const DEBUG_MOVES = {
@@ -117,7 +117,9 @@ export const Catan =  {
       valids,
       diceRoll,
       robberTileId: robberTile,
-      placementOrder
+      placementOrder,
+      devCardPlay: null,
+      robberReturnToStage: null
     };
   },
 
@@ -207,6 +209,10 @@ export const Catan =  {
         stages: {
           preRoll: { moves: {
             rollDice, //after roll dice (and no 7) go to main
+            playDevCardStart,
+            confirmDevCardPlay,
+            cancelDevCardPlay,
+            placeRoadFromDevCard,
             ...DEBUG_MOVES
           }},
           robberDiscard: { // Explicit phase for discarding
@@ -228,6 +234,10 @@ export const Catan =  {
               placeCity,
               maritimeTrade,
               buyDevCard,
+              playDevCardStart,
+              confirmDevCardPlay,
+              cancelDevCardPlay,
+              placeRoadFromDevCard,
               // buyDev,55
               // offerTrade,
               // tradeWithBank,
