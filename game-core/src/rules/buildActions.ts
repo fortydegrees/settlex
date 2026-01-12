@@ -165,6 +165,32 @@ export function applyBuildRoad(
   return { ok: true, state } as const;
 }
 
+export function applyFreeRoad(
+  state: GameState,
+  board: BoardTopology,
+  edgeId: EdgeId,
+  playerId: string
+) {
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ok: false, state, error: "unknown-player" } as const;
+  }
+  if (player.roadsRemaining <= 0) {
+    return { ok: false, state, error: "no-pieces-left" } as const;
+  }
+
+  const legal = buildableEdges(state, board, playerId, { initialPlacement: false });
+  if (!legal.includes(edgeId)) {
+    return { ok: false, state, error: "illegal-road" } as const;
+  }
+
+  state.roadsByEdgeId[edgeId] = playerId;
+  player.roadsRemaining -= 1;
+  recomputeCaches(state, board);
+  recomputeLongestRoad(state, board);
+  return { ok: true, state } as const;
+}
+
 export function applyBuildSettlement(
   state: GameState,
   board: BoardTopology,
