@@ -296,9 +296,12 @@ export const rollDice = {
       return;
     }
 
-    // Trigger resource distribution animations
-    if (result.distributions?.length > 0) {
-      const cardAnims = result.distributions.map(d => {
+    // Trigger resource distribution and blocked tile animations together
+    const hasDistributions = result.distributions?.length > 0;
+    const hasBlocked = result.blockedTiles?.length > 0;
+
+    if (hasDistributions || hasBlocked) {
+      const cardAnims = (result.distributions || []).map(d => {
         const tile = G.tiles.find(t => t.tile.id === d.tileId);
         return {
           tileId: d.tileId,
@@ -307,12 +310,12 @@ export const rollDice = {
           resource: d.resource,
         };
       });
-      effects.distributeCardsFromTile(cardAnims);
-    }
 
-    // Trigger robber-blocked feedback
-    if (result.blockedTiles?.length > 0) {
-      effects.robberBlocked(result.blockedTiles);
+      // Pass combined payload so both flash simultaneously
+      effects.distributeCardsFromTile({
+        cards: cardAnims,
+        blockedTileIds: result.blockedTiles || [],
+      });
     }
 
     if (G.core.turn.phase.startsWith("robber")) {
