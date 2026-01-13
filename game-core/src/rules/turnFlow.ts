@@ -57,17 +57,29 @@ export function applyDiscard(
   return { ok: true };
 }
 
+export type Distribution = {
+  tileId: number;
+  playerId: string;
+  resource: Resource;
+};
+
+export type DistributionResult =
+  | { ok: true; distributions: Distribution[]; blockedTiles: number[] }
+  | { ok: false; error: string };
+
 export function applyResourceDistribution(
   state: GameState,
   board: BoardTopology,
   rollTotal: number
-): { ok: true } | { ok: false; error: string } {
+): DistributionResult {
   if (rollTotal === 7) {
-    return { ok: true };
+    return { ok: true, distributions: [], blockedTiles: [] };
   }
 
   const requiredByResource: Record<string, number> = {};
   const allocations: Record<string, Resource[]> = {};
+  const distributions: Distribution[] = [];
+  const blockedTiles: number[] = [];
 
   for (const playerId of state.players) {
     allocations[playerId] = [];
@@ -77,9 +89,20 @@ export function applyResourceDistribution(
     if (tile.tile.number !== rollTotal) {
       continue;
     }
+
+    // Check if robber blocks this tile
     if (state.robberTileId !== null && tile.tile.id === state.robberTileId) {
+      // Track blocked tile only if it would have produced
+      const nodes = tile.tile.nodes ?? {};
+      const hasBuildings = Object.values(nodes).some(
+        (nodeId) => state.buildingsByNodeId[nodeId]
+      );
+      if (hasBuildings && tile.tile.resource) {
+        blockedTiles.push(tile.tile.id);
+      }
       continue;
     }
+
     if (!tile.tile.resource) {
       continue;
     }
@@ -95,6 +118,11 @@ export function applyResourceDistribution(
       const amount = building.type === "city" ? 2 : 1;
       for (let i = 0; i < amount; i += 1) {
         allocations[owner].push(resource);
+        distributions.push({
+          tileId: tile.tile.id,
+          playerId: owner,
+          resource,
+        });
       }
       requiredByResource[resource] = (requiredByResource[resource] ?? 0) + amount;
     }
@@ -104,10 +132,18 @@ export function applyResourceDistribution(
     for (const [resource, required] of Object.entries(requiredByResource)) {
       const available = state.bank.resources.filter((r) => r === resource).length;
       if (required > available) {
+        // Remove from allocations
         for (const playerId of Object.keys(allocations)) {
           allocations[playerId] = allocations[playerId].filter(
             (r) => r !== resource
           );
+        }
+        // Remove from distributions
+        const resTyped = resource as Resource;
+        const toRemove = distributions.filter((d) => d.resource === resTyped);
+        for (const d of toRemove) {
+          const idx = distributions.indexOf(d);
+          if (idx !== -1) distributions.splice(idx, 1);
         }
       }
     }
@@ -126,7 +162,7 @@ export function applyResourceDistribution(
     }
   }
 
-  return { ok: true };
+  return { ok: true, distributions, blockedTiles };
 }
 
 export function canPlaceRobber(
