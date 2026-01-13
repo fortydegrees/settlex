@@ -25,3 +25,7 @@
 - Dock button sizing/hover uses react-spring in `app/catana/components/ActionsDock/DockCard.js`.
 - Build-action cancel UX design lives in `docs/plans/2026-01-12-ui-build-cancel-design.md`.
 - Build-action cancel helper lives in `app/catana/utils/cancelBuildAction.js` with UI wiring tests in `app/catana/__tests__/ActionNode.test.js` and `app/catana/__tests__/GameScreen.cancelBuildAction.test.js`.
+- Opponent player box UI design lives in `docs/plans/2026-01-13-opponent-player-box-design.md`.
+- Opponent player box implementation plan lives in `docs/plans/2026-01-13-opponent-player-box-plan.md`.
+- Card stack rendering lives in `app/catana/components/CardStack.js` with layout helper in `app/catana/components/CardStackLayout.js`.
+- Shared avatar/stats UI lives in `app/catana/components/PlayerAvatarStats.js` and is reused by `app/catana/components/OpponentPlayerBox.js`.

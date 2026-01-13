@@ -45,3 +45,9 @@
 - Added a design doc for core-owned game-end handling (immediate win on active player threshold in normal phase).
 - Added core game-over state and win checks; main phase now ends when `G.core.gameOver` is set.
 - Implemented outside-click cancellation for normal build actions with action-circle hit testing and UI wiring/tests.
+
+## Status (2026-01-13)
+- Added a shared `CardStack` helper/component with tests and reused it in the dev-card display.
+- Extracted `PlayerAvatarStats` with a VP display helper and preserved local hand counts.
+- Added `OpponentPlayerBox` with resource/dev card-back stacks and hooked it up in `GameScreen`.
+- Logged design + plan docs for the opponent player box UI.
