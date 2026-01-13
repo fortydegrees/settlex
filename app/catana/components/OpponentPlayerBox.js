@@ -23,13 +23,11 @@ export const OpponentPlayerBox = ({ player, core, coreTopology }) => {
           count={resourceCount}
           src={resCardBackIcon}
           alt="Resource cards"
-          maxVisible={3}
         />
         <CardStack
           count={devCount}
           src={devCardBackIcon}
           alt="Dev cards"
-          maxVisible={3}
         />
       </div>
     </div>
