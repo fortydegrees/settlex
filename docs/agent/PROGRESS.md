@@ -43,4 +43,5 @@
 - Added a UI helper + test to compute per-resource maritime trade eligibility for quick-open.
 - Fixed quick-trade modal open handler scope and gated resource cursor to tradable resources only.
 - Added a design doc for core-owned game-end handling (immediate win on active player threshold in normal phase).
+- Added core game-over state and win checks; main phase now ends when `G.core.gameOver` is set.
 - Implemented outside-click cancellation for normal build actions with action-circle hit testing and UI wiring/tests.
