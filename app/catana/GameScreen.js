@@ -6,16 +6,13 @@ import {
 } from "../../react-zoom-pan-pinch";
 import React, { useState, useEffect } from "react";
 
-import { RESOURCE_ICON_SVGS, ResourceType } from "./game/types";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 
-import { EffectsBoardWrapper, useEffectListener } from "bgio-effects/react";
+import { EffectsBoardWrapper } from "bgio-effects/react";
 
-import {
-  PlayerActionContainer,
-  CardIcon,
-} from "./components/PlayerActionContainer";
+import { PlayerActionContainer } from "./components/PlayerActionContainer";
+import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { DebugPanel } from "./components/DebugPanel";
 
@@ -197,23 +194,18 @@ TODO: accurately colour it
         />
       )}
 
-      {opponents.map((player) => (
-        <div
-          key={player.id}
-          className="fixed left-1/2 -translate-x-1/2 flex items-center pl-4 top-4 bg-blue-200 bg-opacity-50 rounded-md h-20"
-        >
-          {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
-            return (
-              <CardIcon
-                playerCards={player.resources}
-                key={resource}
-                resource={resource}
-                player={player.id}
-              />
-            );
-          })}
+      {opponents.length > 0 && (
+        <div className="fixed left-1/2 -translate-x-1/2 top-4 flex items-center gap-4">
+          {opponents.map((opponent) => (
+            <OpponentPlayerBox
+              key={opponent.id}
+              player={opponent}
+              core={bgioProps.G.core}
+              coreTopology={bgioProps.G.coreTopology}
+            />
+          ))}
         </div>
-      ))}
+      )}
 
       <DebugPanel bgioProps={bgioProps} />
     </div>
