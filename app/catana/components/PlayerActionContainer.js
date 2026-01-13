@@ -213,12 +213,9 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
     : "bg-blue-200 bg-opacity-50 ring-slate-300";
 
   return (
-    <div className="flex fixed w-full bottom-4 px-4 items-end">
-      {/* Other elements */}
-      <div className="flex flex-1 items-center justify-end self-end">
-        {/* Add other divs here */}
-        {/* <div className="bg-red-200 w-16 h-16">Settlement</div>
-  <div className="bg-green-200 w-16 h-16">City</div> */}
+    <div className="flex fixed w-full bottom-4 px-4 items-end relative">
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-end">
+        {/* Avatar + centered dock */}
         <PlayerAvatarStats
           player={player}
           core={G.core}
@@ -230,47 +227,45 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
             isOverLimit,
           }}
         />
-      </div>
 
-      {/* Centered card container */}
-      <div className="grow-0 self-end relative">
-        <div className={`relative h-20 ml-4 mr-4 flex pl-4 rounded-md ring-2 transition-colors duration-300 ${containerStyle}`}>
-          <Dock>
-          {dynamicActions.map((action, index) =>
-            action ? (
-              <DockCard key={action.name ?? index} action={action} />
-            ) : (
-              <span key={`empty-${index}`} />
-            )
-          )}
-          </Dock>
-          <div className="flex self-end mb-4">
-            {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
-              const canQuickTrade = canQuickTradeResource(resource);
-              return (
-                <CardIcon
-                  playerCards={player.resources}
-                  key={resource}
-                  resource={resource}
-                  //TODO: change this for more players:
-                  player={player.id}
-                  onResourceClick={canQuickTrade ? handleResourceClick : null}
-                />
-              );
-            })}
+        <div className="relative">
+          <div className={`relative h-20 ml-4 mr-4 flex pl-4 rounded-md ring-2 transition-colors duration-300 ${containerStyle}`}>
+            <Dock>
+            {dynamicActions.map((action, index) =>
+              action ? (
+                <DockCard key={action.name ?? index} action={action} />
+              ) : (
+                <span key={`empty-${index}`} />
+              )
+            )}
+            </Dock>
+            <div className="flex self-end mb-4">
+              {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
+                const canQuickTrade = canQuickTradeResource(resource);
+                return (
+                  <CardIcon
+                    playerCards={player.resources}
+                    key={resource}
+                    resource={resource}
+                    //TODO: change this for more players:
+                    player={player.id}
+                    onResourceClick={canQuickTrade ? handleResourceClick : null}
+                  />
+                );
+              })}
+            </div>
+          </div>
+          {/* Dev Card Display */}
+          <div className="absolute left-full ml-0 bottom-[-2px]">
+            <DevCardDisplay
+              cards={player.devCards}
+              playableByType={devPlayableByType}
+              onPlayCard={(card) => moves.playDevCardStart(card)}
+              activeCardType={activeDevCardType}
+            />
           </div>
         </div>
-        {/* Dev Card Display */}
-        <div className="absolute left-full ml-0 bottom-[-2px]">
-          <DevCardDisplay
-            cards={player.devCards}
-            playableByType={devPlayableByType}
-            onPlayCard={(card) => moves.playDevCardStart(card)}
-            activeCardType={activeDevCardType}
-          />
-        </div>
       </div>
-
 
       <div className="flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
         {ctx.phase === "main" && (

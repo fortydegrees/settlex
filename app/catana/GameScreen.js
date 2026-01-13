@@ -195,7 +195,7 @@ TODO: accurately colour it
       )}
 
       {opponents.length > 0 && (
-        <div className="fixed left-1/2 -translate-x-1/2 top-4 flex items-center gap-4">
+        <div className="fixed left-1/2 -translate-x-1/2 top-6 flex items-center gap-4">
           {opponents.map((opponent) => (
             <OpponentPlayerBox
               key={opponent.id}
