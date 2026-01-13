@@ -229,7 +229,7 @@ export function CatanBoard({
           const viewportStartX = divRect.left + initialCardXRelToBoard;
           const viewportStartY = divRect.top + initialCardYRelToBoard;
 
-          const cardResource = tile.tile.resource;
+          const cardResource = card.resource || tile.tile.resource;
 
           const element = document.getElementById(
             `p${playerID}-${cardResource}`
