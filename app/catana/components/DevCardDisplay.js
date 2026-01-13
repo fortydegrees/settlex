@@ -3,6 +3,7 @@ import Image from "next/image";
 import "./DevCardDisplay.css";
 import { CardStack } from "./CardStack";
 import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
+import { getBadgeClasses } from "./CardStackStyles";
 
 // Map DevCard types to their SVGs
 const DEV_CARD_SVGS = {
@@ -18,6 +19,7 @@ export const DevCardDisplay = ({
   playableByType = {},
   onPlayCard,
   activeCardType,
+  showCountBadge = false,
 }) => {
   const { nonPlayable, playable, boxWidth } =
     useMemo(() => {
@@ -84,7 +86,7 @@ export const DevCardDisplay = ({
 
   return (
     <div
-      className="devcard-box devcard-pop inline-flex h-20 items-center rounded-md bg-blue-200/50 px-3 ring-2 ring-slate-300 shadow-sm origin-bottom-left"
+      className="devcard-box devcard-pop inline-flex h-20 items-center rounded-md bg-blue-200/50 px-3 ring-2 ring-slate-300 shadow-sm origin-bottom-left relative"
       style={{ width: `${boxWidth}px` }}
     >
       {/* Non-Playable (Victory Points) */}
@@ -134,6 +136,9 @@ export const DevCardDisplay = ({
           );
         })}
       </div>
+      {showCountBadge && (
+        <div className={getBadgeClasses("default")}>{cards.length}</div>
+      )}
     </div>
   );
 };
