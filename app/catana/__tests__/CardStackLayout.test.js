@@ -1,0 +1,43 @@
+import { describe, it, expect } from "vitest";
+import { getCardStackLayout } from "../components/CardStackLayout";
+
+describe("getCardStackLayout", () => {
+  it("uses a placeholder card when count is 0", () => {
+    const layout = getCardStackLayout({
+      count: 0,
+      cardWidth: 52,
+      stackOffset: 16,
+      maxVisible: 3,
+    });
+
+    expect(layout.visibleCount).toBe(1);
+    expect(layout.width).toBe(52);
+    expect(layout.isEmpty).toBe(true);
+    expect(layout.showBadge).toBe(false);
+  });
+
+  it("clamps visible cards to maxVisible", () => {
+    const layout = getCardStackLayout({
+      count: 5,
+      cardWidth: 52,
+      stackOffset: 16,
+      maxVisible: 3,
+    });
+
+    expect(layout.visibleCount).toBe(3);
+    expect(layout.width).toBe(52 + 2 * 16);
+    expect(layout.showBadge).toBe(true);
+  });
+
+  it("shows the full stack when maxVisible is omitted", () => {
+    const layout = getCardStackLayout({
+      count: 2,
+      cardWidth: 52,
+      stackOffset: 16,
+    });
+
+    expect(layout.visibleCount).toBe(2);
+    expect(layout.width).toBe(52 + 16);
+    expect(layout.showBadge).toBe(false);
+  });
+});
