@@ -7,10 +7,13 @@ import {
   checkWin,
   checkAndApplyWin
 } from "./victory";
-import { applyBuildRoad } from "./buildActions";
-import { applyKnight } from "./devCards";
+import { applyBuildCity, applyBuildRoad } from "./buildActions";
+import { applyKnight, buyDevCard } from "./devCards";
 import { ResourceType } from "../types";
-import { BoardTopology } from "../core/topology";
+import { BoardTopology, buildTopology } from "../core/topology";
+import { generateBoard } from "../board/generateBoard";
+import { spec } from "../spec";
+import { makeDeterministicRng } from "../testUtils";
 
 function makeBoard(edges: Array<[number, number]>): BoardTopology {
   const edgeNodes: Record<string, [number, number]> = {};
@@ -201,6 +204,49 @@ describe("game over", () => {
     checkAndApplyWin(state, "1");
 
     expect(state.gameOver).toBe(null);
+  });
+});
+
+describe("game over wiring", () => {
+  it("sets gameOver after building a city in normal play", () => {
+    const tiles = generateBoard(spec, makeDeterministicRng(1));
+    const board = buildTopology(tiles);
+    const state = createEmptyState(["0"]);
+    state.phase = "normal";
+    state.turn.currentPlayerId = "0";
+    state.ruleset.victoryPointsToWin = 2;
+    const node = board.landNodeIds[0];
+    state.buildingsByNodeId[node] = { ownerId: "0", type: "settlement" };
+    state.playerStateById["0"].resources = [
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE
+    ];
+
+    const result = applyBuildCity(state, board, node, "0");
+
+    expect(result.ok).toBe(true);
+    expect(state.gameOver?.winnerId).toBe("0");
+  });
+
+  it("sets gameOver when buying a victory point dev card", () => {
+    const state = createEmptyState(["0"]);
+    state.phase = "normal";
+    state.turn.currentPlayerId = "0";
+    state.ruleset.victoryPointsToWin = 1;
+    state.devDeck = ["victoryPoint"];
+    state.playerStateById["0"].resources = [
+      ResourceType.SHEEP,
+      ResourceType.WHEAT,
+      ResourceType.ORE
+    ];
+
+    const result = buyDevCard(state, "0");
+
+    expect(result.ok).toBe(true);
+    expect(state.gameOver?.winnerId).toBe("0");
   });
 });
 
