@@ -37,3 +37,4 @@
 - Opponent bar is nudged down to `top-6` in `app/catana/GameScreen.js`.
 - Player hand totals now render as badges on the resource bar and dev-card box instead of the avatar stats.
 - Player hand badges are currently gated by a local flag in `app/catana/components/PlayerActionContainer.js`.
+- GameScreen disables selection/context menus by default; opt in with `data-allow-interaction="true"` and `select-text`.

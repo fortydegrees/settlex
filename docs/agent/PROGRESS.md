@@ -59,3 +59,4 @@
 - Softened the opponent discard-limit badge styling to match the player warning tone.
 - Moved player hand counts out of the avatar stats and into resource/dev-card badges.
 - Hid player hand badges behind a local flag and switched badge placement to the outside corner.
+- Disabled text selection/context menus on the main game UI with an opt-in attribute for log/chat/status.
