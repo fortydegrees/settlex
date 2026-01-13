@@ -29,3 +29,4 @@
 - Opponent player box implementation plan lives in `docs/plans/2026-01-13-opponent-player-box-plan.md`.
 - Card stack rendering lives in `app/catana/components/CardStack.js` with layout helper in `app/catana/components/CardStackLayout.js`.
 - Shared avatar/stats UI lives in `app/catana/components/PlayerAvatarStats.js` and is reused by `app/catana/components/OpponentPlayerBox.js`.
+- Card stacks cap their width (default 90px) via `DEFAULT_STACK_MAX_WIDTH` in `app/catana/components/CardStackLayout.js`.

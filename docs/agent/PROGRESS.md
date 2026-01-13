@@ -51,3 +51,4 @@
 - Extracted `PlayerAvatarStats` with a VP display helper and preserved local hand counts.
 - Added `OpponentPlayerBox` with resource/dev card-back stacks and hooked it up in `GameScreen`.
 - Logged design + plan docs for the opponent player box UI.
+- Added a max-width cap for card stacks (default 90px) so piles tighten spacing as counts grow.
