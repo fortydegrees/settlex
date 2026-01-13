@@ -1,11 +1,7 @@
-import Image from "next/image";
-import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
-import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
-import resCardBackIcon from "../../../public/svgs/card_rescardback.svg";
-import devCardBackIcon from "../../../public/svgs/card_devcardback.svg";
 import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";
+import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { RESOURCE_ICON_SVGS } from "../game/types";
 import React, { useMemo } from "react";
 import {
@@ -13,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
-import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, canPlayDevCard, ResourceType, buildableNodes, buildableEdges, getLongestRoadLength, getVictoryPoints, getPublicVictoryPoints } from "@settlex/game-core";
+import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, canPlayDevCard, ResourceType, buildableNodes, buildableEdges } from "@settlex/game-core";
 import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 
 
@@ -206,37 +202,10 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
     onTradeClick(resource);
   };
 
-  //
-  
-  const avatarColor = `from-${player.color}-500 to-${player.color}-800`
-
   // Calculate if player is over discard limit
   const totalResources = player.resources.length;
   const discardLimit = G.core?.ruleset?.discardLimit ?? 7;
   const isOverLimit = totalResources > discardLimit;
-
-  // Calculate victory stats
-  const currentRoadLength = G.core ? getLongestRoadLength(G.core, G.coreTopology, player.id) : 0;
-  const currentArmySize = player.knightsPlayed || 0;
-  const hasLongestRoad = G.core?.awards?.longestRoadOwnerId === player.id;
-  const hasLargestArmy = G.core?.awards?.largestArmyOwnerId === player.id;
-
-  // Victory Points Logic
-  const totalPoints = G.core ? getVictoryPoints(G.core, player.id) : 0;
-  const publicPoints = G.core ? getPublicVictoryPoints(G.core, player.id) : 0;
-  
-  const isCurrentPlayer = ctx.currentPlayer === player.id; // Or use spectator logic if needed
-  // If we are looking at our OWN player (or spectator sees all?), show simplified hidden logic
-  // Actually, standard is: show public points. If I am the player, I can see my hidden points.
-  // The 'player' prop here defines WHICH player card we are rendering. 
-  // 'ctx.currentPlayer' defines whose TURN it is, but we need to know who the CLIENT is.
-  // We don't strictly know 'who the client is' in this component except maybe via `bgioProps.playerID`.
-  
-  let vpDisplay = `${publicPoints}`;
-  if (isMe && totalPoints > publicPoints) {
-    const hidden = totalPoints - publicPoints;
-    vpDisplay = `${publicPoints} (+${hidden})`;
-  }
 
   // Determine container styling based on limit status
   const containerStyle = isOverLimit 
@@ -250,76 +219,12 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
         {/* Add other divs here */}
         {/* <div className="bg-red-200 w-16 h-16">Settlement</div>
   <div className="bg-green-200 w-16 h-16">City</div> */}
-        <span className="flex relative">
-          <div className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${avatarColor}`}>
-            🤠
-          </div>
-          <span className="absolute right-0 top-0 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
-            {vpDisplay}
-          </span>
-        </span>
-        <span className="bg-blue-200 bg-opacity-50 rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300">
-          <div className="flex flex-col gap-y-1">
-            <div className="flex items-center">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src={longestRoadIcon}
-                  alt="Longest road"
-                  width={28}
-                  height={28}
-                  className="object-contain"
-                />
-              </div>
-              <span className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${hasLongestRoad ? "text-yellow-400 font-bold" : "text-white"}`}>
-                {currentRoadLength}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src={largestArmyIcon}
-                  alt="Largest army"
-                  width={28}
-                  height={28}
-                  className="object-contain"
-                />
-              </div>
-              <span className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${hasLargestArmy ? "text-yellow-400 font-bold" : "text-white"}`}>
-                {currentArmySize}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-y-1">
-            <div className="flex items-center">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src={resCardBackIcon}
-                  alt="Resource cards"
-                  width={20}
-                  height={28}
-                  className="object-contain"
-                />
-              </div>
-              <span className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${isOverLimit ? "text-rose-500 font-bold" : "text-white"}`}>
-                {player.resources.length}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src={devCardBackIcon}
-                  alt="Dev cards"
-                  width={20}
-                  height={28}
-                  className="object-contain"
-                />
-              </div>
-              <span className="w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] text-white">
-                {player.devCards?.length ?? 0}
-              </span>
-            </div>
-          </div>
-        </span>
+        <PlayerAvatarStats
+          player={player}
+          core={G.core}
+          coreTopology={G.coreTopology}
+          isMe={isMe}
+        />
       </div>
 
       {/* Centered card container */}
