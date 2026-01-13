@@ -256,14 +256,14 @@ export function CatanBoard({
             const finalY = yRelativeToDiv - initialCardYRelToBoard - 15;
 
             ref.current?.({ startX: viewportStartX, startY: viewportStartY, finalX, finalY, cardResource });
-          }, index * 100); // 100ms stagger between cards
+          }, index * 10); // 10ms stagger between cards
         });
 
         // Clear flashing after all cards have started (plus buffer)
         setTimeout(() => {
           setFlashingTiles([]);
           setBlockedFlashingTiles([]);
-        }, cards.length * 100 + 500);
+        }, cards.length * 10 + 500);
       }, 1000);
     },
     [width, height, size, center]
