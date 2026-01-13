@@ -4,7 +4,7 @@ import type { BoardTopology } from "../core/topology";
 import { buildableEdges } from "./buildability";
 import { canAfford, spendResources } from "./buildActions";
 import { recomputeCaches } from "./apply";
-import { recomputeLargestArmy, recomputeLongestRoad } from "./victory";
+import { checkAndApplyWin, recomputeLargestArmy, recomputeLongestRoad } from "./victory";
 
 function isSpendError(
   result: { ok: true } | { ok: false; error: string }
@@ -53,6 +53,7 @@ export function buyDevCard(
   const card = state.devDeck.shift() as DevCardType;
   player.devCards.push(card);
   player.devCardsBoughtThisTurn.push(card);
+  checkAndApplyWin(state, playerId);
   return { ok: true };
 }
 
@@ -145,6 +146,7 @@ export function applyKnight(
   }
   player.knightsPlayed += 1;
   recomputeLargestArmy(state);
+  checkAndApplyWin(state, playerId);
   return { ok: true };
 }
 
@@ -184,6 +186,7 @@ export function applyRoadBuilding(
   player.roadsRemaining -= 2;
   recomputeCaches(state, board);
   recomputeLongestRoad(state, board);
+  checkAndApplyWin(state, playerId);
   return { ok: true };
 }
 
