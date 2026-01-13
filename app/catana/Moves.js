@@ -148,7 +148,7 @@ export const placeSettlement = {
         if (tile.type === TileTypes.LAND && tile.tile.resource !== ResourceType.DESERT){
         cardAnims.push({
           tileId: tile.tile.id,
-          coordinate: tile.coordinate,
+          coordinate: [...tile.coordinate],
           playerID,
           resource: tile.tile.resource,
         });
@@ -302,7 +302,7 @@ export const rollDice = {
         const tile = G.tiles.find(t => t.tile.id === d.tileId);
         return {
           tileId: d.tileId,
-          coordinate: tile?.coordinate,
+          coordinate: tile?.coordinate ? [...tile.coordinate] : null,
           playerID: d.playerId,
           resource: d.resource,
         };
