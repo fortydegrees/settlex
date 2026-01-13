@@ -53,3 +53,5 @@
 - Logged design + plan docs for the opponent player box UI.
 - Added a max-width cap for card stacks (default 90px) so piles tighten spacing as counts grow.
 - Updated opponent stacks to render all card backs (no maxVisible limit) while still capping width.
+- Highlighted opponent resource badge in red when over discard limit.
+- Nudged opponent bar down to avoid VP clipping and centered the avatar+action dock pill.

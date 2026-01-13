@@ -31,3 +31,6 @@
 - Shared avatar/stats UI lives in `app/catana/components/PlayerAvatarStats.js` and is reused by `app/catana/components/OpponentPlayerBox.js`.
 - Card stacks cap their width (default 90px) via `DEFAULT_STACK_MAX_WIDTH` in `app/catana/components/CardStackLayout.js`.
 - Opponent card stacks now render every card back and rely on width caps to tighten spacing as counts grow.
+- Opponent resource badge uses danger styling when over discard limit via `app/catana/components/OpponentPlayerBoxUtils.js`.
+- Bottom action dock + avatar pill is centered using an absolute wrapper in `app/catana/components/PlayerActionContainer.js`.
+- Opponent bar is nudged down to `top-6` in `app/catana/GameScreen.js`.
