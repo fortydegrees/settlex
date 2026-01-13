@@ -4,7 +4,8 @@ import {
   recomputeLargestArmy,
   recomputeLongestRoad,
   getVictoryPoints,
-  checkWin
+  checkWin,
+  checkAndApplyWin
 } from "./victory";
 import { applyBuildRoad } from "./buildActions";
 import { applyKnight } from "./devCards";
@@ -162,6 +163,44 @@ describe("victory points", () => {
     state.awards.largestArmyOwnerId = "0";
 
     expect(checkWin(state, "0")).toBe(true);
+  });
+});
+
+describe("game over", () => {
+  it("sets gameOver when current player reaches threshold in normal phase", () => {
+    const state = createEmptyState(["0"]);
+    state.phase = "normal";
+    state.turn.currentPlayerId = "0";
+    state.ruleset.victoryPointsToWin = 1;
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+    checkAndApplyWin(state, "0");
+
+    expect(state.gameOver).toEqual({ winnerId: "0", reason: "victoryPoints" });
+  });
+
+  it("ignores wins outside normal phase", () => {
+    const state = createEmptyState(["0"]);
+    state.phase = "placement";
+    state.turn.currentPlayerId = "0";
+    state.ruleset.victoryPointsToWin = 1;
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+    checkAndApplyWin(state, "0");
+
+    expect(state.gameOver).toBe(null);
+  });
+
+  it("ignores wins when acting player is not current player", () => {
+    const state = createEmptyState(["0", "1"]);
+    state.phase = "normal";
+    state.turn.currentPlayerId = "0";
+    state.ruleset.victoryPointsToWin = 1;
+    state.buildingsByNodeId[1] = { ownerId: "1", type: "settlement" };
+
+    checkAndApplyWin(state, "1");
+
+    expect(state.gameOver).toBe(null);
   });
 });
 
