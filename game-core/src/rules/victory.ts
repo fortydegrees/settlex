@@ -184,3 +184,18 @@ export function getPublicVictoryPoints(state: GameState, playerId: string): numb
 export function checkWin(state: GameState, playerId: string): boolean {
   return getVictoryPoints(state, playerId) >= state.ruleset.victoryPointsToWin;
 }
+
+export function checkAndApplyWin(state: GameState, actingPlayerId: string): void {
+  if (state.phase !== "normal") {
+    return;
+  }
+  if (state.gameOver) {
+    return;
+  }
+  if (state.turn.currentPlayerId !== actingPlayerId) {
+    return;
+  }
+  if (checkWin(state, actingPlayerId)) {
+    state.gameOver = { winnerId: actingPlayerId, reason: "victoryPoints" };
+  }
+}

@@ -47,6 +47,7 @@ export type GameState = {
     longestRoadOwnerId: string | null;
     largestArmyOwnerId: string | null;
   };
+  gameOver: { winnerId: string; reason: "victoryPoints" } | null;
   ruleset: Ruleset;
   bank: BankState;
   playerStateById: Record<string, PlayerState>;
@@ -118,6 +119,7 @@ export function createEmptyState(players: string[], rulesetSpec?: Ruleset): Game
       longestRoadOwnerId: null,
       largestArmyOwnerId: null
     },
+    gameOver: null,
     ruleset,
     bank: { resources: expandResources(ruleset.bank.resourceCounts) },
     playerStateById,
