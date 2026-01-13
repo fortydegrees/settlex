@@ -52,4 +52,28 @@ describe("getCardStackLayout", () => {
     expect(layout.visibleCount).toBe(2);
     expect(layout.width).toBe(52 + 16);
   });
+
+  it("caps width and tightens offset when ideal width exceeds the cap", () => {
+    const layout = getCardStackLayout({
+      count: 4,
+      cardWidth: 52,
+      stackOffset: 16,
+      maxStackWidth: 90,
+    });
+
+    expect(layout.width).toBe(90);
+    expect(layout.offset).toBeCloseTo((90 - 52) / 3, 4);
+  });
+
+  it("never shrinks below a single card width", () => {
+    const layout = getCardStackLayout({
+      count: 3,
+      cardWidth: 52,
+      stackOffset: 16,
+      maxStackWidth: 40,
+    });
+
+    expect(layout.width).toBe(52);
+    expect(layout.offset).toBe(0);
+  });
 });
