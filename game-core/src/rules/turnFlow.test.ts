@@ -284,3 +284,21 @@ it("rejects end turn when discards are pending", () => {
 
   expect(result.ok).toBe(false);
 });
+
+it("applyRollDice returns distributions from applyResourceDistribution", () => {
+  const state = createEmptyState(["0"]);
+  state.phase = "normal";
+  state.turn.phase = "preRoll";
+  state.bank.resources = Array(5).fill(ResourceType.WOOD);
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyRollDice(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toEqual([
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD }
+    ]);
+  }
+});

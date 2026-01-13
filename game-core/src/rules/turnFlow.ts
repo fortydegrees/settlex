@@ -293,11 +293,15 @@ export function applyMoveRobber(
   return { ok: true };
 }
 
+export type RollResult =
+  | { ok: true; distributions: Distribution[]; blockedTiles: number[] }
+  | { ok: false; error: string };
+
 export function applyRollDice(
   state: GameState,
   board: BoardTopology,
   rollTotal: number
-): { ok: true } | { ok: false; error: string } {
+): RollResult {
   state.turn.hasRolled = true;
   state.turn.lastRollTotal = rollTotal;
 
@@ -305,12 +309,16 @@ export function applyRollDice(
     const pending = playersNeedingDiscard(state);
     state.turn.pendingDiscards = pending;
     state.turn.phase = pending.length > 0 ? "robberDiscard" : "robberMove";
-    return { ok: true };
+    return { ok: true, distributions: [], blockedTiles: [] };
   }
 
-  applyResourceDistribution(state, board, rollTotal);
+  const distResult = applyResourceDistribution(state, board, rollTotal);
+  if (!distResult.ok) {
+    return distResult;
+  }
+
   state.turn.phase = "postRoll";
-  return { ok: true };
+  return { ok: true, distributions: distResult.distributions, blockedTiles: distResult.blockedTiles };
 }
 
 export function applyEndTurn(
