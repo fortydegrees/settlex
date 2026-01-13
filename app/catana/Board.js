@@ -232,9 +232,13 @@ export function CatanBoard({
 
           const cardResource = card.resource;
 
-          const element = document.getElementById(
-            `p${playerID}-${cardResource}`
-          );
+          const elementId = `p${playerID}-${cardResource}`;
+          const element = document.getElementById(elementId);
+
+          if (!element) {
+            console.warn(`Animation target not found: ${elementId}`);
+            continue;
+          }
 
           const rect = element.getBoundingClientRect(); // Target element's viewport coordinates
           
