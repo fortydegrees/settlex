@@ -1,6 +1,8 @@
 import Image from "next/image";
 import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
+import resCardBackIcon from "../../../public/svgs/card_rescardback.svg";
+import devCardBackIcon from "../../../public/svgs/card_devcardback.svg";
 import {
   getLongestRoadLength,
   getVictoryPoints,
@@ -8,7 +10,7 @@ import {
 } from "@settlex/game-core";
 import { getVpDisplay } from "./PlayerAvatarStatsUtils";
 
-export const PlayerAvatarStats = ({ player, core, coreTopology, isMe }) => {
+export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, handCounts }) => {
   if (!player) return null;
 
   const avatarColor = `from-${player.color}-500 to-${player.color}-800`;
@@ -22,6 +24,11 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe }) => {
   const totalPoints = core ? getVictoryPoints(core, player.id) : 0;
   const publicPoints = core ? getPublicVictoryPoints(core, player.id) : 0;
   const vpDisplay = getVpDisplay({ publicPoints, totalPoints, isMe });
+
+  const showHandCounts = Boolean(handCounts);
+  const resourceCount = handCounts?.resources ?? 0;
+  const devCount = handCounts?.devCards ?? 0;
+  const isOverLimit = handCounts?.isOverLimit ?? false;
 
   return (
     <>
@@ -74,6 +81,42 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe }) => {
             </span>
           </div>
         </div>
+        {showHandCounts && (
+          <div className="flex flex-col gap-y-1">
+            <div className="flex items-center">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src={resCardBackIcon}
+                  alt="Resource cards"
+                  width={20}
+                  height={28}
+                  className="object-contain"
+                />
+              </div>
+              <span
+                className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
+                  isOverLimit ? "text-rose-500 font-bold" : "text-white"
+                }`}
+              >
+                {resourceCount}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <Image
+                  src={devCardBackIcon}
+                  alt="Dev cards"
+                  width={20}
+                  height={28}
+                  className="object-contain"
+                />
+              </div>
+              <span className="w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] text-white">
+                {devCount}
+              </span>
+            </div>
+          </div>
+        )}
       </span>
     </>
   );

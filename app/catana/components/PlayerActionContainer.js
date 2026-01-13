@@ -224,6 +224,11 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
           core={G.core}
           coreTopology={G.coreTopology}
           isMe={isMe}
+          handCounts={{
+            resources: player.resources.length,
+            devCards: player.devCards?.length ?? 0,
+            isOverLimit,
+          }}
         />
       </div>
 
