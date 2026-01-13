@@ -1,5 +1,4 @@
 
-import { current } from "immer";
 import { ResourceType, TileTypes } from "./game/types";
 import {
   applyBuildCity,
@@ -142,17 +141,18 @@ export const placeSettlement = {
       .filter(t => t.type === TileTypes.LAND && t.tile.resource !== ResourceType.DESERT)
       .map(t => t.tile.resource);
 
-      //we want to provide [{tile}]
+      //we want to provide [{tileId, coordinate, playerID, resource}]
       const cardAnims = [];
-      for (var tile of resourceTiles) {
-        tile = current(tile);
+      for (const tile of resourceTiles) {
         //check that it's a resource tile AND not blocked
         if (tile.type === TileTypes.LAND && tile.tile.resource !== ResourceType.DESERT){
-        //TODO: change this to be an array of tile, playerIDs so animations aren't staggered
-        cardAnims.push({ tile, playerID });
+        cardAnims.push({
+          tileId: tile.tile.id,
+          coordinate: tile.coordinate,
+          playerID,
+          resource: tile.tile.resource,
+        });
         }
-
-
       }
 
       effects.distributeCardsFromTile(cardAnims);
@@ -298,11 +298,15 @@ export const rollDice = {
 
     // Trigger resource distribution animations
     if (result.distributions?.length > 0) {
-      const cardAnims = result.distributions.map(d => ({
-        tile: G.tiles.find(t => t.tile.id === d.tileId),
-        playerID: d.playerId,
-        resource: d.resource,
-      }));
+      const cardAnims = result.distributions.map(d => {
+        const tile = G.tiles.find(t => t.tile.id === d.tileId);
+        return {
+          tileId: d.tileId,
+          coordinate: tile?.coordinate,
+          playerID: d.playerId,
+          resource: d.resource,
+        };
+      });
       effects.distributeCardsFromTile(cardAnims);
     }
 

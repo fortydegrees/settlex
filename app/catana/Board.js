@@ -204,17 +204,17 @@ export function CatanBoard({
     "distributeCardsFromTile",
     (cards) => {
       //flash tiles
-      setFlashingTiles(cards.map((c) => c.tile.tile.id));
+      setFlashingTiles(cards.map((c) => c.tileId));
       //wait one second (for tiles to flash) then distribute cards
       setTimeout(() => {
         const divRect = divRef.current.getBoundingClientRect(); // Get board's viewport offset and size
 
         for (const card of cards) {
-          const { tile, playerID } = card;
+          const { tileId, coordinate, playerID } = card;
 
           const [centerX, centerY] = center;
           const [tilePosX, tilePosY] = tilePixelVector( // tilePos X,Y relative to board's center
-            tile.coordinate,
+            coordinate,
             size,
             centerX,
             centerY
@@ -230,7 +230,7 @@ export function CatanBoard({
           const viewportStartX = divRect.left + initialCardXRelToBoard;
           const viewportStartY = divRect.top + initialCardYRelToBoard;
 
-          const cardResource = card.resource || tile.tile.resource;
+          const cardResource = card.resource;
 
           const element = document.getElementById(
             `p${playerID}-${cardResource}`
