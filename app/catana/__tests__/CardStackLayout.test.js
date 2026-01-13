@@ -40,4 +40,16 @@ describe("getCardStackLayout", () => {
     expect(layout.width).toBe(52 + 16);
     expect(layout.showBadge).toBe(false);
   });
+
+  it("keeps width based on count when maxVisible is larger", () => {
+    const layout = getCardStackLayout({
+      count: 2,
+      cardWidth: 52,
+      stackOffset: 16,
+      maxVisible: 3,
+    });
+
+    expect(layout.visibleCount).toBe(2);
+    expect(layout.width).toBe(52 + 16);
+  });
 });
