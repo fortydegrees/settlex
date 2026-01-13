@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
+import { getBadgeClasses } from "./CardStackStyles";
 
 export const CardStack = ({
   count = 0,
@@ -11,6 +12,7 @@ export const CardStack = ({
   stackOffset = 16,
   maxVisible,
   maxStackWidth = DEFAULT_STACK_MAX_WIDTH,
+  badgeTone = "default",
   className = "",
 }) => {
   const layout = getCardStackLayout({
@@ -47,7 +49,7 @@ export const CardStack = ({
         </div>
       ))}
       {layout.showBadge && (
-        <div className="absolute -top-2 -right-2 z-20 h-5 min-w-[1.25rem] rounded-full bg-blue-50 px-1 text-xs font-semibold text-slate-700 ring-2 ring-white flex items-center justify-center">
+        <div className={getBadgeClasses(badgeTone)}>
           {count}
         </div>
       )}
