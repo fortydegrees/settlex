@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { getCardStackLayout } from "./CardStackLayout";
+import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
 
 export const CardStack = ({
   count = 0,
@@ -10,6 +10,7 @@ export const CardStack = ({
   cardHeight = 72,
   stackOffset = 16,
   maxVisible,
+  maxStackWidth = DEFAULT_STACK_MAX_WIDTH,
   className = "",
 }) => {
   const layout = getCardStackLayout({
@@ -17,6 +18,7 @@ export const CardStack = ({
     cardWidth,
     stackOffset,
     maxVisible,
+    maxStackWidth,
   });
 
   const cardClass = "object-contain drop-shadow-md";
@@ -33,7 +35,7 @@ export const CardStack = ({
         <div
           key={`stack-${i}`}
           className="absolute top-0"
-          style={{ left: `${i * stackOffset}px`, zIndex: i }}
+          style={{ left: `${i * layout.offset}px`, zIndex: i }}
         >
           <Image
             src={src}
