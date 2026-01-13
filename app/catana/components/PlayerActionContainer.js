@@ -2,6 +2,7 @@ import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
+import { getBadgeClasses } from "./CardStackStyles";
 import { RESOURCE_ICON_SVGS } from "../game/types";
 import React, { useMemo } from "react";
 import {
@@ -45,6 +46,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
 
   
   const { G, ctx, moves } = bgioProps;
+  const SHOW_PLAYER_HAND_BADGES = false;
 
   const [Die, rollTo] = useDie(G.diceRoll[0]);
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);
@@ -213,19 +215,15 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
     : "bg-blue-200 bg-opacity-50 ring-slate-300";
 
   return (
-    <div className="flex fixed w-full bottom-4 px-4 items-end relative">
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-end">
+    <div className="fixed bottom-4 left-0 right-0 px-4">
+      <div className="relative flex items-end">
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-0 flex items-end">
         {/* Avatar + centered dock */}
         <PlayerAvatarStats
           player={player}
           core={G.core}
           coreTopology={G.coreTopology}
           isMe={isMe}
-          handCounts={{
-            resources: player.resources.length,
-            devCards: player.devCards?.length ?? 0,
-            isOverLimit,
-          }}
         />
 
         <div className="relative">
@@ -254,6 +252,11 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
                 );
               })}
             </div>
+            {SHOW_PLAYER_HAND_BADGES && (
+              <div className={getBadgeClasses(isOverLimit ? "danger" : "default")}>
+                {totalResources}
+              </div>
+            )}
           </div>
           {/* Dev Card Display */}
           <div className="absolute left-full ml-0 bottom-[-2px]">
@@ -262,6 +265,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
               playableByType={devPlayableByType}
               onPlayCard={(card) => moves.playDevCardStart(card)}
               activeCardType={activeDevCardType}
+              showCountBadge={SHOW_PLAYER_HAND_BADGES}
             />
           </div>
         </div>
@@ -292,6 +296,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
         {/* Add other divs here */}
         {/* <div className="bg-red-200 w-16 h-16">Element 1</div>
   <div className="bg-green-200 w-16 h-16">Element 2</div> */}
+      </div>
       </div>
     </div>
   );

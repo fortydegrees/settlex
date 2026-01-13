@@ -55,3 +55,7 @@
 - Updated opponent stacks to render all card backs (no maxVisible limit) while still capping width.
 - Highlighted opponent resource badge in red when over discard limit.
 - Nudged opponent bar down to avoid VP clipping and centered the avatar+action dock pill.
+- Fixed bottom action dock container positioning by moving the centering wrapper under a fixed parent.
+- Softened the opponent discard-limit badge styling to match the player warning tone.
+- Moved player hand counts out of the avatar stats and into resource/dev-card badges.
+- Hid player hand badges behind a local flag and switched badge placement to the outside corner.

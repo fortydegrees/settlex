@@ -33,4 +33,7 @@
 - Opponent card stacks now render every card back and rely on width caps to tighten spacing as counts grow.
 - Opponent resource badge uses danger styling when over discard limit via `app/catana/components/OpponentPlayerBoxUtils.js`.
 - Bottom action dock + avatar pill is centered using an absolute wrapper in `app/catana/components/PlayerActionContainer.js`.
+- Action dock fixed positioning is preserved by keeping the fixed container separate from the relative centering wrapper.
 - Opponent bar is nudged down to `top-6` in `app/catana/GameScreen.js`.
+- Player hand totals now render as badges on the resource bar and dev-card box instead of the avatar stats.
+- Player hand badges are currently gated by a local flag in `app/catana/components/PlayerActionContainer.js`.
