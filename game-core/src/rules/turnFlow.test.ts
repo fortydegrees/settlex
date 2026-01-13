@@ -95,6 +95,21 @@ it("returns 2 distributions for a city", () => {
   }
 });
 
+it("returns blocked tile when robber prevents distribution", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = Array(5).fill(ResourceType.WOOD);
+  state.robberTileId = 1; // Robber on the wood tile
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toEqual([]);
+    expect(result.blockedTiles).toEqual([1]);
+  }
+});
+
 it("gives none if bank lacks enough of a resource", () => {
   const state = createEmptyState(["0", "1"]);
   state.bank.resources = [ResourceType.WOOD];
