@@ -77,6 +77,24 @@ it("returns distributions array with tileId, playerId, resource", () => {
   }
 });
 
+it("returns 2 distributions for a city", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = Array(5).fill(ResourceType.WOOD);
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "city" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toHaveLength(2);
+    expect(result.distributions).toEqual([
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD },
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD },
+    ]);
+  }
+});
+
 it("gives none if bank lacks enough of a resource", () => {
   const state = createEmptyState(["0", "1"]);
   state.bank.resources = [ResourceType.WOOD];
