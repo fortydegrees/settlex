@@ -178,7 +178,11 @@ export function Tile({
           <Image
             src={robberIcon}
             alt="Robber"
-            style={{ position: 'absolute', transform: `translateX(-60%)` }}
+            style={{
+              position: 'absolute',
+              transform: `translateX(-60%)`,
+              animation: isBlockedFlashing ? 'robberPulse 0.5s ease-in-out 2' : 'none'
+            }}
             width={size / 1.5}
             height={size / 1.5}
           />
