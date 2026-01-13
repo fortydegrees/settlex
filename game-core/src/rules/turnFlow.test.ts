@@ -61,6 +61,22 @@ it("distributes resources for matching roll when bank has enough", () => {
   expect(state.bank.resources).toHaveLength(1);
 });
 
+it("returns distributions array with tileId, playerId, resource", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD, ResourceType.WOOD];
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toEqual([
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD }
+    ]);
+  }
+});
+
 it("gives none if bank lacks enough of a resource", () => {
   const state = createEmptyState(["0", "1"]);
   state.bank.resources = [ResourceType.WOOD];
