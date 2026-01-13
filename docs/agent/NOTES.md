@@ -30,3 +30,4 @@
 - Card stack rendering lives in `app/catana/components/CardStack.js` with layout helper in `app/catana/components/CardStackLayout.js`.
 - Shared avatar/stats UI lives in `app/catana/components/PlayerAvatarStats.js` and is reused by `app/catana/components/OpponentPlayerBox.js`.
 - Card stacks cap their width (default 90px) via `DEFAULT_STACK_MAX_WIDTH` in `app/catana/components/CardStackLayout.js`.
+- Opponent card stacks now render every card back and rely on width caps to tighten spacing as counts grow.
