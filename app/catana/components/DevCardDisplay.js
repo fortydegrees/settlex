@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import Image from "next/image";
 import "./DevCardDisplay.css";
 import { CardStack } from "./CardStack";
-import { getCardStackLayout } from "./CardStackLayout";
+import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
 
 // Map DevCard types to their SVGs
 const DEV_CARD_SVGS = {
@@ -56,6 +56,7 @@ export const DevCardDisplay = ({
             cardWidth,
             stackOffset: vpStackOffsetValue,
             maxVisible: vps.length,
+            maxStackWidth: DEFAULT_STACK_MAX_WIDTH,
           })
         : null;
       const vpWidth = vpLayout ? vpLayout.width : 0;
