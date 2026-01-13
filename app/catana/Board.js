@@ -107,6 +107,7 @@ export function CatanBoard({
   const [hoveredNode, setHoveredNode] = useState(null);
   const [hoveredTiles, setHoveredTiles] = useState([]);
   const [flashingTiles, setFlashingTiles] = useState([]);
+  const [blockedFlashingTiles, setBlockedFlashingTiles] = useState([]);
   const [robberTiles, setRobberTiles] = useState([]);
 
   const [buildableRoads, setBuildableRoads] = useState([])
@@ -255,6 +256,17 @@ export function CatanBoard({
     [width, height, size, center] // Added center to dependencies
   );
 
+  useEffectListener(
+    "robberBlocked",
+    (blockedTileIds) => {
+      setBlockedFlashingTiles(blockedTileIds);
+      setTimeout(() => {
+        setBlockedFlashingTiles([]);
+      }, 1500);
+    },
+    []
+  );
+
   //for displaying actionNodes based on stage the player is in (e.g. moving robber)
   //NOT for building road, as this is not a stage
   useEffect(() => {
@@ -321,6 +333,7 @@ export function CatanBoard({
           boardCenter={center}
           hoveredTiles={hoveredTiles}
           isFlashing={flashingTiles.includes(tile.id)}
+          isBlockedFlashing={blockedFlashingTiles.includes(tile.id)}
           hasRobber={tile.id == G.core?.robberTileId}
           canPlaceRobber={robberTiles && robberTiles.includes(tile.id)}
           moves={moves}
