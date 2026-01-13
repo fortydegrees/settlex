@@ -46,6 +46,10 @@ const configuredEffectsPlugin = EffectsPlugin({
     roll: {
       create: (value) => value,
       duration: 1.5
+    },
+    robberBlocked: {
+      create: (value) => value,
+      duration: 1.5
     }
   },
 });
