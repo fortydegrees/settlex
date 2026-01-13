@@ -202,73 +202,86 @@ export function CatanBoard({
 
   useEffectListener(
     "distributeCardsFromTile",
-    (cards) => {
-      //flash tiles
+    (payload) => {
+      // payload can be: { cards, blockedTileIds } or just cards array (legacy)
+      const cards = Array.isArray(payload) ? payload : payload.cards || [];
+      const blockedTileIds = Array.isArray(payload) ? [] : payload.blockedTileIds || [];
+
+      // Flash all tiles simultaneously (producing + blocked)
       setFlashingTiles(cards.map((c) => c.tileId));
-      //wait one second (for tiles to flash) then distribute cards
+      setBlockedFlashingTiles(blockedTileIds);
+
+      // Wait one second (for tiles to flash) then distribute cards
       setTimeout(() => {
-        const divRect = divRef.current.getBoundingClientRect(); // Get board's viewport offset and size
+        const divRect = divRef.current.getBoundingClientRect();
 
-        for (const card of cards) {
-          const { tileId, coordinate, playerID } = card;
+        cards.forEach((card, index) => {
+          // Stagger each card by 100ms for visual clarity
+          setTimeout(() => {
+            const { tileId, coordinate, playerID } = card;
 
-          const [centerX, centerY] = center;
-          const [tilePosX, tilePosY] = tilePixelVector( // tilePos X,Y relative to board's center
-            coordinate,
-            size,
-            centerX,
-            centerY
-          );
+            const [centerX, centerY] = center;
+            const [tilePosX, tilePosY] = tilePixelVector(
+              coordinate,
+              size,
+              centerX,
+              centerY
+            );
 
-          const cardWidth = size * 0.5;
+            const cardWidth = size * 0.5;
+            const initialCardXRelToBoard = tilePosX - cardWidth / 2 + (Math.floor(Math.random() * 5) - 2);
+            const initialCardYRelToBoard = tilePosY - size + (Math.floor(Math.random() * 10) - 4);
 
-          // Calculate card's initial X,Y relative to the board's origin (divRef)
-          const initialCardXRelToBoard = tilePosX - cardWidth / 2 + (Math.floor(Math.random() * 5) - 2);
-          const initialCardYRelToBoard = tilePosY - size + (Math.floor(Math.random() * 10) - 4);
-          
-          // Convert to viewport-absolute coordinates
-          const viewportStartX = divRect.left + initialCardXRelToBoard;
-          const viewportStartY = divRect.top + initialCardYRelToBoard;
+            const viewportStartX = divRect.left + initialCardXRelToBoard;
+            const viewportStartY = divRect.top + initialCardYRelToBoard;
 
-          const cardResource = card.resource;
+            const cardResource = card.resource;
 
-          const elementId = `p${playerID}-${cardResource}`;
-          const element = document.getElementById(elementId);
+            // Try specific resource element first, fall back to generic resources container (for opponents)
+            const specificId = `p${playerID}-${cardResource}`;
+            const genericId = `p${playerID}-resources`;
+            const element = document.getElementById(specificId) || document.getElementById(genericId);
 
-          if (!element) {
-            console.warn(`Animation target not found: ${elementId}`);
-            continue;
-          }
+            if (!element) {
+              console.warn(`Animation target not found: ${specificId} or ${genericId}`);
+              return;
+            }
 
-          const rect = element.getBoundingClientRect(); // Target element's viewport coordinates
-          
-          const xRelativeToDiv = rect.left - divRect.left;
-          const yRelativeToDiv = rect.top - divRect.top;
+            const rect = element.getBoundingClientRect();
 
-          // finalX and finalY are deltas relative to the card's starting position.
-          // These are calculated based on the target's position relative to the board,
-          // and the card's initial position relative to the board.
-          // This logic remains correct as it calculates the difference needed.
-          const finalX = xRelativeToDiv - initialCardXRelToBoard;
-          const finalY = yRelativeToDiv - initialCardYRelToBoard - 15;
+            const xRelativeToDiv = rect.left - divRect.left;
+            const yRelativeToDiv = rect.top - divRect.top;
 
-          ref.current?.({ startX: viewportStartX, startY: viewportStartY, finalX, finalY, cardResource });
-        }
-        setFlashingTiles([]); // Moved outside the loop
+            const finalX = xRelativeToDiv - initialCardXRelToBoard;
+            const finalY = yRelativeToDiv - initialCardYRelToBoard - 15;
+
+            ref.current?.({ startX: viewportStartX, startY: viewportStartY, finalX, finalY, cardResource });
+          }, index * 100); // 100ms stagger between cards
+        });
+
+        // Clear flashing after all cards have started (plus buffer)
+        setTimeout(() => {
+          setFlashingTiles([]);
+          setBlockedFlashingTiles([]);
+        }, cards.length * 100 + 500);
       }, 1000);
     },
-    [width, height, size, center] // Added center to dependencies
+    [width, height, size, center]
   );
 
+  // Keep robberBlocked listener for standalone blocked scenarios (no distributions)
   useEffectListener(
     "robberBlocked",
     (blockedTileIds) => {
-      setBlockedFlashingTiles(blockedTileIds);
-      setTimeout(() => {
-        setBlockedFlashingTiles([]);
-      }, 1500);
+      // Only handle if not already handled by distributeCardsFromTile
+      if (blockedFlashingTiles.length === 0) {
+        setBlockedFlashingTiles(blockedTileIds);
+        setTimeout(() => {
+          setBlockedFlashingTiles([]);
+        }, 1500);
+      }
     },
-    []
+    [blockedFlashingTiles]
   );
 
   //for displaying actionNodes based on stage the player is in (e.g. moving robber)
