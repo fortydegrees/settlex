@@ -115,11 +115,17 @@ export function GameScreen(bgioProps) {
       setPlayerAction(null);
     }
   };
+  const allowInteractionSelector = '[data-allow-interaction="true"]';
+  const handleContextMenu = (event) => {
+    // Opt-in for future log/chat/status containers.
+    if (event?.target?.closest?.(allowInteractionSelector)) return;
+    event.preventDefault();
+  };
   // console.log('p', player)
   // console.log('opps', opponents)
   return (
     <div
-      className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600"
+      className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600 select-none"
       style={{
         width: "100vw", // Use viewport width to take the full screen width
         height: "100vh", // Use viewport height to take the full screen height
@@ -129,6 +135,7 @@ export function GameScreen(bgioProps) {
         left: 0,
       }}
       onClickCapture={handleScreenClickCapture}
+      onContextMenu={handleContextMenu}
     >
       {/* board in zoom/pan/pinch wrapper  */}
       <TransformWrapper
