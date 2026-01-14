@@ -66,3 +66,4 @@
 - Added game-core test coverage for mixed-age dev cards of the same type.
 - Added core helper for playable dev-card counts and updated the UI to enable only that many copies per type.
 - Added a future-plan note on a potential player-view model and a small UI test to guard dev-card gating.
+- Added a Space-bar shortcut on the main game screen to roll or end turn when eligible, with UI gating synced to core/ctx checks.

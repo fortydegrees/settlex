@@ -38,6 +38,7 @@
 - Player hand totals now render as badges on the resource bar and dev-card box instead of the avatar stats.
 - Player hand badges are currently gated by a local flag in `app/catana/components/PlayerActionContainer.js`.
 - GameScreen disables selection/context menus by default; opt in with `data-allow-interaction="true"` and `select-text`.
+- GameScreen handles a Space-bar shortcut for roll/end turn when eligible; ignored for editable targets and when modals are open.
 - Dev-card play checks now compare counts of dev cards bought this turn vs total copies so older duplicates can still be played.
 - `getPlayableDevCardCounts` in `game-core/src/rules/devCards.ts` returns per-type playable counts for UI rendering.
 - Future player-view model note lives at `docs/future_plans/player-view-model.md`.
