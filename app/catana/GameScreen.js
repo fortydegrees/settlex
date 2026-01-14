@@ -164,6 +164,7 @@ TODO: accurately colour it
           player={player} //for testing/dev
           onTradeClick={handleTradeOpen}
           isActive={gameStatus.activePlayerId === player.id}
+          statusType={gameStatus.statusType}
         />
       )}
 
@@ -213,6 +214,7 @@ TODO: accurately colour it
               core={bgioProps.G.core}
               coreTopology={bgioProps.G.coreTopology}
               isActive={gameStatus.activePlayerId === opponent.id}
+              statusType={gameStatus.statusType}
             />
           ))}
         </div>
