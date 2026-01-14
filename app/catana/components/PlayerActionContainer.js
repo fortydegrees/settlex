@@ -42,7 +42,14 @@ export const CardIcon = ({ playerCards, resource, player, onResourceClick }) => 
   );
 };
 
-export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTradeClick }) => {
+export const PlayerActionContainer = ({
+  setPlayerAction,
+  bgioProps,
+  player,
+  onTradeClick,
+  canRoll,
+  canEnd
+}) => {
 
   
   const { G, ctx, moves } = bgioProps;
@@ -171,6 +178,8 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
   }), [bgioProps]);
 
   const canTradeNow = isActionEnabled("trade");
+  const rollEnabled = Boolean(canRoll);
+  const endTurnEnabled = Boolean(canEnd);
 
   const canQuickTradeResource = (resource) => {
     if (!onTradeClick || !canTradeNow) return false;
@@ -269,16 +278,18 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
       <div className="flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
         {ctx.phase === "main" && (
         <div className="flex w-36 flex-col items-center">
-          <div className={`flex ${ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? 'opacity-100' : 'opacity-50'}`}
+          <div className={`flex ${rollEnabled ? 'opacity-100' : 'opacity-50'}`}
           
-          onClick={ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? () => moves.rollDice() : ()=>{}}>
+          onClick={rollEnabled ? () => moves.rollDice() : ()=>{}}>
             <Die dieSize="3.5rem" />
             <div className="px-4" />
             <Die2 dieSize="3.5rem" />
           </div>
           <button
-            className={`bg-opacity-50 bg-blue-200 hover:bg-blue-300 mx-auto rounded-md flex h-20 w-20 ring-2 ring-slate-300 hover:fill-blue-200 hover:stroke-black`}
+            className={`bg-opacity-50 bg-blue-200 hover:bg-blue-300 mx-auto rounded-md flex h-20 w-20 ring-2 ring-slate-300 hover:fill-blue-200 hover:stroke-black ${endTurnEnabled ? "opacity-100" : "opacity-50"}`}
+            disabled={!endTurnEnabled}
             onClick={() => {
+              if (!endTurnEnabled) return;
               setPlayerAction(null);
               moves.endTurn();
             }}
