@@ -19,4 +19,15 @@ describe("GameScreen interaction guards", () => {
     expect(contents).toMatch(/data-allow-interaction/);
     expect(contents).toMatch(/onContextMenu/);
   });
+
+  it("handles Space keydown for shortcuts", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+    expect(contents).toMatch(/Space/);
+    expect(contents).toMatch(/keydown/);
+  });
+
+  it("guards keyboard shortcuts for editable targets", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+    expect(contents).toMatch(/contenteditable/i);
+  });
 });
