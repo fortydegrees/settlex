@@ -9,6 +9,7 @@ import {
   applyKnight,
   applyMonopoly,
   applyMoveRobber,
+  getRobberVictims,
   applyPlaceRoad,
   applyPlaceSettlement,
   applyRollDice,
@@ -208,6 +209,18 @@ export const getBuildableNodes = (playerID, G, ctx) => {
     initialPlacement: Boolean(isPlacement)
   });
 }
+
+const pickRandom = (items, random) => {
+  if (!items || items.length === 0) return null;
+  if (random?.Shuffle) {
+    return random.Shuffle([...items])[0];
+  }
+  if (random?.Number) {
+    const index = Math.floor(random.Number() * items.length);
+    return items[index];
+  }
+  return items[0];
+};
 
 
 export const placeRoad = {
@@ -415,6 +428,146 @@ export const discardResources = {
   }
 };
 
+export const autoPlaceSettlement = {
+  move: (context) => {
+    const { G, ctx, random, log } = context;
+    const playerID = context.playerID ?? ctx.currentPlayer;
+    const nodes =
+      G.valids?.nodes?.length > 0
+        ? G.valids.nodes
+        : getBuildableNodes(playerID, G, ctx);
+    const nodeId = pickRandom(nodes, random);
+    if (nodeId == null) {
+      return;
+    }
+    log.setMetadata({ message: `auto-placing settlement at ${nodeId}` });
+    placeSettlement.move(context, nodeId);
+  }
+};
+
+export const autoPlaceRoad = {
+  move: (context) => {
+    const { G, ctx, random, log } = context;
+    const playerID = context.playerID ?? ctx.currentPlayer;
+    const edges =
+      G.valids?.edges?.length > 0
+        ? G.valids.edges
+        : buildableEdges(G.core, G.coreTopology, playerID, {
+            initialPlacement: ctx.phase === "placement"
+          });
+    const edgeId = pickRandom(edges, random);
+    if (!edgeId) {
+      return;
+    }
+    log.setMetadata({ message: `auto-placing road at ${edgeId}` });
+    placeRoad.move(context, edgeId);
+  }
+};
+
+export const autoDiscard = {
+  move: (context) => {
+    const { G, ctx, random, log } = context;
+    const playerID = context.playerID ?? ctx.currentPlayer;
+    const player = G.core?.playerStateById?.[playerID];
+    if (!player) {
+      return;
+    }
+    const requiredCount = Math.floor(player.resources.length / 2);
+    if (requiredCount <= 0) {
+      return;
+    }
+    const shuffled = random?.Shuffle
+      ? random.Shuffle([...player.resources])
+      : [...player.resources];
+    const toDiscard = shuffled.slice(0, requiredCount);
+    log.setMetadata({ message: `auto-discarding ${requiredCount} cards` });
+    discardResources.move(context, toDiscard);
+  }
+};
+
+export const autoRoll = {
+  move: (context) => {
+    rollDice.move(context);
+  }
+};
+
+export const autoEndTurn = {
+  move: (context) => {
+    endTurn.move(context);
+  }
+};
+
+export const autoMoveRobber = {
+  move: (context) => {
+    const { G, ctx, random, events, log } = context;
+    const tiles = G.tiles ?? [];
+    const candidates = tiles
+      .filter((tile) => tile.type === TileTypes.LAND)
+      .map((tile) => tile.tile.id)
+      .filter((tileId) => tileId !== G.core?.robberTileId);
+    const tileId = pickRandom(candidates, random);
+    if (tileId == null) {
+      return;
+    }
+    const stolenCardIndex = random?.Number ? random.Number() : 0;
+    let result = applyMoveRobber(
+      G.core,
+      G.coreTopology,
+      tileId,
+      ctx.currentPlayer,
+      stolenCardIndex
+    );
+    if (!result.ok && result.error === "ambiguous-victim") {
+      const victims = getRobberVictims(
+        G.core,
+        G.coreTopology,
+        tileId,
+        ctx.currentPlayer
+      );
+      const victimId = pickRandom(victims, random);
+      if (victimId) {
+        result = applyMoveRobber(
+          G.core,
+          G.coreTopology,
+          tileId,
+          ctx.currentPlayer,
+          stolenCardIndex,
+          victimId
+        );
+      }
+    }
+
+    if (!result.ok) {
+      console.log(`Invalid robber placement on tile ${tileId}: ${result.error}`);
+      return;
+    }
+
+    const returnTo =
+      G.robberReturnToStage ||
+      context.ctx.activePlayers?.[context.ctx.currentPlayer]?.returnTo ||
+      "postRoll";
+    if (G.core) {
+      G.core.turn.phase = returnTo === "preRoll" ? "preRoll" : "postRoll";
+    }
+    G.robberReturnToStage = null;
+    log.setMetadata({ message: `auto-moving robber to ${tileId}` });
+    events.setStage(returnTo);
+  }
+};
+
+export const autoChooseSteal = {
+  move: (context) => {
+    const { G, ctx, random, log } = context;
+    const playerID = ctx.currentPlayer;
+    const victims = G.core?.players?.filter((id) => id !== playerID) ?? [];
+    const victimId = pickRandom(victims, random);
+    if (!victimId) {
+      return;
+    }
+    log.setMetadata({ message: `auto-choosing steal target ${victimId}` });
+  }
+};
+
 export const maritimeTrade = {
   move: (context, trade) => {
     // trade = { give: [Resource], receive: Resource }
@@ -535,6 +688,34 @@ export const confirmDevCardPlay = {
     }
 
     G.devCardPlay = null;
+  }
+};
+
+export const autoResolveDevCard = {
+  move: (context) => {
+    const { G, ctx, random, log } = context;
+    const devPlay = G.devCardPlay;
+    if (!devPlay || devPlay.playerId !== ctx.currentPlayer) return;
+    if (!isDevCardStage(ctx, devPlay.playerId)) return;
+
+    if (devPlay.type === "yearOfPlenty") {
+      const resources = Object.values(ResourceType);
+      const shuffled = random?.Shuffle
+        ? random.Shuffle(resources)
+        : resources;
+      const payload = [shuffled[0], shuffled[1] ?? shuffled[0]];
+      log.setMetadata({ message: "auto-resolving Year of Plenty" });
+      confirmDevCardPlay.move(context, payload);
+      return;
+    }
+
+    if (devPlay.type === "monopoly") {
+      const resources = Object.values(ResourceType);
+      const choice = pickRandom(resources, random);
+      if (!choice) return;
+      log.setMetadata({ message: "auto-resolving Monopoly" });
+      confirmDevCardPlay.move(context, choice);
+    }
   }
 };
 
