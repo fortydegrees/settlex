@@ -5,7 +5,7 @@ import { CardStack } from "./CardStack";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { getOpponentResourceBadgeTone } from "./OpponentPlayerBoxUtils";
 
-export const OpponentPlayerBox = ({ player, core, coreTopology }) => {
+export const OpponentPlayerBox = ({ player, core, coreTopology, isActive }) => {
   if (!player) return null;
 
   const resourceCount = player.resources?.length ?? 0;
@@ -23,6 +23,7 @@ export const OpponentPlayerBox = ({ player, core, coreTopology }) => {
         core={core}
         coreTopology={coreTopology}
         isMe={false}
+        isActive={isActive}
       />
       <div className="ml-2 bg-blue-200 bg-opacity-50 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300">
         <div id={`p${player.id}-resources`}>

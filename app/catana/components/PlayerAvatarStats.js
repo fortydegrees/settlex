@@ -8,7 +8,7 @@ import {
 } from "@settlex/game-core";
 import { getVpDisplay } from "./PlayerAvatarStatsUtils";
 
-export const PlayerAvatarStats = ({ player, core, coreTopology, isMe }) => {
+export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive }) => {
   if (!player) return null;
 
   const avatarColor = `from-${player.color}-500 to-${player.color}-800`;
@@ -26,8 +26,13 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe }) => {
   return (
     <>
       <span className="flex relative">
+        {isActive && (
+          <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-amber-400 text-xl">
+            ▼
+          </span>
+        )}
         <div
-          className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${avatarColor}`}
+          className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl transition-shadow duration-300 ${avatarColor} ${isActive ? "shadow-[0_0_12px_3px_rgba(251,191,36,0.6)]" : ""}`}
         >
           🤠
         </div>
