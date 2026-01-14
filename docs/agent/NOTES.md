@@ -49,3 +49,4 @@
 - TimerManager lives at `server/timers/TimerManager.js`; stage/turn timers and action time bonuses are handled there.
 - Timer pubsub wrapper lives at `server/timers/timerPubSub.js` and is wired in `server/server.js`.
 - Auto-timeout moves live in `app/catana/Moves.js` (autoRoll/autoPlaceSettlement/autoPlaceRoad/autoDiscard/autoMoveRobber/autoEndTurn/autoResolveDevCard).
+- Stage timeouts: settlement 60s, road 10s, moveRobber 20s, roadBuilding 10s; no dev-card choice or steal-target timers.

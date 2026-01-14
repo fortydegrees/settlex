@@ -72,3 +72,4 @@
 - Logged a server-enforced turn-timer design doc with stage timers and auto-move handling.
 - Added server-side TimerManager + pubSub hook for turn/stage timers and turn-time bonuses.
 - Added auto-timeout moves (auto roll/place/discard/robber/etc.) and wired them into stage move lists.
+- Extended server stage timers to cover placement, robber movement, and road-building dev card flow.
