@@ -10,6 +10,7 @@ export * from "./rules/buildability";
 export * from "./rules/apply";
 export * from "./rules/buildActions";
 export * from "./rules/turnFlow";
+export type { Distribution, DistributionResult, RollResult } from "./rules/turnFlow";
 export * from "./rules/devCards";
 export * from "./rules/trading";
 export * from "./rules/victory";

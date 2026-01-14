@@ -25,12 +25,14 @@ export const OpponentPlayerBox = ({ player, core, coreTopology }) => {
         isMe={false}
       />
       <div className="ml-2 bg-blue-200 bg-opacity-50 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300">
-        <CardStack
-          count={resourceCount}
-          src={resCardBackIcon}
-          alt="Resource cards"
-          badgeTone={resourceBadgeTone}
-        />
+        <div id={`p${player.id}-resources`}>
+          <CardStack
+            count={resourceCount}
+            src={resCardBackIcon}
+            alt="Resource cards"
+            badgeTone={resourceBadgeTone}
+          />
+        </div>
         <CardStack
           count={devCount}
           src={devCardBackIcon}
