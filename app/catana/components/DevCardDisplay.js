@@ -4,6 +4,7 @@ import "./DevCardDisplay.css";
 import { CardStack } from "./CardStack";
 import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
 import { getBadgeClasses } from "./CardStackStyles";
+import { getPlayableDevCardGroups } from "./devCardDisplayUtils";
 
 // Map DevCard types to their SVGs
 const DEV_CARD_SVGS = {
@@ -20,39 +21,25 @@ export const DevCardDisplay = ({
   onPlayCard,
   activeCardType,
   showCountBadge = false,
+  badgeMinCount = 3,
 }) => {
-  const { nonPlayable, playable, boxWidth } =
+  const { nonPlayable, playableGroups, boxWidth, groupGap } =
     useMemo(() => {
-      const vps = [];
-      const playableOrder = [];
-      const playableCounts = new Map();
-
-      cards.forEach((card) => {
-        if (card === "victoryPoint") {
-          vps.push(card);
-          return;
-        }
-        if (!playableCounts.has(card)) {
-          playableOrder.push(card);
-          playableCounts.set(card, 0);
-        }
-        playableCounts.set(card, playableCounts.get(card) + 1);
+      const vps = cards.filter((card) => card === "victoryPoint");
+      const cardWidth = 52;
+      const vpStackOffsetValue = 16;
+      const playableGroupGap = 10;
+      const playableGroups = getPlayableDevCardGroups({
+        cards,
+        playableCountsByType,
+        cardWidth,
+        stackOffset: vpStackOffsetValue,
+        maxStackWidth: DEFAULT_STACK_MAX_WIDTH,
+        badgeMinCount
       });
 
-    const groupedPlayable = [];
-    playableOrder.forEach((card) => {
-      const count = playableCounts.get(card) ?? 0;
-      const playableCount = Math.max(0, playableCountsByType[card] ?? 0);
-      for (let i = 0; i < count; i += 1) {
-        const isPlayable = i >= count - playableCount;
-        groupedPlayable.push({ type: card, isPlayable });
-      }
-    });
-
-      const cardWidth = 52;
-      const cardGap = 6;
-      const vpStackOffsetValue = 16;
-      const groupGap = vps.length > 0 && groupedPlayable.length > 0 ? 16 : 0;
+      const groupGap =
+        vps.length > 0 && playableGroups.length > 0 ? 16 : 0;
       const paddingX = 12;
       const vpLayout = vps.length
         ? getCardStackLayout({
@@ -61,22 +48,24 @@ export const DevCardDisplay = ({
             stackOffset: vpStackOffsetValue,
             maxVisible: vps.length,
             maxStackWidth: DEFAULT_STACK_MAX_WIDTH,
+            badgeMinCount
           })
         : null;
       const vpWidth = vpLayout ? vpLayout.width : 0;
-      const playableWidth = groupedPlayable.length
-        ? cardWidth * groupedPlayable.length +
-          Math.max(0, groupedPlayable.length - 1) * cardGap
-        : 0;
+      const playableWidth = playableGroups.reduce((total, group, index) => {
+        const gap = index > 0 ? playableGroupGap : 0;
+        return total + gap + group.layout.width;
+      }, 0);
       const contentWidth = vpWidth + playableWidth + groupGap;
       const width = contentWidth > 0 ? paddingX * 2 + contentWidth : 0;
 
       return {
         nonPlayable: vps,
-        playable: groupedPlayable,
+        playableGroups,
         boxWidth: Math.round(width),
+        groupGap: playableGroupGap
       };
-    }, [cards, playableCountsByType]);
+    }, [cards, playableCountsByType, badgeMinCount]);
 
   if (cards.length === 0) {
     return null;
@@ -84,7 +73,7 @@ export const DevCardDisplay = ({
 
   const cardStyle =
     "h-[72px] w-[52px] shrink-0 object-contain drop-shadow-md";
-  const hasBoth = nonPlayable.length > 0 && playable.length > 0;
+  const hasBoth = nonPlayable.length > 0 && playableGroups.length > 0;
 
   return (
     <div
@@ -98,6 +87,7 @@ export const DevCardDisplay = ({
           src={DEV_CARD_SVGS.victoryPoint}
           alt="Victory point"
           maxVisible={nonPlayable.length}
+          badgeMinCount={badgeMinCount}
         />
       )}
 
@@ -105,38 +95,56 @@ export const DevCardDisplay = ({
       {hasBoth && <div className="w-4" />}
 
       {/* Playable Cards */}
-      <div className="flex items-center gap-[6px]">
-        {playable.map((card, i) => {
-          const isPlayable = card.isPlayable;
-          const isActive = activeCardType === card.type;
-          const wrapperClass = [
-            "relative devcard-card",
-            isPlayable ? "devcard-playable" : "devcard-disabled",
-            isActive ? "devcard-active" : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
+      <div className="flex items-center">
+        {playableGroups.map((group, groupIndex) => (
+          <div
+            key={`playable-group-${group.type}`}
+            className="relative h-[72px]"
+            style={{
+              width: `${group.layout.width}px`,
+              marginLeft: groupIndex > 0 ? `${groupGap}px` : 0
+            }}
+          >
+            {group.layout.showBadge && (
+              <div className={getBadgeClasses("default")}>{group.count}</div>
+            )}
+            {group.cards.map((card, index) => {
+              const isPlayable = card.isPlayable;
+              const isActive = activeCardType === card.type;
+              const wrapperClass = [
+                "absolute top-0 devcard-card",
+                isPlayable ? "devcard-playable" : "devcard-disabled",
+                isActive ? "devcard-active" : "",
+              ]
+                .filter(Boolean)
+                .join(" ");
 
-          return (
-            <button
-              key={`playable-${i}`}
-              type="button"
-              className={wrapperClass}
-              onClick={() => {
-                if (isPlayable && onPlayCard) onPlayCard(card.type);
-              }}
-              disabled={!isPlayable}
-            >
-              <Image
-                src={DEV_CARD_SVGS[card.type]}
-                alt={card.type}
-                width={52}
-                height={72}
-                className={cardStyle}
-              />
-            </button>
-          );
-        })}
+              return (
+                <button
+                  key={`playable-${card.type}-${index}`}
+                  type="button"
+                  className={wrapperClass}
+                  onClick={() => {
+                    if (isPlayable && onPlayCard) onPlayCard(card.type);
+                  }}
+                  disabled={!isPlayable}
+                  style={{
+                    left: `${index * group.layout.offset}px`,
+                    zIndex: index
+                  }}
+                >
+                  <Image
+                    src={DEV_CARD_SVGS[card.type]}
+                    alt={card.type}
+                    width={52}
+                    height={72}
+                    className={cardStyle}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
       {showCountBadge && (
         <div className={getBadgeClasses("default")}>{cards.length}</div>

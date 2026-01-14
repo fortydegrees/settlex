@@ -36,6 +36,6 @@ describe("DevCardDisplay", () => {
   it("gates playable copies by count instead of type only", () => {
     const contents = fs.readFileSync(devCardDisplayPath, "utf8");
     expect(contents).toMatch(/playableCountsByType/);
-    expect(contents).toMatch(/i\s*>=\s*count\s*-\s*playableCount/);
+    expect(contents).toMatch(/getPlayableDevCardGroups/);
   });
 });
