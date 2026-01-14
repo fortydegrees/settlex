@@ -73,9 +73,57 @@ export function canPlayDevCard(
     return false;
   }
   if (player.devCardsBoughtThisTurn.includes(card)) {
-    return false;
+    const totalOfType = player.devCards.filter((c) => c === card).length;
+    const boughtThisTurn = player.devCardsBoughtThisTurn.filter(
+      (c) => c === card
+    ).length;
+    if (boughtThisTurn >= totalOfType) {
+      return false;
+    }
   }
   return true;
+}
+
+export function getPlayableDevCardCounts(
+  state: GameState,
+  playerId: string
+): Record<DevCardType, number> {
+  const emptyCounts: Record<DevCardType, number> = {
+    knight: 0,
+    victoryPoint: 0,
+    roadBuilding: 0,
+    yearOfPlenty: 0,
+    monopoly: 0
+  };
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ...emptyCounts };
+  }
+
+  const totalCounts = { ...emptyCounts };
+  for (const card of player.devCards) {
+    totalCounts[card] += 1;
+  }
+  const boughtCounts = { ...emptyCounts };
+  for (const card of player.devCardsBoughtThisTurn) {
+    boughtCounts[card] += 1;
+  }
+
+  if (player.devCardsPlayedThisTurn >= 1) {
+    return { ...emptyCounts };
+  }
+
+  const playableCounts = { ...emptyCounts };
+  for (const [card, total] of Object.entries(totalCounts)) {
+    if (card === "victoryPoint") {
+      continue;
+    }
+    const bought = boughtCounts[card as DevCardType] ?? 0;
+    const playable = total - bought;
+    playableCounts[card as DevCardType] = playable > 0 ? playable : 0;
+  }
+
+  return playableCounts;
 }
 
 export function applyYearOfPlenty(

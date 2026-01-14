@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
-import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, canPlayDevCard, ResourceType, buildableNodes, buildableEdges } from "@settlex/game-core";
+import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, getPlayableDevCardCounts, ResourceType, buildableNodes, buildableEdges } from "@settlex/game-core";
 import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 
 
@@ -57,14 +57,9 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
   const devPlayActive = G.devCardPlay && G.devCardPlay.playerId === player.id;
   const canStartDev =
     isMe && ctx.currentPlayer === player.id && isDevStage && !devPlayActive;
-  const devPlayableByType = useMemo(() => {
-    const playable = {};
-    if (!G.core || !player?.devCards) return playable;
-    player.devCards.forEach((card) => {
-      if (card === "victoryPoint") return;
-      playable[card] = canStartDev && canPlayDevCard(G.core, player.id, card);
-    });
-    return playable;
+  const devPlayableCountsByType = useMemo(() => {
+    if (!G.core || !player?.devCards || !canStartDev) return {};
+    return getPlayableDevCardCounts(G.core, player.id);
   }, [G.core, player?.devCards, player.id, canStartDev]);
   const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
 
@@ -262,7 +257,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
           <div className="absolute left-full ml-0 bottom-[-2px]">
             <DevCardDisplay
               cards={player.devCards}
-              playableByType={devPlayableByType}
+              playableCountsByType={devPlayableCountsByType}
               onPlayCard={(card) => moves.playDevCardStart(card)}
               activeCardType={activeDevCardType}
               showCountBadge={SHOW_PLAYER_HAND_BADGES}

@@ -16,7 +16,7 @@ const DEV_CARD_SVGS = {
 
 export const DevCardDisplay = ({
   cards = [],
-  playableByType = {},
+  playableCountsByType = {},
   onPlayCard,
   activeCardType,
   showCountBadge = false,
@@ -42,8 +42,10 @@ export const DevCardDisplay = ({
     const groupedPlayable = [];
     playableOrder.forEach((card) => {
       const count = playableCounts.get(card) ?? 0;
+      const playableCount = Math.max(0, playableCountsByType[card] ?? 0);
       for (let i = 0; i < count; i += 1) {
-        groupedPlayable.push(card);
+        const isPlayable = i >= count - playableCount;
+        groupedPlayable.push({ type: card, isPlayable });
       }
     });
 
@@ -74,7 +76,7 @@ export const DevCardDisplay = ({
         playable: groupedPlayable,
         boxWidth: Math.round(width),
       };
-    }, [cards]);
+    }, [cards, playableCountsByType]);
 
   if (cards.length === 0) {
     return null;
@@ -105,8 +107,8 @@ export const DevCardDisplay = ({
       {/* Playable Cards */}
       <div className="flex items-center gap-[6px]">
         {playable.map((card, i) => {
-          const isPlayable = Boolean(playableByType[card]);
-          const isActive = activeCardType === card;
+          const isPlayable = card.isPlayable;
+          const isActive = activeCardType === card.type;
           const wrapperClass = [
             "relative devcard-card",
             isPlayable ? "devcard-playable" : "devcard-disabled",
@@ -121,13 +123,13 @@ export const DevCardDisplay = ({
               type="button"
               className={wrapperClass}
               onClick={() => {
-                if (isPlayable && onPlayCard) onPlayCard(card);
+                if (isPlayable && onPlayCard) onPlayCard(card.type);
               }}
               disabled={!isPlayable}
             >
               <Image
-                src={DEV_CARD_SVGS[card]}
-                alt={card}
+                src={DEV_CARD_SVGS[card.type]}
+                alt={card.type}
                 width={52}
                 height={72}
                 className={cardStyle}
