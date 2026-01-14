@@ -60,3 +60,9 @@
 - Moved player hand counts out of the avatar stats and into resource/dev-card badges.
 - Hid player hand badges behind a local flag and switched badge placement to the outside corner.
 - Disabled text selection/context menus on the main game UI with an opt-in attribute for log/chat/status.
+
+## Status (2026-01-14)
+- Fixed dev-card play gating so older copies remain playable after buying another copy in the same turn.
+- Added game-core test coverage for mixed-age dev cards of the same type.
+- Added core helper for playable dev-card counts and updated the UI to enable only that many copies per type.
+- Added a future-plan note on a potential player-view model and a small UI test to guard dev-card gating.

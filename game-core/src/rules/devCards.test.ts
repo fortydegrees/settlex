@@ -6,6 +6,7 @@ import {
   createStandardDevDeck,
   buyDevCard,
   canPlayDevCard,
+  getPlayableDevCardCounts,
   applyYearOfPlenty,
   applyMonopoly,
   applyKnight,
@@ -90,6 +91,38 @@ it("prevents playing a dev card bought this turn", () => {
   state.playerStateById["0"].devCardsBoughtThisTurn = ["knight"];
 
   expect(canPlayDevCard(state, "0", "knight")).toBe(false);
+});
+
+it("allows playing an older dev card when a new copy was bought this turn", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].devCards = ["knight", "knight"];
+  state.playerStateById["0"].devCardsBoughtThisTurn = ["knight"];
+
+  expect(canPlayDevCard(state, "0", "knight")).toBe(true);
+});
+
+it("counts playable dev cards by type, excluding cards bought this turn", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].devCards = ["knight", "knight", "monopoly"];
+  state.playerStateById["0"].devCardsBoughtThisTurn = ["knight"];
+
+  const playable = getPlayableDevCardCounts(state, "0");
+
+  expect(playable.knight).toBe(1);
+  expect(playable.monopoly).toBe(1);
+  expect(playable.yearOfPlenty).toBe(0);
+  expect(playable.victoryPoint).toBe(0);
+});
+
+it("counts zero playable dev cards after one is played this turn", () => {
+  const state = createEmptyState(["0"]);
+  state.playerStateById["0"].devCards = ["knight", "monopoly"];
+  state.playerStateById["0"].devCardsPlayedThisTurn = 1;
+
+  const playable = getPlayableDevCardCounts(state, "0");
+
+  expect(playable.knight).toBe(0);
+  expect(playable.monopoly).toBe(0);
 });
 
 it("year of plenty takes two resources if bank has them", () => {
