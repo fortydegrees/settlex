@@ -69,3 +69,6 @@
 - Added fixed dev-card ordering with stacked per-type rendering and a small grouping helper/test.
 - Switched dev-card disabled styling to a non-transparent filter and added configurable badge thresholds for stacks.
 - Added a Space-bar shortcut on the main game screen to roll or end turn when eligible, with UI gating synced to core/ctx checks.
+- Logged a server-enforced turn-timer design doc with stage timers and auto-move handling.
+- Added server-side TimerManager + pubSub hook for turn/stage timers and turn-time bonuses.
+- Added auto-timeout moves (auto roll/place/discard/robber/etc.) and wired them into stage move lists.

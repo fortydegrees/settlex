@@ -1,6 +1,6 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/core";
-import { placeSettlement, placeRoad, placeCity, updateValids, rollDice, moveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, discardResources, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, cancelDevCardPlay, placeRoadFromDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves";
+import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves";
 import { EffectsPlugin } from 'bgio-effects/plugin';
 
 const DEBUG_MOVES = {
@@ -177,8 +177,8 @@ export const Catan =  {
             updateValids(context, "settlement")
         },
         stages: {
-          settlement: { moves: { placeSettlement, ...DEBUG_MOVES } },
-          road: { moves: { placeRoad, ...DEBUG_MOVES } },
+          settlement: { moves: { placeSettlement, autoPlaceSettlement, ...DEBUG_MOVES } },
+          road: { moves: { placeRoad, autoPlaceRoad, ...DEBUG_MOVES } },
         },
       },
 
@@ -213,8 +213,10 @@ export const Catan =  {
         stages: {
           preRoll: { moves: {
             rollDice, //after roll dice (and no 7) go to main
+            autoRoll,
             playDevCardStart,
             confirmDevCardPlay,
+            autoResolveDevCard,
             cancelDevCardPlay,
             placeRoadFromDevCard,
             ...DEBUG_MOVES
@@ -222,6 +224,7 @@ export const Catan =  {
           robberDiscard: { // Explicit phase for discarding
              moves: {
                discardResources,
+               autoDiscard,
                ...DEBUG_MOVES
              }
           },
@@ -240,6 +243,7 @@ export const Catan =  {
               buyDevCard,
               playDevCardStart,
               confirmDevCardPlay,
+              autoResolveDevCard,
               cancelDevCardPlay,
               placeRoadFromDevCard,
               // buyDev,55
@@ -248,12 +252,14 @@ export const Catan =  {
               // playDev,
               //endTurn,
               endTurn,
+              autoEndTurn,
               ...DEBUG_MOVES
             }
           },
           moveRobber: {
             moves:{
               moveRobber,
+              autoMoveRobber,
               ...DEBUG_MOVES
             }
           }

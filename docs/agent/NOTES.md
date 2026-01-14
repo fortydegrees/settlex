@@ -44,3 +44,8 @@
 - Future player-view model note lives at `docs/future_plans/player-view-model.md`.
 - Dev-card stacked display order is handled via `app/catana/components/devCardDisplayUtils.js`.
 - Card stack badges now respect a configurable `badgeMinCount` (default 3) in `app/catana/components/CardStackLayout.js`.
+- Turn timer design doc (server-enforced with stage timers/auto-moves) lives at `docs/plans/2026-01-14-turn-timers-design.md`.
+- Turn timer implementation plan lives at `docs/plans/2026-01-14-turn-timers-implementation-plan.md`.
+- TimerManager lives at `server/timers/TimerManager.js`; stage/turn timers and action time bonuses are handled there.
+- Timer pubsub wrapper lives at `server/timers/timerPubSub.js` and is wired in `server/server.js`.
+- Auto-timeout moves live in `app/catana/Moves.js` (autoRoll/autoPlaceSettlement/autoPlaceRoad/autoDiscard/autoMoveRobber/autoEndTurn/autoResolveDevCard).
