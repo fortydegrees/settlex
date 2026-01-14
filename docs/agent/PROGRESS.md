@@ -68,3 +68,4 @@
 - Added a future-plan note on a potential player-view model and a small UI test to guard dev-card gating.
 - Added fixed dev-card ordering with stacked per-type rendering and a small grouping helper/test.
 - Switched dev-card disabled styling to a non-transparent filter and added configurable badge thresholds for stacks.
+- Added a Space-bar shortcut on the main game screen to roll or end turn when eligible, with UI gating synced to core/ctx checks.

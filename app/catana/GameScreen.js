@@ -25,15 +25,18 @@ export function GameScreen(bgioProps) {
   const [playerAction, setPlayerAction] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradePresetResource, setTradePresetResource] = useState(null);
+  const moves = bgioProps.moves;
 
   //get the active playerID of who's watching
   //can be null for spectator?
   //TODO: handle null/spectator
   const playerID = bgioProps.playerID;
 
-  const playerViewMap = buildPlayerViewMap(bgioProps.G.core);
-  const gameStatus = getGameStatus(bgioProps.G.core, bgioProps.ctx, playerAction);
+  const core = bgioProps.G.core;
+  const coreTurn = core?.turn;
+  const playerViewMap = buildPlayerViewMap(core);
   const player = playerViewMap[playerID];
+  const gameStatus = getGameStatus(core, bgioProps.ctx, playerAction);
   const devPlay = bgioProps.G.devCardPlay;
   const devPlayForMe = devPlay?.playerId === playerID;
   const devPlayMode =
@@ -61,7 +64,7 @@ export function GameScreen(bgioProps) {
   // the client-side derived ctx.phase might lag or differ if the game engine isn't strictly mapping G to ctx phases 1:1.
   // Relying on G.core.turn.pendingDiscards is more robust because that IS the source of truth for "who needs to discard".
   // Also, G.core.turn.phase should be 'robberDiscard' if pendingDiscards > 0, but let's be safe.
-  const needsToDiscard = bgioProps.G.core.turn.pendingDiscards.includes(playerID);
+  const needsToDiscard = coreTurn?.pendingDiscards?.includes(playerID) ?? false;
   
   const discardCount = needsToDiscard ? Math.floor(player.resources.length / 2) : 0;
 
@@ -91,6 +94,27 @@ export function GameScreen(bgioProps) {
     setTradePresetResource(resource ?? null);
     setShowTradeModal(true);
   };
+
+  const canRoll = Boolean(
+    playerID &&
+      bgioProps.ctx.currentPlayer === playerID &&
+      bgioProps.ctx.activePlayers?.[playerID] === "preRoll" &&
+      core?.phase === "normal" &&
+      coreTurn?.phase === "preRoll"
+  );
+
+  const canEnd = Boolean(
+    playerID &&
+      bgioProps.ctx.currentPlayer === playerID &&
+      bgioProps.ctx.activePlayers?.[playerID] === "postRoll" &&
+      core?.phase === "normal" &&
+      coreTurn?.hasRolled &&
+      coreTurn?.phase === "postRoll" &&
+      (coreTurn?.pendingDiscards?.length ?? 0) === 0
+  );
+
+  const hasModalOpen =
+    showTradeModal || needsToDiscard || (devPlayForMe && devPlayMode);
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
@@ -123,6 +147,37 @@ export function GameScreen(bgioProps) {
     if (event?.target?.closest?.(allowInteractionSelector)) return;
     event.preventDefault();
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.defaultPrevented) return;
+      if (event.code !== "Space") return;
+      if (event.repeat) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        return;
+      }
+
+      const targetElement = event.target instanceof Element ? event.target : null;
+      const isEditable = targetElement?.closest?.(
+        "input, textarea, select, [contenteditable]"
+      );
+      if (isEditable) return;
+      if (hasModalOpen) return;
+
+      event.preventDefault();
+
+      if (canRoll) {
+        moves.rollDice();
+        return;
+      }
+      if (canEnd) {
+        moves.endTurn();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [canRoll, canEnd, hasModalOpen, moves]);
   // console.log('p', player)
   // console.log('opps', opponents)
   return (
@@ -166,6 +221,8 @@ TODO: accurately colour it
           isActive={gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}
           gameStatus={gameStatus}
+          canRoll={canRoll}
+          canEnd={canEnd}
         />
       )}
 
