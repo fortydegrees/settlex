@@ -1,6 +1,10 @@
 const DEFAULT_STAGE_TIMERS_MS = {
   "main:preRoll": 5000,
-  "main:robberDiscard": 20000
+  "main:robberDiscard": 20000,
+  "placement:settlement": 60000,
+  "placement:road": 10000,
+  "main:moveRobber": 20000,
+  "main:roadBuilding": 10000
 };
 
 const DEFAULT_TURN_TIMER_MS = 45000;
@@ -19,7 +23,11 @@ const TURN_BONUS_MOVES = new Set([
 
 const STAGE_TIMEOUT_MOVES = {
   "main:preRoll": "autoRoll",
-  "main:robberDiscard": "autoDiscard"
+  "main:robberDiscard": "autoDiscard",
+  "placement:settlement": "autoPlaceSettlement",
+  "placement:road": "autoPlaceRoad",
+  "main:moveRobber": "autoMoveRobber",
+  "main:roadBuilding": "autoPlaceRoad"
 };
 
 export class TimerManager {
@@ -141,8 +149,18 @@ export class TimerManager {
   }
 
   getStageKey(state) {
-    const { ctx } = state;
-    const stage = ctx.activePlayers?.[ctx.currentPlayer] ?? "";
+    const { ctx, G } = state;
+    const active = ctx.activePlayers?.[ctx.currentPlayer] ?? "";
+    const stage = typeof active === "string" ? active : active?.stage ?? "";
+    const devPlay = G?.devCardPlay;
+    if (
+      ctx.phase === "main" &&
+      devPlay?.type === "roadBuilding" &&
+      devPlay?.pendingRoads > 0 &&
+      devPlay?.playerId === ctx.currentPlayer
+    ) {
+      return "main:roadBuilding";
+    }
     return `${ctx.phase}:${stage}`;
   }
 }
