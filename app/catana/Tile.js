@@ -89,6 +89,7 @@ export function Tile({
   number,
   hoveredTiles,
   isFlashing,
+  isBlockedFlashing,
   hasRobber,
   canPlaceRobber,
   moves,
@@ -152,13 +153,15 @@ export function Tile({
         style={style}
       >
         {/* {coordinate.join(', ')} */}
-        {isFlashing && (
+        {(isFlashing || isBlockedFlashing) && (
           <div
             style={{
               content: "",
               display: "block",
               position: "absolute",
-              background: "rgba(255, 255, 255, 0.5)",
+              background: isBlockedFlashing
+                ? "rgba(200, 50, 50, 0.5)"
+                : "rgba(255, 255, 255, 0.5)",
               width: "60px",
               height: "100%",
               top: "0",
@@ -166,7 +169,6 @@ export function Tile({
               opacity: 1,
               filter: "blur(30px)",
               willChange: "transform",
-
               animation: "flash 1s 1",
             }}
           />
@@ -176,7 +178,11 @@ export function Tile({
           <Image
             src={robberIcon}
             alt="Robber"
-            style={{ position: 'absolute', transform: `translateX(-60%)` }}
+            style={{
+              position: 'absolute',
+              transform: `translateX(-60%)`,
+              animation: isBlockedFlashing ? 'robberPulse 0.5s ease-in-out 2' : 'none'
+            }}
             width={size / 1.5}
             height={size / 1.5}
           />

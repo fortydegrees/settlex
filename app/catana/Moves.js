@@ -1,5 +1,4 @@
 
-import { current } from "immer";
 import { ResourceType, TileTypes } from "./game/types";
 import {
   applyBuildCity,
@@ -142,17 +141,18 @@ export const placeSettlement = {
       .filter(t => t.type === TileTypes.LAND && t.tile.resource !== ResourceType.DESERT)
       .map(t => t.tile.resource);
 
-      //we want to provide [{tile}]
+      //we want to provide [{tileId, coordinate, playerID, resource}]
       const cardAnims = [];
-      for (var tile of resourceTiles) {
-        tile = current(tile);
+      for (const tile of resourceTiles) {
         //check that it's a resource tile AND not blocked
         if (tile.type === TileTypes.LAND && tile.tile.resource !== ResourceType.DESERT){
-        //TODO: change this to be an array of tile, playerIDs so animations aren't staggered
-        cardAnims.push({ tile, playerID });
+        cardAnims.push({
+          tileId: tile.tile.id,
+          coordinate: [...tile.coordinate],
+          playerID,
+          resource: tile.tile.resource,
+        });
         }
-
-
       }
 
       effects.distributeCardsFromTile(cardAnims);
@@ -296,26 +296,39 @@ export const rollDice = {
       return;
     }
 
+    // Trigger resource distribution and blocked tile animations together
+    const hasDistributions = result.distributions?.length > 0;
+    const hasBlocked = result.blockedTiles?.length > 0;
+
+    if (hasDistributions || hasBlocked) {
+      const cardAnims = (result.distributions || []).map(d => {
+        const tile = G.tiles.find(t => t.tile.id === d.tileId);
+        return {
+          tileId: d.tileId,
+          coordinate: tile?.coordinate ? [...tile.coordinate] : null,
+          playerID: d.playerId,
+          resource: d.resource,
+        };
+      });
+
+      // Pass combined payload so both flash simultaneously
+      effects.distributeCardsFromTile({
+        cards: cardAnims,
+        blockedTileIds: result.blockedTiles || [],
+      });
+    }
+
     if (G.core.turn.phase.startsWith("robber")) {
-      // Need to determine if we go to discard or moveRobber directly
-      // applyRollDice sets G.core.turn.phase to "robberDiscard" or "robberMove"
-      
       if (G.core.turn.phase === "robberDiscard") {
-        // Activate all players in pendingDiscards list
         const pendingPlayers = G.core.turn.pendingDiscards;
         const activePlayersConfig = {};
-        
+
         pendingPlayers.forEach(pid => {
           activePlayersConfig[pid] = "robberDiscard";
         });
 
-        // Use setActivePlayers to allow multiple players to act
-        // minMoves: 1 ensures they must discard before stage ends for them? 
-        // Actually we handle endStage manually in discardResources so we can just set the active mapping.
         events.setActivePlayers({
           value: activePlayersConfig,
-          // When all active players are done (handled by our logic or automatic?), 
-          // we might want to go to next stage, but we'll control it manually in discardResources
         });
 
       } else {

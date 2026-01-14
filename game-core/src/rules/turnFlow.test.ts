@@ -61,6 +61,55 @@ it("distributes resources for matching roll when bank has enough", () => {
   expect(state.bank.resources).toHaveLength(1);
 });
 
+it("returns distributions array with tileId, playerId, resource", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD, ResourceType.WOOD];
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toEqual([
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD }
+    ]);
+  }
+});
+
+it("returns 2 distributions for a city", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = Array(5).fill(ResourceType.WOOD);
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "city" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toHaveLength(2);
+    expect(result.distributions).toEqual([
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD },
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD },
+    ]);
+  }
+});
+
+it("returns blocked tile when robber prevents distribution", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = Array(5).fill(ResourceType.WOOD);
+  state.robberTileId = 1; // Robber on the wood tile
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyResourceDistribution(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toEqual([]);
+    expect(result.blockedTiles).toEqual([1]);
+  }
+});
+
 it("gives none if bank lacks enough of a resource", () => {
   const state = createEmptyState(["0", "1"]);
   state.bank.resources = [ResourceType.WOOD];
@@ -234,4 +283,22 @@ it("rejects end turn when discards are pending", () => {
   const result = applyEndTurn(state);
 
   expect(result.ok).toBe(false);
+});
+
+it("applyRollDice returns distributions from applyResourceDistribution", () => {
+  const state = createEmptyState(["0"]);
+  state.phase = "normal";
+  state.turn.phase = "preRoll";
+  state.bank.resources = Array(5).fill(ResourceType.WOOD);
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+
+  const result = applyRollDice(state, board, 8);
+
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.distributions).toEqual([
+      { tileId: 1, playerId: "0", resource: ResourceType.WOOD }
+    ]);
+  }
 });
