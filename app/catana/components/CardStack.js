@@ -12,6 +12,7 @@ export const CardStack = ({
   stackOffset = 16,
   maxVisible,
   maxStackWidth = DEFAULT_STACK_MAX_WIDTH,
+  badgeMinCount = 3,
   badgeTone = "default",
   className = "",
 }) => {
@@ -21,6 +22,7 @@ export const CardStack = ({
     stackOffset,
     maxVisible,
     maxStackWidth,
+    badgeMinCount,
   });
 
   const cardClass = "object-contain drop-shadow-md";

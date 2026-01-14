@@ -41,3 +41,5 @@
 - Dev-card play checks now compare counts of dev cards bought this turn vs total copies so older duplicates can still be played.
 - `getPlayableDevCardCounts` in `game-core/src/rules/devCards.ts` returns per-type playable counts for UI rendering.
 - Future player-view model note lives at `docs/future_plans/player-view-model.md`.
+- Dev-card stacked display order is handled via `app/catana/components/devCardDisplayUtils.js`.
+- Card stack badges now respect a configurable `badgeMinCount` (default 3) in `app/catana/components/CardStackLayout.js`.

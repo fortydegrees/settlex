@@ -270,36 +270,37 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
       </div>
 
       <div className="flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
-        {ctx.phase === "main" && (
         <div className="flex w-36 flex-col items-center">
-          <div className={`flex ${ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? 'opacity-100' : 'opacity-50'}`}
+          {/* Dice - only in main phase */}
+          {ctx.phase === "main" && (
+            <div className={`flex ${ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? 'opacity-100' : 'opacity-50'}`}
+              onClick={ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? () => moves.rollDice() : ()=>{}}>
+              <Die dieSize="3.5rem" />
+              <div className="px-4" />
+              <Die2 dieSize="3.5rem" />
+            </div>
+          )}
 
-          onClick={ctx.currentPlayer === player.id && ctx.activePlayers?.[player.id] === 'preRoll' ? () => moves.rollDice() : ()=>{}}>
-            <Die dieSize="3.5rem" />
-            <div className="px-4" />
-            <Die2 dieSize="3.5rem" />
-          </div>
-          {/* Status text */}
+          {/* Status text - always visible */}
           {SHOW_STATUS_TEXT && gameStatus && (
-            <div className="text-white text-sm font-medium drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] my-2 text-center">
+            <div className="text-white text-sm font-medium drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] my-2 text-center min-w-[120px]">
               {gameStatus.text}
             </div>
           )}
-          <button
-            className={`bg-opacity-50 bg-blue-200 hover:bg-blue-300 mx-auto rounded-md flex h-20 w-20 ring-2 ring-slate-300 hover:fill-blue-200 hover:stroke-black`}
-            onClick={() => {
-              setPlayerAction(null);
-              moves.endTurn();
-            }}
-          >
-            <ForwardIcon className="w-16 h-16 mx-auto stroke-[0.6px] stroke-blue-200 my-auto" />
-          </button>
-        </div>
-        )}
 
-        {/* Add other divs here */}
-        {/* <div className="bg-red-200 w-16 h-16">Element 1</div>
-  <div className="bg-green-200 w-16 h-16">Element 2</div> */}
+          {/* End turn button - only in main phase */}
+          {ctx.phase === "main" && (
+            <button
+              className={`bg-opacity-50 bg-blue-200 hover:bg-blue-300 mx-auto rounded-md flex h-20 w-20 ring-2 ring-slate-300 hover:fill-blue-200 hover:stroke-black`}
+              onClick={() => {
+                setPlayerAction(null);
+                moves.endTurn();
+              }}
+            >
+              <ForwardIcon className="w-16 h-16 mx-auto stroke-[0.6px] stroke-blue-200 my-auto" />
+            </button>
+          )}
+        </div>
       </div>
       </div>
     </div>

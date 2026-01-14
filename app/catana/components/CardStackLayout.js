@@ -6,6 +6,7 @@ export const getCardStackLayout = ({
   stackOffset,
   maxVisible,
   maxStackWidth,
+  badgeMinCount = 3,
 }) => {
   const safeCount = Math.max(0, count ?? 0);
   const isEmpty = safeCount === 0;
@@ -19,7 +20,7 @@ export const getCardStackLayout = ({
       : idealWidth;
   const offset =
     visibleCount > 1 ? (cappedWidth - cardWidth) / (visibleCount - 1) : 0;
-  const showBadge = safeCount > 2;
+  const showBadge = safeCount >= badgeMinCount;
 
   return {
     visibleCount,

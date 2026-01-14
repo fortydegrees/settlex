@@ -8,6 +8,7 @@ import {
   getPublicVictoryPoints,
 } from "@settlex/game-core";
 import { getVpDisplay } from "./PlayerAvatarStatsUtils";
+import "./PlayerAvatarStats.css";
 
 export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, statusType }) => {
   if (!player) return null;
@@ -28,12 +29,12 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, 
     <>
       <span className="flex relative">
         {isActive && (
-          <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-amber-400 text-xl">
-            ▼
+          <span className="absolute -top-5 left-1/2 -translate-x-1/2">
+            <span className="turn-chevron" />
           </span>
         )}
         <div
-          className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl transition-shadow duration-300 ${avatarColor} ${isActive ? "shadow-[0_0_12px_3px_rgba(251,191,36,0.6)]" : ""}`}
+          className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
         >
           🤠
         </div>

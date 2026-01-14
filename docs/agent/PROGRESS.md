@@ -66,3 +66,5 @@
 - Added game-core test coverage for mixed-age dev cards of the same type.
 - Added core helper for playable dev-card counts and updated the UI to enable only that many copies per type.
 - Added a future-plan note on a potential player-view model and a small UI test to guard dev-card gating.
+- Added fixed dev-card ordering with stacked per-type rendering and a small grouping helper/test.
+- Switched dev-card disabled styling to a non-transparent filter and added configurable badge thresholds for stacks.
