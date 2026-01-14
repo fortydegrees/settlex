@@ -8,6 +8,7 @@ import React, { useState, useEffect } from "react";
 
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
+import { getGameStatus } from "./utils/gameStatus";
 
 import { EffectsBoardWrapper } from "bgio-effects/react";
 
@@ -31,6 +32,7 @@ export function GameScreen(bgioProps) {
   const playerID = bgioProps.playerID;
 
   const playerViewMap = buildPlayerViewMap(bgioProps.G.core);
+  const gameStatus = getGameStatus(bgioProps.G.core, bgioProps.ctx, playerAction);
   const player = playerViewMap[playerID];
   const devPlay = bgioProps.G.devCardPlay;
   const devPlayForMe = devPlay?.playerId === playerID;
@@ -161,6 +163,7 @@ TODO: accurately colour it
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
           onTradeClick={handleTradeOpen}
+          isActive={gameStatus.activePlayerId === player.id}
         />
       )}
 
@@ -209,6 +212,7 @@ TODO: accurately colour it
               player={opponent}
               core={bgioProps.G.core}
               coreTopology={bgioProps.G.coreTopology}
+              isActive={gameStatus.activePlayerId === opponent.id}
             />
           ))}
         </div>

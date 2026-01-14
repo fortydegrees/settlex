@@ -42,7 +42,7 @@ export const CardIcon = ({ playerCards, resource, player, onResourceClick }) => 
   );
 };
 
-export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTradeClick }) => {
+export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTradeClick, isActive }) => {
 
   
   const { G, ctx, moves } = bgioProps;
@@ -219,6 +219,7 @@ export const PlayerActionContainer = ({ setPlayerAction, bgioProps, player, onTr
           core={G.core}
           coreTopology={G.coreTopology}
           isMe={isMe}
+          isActive={isActive}
         />
 
         <div className="relative">
