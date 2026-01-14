@@ -165,6 +165,7 @@ TODO: accurately colour it
           onTradeClick={handleTradeOpen}
           isActive={gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}
+          gameStatus={gameStatus}
         />
       )}
 
