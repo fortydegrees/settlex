@@ -3,6 +3,7 @@ import { Server, Origins, SocketIO } from "boardgame.io/dist/cjs/server.js";
 import { Master } from "boardgame.io/dist/cjs/master.js";
 import { Catan } from "../app/catana/Game.js";
 import { TimerManager } from "./timers/TimerManager.js";
+import { buildAutoMoveAction } from "./timers/dispatchUtils.js";
 import { createTimerPubSub } from "./timers/timerPubSub.js";
 
 
@@ -13,13 +14,13 @@ let serverInstance;
 const dispatch = async ({ matchID, move, playerID }) => {
   if (!serverInstance || !move) return;
 
-  const { state } = await serverInstance.db.fetch(matchID, { state: true });
+  const { state, metadata } = await serverInstance.db.fetch(matchID, {
+    state: true,
+    metadata: true
+  });
   if (!state) return;
 
-  const action = {
-    type: "MAKE_MOVE",
-    payload: { type: move, args: [], playerID, credentials: null }
-  };
+  const action = buildAutoMoveAction({ move, playerID, metadata });
 
   const transportAPI = {
     send: () => {},
