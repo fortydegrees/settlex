@@ -73,3 +73,7 @@
 - Added server-side TimerManager + pubSub hook for turn/stage timers and turn-time bonuses.
 - Added auto-timeout moves (auto roll/place/discard/robber/etc.) and wired them into stage move lists.
 - Extended server stage timers to cover placement, robber movement, and road-building dev card flow.
+
+## Status (2026-01-15)
+- Added a server timer snapshot endpoint and a bottom-right UI countdown pill.
+

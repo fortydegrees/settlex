@@ -50,3 +50,4 @@
 - Timer pubsub wrapper lives at `server/timers/timerPubSub.js` and is wired in `server/server.js`.
 - Auto-timeout moves live in `app/catana/Moves.js` (autoRoll/autoPlaceSettlement/autoPlaceRoad/autoDiscard/autoMoveRobber/autoEndTurn/autoResolveDevCard).
 - Stage timeouts: settlement 60s, road 10s, moveRobber 20s, roadBuilding 10s; no dev-card choice or steal-target timers.
+- Timer UI polls /timer/:matchID every 2s and displays stage time when active, otherwise the turn timer.
