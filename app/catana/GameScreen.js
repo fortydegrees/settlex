@@ -26,6 +26,7 @@ export function GameScreen(bgioProps) {
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradePresetResource, setTradePresetResource] = useState(null);
   const [timerSnapshot, setTimerSnapshot] = useState(null);
+  const [timerSeeded, setTimerSeeded] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const moves = bgioProps.moves;
 
@@ -56,41 +57,77 @@ export function GameScreen(bgioProps) {
   }, []);
 
   useEffect(() => {
+    setTimerSnapshot(null);
+    setTimerSeeded(false);
+  }, [matchID]);
+
+  useEffect(() => {
+    if (
+      bgioProps.timerSnapshot === undefined &&
+      bgioProps.timerServerTimeMs === undefined
+    ) {
+      return;
+    }
+    if (!bgioProps.timerSnapshot) {
+      setTimerSnapshot(null);
+      return;
+    }
+    const receivedAtMs = Date.now();
+    const serverDelayMs = bgioProps.timerServerTimeMs
+      ? Math.max(0, receivedAtMs - bgioProps.timerServerTimeMs)
+      : 0;
+    setTimerSnapshot({
+      ...bgioProps.timerSnapshot,
+      receivedAtMs,
+      serverDelayMs
+    });
+  }, [bgioProps.timerSnapshot, bgioProps.timerServerTimeMs]);
+
+  useEffect(() => {
     if (!matchID || typeof window === "undefined") return;
-    const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
-    const url = `${baseUrl}/timer/${matchID}`;
+    if (bgioProps.timerSnapshot !== undefined || timerSeeded) return;
     let cancelled = false;
 
-    const fetchTimer = async () => {
+    const fetchSeed = async () => {
       try {
+        const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
+        const url = `${baseUrl}/timer/${matchID}`;
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
         if (cancelled) return;
         if (!data?.timer) {
-          setTimerSnapshot(null);
+          setTimerSeeded(true);
           return;
         }
+        const receivedAtMs = Date.now();
+        const serverDelayMs = data.serverTimeMs
+          ? Math.max(0, receivedAtMs - data.serverTimeMs)
+          : 0;
         setTimerSnapshot({
           ...data.timer,
-          receivedAtMs: Date.now()
+          receivedAtMs,
+          serverDelayMs
         });
+        setTimerSeeded(true);
       } catch (err) {
         // ignore errors
       }
     };
 
-    fetchTimer();
-    const interval = setInterval(fetchTimer, 2000);
+    fetchSeed();
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
-  }, [matchID]);
-
+  }, [matchID, timerSeeded, bgioProps.timerSnapshot]);
 
   const timerMs = timerSnapshot
-    ? Math.max(0, timerSnapshot.remainingMs - (nowMs - timerSnapshot.receivedAtMs))
+    ? Math.max(
+        0,
+        timerSnapshot.remainingMs -
+          (nowMs - timerSnapshot.receivedAtMs) -
+          (timerSnapshot.serverDelayMs ?? 0)
+      )
     : null;
 
   useEffect(() => {
