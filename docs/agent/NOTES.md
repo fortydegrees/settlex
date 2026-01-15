@@ -66,3 +66,4 @@
 - Timer UI hides during preGame and counts down using floor seconds to avoid early auto-move visuals.
 - `autoMoveRobber` filters candidates with `canPlaceRobber` to avoid illegal-friendly-robber tiles.
 - Server-side timer dispatch now builds auto-move actions with stored player credentials (from match metadata) so authenticated matches accept auto-moves.
+- TimerManager detects `robberDiscard` via `G.core.turn.phase`/`pendingDiscards` (not just current player) and auto-dispatches `autoDiscard` for all pending players on timeout.

@@ -157,6 +157,42 @@ describe("TimerManager", () => {
     });
   });
 
+  it("auto-discards for all pending players even if current player is not active", async () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    manager.onState("match-1", {
+      G: {
+        core: {
+          turn: {
+            phase: "robberDiscard",
+            pendingDiscards: ["1", "2"]
+          }
+        }
+      },
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "1": "robberDiscard", "2": "robberDiscard" },
+        turn: 1
+      }
+    });
+
+    vi.advanceTimersByTime(20000);
+    await vi.runAllTicks();
+
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoDiscard",
+      playerID: "1"
+    });
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoDiscard",
+      playerID: "2"
+    });
+  });
+
   it("pauses turn timer while stage timer runs, then resumes", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({ dispatch });
@@ -175,17 +211,22 @@ describe("TimerManager", () => {
 
     vi.advanceTimersByTime(20000);
 
-    manager.onState(
-      "match-1",
-      baseState({
-        ctx: {
-          phase: "main",
-          currentPlayer: "0",
-          activePlayers: { "0": "robberDiscard" },
-          turn: 1
+    manager.onState("match-1", {
+      G: {
+        core: {
+          turn: {
+            phase: "robberDiscard",
+            pendingDiscards: ["0"]
+          }
         }
-      })
-    );
+      },
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "0": "robberDiscard" },
+        turn: 1
+      }
+    });
 
     vi.advanceTimersByTime(20000);
     expect(dispatch).toHaveBeenCalledWith({
