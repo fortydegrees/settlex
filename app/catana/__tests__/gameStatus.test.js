@@ -27,6 +27,28 @@ describe("getGameStatus", () => {
     });
   });
 
+  describe("preGame status", () => {
+    it("returns waiting status during preGame", () => {
+      const core = {
+        phase: "normal",
+        turn: {
+          phase: "preRoll",
+          currentPlayerId: "0",
+          pendingDiscards: []
+        },
+        players: ["0", "1"]
+      };
+      const ctx = {
+        phase: "preGame",
+        currentPlayer: "0",
+        activePlayers: { all: "waiting" }
+      };
+      const status = getGameStatus(core, ctx);
+      expect(status.statusType).toBe(STATUS_TYPES.THINKING);
+      expect(status.text).toBe("Waiting to start");
+    });
+  });
+
   describe("thinking status", () => {
     it("returns thinking status when in postRoll stage", () => {
       const core = { ...baseCoreState, turn: { ...baseCoreState.turn, phase: "postRoll" } };

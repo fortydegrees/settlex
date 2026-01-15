@@ -134,6 +134,29 @@ describe("TimerManager", () => {
     });
   });
 
+  it("auto-starts preGame after timeout", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    manager.onState("match-1", {
+      G: { core: {} },
+      ctx: {
+        phase: "preGame",
+        currentPlayer: "0",
+        activePlayers: { all: "waiting" },
+        turn: 1
+      }
+    });
+
+    vi.advanceTimersByTime(15000);
+
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoStartGame",
+      playerID: "0"
+    });
+  });
+
   it("pauses turn timer while stage timer runs, then resumes", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({ dispatch });
@@ -187,6 +210,62 @@ describe("TimerManager", () => {
     expect(dispatch).toHaveBeenCalledWith({
       matchID: "match-1",
       move: "autoEndTurn",
+      playerID: "0"
+    });
+  });
+
+  it("delays postRoll turn timer after a roll animation", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    manager.onState(
+      "match-1",
+      baseState({
+        ctx: {
+          phase: "main",
+          currentPlayer: "0",
+          activePlayers: { "0": "postRoll" },
+          turn: 1
+        }
+      }),
+      [{ action: { type: "MAKE_MOVE", payload: { type: "rollDice" } } }]
+    );
+
+    vi.advanceTimersByTime(45000 + 3500 - 1);
+    expect(dispatch).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoEndTurn",
+      playerID: "0"
+    });
+  });
+
+  it("delays moveRobber stage timer after a roll animation", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    manager.onState(
+      "match-1",
+      baseState({
+        ctx: {
+          phase: "main",
+          currentPlayer: "0",
+          activePlayers: { "0": "moveRobber" },
+          turn: 1
+        }
+      }),
+      [{ action: { type: "MAKE_MOVE", payload: { type: "autoRoll" } } }]
+    );
+
+    vi.advanceTimersByTime(20000 + 3500 - 1);
+    expect(dispatch).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoMoveRobber",
       playerID: "0"
     });
   });

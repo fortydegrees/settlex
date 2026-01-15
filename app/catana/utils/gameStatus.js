@@ -19,6 +19,14 @@ export const STATUS_TYPES = {
 export function getGameStatus(core, ctx, playerAction = null) {
   const activePlayerId = core.turn.currentPlayerId;
 
+  if (ctx.phase === "preGame") {
+    return {
+      text: "Waiting to start",
+      statusType: STATUS_TYPES.THINKING,
+      activePlayerId,
+    };
+  }
+
   // UI-level build actions take priority
   if (playerAction === "placeRoad" || playerAction === "roadBuilding") {
     return {

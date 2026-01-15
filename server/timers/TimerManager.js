@@ -1,4 +1,5 @@
 const DEFAULT_STAGE_TIMERS_MS = {
+  "preGame:waiting": 15000,
   "main:preRoll": 5000,
   "main:robberDiscard": 20000,
   "placement:settlement": 60000,
@@ -11,6 +12,15 @@ const DEFAULT_TURN_TIMER_MS = 45000;
 const TURN_TIMER_KEYS = new Set(["main:postRoll"]);
 const TURN_BONUS_MS = 10000;
 const TURN_BONUS_CAP_MS = 30000;
+const ROLL_ANIMATION_BUFFER_MS = 3500;
+
+const ROLL_DELAY_STAGES = new Set([
+  "main:postRoll",
+  "main:robberDiscard",
+  "main:moveRobber"
+]);
+
+const ROLL_DELAY_MOVES = new Set(["rollDice", "autoRoll"]);
 
 const TURN_BONUS_MOVES = new Set([
   "maritimeTrade",
@@ -22,6 +32,7 @@ const TURN_BONUS_MOVES = new Set([
 ]);
 
 const STAGE_TIMEOUT_MOVES = {
+  "preGame:waiting": "autoStartGame",
   "main:preRoll": "autoRoll",
   "main:robberDiscard": "autoDiscard",
   "placement:settlement": "autoPlaceSettlement",
@@ -64,14 +75,16 @@ export class TimerManager {
       this.resetTurnTimer(prev);
     }
 
+    const stageDelayMs = this.getRollDelayMs(stageKey, deltalog);
+
     if (stageTimeoutMs) {
       const playerID = state.ctx.currentPlayer;
       const move = STAGE_TIMEOUT_MOVES[stageKey];
-      prev.stageStartedAtMs = Date.now();
+      prev.stageStartedAtMs = Date.now() + stageDelayMs;
       prev.stageDurationMs = stageTimeoutMs;
       prev.stageTimeoutId = setTimeout(() => {
         this.dispatch({ matchID, move, playerID });
-      }, stageTimeoutMs);
+      }, stageTimeoutMs + stageDelayMs);
     } else {
       prev.stageStartedAtMs = undefined;
       prev.stageDurationMs = undefined;
@@ -81,7 +94,7 @@ export class TimerManager {
       if (prev.turnRemainingMs == null) {
         prev.turnRemainingMs = DEFAULT_TURN_TIMER_MS;
       }
-      this.startTurnTimer(matchID, state, prev);
+      this.startTurnTimer(matchID, state, prev, stageDelayMs);
     }
 
     const bonusMs = this.getTurnBonusMs(deltalog);
@@ -100,22 +113,22 @@ export class TimerManager {
     this.matches.set(matchID, prev);
   }
 
-  startTurnTimer(matchID, state, record) {
+  startTurnTimer(matchID, state, record, delayMs = 0) {
     if (record.turnTimeoutId) {
       clearTimeout(record.turnTimeoutId);
     }
-    record.turnStartedAtMs = Date.now();
+    record.turnStartedAtMs = Date.now() + delayMs;
     const playerID = state.ctx.currentPlayer;
     record.turnTimeoutId = setTimeout(() => {
       this.dispatch({ matchID, move: "autoEndTurn", playerID });
-    }, record.turnRemainingMs);
+    }, record.turnRemainingMs + delayMs);
   }
 
   pauseTurnTimer(record) {
     if (!record.turnTimeoutId) return;
     clearTimeout(record.turnTimeoutId);
     record.turnTimeoutId = undefined;
-    const elapsed = Date.now() - record.turnStartedAtMs;
+    const elapsed = Math.max(0, Date.now() - record.turnStartedAtMs);
     record.turnRemainingMs = Math.max(0, record.turnRemainingMs - elapsed);
     record.turnStartedAtMs = undefined;
   }
@@ -157,6 +170,9 @@ export class TimerManager {
 
   getStageRemainingMs(record) {
     if (!record.stageStartedAtMs || !record.stageDurationMs) return null;
+    if (Date.now() < record.stageStartedAtMs) {
+      return record.stageDurationMs;
+    }
     const elapsed = Date.now() - record.stageStartedAtMs;
     return Math.max(0, record.stageDurationMs - elapsed);
   }
@@ -164,6 +180,9 @@ export class TimerManager {
   getTurnRemainingMs(record) {
     if (record.turnRemainingMs == null) return null;
     if (!record.turnTimeoutId || !record.turnStartedAtMs) {
+      return record.turnRemainingMs;
+    }
+    if (Date.now() < record.turnStartedAtMs) {
       return record.turnRemainingMs;
     }
     const elapsed = Date.now() - record.turnStartedAtMs;
@@ -201,7 +220,8 @@ export class TimerManager {
 
   getStageKey(state) {
     const { ctx, G } = state;
-    const active = ctx.activePlayers?.[ctx.currentPlayer] ?? "";
+    const active =
+      ctx.activePlayers?.[ctx.currentPlayer] ?? ctx.activePlayers?.all ?? "";
     const stage = typeof active === "string" ? active : active?.stage ?? "";
     const devPlay = G?.devCardPlay;
     if (
@@ -213,5 +233,15 @@ export class TimerManager {
       return "main:roadBuilding";
     }
     return `${ctx.phase}:${stage}`;
+  }
+
+  getRollDelayMs(stageKey, deltalog) {
+    if (!ROLL_DELAY_STAGES.has(stageKey)) return 0;
+    if (!Array.isArray(deltalog)) return 0;
+    const hasRoll = deltalog.some((entry) => {
+      if (entry?.action?.type !== "MAKE_MOVE") return false;
+      return ROLL_DELAY_MOVES.has(entry.action?.payload?.type);
+    });
+    return hasRoll ? ROLL_ANIMATION_BUFFER_MS : 0;
   }
 }
