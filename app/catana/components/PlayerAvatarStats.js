@@ -41,7 +41,8 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, 
         <span className="absolute right-0 top-0 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
           {vpDisplay}
         </span>
-        <StatusBubble statusType={statusType} isVisible={isActive} />
+        {/* Only show status bubble for opponents, not for self */}
+        {!isMe && <StatusBubble statusType={statusType} isVisible={isActive} />}
       </span>
       <span className="bg-blue-200 bg-opacity-50 rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300">
         <div className="flex flex-col gap-y-1">
