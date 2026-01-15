@@ -49,6 +49,8 @@ export class TimerManager {
       clearTimeout(prev.stageTimeoutId);
       prev.stageTimeoutId = undefined;
     }
+    prev.stageStartedAtMs = undefined;
+    prev.stageDurationMs = undefined;
 
     const stageTimeoutMs = DEFAULT_STAGE_TIMERS_MS[stageKey];
     const isTurnStage = TURN_TIMER_KEYS.has(stageKey);
@@ -65,9 +67,14 @@ export class TimerManager {
     if (stageTimeoutMs) {
       const playerID = state.ctx.currentPlayer;
       const move = STAGE_TIMEOUT_MOVES[stageKey];
+      prev.stageStartedAtMs = Date.now();
+      prev.stageDurationMs = stageTimeoutMs;
       prev.stageTimeoutId = setTimeout(() => {
         this.dispatch({ matchID, move, playerID });
       }, stageTimeoutMs);
+    } else {
+      prev.stageStartedAtMs = undefined;
+      prev.stageDurationMs = undefined;
     }
 
     if (isTurnStage) {
@@ -147,6 +154,50 @@ export class TimerManager {
   getTurnRemaining(matchID) {
     return this.matches.get(matchID)?.turnRemainingMs ?? null;
   }
+
+  getStageRemainingMs(record) {
+    if (!record.stageStartedAtMs || !record.stageDurationMs) return null;
+    const elapsed = Date.now() - record.stageStartedAtMs;
+    return Math.max(0, record.stageDurationMs - elapsed);
+  }
+
+  getTurnRemainingMs(record) {
+    if (record.turnRemainingMs == null) return null;
+    if (!record.turnTimeoutId || !record.turnStartedAtMs) {
+      return record.turnRemainingMs;
+    }
+    const elapsed = Date.now() - record.turnStartedAtMs;
+    return Math.max(0, record.turnRemainingMs - elapsed);
+  }
+
+  getTimerSnapshot(matchID, state) {
+    let record = this.matches.get(matchID);
+    if (!record && state) {
+      this.onState(matchID, state);
+      record = this.matches.get(matchID);
+    }
+    if (!record) return null;
+    const stageRemainingMs = this.getStageRemainingMs(record);
+    if (stageRemainingMs != null) {
+      return {
+        kind: "stage",
+        remainingMs: stageRemainingMs,
+        totalMs: record.stageDurationMs,
+        stageKey: record.stageKey
+      };
+    }
+    const turnRemainingMs = this.getTurnRemainingMs(record);
+    if (turnRemainingMs != null) {
+      return {
+        kind: "turn",
+        remainingMs: turnRemainingMs,
+        totalMs: record.turnRemainingMs,
+        stageKey: record.stageKey
+      };
+    }
+    return null;
+  }
+
 
   getStageKey(state) {
     const { ctx, G } = state;
