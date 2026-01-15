@@ -25,12 +25,15 @@ export function GameScreen(bgioProps) {
   const [playerAction, setPlayerAction] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradePresetResource, setTradePresetResource] = useState(null);
+  const [timerSnapshot, setTimerSnapshot] = useState(null);
+  const [nowMs, setNowMs] = useState(Date.now());
   const moves = bgioProps.moves;
 
   //get the active playerID of who's watching
   //can be null for spectator?
   //TODO: handle null/spectator
   const playerID = bgioProps.playerID;
+  const matchID = bgioProps.matchID ?? "default";
 
   const core = bgioProps.G.core;
   const coreTurn = core?.turn;
@@ -45,6 +48,50 @@ export function GameScreen(bgioProps) {
       : devPlay?.type === "monopoly"
       ? "dev-monopoly"
       : null;
+
+
+  useEffect(() => {
+    const interval = setInterval(() => setNowMs(Date.now()), 250);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!matchID || typeof window === "undefined") return;
+    const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
+    const url = `${baseUrl}/timer/${matchID}`;
+    let cancelled = false;
+
+    const fetchTimer = async () => {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (!data?.timer) {
+          setTimerSnapshot(null);
+          return;
+        }
+        setTimerSnapshot({
+          ...data.timer,
+          receivedAtMs: Date.now()
+        });
+      } catch (err) {
+        // ignore errors
+      }
+    };
+
+    fetchTimer();
+    const interval = setInterval(fetchTimer, 2000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [matchID]);
+
+
+  const timerMs = timerSnapshot
+    ? Math.max(0, timerSnapshot.remainingMs - (nowMs - timerSnapshot.receivedAtMs))
+    : null;
 
   useEffect(() => {
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
@@ -223,6 +270,7 @@ TODO: accurately colour it
           gameStatus={gameStatus}
           canRoll={canRoll}
           canEnd={canEnd}
+          timerMs={timerMs}
         />
       )}
 
