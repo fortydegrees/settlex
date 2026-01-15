@@ -27,8 +27,48 @@ class InMemoryPubSub {
 
 export function createTimerPubSub(timerManager) {
   const base = new InMemoryPubSub();
+  const attachTimerSnapshot = (payload, matchID, state) => {
+    if (!state) return payload;
+    const timerSnapshot = timerManager.getTimerSnapshot(matchID, state);
+    const serverTimeMs = Date.now();
+
+    if (payload?.type === "update") {
+      const args = payload.args ?? [];
+      const deltalog = args.length > 2 ? args[2] : undefined;
+      const stateWithTimer = {
+        ...state,
+        timerSnapshot,
+        timerServerTimeMs: serverTimeMs
+      };
+      return {
+        ...payload,
+        args: deltalog === undefined
+          ? [matchID, stateWithTimer]
+          : [matchID, stateWithTimer, deltalog]
+      };
+    }
+
+    if (payload?.type === "patch") {
+      const args = payload.args ?? [];
+      const prevStateID = args[1];
+      const prevState = args[2];
+      const stateWithTimer = {
+        ...state,
+        timerSnapshot,
+        timerServerTimeMs: serverTimeMs
+      };
+      return {
+        ...payload,
+        args: [matchID, prevStateID, prevState, stateWithTimer]
+      };
+    }
+
+    return payload;
+  };
+
   return {
     publish(channelId, payload) {
+      let updatedPayload = payload;
       if (channelId.startsWith(MATCH_PREFIX)) {
         const matchID = channelId.slice(MATCH_PREFIX.length);
         const state =
@@ -43,8 +83,10 @@ export function createTimerPubSub(timerManager) {
         if (state) {
           timerManager.onState(matchID, state, deltalog);
         }
+
+        updatedPayload = attachTimerSnapshot(payload, matchID, state);
       }
-      base.publish(channelId, payload);
+      base.publish(channelId, updatedPayload);
     },
     subscribe(channelId, callback) {
       base.subscribe(channelId, callback);
