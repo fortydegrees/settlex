@@ -80,3 +80,7 @@
 - Removed the stale `initialiseGraph` import from `app/catana/Game.js` to satisfy ESM named export checks.
 - Replaced `react-hexgrid` usage in core board utils with an internal hexagon generator to keep server-side ESM compatible, and fixed the `jsnetworkx` default import; `pnpm serve` now runs without experimental flags.
 - Added a local Next image wrapper for Catana UI components to normalize default imports under ESM.
+
+## Status (2026-01-15)
+- Added a server timer snapshot endpoint and a bottom-right UI countdown pill.
+- Timer snapshots now attach to state updates; the UI uses them with a one-time seed fetch for initial sync.

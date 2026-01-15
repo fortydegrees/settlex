@@ -44,6 +44,19 @@ const server = Server({
 
 serverInstance = server;
 
+
+server.router.get("/timer/:matchID", async (ctx) => {
+  const matchID = ctx.params.matchID;
+  const { state } = await serverInstance.db.fetch(matchID, { state: true });
+  if (!state) {
+    ctx.status = 404;
+    ctx.body = { error: "match not found" };
+    return;
+  }
+  const timer = timerManager.getTimerSnapshot(matchID, state);
+  ctx.body = { matchID, timer, serverTimeMs: Date.now() };
+});
+
 const lobbyConfig = {
   apiPort: 8080,
   apiCallback: () => console.log("Running Lobby API on port 8080...")

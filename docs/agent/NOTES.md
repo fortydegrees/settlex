@@ -59,3 +59,5 @@
 - Core board generation no longer relies on `react-hexgrid`; `game-core/src/board/boardUtils.ts` now includes a minimal hexagon grid generator for server-side use.
 - `app/catana/Game.js` uses the default import from `jsnetworkx` for Node ESM compatibility.
 - Catana UI components use `app/catana/components/NextImage.js` to normalize `next/image` default imports under ESM.
+- Timer UI consumes timer snapshots attached to state updates, with a one-time /timer/:matchID seed when the snapshot is missing.
+- Timer UI is manually verified for now; add automated coverage once a React test harness exists for `GameScreen`.
