@@ -25,12 +25,16 @@ export function GameScreen(bgioProps) {
   const [playerAction, setPlayerAction] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradePresetResource, setTradePresetResource] = useState(null);
+  const [timerSnapshot, setTimerSnapshot] = useState(null);
+  const [timerSeeded, setTimerSeeded] = useState(false);
+  const [nowMs, setNowMs] = useState(Date.now());
   const moves = bgioProps.moves;
 
   //get the active playerID of who's watching
   //can be null for spectator?
   //TODO: handle null/spectator
   const playerID = bgioProps.playerID;
+  const matchID = bgioProps.matchID ?? "default";
 
   const core = bgioProps.G.core;
   const coreTurn = core?.turn;
@@ -45,6 +49,86 @@ export function GameScreen(bgioProps) {
       : devPlay?.type === "monopoly"
       ? "dev-monopoly"
       : null;
+
+
+  useEffect(() => {
+    const interval = setInterval(() => setNowMs(Date.now()), 250);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    setTimerSnapshot(null);
+    setTimerSeeded(false);
+  }, [matchID]);
+
+  useEffect(() => {
+    if (
+      bgioProps.timerSnapshot === undefined &&
+      bgioProps.timerServerTimeMs === undefined
+    ) {
+      return;
+    }
+    if (!bgioProps.timerSnapshot) {
+      setTimerSnapshot(null);
+      return;
+    }
+    const receivedAtMs = Date.now();
+    const serverDelayMs = bgioProps.timerServerTimeMs
+      ? Math.max(0, receivedAtMs - bgioProps.timerServerTimeMs)
+      : 0;
+    setTimerSnapshot({
+      ...bgioProps.timerSnapshot,
+      receivedAtMs,
+      serverDelayMs
+    });
+  }, [bgioProps.timerSnapshot, bgioProps.timerServerTimeMs]);
+
+  useEffect(() => {
+    if (!matchID || typeof window === "undefined") return;
+    if (bgioProps.timerSnapshot !== undefined || timerSeeded) return;
+    let cancelled = false;
+
+    const fetchSeed = async () => {
+      try {
+        const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
+        const url = `${baseUrl}/timer/${matchID}`;
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (!data?.timer) {
+          setTimerSeeded(true);
+          return;
+        }
+        const receivedAtMs = Date.now();
+        const serverDelayMs = data.serverTimeMs
+          ? Math.max(0, receivedAtMs - data.serverTimeMs)
+          : 0;
+        setTimerSnapshot({
+          ...data.timer,
+          receivedAtMs,
+          serverDelayMs
+        });
+        setTimerSeeded(true);
+      } catch (err) {
+        // ignore errors
+      }
+    };
+
+    fetchSeed();
+    return () => {
+      cancelled = true;
+    };
+  }, [matchID, timerSeeded, bgioProps.timerSnapshot]);
+
+  const timerMs = timerSnapshot
+    ? Math.max(
+        0,
+        timerSnapshot.remainingMs -
+          (nowMs - timerSnapshot.receivedAtMs) -
+          (timerSnapshot.serverDelayMs ?? 0)
+      )
+    : null;
 
   useEffect(() => {
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
@@ -223,6 +307,7 @@ TODO: accurately colour it
           gameStatus={gameStatus}
           canRoll={canRoll}
           canEnd={canEnd}
+          timerMs={timerMs}
         />
       )}
 
