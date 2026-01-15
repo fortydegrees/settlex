@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import Image from "next/image";
+import Image from "./components/NextImage";
 import robberIcon from "../../public/svgs/icon_robber.svg";
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
 import {

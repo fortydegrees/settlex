@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TurnOrder } from "boardgame.io/core";
+import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import { Catan } from "../Game";
 import { createEmptyState, buildTopology } from "@settlex/game-core";
 import { getBuildableEdges } from "../Moves";

@@ -1,9 +1,10 @@
 // src/server.js
-const { Server, Origins, SocketIO } = require("boardgame.io/server");
-const { Master } = require("boardgame.io/master");
-const { Catan } = require("../app/catana/Game");
-const { TimerManager } = require("./timers/TimerManager");
-const { createTimerPubSub } = require("./timers/timerPubSub");
+import { Server, Origins, SocketIO } from "boardgame.io/dist/cjs/server.js";
+import { Master } from "boardgame.io/dist/cjs/master.js";
+import { Catan } from "../app/catana/Game.js";
+import { TimerManager } from "./timers/TimerManager.js";
+import { createTimerPubSub } from "./timers/timerPubSub.js";
+
 
 const MATCH_PREFIX = "MATCH-";
 
