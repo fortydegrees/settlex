@@ -88,3 +88,4 @@
 - TimerManager now handles the preGame stage and delays post-roll timers by the roll-animation buffer.
 - Auto-move robber now filters legal tiles under friendly-robber rules.
 - Timer UI hides during preGame and uses floor seconds to avoid early auto-roll visuals.
+- Auto-move dispatch now includes player credentials from match metadata so server-side timers can act on behalf of authenticated players.

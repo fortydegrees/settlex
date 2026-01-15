@@ -65,3 +65,4 @@
 - TimerManager stage keys now fall back to `activePlayers.all` and apply a 3.5s roll-animation buffer for post-roll/robber timers.
 - Timer UI hides during preGame and counts down using floor seconds to avoid early auto-move visuals.
 - `autoMoveRobber` filters candidates with `canPlaceRobber` to avoid illegal-friendly-robber tiles.
+- Server-side timer dispatch now builds auto-move actions with stored player credentials (from match metadata) so authenticated matches accept auto-moves.
