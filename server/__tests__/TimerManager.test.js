@@ -251,4 +251,49 @@ describe("TimerManager", () => {
 
     expect(manager.getTurnRemaining("match-1")).toBeGreaterThan(45000);
   });
+
+  it("returns stage timer snapshot when stage timer is active", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    manager.onState(
+      "match-1",
+      baseState({
+        ctx: {
+          phase: "placement",
+          currentPlayer: "0",
+          activePlayers: { "0": "settlement" },
+          turn: 1
+        }
+      })
+    );
+
+    const snapshot = manager.getTimerSnapshot("match-1");
+
+    expect(snapshot?.kind).toBe("stage");
+    expect(snapshot?.remainingMs).toBeGreaterThan(0);
+  });
+
+  it("returns turn timer snapshot when no stage timer is active", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    manager.onState(
+      "match-1",
+      baseState({
+        ctx: {
+          phase: "main",
+          currentPlayer: "0",
+          activePlayers: { "0": "postRoll" },
+          turn: 1
+        }
+      })
+    );
+
+    const snapshot = manager.getTimerSnapshot("match-1");
+
+    expect(snapshot?.kind).toBe("turn");
+    expect(snapshot?.remainingMs).toBeGreaterThan(0);
+  });
+
 });
