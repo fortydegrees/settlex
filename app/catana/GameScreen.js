@@ -28,6 +28,7 @@ export function GameScreen(bgioProps) {
   const [timerSnapshot, setTimerSnapshot] = useState(null);
   const [timerSeeded, setTimerSeeded] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
+  const [readySent, setReadySent] = useState(false);
   const moves = bgioProps.moves;
 
   //get the active playerID of who's watching
@@ -59,6 +60,7 @@ export function GameScreen(bgioProps) {
   useEffect(() => {
     setTimerSnapshot(null);
     setTimerSeeded(false);
+    setReadySent(false);
   }, [matchID]);
 
   useEffect(() => {
@@ -121,6 +123,14 @@ export function GameScreen(bgioProps) {
     };
   }, [matchID, timerSeeded, bgioProps.timerSnapshot]);
 
+  useEffect(() => {
+    if (readySent) return;
+    if (!playerID || typeof moves?.readyUp !== "function") return;
+    if (bgioProps.ctx?.phase !== "preGame") return;
+    moves.readyUp();
+    setReadySent(true);
+  }, [readySent, playerID, moves, bgioProps.ctx?.phase]);
+
   const timerMs = timerSnapshot
     ? Math.max(
         0,
@@ -129,6 +139,8 @@ export function GameScreen(bgioProps) {
           (timerSnapshot.serverDelayMs ?? 0)
       )
     : null;
+  const hideTimer = timerSnapshot?.stageKey?.startsWith("preGame:");
+  const visibleTimerMs = hideTimer ? null : timerMs;
 
   useEffect(() => {
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
@@ -307,7 +319,7 @@ TODO: accurately colour it
           gameStatus={gameStatus}
           canRoll={canRoll}
           canEnd={canEnd}
-          timerMs={timerMs}
+          timerMs={visibleTimerMs}
         />
       )}
 

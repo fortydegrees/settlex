@@ -61,3 +61,7 @@
 - Catana UI components use `app/catana/components/NextImage.js` to normalize `next/image` default imports under ESM.
 - Timer UI consumes timer snapshots attached to state updates, with a one-time /timer/:matchID seed when the snapshot is missing.
 - Timer UI is manually verified for now; add automated coverage once a React test harness exists for `GameScreen`.
+- `preGame` phase starts matches with `activePlayers: { all: "waiting" }`; clients send `readyUp()` immediately and the server auto-starts after 15s via `autoStartGame`.
+- TimerManager stage keys now fall back to `activePlayers.all` and apply a 3.5s roll-animation buffer for post-roll/robber timers.
+- Timer UI hides during preGame and counts down using floor seconds to avoid early auto-move visuals.
+- `autoMoveRobber` filters candidates with `canPlaceRobber` to avoid illegal-friendly-robber tiles.

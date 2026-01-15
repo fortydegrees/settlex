@@ -1,6 +1,6 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
-import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
+import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 
 const DEBUG_MOVES = {
@@ -122,6 +122,7 @@ export const Catan =  {
       diceRoll,
       robberTileId: robberTile,
       placementOrder,
+      preGame: { readyByPlayerId: {} },
       devCardPlay: null,
       robberReturnToStage: null
     };
@@ -158,6 +159,16 @@ export const Catan =  {
 
 
   phases: {
+    preGame: {
+      turn: {
+        activePlayers: { all: "waiting" },
+        stages: {
+          waiting: { moves: { readyUp, autoStartGame, ...DEBUG_MOVES } }
+        }
+      },
+      start: true,
+      next: "placement"
+    },
     placement: {
       turn: {
         order: TurnOrder.CUSTOM_FROM("placementOrder"),
@@ -174,6 +185,9 @@ export const Catan =  {
           //TODO: randomize player order (could even do this in a pre-phase)
           console.log("placement phase") 
 
+            if (context.G?.core) {
+              context.G.core.phase = "placement";
+            }
             updateValids(context, "settlement")
         },
         stages: {
@@ -194,7 +208,7 @@ export const Catan =  {
         });
       },
       next: "main",
-      start: true,
+      start: false,
       onEnd: ({ G }) => {
         if (G.core) {
           G.core.phase = "normal";

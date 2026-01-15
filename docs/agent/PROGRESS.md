@@ -84,3 +84,7 @@
 ## Status (2026-01-15)
 - Added a server timer snapshot endpoint and a bottom-right UI countdown pill.
 - Timer snapshots now attach to state updates; the UI uses them with a one-time seed fetch for initial sync.
+- Added a preGame phase with ready-up + 15s auto-start before placement begins.
+- TimerManager now handles the preGame stage and delays post-roll timers by the roll-animation buffer.
+- Auto-move robber now filters legal tiles under friendly-robber rules.
+- Timer UI hides during preGame and uses floor seconds to avoid early auto-roll visuals.

@@ -19,6 +19,7 @@ import {
   buildableEdges,
   buildableNodes,
   buyDevCard as applyBuyDevCard,
+  canPlaceRobber,
   canPlayDevCard,
   playDevCard
 } from "@settlex/game-core";
@@ -209,6 +210,35 @@ export const getBuildableNodes = (playerID, G, ctx) => {
     initialPlacement: Boolean(isPlacement)
   });
 }
+
+export const readyUp = {
+  move: (context) => {
+    const { G, ctx, playerID, events } = context;
+    if (!playerID) return;
+    if (!G.preGame) {
+      G.preGame = { readyByPlayerId: {} };
+    }
+    G.preGame.readyByPlayerId[playerID] = true;
+
+    const allPlayers = G.core?.players ?? ctx.playOrder ?? [];
+    if (!Array.isArray(allPlayers) || allPlayers.length === 0) {
+      return;
+    }
+    const allReady = allPlayers.every(
+      (id) => G.preGame.readyByPlayerId?.[id]
+    );
+    if (allReady) {
+      events.endPhase();
+    }
+  }
+};
+
+export const autoStartGame = {
+  move: (context) => {
+    const { events } = context;
+    events.endPhase();
+  }
+};
 
 const pickRandom = (items, random) => {
   if (!items || items.length === 0) return null;
@@ -504,7 +534,8 @@ export const autoMoveRobber = {
     const candidates = tiles
       .filter((tile) => tile.type === TileTypes.LAND)
       .map((tile) => tile.tile.id)
-      .filter((tileId) => tileId !== G.core?.robberTileId);
+      .filter((tileId) => tileId !== G.core?.robberTileId)
+      .filter((tileId) => canPlaceRobber(G.core, G.coreTopology, tileId));
     const tileId = pickRandom(candidates, random);
     if (tileId == null) {
       return;
