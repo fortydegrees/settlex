@@ -20,7 +20,18 @@ export const StatusBubble = ({ statusType, isVisible }) => {
     <div
       className={`status-bubble ${isVisible ? "status-bubble--visible" : "status-bubble--hidden"}`}
     >
-      {icon}
+      {/* Cloud made of overlapping ovals */}
+      <div className="status-bubble__cloud">
+        <span className="status-bubble__blob status-bubble__blob--1" />
+        <span className="status-bubble__blob status-bubble__blob--2" />
+        <span className="status-bubble__blob status-bubble__blob--3" />
+        <span className="status-bubble__blob status-bubble__blob--4" />
+        <span className="status-bubble__blob status-bubble__blob--5" />
+        <span className="status-bubble__blob status-bubble__blob--6" />
+
+        {/* Icon container */}
+        <span className="status-bubble__icon">{icon}</span>
+      </div>
     </div>
   );
 };
