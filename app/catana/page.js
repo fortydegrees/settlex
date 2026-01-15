@@ -21,13 +21,13 @@ const CatanClient = Client({
 
 const Page = () => {
 
-  return(
+  // return(
 
-    <CatanClient playerID={"0"} />
+  //   <CatanClient playerID={"0"} />
 
 
 
-  )
+  // )
 
   const [auth, setAuth] = useState({
     username: null,
