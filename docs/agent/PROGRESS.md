@@ -76,4 +76,4 @@
 
 ## Status (2026-01-15)
 - Added a server timer snapshot endpoint and a bottom-right UI countdown pill.
-
+- Timer snapshots now attach to state updates; the UI uses them with a one-time seed fetch for initial sync.
