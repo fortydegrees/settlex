@@ -15,6 +15,14 @@ import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 
 const SHOW_STATUS_TEXT = true;
 
+const formatTimer = (ms) => {
+  if (ms == null) return null;
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(total / 60);
+  const seconds = String(total % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
+
 export const CardIcon = ({ playerCards, resource, player, onResourceClick }) => {
   const handleClick = () => {
     if (onResourceClick) {
@@ -52,7 +60,8 @@ export const PlayerActionContainer = ({
   statusType,
   gameStatus,
   canRoll,
-  canEnd
+  canEnd,
+  timerMs
 }) => {
 
   
@@ -72,6 +81,8 @@ export const PlayerActionContainer = ({
     if (!G.core || !player?.devCards || !canStartDev) return {};
     return getPlayableDevCardCounts(G.core, player.id);
   }, [G.core, player?.devCards, player.id, canStartDev]);
+  const timerText = formatTimer(timerMs);
+
   const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
 
   //dice roll animation
@@ -307,8 +318,15 @@ export const PlayerActionContainer = ({
 
           {/* Status text - always visible */}
           {SHOW_STATUS_TEXT && gameStatus && (
-            <div className="text-white text-sm font-medium drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] my-2 text-center min-w-[120px]">
-              {gameStatus.text}
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <div className="text-white text-sm font-medium drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+                {gameStatus.text}
+              </div>
+              {timerText && (
+                <div className="rounded-md px-2 py-1 text-xs font-semibold text-slate-800 bg-blue-200/70 ring-1 ring-slate-300">
+                  {timerText}
+                </div>
+              )}
             </div>
           )}
         </div>
