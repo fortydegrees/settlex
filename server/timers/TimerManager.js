@@ -77,13 +77,22 @@ export class TimerManager {
 
     const stageDelayMs = this.getRollDelayMs(stageKey, deltalog);
 
-    if (stageTimeoutMs) {
-      const playerID = state.ctx.currentPlayer;
+    const stagePlayers =
+      stageKey === "main:robberDiscard"
+        ? [...(state.G?.core?.turn?.pendingDiscards ?? [])]
+        : [state.ctx.currentPlayer];
+
+    if (stageTimeoutMs && stagePlayers.length > 0) {
       const move = STAGE_TIMEOUT_MOVES[stageKey];
       prev.stageStartedAtMs = Date.now() + stageDelayMs;
       prev.stageDurationMs = stageTimeoutMs;
       prev.stageTimeoutId = setTimeout(() => {
-        this.dispatch({ matchID, move, playerID });
+        const dispatchStage = async () => {
+          for (const playerID of stagePlayers) {
+            await this.dispatch({ matchID, move, playerID });
+          }
+        };
+        void dispatchStage();
       }, stageTimeoutMs + stageDelayMs);
     } else {
       prev.stageStartedAtMs = undefined;
@@ -224,6 +233,14 @@ export class TimerManager {
       ctx.activePlayers?.[ctx.currentPlayer] ?? ctx.activePlayers?.all ?? "";
     const stage = typeof active === "string" ? active : active?.stage ?? "";
     const devPlay = G?.devCardPlay;
+    const coreTurn = G?.core?.turn;
+    if (
+      ctx.phase === "main" &&
+      (coreTurn?.phase === "robberDiscard" ||
+        (coreTurn?.pendingDiscards?.length ?? 0) > 0)
+    ) {
+      return "main:robberDiscard";
+    }
     if (
       ctx.phase === "main" &&
       devPlay?.type === "roadBuilding" &&
