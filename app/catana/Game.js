@@ -1,14 +1,14 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
-import { TurnOrder } from "boardgame.io/core";
-import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, initialiseGraph, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves";
-import { EffectsPlugin } from 'bgio-effects/plugin';
+import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
+import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
+import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 
 const DEBUG_MOVES = {
   DEBUG_takeCardsFromBank,
   DEBUG_loadState,
   DEBUG_setScenario
 };
-import * as nx from "jsnetworkx";
+import nx from "jsnetworkx";
 //setup board and convert tiles/edges into right format to render
 
 //   new BalancedBoard({

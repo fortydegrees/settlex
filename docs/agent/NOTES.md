@@ -50,3 +50,12 @@
 - Timer pubsub wrapper lives at `server/timers/timerPubSub.js` and is wired in `server/server.js`.
 - Auto-timeout moves live in `app/catana/Moves.js` (autoRoll/autoPlaceSettlement/autoPlaceRoad/autoDiscard/autoMoveRobber/autoEndTurn/autoResolveDevCard).
 - Stage timeouts: settlement 60s, road 10s, moveRobber 20s, roadBuilding 10s; no dev-card choice or steal-target timers.
+- The boardgame.io server now runs as native ESM via `server/package.json` + `app/catana/package.json` (`type: module`), and `pnpm serve` uses `node server/server.js` (no `esm` loader).
+- Server-side ESM imports `boardgame.io` from `dist/cjs` to avoid Node's unsupported directory import error.
+- `app/catana/Game.js` now imports `TurnOrder` from `boardgame.io/dist/cjs/core.js` for the same ESM resolution reason.
+- `app/catana/Game.js` now imports `EffectsPlugin` from `bgio-effects/dist/plugin.js` to avoid ESM directory import errors.
+- `app/catana/Game.js` dropped a stale `initialiseGraph` import to satisfy strict ESM named export checks.
+- `pnpm serve` runs `node server/server.js` (no experimental specifier flag).
+- Core board generation no longer relies on `react-hexgrid`; `game-core/src/board/boardUtils.ts` now includes a minimal hexagon grid generator for server-side use.
+- `app/catana/Game.js` uses the default import from `jsnetworkx` for Node ESM compatibility.
+- Catana UI components use `app/catana/components/NextImage.js` to normalize `next/image` default imports under ESM.

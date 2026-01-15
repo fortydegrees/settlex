@@ -5,12 +5,18 @@ import { Catan } from "./Game";
 import { GameScreenWithEffects } from "./GameScreen";
 import React, { useState } from "react";
 
+// const CatanClient = Client({
+//   game: Catan,
+//   board: GameScreenWithEffects,
+//   multiplayer: Local(),
+//   //multiplayer: SocketIO({ server: "localhost:8000" }),
+//   //debug: false,
+// });
+
 const CatanClient = Client({
   game: Catan,
   board: GameScreenWithEffects,
-  multiplayer: Local(),
-  //multiplayer: SocketIO({ server: "localhost:8000" }),
-  //debug: false,
+  multiplayer: SocketIO({ server: "localhost:8000" }),
 });
 
 const Page = () => {

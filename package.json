@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "verify": "pnpm -C game-core build && pnpm -C game-core test && pnpm lint",
-    "serve": "node -r esm server/server.js"
+    "serve": "node server/server.js"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",

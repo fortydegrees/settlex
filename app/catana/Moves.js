@@ -1,5 +1,5 @@
 
-import { ResourceType, TileTypes } from "./game/types";
+import { ResourceType, TileTypes } from "./game/types.js";
 import {
   applyBuildCity,
   applyBuildRoad,

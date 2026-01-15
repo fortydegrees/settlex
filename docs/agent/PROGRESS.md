@@ -73,3 +73,10 @@
 - Added server-side TimerManager + pubSub hook for turn/stage timers and turn-time bonuses.
 - Added auto-timeout moves (auto roll/place/discard/robber/etc.) and wired them into stage move lists.
 - Extended server stage timers to cover placement, robber movement, and road-building dev card flow.
+- Switched the game server to native ESM (local `type: module`) and updated `pnpm serve` to drop the `esm` loader.
+- Updated server imports to use `boardgame.io/dist/cjs/*` so Node ESM can resolve them without directory imports.
+- Updated the Catana game config to import `boardgame.io` core from `dist/cjs` for Node ESM compatibility.
+- Updated Catana effects plugin import to the explicit `bgio-effects/dist/plugin.js` entry for Node ESM resolution.
+- Removed the stale `initialiseGraph` import from `app/catana/Game.js` to satisfy ESM named export checks.
+- Replaced `react-hexgrid` usage in core board utils with an internal hexagon generator to keep server-side ESM compatible, and fixed the `jsnetworkx` default import; `pnpm serve` now runs without experimental flags.
+- Added a local Next image wrapper for Catana UI components to normalize default imports under ESM.

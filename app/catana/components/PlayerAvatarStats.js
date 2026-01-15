@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "./NextImage";
 import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
 import { StatusBubble } from "./StatusBubble";

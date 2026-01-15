@@ -1,5 +1,6 @@
 import { RandomQueue, RandomFn } from "../randomQueue";
 import { ResourceType, TileTypes } from "../types";
+import type { Resource } from "../types";
 import { generateStandardHexes, getNumDots } from "./boardUtils";
 
 const doNumbersAndResources = (tiles: any[], spec: any, rng: RandomFn) => {
@@ -87,7 +88,7 @@ const getNodesAndEdges = (
     [getNodeRef("NORTHWEST")]: null
   };
 
-  const edges: Record<string, number[] | null> = {
+  const edges: Record<string, [number, number] | null> = {
     [getEdgeRef("EAST")]: null,
     [getEdgeRef("SOUTHEAST")]: null,
     [getEdgeRef("SOUTHWEST")]: null,
@@ -117,27 +118,27 @@ const getNodesAndEdges = (
       if (neighborDirection === Direction.EAST) {
         nodes[getNodeRef("NORTHEAST")] = neighbor.tile.nodes[getNodeRef("NORTHWEST")];
         nodes[getNodeRef("SOUTHEAST")] = neighbor.tile.nodes[getNodeRef("SOUTHWEST")];
-        edges[getEdgeRef("EAST")] = neighbor.tile.edges[getEdgeRef("WEST")];
+        edges[getEdgeRef("EAST")] = neighbor.tile.edges[getEdgeRef("WEST")] as [number, number];
       } else if (neighborDirection === Direction.SOUTHEAST) {
         nodes[getNodeRef("SOUTH")] = neighbor.tile.nodes[getNodeRef("NORTHWEST")];
         nodes[getNodeRef("SOUTHEAST")] = neighbor.tile.nodes[getNodeRef("NORTH")];
-        edges[getEdgeRef("SOUTHEAST")] = neighbor.tile.edges[getEdgeRef("NORTHWEST")];
+        edges[getEdgeRef("SOUTHEAST")] = neighbor.tile.edges[getEdgeRef("NORTHWEST")] as [number, number];
       } else if (neighborDirection === Direction.SOUTHWEST) {
         nodes[getNodeRef("SOUTH")] = neighbor.tile.nodes[getNodeRef("NORTHEAST")];
         nodes[getNodeRef("SOUTHWEST")] = neighbor.tile.nodes[getNodeRef("NORTH")];
-        edges[getEdgeRef("SOUTHWEST")] = neighbor.tile.edges[getEdgeRef("NORTHEAST")];
+        edges[getEdgeRef("SOUTHWEST")] = neighbor.tile.edges[getEdgeRef("NORTHEAST")] as [number, number];
       } else if (neighborDirection === Direction.WEST) {
         nodes[getNodeRef("NORTHWEST")] = neighbor.tile.nodes[getNodeRef("NORTHEAST")];
         nodes[getNodeRef("SOUTHWEST")] = neighbor.tile.nodes[getNodeRef("SOUTHEAST")];
-        edges[getEdgeRef("WEST")] = neighbor.tile.edges[getEdgeRef("EAST")];
+        edges[getEdgeRef("WEST")] = neighbor.tile.edges[getEdgeRef("EAST")] as [number, number];
       } else if (neighborDirection === Direction.NORTHWEST) {
         nodes[getNodeRef("NORTH")] = neighbor.tile.nodes[getNodeRef("SOUTHEAST")];
         nodes[getNodeRef("NORTHWEST")] = neighbor.tile.nodes[getNodeRef("SOUTH")];
-        edges[getEdgeRef("NORTHWEST")] = neighbor.tile.edges[getEdgeRef("SOUTHEAST")];
+        edges[getEdgeRef("NORTHWEST")] = neighbor.tile.edges[getEdgeRef("SOUTHEAST")] as [number, number];
       } else if (neighborDirection === Direction.NORTHEAST) {
         nodes[getNodeRef("NORTH")] = neighbor.tile.nodes[getNodeRef("SOUTHWEST")];
         nodes[getNodeRef("NORTHEAST")] = neighbor.tile.nodes[getNodeRef("SOUTH")];
-        edges[getEdgeRef("NORTHEAST")] = neighbor.tile.edges[getEdgeRef("SOUTHWEST")];
+        edges[getEdgeRef("NORTHEAST")] = neighbor.tile.edges[getEdgeRef("SOUTHWEST")] as [number, number];
       }
     } catch {
       continue;
@@ -154,8 +155,11 @@ const getNodesAndEdges = (
   for (const edgeref in edges) {
     if (edges[edgeref] === null) {
       const [a_noderef, b_noderef] = getEdgeNodes(edgeref);
-      const edgeNodes = [nodes[a_noderef], nodes[b_noderef]] as number[];
-      edges[edgeref] = edgeNodes.slice().sort();
+      const edgeNodes = [nodes[a_noderef] as number, nodes[b_noderef] as number] as [
+        number,
+        number
+      ];
+      edges[edgeref] = (edgeNodes.slice().sort() as [number, number]);
       edgeAutoinc++;
     }
   }
@@ -246,7 +250,7 @@ export class Board {
     }
 
     let idCounter = tiles.length;
-    const portCounts = new RandomQueue(spec.portCounts(), rng);
+    const portCounts = new RandomQueue<Resource>(spec.portCounts(), rng);
     for (const port of spec.ports) {
       if (portCounts.length) {
         tiles.push({
@@ -257,7 +261,7 @@ export class Board {
             id: idCounter++,
             nodes: port.nodes,
             edges: {},
-            resource: portCounts.pop()
+            resource: portCounts.pop() as Resource
           }
         });
       }

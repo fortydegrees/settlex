@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import Image from "next/image";
+import Image from "./NextImage";
 import "./DevCardDisplay.css";
 import { CardStack } from "./CardStack";
 import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
