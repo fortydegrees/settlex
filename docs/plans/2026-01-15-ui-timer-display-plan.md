@@ -1,303 +1,295 @@
-# UI Timer Display Implementation Plan
+# UI Timer Snapshot Push Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Display a server-synchronized countdown (mm:ss) in the bottom-right UI, prioritizing stage timers over turn timers.
+**Goal:** Display a server-synchronized countdown (mm:ss) using timer snapshots attached to state updates, with a one-time seed fetch for initial sync.
 
-**Architecture:** Add a TimerManager snapshot helper and an HTTP timer endpoint on the server. The client polls the endpoint, keeps a local countdown based on the received snapshot, and renders a timer pill next to the status text.
+**Architecture:** TimerManager provides a snapshot and server time. `timerPubSub` attaches `timerSnapshot` and `timerServerTimeMs` to update/patch payloads. The client listens for these props, seeds once via `/timer/:matchID` if missing, and counts down locally between updates.
 
 **Tech Stack:** Node.js, boardgame.io server, React (Next.js), Vitest
 
-### Task 1: Add failing tests for TimerManager snapshot
+### Task 1: Add failing timerPubSub tests for snapshot payloads
 
 **Files:**
-- Modify: `server/__tests__/TimerManager.test.js`
+- Modify: `server/__tests__/timerPubSub.test.js`
 
-**Step 1: Write failing test for stage snapshot**
+**Step 1: Write failing test for update payload snapshot**
 
 ```js
-it("returns stage timer snapshot when stage timer is active", () => {
-  const dispatch = vi.fn();
-  const manager = new TimerManager({ dispatch });
+it("attaches timer snapshot to update payloads", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-01-15T00:00:00Z"));
 
-  manager.onState("match-1", baseState({
-    ctx: {
-      phase: "placement",
-      currentPlayer: "0",
-      activePlayers: { "0": "settlement" },
-      turn: 1
-    }
-  }));
+  const manager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue({
+      kind: "turn",
+      remainingMs: 5000,
+      totalMs: 60000,
+      stageKey: "main:"
+    })
+  };
 
-  const snapshot = manager.getTimerSnapshot("match-1");
-  expect(snapshot?.kind).toBe("stage");
-  expect(snapshot?.remainingMs).toBeGreaterThan(0);
+  const pubSub = createTimerPubSub(manager);
+  const received = vi.fn();
+  pubSub.subscribe("MATCH-1", received);
+
+  const payload = {
+    type: "update",
+    args: [
+      "1",
+      { ctx: { phase: "main", currentPlayer: "0", activePlayers: { "0": "preRoll" } } }
+    ]
+  };
+
+  pubSub.publish("MATCH-1", payload);
+
+  expect(received).toHaveBeenCalledTimes(1);
+  const forwarded = received.mock.calls[0][0];
+  expect(forwarded.args[1].timerSnapshot).toEqual({
+    kind: "turn",
+    remainingMs: 5000,
+    totalMs: 60000,
+    stageKey: "main:"
+  });
+  expect(forwarded.args[1].timerServerTimeMs).toBe(Date.now());
+  vi.useRealTimers();
 });
 ```
 
-**Step 2: Write failing test for turn snapshot**
+**Step 2: Write failing test for patch payload snapshot**
 
 ```js
-it("returns turn timer snapshot when no stage timer is active", () => {
-  const dispatch = vi.fn();
-  const manager = new TimerManager({ dispatch });
+it("attaches timer snapshot to patch payloads", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-01-15T00:00:00Z"));
 
-  manager.onState("match-1", baseState({
-    ctx: {
-      phase: "main",
-      currentPlayer: "0",
-      activePlayers: { "0": "postRoll" },
-      turn: 1
-    }
-  }));
+  const manager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue({
+      kind: "stage",
+      remainingMs: 2000,
+      totalMs: 10000,
+      stageKey: "main:postRoll"
+    })
+  };
 
-  const snapshot = manager.getTimerSnapshot("match-1");
-  expect(snapshot?.kind).toBe("turn");
-  expect(snapshot?.remainingMs).toBeGreaterThan(0);
+  const pubSub = createTimerPubSub(manager);
+  const received = vi.fn();
+  pubSub.subscribe("MATCH-1", received);
+
+  const payload = {
+    type: "patch",
+    args: ["1", 10, { ctx: {} }, { ctx: { phase: "main" } }]
+  };
+
+  pubSub.publish("MATCH-1", payload);
+
+  const forwarded = received.mock.calls[0][0];
+  expect(forwarded.args[3].timerSnapshot).toEqual({
+    kind: "stage",
+    remainingMs: 2000,
+    totalMs: 10000,
+    stageKey: "main:postRoll"
+  });
+  expect(forwarded.args[3].timerServerTimeMs).toBe(Date.now());
+  vi.useRealTimers();
 });
 ```
 
 **Step 3: Run tests to confirm failures**
 
-Run: `pnpm vitest server/__tests__/TimerManager.test.js`
-Expected: FAIL (getTimerSnapshot missing)
+Run: `pnpm vitest server/__tests__/timerPubSub.test.js`
+Expected: FAIL (snapshot not attached yet)
 
 **Step 4: Commit tests**
 
 ```bash
-git add server/__tests__/TimerManager.test.js
-git commit -m "test: add timer snapshot coverage"
+git add server/__tests__/timerPubSub.test.js
+git commit -m "test: cover timer snapshot publish"
 ```
 
-### Task 2: Implement TimerManager snapshot support
+### Task 2: Attach timer snapshot to update/patch payloads
 
 **Files:**
-- Modify: `server/timers/TimerManager.js`
+- Modify: `server/timers/timerPubSub.js`
 
-**Step 1: Track stage timer start/duration**
-
-```js
-if (prev.stageTimeoutId) {
-  clearTimeout(prev.stageTimeoutId);
-  prev.stageTimeoutId = undefined;
-  prev.stageStartedAtMs = undefined;
-  prev.stageDurationMs = undefined;
-}
-```
-
-When scheduling a stage timer:
-```js
-prev.stageStartedAtMs = Date.now();
-prev.stageDurationMs = stageTimeoutMs;
-```
-
-When no stage timeout:
-```js
-prev.stageStartedAtMs = undefined;
-prev.stageDurationMs = undefined;
-```
-
-**Step 2: Add snapshot helpers**
+**Step 1: Implement snapshot attachment**
 
 ```js
-getStageRemainingMs(record) {
-  if (!record.stageStartedAtMs || !record.stageDurationMs) return null;
-  const elapsed = Date.now() - record.stageStartedAtMs;
-  return Math.max(0, record.stageDurationMs - elapsed);
-}
+const attachTimerSnapshot = (payload, matchID, state) => {
+  if (!state) return payload;
+  const timerSnapshot = timerManager.getTimerSnapshot(matchID, state);
+  const serverTimeMs = Date.now();
 
-getTurnRemainingMs(record) {
-  if (record.turnRemainingMs == null) return null;
-  if (!record.turnTimeoutId || !record.turnStartedAtMs) return record.turnRemainingMs;
-  const elapsed = Date.now() - record.turnStartedAtMs;
-  return Math.max(0, record.turnRemainingMs - elapsed);
-}
-
-getTimerSnapshot(matchID, state) {
-  let record = this.matches.get(matchID);
-  if (!record && state) {
-    this.onState(matchID, state);
-    record = this.matches.get(matchID);
-  }
-  if (!record) return null;
-  const stageRemainingMs = this.getStageRemainingMs(record);
-  if (stageRemainingMs != null) {
+  if (payload?.type === "update") {
+    const args = payload.args ?? [];
+    const deltalog = args.length > 2 ? args[2] : undefined;
+    const stateWithTimer = {
+      ...state,
+      timerSnapshot,
+      timerServerTimeMs: serverTimeMs
+    };
     return {
-      kind: "stage",
-      remainingMs: stageRemainingMs,
-      totalMs: record.stageDurationMs,
-      stageKey: record.stageKey
+      ...payload,
+      args: deltalog === undefined
+        ? [matchID, stateWithTimer]
+        : [matchID, stateWithTimer, deltalog]
     };
   }
-  const turnRemainingMs = this.getTurnRemainingMs(record);
-  if (turnRemainingMs != null) {
+
+  if (payload?.type === "patch") {
+    const args = payload.args ?? [];
+    const prevStateID = args[1];
+    const prevState = args[2];
+    const stateWithTimer = {
+      ...state,
+      timerSnapshot,
+      timerServerTimeMs: serverTimeMs
+    };
     return {
-      kind: "turn",
-      remainingMs: turnRemainingMs,
-      totalMs: record.turnRemainingMs,
-      stageKey: record.stageKey
+      ...payload,
+      args: [matchID, prevStateID, prevState, stateWithTimer]
     };
   }
-  return null;
-}
+
+  return payload;
+};
 ```
 
-**Step 3: Run tests to confirm pass**
+**Step 2: Run tests to confirm pass**
 
-Run: `pnpm vitest server/__tests__/TimerManager.test.js`
+Run: `pnpm vitest server/__tests__/timerPubSub.test.js`
 Expected: PASS
 
-**Step 4: Commit**
+**Step 3: Commit**
 
 ```bash
-git add server/timers/TimerManager.js
-git commit -m "feat: add timer snapshots"
+git add server/timers/timerPubSub.js
+git commit -m "feat: attach timer snapshots to updates"
 ```
 
-### Task 3: Add server timer endpoint
-
-**Files:**
-- Modify: `server/server.js`
-
-**Step 1: Add Koa route**
-
-```js
-server.router.get('/timer/:matchID', async (ctx) => {
-  const matchID = ctx.params.matchID;
-  const { state } = await serverInstance.db.fetch(matchID, { state: true });
-  if (!state) {
-    ctx.status = 404;
-    ctx.body = { error: 'match not found' };
-    return;
-  }
-  const timer = timerManager.getTimerSnapshot(matchID, state);
-  ctx.body = { matchID, timer, serverTimeMs: Date.now() };
-});
-```
-
-**Step 2: Commit**
-
-```bash
-git add server/server.js
-git commit -m "feat: add timer endpoint"
-```
-
-### Task 4: Add client polling + display
+### Task 3: Use server snapshot + one-time seed on the client
 
 **Files:**
 - Modify: `app/catana/GameScreen.js`
-- Modify: `app/catana/components/PlayerActionContainer.js`
 
-**Step 1: Add timer polling in GameScreen**
+**Step 1: Sync snapshot from state updates**
 
 ```js
 const [timerSnapshot, setTimerSnapshot] = useState(null);
 const [nowMs, setNowMs] = useState(Date.now());
-const matchID = bgioProps.matchID ?? "default";
 
 useEffect(() => {
-  const tick = setInterval(() => setNowMs(Date.now()), 250);
-  return () => clearInterval(tick);
-}, []);
+  if (!bgioProps.timerSnapshot) {
+    setTimerSnapshot(null);
+    return;
+  }
+  const receivedAtMs = Date.now();
+  const delayMs = bgioProps.timerServerTimeMs
+    ? Math.max(0, receivedAtMs - bgioProps.timerServerTimeMs)
+    : 0;
+  setTimerSnapshot({
+    ...bgioProps.timerSnapshot,
+    receivedAtMs,
+    serverDelayMs: delayMs
+  });
+}, [bgioProps.timerSnapshot, bgioProps.timerServerTimeMs]);
+```
+
+**Step 2: One-time seed fetch if snapshot missing**
+
+```js
+const [seeded, setSeeded] = useState(false);
 
 useEffect(() => {
   if (!matchID || typeof window === "undefined") return;
-  const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
-  const url = `${baseUrl}/timer/${matchID}`;
+  if (bgioProps.timerSnapshot || seeded) return;
   let cancelled = false;
 
-  const fetchTimer = async () => {
+  const fetchSeed = async () => {
     try {
-      const res = await fetch(url);
+      const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
+      const url = `${baseUrl}/timer/${matchID}`;
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return;
       const data = await res.json();
       if (cancelled) return;
       if (!data?.timer) {
-        setTimerSnapshot(null);
+        setSeeded(true);
         return;
       }
+      const receivedAtMs = Date.now();
+      const delayMs = data.serverTimeMs
+        ? Math.max(0, receivedAtMs - data.serverTimeMs)
+        : 0;
       setTimerSnapshot({
         ...data.timer,
-        receivedAtMs: Date.now()
+        receivedAtMs,
+        serverDelayMs: delayMs
       });
+      setSeeded(true);
     } catch (err) {
       // ignore errors
     }
   };
 
-  fetchTimer();
-  const interval = setInterval(fetchTimer, 2000);
+  fetchSeed();
   return () => {
     cancelled = true;
-    clearInterval(interval);
   };
-}, [matchID]);
+}, [matchID, seeded, bgioProps.timerSnapshot]);
+```
 
+**Step 3: Compute displayed timer**
+
+```js
 const timerMs = timerSnapshot
-  ? Math.max(0, timerSnapshot.remainingMs - (nowMs - timerSnapshot.receivedAtMs))
+  ? Math.max(
+      0,
+      timerSnapshot.remainingMs -
+        (nowMs - timerSnapshot.receivedAtMs) -
+        (timerSnapshot.serverDelayMs ?? 0)
+    )
   : null;
 ```
 
-Pass `timerMs` to `PlayerActionContainer`.
+**Step 4: Remove polling interval** (delete the `setInterval(fetchTimer, 2000)` and related effect).
 
-**Step 2: Render timer in PlayerActionContainer**
+**Step 5: Manual check**
+- Launch UI, confirm timer displays and updates smoothly.
+- Reload to verify seed fetch populates timer once before next server update.
 
-Add a `timerMs` prop and helper formatter:
-```js
-const formatTimer = (ms) => {
-  if (ms == null) return null;
-  const total = Math.max(0, Math.ceil(ms / 1000));
-  const minutes = Math.floor(total / 60);
-  const seconds = String(total % 60).padStart(2, "0");
-  return `${minutes}:${seconds}`;
-};
-```
-
-Render to the right of status text:
-```js
-const timerText = formatTimer(timerMs);
-...
-{SHOW_STATUS_TEXT && gameStatus && (
-  <div className="mt-2 flex items-center justify-center gap-2">
-    <div className="text-white text-sm font-medium drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-      {gameStatus.text}
-    </div>
-    {timerText && (
-      <div className="rounded-md px-2 py-1 text-xs font-semibold text-slate-800 bg-blue-200/70 ring-1 ring-slate-300">
-        {timerText}
-      </div>
-    )}
-  </div>
-)}
-```
-
-**Step 3: Run tests (optional UI)**
-
-Run: `pnpm vitest server/__tests__/TimerManager.test.js`
-Expected: PASS
-
-**Step 4: Commit UI changes**
+**Step 6: Commit**
 
 ```bash
-git add app/catana/GameScreen.js app/catana/components/PlayerActionContainer.js
-git commit -m "feat: show server-synced timer"
+git add app/catana/GameScreen.js
+git commit -m "feat: use timer snapshot updates"
 ```
 
-### Task 5: Update agent docs
+### Task 4: Update agent docs for snapshot approach
 
 **Files:**
-- Modify: `docs/agent/PROGRESS.md`
 - Modify: `docs/agent/NOTES.md`
+- Modify: `docs/agent/PROGRESS.md`
 
-**Step 1: Progress entry**
-- `Added server timer endpoint and UI countdown pill in bottom-right.`
+**Step 1: Notes**
+- Replace polling note with: `Timer UI uses timerSnapshot on state updates, with a one-time /timer/:matchID seed if needed.`
 
-**Step 2: Notes entry**
-- `Timer UI polls /timer/:matchID (2s) and displays stage timer when active, else turn timer.`
+**Step 2: Progress**
+- Keep `Added server timer snapshot endpoint and a bottom-right UI countdown pill.`
 
-**Step 3: Commit docs**
+**Step 3: Commit**
 
 ```bash
-git add docs/agent/PROGRESS.md docs/agent/NOTES.md
-git commit -m "docs: note timer UI"
+git add docs/agent/NOTES.md docs/agent/PROGRESS.md
+git commit -m "docs: update timer snapshot notes"
 ```
+
+### Task 5: Verify
+
+Run: `pnpm vitest server/__tests__/timerPubSub.test.js`
+Expected: PASS
+
+Optional: `pnpm vitest server/__tests__/TimerManager.test.js`
+Expected: PASS
