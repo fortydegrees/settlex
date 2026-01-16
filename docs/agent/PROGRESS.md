@@ -93,3 +93,7 @@
 
 ## Status (2026-01-16)
 - Logged a GSAP-based effects + audio system design with a cue-driven event bus and centralized AudioManager.
+
+## Status (2026-01-16)
+- Added an Effects layer (EffectBus, GameEffects, EffectLayer) with GSAP-based resource distribution and cue-driven audio wiring.
+- Centralized board layout helpers and passed board refs for effect positioning.
