@@ -1,73 +1,157 @@
 Personal TODO
 
-friendly robber - atm can place on any hex/tile no matter user's VPs
-robber/knight steals random card 
-    dialog box to choose which player if > 2
+[ ] game status box, e.g. 'waiting for player 1 to roll'. 'player 1 choosing robber location'
+    kinda done wiht CC, looks a bit ugly tho
 
-bank resource display
+[ ] game log
 
-user/opponent score display
-    accurate longest road, VPs, card count etc tracking
-
-dev cards
-    design
-    buying and display in user's action box.
-    dev card playing
+[ ] chat box
 
 
-game win/end
+not obvious when playing a knight. e.g. the card just disappears when clicked.
+    status thing doesn't update
+    should also be obvious when opponent is playing a knight/dev
+        should come out and hover next to board while they're making their decision (for knight + rb)
+        for mono/yop, can just like pop out, resource cards animate, then go
 
-post-game stats
-
-turn timer
-    need default moves e.g. settlement placing, cards to discard
 
 
 animations
     game start - tile reveal/drop
+        https://codesandbox.io/p/sandbox/uqpn4f
+        https://codesandbox.io/p/sandbox/90qj1i?file=%2Fsrc%2FApp.tsx
     game win/end
-    card distribution on roll
-    longest road
+    longest road/army award
     robber Moves
     dev card playing
     building
-    mouse roll
-    better indication of which hexes produced/rolled (colonist makes them darker)
+    dice roll
+    thought bubble
+        maybe have like an 'idle' animation where it jus kind of 'bubbles' a tiny amount?
 
-sounds
-
-hotkeys
-    spacebar to roll/end turn
-    ideally can play it all via keyboard
-
-proper board generation
+[ ] sounds
+    mute button
+    ticking when close to turn timer end
 
 
+[ ] proper/different board generation - balanced/standard
+
+[ ] change all design svgs from colonist ones
+
+[ ] mobile friendly / responsiveness
+    [ ] resource/action bar and 'end turn' overlap
+    in mobile, dev cards can be not in a container and just like 'fanned' at the bottom. can like flash when they're playable. then a user can press them and they'll expand/fan to fill screen and a user can press
+        could also add swiping/drag!
+    or (more short term) can just compress dev card box/make it stack
+
+
+[ ] post-game stats
+
+[ ] replay
+
+[ ] handle disconnect/quitting/resigning
+    need like a new UI component/state thing that are like authoritative messages from server. like a banner at the top
+
+
+
+[ ] dialog box to choose which player to steal from if > 2
+
+
+=== 'big refactors' ===
+around animations? is it fine for them to live in the UI? like is our structure correct/good? how would/does this combine with like sounds, achievements?
+    how would/does this work with a setting that disables animation(s)? or different themes?
+
+settings/customizability/custom themes
+
+sound engine
+
+UI/frontend testing
+
+we also want like, backend testing? e.g. user re-connecting to/rejoining game. handling disconnect/server desync properly.
 
 ==potential bugs==
-getting 3 resource cards at the start when only placing on 2...
-    card animation when user places settlement on only two tiles throws error in initial phase
-    
-weird legacy bounce animation when placing roads doesn't stop/makes it difficult to place multiple in one turn 
+
+weird legacy bounce animation in player action container when placing roads doesn't stop/makes it difficult to place multiple in one turn 
+
+what if there's no valid robber targets? (e.g. small board, friendly robber)
 
 ==minor==
+better UI stuff. timer, status box.
+    https://www.npmjs.com/package/react-countdown-circle-timer
 improve the trade/discard modal/dialog/popup design
 easy build roads (by just clicking on available edge)
 settlement still shows when hovering to place city. looks a bit janky. settle/city placement in general could be better
+road spacing looks janky
+minor animation/transition for the width of the opponent card box. there's a css property for this right? but yeah when it 'grows' it just jumps rn (e.g. when going from 3 cards to 4)
 
+for dice roll/resource provision animation, do we do something if it's a number no-one's on? atm nothing happens. 
+    CU does nothing
+
+[ ] bank resource display
+    - maybe we don't need?
+
+remove trade button for 1v1? (how to make it obvious you can press resources to maritime trade? tiny little indicator next to icon?)
+
+if user idle, kick them/end game.
+
+hotkeys? currently have spacebar
+
+[design] should VPs always be 'unplayable' e.g. darker/grayed?
+
+animate card loss e.g. '-1' float thing in red when trading - https://www.youtube.com/watch?v=lMToUv8xngw (9:48)
+ image.png
+
+double click to zoom in, double click again to zoom out to the same/previous zoom level.
+
+
+what about the (very rare)? bug where a user has resources and roads left in the bank, but _can't_ place roads as there's no possible location?
+    need a test for this, how it connects to road builder dev card
+
+check that like randomness setup is done correctly. like generating dev card deck in setup etc.
+
+resource/dev card box horizontal spacing issue on smaller screens.
+    handle stuff like compaction, stacking etc.
+
+**ADD DRAGGING TO PLACE/PLAY!**
+    e.g. can drag road/settlement icon. can drag dev card onto the board!
+
+code refactor, make sure components split etc. (e.g. avatar and resource card box are in the same component)
+
+better animations/hints around what to do next (e.g. ending turn etc)
+
+
+handle not all ready-up in >3player games or whatever. like if game starts with 4 players, but 1 drops out right at the start, do we just remove them and continue? ask the user(s)? just abort game? replace with CPU?
 
 ==long term==
 profiles, game history etc
 
 two player, see other person's mouse live
 achievements
+play dev card at any time 
 
 settings
     'pro mode' / no animations 
+        if we disable animations, need to handle like server/turn timing correctly. e.g. we 'wait' like 2s while the dice is rolling before a turn starts.
+    checkbox for fanned/stacked dev cards or not
+    'card' display or just numerical resources.
+    drag mode/click mode
+    auto-roll if no devs
+    confirm playing dev cards y/n
+    
+
+tutorial/trainer
+    like showing features. e.g. at one point tell a user they can drag to place settlements etc.
 
 themes
     different tile designs
+    liquid glass settlements: https://kube.io/blog/liquid-glass-css-svg/
 
+advanced options, e.g. 'giving' non blocks etc.
+
+COMPREHENSIVE TEST SUITE
+    UI stuff, making sure it looks visually normal (e.g. road appears where it should, trade UI shows correct things)
+        action circles don't show up out of turn (e.g. robber showed action circles for player 1 when player 0 rolled)
+    game logic stuff. e.g. no discarding out of turn, can't discard cards you don't have, etc etc.
 
 
 ===questions===
@@ -76,3 +160,106 @@ trade button disabled if can't trade. is this ok? is this good UX for 1v1? or sh
 
 ==features etc==
 custom rules. e.g. custom friendly robber. can't be robbed/blocked on 2VP, but also like 5 and 7 VP?
+
+
+==design==
+
+how to signify too many cards?
+     I think the most elegant and subtle way to handle this is to use contextual coloring on the container itself, rather than adding new icons or animations that might clutter
+    the UI.
+
+   Here are a few specific approaches:
+
+   1. The "Danger" Ring (Recommended): Change the border (ring) of the resource dock from standard slate/white to a soft red or orange when over the limit. It frames the
+      cards with a "warning" state without shouting.
+   2. Text Color: Change the resource count numbers from white to red/orange. This is very direct but might reduce readability against the background.
+      3. Background Tint: Slightly tint the background of the card dock red.
+
+    ---
+    Do we want to also add like an icon/tooltip/hover explaining this to the user? like they move their mouse over it and it says 'you are over the discard limit!'
+
+
+dev card box/spacing.
+    we could have a 'preview' box which shows a few, and then expands when hovered/clicked:
+        https://codesandbox.io/p/sandbox/dqxvqu?file=%2Fsrc%2FApp.tsx
+    would also have to probably 'compress' the resources box
+
+
+could put/move the dice pre/post roll next to whoever's turn it is? as a good/better indicator? like dice move/animate towards a player on endTurn, then they click roll, they roll into the middle for all users to see, then like return back to the person whose turn it is as slightly grayed out (so can still see what number was rolled)
+
+can we make the emoji/avatar 'bounce'/double bounce every 5 seconds or so also? or maybe just bounce at the start o the turn
+	-maybe not needed if we have the dice roll/movement animation
+
+--
+change design of card info box. cards below avatar like in catan universe?
+    maybe we get rid of dev card/resource card count in avatar box. can display these as numbers above the boxes themselves.
+    for opponent, can display a stack of cards with a number, same for devs
+
+victory points/dev card - should/do they 'stack', so they overlap if there are multiple? or just have them side-by-side (like colonist). maybe have this as a player option?
+
+
+
+
+=== big===
+like if you were making this some kind of library/api. your dev card container would receive dev cards
+each dev card would be individual with like a 'playable' boolean, right?
+(this is inspired from thinking through/talking about the knight dev card bug in our UI - where buying a knight means you can't play any knight on the turn)
+
+and so like rendering a dev card, we'd just care about like type. like 
+{
+    type: "knight"
+    isPlayable: false
+}
+
+otherwise the UI has to have logic around how to display it (whether to be enabled or not)
+
+do we actually have like a game core, then something that converts this game core to derived views? and then each UI layer converts the derived views to actual UI.
+
+this would be easier to test, no? game core, derived core, UI. all separated.
+
+```
+• I’ve read the superpowers:systematic-debugging skill and I’m using it to confirm the root cause before proposing a fix. I’ve read the superpowers:brainstorming skill and I’m using it to
+  explore options and trade‑offs before we implement.
+
+  Root cause (evidence from code): the UI treats playability as a per‑type boolean (playableByType), so when any knight is playable, all knights render playable. That’s why the new copy
+  can’t be shown as disabled—even though the core rules are now correct.
+
+  Here are a few ways to fix the UI so it reflects the game rules and survives refreshes:
+
+  Option A (recommended, minimal):
+  Compute playable count per type in PlayerActionContainer using G.core.playerStateById[player.id].devCards and devCardsBoughtThisTurn, then render only the “old” copies as clickable in
+  DevCardDisplay. This stays UI‑only but derives from core state, so refresh works and it stays aligned with rules. Very small diff.
+
+  Option B (shared helper in game‑core):
+  Add a helper like getPlayableDevCardCounts(state, playerId) in game‑core and use it in the UI. Slightly more change but centralizes logic for reuse.
+
+  Option C (full fidelity):
+  Track dev cards as instances with IDs + purchase turn in core state. UI renders exact instance age. Most accurate, but significantly more invasive.
+
+  Recommendation: Option A—it fixes the UX, survives refresh (because devCardsBoughtThisTurn is part of core state), and keeps scope small.
+
+  Do you want me to proceed with Option A?
+
+
+› okay. we have a concept of keeping our UI as thin as possible. let's say i wanted to code another UI for this game, like a 3d one. if i was making a dev card component box, e.g. <DevCard
+  devs={playerDevCardArray} />, i'd kind of expect each object in playerDevCardArray to like, say if it's playable or not? or does that not make sense because it can change so regularly?
+  like a dev card being playable is/might not be an actual property of the dev card itself? (e.g. when one dev card is played in a turn, all dev cards become unplayable for the rest of
+  that turn) i'm just trying to think of the cleanest/proper solution for this.. i don't know, does this confused ramble help at all? let's keep brainstorming. i'm not against any of your
+  suggetiosn - you're the expert - just trying to cohere my thoughts
+
+
+• Totally makes sense. You’re right to separate “card identity” from “permission to play.” Playability isn’t an intrinsic property of a dev card — it’s a derived, turn‑scoped permission
+  that depends on game state (turn phase, devs played this turn, devs bought this turn, etc.). So in a “thin UI” model, the cleanest approach is usually to have core produce a derived view
+  (e.g., devCardsView: [{ type, playable }]), and the UI just renders it.
+
+  One question to pick direction:
+  Do you want the UI to receive a derived devCardsView from core (e.g., via a playerView/helper), or keep it computing playability locally from core state?
+  ```
+
+
+  ===
+  extract game layout/UI
+
+  so like if i make it 3D or whatever i should just be able to change like a few basic things.
+  the board component
+  the tiles/resources etc. 
