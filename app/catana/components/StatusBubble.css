@@ -139,37 +139,80 @@
   }
 }
 
+/* Continuous wobble animations - subtle morphing */
+@keyframes blob-wobble-1 {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06) translateY(-1px); }
+}
+
+@keyframes blob-wobble-2 {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.94) translateX(-1px); }
+}
+
+@keyframes blob-wobble-3 {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05) translateX(1px); }
+}
+
+@keyframes blob-wobble-4 {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.95) translateY(1px); }
+}
+
+@keyframes blob-wobble-5 {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08) translateY(-0.5px); }
+}
+
+@keyframes blob-wobble-6 {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.92) translateX(0.5px) translateY(0.5px); }
+}
+
 /* === VISIBLE STATE === */
 
-/* Blobs pop in - center first, then outward */
+/* Blobs pop in - center first, then outward - then continuous wobble */
 .status-bubble--visible .status-bubble__blob--1 {
-  animation: blob-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: 0ms;
+  animation:
+    blob-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    blob-wobble-1 2.4s ease-in-out infinite;
+  animation-delay: 0ms, 180ms;
 }
 
 .status-bubble--visible .status-bubble__blob--2 {
-  animation: blob-pop 170ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: 20ms;
+  animation:
+    blob-pop 170ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    blob-wobble-2 2.7s ease-in-out infinite;
+  animation-delay: 20ms, 190ms;
 }
 
 .status-bubble--visible .status-bubble__blob--3 {
-  animation: blob-pop 170ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: 30ms;
+  animation:
+    blob-pop 170ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    blob-wobble-3 2.2s ease-in-out infinite;
+  animation-delay: 30ms, 200ms;
 }
 
 .status-bubble--visible .status-bubble__blob--5 {
-  animation: blob-pop 160ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: 50ms;
+  animation:
+    blob-pop 160ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    blob-wobble-5 2.9s ease-in-out infinite;
+  animation-delay: 50ms, 210ms;
 }
 
 .status-bubble--visible .status-bubble__blob--4 {
-  animation: blob-pop 160ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: 60ms;
+  animation:
+    blob-pop 160ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    blob-wobble-4 2.5s ease-in-out infinite;
+  animation-delay: 60ms, 220ms;
 }
 
 .status-bubble--visible .status-bubble__blob--6 {
-  animation: blob-pop 150ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: 70ms;
+  animation:
+    blob-pop 150ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    blob-wobble-6 3.1s ease-in-out infinite;
+  animation-delay: 70ms, 220ms;
 }
 
 /* Icon appears after cloud forms */
