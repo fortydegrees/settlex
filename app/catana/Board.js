@@ -8,7 +8,8 @@ import { Edge } from "./Edge";
 import { Port } from "./Port";
 import { Card } from "./Card";
 import "./Board.css";
-import { SQRT3, tilePixelVector } from "./utils/coordinates";
+import { tilePixelVector } from "./utils/coordinates";
+import { getBoardLayout } from "./utils/boardLayout";
 import useWindowSize from "./utils/useWindowSize";
 import { useLatestPropsOnEffect, useEffectListener } from "bgio-effects/react";
 import { useTransition, animated } from "@react-spring/web";
@@ -32,23 +33,6 @@ const getValidRobberTiles = (G) => {
 
 let id = 0; //for key id of card aniimations
 
-function computeDefaultSize(divWidth, divHeight) {
-  const numLevels = 6; // 3 rings + 1/2 a tile for the outer water ring
-  // divHeight = numLevels * (3h/4) + (h/4), implies:
-  const maxSizeThatRespectsHeight = (4 * divHeight) / (3 * numLevels + 1) / 2;
-  const correspondingWidth = SQRT3 * maxSizeThatRespectsHeight;
-  let size;
-  if (numLevels * correspondingWidth < divWidth) {
-    // thus complete board would fit if we pick size based on height (height is limiting factor)
-    size = maxSizeThatRespectsHeight;
-  } else {
-    // we'll have to decide size based on width.
-    const maxSizeThatRespectsWidth = divWidth / numLevels / SQRT3;
-    size = maxSizeThatRespectsWidth;
-  }
-  return size;
-}
-
 //this is our board that simply renders the gameState
 /*
 render all tiles
@@ -71,6 +55,7 @@ export function CatanBoard({
   G,
   moves,
   isActive,
+  boardRef,
 }) {
 
   //surely gotta be state...
@@ -134,11 +119,10 @@ export function CatanBoard({
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
   const { width, height } = useWindowSize();
   // TODO: Keep in sync with CSS
-  const containerHeight = height - 144 - 38 - 40;
-  //const containerWidth = isMobile ? width - 280 : width;
-  const containerWidth = width;
-  const center = [containerWidth / 2, containerHeight / 2];
-  const size = computeDefaultSize(containerWidth, containerHeight);
+  const { containerWidth, containerHeight, center, size } = getBoardLayout({
+    width,
+    height,
+  });
   const { nodeRenderById, edgeRenderById } = useMemo(
     () => buildRenderMaps(G.tiles),
     [G.tiles]
@@ -533,8 +517,18 @@ export function CatanBoard({
   //const buildable_subgraph = STATIC_GRAPH.subgraph(landNodes)
 
   console.log("board render ");
+  const setBoardRefs = (node) => {
+    divRef.current = node;
+    if (!boardRef) return;
+    if (typeof boardRef === "function") {
+      boardRef(node);
+    } else {
+      boardRef.current = node;
+    }
+  };
+
   return (
-    <div ref={divRef}>
+    <div ref={setBoardRefs}>
       {" "}
       {portalNode && ( // Only render CardAnimContainer if portalNode exists
         <CardAnimContainer

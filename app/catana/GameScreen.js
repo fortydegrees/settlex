@@ -4,7 +4,7 @@ import {
   TransformWrapper,
   TransformComponent,
 } from "../../react-zoom-pan-pinch";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
@@ -29,6 +29,7 @@ export function GameScreen(bgioProps) {
   const [timerSeeded, setTimerSeeded] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
+  const boardRef = useRef(null);
   const moves = bgioProps.moves;
 
   //get the active playerID of who's watching
@@ -300,7 +301,12 @@ export function GameScreen(bgioProps) {
         minScale={0.3}
       >
         <TransformComponent>
-          <CatanBoard playerAction={playerAction} setPlayerAction={setPlayerAction} {...bgioProps} />
+          <CatanBoard
+            boardRef={boardRef}
+            playerAction={playerAction}
+            setPlayerAction={setPlayerAction}
+            {...bgioProps}
+          />
         </TransformComponent>
       </TransformWrapper>
 
