@@ -16,6 +16,7 @@ import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { DebugPanel } from "./components/DebugPanel";
+import { GameEffects } from "./effects/GameEffects";
 
 export function GameScreen(bgioProps) {
   //playerAction is things that appear to the user (not spectator)
@@ -309,6 +310,8 @@ export function GameScreen(bgioProps) {
           />
         </TransformComponent>
       </TransformWrapper>
+
+      <GameEffects boardRef={boardRef} />
 
       {/* our cards and action dock 
 TODO: accurately colour it
