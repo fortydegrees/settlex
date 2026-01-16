@@ -23,6 +23,8 @@
     "boardgame.io": "^0.50.2",
     "esm": "^3.2.25",
     "framer-motion": "^10.16.4",
+    "gsap": "^3.14.2",
+    "howler": "^2.2.4",
     "jsnetworkx": "^0.3.4",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
