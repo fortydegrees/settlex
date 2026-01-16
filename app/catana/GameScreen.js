@@ -4,7 +4,7 @@ import {
   TransformWrapper,
   TransformComponent,
 } from "../../react-zoom-pan-pinch";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
@@ -17,6 +17,9 @@ import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { DebugPanel } from "./components/DebugPanel";
 import { GameEffects } from "./effects/GameEffects";
+import { createResourceDistributionRunner } from "./effects/resourceDistribution";
+import useWindowSize from "./utils/useWindowSize";
+import { getBoardLayout } from "./utils/boardLayout";
 
 export function GameScreen(bgioProps) {
   //playerAction is things that appear to the user (not spectator)
@@ -31,6 +34,7 @@ export function GameScreen(bgioProps) {
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
   const boardRef = useRef(null);
+  const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
 
   //get the active playerID of who's watching
@@ -276,6 +280,25 @@ export function GameScreen(bgioProps) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [canRoll, canEnd, hasModalOpen, moves]);
+
+  const effects = useMemo(() => {
+    return {
+      resourceDistribution: ({ layerRef, boardRef, emitCue }) => {
+        const runner = createResourceDistributionRunner({
+          getLayerEl: () => layerRef.current,
+          getLayout: () => {
+            if (!width || !height) return null;
+            return getBoardLayout({ width, height });
+          },
+          getBoardRect: () =>
+            boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
+          emitCue
+        });
+
+        return (event) => runner(event?.payload);
+      }
+    };
+  }, [width, height]);
   // console.log('p', player)
   // console.log('opps', opponents)
   return (
@@ -311,7 +334,7 @@ export function GameScreen(bgioProps) {
         </TransformComponent>
       </TransformWrapper>
 
-      <GameEffects boardRef={boardRef} />
+      <GameEffects boardRef={boardRef} effects={effects} />
 
       {/* our cards and action dock 
 TODO: accurately colour it
