@@ -67,3 +67,4 @@
 - `autoMoveRobber` filters candidates with `canPlaceRobber` to avoid illegal-friendly-robber tiles.
 - Server-side timer dispatch now builds auto-move actions with stored player credentials (from match metadata) so authenticated matches accept auto-moves.
 - TimerManager detects `robberDiscard` via `G.core.turn.phase`/`pendingDiscards` (not just current player) and auto-dispatches `autoDiscard` for all pending players on timeout.
+- Effects/audio architecture design doc (GSAP + cue bus) lives at `docs/plans/2026-01-16-effects-audio-design.md`.

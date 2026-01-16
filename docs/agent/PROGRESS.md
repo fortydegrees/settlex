@@ -90,3 +90,6 @@
 - Timer UI hides during preGame and uses floor seconds to avoid early auto-roll visuals.
 - Auto-move dispatch now includes player credentials from match metadata so server-side timers can act on behalf of authenticated players.
 - TimerManager now detects robberDiscard via core turn state and auto-dispatches discards for every pending player.
+
+## Status (2026-01-16)
+- Logged a GSAP-based effects + audio system design with a cue-driven event bus and centralized AudioManager.
