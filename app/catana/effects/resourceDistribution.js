@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 import { RESOURCE_ICON_SVGS } from "../game/types";
 import { tilePixelVector } from "../utils/coordinates";
+import { isDocumentHidden } from "../utils/visibility";
 
 const CARD_CLASS = "rounded border-2 border-white p-2 drop-shadow-lg";
 
@@ -48,6 +49,7 @@ export function createResourceDistributionRunner({
 } = {}) {
   return function run(payload) {
     if (typeof document === "undefined") return;
+    if (isDocumentHidden()) return;
 
     const resolvedLayer = getLayerEl ? getLayerEl() : layerEl;
     if (!resolvedLayer || !getLayout || !getBoardRect) return;
