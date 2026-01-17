@@ -5,10 +5,11 @@ import { createAudioManager } from "./AudioManager";
 import { registerEffects } from "./registry";
 import { EffectLayer } from "./EffectLayer";
 
-export function GameEffects({ effects = {}, boardRef }) {
+export function GameEffects({ effects = {}, boardRef, currentPlayerId, playerID, phase }) {
   const bus = useMemo(() => createEffectBus(), []);
   const layerRef = useRef(null);
   const audio = useMemo(() => createAudioManager({ bus }), [bus]);
+  const lastTurnRef = useRef({ currentPlayerId: null, initialized: false });
 
   const context = useMemo(
     () => ({
@@ -46,6 +47,31 @@ export function GameEffects({ effects = {}, boardRef }) {
     },
     [bus]
   );
+
+  useEffectListener(
+    "roll",
+    () => {
+      bus.emit({ type: "cue", payload: { name: "dice:roll" } });
+    },
+    [bus]
+  );
+
+  useEffect(() => {
+    if (!currentPlayerId || !playerID) return;
+    if (!lastTurnRef.current.initialized) {
+      lastTurnRef.current = { currentPlayerId, initialized: true };
+      return;
+    }
+    if (phase === "preGame") {
+      lastTurnRef.current = { currentPlayerId, initialized: true };
+      return;
+    }
+    if (currentPlayerId === lastTurnRef.current.currentPlayerId) return;
+    lastTurnRef.current = { currentPlayerId, initialized: true };
+    if (currentPlayerId === playerID) {
+      bus.emit({ type: "cue", payload: { name: "turn:start" } });
+    }
+  }, [bus, currentPlayerId, playerID, phase]);
 
   return <EffectLayer ref={layerRef} />;
 }
