@@ -120,6 +120,7 @@ describe("Detailed placeSettlement test", () => {
         
         const mockLandTile = {
             type: TileTypes.LAND,
+            coordinate: [0, 0, 0],
             tile: {
               id: 1,
               resource: ResourceType.WHEAT,
@@ -129,6 +130,7 @@ describe("Detailed placeSettlement test", () => {
       
         const mockPortTile = {
             type: TileTypes.PORT, // CRITICAL: This IS NOT TileTypes.LAND
+            coordinate: [0, 1, -1],
             tile: {
               id: 2,
               resource: ResourceType.BRICK, 
@@ -139,7 +141,8 @@ describe("Detailed placeSettlement test", () => {
         const G = {
             core: {
                 phase: "placement",
-                playerStateById: { "0": { resources: [] } },
+                playerStateById: { "0": { resources: [], settlementsRemaining: 3 } },
+                ruleset: { pieceLimits: { settlements: 5 } },
                 bank: { resources: ["Wheat", "Brick"] },
                 roadsByEdgeId: {} 
             },
@@ -174,11 +177,86 @@ describe("Detailed placeSettlement test", () => {
         
         // We expect ONLY the Land tile to be in the distribution list
         expect(callArgs).toHaveLength(1);
-        expect(callArgs[0].tile.tile.id).toBe(1); // Wheat tile
-        expect(callArgs[0].tile.tile.resource).toBe(ResourceType.WHEAT);
+        expect(callArgs[0].tileId).toBe(1); // Wheat tile
+        expect(callArgs[0].resource).toBe(ResourceType.WHEAT);
         
         // Ensure Port tile (id 2) was NOT included
-        const tileIds = callArgs.map(arg => arg.tile.tile.id);
+        const tileIds = callArgs.map(arg => arg.tileId);
         expect(tileIds).not.toContain(2);
     });
+});
+
+describe("placement resource distribution gating", () => {
+  const createContext = ({ settlementsRemaining }) => {
+    const playerID = "1";
+    const nodeId = 10;
+    const landTile = {
+      type: TileTypes.LAND,
+      coordinate: [0, 0, 0],
+      tile: {
+        id: 7,
+        resource: ResourceType.WOOD,
+        nodes: { NORTH: nodeId }
+      }
+    };
+
+    const G = {
+      core: {
+        phase: "placement",
+        playerStateById: {
+          [playerID]: {
+            resources: [],
+            settlementsRemaining
+          }
+        },
+        ruleset: {
+          pieceLimits: { settlements: 5 },
+          buildCosts: { settlement: {} },
+          bank: { finite: false }
+        },
+        bank: { resources: [ResourceType.WOOD] },
+        roadsByEdgeId: {}
+      },
+      tiles: [landTile],
+      coreTopology: {
+        adjacencies: {},
+        nodes: { "10": { id: 10, edges: [] } },
+        nodeEdges: { "10": [] }
+      },
+      valids: { nodes: [nodeId] }
+    };
+
+    const ctx = {
+      phase: "placement",
+      turn: 99,
+      numPlayers: 2,
+      currentPlayer: playerID
+    };
+
+    const events = { setStage: vi.fn(), endTurn: vi.fn() };
+    const effects = { distributeCardsFromTile: vi.fn() };
+    const log = { setMetadata: vi.fn() };
+
+    return { context: { G, playerID, ctx, events, effects, log }, nodeId, effects };
+  };
+
+  it("does not distribute resources on first placement even if ctx.turn is high", () => {
+    const { context, nodeId, effects } = createContext({
+      settlementsRemaining: 4
+    });
+
+    placeSettlement.move(context, nodeId);
+
+    expect(effects.distributeCardsFromTile).not.toHaveBeenCalled();
+  });
+
+  it("distributes resources on second placement based on remaining settlements", () => {
+    const { context, nodeId, effects } = createContext({
+      settlementsRemaining: 3
+    });
+
+    placeSettlement.move(context, nodeId);
+
+    expect(effects.distributeCardsFromTile).toHaveBeenCalledTimes(1);
+  });
 });
