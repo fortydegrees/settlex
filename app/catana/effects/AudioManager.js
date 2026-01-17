@@ -1,5 +1,6 @@
 import { Howl } from "howler";
 import { DEFAULT_THEME } from "./soundThemes";
+import { isDocumentHidden } from "../utils/visibility";
 
 export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} } = {}) {
   const howls = new Map();
@@ -18,6 +19,9 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
   const play = (cueName) => {
     if (settings.muted) return;
     if (!unlocked) return;
+    const entry = theme[cueName];
+    if (!entry) return;
+    if (isDocumentHidden() && !entry.allowWhenHidden) return;
     const howl = getHowl(cueName);
     if (!howl) return;
     lastPlay = cueName;
