@@ -14,6 +14,7 @@ import { buildableNodes, canPlaceRobber } from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
+import { isDocumentHidden } from "./utils/visibility";
 
 const getValidRobberTiles = (G) => {
   // Use core function for validation
@@ -163,6 +164,9 @@ export function CatanBoard({
   useEffectListener(
     "distributeCardsFromTile",
     (payload) => {
+      if (isDocumentHidden()) {
+        return;
+      }
       // payload can be: { cards, blockedTileIds } or just cards array (legacy)
       const cards = Array.isArray(payload) ? payload : payload.cards || [];
       const blockedTileIds = Array.isArray(payload) ? [] : payload.blockedTileIds || [];
