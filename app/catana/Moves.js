@@ -133,8 +133,16 @@ export const placeSettlement = {
       console.log(`Invalid settlement placement at node ${node}`);
       return;
     }
+    const playerState = G.core?.playerStateById?.[playerID];
+    const startingSettlements = G.core?.ruleset?.pieceLimits?.settlements;
+    const shouldDistribute =
+      isPlacement &&
+      playerState &&
+      typeof startingSettlements === "number" &&
+      playerState.settlementsRemaining === startingSettlements - 2;
+
     //distribute initial resource cards IF placement phase && second settle:
-    if (isPlacement && ctx.turn > ctx.numPlayers) {
+    if (shouldDistribute || (isPlacement && !playerState && ctx.turn > ctx.numPlayers)) {
       //get all tiles connected to node
       const resourceTiles = getAllTilesConnectedToNode(G.tiles, node);
 
