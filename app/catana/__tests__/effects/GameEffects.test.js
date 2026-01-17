@@ -11,5 +11,8 @@ describe("GameEffects", () => {
     expect(source).toContain("useEffectListener");
     expect(source).toContain("distributeCardsFromTile");
     expect(source).toContain("resource:distribution");
+    expect(source).toContain("roll");
+    expect(source).toContain("dice:roll");
+    expect(source).toContain("turn:start");
   });
 });

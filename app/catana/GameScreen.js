@@ -334,7 +334,13 @@ export function GameScreen(bgioProps) {
         </TransformComponent>
       </TransformWrapper>
 
-      <GameEffects boardRef={boardRef} effects={effects} />
+      <GameEffects
+        boardRef={boardRef}
+        effects={effects}
+        currentPlayerId={bgioProps.ctx?.currentPlayer}
+        playerID={playerID}
+        phase={bgioProps.ctx?.phase}
+      />
 
       {/* our cards and action dock 
 TODO: accurately colour it
