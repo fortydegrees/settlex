@@ -100,3 +100,6 @@
 
 ## Status (2026-01-16)
 - Fixed initial placement resource distribution gating to use per-player remaining settlements (no extra resources on first placement).
+
+## Status (2026-01-16)
+- Moved initial placement resource grants into game-core with new tests, and wired Moves to forward core distributions only.
