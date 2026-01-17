@@ -62,29 +62,6 @@ export const DEBUG_takeCardsFromBank = {
 };
 
 
-//used for giving out resources on 2nd placement
-function getAllTilesConnectedToNode(tiles, nodeId) {
-  // Initialize an array to store the matching tiles
-  const matchingTiles = [];
-
-  // Iterate through the tiles array
-  for (const tile of tiles) {
-    // Iterate through the keys of the nodes object in the tile
-    for (const direction in tile.tile.nodes) {
-      // Check if the nodeId matches the value in the nodes object
-      //TODO: make nodeID either a string or an integer..
-      if (tile.tile.nodes[direction] === parseInt(nodeId)) {
-        // If it matches, add the tile to the matchingTiles array
-        matchingTiles.push(tile);
-        // Break out of the loop for this tile since we found a match
-        break;
-      }
-    }
-  }
-
-  return matchingTiles;
-}
-
 //need to allow arrays for both arguments
 export const takeCardsFromBank = (context, cards, playerID) => {
   const { G } = context;
@@ -133,40 +110,18 @@ export const placeSettlement = {
       console.log(`Invalid settlement placement at node ${node}`);
       return;
     }
-    const playerState = G.core?.playerStateById?.[playerID];
-    const startingSettlements = G.core?.ruleset?.pieceLimits?.settlements;
-    const shouldDistribute =
-      isPlacement &&
-      playerState &&
-      typeof startingSettlements === "number" &&
-      playerState.settlementsRemaining === startingSettlements - 2;
-
-    //distribute initial resource cards IF placement phase && second settle:
-    if (shouldDistribute || (isPlacement && !playerState && ctx.turn > ctx.numPlayers)) {
-      //get all tiles connected to node
-      const resourceTiles = getAllTilesConnectedToNode(G.tiles, node);
-
-      //get the resource of the tile
-      const resources = resourceTiles
-      .filter(t => t.type === TileTypes.LAND && t.tile.resource !== ResourceType.DESERT)
-      .map(t => t.tile.resource);
-
-      //we want to provide [{tileId, coordinate, playerID, resource}]
-      const cardAnims = [];
-      for (const tile of resourceTiles) {
-        //check that it's a resource tile AND not blocked
-        if (tile.type === TileTypes.LAND && tile.tile.resource !== ResourceType.DESERT){
-        cardAnims.push({
-          tileId: tile.tile.id,
-          coordinate: [...tile.coordinate],
-          playerID,
-          resource: tile.tile.resource,
-        });
-        }
-      }
-
+    const distributions = result.distributions ?? [];
+    if (distributions.length > 0) {
+      const cardAnims = distributions.map((d) => {
+        const tile = G.tiles.find((t) => t.tile.id === d.tileId);
+        return {
+          tileId: d.tileId,
+          coordinate: tile?.coordinate ? [...tile.coordinate] : null,
+          playerID: d.playerId,
+          resource: d.resource
+        };
+      });
       effects.distributeCardsFromTile(cardAnims);
-      takeCardsFromBank(context, resources, playerID);
     }
 
     if (isPlacement) {
