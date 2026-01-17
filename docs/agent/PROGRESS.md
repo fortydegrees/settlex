@@ -97,3 +97,6 @@
 ## Status (2026-01-16)
 - Added an Effects layer (EffectBus, GameEffects, EffectLayer) with GSAP-based resource distribution and cue-driven audio wiring.
 - Centralized board layout helpers and passed board refs for effect positioning.
+
+## Status (2026-01-16)
+- Fixed initial placement resource distribution gating to use per-player remaining settlements (no extra resources on first placement).

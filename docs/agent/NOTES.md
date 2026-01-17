@@ -69,3 +69,4 @@
 - TimerManager detects `robberDiscard` via `G.core.turn.phase`/`pendingDiscards` (not just current player) and auto-dispatches `autoDiscard` for all pending players on timeout.
 - Effects/audio architecture design doc (GSAP + cue bus) lives at `docs/plans/2026-01-16-effects-audio-design.md`.
 - Effects system entry point: `app/catana/effects/GameEffects.js`; GSAP runner in `app/catana/effects/resourceDistribution.js` and audio mapping in `app/catana/effects/AudioManager.js` with themes in `app/catana/effects/soundThemes.js`.
+- Initial placement resource distribution now gates off `settlementsRemaining` vs ruleset piece limits in `app/catana/Moves.js` (not `ctx.turn`).
