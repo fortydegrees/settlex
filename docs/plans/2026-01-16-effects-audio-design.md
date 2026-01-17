@@ -50,6 +50,7 @@ Animations remain client-only; server state is still authoritative. The effect l
   - `muted` or `volume` (AudioManager).
   - `reducedMotion` (skip non-essential runners).
   - `turbo` (duration scale < 1 or skip intermediate phases).
+  - `allowWhenHidden` per cue (e.g., `dice:roll`, `turn:start`) to permit notification sounds even when the tab is hidden.
 
 ## Error Handling
 - Missing DOM targets or refs should not crash effects; fall back to safe defaults or skip the effect.

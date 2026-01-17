@@ -103,3 +103,6 @@
 
 ## Status (2026-01-16)
 - Moved initial placement resource grants into game-core with new tests, and wired Moves to forward core distributions only.
+
+## Status (2026-01-17)
+- Added per-cue hidden-tab audio policy and wired turn-start + dice-roll cues to the effects bus.
