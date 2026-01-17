@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createEffectBus } from "../../effects/EffectBus";
 import { createAudioManager } from "../../effects/AudioManager";
 
@@ -7,6 +7,12 @@ vi.mock("howler", () => ({
 }));
 
 describe("AudioManager", () => {
+  const originalDocument = global.document;
+
+  afterEach(() => {
+    global.document = originalDocument;
+  });
+
   it("plays sound for cue mapping", () => {
     const bus = createEffectBus();
     const audio = createAudioManager({
@@ -19,5 +25,35 @@ describe("AudioManager", () => {
     audio.unlock();
     bus.emit({ type: "cue", payload: { name: "resource:travel:start" } });
     expect(audio._debugLastPlay()).toBe("resource:travel:start");
+  });
+
+  it("skips cues when document is hidden unless allowed", () => {
+    global.document = { hidden: true };
+    const bus = createEffectBus();
+    const audio = createAudioManager({
+      bus,
+      theme: {
+        "resource:travel:start": { src: "/sounds/woosh-card.mp3", volume: 0.6 }
+      },
+      settings: { muted: false }
+    });
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "resource:travel:start" } });
+    expect(audio._debugLastPlay()).toBe(null);
+  });
+
+  it("plays cues that are allowed when document is hidden", () => {
+    global.document = { hidden: true };
+    const bus = createEffectBus();
+    const audio = createAudioManager({
+      bus,
+      theme: {
+        "turn:start": { src: "/sounds/shimmer.mp3", volume: 0.5, allowWhenHidden: true }
+      },
+      settings: { muted: false }
+    });
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "turn:start" } });
+    expect(audio._debugLastPlay()).toBe("turn:start");
   });
 });
