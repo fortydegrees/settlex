@@ -106,3 +106,6 @@
 
 ## Status (2026-01-17)
 - Added per-cue hidden-tab audio policy and wired turn-start + dice-roll cues to the effects bus.
+
+## Status (2026-01-18)
+- Added pop/overshoot + jitter to resource distribution card animations for a more "alive" feel.

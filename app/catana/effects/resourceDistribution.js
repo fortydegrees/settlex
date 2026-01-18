@@ -21,6 +21,22 @@ const RESOURCE_IMAGE_CLASS = {
   Ore: "mt-4"
 };
 
+const POP_SCALES = {
+  from: 0.2,
+  overshoot: 1.15,
+  settle: 1
+};
+
+const POP_DURATIONS = {
+  pop: 0.18,
+  settle: 0.12
+};
+
+const TRAVEL_DURATION = 0.6;
+const JITTER_X = 4;
+const JITTER_Y = 6;
+const ROTATE_DEG = 3;
+
 function createCardElement(resource) {
   const el = document.createElement("div");
   el.className = CARD_CLASS;
@@ -38,6 +54,45 @@ function createCardElement(resource) {
 export function scheduleResourceCues(timeline, emitCue) {
   if (!timeline || !emitCue) return;
   timeline.call(() => emitCue("resource:travel:start"), null, "travel");
+}
+
+export function getCardAnimationConfig({
+  startX,
+  startY,
+  endX,
+  endY,
+  jitterX = 0,
+  jitterY = 0,
+  rotate = 0
+}) {
+  return {
+    from: {
+      x: startX + jitterX,
+      y: startY + jitterY,
+      opacity: 0,
+      scale: POP_SCALES.from,
+      rotation: rotate
+    },
+    pop: {
+      opacity: 1,
+      scale: POP_SCALES.overshoot,
+      rotation: rotate,
+      duration: POP_DURATIONS.pop,
+      ease: "back.out(2)"
+    },
+    settle: {
+      scale: POP_SCALES.settle,
+      rotation: 0,
+      duration: POP_DURATIONS.settle,
+      ease: "power2.out"
+    },
+    travel: {
+      x: endX,
+      y: endY,
+      duration: TRAVEL_DURATION,
+      ease: "power2.out"
+    }
+  };
 }
 
 export function createResourceDistributionRunner({
@@ -86,7 +141,20 @@ export function createResourceDistributionRunner({
       el.style.height = `${cardHeight}px`;
       resolvedLayer.appendChild(el);
 
-      gsap.set(el, { x: startX, y: startY, opacity: 0, scale: 0.7 });
+      const jitterX = (Math.random() * 2 - 1) * JITTER_X;
+      const jitterY = (Math.random() * 2 - 1) * JITTER_Y;
+      const rotate = (Math.random() * 2 - 1) * ROTATE_DEG;
+      const anim = getCardAnimationConfig({
+        startX,
+        startY,
+        endX,
+        endY,
+        jitterX,
+        jitterY,
+        rotate
+      });
+
+      gsap.set(el, anim.from);
 
       const tl = gsap.timeline({
         onComplete: () => {
@@ -94,9 +162,10 @@ export function createResourceDistributionRunner({
         }
       });
 
-      tl.to(el, { opacity: 1, scale: 1, duration: 0.15 })
+      tl.to(el, anim.pop)
+        .to(el, anim.settle)
         .addLabel("travel")
-        .to(el, { x: endX, y: endY, duration: 0.6, ease: "power2.out" }, "travel");
+        .to(el, anim.travel, "travel");
 
       scheduleResourceCues(tl, emitCue);
       tl.delay(1 + index * 0.03);

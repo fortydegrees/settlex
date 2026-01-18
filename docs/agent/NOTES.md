@@ -70,5 +70,6 @@
 - Effects/audio architecture design doc (GSAP + cue bus) lives at `docs/plans/2026-01-16-effects-audio-design.md`.
 - Effects system entry point: `app/catana/effects/GameEffects.js`; GSAP runner in `app/catana/effects/resourceDistribution.js` and audio mapping in `app/catana/effects/AudioManager.js` with themes in `app/catana/effects/soundThemes.js`.
 - Audio cues can opt into hidden-tab playback via `allowWhenHidden` in `app/catana/effects/soundThemes.js` (e.g., `dice:roll`, `turn:start`).
+- Resource distribution cards now use pop/overshoot + jitter/rotation in `app/catana/effects/resourceDistribution.js`.
 - Initial placement resource distribution now gates off `settlementsRemaining` vs ruleset piece limits in `app/catana/Moves.js` (not `ctx.turn`).
 - Initial placement resource distribution now happens in `game-core/src/rules/apply.ts` (returns `distributions` from `applyPlaceSettlement`) with tests in `game-core/src/rules/initialPlacementResources.test.ts`.
