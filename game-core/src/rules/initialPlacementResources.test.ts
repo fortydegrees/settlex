@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { createEmptyState } from "../core/state";
-import { buildTopology } from "../core/topology";
+import { buildTopology, type BoardTile } from "../core/topology";
 import { applyPlaceSettlement } from "./apply";
 import { ResourceType, TileTypes } from "../types";
 
 describe("initial placement resources", () => {
   it("grants resources only on the second placement", () => {
-    const tiles = [
+    const tiles: BoardTile[] = [
       {
         type: TileTypes.LAND,
         coordinate: [0, 0, 0],
@@ -53,7 +53,7 @@ describe("initial placement resources", () => {
   });
 
   it("ignores ports and desert tiles", () => {
-    const tiles = [
+    const tiles: BoardTile[] = [
       {
         type: TileTypes.LAND,
         coordinate: [0, 0, 0],
