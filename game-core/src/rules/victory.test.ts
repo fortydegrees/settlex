@@ -12,8 +12,8 @@ import { applyKnight, buyDevCard } from "./devCards";
 import { ResourceType } from "../types";
 import { BoardTopology, buildTopology } from "../core/topology";
 import { generateBoard } from "../board/generateBoard";
-import { spec } from "../spec";
 import { makeDeterministicRng } from "../testUtils";
+import { resolveBoardConfig } from "../board/boardConfigs";
 
 function makeBoard(edges: Array<[number, number]>): BoardTopology {
   const edgeNodes: Record<string, [number, number]> = {};
@@ -209,7 +209,8 @@ describe("game over", () => {
 
 describe("game over wiring", () => {
   it("sets gameOver after building a city in normal play", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(1));
+    const config = resolveBoardConfig("standard-random");
+    const tiles = generateBoard(config, makeDeterministicRng(1));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0"]);
     state.phase = "normal";
