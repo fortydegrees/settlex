@@ -25,7 +25,7 @@ const add = (a: HexCoordinate, b: HexCoordinate): HexCoordinate => [
 ];
 
 export function buildRing(radius: number, cornerIndex: number): HexCoordinate[] {
-  const startCorner = CORNERS[cornerIndex];
+  const startCorner = CORNERS[0];
   let pos: HexCoordinate = [
     startCorner[0] * radius,
     startCorner[1] * radius,
@@ -33,12 +33,17 @@ export function buildRing(radius: number, cornerIndex: number): HexCoordinate[] 
   ];
   const ring: HexCoordinate[] = [];
   for (let side = 0; side < 6; side++) {
+    const direction = DIRS_CCW[side];
     for (let step = 0; step < radius; step++) {
       ring.push(pos);
-      pos = add(pos, DIRS_CCW[side]);
+      pos = add(pos, direction);
     }
   }
-  return ring;
+  if (cornerIndex === 0) {
+    return ring;
+  }
+  const offset = (cornerIndex * radius) % ring.length;
+  return ring.slice(offset).concat(ring.slice(0, offset));
 }
 
 export function buildSpiralOrder(radius: number, cornerIndex: number): HexCoordinate[] {
