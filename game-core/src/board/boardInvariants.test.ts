@@ -5,6 +5,7 @@ import { ResourceType, TileTypes } from "../types";
 import { resolveBoardConfig } from "./boardConfigs";
 import { resolveBoardSpec } from "./boardSpecs";
 import { buildSpiralOrder } from "./officialSpiral";
+import type { BoardTile } from "../core/topology";
 
 describe("board generation invariants", () => {
   const randomConfig = resolveBoardConfig("standard-random");
@@ -74,14 +75,16 @@ describe("board generation invariants", () => {
       ...baseConfig,
       generation: {
         ...baseConfig.generation,
-        options: { official: { startCorner: "fixed" } }
+        options: { official: { startCorner: "fixed" as const } }
       }
     };
     const resolvedSpec = resolveBoardSpec(config.specId);
     const tiles = generateBoard(config, rng);
 
     const spiral = buildSpiralOrder(resolvedSpec.radius, 0);
-    const byCoord = new Map(tiles.map((t) => [t.coordinate.join(","), t]));
+    const byCoord = new Map<string, BoardTile>(
+      tiles.map((t) => [t.coordinate.join(","), t])
+    );
     const placed: number[] = [];
 
     for (const coord of spiral) {
