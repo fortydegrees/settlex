@@ -23,7 +23,7 @@ import {
   canPlayDevCard,
   playDevCard
 } from "@settlex/game-core";
-import { appendGameLog } from "./utils/gameLog";
+import { appendGameLog } from "./utils/gameLog.js";
 
 const countResources = (resources = []) =>
   resources.reduce((acc, resource) => {
