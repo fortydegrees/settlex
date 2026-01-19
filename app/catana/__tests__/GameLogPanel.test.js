@@ -1,0 +1,39 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const componentPath = path.resolve(
+  __dirname,
+  "..",
+  "components",
+  "GameLogPanel.js"
+);
+
+describe("GameLogPanel", () => {
+  it("renders a log container with interaction opt-in", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("Game Log");
+    expect(contents).toContain("data-allow-interaction");
+    expect(contents).toContain("formatLogEntry");
+  });
+
+  it("uses a custom scroll class", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("game-log-scroll");
+  });
+
+  it("auto-scrolls to the latest entry", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("scrollHeight");
+    expect(contents).toContain("scrollTop");
+  });
+
+  it("re-enables auto-scroll after a delay", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("AUTO_SCROLL_IDLE_MS");
+  });
+});

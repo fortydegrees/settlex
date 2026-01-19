@@ -14,6 +14,7 @@ import { EffectsBoardWrapper } from "bgio-effects/react";
 
 import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
+import { GameLogPanel } from "./components/GameLogPanel";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { DebugPanel } from "./components/DebugPanel";
 import { GameEffects } from "./effects/GameEffects";
@@ -56,6 +57,17 @@ export function GameScreen(bgioProps) {
       : devPlay?.type === "monopoly"
       ? "dev-monopoly"
       : null;
+  const nameMap = useMemo(() => {
+    const map = {};
+    const matchData = bgioProps.matchData;
+    if (Array.isArray(matchData)) {
+      matchData.forEach((player) => {
+        if (player?.id == null) return;
+        map[player.id] = player.name || `Player ${player.id}`;
+      });
+    }
+    return map;
+  }, [bgioProps.matchData]);
 
 
   useEffect(() => {
@@ -333,6 +345,8 @@ export function GameScreen(bgioProps) {
           />
         </TransformComponent>
       </TransformWrapper>
+
+      <GameLogPanel entries={bgioProps.G?.gameLog ?? []} nameMap={nameMap} />
 
       <GameEffects
         boardRef={boardRef}
