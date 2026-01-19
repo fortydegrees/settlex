@@ -18,13 +18,13 @@ describe("AudioManager", () => {
     const audio = createAudioManager({
       bus,
       theme: {
-        "resource:travel:start": { src: "/sounds/woosh-card.mp3", volume: 0.6 }
+        "resource:pop:start": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.6 }
       },
       settings: { muted: false }
     });
     audio.unlock();
-    bus.emit({ type: "cue", payload: { name: "resource:travel:start" } });
-    expect(audio._debugLastPlay()).toBe("resource:travel:start");
+    bus.emit({ type: "cue", payload: { name: "resource:pop:start" } });
+    expect(audio._debugLastPlay()).toBe("resource:pop:start");
   });
 
   it("skips cues when document is hidden unless allowed", () => {
@@ -33,12 +33,12 @@ describe("AudioManager", () => {
     const audio = createAudioManager({
       bus,
       theme: {
-        "resource:travel:start": { src: "/sounds/woosh-card.mp3", volume: 0.6 }
+        "resource:pop:start": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.6 }
       },
       settings: { muted: false }
     });
     audio.unlock();
-    bus.emit({ type: "cue", payload: { name: "resource:travel:start" } });
+    bus.emit({ type: "cue", payload: { name: "resource:pop:start" } });
     expect(audio._debugLastPlay()).toBe(null);
   });
 
