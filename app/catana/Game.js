@@ -123,7 +123,7 @@ export const Catan =  {
       }
       return random.Number();
     };
-    const defaultBoardConfigId = "standard-official";
+    const defaultBoardConfigId = "standard-random";
     const selectedBoardConfigId = setupData?.boardConfigId ?? defaultBoardConfigId;
     const boardConfig = setupData?.boardConfig ?? resolveBoardConfig(selectedBoardConfigId);
     const boardConfigId = setupData?.boardConfigId ?? (setupData?.boardConfig ? "custom" : defaultBoardConfigId);
