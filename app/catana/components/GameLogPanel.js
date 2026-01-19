@@ -5,10 +5,15 @@ import { RESOURCE_ICON_SVGS } from "../game/types";
 const renderToken = (token, index) => {
   if (!token) return null;
   if (token.kind === "divider") {
+    const isStrong = token.variant === "strong";
     return (
       <div
         key={`divider-${index}`}
-        className="my-2 h-px w-full bg-slate-300/70"
+        className={
+          isStrong
+            ? "my-3 h-0.5 w-full bg-slate-400/80"
+            : "my-2 h-px w-full bg-slate-300/70"
+        }
       />
     );
   }
@@ -50,14 +55,14 @@ const renderToken = (token, index) => {
 export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
   return (
     <div
-      className="fixed left-4 top-4 bottom-4 w-72 md:w-80"
+      className="fixed left-4 top-4 w-72 md:w-80 z-30 pointer-events-auto"
       data-allow-interaction="true"
     >
-      <div className="flex h-full flex-col rounded-xl bg-white/75 shadow-lg ring-1 ring-white/60 backdrop-blur-sm select-text">
+      <div className="flex min-h-0 max-h-[22vh] flex-col rounded-xl bg-white/75 shadow-lg ring-1 ring-white/60 backdrop-blur-sm select-text overflow-hidden">
         <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-slate-700">
           Game Log
         </div>
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
           <div className="space-y-2 text-sm">
             {entries.map((entry, entryIndex) => {
               const tokens = formatLogEntry(entry, nameMap);

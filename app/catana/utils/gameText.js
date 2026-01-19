@@ -35,8 +35,16 @@ export function formatLogEntry(entry, nameMap = {}) {
   if (!entry) return [];
   const { type, actorId, data = {}, forced } = entry;
 
+  if (type === "forced:roll" || type === "forced:endTurn") {
+    return [];
+  }
+
   if (type === "turn:end" || data.divider) {
     return [{ kind: "divider" }];
+  }
+
+  if (type === "phase:main") {
+    return [{ kind: "divider", variant: "strong" }];
   }
 
   const tokens = [];
@@ -120,7 +128,7 @@ export function formatLogEntry(entry, nameMap = {}) {
     }
   }
 
-  if (forced) {
+  if (forced && type !== "roll" && type !== "turn:end") {
     tokens.push(textToken(" (auto)"));
   }
 
