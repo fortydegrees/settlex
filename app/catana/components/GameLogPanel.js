@@ -107,28 +107,30 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
         <div className="bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700">
           Game Log
         </div>
-        <div
-          ref={scrollRef}
-          className="game-log-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4"
-          onWheel={markManualScroll}
-          onTouchMove={markManualScroll}
-          onMouseLeave={scheduleAutoScrollResume}
-        >
-          <div className="space-y-2 text-sm">
-            {entries.map((entry, entryIndex) => {
-              const tokens = formatLogEntry(entry, nameMap);
-              if (!tokens || tokens.length === 0) return null;
-              return (
-                <div
-                  key={entry.id ?? `${entryIndex}-${entry.type}`}
-                  className="flex flex-wrap items-center gap-1"
-                >
-                  {tokens.map((token, tokenIndex) =>
-                    renderToken(token, tokenIndex)
-                  )}
-                </div>
-              );
-            })}
+        <div className="min-h-0 flex-1 px-4 pb-4">
+          <div
+            ref={scrollRef}
+            className="game-log-scroll h-full overflow-y-auto pr-2"
+            onWheel={markManualScroll}
+            onTouchMove={markManualScroll}
+            onMouseLeave={scheduleAutoScrollResume}
+          >
+            <div className="space-y-2 text-sm">
+              {entries.map((entry, entryIndex) => {
+                const tokens = formatLogEntry(entry, nameMap);
+                if (!tokens || tokens.length === 0) return null;
+                return (
+                  <div
+                    key={entry.id ?? `${entryIndex}-${entry.type}`}
+                    className="flex flex-wrap items-center gap-1"
+                  >
+                    {tokens.map((token, tokenIndex) =>
+                      renderToken(token, tokenIndex)
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
