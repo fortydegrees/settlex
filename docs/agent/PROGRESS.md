@@ -128,4 +128,5 @@
 - Smoothed log autoscroll behavior (wheel-only) and moved placement divider logging to phase start.
 - Increased header contrast with a stronger background + divider line.
 - Hid the log scrollbar until hover to match default OS behavior.
+- Inset the scroll area to keep the scrollbar away from rounded corners.
 - Logged a design doc for the game log panel, structured log entries, and shared text templates.
