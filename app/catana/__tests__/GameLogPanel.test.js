@@ -31,4 +31,9 @@ describe("GameLogPanel", () => {
     expect(contents).toContain("scrollHeight");
     expect(contents).toContain("scrollTop");
   });
+
+  it("re-enables auto-scroll after a delay", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("AUTO_SCROLL_IDLE_MS");
+  });
 });

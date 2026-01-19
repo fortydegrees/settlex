@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from "react";
 import { formatLogEntry } from "../utils/gameText";
 import { RESOURCE_ICON_SVGS } from "../game/types";
 
+const AUTO_SCROLL_IDLE_MS = 3000;
+
 const renderToken = (token, index) => {
   if (!token) return null;
   if (token.kind === "divider") {
@@ -54,24 +56,56 @@ const renderToken = (token, index) => {
 
 export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
   const scrollRef = useRef(null);
+  const shouldAutoScrollRef = useRef(true);
+  const idleTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!scrollRef.current) return;
+    if (!shouldAutoScrollRef.current) return;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [entries.length]);
+
+  useEffect(() => {
+    return () => {
+      if (idleTimeoutRef.current) {
+        clearTimeout(idleTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const markManualScroll = () => {
+    shouldAutoScrollRef.current = false;
+    if (idleTimeoutRef.current) {
+      clearTimeout(idleTimeoutRef.current);
+    }
+  };
+
+  const scheduleAutoScrollResume = () => {
+    if (idleTimeoutRef.current) {
+      clearTimeout(idleTimeoutRef.current);
+    }
+    idleTimeoutRef.current = setTimeout(() => {
+      shouldAutoScrollRef.current = true;
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, AUTO_SCROLL_IDLE_MS);
+  };
 
   return (
     <div
       className="fixed left-4 top-4 w-72 md:w-80 z-30 pointer-events-auto"
       data-allow-interaction="true"
     >
-      <div className="flex h-[20vh] flex-col rounded-xl bg-white/65 shadow-lg ring-1 ring-white/50 backdrop-blur-sm select-text overflow-hidden">
-        <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-slate-700">
+      <div className="flex h-[20vh] flex-col rounded-xl bg-white/15 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text overflow-hidden">
+        <div className="bg-white/50 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700">
           Game Log
         </div>
         <div
           ref={scrollRef}
           className="game-log-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4"
+          onScroll={markManualScroll}
+          onMouseLeave={scheduleAutoScrollResume}
         >
           <div className="space-y-2 text-sm">
             {entries.map((entry, entryIndex) => {
