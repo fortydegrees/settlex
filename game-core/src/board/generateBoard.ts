@@ -239,8 +239,8 @@ const getNodesAndEdges = (
 
 export const generateBoard = (config: BoardConfig, rng: RandomFn, empty = false) => {
   const spec = resolveBoardSpec(config.specId);
-  const shape = spec.map || (spec.shape ? spec.shape[0] : undefined);
-  const radius = spec.radius || (spec.shape ? spec.shape[1] : undefined);
+  const shape = spec.map;
+  const radius = spec.radius;
   if (shape === undefined || radius === undefined) {
     throw new Error("Spec must include map/radius or shape");
   }
