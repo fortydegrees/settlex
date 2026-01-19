@@ -115,3 +115,6 @@
 - Fixed Effects Lab hydration by deferring the EffectLayer portal until client mount.
 - Added an effects registry + dropdown selector in the lab and wired an audio toggle via the effect bus.
 - Logged a design doc for the game log panel, structured log entries, and shared text templates.
+
+## Status (2026-01-19)
+- Logged a board-generation config + official spiral placement design doc to guide strategy refactors.
