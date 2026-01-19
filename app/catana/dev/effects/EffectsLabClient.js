@@ -31,11 +31,6 @@ export function EffectsLabClient() {
     return (name) => bus.emit({ type: "cue", payload: { name } });
   }, [audioEnabled, bus]);
 
-  const layout = useMemo(() => {
-    if (!width || !height) return null;
-    return getBoardLayout({ width, height });
-  }, [width, height]);
-
   useEffect(() => {
     gsap.globalTimeline.timeScale(timeScale);
     return () => {
