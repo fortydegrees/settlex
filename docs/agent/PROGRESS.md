@@ -109,3 +109,6 @@
 
 ## Status (2026-01-18)
 - Added pop/overshoot + jitter to resource distribution card animations for a more "alive" feel.
+
+## Status (2026-01-19)
+- Added a dev-only Effects Lab route with deterministic replays for animation tuning.

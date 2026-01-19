@@ -71,5 +71,6 @@
 - Effects system entry point: `app/catana/effects/GameEffects.js`; GSAP runner in `app/catana/effects/resourceDistribution.js` and audio mapping in `app/catana/effects/AudioManager.js` with themes in `app/catana/effects/soundThemes.js`.
 - Audio cues can opt into hidden-tab playback via `allowWhenHidden` in `app/catana/effects/soundThemes.js` (e.g., `dice:roll`, `turn:start`).
 - Resource distribution cards now use pop/overshoot + jitter/rotation in `app/catana/effects/resourceDistribution.js`.
+- Dev-only Effects Lab lives at `/catana/dev/effects` with deterministic replays via `app/catana/utils/seededRandom.js` and demo payloads in `app/catana/dev/effects/resourceDistributionLabUtils.js`.
 - Initial placement resource distribution now gates off `settlementsRemaining` vs ruleset piece limits in `app/catana/Moves.js` (not `ctx.turn`).
 - Initial placement resource distribution now happens in `game-core/src/rules/apply.ts` (returns `distributions` from `applyPlaceSettlement`) with tests in `game-core/src/rules/initialPlacementResources.test.ts`.
