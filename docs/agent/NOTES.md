@@ -76,3 +76,4 @@
 - Effects Lab uses `app/catana/dev/effects/registry.js` to list available labs for the dropdown; each lab receives `layerRef` + `emitCue`.
 - Initial placement resource distribution now gates off `settlementsRemaining` vs ruleset piece limits in `app/catana/Moves.js` (not `ctx.turn`).
 - Initial placement resource distribution now happens in `game-core/src/rules/apply.ts` (returns `distributions` from `applyPlaceSettlement`) with tests in `game-core/src/rules/initialPlacementResources.test.ts`.
+- Game log panel + structured log entry design lives at `docs/plans/2026-01-19-game-log-design.md`.
