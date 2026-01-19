@@ -32,6 +32,10 @@ const POP_DURATIONS = {
   settle: 0.12
 };
 
+const BASE_DELAY = 1;
+const POP_STAGGER = 0.1;
+const TRAVEL_STAGGER = 0.02;
+
 const TRAVEL_DURATION = 0.6;
 const JITTER_X = 4;
 const JITTER_Y = 6;
@@ -137,6 +141,9 @@ export function createResourceDistributionRunner({
     const cards = Array.isArray(payload) ? payload : payload?.cards ?? [];
     if (!cards.length) return;
 
+    const popDuration = POP_DURATIONS.pop + POP_DURATIONS.settle;
+    const travelStart = BASE_DELAY + POP_STAGGER * (cards.length - 1) + popDuration;
+
     const layout = getLayout();
     if (!layout?.size || !layout?.center) return;
     const { size, center } = layout;
@@ -176,6 +183,14 @@ export function createResourceDistributionRunner({
         jitterY,
         rotate
       });
+      const timings = getDistributionTimings({
+        index,
+        count: cards.length,
+        baseDelay: BASE_DELAY,
+        popStagger: POP_STAGGER,
+        travelStagger: TRAVEL_STAGGER,
+        popDuration
+      });
 
       gsap.set(el, anim.from);
 
@@ -185,14 +200,16 @@ export function createResourceDistributionRunner({
         }
       });
 
-      tl.addLabel("pop")
-        .to(el, anim.pop)
+      tl.addLabel("pop", timings.popStart)
+        .to(el, anim.pop, "pop")
         .to(el, anim.settle)
-        .addLabel("travel")
+        .addLabel("travel", timings.travelStartForCard)
         .to(el, anim.travel, "travel");
 
       scheduleResourceCues(tl, emitCue);
-      tl.delay(1 + index * 0.03);
+      if (emitCue && index === 0) {
+        tl.call(() => emitCue("resource:travel:start"), null, travelStart);
+      }
     });
   };
 }
