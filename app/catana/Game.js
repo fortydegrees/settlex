@@ -227,6 +227,11 @@ export const Catan =  {
               context.G.core.phase = "placement";
             }
             updateValids(context, "settlement")
+            appendGameLog(context.G, context.ctx, {
+              type: "phase:placement",
+              actorId: "system",
+              data: {}
+            });
         },
         stages: {
           settlement: { moves: { placeSettlement, autoPlaceSettlement, ...DEBUG_MOVES } },

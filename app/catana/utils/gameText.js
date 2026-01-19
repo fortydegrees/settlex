@@ -47,6 +47,10 @@ export function formatLogEntry(entry, nameMap = {}) {
     return [{ kind: "divider", variant: "strong" }];
   }
 
+  if (type === "phase:placement") {
+    return [{ kind: "divider", variant: "strong" }];
+  }
+
   const tokens = [];
   if (actorId != null) {
     tokens.push(playerToken(actorId, nameMap));
