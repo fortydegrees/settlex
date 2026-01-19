@@ -62,7 +62,7 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
         <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-slate-700">
           Game Log
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+        <div className="game-log-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
           <div className="space-y-2 text-sm">
             {entries.map((entry, entryIndex) => {
               const tokens = formatLogEntry(entry, nameMap);

@@ -128,7 +128,7 @@ export function formatLogEntry(entry, nameMap = {}) {
     }
   }
 
-  if (forced && type !== "roll" && type !== "turn:end") {
+  if (forced && type !== "roll" && type !== "turn:end" && type !== "resource:gain") {
     tokens.push(textToken(" (auto)"));
   }
 
