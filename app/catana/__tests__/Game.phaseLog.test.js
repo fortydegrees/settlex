@@ -21,7 +21,7 @@ const makeContext = () => {
 describe("phase log entries", () => {
   it("logs placement phase start", () => {
     const context = makeContext();
-    Catan.phases.placement.turn.onBegin(context);
+    Catan.phases.placement.onBegin(context);
     expect(context.G.gameLog.some((entry) => entry.type === "phase:placement")).toBe(true);
   });
 });
