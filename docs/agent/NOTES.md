@@ -80,3 +80,4 @@
 - Game log implementation plan lives at `docs/plans/2026-01-19-game-log-implementation-plan.md`.
 - Game log entries are appended via `appendGameLog` in `app/catana/utils/gameLog.js`; Moves add public-safe log entries and forced action markers.
 - Log/status copy is centralized in `app/catana/utils/gameText.js`; `formatLogEntry` returns tokens for the UI.
+- Placement turn boundaries now log `turn:end` dividers from `placeRoad`, and `phase:main` adds a strong divider when placement ends.

@@ -121,4 +121,5 @@
 - Centralized status/log copy in `app/catana/utils/gameText.js` and added a token formatter.
 - Added a left-side Game Log panel with scrollable entries and resource icons.
 - Added app-level tests for log helper/init, log entry formatting, and log panel wiring.
+- Refined the log UI height/z-index and added placement turn dividers plus a main-phase separator.
 - Logged a design doc for the game log panel, structured log entries, and shared text templates.
