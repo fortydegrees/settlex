@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCardAnimationConfig, scheduleResourceCues } from "../../effects/resourceDistribution";
+import { getCardAnimationConfig, getRandomizedOffsets, scheduleResourceCues } from "../../effects/resourceDistribution";
 
 describe("resourceDistribution cues", () => {
   it("registers travel-start cue", () => {
@@ -30,5 +30,13 @@ describe("resourceDistribution cues", () => {
     expect(config.from.y).toBe(17);
     expect(config.travel.x).toBe(100);
     expect(config.travel.y).toBe(200);
+  });
+
+  it("computes jitter offsets from provided random", () => {
+    const rand = () => 1;
+    const offsets = getRandomizedOffsets(rand);
+    expect(offsets.jitterX).toBeGreaterThan(0);
+    expect(offsets.jitterY).toBeGreaterThan(0);
+    expect(offsets.rotate).toBeGreaterThan(0);
   });
 });

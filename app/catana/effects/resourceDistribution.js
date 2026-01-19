@@ -95,12 +95,21 @@ export function getCardAnimationConfig({
   };
 }
 
+export function getRandomizedOffsets(random = Math.random) {
+  return {
+    jitterX: (random() * 2 - 1) * JITTER_X,
+    jitterY: (random() * 2 - 1) * JITTER_Y,
+    rotate: (random() * 2 - 1) * ROTATE_DEG
+  };
+}
+
 export function createResourceDistributionRunner({
   layerEl,
   getLayerEl,
   getLayout,
   getBoardRect,
-  emitCue
+  emitCue,
+  random = Math.random
 } = {}) {
   return function run(payload) {
     if (typeof document === "undefined") return;
@@ -141,9 +150,7 @@ export function createResourceDistributionRunner({
       el.style.height = `${cardHeight}px`;
       resolvedLayer.appendChild(el);
 
-      const jitterX = (Math.random() * 2 - 1) * JITTER_X;
-      const jitterY = (Math.random() * 2 - 1) * JITTER_Y;
-      const rotate = (Math.random() * 2 - 1) * ROTATE_DEG;
+      const { jitterX, jitterY, rotate } = getRandomizedOffsets(random);
       const anim = getCardAnimationConfig({
         startX,
         startY,
