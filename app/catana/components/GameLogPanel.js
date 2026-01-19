@@ -107,10 +107,10 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
         <div className="bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700">
           Game Log
         </div>
-        <div className="min-h-0 flex-1 px-4 pb-4">
+        <div className="min-h-0 flex-1 pb-4">
           <div
             ref={scrollRef}
-            className="game-log-scroll h-full overflow-y-auto pr-2"
+            className="game-log-scroll h-full overflow-y-auto px-4"
             onWheel={markManualScroll}
             onTouchMove={markManualScroll}
             onMouseLeave={scheduleAutoScrollResume}
