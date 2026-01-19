@@ -1,15 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { spec } from "../spec";
 import { generateBoard } from "../board/generateBoard";
 import { makeDeterministicRng } from "../testUtils";
 import { buildTopology } from "../core/topology";
 import { createEmptyState } from "../core/state";
 import { buildableNodes, buildableEdges } from "./buildability";
 import { applyPlaceSettlement, applyPlaceRoad } from "./apply";
+import { resolveBoardConfig } from "../board/boardConfigs";
+
+const randomConfig = resolveBoardConfig("standard-random");
 
 describe("buildability - initial placement", () => {
   it("returns all land nodes when no buildings exist", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(1));
+    const tiles = generateBoard(randomConfig, makeDeterministicRng(1));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0", "1"]);
 
@@ -21,7 +23,7 @@ describe("buildability - initial placement", () => {
   });
 
   it("excludes nodes adjacent to an existing settlement", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(2));
+    const tiles = generateBoard(randomConfig, makeDeterministicRng(2));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0", "1"]);
 
@@ -38,7 +40,7 @@ describe("buildability - initial placement", () => {
   });
 
   it("returns unoccupied edges adjacent to a specific node in setup", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(4));
+    const tiles = generateBoard(randomConfig, makeDeterministicRng(4));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0", "1"]);
 
@@ -55,7 +57,7 @@ describe("buildability - initial placement", () => {
 
 describe("buildability - normal play", () => {
   it("requires road connectivity in normal play", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(3));
+    const tiles = generateBoard(randomConfig, makeDeterministicRng(3));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0", "1"]);
     state.phase = "normal";
@@ -71,7 +73,7 @@ describe("buildability - normal play", () => {
   });
 
   it("returns unoccupied edges adjacent to player roads/buildings in normal play", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(5));
+    const tiles = generateBoard(randomConfig, makeDeterministicRng(5));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0", "1"]);
 
@@ -96,7 +98,7 @@ describe("buildability - normal play", () => {
 
 describe("apply placement", () => {
   it("applyPlaceSettlement adds building and updates caches", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(6));
+    const tiles = generateBoard(randomConfig, makeDeterministicRng(6));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0", "1"]);
 
@@ -110,7 +112,7 @@ describe("apply placement", () => {
   });
 
   it("applyPlaceRoad adds road and clears pending placement", () => {
-    const tiles = generateBoard(spec, makeDeterministicRng(7));
+    const tiles = generateBoard(randomConfig, makeDeterministicRng(7));
     const board = buildTopology(tiles);
     const state = createEmptyState(["0", "1"]);
 

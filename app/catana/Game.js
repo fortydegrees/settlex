@@ -1,4 +1,4 @@
-import { buildTopology, createEmptyState, generateBoard, resolveBoardPreset, ResourceType } from "@settlex/game-core";
+import { buildTopology, createEmptyState, generateBoard, resolveBoardConfig, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
@@ -122,9 +122,9 @@ export const Catan =  {
       }
       return random.Number();
     };
-    const boardPresetId = "standard-random";
-    const boardPreset = resolveBoardPreset(boardPresetId);
-    const tiles = generateBoard(boardPreset, rng);
+    const boardConfigId = "standard-random";
+    const boardConfig = resolveBoardConfig(boardConfigId);
+    const tiles = generateBoard(boardConfig, rng);
     const valids = { nodes: [], edges: [], tiles: [] };
     const diceRoll = [3,4]
     const robberTile = tiles.find((tile) => tile.tile.resource === ResourceType.DESERT)?.tile.id ?? null;
@@ -151,7 +151,7 @@ export const Catan =  {
     return {
       core,
       coreTopology,
-      boardPresetId,
+      boardConfigId,
       tiles,
       valids,
       diceRoll,
