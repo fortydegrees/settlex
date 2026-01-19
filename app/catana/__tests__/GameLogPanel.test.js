@@ -20,4 +20,9 @@ describe("GameLogPanel", () => {
     expect(contents).toContain("data-allow-interaction");
     expect(contents).toContain("formatLogEntry");
   });
+
+  it("uses a custom scroll class", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("game-log-scroll");
+  });
 });
