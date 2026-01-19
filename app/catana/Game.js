@@ -159,7 +159,9 @@ export const Catan =  {
       placementOrder,
       preGame: { readyByPlayerId: {} },
       devCardPlay: null,
-      robberReturnToStage: null
+      robberReturnToStage: null,
+      gameLog: [],
+      gameLogSeq: 0
     };
   },
 
