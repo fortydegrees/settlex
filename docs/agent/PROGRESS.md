@@ -126,4 +126,5 @@
 - Added auto-scroll to the log panel and a placement-phase divider entry.
 - Paused autoscroll on manual scroll and added a delayed resume on mouse leave.
 - Smoothed log autoscroll behavior (wheel-only) and moved placement divider logging to phase start.
+- Increased header contrast with a stronger background + divider line.
 - Logged a design doc for the game log panel, structured log entries, and shared text templates.
