@@ -138,3 +138,7 @@
 - Added board spec/config registries and official spiral utilities for deterministic placement.
 - Refactored board generation to accept a BoardConfig and apply terrain/number/port strategies.
 - Updated Catana setup/tests to use board configs and removed the old board preset module.
+
+## Status (2026-01-19)
+- Added an effects/audio quick reference to `AGENTS.md` and linked it from agent notes.
+- Swapped resource distribution audio to the pop-out cue (`resource:pop:start`) mapped to `ui-pop-resource-out.mp3`.

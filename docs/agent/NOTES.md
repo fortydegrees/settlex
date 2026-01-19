@@ -69,7 +69,9 @@
 - TimerManager detects `robberDiscard` via `G.core.turn.phase`/`pendingDiscards` (not just current player) and auto-dispatches `autoDiscard` for all pending players on timeout.
 - Effects/audio architecture design doc (GSAP + cue bus) lives at `docs/plans/2026-01-16-effects-audio-design.md`.
 - Effects system entry point: `app/catana/effects/GameEffects.js`; GSAP runner in `app/catana/effects/resourceDistribution.js` and audio mapping in `app/catana/effects/AudioManager.js` with themes in `app/catana/effects/soundThemes.js`.
+- Quick reference for the effects/audio stack lives in `AGENTS.md` (key files, cue mapping, and sound asset location).
 - Audio cues can opt into hidden-tab playback via `allowWhenHidden` in `app/catana/effects/soundThemes.js` (e.g., `dice:roll`, `turn:start`).
+- Resource distribution now emits `resource:pop:start` for the card pop-out sound (replacing `resource:travel:start`).
 - Resource distribution cards now use pop/overshoot + jitter/rotation in `app/catana/effects/resourceDistribution.js`.
 - Dev-only Effects Lab lives at `/catana/dev/effects` with deterministic replays via `app/catana/utils/seededRandom.js` and demo payloads in `app/catana/dev/effects/resourceDistributionLabUtils.js`.
 - Effects Lab UI is dev-only and currently not covered by UI tests; consider adding a lightweight harness if it grows.

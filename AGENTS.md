@@ -33,6 +33,15 @@ Ship small, correct changes with a stable, testable game engine.
 - Legacy/experimental: `spec/`, `strategy/`, `utils/`
 - Agent docs: `docs/agent/`
 
+## Effects + audio (GSAP + cue bus)
+- Entry point: `app/catana/effects/GameEffects.js` (EffectBus + AudioManager + cue emit)
+- Effect registry: `app/catana/effects/registry.js` (bus event routing)
+- Resource distribution runner: `app/catana/effects/resourceDistribution.js` (GSAP timeline + cue labels)
+- Sound mapping: `app/catana/effects/soundThemes.js` (cue -> `/sounds/*.mp3`)
+- Audio playback: `app/catana/effects/AudioManager.js` (Howler + hidden-tab policy)
+- Assets: `public/sounds/` (served under `/sounds/*`)
+- Dev lab: `/catana/dev/effects` (deterministic replays)
+
 ## Guardrails
 - Use pnpm; do not modify `package-lock.json`.
 - New engine code should be TypeScript; UI can remain JavaScript for now.
