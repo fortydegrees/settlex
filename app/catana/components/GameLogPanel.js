@@ -104,7 +104,7 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
       data-allow-interaction="true"
     >
       <div className="flex h-[20vh] flex-col rounded-lg bg-white/20 shadow-lg ring-1 ring-white/25 backdrop-blur-sm select-text overflow-hidden">
-        <div className="bg-white/55 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700">
+        <div className="bg-white/65 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700">
           Game Log
         </div>
         <div
