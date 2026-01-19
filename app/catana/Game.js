@@ -1,6 +1,7 @@
 import { buildTopology, createEmptyState, generateBoard, resolveBoardConfig, ResourceType } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
+import { appendGameLog } from "./utils/gameLog.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 
 const DEBUG_MOVES = {
@@ -159,7 +160,9 @@ export const Catan =  {
       placementOrder,
       preGame: { readyByPlayerId: {} },
       devCardPlay: null,
-      robberReturnToStage: null
+      robberReturnToStage: null,
+      gameLog: [],
+      gameLogSeq: 0
     };
   },
 
@@ -205,6 +208,13 @@ export const Catan =  {
       next: "placement"
     },
     placement: {
+      onBegin: (context) => {
+        appendGameLog(context.G, context.ctx, {
+          type: "phase:placement",
+          actorId: "system",
+          data: {}
+        });
+      },
       turn: {
         order: TurnOrder.CUSTOM_FROM("placementOrder"),
         // playOrder: (G, ctx) => {
@@ -244,10 +254,11 @@ export const Catan =  {
       },
       next: "main",
       start: false,
-      onEnd: ({ G }) => {
+      onEnd: ({ G, ctx }) => {
         if (G.core) {
           G.core.phase = "normal";
         }
+        appendGameLog(G, ctx, { type: "phase:main", actorId: "system", data: {} });
       },
     },
     main: {

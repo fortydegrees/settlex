@@ -23,6 +23,33 @@ import {
   canPlayDevCard,
   playDevCard
 } from "@settlex/game-core";
+import { appendGameLog } from "./utils/gameLog.js";
+
+const countResources = (resources = []) =>
+  resources.reduce((acc, resource) => {
+    acc[resource] = (acc[resource] ?? 0) + 1;
+    return acc;
+  }, {});
+
+const logResourceDistributions = (G, ctx, distributions, options) => {
+  if (!Array.isArray(distributions) || distributions.length === 0) return;
+  const byPlayer = new Map();
+  for (const dist of distributions) {
+    if (!dist?.playerId || !dist?.resource) continue;
+    const existing = byPlayer.get(dist.playerId) ?? {};
+    existing[dist.resource] = (existing[dist.resource] ?? 0) + 1;
+    byPlayer.set(dist.playerId, existing);
+  }
+  const playerIds = Array.from(byPlayer.keys()).sort();
+  playerIds.forEach((playerId) => {
+    appendGameLog(G, ctx, {
+      type: "resource:gain",
+      actorId: playerId,
+      data: { resources: byPlayer.get(playerId) },
+      forced: options?.forced
+    });
+  });
+};
 
 //used for giving cards to a player by clicking on icon for testing
 //TODO: remove
@@ -93,7 +120,7 @@ export const takeCardsFromBank = (context, cards, playerID) => {
 };
 
 export const placeSettlement = {
-  move: (context, node) => {
+  move: (context, node, options) => {
     const { G, playerID, events, ctx, effects } = context;
     const nodeId = parseInt(node);
     const isPlacement = ctx.phase === "placement";
@@ -123,6 +150,13 @@ export const placeSettlement = {
       });
       effects.distributeCardsFromTile(cardAnims);
     }
+    appendGameLog(G, ctx, {
+      type: "build:settlement",
+      actorId: playerID,
+      data: { nodeId, initialPlacement: isPlacement },
+      forced: options?.forced
+    });
+    logResourceDistributions(G, ctx, distributions, options);
 
     if (isPlacement) {
       updateValids(context, "road", nodeId);
@@ -217,7 +251,7 @@ const pickRandom = (items, random) => {
 
 
 export const placeRoad = {
-  move: (context, edge) => {
+  move: (context, edge, options) => {
     const { G, playerID, events, ctx } = context;
     const isPlacement = ctx.phase === "placement";
     if (G.core) {
@@ -233,9 +267,21 @@ export const placeRoad = {
       console.log(`Invalid road placement at edge ${edge}`);
       return;
     }
+    appendGameLog(G, ctx, {
+      type: "build:road",
+      actorId: playerID,
+      data: { edgeId: edge, initialPlacement: isPlacement },
+      forced: options?.forced
+    });
 
     //if we're in placement phase, end turn after placing road
     if (isPlacement){
+    appendGameLog(G, ctx, {
+      type: "turn:end",
+      actorId: playerID,
+      data: { phase: "placement" },
+      forced: options?.forced
+    });
     events.endTurn();
     }
     //updateValids(context, stage);
@@ -245,7 +291,7 @@ export const placeRoad = {
 }
 
 export const placeCity = {
-  move: (context, node) => {
+  move: (context, node, options) => {
     const { G, playerID, ctx } = context;
     if (ctx.phase === "placement") {
       return;
@@ -254,7 +300,14 @@ export const placeCity = {
     const result = applyBuildCity(G.core, G.coreTopology, nodeId, playerID);
     if (!result.ok) {
       console.log(`Invalid city placement at node ${node}`);
+      return;
     }
+    appendGameLog(G, ctx, {
+      type: "build:city",
+      actorId: playerID,
+      data: { nodeId },
+      forced: options?.forced
+    });
   }
 };
 
@@ -262,17 +315,37 @@ export const placeCity = {
 //we need to either return to preRoll (if robber moved from knight played before rolling dice)
 //or postRoll (if played from rolling a 7 or knight mid-turn)
 export const moveRobber = {
-  move: (context, tileID) =>{
+  move: (context, tileID, options) =>{
     const { G, events, ctx, random } = context;
     
     // Generate a random number for stealing (deterministic)
     // We pass this to the core logic, which will use modulo to select the actual card if needed
     const stolenCardIndex = random.Number(); 
+    const potentialVictims = getRobberVictims(
+      G.core,
+      G.coreTopology,
+      tileID,
+      ctx.currentPlayer
+    ).filter((id) => (G.core?.playerStateById?.[id]?.resources?.length ?? 0) > 0);
     
     const result = applyMoveRobber(G.core, G.coreTopology, tileID, ctx.currentPlayer, stolenCardIndex);
     if (!result.ok) {
       console.log(`Invalid robber placement on tile ${tileID}: ${result.error}`);
       return;
+    }
+    appendGameLog(G, ctx, {
+      type: "robber:move",
+      actorId: ctx.currentPlayer,
+      data: { tileId: tileID },
+      forced: options?.forced
+    });
+    if (potentialVictims.length === 1) {
+      appendGameLog(G, ctx, {
+        type: "robber:steal",
+        actorId: ctx.currentPlayer,
+        data: { victimId: potentialVictims[0] },
+        forced: options?.forced
+      });
     }
 
     const returnTo =
@@ -289,7 +362,7 @@ export const moveRobber = {
 
 export const rollDice = {
   canDo: () => console.log("hi roll dive"),
-  move: (context) => {
+  move: (context, options) => {
     const { G, random, effects, events } = context;
     const roll = random.D6(2);
     G.diceRoll = roll;
@@ -301,6 +374,13 @@ export const rollDice = {
       console.log("Invalid dice roll");
       return;
     }
+    appendGameLog(G, context.ctx, {
+      type: "roll",
+      actorId: context.ctx?.currentPlayer,
+      data: { dice: roll, total: diceScore },
+      forced: options?.forced
+    });
+    logResourceDistributions(G, context.ctx, result.distributions, options);
 
     // Trigger resource distribution and blocked tile animations together
     const hasDistributions = result.distributions?.length > 0;
@@ -377,7 +457,7 @@ export const updateValids = (context, stage, meta) => {
 export const getAvailableMoves = (context) => {};
 
 export const endTurn = {
-  move: (context) => {
+  move: (context, options) => {
     const { G, ctx, events } = context;
     if (G.core) {
       G.core.phase = ctx.phase === "placement" ? "placement" : "normal";
@@ -387,6 +467,12 @@ export const endTurn = {
       console.log(`Invalid end turn: ${result.error}`);
       return;
     }
+    appendGameLog(G, ctx, {
+      type: "turn:end",
+      actorId: ctx.currentPlayer,
+      data: {},
+      forced: options?.forced
+    });
 
     const nextPlayerId = G.core.turn.currentPlayerId;
     events.endTurn({ next: nextPlayerId });
@@ -394,7 +480,7 @@ export const endTurn = {
 };
 
 export const discardResources = {
-  move: (context, resources) => {
+  move: (context, resources, options) => {
     const { G, playerID, events } = context;
     // Assume core G structure
     const result = applyDiscard(G.core, playerID, resources);
@@ -402,6 +488,12 @@ export const discardResources = {
       console.log(`Invalid discard: ${result.error}`);
       return;
     }
+    appendGameLog(G, context.ctx, {
+      type: "discard",
+      actorId: playerID,
+      data: { resources: countResources(resources) },
+      forced: options?.forced
+    });
 
     // After a successful discard, this player is done with this stage.
     // We remove them from the active players.
@@ -433,8 +525,13 @@ export const autoPlaceSettlement = {
     if (nodeId == null) {
       return;
     }
+    appendGameLog(G, ctx, {
+      type: "forced:placeSettlement",
+      actorId: "system",
+      data: { playerId: playerID }
+    });
     log.setMetadata({ message: `auto-placing settlement at ${nodeId}` });
-    placeSettlement.move(context, nodeId);
+    placeSettlement.move(context, nodeId, { forced: true });
   }
 };
 
@@ -452,8 +549,13 @@ export const autoPlaceRoad = {
     if (!edgeId) {
       return;
     }
+    appendGameLog(G, ctx, {
+      type: "forced:placeRoad",
+      actorId: "system",
+      data: { playerId: playerID }
+    });
     log.setMetadata({ message: `auto-placing road at ${edgeId}` });
-    placeRoad.move(context, edgeId);
+    placeRoad.move(context, edgeId, { forced: true });
   }
 };
 
@@ -473,20 +575,25 @@ export const autoDiscard = {
       ? random.Shuffle([...player.resources])
       : [...player.resources];
     const toDiscard = shuffled.slice(0, requiredCount);
+    appendGameLog(G, ctx, {
+      type: "forced:discardSelection",
+      actorId: "system",
+      data: { playerId: playerID }
+    });
     log.setMetadata({ message: `auto-discarding ${requiredCount} cards` });
-    discardResources.move(context, toDiscard);
+    discardResources.move(context, toDiscard, { forced: true });
   }
 };
 
 export const autoRoll = {
   move: (context) => {
-    rollDice.move(context);
+    rollDice.move(context, { forced: true });
   }
 };
 
 export const autoEndTurn = {
   move: (context) => {
-    endTurn.move(context);
+    endTurn.move(context, { forced: true });
   }
 };
 
@@ -503,7 +610,19 @@ export const autoMoveRobber = {
     if (tileId == null) {
       return;
     }
+    const potentialVictims = getRobberVictims(
+      G.core,
+      G.coreTopology,
+      tileId,
+      ctx.currentPlayer
+    ).filter((id) => (G.core?.playerStateById?.[id]?.resources?.length ?? 0) > 0);
+    appendGameLog(G, ctx, {
+      type: "forced:moveRobber",
+      actorId: "system",
+      data: { playerId: ctx.currentPlayer }
+    });
     const stolenCardIndex = random?.Number ? random.Number() : 0;
+    let selectedVictimId = potentialVictims.length === 1 ? potentialVictims[0] : undefined;
     let result = applyMoveRobber(
       G.core,
       G.coreTopology,
@@ -520,6 +639,7 @@ export const autoMoveRobber = {
       );
       const victimId = pickRandom(victims, random);
       if (victimId) {
+        selectedVictimId = victimId;
         result = applyMoveRobber(
           G.core,
           G.coreTopology,
@@ -534,6 +654,20 @@ export const autoMoveRobber = {
     if (!result.ok) {
       console.log(`Invalid robber placement on tile ${tileId}: ${result.error}`);
       return;
+    }
+    appendGameLog(G, ctx, {
+      type: "robber:move",
+      actorId: ctx.currentPlayer,
+      data: { tileId },
+      forced: true
+    });
+    if (selectedVictimId) {
+      appendGameLog(G, ctx, {
+        type: "robber:steal",
+        actorId: ctx.currentPlayer,
+        data: { victimId: selectedVictimId },
+        forced: true
+      });
     }
 
     const returnTo =
@@ -594,7 +728,16 @@ export const maritimeTrade = {
     
     if (!result.ok) {
         console.log(`Invalid maritime trade: ${result.error}`);
+        return;
     }
+    appendGameLog(G, context.ctx, {
+      type: "trade:maritime",
+      actorId: playerID,
+      data: {
+        give: { [resourceType]: trade.give.length },
+        receive: { [trade.receive]: 1 }
+      }
+    });
   }
 };
 
@@ -604,7 +747,13 @@ export const buyDevCard = {
     const result = applyBuyDevCard(G.core, playerID);
     if (!result.ok) {
       console.log(`Invalid buy dev card: ${result.error}`);
+      return;
     }
+    appendGameLog(G, context.ctx, {
+      type: "dev:buy",
+      actorId: playerID,
+      data: {}
+    });
   }
 };
 
@@ -614,7 +763,7 @@ const isDevCardStage = (ctx, playerID) => {
 };
 
 export const playDevCardStart = {
-  move: (context, cardType) => {
+  move: (context, cardType, options) => {
     const { G, playerID, ctx, events } = context;
     if (playerID !== ctx.currentPlayer) return;
     if (!isDevCardStage(ctx, playerID)) return;
@@ -634,6 +783,12 @@ export const playDevCardStart = {
         console.log(`Invalid knight: ${result.error}`);
         return;
       }
+      appendGameLog(G, ctx, {
+        type: "dev:play",
+        actorId: playerID,
+        data: { cardType: "knight" },
+        forced: options?.forced
+      });
       G.robberReturnToStage = currentStage;
       events.setStage("moveRobber");
       return;
@@ -654,7 +809,7 @@ export const playDevCardStart = {
 };
 
 export const confirmDevCardPlay = {
-  move: (context, payload) => {
+  move: (context, payload, options) => {
     const { G, playerID, ctx } = context;
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.playerId !== playerID) return;
@@ -680,6 +835,12 @@ export const confirmDevCardPlay = {
       console.log(`Invalid play dev card: ${played.error}`);
       return;
     }
+    appendGameLog(G, ctx, {
+      type: "dev:play",
+      actorId: playerID,
+      data: { cardType: devPlay.type },
+      forced: options?.forced
+    });
 
     G.devCardPlay = null;
   }
@@ -691,6 +852,11 @@ export const autoResolveDevCard = {
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.playerId !== ctx.currentPlayer) return;
     if (!isDevCardStage(ctx, devPlay.playerId)) return;
+    appendGameLog(G, ctx, {
+      type: "forced:devCardResolution",
+      actorId: "system",
+      data: { playerId: devPlay.playerId, cardType: devPlay.type }
+    });
 
     if (devPlay.type === "yearOfPlenty") {
       const resources = Object.values(ResourceType);
@@ -699,7 +865,7 @@ export const autoResolveDevCard = {
         : resources;
       const payload = [shuffled[0], shuffled[1] ?? shuffled[0]];
       log.setMetadata({ message: "auto-resolving Year of Plenty" });
-      confirmDevCardPlay.move(context, payload);
+      confirmDevCardPlay.move(context, payload, { forced: true });
       return;
     }
 
@@ -708,7 +874,7 @@ export const autoResolveDevCard = {
       const choice = pickRandom(resources, random);
       if (!choice) return;
       log.setMetadata({ message: "auto-resolving Monopoly" });
-      confirmDevCardPlay.move(context, choice);
+      confirmDevCardPlay.move(context, choice, { forced: true });
     }
   }
 };
@@ -722,7 +888,7 @@ export const cancelDevCardPlay = {
 };
 
 export const placeRoadFromDevCard = {
-  move: (context, edge) => {
+  move: (context, edge, options) => {
     const { G, playerID, ctx } = context;
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.type !== "roadBuilding") return;
@@ -734,6 +900,12 @@ export const placeRoadFromDevCard = {
       console.log(`Invalid dev road: ${result.error}`);
       return;
     }
+    appendGameLog(G, ctx, {
+      type: "build:road",
+      actorId: playerID,
+      data: { edgeId: edge, free: true, via: "devCard" },
+      forced: options?.forced
+    });
 
     devPlay.pendingRoads -= 1;
     if (devPlay.pendingRoads <= 0) {
@@ -742,6 +914,12 @@ export const placeRoadFromDevCard = {
         console.log(`Invalid play dev card: ${played.error}`);
         return;
       }
+      appendGameLog(G, ctx, {
+        type: "dev:play",
+        actorId: playerID,
+        data: { cardType: "roadBuilding" },
+        forced: options?.forced
+      });
       G.devCardPlay = null;
     }
   }

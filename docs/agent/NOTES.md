@@ -80,3 +80,9 @@
 - Board-generation config + official spiral design lives at `docs/plans/2026-01-19-board-generation-config-design.md` (single BoardConfig input with specId + generation + reveal rules).
 - Board specs/configs live in `game-core/src/board/boardSpecs.ts` and `game-core/src/board/boardConfigs.ts`; `generateBoard` now accepts a `BoardConfig`.
 - Official spiral placement helpers live in `game-core/src/board/officialSpiral.ts`; `spec.officialNumbers` defines the ordered token list.
+- Game log implementation plan lives at `docs/plans/2026-01-19-game-log-implementation-plan.md`.
+- Game log entries are appended via `appendGameLog` in `app/catana/utils/gameLog.js`; Moves add public-safe log entries and forced action markers.
+- Log/status copy is centralized in `app/catana/utils/gameText.js`; `formatLogEntry` returns tokens for the UI.
+- Placement turn boundaries now log `turn:end` dividers from `placeRoad`, and `phase:main` adds a strong divider when placement ends.
+- Placement no longer logs a phase-start entry; the final placement road omits the `turn:end` divider so the main-phase divider stands alone.
+- Game log autoscroll now pauses while hovering and only resumes on new entries after an idle delay; the log list has a small top padding.

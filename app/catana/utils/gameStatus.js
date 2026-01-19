@@ -1,3 +1,5 @@
+import { STATUS_TEXT } from "./gameText";
+
 export const STATUS_TYPES = {
   ROLLING: "rolling",
   THINKING: "thinking",
@@ -21,7 +23,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
 
   if (ctx.phase === "preGame") {
     return {
-      text: "Waiting to start",
+      text: STATUS_TEXT.PREGAME,
       statusType: STATUS_TYPES.THINKING,
       activePlayerId,
     };
@@ -30,7 +32,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
   // UI-level build actions take priority
   if (playerAction === "placeRoad" || playerAction === "roadBuilding") {
     return {
-      text: "Place Road",
+      text: STATUS_TEXT.PLACING_ROAD,
       statusType: STATUS_TYPES.PLACING_ROAD,
       activePlayerId,
     };
@@ -38,7 +40,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
 
   if (playerAction === "placeSettlement") {
     return {
-      text: "Place Settlement",
+      text: STATUS_TEXT.PLACING_SETTLEMENT,
       statusType: STATUS_TYPES.PLACING_SETTLEMENT,
       activePlayerId,
     };
@@ -46,7 +48,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
 
   if (playerAction === "placeCity") {
     return {
-      text: "Place City",
+      text: STATUS_TEXT.PLACING_CITY,
       statusType: STATUS_TYPES.PLACING_CITY,
       activePlayerId,
     };
@@ -57,13 +59,13 @@ export function getGameStatus(core, ctx, playerAction = null) {
     const hasPendingRoad = core.pendingRoadFromNodeIdByPlayer?.[activePlayerId] != null;
     if (hasPendingRoad) {
       return {
-        text: "Place Road",
+        text: STATUS_TEXT.PLACING_ROAD,
         statusType: STATUS_TYPES.PLACING_ROAD,
         activePlayerId,
       };
     }
     return {
-      text: "Place Settlement",
+      text: STATUS_TEXT.PLACING_SETTLEMENT,
       statusType: STATUS_TYPES.PLACING_SETTLEMENT,
       activePlayerId,
     };
@@ -72,7 +74,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
   // Robber phases
   if (core.turn.phase === "robberDiscard") {
     return {
-      text: "Discard Cards",
+      text: STATUS_TEXT.DISCARDING,
       statusType: STATUS_TYPES.DISCARDING,
       activePlayerId,
     };
@@ -80,7 +82,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
 
   if (core.turn.phase === "robberMove") {
     return {
-      text: "Move Robber",
+      text: STATUS_TEXT.MOVING_ROBBER,
       statusType: STATUS_TYPES.MOVING_ROBBER,
       activePlayerId,
     };
@@ -88,7 +90,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
 
   if (core.turn.phase === "robberSteal") {
     return {
-      text: "Choose Player",
+      text: STATUS_TEXT.STEALING,
       statusType: STATUS_TYPES.STEALING,
       activePlayerId,
     };
@@ -97,7 +99,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
   // Pre-roll
   if (core.turn.phase === "preRoll") {
     return {
-      text: "Roll Dice",
+      text: STATUS_TEXT.ROLLING,
       statusType: STATUS_TYPES.ROLLING,
       activePlayerId,
     };
@@ -105,7 +107,7 @@ export function getGameStatus(core, ctx, playerAction = null) {
 
   // Post-roll (default main phase)
   return {
-    text: "Your Turn",
+    text: STATUS_TEXT.THINKING,
     statusType: STATUS_TYPES.THINKING,
     activePlayerId,
   };
