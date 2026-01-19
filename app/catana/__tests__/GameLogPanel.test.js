@@ -25,4 +25,10 @@ describe("GameLogPanel", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("game-log-scroll");
   });
+
+  it("auto-scrolls to the latest entry", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("scrollHeight");
+    expect(contents).toContain("scrollTop");
+  });
 });

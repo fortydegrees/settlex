@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { formatLogEntry } from "../utils/gameText";
 import { RESOURCE_ICON_SVGS } from "../game/types";
 
@@ -53,16 +53,26 @@ const renderToken = (token, index) => {
 };
 
 export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [entries.length]);
+
   return (
     <div
       className="fixed left-4 top-4 w-72 md:w-80 z-30 pointer-events-auto"
       data-allow-interaction="true"
     >
-      <div className="flex min-h-0 max-h-[22vh] flex-col rounded-xl bg-white/75 shadow-lg ring-1 ring-white/60 backdrop-blur-sm select-text overflow-hidden">
+      <div className="flex h-[20vh] flex-col rounded-xl bg-white/65 shadow-lg ring-1 ring-white/50 backdrop-blur-sm select-text overflow-hidden">
         <div className="px-4 py-3 text-xs font-semibold uppercase tracking-widest text-slate-700">
           Game Log
         </div>
-        <div className="game-log-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+        <div
+          ref={scrollRef}
+          className="game-log-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4"
+        >
           <div className="space-y-2 text-sm">
             {entries.map((entry, entryIndex) => {
               const tokens = formatLogEntry(entry, nameMap);

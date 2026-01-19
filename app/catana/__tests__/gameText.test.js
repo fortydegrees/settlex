@@ -57,6 +57,11 @@ describe("formatLogEntry", () => {
     const tokens = formatLogEntry({ type: "phase:main" });
     expect(tokens).toEqual([{ kind: "divider", variant: "strong" }]);
   });
+
+  it("renders a strong divider for placement phase start", () => {
+    const tokens = formatLogEntry({ type: "phase:placement" });
+    expect(tokens).toEqual([{ kind: "divider", variant: "strong" }]);
+  });
 });
 
 describe("STATUS_TEXT", () => {
