@@ -124,4 +124,5 @@
 - Refined the log UI height/z-index and added placement turn dividers plus a main-phase separator.
 - Suppressed auto tags for resource gains and styled the log scrollbar for a cohesive UI.
 - Added auto-scroll to the log panel and a placement-phase divider entry.
+- Paused autoscroll on manual scroll and added a delayed resume on mouse leave.
 - Logged a design doc for the game log panel, structured log entries, and shared text templates.
