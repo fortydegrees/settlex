@@ -20,6 +20,7 @@ export function EffectsLabClient() {
   const [seed, setSeed] = useState(DEFAULT_SEED);
   const [count, setCount] = useState(DEFAULT_COUNT);
   const [timeScale, setTimeScale] = useState(DEFAULT_TIME_SCALE);
+  const [mounted, setMounted] = useState(false);
 
   const layout = useMemo(() => {
     if (!width || !height) return null;
@@ -32,6 +33,10 @@ export function EffectsLabClient() {
       gsap.globalTimeline.timeScale(1);
     };
   }, [timeScale]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleReplay = () => {
     if (!layout || !boardRef.current || !layerRef.current) return;
@@ -132,7 +137,7 @@ export function EffectsLabClient() {
             P1
           </div>
 
-          <EffectLayer ref={layerRef} />
+          {mounted ? <EffectLayer ref={layerRef} /> : null}
         </section>
       </div>
     </div>
