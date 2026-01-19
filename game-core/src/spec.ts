@@ -13,6 +13,7 @@ function createByCounts<T>(...valueCounts: Array<[T, number]>): T[] {
 
 // https://github.com/cgagliardi/settlers-setup/blob/master/src/app/board/specs/standard.ts
 export const spec = {
+  id: "standard-4p",
   name: "standard4p",
   map: "hexagon",
   radius: 2,
@@ -96,5 +97,9 @@ export const spec = {
     }
   ],
   hasDefaultPortResources: true,
-  rollNumbers: () => [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12]
+  rollNumbers: () => [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12],
+  officialNumbers: [
+    5, 2, 6, 3, 8, 10, 9, 12, 11,
+    4, 8, 10, 9, 4, 5, 6, 3, 11
+  ]
 };
