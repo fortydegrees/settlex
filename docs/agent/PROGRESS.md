@@ -114,4 +114,11 @@
 - Added a dev-only Effects Lab route with deterministic replays for animation tuning.
 - Fixed Effects Lab hydration by deferring the EffectLayer portal until client mount.
 - Added an effects registry + dropdown selector in the lab and wired an audio toggle via the effect bus.
+- Wrote an implementation plan for the game log panel and structured log entries.
+
+## Status (2026-01-19)
+- Implemented a public game log in `G.gameLog` with structured entries and forced-action logging.
+- Centralized status/log copy in `app/catana/utils/gameText.js` and added a token formatter.
+- Added a left-side Game Log panel with scrollable entries and resource icons.
+- Added app-level tests for log helper/init, log entry formatting, and log panel wiring.
 - Logged a design doc for the game log panel, structured log entries, and shared text templates.
