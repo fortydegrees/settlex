@@ -56,6 +56,22 @@ export function scheduleResourceCues(timeline, emitCue) {
   timeline.call(() => emitCue("resource:pop:start"), null, "pop");
 }
 
+export function getDistributionTimings({
+  index,
+  count,
+  baseDelay,
+  popStagger,
+  travelStagger,
+  popDuration
+}) {
+  const travelStart = baseDelay + popStagger * (count - 1) + popDuration;
+  return {
+    popStart: baseDelay + popStagger * index,
+    travelStart,
+    travelStartForCard: travelStart + travelStagger * index
+  };
+}
+
 export function getCardAnimationConfig({
   startX,
   startY,

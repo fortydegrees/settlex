@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getCardAnimationConfig, getRandomizedOffsets, scheduleResourceCues } from "../../effects/resourceDistribution";
+import {
+  getCardAnimationConfig,
+  getDistributionTimings,
+  getRandomizedOffsets,
+  scheduleResourceCues
+} from "../../effects/resourceDistribution";
 
 describe("resourceDistribution cues", () => {
   it("registers pop-start cue", () => {
@@ -38,5 +43,22 @@ describe("resourceDistribution cues", () => {
     expect(offsets.jitterX).toBeGreaterThan(0);
     expect(offsets.jitterY).toBeGreaterThan(0);
     expect(offsets.rotate).toBeGreaterThan(0);
+  });
+
+  it("schedules travel after the final pop settles", () => {
+    const timings = getDistributionTimings({
+      index: 2,
+      count: 4,
+      baseDelay: 1,
+      popStagger: 0.1,
+      travelStagger: 0.02,
+      popDuration: 0.3
+    });
+
+    expect(timings.travelStart).toBeCloseTo(1 + 0.1 * (4 - 1) + 0.3, 5);
+    expect(timings.travelStartForCard).toBeCloseTo(
+      timings.travelStart + 0.02 * 2,
+      5
+    );
   });
 });
