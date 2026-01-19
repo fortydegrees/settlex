@@ -23,6 +23,28 @@ describe("formatLogEntry", () => {
       )
     ).toBe(true);
   });
+
+  it("skips forced roll/endTurn markers", () => {
+    expect(formatLogEntry({ type: "forced:roll" })).toEqual([]);
+    expect(formatLogEntry({ type: "forced:endTurn" })).toEqual([]);
+  });
+
+  it("does not append auto tag for rolls", () => {
+    const tokens = formatLogEntry({
+      type: "roll",
+      actorId: "0",
+      forced: true,
+      data: { dice: [1, 2], total: 3 }
+    });
+    expect(tokens.some((token) => token.kind === "text" && token.text === " (auto)")).toBe(
+      false
+    );
+  });
+
+  it("renders a strong divider for main phase start", () => {
+    const tokens = formatLogEntry({ type: "phase:main" });
+    expect(tokens).toEqual([{ kind: "divider", variant: "strong" }]);
+  });
 });
 
 describe("STATUS_TEXT", () => {

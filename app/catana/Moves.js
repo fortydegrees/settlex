@@ -276,6 +276,12 @@ export const placeRoad = {
 
     //if we're in placement phase, end turn after placing road
     if (isPlacement){
+    appendGameLog(G, ctx, {
+      type: "turn:end",
+      actorId: playerID,
+      data: { phase: "placement" },
+      forced: options?.forced
+    });
     events.endTurn();
     }
     //updateValids(context, stage);
@@ -581,22 +587,12 @@ export const autoDiscard = {
 
 export const autoRoll = {
   move: (context) => {
-    appendGameLog(context.G, context.ctx, {
-      type: "forced:roll",
-      actorId: "system",
-      data: { playerId: context.ctx?.currentPlayer }
-    });
     rollDice.move(context, { forced: true });
   }
 };
 
 export const autoEndTurn = {
   move: (context) => {
-    appendGameLog(context.G, context.ctx, {
-      type: "forced:endTurn",
-      actorId: "system",
-      data: { playerId: context.ctx?.currentPlayer }
-    });
     endTurn.move(context, { forced: true });
   }
 };
