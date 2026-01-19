@@ -113,3 +113,4 @@
 ## Status (2026-01-19)
 - Added a dev-only Effects Lab route with deterministic replays for animation tuning.
 - Fixed Effects Lab hydration by deferring the EffectLayer portal until client mount.
+- Added an effects registry + dropdown selector in the lab and wired an audio toggle via the effect bus.
