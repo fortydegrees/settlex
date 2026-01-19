@@ -115,7 +115,7 @@ export const Catan =  {
 
   //seed:Date.now(),
   //generate map here
-  setup: ({ ctx, random }) => {
+  setup: ({ ctx, random }, setupData) => {
     //ctx.numPlayers = 3
     const rng = () => {
       if (!random || typeof random.Number !== "function") {
@@ -123,8 +123,10 @@ export const Catan =  {
       }
       return random.Number();
     };
-    const boardConfigId = "standard-random";
-    const boardConfig = resolveBoardConfig(boardConfigId);
+    const defaultBoardConfigId = "standard-official";
+    const selectedBoardConfigId = setupData?.boardConfigId ?? defaultBoardConfigId;
+    const boardConfig = setupData?.boardConfig ?? resolveBoardConfig(selectedBoardConfigId);
+    const boardConfigId = setupData?.boardConfigId ?? (setupData?.boardConfig ? "custom" : defaultBoardConfigId);
     const tiles = generateBoard(boardConfig, rng);
     const valids = { nodes: [], edges: [], tiles: [] };
     const diceRoll = [3,4]
