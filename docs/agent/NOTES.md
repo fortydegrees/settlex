@@ -78,3 +78,5 @@
 - Initial placement resource distribution now happens in `game-core/src/rules/apply.ts` (returns `distributions` from `applyPlaceSettlement`) with tests in `game-core/src/rules/initialPlacementResources.test.ts`.
 - Game log panel + structured log entry design lives at `docs/plans/2026-01-19-game-log-design.md`.
 - Board-generation config + official spiral design lives at `docs/plans/2026-01-19-board-generation-config-design.md` (single BoardConfig input with specId + generation + reveal rules).
+- Board specs/configs live in `game-core/src/board/boardSpecs.ts` and `game-core/src/board/boardConfigs.ts`; `generateBoard` now accepts a `BoardConfig`.
+- Official spiral placement helpers live in `game-core/src/board/officialSpiral.ts`; `spec.officialNumbers` defines the ordered token list.

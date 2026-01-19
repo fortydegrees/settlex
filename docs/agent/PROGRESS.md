@@ -118,3 +118,8 @@
 
 ## Status (2026-01-19)
 - Logged a board-generation config + official spiral placement design doc to guide strategy refactors.
+
+## Status (2026-01-19)
+- Added board spec/config registries and official spiral utilities for deterministic placement.
+- Refactored board generation to accept a BoardConfig and apply terrain/number/port strategies.
+- Updated Catana setup/tests to use board configs and removed the old board preset module.
