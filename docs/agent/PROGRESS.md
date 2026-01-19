@@ -142,3 +142,6 @@
 ## Status (2026-01-19)
 - Added an effects/audio quick reference to `AGENTS.md` and linked it from agent notes.
 - Swapped resource distribution audio to the pop-out cue (`resource:pop:start`) mapped to `ui-pop-resource-out.mp3`.
+
+## Status (2026-01-19)
+- Synced resource distribution travel to start after all pops, with a tiny travel stagger and a single travel cue mapped to `card_woosh.mp3`.

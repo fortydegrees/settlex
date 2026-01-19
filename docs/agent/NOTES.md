@@ -72,6 +72,7 @@
 - Quick reference for the effects/audio stack lives in `AGENTS.md` (key files, cue mapping, and sound asset location).
 - Audio cues can opt into hidden-tab playback via `allowWhenHidden` in `app/catana/effects/soundThemes.js` (e.g., `dice:roll`, `turn:start`).
 - Resource distribution now emits `resource:pop:start` for the card pop-out sound (replacing `resource:travel:start`).
+- Resource distribution travel now waits for all pops, then travels together with a slight stagger and a single `resource:travel:start` cue mapped to `card_woosh.mp3`.
 - Resource distribution cards now use pop/overshoot + jitter/rotation in `app/catana/effects/resourceDistribution.js`.
 - Dev-only Effects Lab lives at `/catana/dev/effects` with deterministic replays via `app/catana/utils/seededRandom.js` and demo payloads in `app/catana/dev/effects/resourceDistributionLabUtils.js`.
 - Effects Lab UI is dev-only and currently not covered by UI tests; consider adding a lightweight harness if it grows.
