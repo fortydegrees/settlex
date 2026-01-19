@@ -53,7 +53,7 @@ function createCardElement(resource) {
 
 export function scheduleResourceCues(timeline, emitCue) {
   if (!timeline || !emitCue) return;
-  timeline.call(() => emitCue("resource:travel:start"), null, "travel");
+  timeline.call(() => emitCue("resource:pop:start"), null, "pop");
 }
 
 export function getCardAnimationConfig({
@@ -169,7 +169,8 @@ export function createResourceDistributionRunner({
         }
       });
 
-      tl.to(el, anim.pop)
+      tl.addLabel("pop")
+        .to(el, anim.pop)
         .to(el, anim.settle)
         .addLabel("travel")
         .to(el, anim.travel, "travel");

@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { getCardAnimationConfig, getRandomizedOffsets, scheduleResourceCues } from "../../effects/resourceDistribution";
 
 describe("resourceDistribution cues", () => {
-  it("registers travel-start cue", () => {
+  it("registers pop-start cue", () => {
     const calls = [];
     const tl = {
       call: (_, __, label) => calls.push(label)
     };
     scheduleResourceCues(tl, () => {});
-    expect(calls).toContain("travel");
+    expect(calls).toContain("pop");
   });
 
   it("builds a pop-heavy card animation config", () => {
