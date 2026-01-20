@@ -63,7 +63,7 @@ describe("AudioManager", () => {
     const audio = createAudioManager({
       bus,
       theme: {
-        "build:place": {
+        "build:settlement": {
           src: "blob://audio",
           volume: 1,
           format: ["mp3"]
@@ -72,7 +72,7 @@ describe("AudioManager", () => {
       settings: { muted: false }
     });
     audio.unlock();
-    bus.emit({ type: "cue", payload: { name: "build:place" } });
+    bus.emit({ type: "cue", payload: { name: "build:settlement" } });
     expect(Howl).toHaveBeenCalledWith(
       expect.objectContaining({
         format: ["mp3"]

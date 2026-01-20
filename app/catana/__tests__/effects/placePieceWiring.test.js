@@ -33,4 +33,10 @@ describe("placePiece wiring", () => {
     const source = read("../../effects/placePiece.js");
     expect(source).toContain("postHoldDuration");
   });
+
+  it("emits piece-specific placement audio cues", () => {
+    const source = read("../../effects/placePiece.js");
+    expect(source).toContain("build:settlement");
+    expect(source).toContain("build:road");
+  });
 });
