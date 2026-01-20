@@ -167,6 +167,7 @@
 
 ## Status (2026-01-20)
 - Added a Piece Placement entry to the Effects Lab with full tuning controls.
+- Reworked the Piece Placement lab layout to use a side-by-side control panel and preview.
 
 ## Status (2026-01-20)
 - Logged a placement animation design doc for settlement/road drop + dust effects with a shared cue.

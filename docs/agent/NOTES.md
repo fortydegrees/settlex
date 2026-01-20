@@ -78,6 +78,7 @@
 - Resource distribution cards now use pop/overshoot + jitter/rotation in `app/catana/effects/resourceDistribution.js`.
 - Piece placement animation runner lives in `app/catana/effects/placePiece.js`; cue `build:place` is mapped to `/sounds/settle_place.mp3` in `app/catana/effects/soundThemes.js`.
 - Effects Lab now includes a Piece Placement entry with tuning controls in `app/catana/dev/effects/PiecePlacementLab.jsx`.
+- Piece Placement lab uses a two-column layout with a scrollable controls panel and a larger preview panel for easier tuning.
 - Dev-only Effects Lab lives at `/catana/dev/effects` with deterministic replays via `app/catana/utils/seededRandom.js` and demo payloads in `app/catana/dev/effects/resourceDistributionLabUtils.js`.
 - Effects Lab UI is dev-only and currently not covered by UI tests; consider adding a lightweight harness if it grows.
 - Effects Lab uses `app/catana/dev/effects/registry.js` to list available labs for the dropdown; each lab receives `layerRef` + `emitCue`.
