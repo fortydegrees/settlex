@@ -12,15 +12,28 @@ import { isDocumentHidden } from "../utils/visibility";
 const PIECE_SCALE = 0.8;
 const PIECE_OFFSET_X = 0.5;
 const PIECE_OFFSET_Y = 0.63;
-const DROP_DISTANCE = 0.7;
 
-const DROP_DURATION = 0.22;
-const SQUISH_DURATION = 0.08;
-const SETTLE_DURATION = 0.18;
-const DUST_DURATION = 0.24;
-
-const DUST_SCALE_FROM = 0.2;
-const DUST_SCALE_TO = 1.15;
+const DEFAULT_TUNING = {
+  dropDistance: 0.7,
+  dropDuration: 0.22,
+  squishDuration: 0.08,
+  settleDuration: 0.18,
+  dustDuration: 0.24,
+  dustScaleFrom: 0.2,
+  dustScaleTo: 1.15,
+  dustOpacity: 0.5,
+  squishScaleX: 1.06,
+  squishScaleY: 0.92,
+  roadSquishScaleX: 1.04,
+  roadSquishScaleY: 0.94,
+  dustSizeSettlement: 0.9,
+  dustSizeRoad: 0.7,
+  easeDrop: "power2.in",
+  easeDust: "power2.out",
+  easeSquish: "power2.out",
+  easeSettle: "back.out(1.6)",
+  easeSettleRoad: "back.out(1.4)"
+};
 
 const DUST_GRADIENT =
   "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0) 70%)";
@@ -124,9 +137,10 @@ export function createPiecePlacementRunner({
     const { containerWidth, size, center } = layout;
     const scale = containerWidth ? boardRect.width / containerWidth : 1;
     const { nodeRenderById, edgeRenderById } = buildRenderMaps(tiles);
+    const tuning = { ...DEFAULT_TUNING, ...(payload?.tuning ?? {}) };
 
     const color = getPlayerColor?.(payload.playerId) ?? "red";
-    const dropPx = size * DROP_DISTANCE * scale;
+    const dropPx = size * tuning.dropDistance * scale;
 
     if (payload.pieceType === "settlement") {
       const placement = resolveNodePlacement({
@@ -142,13 +156,17 @@ export function createPiecePlacementRunner({
       const y = boardRect.top + placement.y * scale;
 
       const pieceEl = createSettlementEl({ size: pieceSize, x, y, color });
-      const dustEl = createDustRing({ size: pieceSize * 0.9, x, y });
+      const dustEl = createDustRing({
+        size: pieceSize * tuning.dustSizeSettlement,
+        x,
+        y
+      });
 
       layerEl.appendChild(dustEl);
       layerEl.appendChild(pieceEl);
 
       gsap.set(pieceEl, { y: -dropPx, scale: 1.04, opacity: 0 });
-      gsap.set(dustEl, { scale: DUST_SCALE_FROM, opacity: 0.5 });
+      gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity });
 
       gsap.timeline({
         onComplete: () => {
@@ -156,25 +174,30 @@ export function createPiecePlacementRunner({
           dustEl.remove();
         }
       })
-        .to(pieceEl, { y: 0, opacity: 1, duration: DROP_DURATION, ease: "power2.in" })
+        .to(pieceEl, {
+          y: 0,
+          opacity: 1,
+          duration: tuning.dropDuration,
+          ease: tuning.easeDrop
+        })
         .add(() => emitCue?.("build:place"))
         .to(dustEl, {
-          scale: DUST_SCALE_TO,
+          scale: tuning.dustScaleTo,
           opacity: 0,
-          duration: DUST_DURATION,
-          ease: "power2.out"
+          duration: tuning.dustDuration,
+          ease: tuning.easeDust
         }, "<")
         .to(pieceEl, {
-          scaleX: 1.06,
-          scaleY: 0.92,
-          duration: SQUISH_DURATION,
-          ease: "power2.out"
+          scaleX: tuning.squishScaleX,
+          scaleY: tuning.squishScaleY,
+          duration: tuning.squishDuration,
+          ease: tuning.easeSquish
         }, "<")
         .to(pieceEl, {
           scaleX: 1,
           scaleY: 1,
-          duration: SETTLE_DURATION,
-          ease: "back.out(1.6)"
+          duration: tuning.settleDuration,
+          ease: tuning.easeSettle
         });
       return;
     }
@@ -204,13 +227,17 @@ export function createPiecePlacementRunner({
         ),
         color
       });
-      const dustEl = createDustRing({ size: roadSize * 0.7, x: dustX, y: dustY });
+      const dustEl = createDustRing({
+        size: roadSize * tuning.dustSizeRoad,
+        x: dustX,
+        y: dustY
+      });
 
       layerEl.appendChild(dustEl);
       layerEl.appendChild(roadEl);
 
       gsap.set(roadEl, { y: -dropPx, scale: 1.03, opacity: 0 });
-      gsap.set(dustEl, { scale: DUST_SCALE_FROM, opacity: 0.5 });
+      gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity });
 
       gsap.timeline({
         onComplete: () => {
@@ -218,25 +245,30 @@ export function createPiecePlacementRunner({
           dustEl.remove();
         }
       })
-        .to(roadEl, { y: 0, opacity: 1, duration: DROP_DURATION, ease: "power2.in" })
+        .to(roadEl, {
+          y: 0,
+          opacity: 1,
+          duration: tuning.dropDuration,
+          ease: tuning.easeDrop
+        })
         .add(() => emitCue?.("build:place"))
         .to(dustEl, {
-          scale: DUST_SCALE_TO,
+          scale: tuning.dustScaleTo,
           opacity: 0,
-          duration: DUST_DURATION,
-          ease: "power2.out"
+          duration: tuning.dustDuration,
+          ease: tuning.easeDust
         }, "<")
         .to(roadEl, {
-          scaleX: 1.04,
-          scaleY: 0.94,
-          duration: SQUISH_DURATION,
-          ease: "power2.out"
+          scaleX: tuning.roadSquishScaleX,
+          scaleY: tuning.roadSquishScaleY,
+          duration: tuning.squishDuration,
+          ease: tuning.easeSquish
         }, "<")
         .to(roadEl, {
           scaleX: 1,
           scaleY: 1,
-          duration: SETTLE_DURATION,
-          ease: "back.out(1.4)"
+          duration: tuning.settleDuration,
+          ease: tuning.easeSettleRoad
         });
     }
   };
