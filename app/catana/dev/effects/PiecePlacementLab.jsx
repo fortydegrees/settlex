@@ -2,6 +2,7 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import { createPiecePlacementRunner } from "../../effects/placePiece";
+import { PLACE_PIECE_DEFAULT_TUNING } from "../../effects/placePieceDefaults";
 import { createSeededRandom } from "../../utils/seededRandom";
 import useWindowSize from "../../utils/useWindowSize";
 import { getBoardLayout } from "../../utils/boardLayout";
@@ -10,35 +11,6 @@ import { generateBoard, resolveBoardConfig } from "@settlex/game-core";
 
 const DEFAULT_SEED = 1;
 const DEFAULT_PLAYER_ID = "0";
-const DEFAULT_TUNING = {
-  dropDistance: 1.5,
-  dropDuration: 0.22,
-  squishDuration: 0.08,
-  settleDuration: 0.18,
-  dustDuration: 0.24,
-  dustScaleFrom: 0.2,
-  dustScaleTo: 1.15,
-  dustOpacity: 0.7,
-  squishScaleX: 1,
-  squishScaleY: 1,
-  roadSquishScaleX: 1,
-  roadSquishScaleY: 1,
-  dustSizeSettlement: 1.05,
-  dustSizeRoad: 0.85,
-  shadowOpacity: 0.35,
-  shadowScaleFrom: 0.4,
-  shadowScaleTo: 0.9,
-  shadowSizeSettlement: 0.85,
-  shadowSizeRoad: 0.6,
-  shadowFadeOutDuration: 0.08,
-  shadowEase: "power2.out",
-  easeDrop: "power2.in",
-  easeDust: "power2.out",
-  easeSquish: "power2.out",
-  easeSettle: "back.out(1.6)",
-  easeSettleRoad: "back.out(1.4)"
-};
-
 const COLOR_OPTIONS = [
   { id: "red", label: "Red" },
   { id: "blue", label: "Blue" },
@@ -69,7 +41,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
   const [pieceType, setPieceType] = useState("settlement");
   const [playerColor, setPlayerColor] = useState("red");
   const [targetIndex, setTargetIndex] = useState(0);
-  const [tuning, setTuning] = useState(DEFAULT_TUNING);
+  const [tuning, setTuning] = useState(PLACE_PIECE_DEFAULT_TUNING);
 
   const layout = useMemo(() => {
     if (!width || !height) return null;

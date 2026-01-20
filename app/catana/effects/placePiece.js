@@ -8,39 +8,11 @@ import {
   tilePixelVector
 } from "../utils/coordinates";
 import { isDocumentHidden } from "../utils/visibility";
+import { PLACE_PIECE_DEFAULT_TUNING } from "./placePieceDefaults";
 
 const PIECE_SCALE = 0.8;
 const PIECE_OFFSET_X = 0.5;
 const PIECE_OFFSET_Y = 0.63;
-
-const DEFAULT_TUNING = {
-  dropDistance: 1.5,
-  dropDuration: 0.22,
-  squishDuration: 0.08,
-  settleDuration: 0.18,
-  dustDuration: 0.24,
-  dustScaleFrom: 0.2,
-  dustScaleTo: 1.15,
-  dustOpacity: 0.7,
-  squishScaleX: 1,
-  squishScaleY: 1,
-  roadSquishScaleX: 1,
-  roadSquishScaleY: 1,
-  dustSizeSettlement: 1.05,
-  dustSizeRoad: 0.85,
-  shadowOpacity: 0.35,
-  shadowScaleFrom: 0.4,
-  shadowScaleTo: 0.9,
-  shadowSizeSettlement: 0.85,
-  shadowSizeRoad: 0.6,
-  shadowFadeOutDuration: 0.08,
-  shadowEase: "power2.out",
-  easeDrop: "power2.in",
-  easeDust: "power2.out",
-  easeSquish: "power2.out",
-  easeSettle: "back.out(1.6)",
-  easeSettleRoad: "back.out(1.4)"
-};
 
 const SHADOW_GRADIENT =
   "radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0) 70%)";
@@ -147,7 +119,10 @@ export function createPiecePlacementRunner({
     const { containerWidth, size, center } = layout;
     const scale = containerWidth ? boardRect.width / containerWidth : 1;
     const { nodeRenderById, edgeRenderById } = buildRenderMaps(tiles);
-    const tuning = { ...DEFAULT_TUNING, ...(payload?.tuning ?? {}) };
+    const tuning = {
+      ...PLACE_PIECE_DEFAULT_TUNING,
+      ...(payload?.tuning ?? {})
+    };
 
     const color = getPlayerColor?.(payload.playerId) ?? "red";
     const dropPx = size * tuning.dropDistance * scale;

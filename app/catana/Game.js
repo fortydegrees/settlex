@@ -3,6 +3,10 @@ import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
 import { appendGameLog } from "./utils/gameLog.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
+import {
+  PLACE_PIECE_DEFAULT_TUNING,
+  getPlacementEffectDuration
+} from "./effects/placePieceDefaults";
 
 const DEBUG_MOVES = {
   DEBUG_takeCardsFromBank,
@@ -54,7 +58,7 @@ const configuredEffectsPlugin = EffectsPlugin({
     },
     placePiece: {
       create: (value) => value,
-      duration: 0.7
+      duration: getPlacementEffectDuration(PLACE_PIECE_DEFAULT_TUNING)
     }
   },
 });
