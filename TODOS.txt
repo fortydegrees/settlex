@@ -3,20 +3,22 @@ Personal TODO
 [ ] game status box, e.g. 'waiting for player 1 to roll'. 'player 1 choosing robber location'
     kinda done wiht CC, looks a bit ugly tho
 
-[ ] game log
-
 [ ] chat box
 
-
-not obvious when playing a knight. e.g. the card just disappears when clicked.
-    status thing doesn't update
-    should also be obvious when opponent is playing a knight/dev
-        should come out and hover next to board while they're making their decision (for knight + rb)
-        for mono/yop, can just like pop out, resource cards animate, then go
+[ ] sounds
+    mute button
+    ticking when close to turn timer end
 
 
+[ ] sidebar UI.
+    game rules- 2 player, VPs to win, discard limit etc
+    game log
+    chat
+    bank
 
 animations
+    resource disribution
+        could have the icon like 'flash'/glow and the resources 'pop' out of that (instead of looking like cards)
     game start - tile reveal/drop
         https://codesandbox.io/p/sandbox/uqpn4f
         https://codesandbox.io/p/sandbox/90qj1i?file=%2Fsrc%2FApp.tsx
@@ -28,21 +30,29 @@ animations
     dice roll
     thought bubble
         maybe have like an 'idle' animation where it jus kind of 'bubbles' a tiny amount?
+    maritime trade
+not obvious when playing a knight. e.g. the card just disappears when clicked.
+    status thing doesn't update
+    should also be obvious when opponent is playing a knight/dev
+        should come out and hover next to board while they're making their decision (for knight + rb)
+        for mono/yop, can just like pop out, resource cards animate, then go
 
-[ ] sounds
-    mute button
-    ticking when close to turn timer end
 
-
-[ ] proper/different board generation - balanced/standard
+weird legacy bounce animation in player action container when placing roads doesn't stop/makes it difficult to place multiple in one turn 
 
 [ ] change all design svgs from colonist ones
+
+[ ] implement player colour properly
+    user can set/choose (or we just randomly assign red/blue)
+    this propagates into the UI (e.g avatar box, log box, settlement colours)
+
 
 [ ] mobile friendly / responsiveness
     [ ] resource/action bar and 'end turn' overlap
     in mobile, dev cards can be not in a container and just like 'fanned' at the bottom. can like flash when they're playable. then a user can press them and they'll expand/fan to fill screen and a user can press
         could also add swiping/drag!
     or (more short term) can just compress dev card box/make it stack
+    expandable/hideable components, e.g. logbox
 
 
 [ ] post-game stats
@@ -52,18 +62,14 @@ animations
 [ ] handle disconnect/quitting/resigning
     need like a new UI component/state thing that are like authoritative messages from server. like a banner at the top
 
+[ ] not super obvious that we have to place the robber. action circles aren't obvious..
 
-
-[ ] dialog box to choose which player to steal from if > 2
+3 player +
+    [ ] dialog box to choose which player to steal from if > 2
 
 
 === 'big refactors' ===
-around animations? is it fine for them to live in the UI? like is our structure correct/good? how would/does this combine with like sounds, achievements?
-    how would/does this work with a setting that disables animation(s)? or different themes?
-
 settings/customizability/custom themes
-
-sound engine
 
 UI/frontend testing
 
@@ -71,9 +77,12 @@ we also want like, backend testing? e.g. user re-connecting to/rejoining game. h
 
 ==potential bugs==
 
-weird legacy bounce animation in player action container when placing roads doesn't stop/makes it difficult to place multiple in one turn 
-
 what if there's no valid robber targets? (e.g. small board, friendly robber)
+    knight not playable? have to skip the 'robber place' phase on 7?
+
+
+what about the (very rare)? bug where a user has resources and roads left in the bank, but _can't_ place roads as there's no possible location?
+    need a test for this, how it connects to road builder dev card
 
 ==minor==
 better UI stuff. timer, status box.
@@ -83,9 +92,19 @@ easy build roads (by just clicking on available edge)
 settlement still shows when hovering to place city. looks a bit janky. settle/city placement in general could be better
 road spacing looks janky
 minor animation/transition for the width of the opponent card box. there's a css property for this right? but yeah when it 'grows' it just jumps rn (e.g. when going from 3 cards to 4)
+optimize sound/mp3s
+
+hover over road/settle/city buttons and it subtly shows you the resources required
+    but could be annoying if you're a pro. but why would you hover over if they're disabled?
+
+confirm button/UX/UI for actions, e.g. placing settle etc
+    make sure works on mobile too
 
 for dice roll/resource provision animation, do we do something if it's a number no-one's on? atm nothing happens. 
     CU does nothing
+
+[ ] game log
+    default message, like be polite or check game rules etc?
 
 [ ] bank resource display
     - maybe we don't need?
@@ -102,10 +121,6 @@ animate card loss e.g. '-1' float thing in red when trading - https://www.youtub
  image.png
 
 double click to zoom in, double click again to zoom out to the same/previous zoom level.
-
-
-what about the (very rare)? bug where a user has resources and roads left in the bank, but _can't_ place roads as there's no possible location?
-    need a test for this, how it connects to road builder dev card
 
 check that like randomness setup is done correctly. like generating dev card deck in setup etc.
 
@@ -127,7 +142,6 @@ profiles, game history etc
 
 two player, see other person's mouse live
 achievements
-play dev card at any time 
 
 settings
     'pro mode' / no animations 
@@ -163,6 +177,8 @@ custom rules. e.g. custom friendly robber. can't be robbed/blocked on 2VP, but a
 
 
 ==design==
+
+is UI 'language' consistent? like game log box has drop shadow. i don't think our resource container does? our end turn button doesnt
 
 how to signify too many cards?
      I think the most elegant and subtle way to handle this is to use contextual coloring on the container itself, rather than adding new icons or animations that might clutter
@@ -201,6 +217,9 @@ victory points/dev card - should/do they 'stack', so they overlap if there are m
 
 
 === big===
+
+proper catan game format, like a PGN/FEN kinda stuff.
+
 like if you were making this some kind of library/api. your dev card container would receive dev cards
 each dev card would be individual with like a 'playable' boolean, right?
 (this is inspired from thinking through/talking about the knight dev card bug in our UI - where buying a knight means you can't play any knight on the turn)
