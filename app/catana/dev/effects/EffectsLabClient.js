@@ -51,7 +51,7 @@ export function EffectsLabClient() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-8">
         <header className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">Effects Lab</h1>
           <p className="text-sm text-slate-300">
