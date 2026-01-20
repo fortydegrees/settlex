@@ -49,19 +49,27 @@ function createSettlementEl({ size, x, y, color }) {
   return el;
 }
 
-function createRoadEl({ size, x, y, transform, color }) {
+function createRoadWrapper({ size, x, y }) {
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.width = `${size}px`;
-  el.style.height = `${size * 0.2}px`;
+  el.style.height = `${size}px`;
   el.style.left = `${x}px`;
   el.style.top = `${y}px`;
+  el.style.pointerEvents = "none";
+  el.style.zIndex = "1001";
+  return el;
+}
+
+function createRoadInner({ size, transform, color }) {
+  const el = document.createElement("div");
+  el.style.width = `${size}px`;
+  el.style.height = `${size * 0.2}px`;
   el.style.transform = transform;
   el.style.backgroundImage = `url('/svgs/road_${color}.svg')`;
   el.style.backgroundRepeat = "no-repeat";
   el.style.backgroundSize = "contain";
   el.style.pointerEvents = "none";
-  el.style.zIndex = "1001";
   return el;
 }
 
@@ -238,10 +246,13 @@ export function createPiecePlacementRunner({
       const dustX = offsetLeft + placement.dustX * scale;
       const dustY = offsetTop + placement.dustY * scale;
 
-      const roadEl = createRoadEl({
+      const roadWrapperEl = createRoadWrapper({
         size: roadSize,
         x,
-        y,
+        y
+      });
+      const roadInnerEl = createRoadInner({
+        size: roadSize,
         transform: getEdgeTransform(
           placement.direction,
           roadSize
@@ -263,22 +274,23 @@ export function createPiecePlacementRunner({
         zIndex: 1000
       });
 
+      roadWrapperEl.appendChild(roadInnerEl);
       layerEl.appendChild(shadowEl);
       layerEl.appendChild(dustEl);
-      layerEl.appendChild(roadEl);
+      layerEl.appendChild(roadWrapperEl);
 
-      gsap.set(roadEl, { y: -dropPx, scale: 1.03, opacity: 0 });
+      gsap.set(roadWrapperEl, { y: -dropPx, scale: 1.03, opacity: 0 });
       gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
       gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 
       gsap.timeline({
         onComplete: () => {
-          roadEl.remove();
+          roadWrapperEl.remove();
           dustEl.remove();
           shadowEl.remove();
         }
       })
-        .to(roadEl, {
+        .to(roadWrapperEl, {
           y: 0,
           opacity: 1,
           duration: tuning.dropDuration,
@@ -307,13 +319,13 @@ export function createPiecePlacementRunner({
           duration: tuning.shadowFadeOutDuration,
           ease: "power1.out"
         }, "<")
-        .to(roadEl, {
+        .to(roadWrapperEl, {
           scaleX: tuning.roadSquishScaleX,
           scaleY: tuning.roadSquishScaleY,
           duration: tuning.squishDuration,
           ease: tuning.easeSquish
         }, "<")
-        .to(roadEl, {
+        .to(roadWrapperEl, {
           scaleX: 1,
           scaleY: 1,
           duration: tuning.settleDuration,
