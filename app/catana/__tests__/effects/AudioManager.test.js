@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { Howl } from "howler";
 import { createEffectBus } from "../../effects/EffectBus";
 import { createAudioManager } from "../../effects/AudioManager";
 
@@ -55,5 +56,27 @@ describe("AudioManager", () => {
     audio.unlock();
     bus.emit({ type: "cue", payload: { name: "turn:start" } });
     expect(audio._debugLastPlay()).toBe("turn:start");
+  });
+
+  it("passes through audio format overrides when provided", () => {
+    const bus = createEffectBus();
+    const audio = createAudioManager({
+      bus,
+      theme: {
+        "build:place": {
+          src: "blob://audio",
+          volume: 1,
+          format: ["mp3"]
+        }
+      },
+      settings: { muted: false }
+    });
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "build:place" } });
+    expect(Howl).toHaveBeenCalledWith(
+      expect.objectContaining({
+        format: ["mp3"]
+      })
+    );
   });
 });
