@@ -52,6 +52,7 @@ export function CatanBoard({
   moves,
   isActive,
   boardRef,
+  placementLayerRef,
 }) {
 
   //surely gotta be state...
@@ -461,8 +462,12 @@ export function CatanBoard({
   return (
     <div ref={setBoardRefs}>
       {" "}
-      <div className="h-screen w-screen">
+      <div className="relative h-screen w-screen">
         {tiles}
+        <div
+          ref={placementLayerRef}
+          className="absolute inset-0 pointer-events-none z-0"
+        />
 
         {buildings}
         {actions}
