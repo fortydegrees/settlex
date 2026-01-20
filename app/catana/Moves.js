@@ -137,6 +137,12 @@ export const placeSettlement = {
       console.log(`Invalid settlement placement at node ${node}`);
       return;
     }
+    effects?.placePiece?.({
+      pieceType: "settlement",
+      id: nodeId,
+      playerId: playerID,
+      initialPlacement: isPlacement
+    });
     const distributions = result.distributions ?? [];
     if (distributions.length > 0) {
       const cardAnims = distributions.map((d) => {
@@ -252,7 +258,7 @@ const pickRandom = (items, random) => {
 
 export const placeRoad = {
   move: (context, edge, options) => {
-    const { G, playerID, events, ctx } = context;
+    const { G, playerID, events, ctx, effects } = context;
     const isPlacement = ctx.phase === "placement";
     if (G.core) {
       G.core.phase = isPlacement ? "placement" : "normal";
@@ -267,6 +273,12 @@ export const placeRoad = {
       console.log(`Invalid road placement at edge ${edge}`);
       return;
     }
+    effects?.placePiece?.({
+      pieceType: "road",
+      id: edge,
+      playerId: playerID,
+      initialPlacement: isPlacement
+    });
     appendGameLog(G, ctx, {
       type: "build:road",
       actorId: playerID,
@@ -901,7 +913,7 @@ export const cancelDevCardPlay = {
 
 export const placeRoadFromDevCard = {
   move: (context, edge, options) => {
-    const { G, playerID, ctx } = context;
+    const { G, playerID, ctx, effects } = context;
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.type !== "roadBuilding") return;
     if (devPlay.playerId !== playerID) return;
@@ -912,6 +924,12 @@ export const placeRoadFromDevCard = {
       console.log(`Invalid dev road: ${result.error}`);
       return;
     }
+    effects?.placePiece?.({
+      pieceType: "road",
+      id: edge,
+      playerId: playerID,
+      initialPlacement: ctx.phase === "placement"
+    });
     appendGameLog(G, ctx, {
       type: "build:road",
       actorId: playerID,
