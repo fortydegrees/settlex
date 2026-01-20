@@ -11,20 +11,27 @@ import { generateBoard, resolveBoardConfig } from "@settlex/game-core";
 const DEFAULT_SEED = 1;
 const DEFAULT_PLAYER_ID = "0";
 const DEFAULT_TUNING = {
-  dropDistance: 0.7,
+  dropDistance: 1.5,
   dropDuration: 0.22,
   squishDuration: 0.08,
   settleDuration: 0.18,
   dustDuration: 0.24,
   dustScaleFrom: 0.2,
   dustScaleTo: 1.15,
-  dustOpacity: 0.5,
-  squishScaleX: 1.06,
-  squishScaleY: 0.92,
-  roadSquishScaleX: 1.04,
-  roadSquishScaleY: 0.94,
-  dustSizeSettlement: 0.9,
-  dustSizeRoad: 0.7,
+  dustOpacity: 0.7,
+  squishScaleX: 1,
+  squishScaleY: 1,
+  roadSquishScaleX: 1,
+  roadSquishScaleY: 1,
+  dustSizeSettlement: 1.05,
+  dustSizeRoad: 0.85,
+  shadowOpacity: 0.35,
+  shadowScaleFrom: 0.4,
+  shadowScaleTo: 0.9,
+  shadowSizeSettlement: 0.85,
+  shadowSizeRoad: 0.6,
+  shadowFadeOutDuration: 0.08,
+  shadowEase: "power2.out",
   easeDrop: "power2.in",
   easeDust: "power2.out",
   easeSquish: "power2.out",
@@ -204,6 +211,24 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
           {createRangeField("Road Dust Size", tuning.dustSizeRoad, (value) =>
             setTuning((prev) => ({ ...prev, dustSizeRoad: value })), 0.3, 1.3, 0.05
           )}
+          {createRangeField("Shadow Opacity", tuning.shadowOpacity, (value) =>
+            setTuning((prev) => ({ ...prev, shadowOpacity: value })), 0, 0.6, 0.05
+          )}
+          {createRangeField("Shadow Scale From", tuning.shadowScaleFrom, (value) =>
+            setTuning((prev) => ({ ...prev, shadowScaleFrom: value })), 0.2, 1, 0.05
+          )}
+          {createRangeField("Shadow Scale To", tuning.shadowScaleTo, (value) =>
+            setTuning((prev) => ({ ...prev, shadowScaleTo: value })), 0.4, 1.2, 0.05
+          )}
+          {createRangeField("Settlement Shadow Size", tuning.shadowSizeSettlement, (value) =>
+            setTuning((prev) => ({ ...prev, shadowSizeSettlement: value })), 0.6, 1.1, 0.05
+          )}
+          {createRangeField("Road Shadow Size", tuning.shadowSizeRoad, (value) =>
+            setTuning((prev) => ({ ...prev, shadowSizeRoad: value })), 0.4, 0.9, 0.05
+          )}
+          {createRangeField("Shadow Fade", tuning.shadowFadeOutDuration, (value) =>
+            setTuning((prev) => ({ ...prev, shadowFadeOutDuration: value })), 0.02, 0.2, 0.01
+          )}
           {createRangeField("Squish X", tuning.squishScaleX, (value) =>
             setTuning((prev) => ({ ...prev, squishScaleX: value })), 0.9, 1.1, 0.01
           )}
@@ -224,18 +249,26 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
               onChange={(event) => setTuning((prev) => ({ ...prev, easeDrop: event.target.value }))}
             />
           </label>
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
-            Ease Dust
-            <input
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
-              value={tuning.easeDust}
-              onChange={(event) => setTuning((prev) => ({ ...prev, easeDust: event.target.value }))}
-            />
-          </label>
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
-            Ease Squish
-            <input
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          Ease Dust
+          <input
+            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+            value={tuning.easeDust}
+            onChange={(event) => setTuning((prev) => ({ ...prev, easeDust: event.target.value }))}
+          />
+        </label>
+        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          Ease Shadow
+          <input
+            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+            value={tuning.shadowEase}
+            onChange={(event) => setTuning((prev) => ({ ...prev, shadowEase: event.target.value }))}
+          />
+        </label>
+        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          Ease Squish
+          <input
+            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
               value={tuning.easeSquish}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeSquish: event.target.value }))}
             />
