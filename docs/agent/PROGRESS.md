@@ -166,4 +166,7 @@
 - Added placement drop + dust animations for settlement/road builds with a shared sound cue.
 
 ## Status (2026-01-20)
+- Added a Piece Placement entry to the Effects Lab with full tuning controls.
+
+## Status (2026-01-20)
 - Logged a placement animation design doc for settlement/road drop + dust effects with a shared cue.
