@@ -6,12 +6,14 @@ export const EFFECTS_LAB_REGISTRY = [
     id: "piece-placement",
     label: "Piece Placement",
     component: PiecePlacementLab,
-    supportsAudio: true
+    supportsAudio: true,
+    cues: ["build:place"]
   },
   {
     id: "resource-distribution",
     label: "Resource Distribution",
     component: ResourceDistributionLab,
-    supportsAudio: true
+    supportsAudio: true,
+    cues: ["resource:pop:start", "resource:travel:start"]
   }
 ];
