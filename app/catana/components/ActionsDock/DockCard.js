@@ -152,6 +152,7 @@ export const DockCard = ({ action }) => {
             style={action.style}
             src={action.img}
             alt=""
+            draggable={false}
           />
 
           {(action.count > 0) && (

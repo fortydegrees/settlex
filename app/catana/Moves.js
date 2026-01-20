@@ -275,14 +275,26 @@ export const placeRoad = {
     });
 
     //if we're in placement phase, end turn after placing road
-    if (isPlacement){
-    appendGameLog(G, ctx, {
-      type: "turn:end",
-      actorId: playerID,
-      data: { phase: "placement" },
-      forced: options?.forced
-    });
-    events.endTurn();
+    if (isPlacement) {
+      const ruleset = G.core?.ruleset;
+      const startingSettlements = ruleset?.pieceLimits?.settlements ?? 0;
+      const startingRoads = ruleset?.pieceLimits?.roads ?? 0;
+      const placementComplete = G.core?.players?.every((id) => {
+        const playerState = G.core.playerStateById[id];
+        return (
+          playerState?.settlementsRemaining === startingSettlements - 2 &&
+          playerState?.roadsRemaining === startingRoads - 2
+        );
+      });
+      if (!placementComplete) {
+        appendGameLog(G, ctx, {
+          type: "turn:end",
+          actorId: playerID,
+          data: { phase: "placement" },
+          forced: options?.forced
+        });
+      }
+      events.endTurn();
     }
     //updateValids(context, stage);
   },

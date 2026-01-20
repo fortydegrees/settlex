@@ -269,6 +269,7 @@ export const TradeDiscardModal = ({
                           src={RESOURCE_ICON_SVGS[res]}
                           alt={res}
                           className="h-10 w-10 drop-shadow-md"
+                          draggable={false}
                         />
                         <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                           {available}
@@ -327,7 +328,12 @@ export const TradeDiscardModal = ({
                             : 'hover:bg-white hover:bg-opacity-50'
                         } ${isSame ? 'opacity-30 cursor-not-allowed' : ''}`}
                       >
-                         <img src={RESOURCE_ICON_SVGS[res]} alt={res} className="h-8 w-8 drop-shadow-md" />
+                         <img
+                           src={RESOURCE_ICON_SVGS[res]}
+                           alt={res}
+                           className="h-8 w-8 drop-shadow-md"
+                           draggable={false}
+                         />
                       </button>
                     );
                 })}
@@ -367,6 +373,7 @@ export const TradeDiscardModal = ({
                           src={RESOURCE_ICON_SVGS[res]}
                           alt={res}
                           className="h-10 w-10 drop-shadow-md"
+                          draggable={false}
                         />
                         {isDevYop && bankFinite && (
                           <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">

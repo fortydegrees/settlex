@@ -485,7 +485,7 @@ export function createResourceDistributionRunner({ layerEl, getLayout, getBoardR
         .to(el, { x: endX, y: endY, duration: 0.6, ease: "power2.out" }, "travel");
 
       scheduleResourceCues(tl, emitCue);
-      tl.delay(index * 0.03);
+      tl.delay(index * 0.5);
     });
   };
 }

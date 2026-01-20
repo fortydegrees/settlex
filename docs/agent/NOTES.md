@@ -44,6 +44,7 @@
 - Future player-view model note lives at `docs/future_plans/player-view-model.md`.
 - Dev-card stacked display order is handled via `app/catana/components/devCardDisplayUtils.js`.
 - Card stack badges now respect a configurable `badgeMinCount` (default 3) in `app/catana/components/CardStackLayout.js`.
+- `app/catana/components/NextImage.js` now defaults `draggable={false}` to prevent UI SVGs from being draggable; coverage in `app/catana/__tests__/uiNoDragImages.test.js` (resource bar, dock, log, trade modal, and Card.js).
 - Turn timer design doc (server-enforced with stage timers/auto-moves) lives at `docs/plans/2026-01-14-turn-timers-design.md`.
 - Turn timer implementation plan lives at `docs/plans/2026-01-14-turn-timers-implementation-plan.md`.
 - TimerManager lives at `server/timers/TimerManager.js`; stage/turn timers and action time bonuses are handled there.
@@ -73,6 +74,7 @@
 - Audio cues can opt into hidden-tab playback via `allowWhenHidden` in `app/catana/effects/soundThemes.js` (e.g., `dice:roll`, `turn:start`).
 - Resource distribution now emits `resource:pop:start` for the card pop-out sound (replacing `resource:travel:start`).
 - Resource distribution travel now waits for all pops, then travels together with a slight stagger and a single `resource:travel:start` cue mapped to `card_woosh.mp3`.
+- Resource travel cue is scheduled 20ms ahead of motion to line up the woosh with travel start.
 - Resource distribution cards now use pop/overshoot + jitter/rotation in `app/catana/effects/resourceDistribution.js`.
 - Dev-only Effects Lab lives at `/catana/dev/effects` with deterministic replays via `app/catana/utils/seededRandom.js` and demo payloads in `app/catana/dev/effects/resourceDistributionLabUtils.js`.
 - Effects Lab UI is dev-only and currently not covered by UI tests; consider adding a lightweight harness if it grows.
@@ -89,3 +91,8 @@
 - Placement turn boundaries now log `turn:end` dividers from `placeRoad`, and `phase:main` adds a strong divider when placement ends.
 - Placement no longer logs a phase-start entry; the final placement road omits the `turn:end` divider so the main-phase divider stands alone.
 - Game log autoscroll now pauses while hovering and only resumes on new entries after an idle delay; the log list has a small top padding.
+- Placement no longer logs a phase-start entry; the final placement road omits the `turn:end` divider so the main-phase divider stands alone.
+- Game log autoscroll now pauses while hovering and only resumes on new entries after an idle delay; the log list has a small top padding.
+- Game screen now includes a top-left audio mute toggle that calls `Howler.mute(...)` and persists state in `localStorage` under `catana:audioMuted`.
+- Game log panel anchor moved to bottom-left (fixed `left-4 bottom-4`).
+- Placement animation design doc (settlement/road drop + dust + shared cue) lives at `docs/plans/2026-01-20-piece-placement-animation-design.md`.

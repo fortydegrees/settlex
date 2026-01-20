@@ -140,8 +140,27 @@
 - Updated Catana setup/tests to use board configs and removed the old board preset module.
 
 ## Status (2026-01-19)
-- Added an effects/audio quick reference to `AGENTS.md` and linked it from agent notes.
+- Removed the placement-phase start log entry so the game log begins empty.
+- Skipped the placement turn divider on the final placement road so only the main-phase divider remains.
+- Added a placement log regression test for the final-divider behavior.
+- Added top padding to the log list and refined autoscroll to pause on hover and only jump on new entries after idle.
+
+## Status (2026-01-19)
+- Disabled default dragging across Catana UI images (resource bar, dock, log icons, trade modal, dev cards via `NextImage`) and added a UI test to guard non-draggable images.
+
+## Status (2026-01-19)
+- Added an effects/audio quick reference to `AGENTS.md` and linked it from agent notes for future sessions.
 - Swapped resource distribution audio to the pop-out cue (`resource:pop:start`) mapped to `ui-pop-resource-out.mp3`.
 
 ## Status (2026-01-19)
 - Synced resource distribution travel to start after all pops, with a tiny travel stagger and a single travel cue mapped to `card_woosh.mp3`.
+
+## Status (2026-01-19)
+- Added a 20ms lead for the resource travel cue so the woosh aligns with motion.
+
+## Status (2026-01-20)
+- Added a top-left mute toggle that persists audio mute state in localStorage and uses Howler global mute.
+- Moved the Game Log panel anchor to the bottom-left of the screen.
+
+## Status (2026-01-20)
+- Logged a placement animation design doc for settlement/road drop + dust effects with a shared cue.
