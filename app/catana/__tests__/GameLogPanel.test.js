@@ -36,4 +36,16 @@ describe("GameLogPanel", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("AUTO_SCROLL_IDLE_MS");
   });
+
+  it("pauses auto-scroll while hovering the log", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("onMouseEnter");
+    expect(contents).toContain("isHoveringRef");
+  });
+
+  it("anchors the log to the bottom-left of the screen", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("bottom-4");
+    expect(contents).toContain("left-4");
+  });
 });

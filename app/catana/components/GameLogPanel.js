@@ -37,7 +37,7 @@ const renderToken = (token, index) => {
           {token.count}x
         </span>
         {icon ? (
-          <img src={icon} alt="" className="h-4 w-4" />
+          <img src={icon} alt="" className="h-4 w-4" draggable={false} />
         ) : (
           <span className="text-slate-700">{token.resource}</span>
         )}
@@ -59,10 +59,12 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
   const shouldAutoScrollRef = useRef(true);
   const idleTimeoutRef = useRef(null);
   const isAutoScrollingRef = useRef(false);
+  const isHoveringRef = useRef(false);
 
   useEffect(() => {
     if (!scrollRef.current) return;
     if (!shouldAutoScrollRef.current) return;
+    if (isHoveringRef.current) return;
     isAutoScrollingRef.current = true;
     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     requestAnimationFrame(() => {
@@ -92,15 +94,24 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
     }
     idleTimeoutRef.current = setTimeout(() => {
       shouldAutoScrollRef.current = true;
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      }
     }, AUTO_SCROLL_IDLE_MS);
+  };
+
+  const handleMouseEnter = () => {
+    isHoveringRef.current = true;
+    if (idleTimeoutRef.current) {
+      clearTimeout(idleTimeoutRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    isHoveringRef.current = false;
+    scheduleAutoScrollResume();
   };
 
   return (
     <div
-      className="fixed left-4 top-4 w-72 md:w-80 z-30 pointer-events-auto"
+      className="fixed left-4 bottom-4 w-72 md:w-80 z-30 pointer-events-auto"
       data-allow-interaction="true"
     >
       <div className="flex h-[20vh] flex-col rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text overflow-hidden">
@@ -113,9 +124,10 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
             className="game-log-scroll h-full overflow-y-auto px-4"
             onWheel={markManualScroll}
             onTouchMove={markManualScroll}
-            onMouseLeave={scheduleAutoScrollResume}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           >
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 text-sm pt-2">
               {entries.map((entry, entryIndex) => {
                 const tokens = formatLogEntry(entry, nameMap);
                 if (!tokens || tokens.length === 0) return null;

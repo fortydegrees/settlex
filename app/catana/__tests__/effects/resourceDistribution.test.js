@@ -52,7 +52,8 @@ describe("resourceDistribution cues", () => {
       baseDelay: 1,
       popStagger: 0.1,
       travelStagger: 0.02,
-      popDuration: 0.3
+      popDuration: 0.3,
+      travelCueLead: 0.02
     });
 
     expect(timings.travelStart).toBeCloseTo(1 + 0.1 * (4 - 1) + 0.3, 5);
@@ -60,5 +61,19 @@ describe("resourceDistribution cues", () => {
       timings.travelStart + 0.02 * 2,
       5
     );
+  });
+
+  it("offsets travel cue by the lead time", () => {
+    const timings = getDistributionTimings({
+      index: 0,
+      count: 1,
+      baseDelay: 1,
+      popStagger: 0.1,
+      travelStagger: 0.02,
+      popDuration: 0.3,
+      travelCueLead: 0.02
+    });
+
+    expect(timings.travelCueAt).toBeCloseTo(timings.travelStart - 0.02, 5);
   });
 });

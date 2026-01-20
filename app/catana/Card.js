@@ -34,7 +34,11 @@ export function Card({ resource, style }) {
       className={`rounded border-2 border-white p-2 drop-shadow-lg`}
       style={{ ...style, backgroundColor: bgColor }}
     >
-      <img src={RESOURCE_ICON_SVGS[resource]} className={margin} />
+      <img
+        src={RESOURCE_ICON_SVGS[resource]}
+        className={margin}
+        draggable={false}
+      />
     </animated.div>
   );
 }

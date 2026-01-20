@@ -41,11 +41,23 @@ export const CardIcon = ({ playerCards, resource, player, onResourceClick }) => 
         {playerCards.filter((item) => item === resource).length}
       </div>
       {resource === ResourceType.BRICK || resource === ResourceType.ORE ? (
-        <img src={RESOURCE_ICON_SVGS[resource]} className="h-6" />
+        <img
+          src={RESOURCE_ICON_SVGS[resource]}
+          className="h-6"
+          draggable={false}
+        />
       ) : resource == ResourceType.SHEEP ? (
-        <img src={RESOURCE_ICON_SVGS[resource]} className="h-7" />
+        <img
+          src={RESOURCE_ICON_SVGS[resource]}
+          className="h-7"
+          draggable={false}
+        />
       ) : (
-        <img src={RESOURCE_ICON_SVGS[resource]} className="h-8" />
+        <img
+          src={RESOURCE_ICON_SVGS[resource]}
+          className="h-8"
+          draggable={false}
+        />
       )}
     </div>
   );

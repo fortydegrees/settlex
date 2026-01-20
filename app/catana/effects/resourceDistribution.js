@@ -29,12 +29,13 @@ const POP_SCALES = {
 
 const POP_DURATIONS = {
   pop: 0.18,
-  settle: 0.12
+  settle: 0.6
 };
 
 const BASE_DELAY = 1;
 const POP_STAGGER = 0.1;
 const TRAVEL_STAGGER = 0.02;
+const TRAVEL_CUE_LEAD = 0.15;
 
 const TRAVEL_DURATION = 0.6;
 const JITTER_X = 4;
@@ -66,13 +67,15 @@ export function getDistributionTimings({
   baseDelay,
   popStagger,
   travelStagger,
-  popDuration
+  popDuration,
+  travelCueLead = 0
 }) {
   const travelStart = baseDelay + popStagger * (count - 1) + popDuration;
   return {
     popStart: baseDelay + popStagger * index,
     travelStart,
-    travelStartForCard: travelStart + travelStagger * index
+    travelStartForCard: travelStart + travelStagger * index,
+    travelCueAt: Math.max(0, travelStart - travelCueLead)
   };
 }
 
@@ -142,8 +145,6 @@ export function createResourceDistributionRunner({
     if (!cards.length) return;
 
     const popDuration = POP_DURATIONS.pop + POP_DURATIONS.settle;
-    const travelStart = BASE_DELAY + POP_STAGGER * (cards.length - 1) + popDuration;
-
     const layout = getLayout();
     if (!layout?.size || !layout?.center) return;
     const { size, center } = layout;
@@ -189,7 +190,8 @@ export function createResourceDistributionRunner({
         baseDelay: BASE_DELAY,
         popStagger: POP_STAGGER,
         travelStagger: TRAVEL_STAGGER,
-        popDuration
+        popDuration,
+        travelCueLead: TRAVEL_CUE_LEAD
       });
 
       gsap.set(el, anim.from);
@@ -208,7 +210,7 @@ export function createResourceDistributionRunner({
 
       scheduleResourceCues(tl, emitCue);
       if (emitCue && index === 0) {
-        tl.call(() => emitCue("resource:travel:start"), null, travelStart);
+        tl.call(() => emitCue("resource:travel:start"), null, timings.travelCueAt);
       }
     });
   };

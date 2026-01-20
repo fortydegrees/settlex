@@ -21,6 +21,18 @@ import { GameEffects } from "./effects/GameEffects";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
+import { Howler } from "howler";
+
+const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
+
+const readStoredMute = () => {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(AUDIO_MUTE_STORAGE_KEY) === "true";
+  } catch (err) {
+    return false;
+  }
+};
 
 export function GameScreen(bgioProps) {
   //playerAction is things that appear to the user (not spectator)
@@ -34,6 +46,7 @@ export function GameScreen(bgioProps) {
   const [timerSeeded, setTimerSeeded] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
+  const [isMuted, setIsMuted] = useState(readStoredMute);
   const boardRef = useRef(null);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
@@ -148,6 +161,16 @@ export function GameScreen(bgioProps) {
     moves.readyUp();
     setReadySent(true);
   }, [readySent, playerID, moves, bgioProps.ctx?.phase]);
+
+  useEffect(() => {
+    Howler.mute(isMuted);
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(AUDIO_MUTE_STORAGE_KEY, String(isMuted));
+    } catch (err) {
+      // ignore storage errors
+    }
+  }, [isMuted]);
 
   const timerMs = timerSnapshot
     ? Math.max(
@@ -313,6 +336,9 @@ export function GameScreen(bgioProps) {
   }, [width, height]);
   // console.log('p', player)
   // console.log('opps', opponents)
+  const handleToggleMute = () => {
+    setIsMuted((prev) => !prev);
+  };
   return (
     <div
       className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600 select-none"
@@ -345,6 +371,28 @@ export function GameScreen(bgioProps) {
           />
         </TransformComponent>
       </TransformWrapper>
+
+      <button
+        type="button"
+        onClick={handleToggleMute}
+        className="fixed left-4 top-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white/60 text-slate-700 shadow-lg ring-1 ring-white/50 backdrop-blur-sm transition hover:bg-white/80"
+        aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+        data-allow-interaction="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className="h-5 w-5"
+          fill="currentColor"
+        >
+          <path d="M11 4.5 6.8 8H4.5A1.5 1.5 0 0 0 3 9.5v5A1.5 1.5 0 0 0 4.5 16h2.3L11 19.5a1 1 0 0 0 1.6-.8V5.3A1 1 0 0 0 11 4.5Z" />
+          {isMuted ? (
+            <path d="m19.5 7.5-1-1-13 13 1 1 13-13Z" />
+          ) : (
+            <path d="M15.5 8.2a1 1 0 0 1 1.4 0c.9.9 1.4 2.1 1.4 3.3s-.5 2.4-1.4 3.3a1 1 0 1 1-1.4-1.4c.6-.6.9-1.3.9-1.9s-.3-1.3-.9-1.9a1 1 0 0 1 0-1.4Z" />
+          )}
+        </svg>
+      </button>
 
       <GameLogPanel entries={bgioProps.G?.gameLog ?? []} nameMap={nameMap} />
 
@@ -427,7 +475,7 @@ TODO: accurately colour it
         </div>
       )}
 
-      <DebugPanel bgioProps={bgioProps} />
+      {/* <DebugPanel bgioProps={bgioProps} /> */}
     </div>
   );
 }

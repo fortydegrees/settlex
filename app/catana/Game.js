@@ -210,13 +210,6 @@ export const Catan =  {
       next: "placement"
     },
     placement: {
-      onBegin: (context) => {
-        appendGameLog(context.G, context.ctx, {
-          type: "phase:placement",
-          actorId: "system",
-          data: {}
-        });
-      },
       turn: {
         order: TurnOrder.CUSTOM_FROM("placementOrder"),
         // playOrder: (G, ctx) => {
