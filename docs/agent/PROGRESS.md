@@ -193,3 +193,6 @@
 
 ## Status (2026-01-20)
 - Added audio format passthrough for custom Effects Lab uploads so blob URLs play reliably.
+
+## Status (2026-01-20)
+- Split placement audio cues so settlements and roads use distinct sounds.
