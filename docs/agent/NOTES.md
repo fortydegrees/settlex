@@ -80,6 +80,7 @@
 - Effects Lab now includes a Piece Placement entry with tuning controls in `app/catana/dev/effects/PiecePlacementLab.jsx`.
 - Piece Placement lab uses a two-column layout with a scrollable controls panel and a larger preview panel for easier tuning.
 - Effects Lab container width is widened (`max-w-7xl`), and the placement preview is capped at 720px square to prevent horizontal overflow.
+- Piece placement now renders a dark shadow during the drop plus a chalky dust burst at impact; defaults set `dropDistance` to 1.5 and squish scales to 1.
 - Dev-only Effects Lab lives at `/catana/dev/effects` with deterministic replays via `app/catana/utils/seededRandom.js` and demo payloads in `app/catana/dev/effects/resourceDistributionLabUtils.js`.
 - Effects Lab UI is dev-only and currently not covered by UI tests; consider adding a lightweight harness if it grows.
 - Effects Lab uses `app/catana/dev/effects/registry.js` to list available labs for the dropdown; each lab receives `layerRef` + `emitCue`.

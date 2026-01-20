@@ -14,20 +14,27 @@ const PIECE_OFFSET_X = 0.5;
 const PIECE_OFFSET_Y = 0.63;
 
 const DEFAULT_TUNING = {
-  dropDistance: 0.7,
+  dropDistance: 1.5,
   dropDuration: 0.22,
   squishDuration: 0.08,
   settleDuration: 0.18,
   dustDuration: 0.24,
   dustScaleFrom: 0.2,
   dustScaleTo: 1.15,
-  dustOpacity: 0.5,
-  squishScaleX: 1.06,
-  squishScaleY: 0.92,
-  roadSquishScaleX: 1.04,
-  roadSquishScaleY: 0.94,
-  dustSizeSettlement: 0.9,
-  dustSizeRoad: 0.7,
+  dustOpacity: 0.7,
+  squishScaleX: 1,
+  squishScaleY: 1,
+  roadSquishScaleX: 1,
+  roadSquishScaleY: 1,
+  dustSizeSettlement: 1.05,
+  dustSizeRoad: 0.85,
+  shadowOpacity: 0.35,
+  shadowScaleFrom: 0.4,
+  shadowScaleTo: 0.9,
+  shadowSizeSettlement: 0.85,
+  shadowSizeRoad: 0.6,
+  shadowFadeOutDuration: 0.08,
+  shadowEase: "power2.out",
   easeDrop: "power2.in",
   easeDust: "power2.out",
   easeSquish: "power2.out",
@@ -35,10 +42,13 @@ const DEFAULT_TUNING = {
   easeSettleRoad: "back.out(1.4)"
 };
 
-const DUST_GRADIENT =
-  "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0) 70%)";
+const SHADOW_GRADIENT =
+  "radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0) 70%)";
 
-function createDustRing({ size, x, y }) {
+const DUST_GRADIENT =
+  "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0) 70%)";
+
+function createRing({ size, x, y, gradient, zIndex }) {
   const ring = document.createElement("div");
   ring.style.position = "absolute";
   ring.style.left = `${x - size / 2}px`;
@@ -46,9 +56,9 @@ function createDustRing({ size, x, y }) {
   ring.style.width = `${size}px`;
   ring.style.height = `${size}px`;
   ring.style.borderRadius = "999px";
-  ring.style.background = DUST_GRADIENT;
+  ring.style.background = gradient;
   ring.style.pointerEvents = "none";
-  ring.style.zIndex = "1000";
+  ring.style.zIndex = `${zIndex ?? 1000}`;
   return ring;
 }
 
@@ -156,22 +166,34 @@ export function createPiecePlacementRunner({
       const y = boardRect.top + placement.y * scale;
 
       const pieceEl = createSettlementEl({ size: pieceSize, x, y, color });
-      const dustEl = createDustRing({
+      const shadowEl = createRing({
+        size: pieceSize * tuning.shadowSizeSettlement,
+        x,
+        y,
+        gradient: SHADOW_GRADIENT,
+        zIndex: 999
+      });
+      const dustEl = createRing({
         size: pieceSize * tuning.dustSizeSettlement,
         x,
-        y
+        y,
+        gradient: DUST_GRADIENT,
+        zIndex: 1000
       });
 
+      layerEl.appendChild(shadowEl);
       layerEl.appendChild(dustEl);
       layerEl.appendChild(pieceEl);
 
       gsap.set(pieceEl, { y: -dropPx, scale: 1.04, opacity: 0 });
-      gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity });
+      gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
+      gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 
       gsap.timeline({
         onComplete: () => {
           pieceEl.remove();
           dustEl.remove();
+          shadowEl.remove();
         }
       })
         .to(pieceEl, {
@@ -180,12 +202,28 @@ export function createPiecePlacementRunner({
           duration: tuning.dropDuration,
           ease: tuning.easeDrop
         })
+        .to(shadowEl, {
+          scale: tuning.shadowScaleTo,
+          opacity: tuning.shadowOpacity,
+          duration: tuning.dropDuration,
+          ease: tuning.shadowEase
+        }, "<")
         .add(() => emitCue?.("build:place"))
-        .to(dustEl, {
-          scale: tuning.dustScaleTo,
+        .fromTo(
+          dustEl,
+          { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity },
+          {
+            scale: tuning.dustScaleTo,
+            opacity: 0,
+            duration: tuning.dustDuration,
+            ease: tuning.easeDust
+          },
+          "<"
+        )
+        .to(shadowEl, {
           opacity: 0,
-          duration: tuning.dustDuration,
-          ease: tuning.easeDust
+          duration: tuning.shadowFadeOutDuration,
+          ease: "power1.out"
         }, "<")
         .to(pieceEl, {
           scaleX: tuning.squishScaleX,
@@ -227,22 +265,34 @@ export function createPiecePlacementRunner({
         ),
         color
       });
-      const dustEl = createDustRing({
+      const shadowEl = createRing({
+        size: roadSize * tuning.shadowSizeRoad,
+        x: dustX,
+        y: dustY,
+        gradient: SHADOW_GRADIENT,
+        zIndex: 999
+      });
+      const dustEl = createRing({
         size: roadSize * tuning.dustSizeRoad,
         x: dustX,
-        y: dustY
+        y: dustY,
+        gradient: DUST_GRADIENT,
+        zIndex: 1000
       });
 
+      layerEl.appendChild(shadowEl);
       layerEl.appendChild(dustEl);
       layerEl.appendChild(roadEl);
 
       gsap.set(roadEl, { y: -dropPx, scale: 1.03, opacity: 0 });
-      gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity });
+      gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
+      gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 
       gsap.timeline({
         onComplete: () => {
           roadEl.remove();
           dustEl.remove();
+          shadowEl.remove();
         }
       })
         .to(roadEl, {
@@ -251,12 +301,28 @@ export function createPiecePlacementRunner({
           duration: tuning.dropDuration,
           ease: tuning.easeDrop
         })
+        .to(shadowEl, {
+          scale: tuning.shadowScaleTo,
+          opacity: tuning.shadowOpacity,
+          duration: tuning.dropDuration,
+          ease: tuning.shadowEase
+        }, "<")
         .add(() => emitCue?.("build:place"))
-        .to(dustEl, {
-          scale: tuning.dustScaleTo,
+        .fromTo(
+          dustEl,
+          { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity },
+          {
+            scale: tuning.dustScaleTo,
+            opacity: 0,
+            duration: tuning.dustDuration,
+            ease: tuning.easeDust
+          },
+          "<"
+        )
+        .to(shadowEl, {
           opacity: 0,
-          duration: tuning.dustDuration,
-          ease: tuning.easeDust
+          duration: tuning.shadowFadeOutDuration,
+          ease: "power1.out"
         }, "<")
         .to(roadEl, {
           scaleX: tuning.roadSquishScaleX,

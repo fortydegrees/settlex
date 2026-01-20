@@ -169,6 +169,7 @@
 - Added a Piece Placement entry to the Effects Lab with full tuning controls.
 - Reworked the Piece Placement lab layout to use a side-by-side control panel and preview.
 - Widened the Effects Lab container and constrained the preview canvas to avoid horizontal scrolling.
+- Updated placement defaults (longer drop, no squish) and split shadow vs. dust burst visuals.
 
 ## Status (2026-01-20)
 - Logged a placement animation design doc for settlement/road drop + dust effects with a shared cue.
