@@ -19,6 +19,7 @@ import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { DebugPanel } from "./components/DebugPanel";
 import { GameEffects } from "./effects/GameEffects";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
+import { createPiecePlacementRunner } from "./effects/placePiece";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import { Howler } from "howler";
@@ -331,9 +332,25 @@ export function GameScreen(bgioProps) {
         });
 
         return (event) => runner(event?.payload);
+      },
+      piecePlacement: ({ layerRef, boardRef, emitCue }) => {
+        const runner = createPiecePlacementRunner({
+          getLayerEl: () => layerRef.current,
+          getLayout: () => {
+            if (!width || !height) return null;
+            return getBoardLayout({ width, height });
+          },
+          getBoardRect: () =>
+            boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
+          getTiles: () => bgioProps.G?.tiles ?? [],
+          getPlayerColor: (playerId) => playerViewMap[playerId]?.color,
+          emitCue
+        });
+
+        return (event) => runner(event?.payload);
       }
     };
-  }, [width, height]);
+  }, [width, height, bgioProps.G, playerViewMap]);
   // console.log('p', player)
   // console.log('opps', opponents)
   const handleToggleMute = () => {

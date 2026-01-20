@@ -56,6 +56,19 @@ export function GameEffects({ effects = {}, boardRef, currentPlayerId, playerID,
     [bus]
   );
 
+  useEffectListener(
+    "placePiece",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "build:place",
+        payload,
+        effectId: `build:${payload.pieceType}:${payload.id}`
+      });
+    },
+    [bus]
+  );
+
   useEffect(() => {
     if (!currentPlayerId || !playerID) return;
     if (!lastTurnRef.current.initialized) {
