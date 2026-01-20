@@ -173,3 +173,8 @@
 
 ## Status (2026-01-20)
 - Logged a placement animation design doc for settlement/road drop + dust effects with a shared cue.
+
+## Status (2026-01-20)
+- Derived placement effect duration from shared defaults to keep state updates aligned with the animation.
+- Attached a board-scoped placement layer and added board-space rendering in the placement runner.
+- Wrapped animated roads so drop translation doesn't disturb rotated road placement.

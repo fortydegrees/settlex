@@ -101,3 +101,6 @@
 - Game screen now includes a top-left audio mute toggle that calls `Howler.mute(...)` and persists state in `localStorage` under `catana:audioMuted`.
 - Game log panel anchor moved to bottom-left (fixed `left-4 bottom-4`).
 - Placement animation design doc (settlement/road drop + dust + shared cue) lives at `docs/plans/2026-01-20-piece-placement-animation-design.md`.
+- Placement tuning defaults now live in `app/catana/effects/placePieceDefaults.js`, and `getPlacementEffectDuration(...)` feeds the EffectsPlugin duration.
+- Placement effects render through a board-attached `placementLayerRef` in `app/catana/Board.js`/`app/catana/GameScreen.js`; `createPiecePlacementRunner` accepts `useBoardSpace`.
+- Road placement animation wraps the rotated road in a wrapper element so the drop translation doesn't disturb rotation.
