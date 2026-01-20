@@ -13,6 +13,7 @@ describe("placePiece wiring", () => {
     const source = read("../../Game.js");
     expect(source).toContain("getPlacementEffectDuration");
     expect(source).toContain("PLACE_PIECE_DEFAULT_TUNING");
+    expect(source).toContain("./effects/placePieceDefaults.js");
   });
 
   it("uses a board placement layer for placement effects", () => {
