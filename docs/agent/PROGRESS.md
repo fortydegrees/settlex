@@ -187,3 +187,6 @@
 
 ## Status (2026-01-20)
 - Kept the post-hold out of the effect duration so the animation overlaps the state update and avoids lingering flicker.
+
+## Status (2026-01-20)
+- Effects Lab audio now defaults on and supports a per-effect custom sound override with delay tuning.

@@ -107,3 +107,4 @@
 - Build highlights are locally suppressed after a placement click via `suppressBuildHighlights` in `app/catana/Board.js`, and edge clicks notify via `onPlaceCommitted` in `app/catana/Edge.js`.
 - Placement defaults now include a tiny `postHoldDuration` (see `app/catana/effects/placePieceDefaults.js`) to keep the animated piece visible until the state update lands.
 - `getPlacementEffectDuration` intentionally excludes `postHoldDuration` so the animation slightly overlaps the state swap.
+- Effects Lab audio defaults on, with per-lab cue overrides via a custom sound upload and delay slider in `app/catana/dev/effects/EffectsLabClient.js`.

@@ -5,31 +5,74 @@ import { gsap } from "gsap";
 import { EffectLayer } from "../../effects/EffectLayer";
 import { createEffectBus } from "../../effects/EffectBus";
 import { createAudioManager } from "../../effects/AudioManager";
+import { DEFAULT_THEME } from "../../effects/soundThemes";
 import { EFFECTS_LAB_REGISTRY } from "./registry";
 
 const DEFAULT_TIME_SCALE = 1;
+const DEFAULT_CUSTOM_DELAY_MS = 0;
+const MAX_CUSTOM_DELAY_MS = 1000;
 
 export function EffectsLabClient() {
   const layerRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [timeScale, setTimeScale] = useState(DEFAULT_TIME_SCALE);
   const [mounted, setMounted] = useState(false);
   const [selectedId, setSelectedId] = useState(
     EFFECTS_LAB_REGISTRY[0]?.id ?? ""
   );
-  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [customSound, setCustomSound] = useState({ url: "", name: "" });
+  const [customDelayMs, setCustomDelayMs] = useState(DEFAULT_CUSTOM_DELAY_MS);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const bus = useMemo(() => createEffectBus(), []);
-  const audio = useMemo(() => createAudioManager({ bus }), [bus]);
+  const audioRef = useRef(null);
 
   const selected = useMemo(
     () => EFFECTS_LAB_REGISTRY.find((item) => item.id === selectedId),
     [selectedId]
   );
 
+  const selectedCues = selected?.cues ?? [];
+  const audioSupported = Boolean(selected?.supportsAudio && selectedCues.length);
+
+  const themeOverride = useMemo(() => {
+    if (!customSound.url || !audioSupported) return DEFAULT_THEME;
+    const overrides = {};
+    selectedCues.forEach((cue) => {
+      const base = DEFAULT_THEME[cue];
+      overrides[cue] = base
+        ? { ...base, src: customSound.url }
+        : { src: customSound.url, volume: 1 };
+    });
+    return { ...DEFAULT_THEME, ...overrides };
+  }, [customSound.url, audioSupported, selectedCues]);
+
+  useEffect(() => {
+    const audio = createAudioManager({ bus, theme: themeOverride });
+    audioRef.current = audio;
+    if (hasInteracted) {
+      audio.unlock();
+    }
+    return () => {
+      audio.destroy();
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+  }, [bus, themeOverride, hasInteracted]);
+
   const emitCue = useMemo(() => {
-    if (!audioEnabled) return () => {};
-    return (name) => bus.emit({ type: "cue", payload: { name } });
-  }, [audioEnabled, bus]);
+    return (name) => {
+      const shouldDelay = customSound.url && selectedCues.includes(name);
+      if (shouldDelay && customDelayMs > 0) {
+        window.setTimeout(() => {
+          bus.emit({ type: "cue", payload: { name } });
+        }, customDelayMs);
+        return;
+      }
+      bus.emit({ type: "cue", payload: { name } });
+    };
+  }, [bus, customSound.url, selectedCues, customDelayMs]);
 
   useEffect(() => {
     gsap.globalTimeline.timeScale(timeScale);
@@ -42,11 +85,35 @@ export function EffectsLabClient() {
     setMounted(true);
   }, []);
 
-  const handleAudioToggle = () => {
-    if (!audioEnabled) {
-      audio.unlock();
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handlePointer = () => setHasInteracted(true);
+    window.addEventListener("pointerdown", handlePointer, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", handlePointer);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (customSound.url) {
+        URL.revokeObjectURL(customSound.url);
+      }
+    };
+  }, [customSound.url]);
+
+  const handleCustomSoundChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCustomSound({ url, name: file.name });
+  };
+
+  const handleClearSound = () => {
+    setCustomSound({ url: "", name: "" });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
-    setAudioEnabled((prev) => !prev);
   };
 
   return (
@@ -90,16 +157,45 @@ export function EffectsLabClient() {
             <span className="text-sm text-slate-200">{timeScale.toFixed(1)}</span>
           </label>
 
+          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+            Custom Sound
+            <input
+              ref={fileInputRef}
+              className="mt-1 text-sm text-slate-200 file:mr-3 file:rounded file:border-0 file:bg-slate-700 file:px-3 file:py-1 file:text-xs file:uppercase file:tracking-wide file:text-slate-100"
+              type="file"
+              accept="audio/*"
+              disabled={!audioSupported}
+              onChange={handleCustomSoundChange}
+            />
+            <span className="mt-1 text-sm text-slate-200">
+              {customSound.name || (audioSupported ? "None selected" : "Audio override not available")}
+            </span>
+          </label>
+
+          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+            Audio Delay
+            <input
+              className="mt-1"
+              type="range"
+              min="0"
+              max={MAX_CUSTOM_DELAY_MS}
+              step="10"
+              value={customDelayMs}
+              onChange={(event) => setCustomDelayMs(Number(event.target.value))}
+              disabled={!audioSupported}
+            />
+            <span className="text-sm text-slate-200">
+              {(customDelayMs / 1000).toFixed(2)}s
+            </span>
+          </label>
+
           <button
-            className={`rounded px-4 py-2 text-sm font-semibold ${
-              audioEnabled
-                ? "bg-emerald-400 text-slate-900"
-                : "bg-slate-700 text-slate-100"
-            }`}
-            onClick={handleAudioToggle}
+            className="rounded bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
+            onClick={handleClearSound}
+            disabled={!customSound.url}
           >
-            {audioEnabled ? "Audio On" : "Enable Audio"}
+            Clear Sound
           </button>
         </section>
 
