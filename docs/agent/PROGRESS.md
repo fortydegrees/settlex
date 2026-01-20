@@ -178,3 +178,6 @@
 - Derived placement effect duration from shared defaults to keep state updates aligned with the animation.
 - Attached a board-scoped placement layer and added board-space rendering in the placement runner.
 - Wrapped animated roads so drop translation doesn't disturb rotated road placement.
+
+## Status (2026-01-20)
+- Suppressed build action highlights immediately after a placement click and restored them once board state advances.
