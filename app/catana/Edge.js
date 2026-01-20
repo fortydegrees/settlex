@@ -171,6 +171,7 @@ export function Edge({
   setHoveredNode,
   moves,
   setPlayerAction,
+  onPlaceCommitted,
 }) {
   const { width } = useWindowSize();
   const [centerX, centerY] = center;
@@ -190,6 +191,7 @@ export function Edge({
         hoveredNode={hoveredNode}
         setHoveredNode={setHoveredNode}
         onPlace={(edgeId) => {
+          onPlaceCommitted?.();
           if (roadBuilding) {
             moves.placeRoadFromDevCard(edgeId);
           } else {
@@ -214,6 +216,7 @@ export function Edge({
         hoveredEdge={hoveredNode}
         setHoveredEdge={setHoveredNode}
         onPlace={(edgeId) => {
+          onPlaceCommitted?.();
           moves.placeRoad(edgeId);
           setHoveredNode(null);
         }}

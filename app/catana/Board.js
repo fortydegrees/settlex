@@ -73,6 +73,7 @@ export function CatanBoard({
   const [flashingTiles, setFlashingTiles] = useState([]);
   const [blockedFlashingTiles, setBlockedFlashingTiles] = useState([]);
   const [robberTiles, setRobberTiles] = useState([]);
+  const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
 
   const [buildableRoads, setBuildableRoads] = useState([])
   const mainBuildableNodes = useMemo(() => {
@@ -159,6 +160,37 @@ export function CatanBoard({
       setBuildableRoads([])
     }
   }, [playerAction, G, ctx])
+
+  const lastBoardStateRef = useRef({
+    phase: ctx.phase,
+    currentPlayer: ctx.currentPlayer,
+    activePlayers: ctx.activePlayers,
+    core: G.core
+  });
+
+  useEffect(() => {
+    const last = lastBoardStateRef.current;
+    const stateChanged =
+      last.phase !== ctx.phase ||
+      last.currentPlayer !== ctx.currentPlayer ||
+      last.activePlayers !== ctx.activePlayers ||
+      last.core !== G.core;
+
+    if (suppressBuildHighlights && stateChanged) {
+      setSuppressBuildHighlights(false);
+    }
+
+    lastBoardStateRef.current = {
+      phase: ctx.phase,
+      currentPlayer: ctx.currentPlayer,
+      activePlayers: ctx.activePlayers,
+      core: G.core
+    };
+  }, [ctx.phase, ctx.currentPlayer, ctx.activePlayers, G.core, suppressBuildHighlights]);
+
+  const handleBuildCommit = () => {
+    setSuppressBuildHighlights(true);
+  };
 
   
 
@@ -335,6 +367,7 @@ export function CatanBoard({
   //we only need to do this if it's the player's turn
   
   {
+    !suppressBuildHighlights &&
     isActive &&
       (() => {
         const isPlacement = ctx.phase === "placement";
@@ -369,6 +402,7 @@ export function CatanBoard({
               buildingColor={currentPlayerView?.color ?? "red"}
               flashing={isActive}
               onClick={() => {
+                handleBuildCommit();
                 if (nodeActionType === "city") {
                   moves.placeCity(nodeId);
                 } else {
@@ -389,6 +423,7 @@ export function CatanBoard({
 
   //editable edges e.g placing road during initial placement
   {
+    !suppressBuildHighlights &&
     isActive &&
       G.valids.edges.map((edgeId, x) => {
         const renderEdge = edgeRenderById[edgeId];
@@ -411,37 +446,41 @@ export function CatanBoard({
             setHoveredNode={setHoveredNode}
             setPlayerAction={setPlayerAction}
             hoveredNode={hoveredNode}
+            onPlaceCommitted={handleBuildCommit}
           />
         );
         return null;
       });
   }
 
-  buildableRoads.map((edgeId, x) => {
-    const renderEdge = edgeRenderById[edgeId];
-    if (!renderEdge) {
+  if (!suppressBuildHighlights) {
+    buildableRoads.map((edgeId, x) => {
+      const renderEdge = edgeRenderById[edgeId];
+      if (!renderEdge) {
+        return null;
+      }
+      actions.push(
+        <Edge
+          key={`buildable-${edgeId}`}
+          id={edgeId}
+          center={center}
+          size={size}
+          coordinate={renderEdge.tile_coordinate}
+          direction={renderEdge.direction}
+          color={currentPlayerView?.color ?? "red"}
+          placing
+          initialPlacement={false}
+          roadBuilding={playerAction === "roadBuilding"}
+          moves={moves}
+          setHoveredNode={setHoveredNode}
+          setPlayerAction={setPlayerAction}
+          hoveredNode={hoveredNode}
+          onPlaceCommitted={handleBuildCommit}
+        />
+      );
       return null;
-    }
-    actions.push(
-      <Edge
-        key={`buildable-${edgeId}`}
-        id={edgeId}
-        center={center}
-        size={size}
-        coordinate={renderEdge.tile_coordinate}
-        direction={renderEdge.direction}
-        color={currentPlayerView?.color ?? "red"}
-        placing
-        initialPlacement={false}
-        roadBuilding={playerAction === "roadBuilding"}
-        moves={moves}
-        setHoveredNode={setHoveredNode}
-        setPlayerAction={setPlayerAction}
-        hoveredNode={hoveredNode}
-      />
-    );
-    return null;
-  });
+    });
+  }
 
   //make a subgraph of buildable nodes - used in catanatron
   //https://github.com/bcollazo/catanatron/blob/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3/catanatron_core/catanatron/models/board.py#L148
