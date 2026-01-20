@@ -16,4 +16,19 @@ describe("registerEffects", () => {
     cleanup();
     expect(unsubscribe).toHaveBeenCalled();
   });
+
+  it("registers piece placement handler and cleans up", () => {
+    const unsubscribe = vi.fn();
+    const bus = { on: vi.fn(() => unsubscribe) };
+    const handler = vi.fn();
+
+    const cleanup = registerEffects({
+      bus,
+      effects: { piecePlacement: handler }
+    });
+
+    expect(bus.on).toHaveBeenCalledWith("build:place", handler);
+    cleanup();
+    expect(unsubscribe).toHaveBeenCalled();
+  });
 });
