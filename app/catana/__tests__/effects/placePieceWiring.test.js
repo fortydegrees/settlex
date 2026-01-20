@@ -21,4 +21,10 @@ describe("placePiece wiring", () => {
     expect(screen).toContain("placementLayerRef");
     expect(board).toContain("placementLayerRef");
   });
+
+  it("wraps animated road so drop translates wrapper, not rotated element", () => {
+    const source = read("../../effects/placePiece.js");
+    expect(source).toContain("createRoadWrapper");
+    expect(source).toContain("roadInnerEl");
+  });
 });
