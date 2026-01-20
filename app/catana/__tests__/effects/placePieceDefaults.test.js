@@ -16,6 +16,6 @@ describe("placePiece defaults", () => {
       postHoldDuration: 0.05
     });
 
-    expect(duration).toBeCloseTo(0.45, 5);
+    expect(duration).toBeCloseTo(0.4, 5);
   });
 });

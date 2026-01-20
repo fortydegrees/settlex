@@ -184,3 +184,6 @@
 
 ## Status (2026-01-20)
 - Added a small post-hold to placement animations to avoid single-frame flicker before state updates.
+
+## Status (2026-01-20)
+- Kept the post-hold out of the effect duration so the animation overlaps the state update and avoids lingering flicker.

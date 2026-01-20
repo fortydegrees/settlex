@@ -34,10 +34,5 @@ export const getPlacementEffectDuration = (tuning = PLACE_PIECE_DEFAULT_TUNING) 
     tuning.squishDuration ?? 0,
     tuning.shadowFadeOutDuration ?? 0
   );
-  return (
-    (tuning.dropDuration ?? 0) +
-    overlap +
-    (tuning.settleDuration ?? 0) +
-    (tuning.postHoldDuration ?? 0)
-  );
+  return (tuning.dropDuration ?? 0) + overlap + (tuning.settleDuration ?? 0);
 };
