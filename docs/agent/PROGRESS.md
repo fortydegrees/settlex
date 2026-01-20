@@ -181,3 +181,6 @@
 
 ## Status (2026-01-20)
 - Suppressed build action highlights immediately after a placement click and restored them once board state advances.
+
+## Status (2026-01-20)
+- Added a small post-hold to placement animations to avoid single-frame flicker before state updates.

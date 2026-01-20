@@ -105,3 +105,4 @@
 - Placement effects render through a board-attached `placementLayerRef` in `app/catana/Board.js`/`app/catana/GameScreen.js`; `createPiecePlacementRunner` accepts `useBoardSpace`.
 - Road placement animation wraps the rotated road in a wrapper element so the drop translation doesn't disturb rotation.
 - Build highlights are locally suppressed after a placement click via `suppressBuildHighlights` in `app/catana/Board.js`, and edge clicks notify via `onPlaceCommitted` in `app/catana/Edge.js`.
+- Placement defaults now include a tiny `postHoldDuration` (see `app/catana/effects/placePieceDefaults.js`) to keep the animated piece visible until the state update lands.
