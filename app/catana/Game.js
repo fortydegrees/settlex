@@ -6,7 +6,7 @@ import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 import {
   PLACE_PIECE_DEFAULT_TUNING,
   getPlacementEffectDuration
-} from "./effects/placePieceDefaults";
+} from "./effects/placePieceDefaults.js";
 
 const DEBUG_MOVES = {
   DEBUG_takeCardsFromBank,
