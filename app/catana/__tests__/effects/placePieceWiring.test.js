@@ -28,4 +28,9 @@ describe("placePiece wiring", () => {
     expect(source).toContain("createRoadWrapper");
     expect(source).toContain("roadInnerEl");
   });
+
+  it("keeps placed pieces visible during a tiny post-hold", () => {
+    const source = read("../../effects/placePiece.js");
+    expect(source).toContain("postHoldDuration");
+  });
 });

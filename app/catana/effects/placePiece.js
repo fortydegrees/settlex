@@ -227,6 +227,11 @@ export function createPiecePlacementRunner({
           scaleY: 1,
           duration: tuning.settleDuration,
           ease: tuning.easeSettle
+        })
+        .to(pieceEl, {
+          opacity: 1,
+          duration: tuning.postHoldDuration,
+          ease: "none"
         });
       return;
     }
@@ -330,6 +335,11 @@ export function createPiecePlacementRunner({
           scaleY: 1,
           duration: tuning.settleDuration,
           ease: tuning.easeSettleRoad
+        })
+        .to(roadWrapperEl, {
+          opacity: 1,
+          duration: tuning.postHoldDuration,
+          ease: "none"
         });
     }
   };
