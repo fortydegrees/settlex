@@ -49,6 +49,7 @@ export function GameScreen(bgioProps) {
   const [readySent, setReadySent] = useState(false);
   const [isMuted, setIsMuted] = useState(readStoredMute);
   const boardRef = useRef(null);
+  const placementLayerRef = useRef(null);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
 
@@ -335,7 +336,7 @@ export function GameScreen(bgioProps) {
       },
       piecePlacement: ({ layerRef, boardRef, emitCue }) => {
         const runner = createPiecePlacementRunner({
-          getLayerEl: () => layerRef.current,
+          getLayerEl: () => placementLayerRef.current,
           getLayout: () => {
             if (!width || !height) return null;
             return getBoardLayout({ width, height });
@@ -344,7 +345,8 @@ export function GameScreen(bgioProps) {
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
           getTiles: () => bgioProps.G?.tiles ?? [],
           getPlayerColor: (playerId) => playerViewMap[playerId]?.color,
-          emitCue
+          emitCue,
+          useBoardSpace: true
         });
 
         return (event) => runner(event?.payload);
@@ -382,6 +384,7 @@ export function GameScreen(bgioProps) {
         <TransformComponent>
           <CatanBoard
             boardRef={boardRef}
+            placementLayerRef={placementLayerRef}
             playerAction={playerAction}
             setPlayerAction={setPlayerAction}
             {...bgioProps}

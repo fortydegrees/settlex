@@ -102,7 +102,8 @@ export function createPiecePlacementRunner({
   getBoardRect,
   getTiles,
   getPlayerColor,
-  emitCue
+  emitCue,
+  useBoardSpace = false
 } = {}) {
   return function run(payload) {
     if (typeof document === "undefined") return;
@@ -114,10 +115,17 @@ export function createPiecePlacementRunner({
     const boardRect = getBoardRect?.();
     const tiles = getTiles?.();
 
-    if (!layerEl || !layout || !boardRect || !Array.isArray(tiles)) return;
+    if (!layerEl || !layout || !Array.isArray(tiles)) return;
+    if (!useBoardSpace && !boardRect) return;
 
     const { containerWidth, size, center } = layout;
-    const scale = containerWidth ? boardRect.width / containerWidth : 1;
+    const scale = useBoardSpace
+      ? 1
+      : containerWidth
+        ? boardRect.width / containerWidth
+        : 1;
+    const offsetLeft = useBoardSpace ? 0 : boardRect.left;
+    const offsetTop = useBoardSpace ? 0 : boardRect.top;
     const { nodeRenderById, edgeRenderById } = buildRenderMaps(tiles);
     const tuning = {
       ...PLACE_PIECE_DEFAULT_TUNING,
@@ -137,8 +145,8 @@ export function createPiecePlacementRunner({
       if (!placement) return;
 
       const pieceSize = size * PIECE_SCALE * scale;
-      const x = boardRect.left + placement.x * scale;
-      const y = boardRect.top + placement.y * scale;
+      const x = offsetLeft + placement.x * scale;
+      const y = offsetTop + placement.y * scale;
 
       const pieceEl = createSettlementEl({ size: pieceSize, x, y, color });
       const shadowEl = createRing({
@@ -225,10 +233,10 @@ export function createPiecePlacementRunner({
       if (!placement) return;
 
       const roadSize = size * scale;
-      const x = boardRect.left + placement.tileX * scale;
-      const y = boardRect.top + placement.tileY * scale;
-      const dustX = boardRect.left + placement.dustX * scale;
-      const dustY = boardRect.top + placement.dustY * scale;
+      const x = offsetLeft + placement.tileX * scale;
+      const y = offsetTop + placement.tileY * scale;
+      const dustX = offsetLeft + placement.dustX * scale;
+      const dustY = offsetTop + placement.dustY * scale;
 
       const roadEl = createRoadEl({
         size: roadSize,
