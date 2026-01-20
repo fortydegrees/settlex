@@ -11,7 +11,14 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
     const entry = theme[cueName];
     if (!entry) return null;
     if (!howls.has(cueName)) {
-      howls.set(cueName, new Howl({ src: [entry.src], volume: entry.volume ?? 1 }));
+      howls.set(
+        cueName,
+        new Howl({
+          src: [entry.src],
+          volume: entry.volume ?? 1,
+          format: entry.format
+        })
+      );
     }
     return howls.get(cueName);
   };

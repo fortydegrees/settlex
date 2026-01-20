@@ -108,3 +108,4 @@
 - Placement defaults now include a tiny `postHoldDuration` (see `app/catana/effects/placePieceDefaults.js`) to keep the animated piece visible until the state update lands.
 - `getPlacementEffectDuration` intentionally excludes `postHoldDuration` so the animation slightly overlaps the state swap.
 - Effects Lab audio defaults on, with per-lab cue overrides via a custom sound upload and delay slider in `app/catana/dev/effects/EffectsLabClient.js`.
+- `createAudioManager` now passes optional `format` through to Howler, and the Effects Lab infers format from the uploaded file to support blob URLs.

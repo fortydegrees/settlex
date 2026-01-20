@@ -11,6 +11,24 @@ import { EFFECTS_LAB_REGISTRY } from "./registry";
 const DEFAULT_TIME_SCALE = 1;
 const DEFAULT_CUSTOM_DELAY_MS = 0;
 const MAX_CUSTOM_DELAY_MS = 1000;
+const AUDIO_FORMAT_BY_MIME = {
+  "audio/mpeg": "mp3",
+  "audio/mp3": "mp3",
+  "audio/wav": "wav",
+  "audio/x-wav": "wav",
+  "audio/ogg": "ogg",
+  "audio/webm": "webm",
+  "audio/aac": "aac",
+  "audio/flac": "flac"
+};
+
+const getAudioFormat = (file) => {
+  const byMime = AUDIO_FORMAT_BY_MIME[file.type];
+  if (byMime) return [byMime];
+  const parts = file.name.toLowerCase().split(".");
+  const ext = parts.length > 1 ? parts[parts.length - 1] : "";
+  return ext ? [ext] : undefined;
+};
 
 export function EffectsLabClient() {
   const layerRef = useRef(null);
@@ -20,7 +38,11 @@ export function EffectsLabClient() {
   const [selectedId, setSelectedId] = useState(
     EFFECTS_LAB_REGISTRY[0]?.id ?? ""
   );
-  const [customSound, setCustomSound] = useState({ url: "", name: "" });
+  const [customSound, setCustomSound] = useState({
+    url: "",
+    name: "",
+    format: undefined
+  });
   const [customDelayMs, setCustomDelayMs] = useState(DEFAULT_CUSTOM_DELAY_MS);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -41,8 +63,8 @@ export function EffectsLabClient() {
     selectedCues.forEach((cue) => {
       const base = DEFAULT_THEME[cue];
       overrides[cue] = base
-        ? { ...base, src: customSound.url }
-        : { src: customSound.url, volume: 1 };
+        ? { ...base, src: customSound.url, format: customSound.format }
+        : { src: customSound.url, volume: 1, format: customSound.format };
     });
     return { ...DEFAULT_THEME, ...overrides };
   }, [customSound.url, audioSupported, selectedCues]);
@@ -106,11 +128,11 @@ export function EffectsLabClient() {
     const file = event.target.files?.[0];
     if (!file) return;
     const url = URL.createObjectURL(file);
-    setCustomSound({ url, name: file.name });
+    setCustomSound({ url, name: file.name, format: getAudioFormat(file) });
   };
 
   const handleClearSound = () => {
-    setCustomSound({ url: "", name: "" });
+    setCustomSound({ url: "", name: "", format: undefined });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

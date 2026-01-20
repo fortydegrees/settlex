@@ -190,3 +190,6 @@
 
 ## Status (2026-01-20)
 - Effects Lab audio now defaults on and supports a per-effect custom sound override with delay tuning.
+
+## Status (2026-01-20)
+- Added audio format passthrough for custom Effects Lab uploads so blob URLs play reliably.
