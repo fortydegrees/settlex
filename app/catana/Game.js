@@ -51,6 +51,10 @@ const configuredEffectsPlugin = EffectsPlugin({
     robberBlocked: {
       create: (value) => value,
       duration: 1.5
+    },
+    placePiece: {
+      create: (value) => value,
+      duration: 0.7
     }
   },
 });
