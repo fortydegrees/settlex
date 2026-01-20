@@ -18,7 +18,8 @@ describe("Effects Lab audio override", () => {
   it("defines cues for labs that can override audio", () => {
     const source = read("../../dev/effects/registry.js");
     expect(source).toContain("cues");
-    expect(source).toContain("build:place");
+    expect(source).toContain("build:settlement");
+    expect(source).toContain("build:road");
     expect(source).toContain("resource:pop:start");
     expect(source).toContain("resource:travel:start");
   });

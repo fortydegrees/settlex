@@ -199,7 +199,7 @@ export function createPiecePlacementRunner({
           duration: tuning.dropDuration,
           ease: tuning.shadowEase
         }, "<")
-        .add(() => emitCue?.("build:place"))
+        .add(() => emitCue?.("build:settlement"))
         .fromTo(
           dustEl,
           { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity },
@@ -307,7 +307,7 @@ export function createPiecePlacementRunner({
           duration: tuning.dropDuration,
           ease: tuning.shadowEase
         }, "<")
-        .add(() => emitCue?.("build:place"))
+        .add(() => emitCue?.("build:road"))
         .fromTo(
           dustEl,
           { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity },
