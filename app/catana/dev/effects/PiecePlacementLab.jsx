@@ -108,8 +108,9 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
   };
 
   const boardStyle = {
-    width: layout?.containerWidth ?? 640,
-    height: layout?.containerHeight ?? 640
+    width: "100%",
+    maxWidth: 720,
+    aspectRatio: "1 / 1"
   };
 
   const targetMax = pieceType === "road" ? Math.max(edgeIds.length - 1, 0) : Math.max(nodeIds.length - 1, 0);
@@ -258,7 +259,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
         </div>
       </section>
 
-      <section className="relative flex flex-col gap-4 rounded-lg border border-slate-700 bg-slate-800/40 p-6">
+      <section className="relative flex min-w-0 flex-col gap-4 rounded-lg border border-slate-700 bg-slate-800/40 p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-200">Preview</h2>
           <button
