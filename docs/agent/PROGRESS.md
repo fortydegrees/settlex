@@ -203,9 +203,10 @@
 ## Status (2026-01-21)
 - Dice roll audio now uses 5 shuffled variants with subtle pitch/volume jitter.
 - Moved dice roll mp3 assets to `public/sounds/` for `/sounds/*` serving.
-
 ## Status (2026-01-21)
 - Improved city upgrade hover/placement animation + sound.
 - Cleared city hover immediately on placement click to avoid double-ghosting during the drop.
 - City upgrade overlap suppression now keys off active `placePiece` effects to avoid showing a city/settlement under the drop.
 - City placement overlay now renders above roads during the drop animation.
+- Added placement-start turn-start cue logic with tests to avoid double-dings on snake turns.
+- Split placement layers so road drops stay behind buildings while city drops stay above roads.

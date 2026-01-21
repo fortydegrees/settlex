@@ -115,3 +115,5 @@
 - City upgrade overlap suppression now tracks active `placePiece` effects via `useEffectState("placePiece")` in `app/catana/Board.js` (no timers).
 - City placement overlay now sits above board pieces via `placementLayerRef` z-index in `app/catana/Board.js`.
 - City placement effects emit `build:city`, mapped to the settlement sound in `app/catana/effects/soundThemes.js`.
+- Turn-start cue logic now lives in `app/catana/effects/turnStartCue.js` and handles placement-start dings without repeating on consecutive placement turns.
+- Piece placement now uses separate board layers for roads vs. node pieces via `placementRoadLayerRef` and `placementLayerRef` in `app/catana/Board.js`.
