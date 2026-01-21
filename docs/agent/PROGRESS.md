@@ -203,3 +203,6 @@
 ## Status (2026-01-21)
 - Dice roll audio now uses 5 shuffled variants with subtle pitch/volume jitter.
 - Moved dice roll mp3 assets to `public/sounds/` for `/sounds/*` serving.
+
+## Status (2026-01-21)
+- Improved city upgrade hover/placement animation + sound.
