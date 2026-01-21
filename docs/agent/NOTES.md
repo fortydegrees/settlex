@@ -111,6 +111,6 @@
 - `getPlacementEffectDuration` intentionally excludes `postHoldDuration` so the animation slightly overlaps the state swap.
 - Effects Lab audio defaults on, with per-lab cue overrides via a custom sound upload and delay slider in `app/catana/dev/effects/EffectsLabClient.js`.
 - `createAudioManager` now passes optional `format` through to Howler, and the Effects Lab infers format from the uploaded file to support blob URLs.
-- City upgrade hover now hides the underlying settlement via a `pendingCityNodeId` guard in `app/catana/Board.js`.
-- City upgrade clicks now clear the hover state immediately in `app/catana/Board.js` to prevent the ghost city from persisting during the drop animation.
+- City upgrade hover hides the underlying settlement and clears hover on click in `app/catana/Board.js`.
+- City upgrade overlap suppression now tracks active `placePiece` effects via `useEffectState("placePiece")` in `app/catana/Board.js` (no timers).
 - City placement effects emit `build:city`, mapped to the settlement sound in `app/catana/effects/soundThemes.js`.
