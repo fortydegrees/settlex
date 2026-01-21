@@ -124,6 +124,18 @@ export function CatanBoard({
     };
   }, []);
 
+  useEffect(() => {
+    if (pendingCityNodeId == null) return;
+    const building = G.core?.buildingsByNodeId?.[pendingCityNodeId];
+    if (building?.type === "city") {
+      if (pendingCityTimeoutRef.current) {
+        clearTimeout(pendingCityTimeoutRef.current);
+        pendingCityTimeoutRef.current = null;
+      }
+      setPendingCityNodeId(null);
+    }
+  }, [pendingCityNodeId, G.core?.buildingsByNodeId]);
+
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
   //take in player object (which includes number of cards, number of roads left etc)
