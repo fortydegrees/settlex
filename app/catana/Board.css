@@ -115,6 +115,22 @@
   animation: pulse 2s infinite;
 }
 
+@keyframes pieceFlash {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+.piece-flash {
+  animation: pieceFlash 0.6s ease-in-out infinite;
+}
+
 @keyframes pulse {
   0% {
       transform: scale(0.80);

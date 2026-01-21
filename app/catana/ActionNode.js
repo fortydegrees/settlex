@@ -35,6 +35,7 @@ export function ActionNode({
   const actionSize = size * 0.4;
   const isHovered = hoveredNode === nodeId;
   const isNodeType = type === "node";
+  const isCity = buildingType === "city";
 
   const gradientClass = isHovered && isNodeType
     ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
@@ -69,7 +70,8 @@ export function ActionNode({
             size={size * 0.8}
             left={x}
             top={y}
-            placing
+            placing={!isCity}
+            highlight={isCity}
           />
         ) : (
           // this is actually used for roads (ActionNode is reused)
