@@ -213,7 +213,8 @@ export function createPiecePlacementRunner({
     if (isDocumentHidden()) return;
     if (!payload) return;
 
-    const layerEl = getLayerEl?.();
+    const layerEl =
+      typeof getLayerEl === "function" ? getLayerEl(payload) : getLayerEl;
     const layout = getLayout?.();
     const boardRect = getBoardRect?.();
     const tiles = getTiles?.();

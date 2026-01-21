@@ -50,6 +50,7 @@ export function GameScreen(bgioProps) {
   const [isMuted, setIsMuted] = useState(readStoredMute);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
+  const placementRoadLayerRef = useRef(null);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
 
@@ -336,7 +337,10 @@ export function GameScreen(bgioProps) {
       },
       piecePlacement: ({ layerRef, boardRef, emitCue }) => {
         const runner = createPiecePlacementRunner({
-          getLayerEl: () => placementLayerRef.current,
+          getLayerEl: (payload) =>
+            payload?.pieceType === "road"
+              ? placementRoadLayerRef.current
+              : placementLayerRef.current,
           getLayout: () => {
             if (!width || !height) return null;
             return getBoardLayout({ width, height });
@@ -385,6 +389,7 @@ export function GameScreen(bgioProps) {
           <CatanBoard
             boardRef={boardRef}
             placementLayerRef={placementLayerRef}
+            placementRoadLayerRef={placementRoadLayerRef}
             playerAction={playerAction}
             setPlayerAction={setPlayerAction}
             {...bgioProps}
@@ -494,8 +499,7 @@ TODO: accurately colour it
           ))}
         </div>
       )}
-
-      {/* <DebugPanel bgioProps={bgioProps} /> */}
+      <DebugPanel bgioProps={bgioProps} /> 
     </div>
   );
 }
