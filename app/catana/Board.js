@@ -15,6 +15,10 @@ import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { isDocumentHidden } from "./utils/visibility";
+import {
+  getPlacementEffectDuration,
+  PLACE_PIECE_DEFAULT_TUNING
+} from "./effects/placePieceDefaults.js";
 
 const getValidRobberTiles = (G) => {
   // Use core function for validation
@@ -75,6 +79,7 @@ export function CatanBoard({
   const [robberTiles, setRobberTiles] = useState([]);
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
   const [pendingCityNodeId, setPendingCityNodeId] = useState(null);
+  const pendingCityTimeoutRef = useRef(null);
 
   const [buildableRoads, setBuildableRoads] = useState([])
   const mainBuildableNodes = useMemo(() => {
@@ -111,12 +116,13 @@ export function CatanBoard({
   const currentPlayerView = playerViewMap[ctx.currentPlayer];
 
   useEffect(() => {
-    if (pendingCityNodeId == null) return;
-    const building = G.core?.buildingsByNodeId?.[pendingCityNodeId];
-    if (building?.type === "city") {
-      setPendingCityNodeId(null);
-    }
-  }, [pendingCityNodeId, G.core?.buildingsByNodeId]);
+    return () => {
+      if (pendingCityTimeoutRef.current) {
+        clearTimeout(pendingCityTimeoutRef.current);
+        pendingCityTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -199,6 +205,21 @@ export function CatanBoard({
 
   const handleBuildCommit = () => {
     setSuppressBuildHighlights(true);
+  };
+
+  const beginCityPlacementHold = (nodeId) => {
+    setPendingCityNodeId(nodeId);
+    if (pendingCityTimeoutRef.current) {
+      clearTimeout(pendingCityTimeoutRef.current);
+    }
+    setHoveredNode(null);
+    const effectDuration =
+      getPlacementEffectDuration(PLACE_PIECE_DEFAULT_TUNING) +
+      (PLACE_PIECE_DEFAULT_TUNING.postHoldDuration ?? 0);
+    pendingCityTimeoutRef.current = setTimeout(() => {
+      setPendingCityNodeId(null);
+      pendingCityTimeoutRef.current = null;
+    }, effectDuration * 1000);
   };
 
   
@@ -344,6 +365,9 @@ export function CatanBoard({
       ) {
         return;
       }
+      if (building.type === "city" && isCityUpgradePending) {
+        return;
+      }
 
       buildings.push(
         <Node
@@ -408,6 +432,9 @@ export function CatanBoard({
           if (!renderNode) {
             return;
           }
+          if (nodeActionType === "city" && pendingCityNodeId === nodeId) {
+            return;
+          }
 
           actions.push(
             <ActionNode
@@ -423,7 +450,7 @@ export function CatanBoard({
               onClick={() => {
                 handleBuildCommit();
                 if (nodeActionType === "city") {
-                  setPendingCityNodeId(nodeId);
+                  beginCityPlacementHold(nodeId);
                   moves.placeCity(nodeId);
                 } else {
                   moves.placeSettlement(nodeId);
