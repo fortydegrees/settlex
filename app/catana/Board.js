@@ -78,6 +78,7 @@ export function CatanBoard({
   const [blockedFlashingTiles, setBlockedFlashingTiles] = useState([]);
   const [robberTiles, setRobberTiles] = useState([]);
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
+  const [localPendingCityNodeId, setLocalPendingCityNodeId] = useState(null);
 
   const [buildableRoads, setBuildableRoads] = useState([])
   const mainBuildableNodes = useMemo(() => {
@@ -118,6 +119,17 @@ export function CatanBoard({
     isPlacePieceActive && placePiecePayload?.pieceType === "city"
       ? Number(placePiecePayload.id)
       : null;
+  const effectiveCityPlacementId =
+    activeCityPlacementId ?? localPendingCityNodeId;
+
+  useEffect(() => {
+    if (
+      localPendingCityNodeId != null &&
+      activeCityPlacementId === localPendingCityNodeId
+    ) {
+      setLocalPendingCityNodeId(null);
+    }
+  }, [localPendingCityNodeId, activeCityPlacementId]);
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -340,7 +352,7 @@ export function CatanBoard({
       }
       const isCityUpgradeHover =
         playerAction === "placeCity" && hoveredNode === numericNodeId;
-      const isCityUpgradePending = activeCityPlacementId === numericNodeId;
+      const isCityUpgradePending = effectiveCityPlacementId === numericNodeId;
       if (
         building.type === "settlement" &&
         (isCityUpgradeHover || isCityUpgradePending)
@@ -414,7 +426,7 @@ export function CatanBoard({
           if (!renderNode) {
             return;
           }
-          if (nodeActionType === "city" && activeCityPlacementId === nodeId) {
+          if (nodeActionType === "city" && effectiveCityPlacementId === nodeId) {
             return;
           }
 
@@ -432,6 +444,7 @@ export function CatanBoard({
               onClick={() => {
                 handleBuildCommit();
                 if (nodeActionType === "city") {
+                  setLocalPendingCityNodeId(nodeId);
                   moves.placeCity(nodeId);
                 } else {
                   moves.placeSettlement(nodeId);
@@ -533,7 +546,7 @@ export function CatanBoard({
         {tiles}
         <div
           ref={placementLayerRef}
-          className="absolute inset-0 pointer-events-none z-0"
+          className="absolute inset-0 pointer-events-none z-30"
         />
 
         {buildings}
