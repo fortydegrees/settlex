@@ -49,6 +49,21 @@ function createSettlementEl({ size, x, y, color }) {
   return el;
 }
 
+function createCityEl({ size, x, y, color }) {
+  const el = document.createElement("div");
+  el.style.position = "absolute";
+  el.style.width = `${size}px`;
+  el.style.height = `${size}px`;
+  el.style.left = `${x - size * PIECE_OFFSET_X}px`;
+  el.style.top = `${y - size * PIECE_OFFSET_Y}px`;
+  el.style.backgroundImage = `url('/svgs/city_${color}.svg')`;
+  el.style.backgroundRepeat = "no-repeat";
+  el.style.backgroundSize = "cover";
+  el.style.pointerEvents = "none";
+  el.style.zIndex = "1001";
+  return el;
+}
+
 function createRoadWrapper({ size, x, y }) {
   const el = document.createElement("div");
   el.style.position = "absolute";
@@ -102,6 +117,86 @@ function resolveEdgePlacement({ edgeId, edgeRenderById, size, center }) {
     dustY: tileY + deltaY,
     direction: renderEdge.direction
   };
+}
+
+function runNodePlacementAnimation({
+  pieceEl,
+  shadowEl,
+  dustEl,
+  tuning,
+  dropPx,
+  emitCue,
+  cueName
+}) {
+  gsap.set(pieceEl, { y: -dropPx, scale: 1.04, opacity: 0 });
+  gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
+  gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
+
+  gsap.timeline({
+    onComplete: () => {
+      pieceEl.remove();
+      dustEl.remove();
+      shadowEl.remove();
+    }
+  })
+    .to(pieceEl, {
+      y: 0,
+      opacity: 1,
+      duration: tuning.dropDuration,
+      ease: tuning.easeDrop
+    })
+    .to(
+      shadowEl,
+      {
+        scale: tuning.shadowScaleTo,
+        opacity: tuning.shadowOpacity,
+        duration: tuning.dropDuration,
+        ease: tuning.shadowEase
+      },
+      "<"
+    )
+    .add(() => emitCue?.(cueName))
+    .fromTo(
+      dustEl,
+      { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity },
+      {
+        scale: tuning.dustScaleTo,
+        opacity: 0,
+        duration: tuning.dustDuration,
+        ease: tuning.easeDust
+      },
+      "<"
+    )
+    .to(
+      shadowEl,
+      {
+        opacity: 0,
+        duration: tuning.shadowFadeOutDuration,
+        ease: "power1.out"
+      },
+      "<"
+    )
+    .to(
+      pieceEl,
+      {
+        scaleX: tuning.squishScaleX,
+        scaleY: tuning.squishScaleY,
+        duration: tuning.squishDuration,
+        ease: tuning.easeSquish
+      },
+      "<"
+    )
+    .to(pieceEl, {
+      scaleX: 1,
+      scaleY: 1,
+      duration: tuning.settleDuration,
+      ease: tuning.easeSettle
+    })
+    .to(pieceEl, {
+      opacity: 1,
+      duration: tuning.postHoldDuration,
+      ease: "none"
+    });
 }
 
 export function createPiecePlacementRunner({
@@ -176,63 +271,60 @@ export function createPiecePlacementRunner({
       layerEl.appendChild(dustEl);
       layerEl.appendChild(pieceEl);
 
-      gsap.set(pieceEl, { y: -dropPx, scale: 1.04, opacity: 0 });
-      gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
-      gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
+      runNodePlacementAnimation({
+        pieceEl,
+        shadowEl,
+        dustEl,
+        tuning,
+        dropPx,
+        emitCue,
+        cueName: "build:settlement"
+      });
+      return;
+    }
 
-      gsap.timeline({
-        onComplete: () => {
-          pieceEl.remove();
-          dustEl.remove();
-          shadowEl.remove();
-        }
-      })
-        .to(pieceEl, {
-          y: 0,
-          opacity: 1,
-          duration: tuning.dropDuration,
-          ease: tuning.easeDrop
-        })
-        .to(shadowEl, {
-          scale: tuning.shadowScaleTo,
-          opacity: tuning.shadowOpacity,
-          duration: tuning.dropDuration,
-          ease: tuning.shadowEase
-        }, "<")
-        .add(() => emitCue?.("build:settlement"))
-        .fromTo(
-          dustEl,
-          { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity },
-          {
-            scale: tuning.dustScaleTo,
-            opacity: 0,
-            duration: tuning.dustDuration,
-            ease: tuning.easeDust
-          },
-          "<"
-        )
-        .to(shadowEl, {
-          opacity: 0,
-          duration: tuning.shadowFadeOutDuration,
-          ease: "power1.out"
-        }, "<")
-        .to(pieceEl, {
-          scaleX: tuning.squishScaleX,
-          scaleY: tuning.squishScaleY,
-          duration: tuning.squishDuration,
-          ease: tuning.easeSquish
-        }, "<")
-        .to(pieceEl, {
-          scaleX: 1,
-          scaleY: 1,
-          duration: tuning.settleDuration,
-          ease: tuning.easeSettle
-        })
-        .to(pieceEl, {
-          opacity: 1,
-          duration: tuning.postHoldDuration,
-          ease: "none"
-        });
+    if (payload.pieceType === "city") {
+      const placement = resolveNodePlacement({
+        nodeId: payload.id,
+        nodeRenderById,
+        size,
+        center
+      });
+      if (!placement) return;
+
+      const pieceSize = size * PIECE_SCALE * scale;
+      const x = offsetLeft + placement.x * scale;
+      const y = offsetTop + placement.y * scale;
+
+      const pieceEl = createCityEl({ size: pieceSize, x, y, color });
+      const shadowEl = createRing({
+        size: pieceSize * tuning.shadowSizeSettlement,
+        x,
+        y,
+        gradient: SHADOW_GRADIENT,
+        zIndex: 999
+      });
+      const dustEl = createRing({
+        size: pieceSize * tuning.dustSizeSettlement,
+        x,
+        y,
+        gradient: DUST_GRADIENT,
+        zIndex: 1000
+      });
+
+      layerEl.appendChild(shadowEl);
+      layerEl.appendChild(dustEl);
+      layerEl.appendChild(pieceEl);
+
+      runNodePlacementAnimation({
+        pieceEl,
+        shadowEl,
+        dustEl,
+        tuning,
+        dropPx,
+        emitCue,
+        cueName: "build:city"
+      });
       return;
     }
 

@@ -7,7 +7,7 @@ export const EFFECTS_LAB_REGISTRY = [
     label: "Piece Placement",
     component: PiecePlacementLab,
     supportsAudio: true,
-    cues: ["build:settlement", "build:road"]
+    cues: ["build:settlement", "build:road", "build:city"]
   },
   {
     id: "resource-distribution",
