@@ -196,3 +196,6 @@
 
 ## Status (2026-01-20)
 - Split placement audio cues so settlements and roads use distinct sounds.
+
+## Status (2026-01-21)
+- Logged a design doc for dice roll audio variants with shuffle-bag selection and subtle jitter.
