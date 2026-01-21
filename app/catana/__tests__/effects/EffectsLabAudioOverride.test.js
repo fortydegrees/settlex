@@ -20,6 +20,7 @@ describe("Effects Lab audio override", () => {
     expect(source).toContain("cues");
     expect(source).toContain("build:settlement");
     expect(source).toContain("build:road");
+    expect(source).toContain("build:city");
     expect(source).toContain("resource:pop:start");
     expect(source).toContain("resource:travel:start");
   });

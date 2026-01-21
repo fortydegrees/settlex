@@ -2,6 +2,7 @@ export const DEFAULT_THEME = {
   "resource:pop:start": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.6 },
   "resource:travel:start": { src: "/sounds/card_woosh.mp3", volume: 0.6 },
   "build:settlement": { src: "/sounds/settle.mp3", volume: 0.6 },
+  "build:city": { src: "/sounds/settle.mp3", volume: 0.6 },
   "build:road": { src: "/sounds/road.mp3", volume: 0.6 },
   "build:place": { src: "/sounds/settle_place.mp3", volume: 0.6 },
   "dice:roll": {
