@@ -1,12 +1,27 @@
 import React, { useState } from "react";
 
 
-export function Piece({ coordinate, size = 50, svg, left, top, placing=false, buildingSVG }) {
+export function Piece({
+  coordinate,
+  size = 50,
+  svg,
+  left,
+  top,
+  placing = false,
+  highlight = false,
+  buildingSVG
+}) {
 
+  const className = [
+    placing ? "animate-bounce" : "",
+    highlight ? "piece-flash" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div
-      className={placing ? "animate-bounce": ""}
+      className={className}
       key={coordinate}
       style={{
         backgroundImage: `url('${buildingSVG}')`,

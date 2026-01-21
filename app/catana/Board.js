@@ -74,6 +74,7 @@ export function CatanBoard({
   const [blockedFlashingTiles, setBlockedFlashingTiles] = useState([]);
   const [robberTiles, setRobberTiles] = useState([]);
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
+  const [pendingCityNodeId, setPendingCityNodeId] = useState(null);
 
   const [buildableRoads, setBuildableRoads] = useState([])
   const mainBuildableNodes = useMemo(() => {
@@ -108,6 +109,14 @@ export function CatanBoard({
   );
   const playerViewMap = useMemo(() => buildPlayerViewMap(G.core), [G.core]);
   const currentPlayerView = playerViewMap[ctx.currentPlayer];
+
+  useEffect(() => {
+    if (pendingCityNodeId == null) return;
+    const building = G.core?.buildingsByNodeId?.[pendingCityNodeId];
+    if (building?.type === "city") {
+      setPendingCityNodeId(null);
+    }
+  }, [pendingCityNodeId, G.core?.buildingsByNodeId]);
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -320,16 +329,26 @@ export function CatanBoard({
 
   Object.entries(G.core?.buildingsByNodeId ?? {}).forEach(
     ([nodeId, building]) => {
+      const numericNodeId = Number(nodeId);
       const renderNode = nodeRenderById[String(nodeId)];
       const owner = playerViewMap[building.ownerId];
       if (!renderNode || !owner) {
+        return;
+      }
+      const isCityUpgradeHover =
+        playerAction === "placeCity" && hoveredNode === numericNodeId;
+      const isCityUpgradePending = pendingCityNodeId === numericNodeId;
+      if (
+        building.type === "settlement" &&
+        (isCityUpgradeHover || isCityUpgradePending)
+      ) {
         return;
       }
 
       buildings.push(
         <Node
           key={nodeId}
-          nodeId={nodeId}
+          nodeId={numericNodeId}
           tileId={renderNode.tileId}
           center={center}
           size={size}
@@ -404,6 +423,7 @@ export function CatanBoard({
               onClick={() => {
                 handleBuildCommit();
                 if (nodeActionType === "city") {
+                  setPendingCityNodeId(nodeId);
                   moves.placeCity(nodeId);
                 } else {
                   moves.placeSettlement(nodeId);
