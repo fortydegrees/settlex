@@ -316,7 +316,7 @@ export const placeRoad = {
 
 export const placeCity = {
   move: (context, node, options) => {
-    const { G, playerID, ctx } = context;
+    const { G, playerID, ctx, effects } = context;
     if (ctx.phase === "placement") {
       return;
     }
@@ -326,6 +326,11 @@ export const placeCity = {
       console.log(`Invalid city placement at node ${node}`);
       return;
     }
+    effects?.placePiece?.({
+      pieceType: "city",
+      id: nodeId,
+      playerId: playerID
+    });
     appendGameLog(G, ctx, {
       type: "build:city",
       actorId: playerID,
