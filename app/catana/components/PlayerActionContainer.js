@@ -308,12 +308,27 @@ export const PlayerActionContainer = ({
         <div className="flex w-36 flex-col items-center">
           {ctx.phase === "main" && (
             <>
+              {/* Dice */}
               <div className={`flex ${rollEnabled ? "opacity-100" : "opacity-50"}`}
                 onClick={rollEnabled ? () => moves.rollDice() : () => {}}>
                 <Die dieSize="3.5rem" />
                 <div className="px-4" />
                 <Die2 dieSize="3.5rem" />
               </div>
+
+              {/* Status box - between dice and end turn */}
+              {SHOW_STATUS_TEXT && gameStatus && (
+                <div className="mt-2 mb-4 w-36 px-3 py-1.5 rounded-lg bg-white/25 backdrop-blur-sm">
+                  <div className="flex items-center justify-center gap-2 text-sm font-medium text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+                    <span>{gameStatus.text}</span>
+                    {timerText && (
+                      <span className="tabular-nums">{timerText}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* End turn button */}
               <button
                 className={`bg-opacity-50 bg-blue-200 hover:bg-blue-300 mx-auto rounded-md flex h-20 w-20 ring-2 ring-slate-300 hover:fill-blue-200 hover:stroke-black ${endTurnEnabled ? "opacity-100" : "opacity-50"}`}
                 disabled={!endTurnEnabled}
@@ -328,17 +343,15 @@ export const PlayerActionContainer = ({
             </>
           )}
 
-          {/* Status text - always visible */}
-          {SHOW_STATUS_TEXT && gameStatus && (
-            <div className="mt-2 flex items-center justify-center gap-2">
-              <div className="text-white text-sm font-medium drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-                {gameStatus.text}
+          {/* Status text - shown outside main phase */}
+          {SHOW_STATUS_TEXT && gameStatus && ctx.phase !== "main" && (
+            <div className="w-36 px-3 py-1.5 rounded-lg bg-white/25 backdrop-blur-sm">
+              <div className="flex items-center justify-center gap-2 text-sm font-medium text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+                <span>{gameStatus.text}</span>
+                {timerText && (
+                  <span className="tabular-nums">{timerText}</span>
+                )}
               </div>
-              {timerText && (
-                <div className="rounded-md px-2 py-1 text-xs font-semibold text-slate-800 bg-blue-200/70 ring-1 ring-slate-300">
-                  {timerText}
-                </div>
-              )}
             </div>
           )}
         </div>

@@ -76,7 +76,7 @@
 - Resource distribution travel now waits for all pops, then travels together with a slight stagger and a single `resource:travel:start` cue mapped to `card_woosh.mp3`.
 - Resource travel cue is scheduled 20ms ahead of motion to line up the woosh with travel start.
 - Resource distribution cards now use pop/overshoot + jitter/rotation in `app/catana/effects/resourceDistribution.js`.
-- Piece placement animation runner lives in `app/catana/effects/placePiece.js`; audio cues `build:settlement` and `build:road` map to `/sounds/settle.mp3` and `/sounds/road.mp3` in `app/catana/effects/soundThemes.js` (legacy `build:place` still maps to `/sounds/settle_place.mp3`).
+- Piece placement animation runner lives in `app/catana/effects/placePiece.js`; audio cues `build:settlement` and `build:road` map to `/sounds/settle.mp3` and `/sounds/road.mp3` in `app/catana/effects/soundThemes.js` (legacy `build:place` maps to `/sounds/build_settlement.mp3`).
 - Effects Lab now includes a Piece Placement entry with tuning controls in `app/catana/dev/effects/PiecePlacementLab.jsx`.
 - Piece Placement lab uses a two-column layout with a scrollable controls panel and a larger preview panel for easier tuning.
 - Effects Lab container width is widened (`max-w-7xl`), and the placement preview is capped at 720px square to prevent horizontal overflow.

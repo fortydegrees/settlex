@@ -4,7 +4,7 @@
 
 **Goal:** Add a drop + dust-ring placement animation and shared sound for settlement/road placement using the existing effects system.
 
-**Architecture:** Moves emit a `placePiece` effect; `GameEffects` forwards it to the EffectBus as `build:place`. A GSAP runner renders overlay DOM in `EffectLayer` at the correct board position, plays a short drop/impact animation, spawns a dust ring, and emits a shared `build:place` cue. Audio mapping uses `/sounds/settle_place.mp3`.
+**Architecture:** Moves emit a `placePiece` effect; `GameEffects` forwards it to the EffectBus as `build:place`. A GSAP runner renders overlay DOM in `EffectLayer` at the correct board position, plays a short drop/impact animation, spawns a dust ring, and emits a shared `build:place` cue. Audio mapping uses `/sounds/build_settlement.mp3`.
 
 **Tech Stack:** React, bgio-effects, GSAP, Howler.
 
@@ -228,7 +228,7 @@ piecePlacement: ({ layerRef, emitCue }) => {
 In `soundThemes.js` add:
 
 ```js
-"build:place": { src: "/sounds/settle_place.mp3", volume: 0.6 }
+"build:place": { src: "/sounds/build_settlement.mp3", volume: 0.6 }
 ```
 
 **Step 6: Manual verification**
