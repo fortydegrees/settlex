@@ -199,3 +199,7 @@
 
 ## Status (2026-01-21)
 - Logged a design doc for dice roll audio variants with shuffle-bag selection and subtle jitter.
+
+## Status (2026-01-21)
+- Dice roll audio now uses 5 shuffled variants with subtle pitch/volume jitter.
+- Moved dice roll mp3 assets to `public/sounds/` for `/sounds/*` serving.
