@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { placeSettlement, placeRoad } from "../Moves";
+import { placeSettlement, placeRoad, placeCity } from "../Moves";
 
 vi.mock("@settlex/game-core", async () => {
   const actual = await vi.importActual("@settlex/game-core");
@@ -9,6 +9,7 @@ vi.mock("@settlex/game-core", async () => {
     applyBuildSettlement: vi.fn(() => ({ ok: true })),
     applyPlaceRoad: vi.fn(() => ({ ok: true })),
     applyBuildRoad: vi.fn(() => ({ ok: true })),
+    applyBuildCity: vi.fn(() => ({ ok: true })),
     buildableEdges: vi.fn(() => []),
     buildableNodes: vi.fn(() => [])
   };
@@ -67,6 +68,22 @@ describe("placePiece effect wiring", () => {
       id: "1,2",
       playerId: "0",
       initialPlacement: true
+    });
+  });
+
+  it("emits placePiece when placing city", () => {
+    const { context, effects } = makeContext();
+    context.ctx.phase = "main";
+    context.G.core.buildingsByNodeId = {
+      0: { ownerId: "0", type: "settlement" }
+    };
+
+    placeCity.move(context, 0);
+
+    expect(effects.placePiece).toHaveBeenCalledWith({
+      pieceType: "city",
+      id: 0,
+      playerId: "0"
     });
   });
 });
