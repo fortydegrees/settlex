@@ -8,17 +8,17 @@ import { Port } from "./Port";
 import "./Board.css";
 import { getBoardLayout } from "./utils/boardLayout";
 import useWindowSize from "./utils/useWindowSize";
-import { useLatestPropsOnEffect, useEffectListener } from "bgio-effects/react";
+import {
+  useLatestPropsOnEffect,
+  useEffectListener,
+  useEffectState
+} from "bgio-effects/react";
 import { TileTypes } from "./game/types";
 import { buildableNodes, canPlaceRobber } from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { isDocumentHidden } from "./utils/visibility";
-import {
-  getPlacementEffectDuration,
-  PLACE_PIECE_DEFAULT_TUNING
-} from "./effects/placePieceDefaults.js";
 
 const getValidRobberTiles = (G) => {
   // Use core function for validation
@@ -78,8 +78,6 @@ export function CatanBoard({
   const [blockedFlashingTiles, setBlockedFlashingTiles] = useState([]);
   const [robberTiles, setRobberTiles] = useState([]);
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
-  const [pendingCityNodeId, setPendingCityNodeId] = useState(null);
-  const pendingCityTimeoutRef = useRef(null);
 
   const [buildableRoads, setBuildableRoads] = useState([])
   const mainBuildableNodes = useMemo(() => {
@@ -115,26 +113,11 @@ export function CatanBoard({
   const playerViewMap = useMemo(() => buildPlayerViewMap(G.core), [G.core]);
   const currentPlayerView = playerViewMap[ctx.currentPlayer];
 
-  useEffect(() => {
-    return () => {
-      if (pendingCityTimeoutRef.current) {
-        clearTimeout(pendingCityTimeoutRef.current);
-        pendingCityTimeoutRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (pendingCityNodeId == null) return;
-    const building = G.core?.buildingsByNodeId?.[pendingCityNodeId];
-    if (building?.type === "city") {
-      if (pendingCityTimeoutRef.current) {
-        clearTimeout(pendingCityTimeoutRef.current);
-        pendingCityTimeoutRef.current = null;
-      }
-      setPendingCityNodeId(null);
-    }
-  }, [pendingCityNodeId, G.core?.buildingsByNodeId]);
+  const [placePiecePayload, isPlacePieceActive] = useEffectState("placePiece");
+  const activeCityPlacementId =
+    isPlacePieceActive && placePiecePayload?.pieceType === "city"
+      ? Number(placePiecePayload.id)
+      : null;
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -219,20 +202,7 @@ export function CatanBoard({
     setSuppressBuildHighlights(true);
   };
 
-  const beginCityPlacementHold = (nodeId) => {
-    setPendingCityNodeId(nodeId);
-    if (pendingCityTimeoutRef.current) {
-      clearTimeout(pendingCityTimeoutRef.current);
-    }
-    setHoveredNode(null);
-    const effectDuration =
-      getPlacementEffectDuration(PLACE_PIECE_DEFAULT_TUNING) +
-      (PLACE_PIECE_DEFAULT_TUNING.postHoldDuration ?? 0);
-    pendingCityTimeoutRef.current = setTimeout(() => {
-      setPendingCityNodeId(null);
-      pendingCityTimeoutRef.current = null;
-    }, effectDuration * 1000);
-  };
+  // placePiece effects keep state updates delayed; use active effect to suppress overlaps
 
   
 
@@ -370,7 +340,7 @@ export function CatanBoard({
       }
       const isCityUpgradeHover =
         playerAction === "placeCity" && hoveredNode === numericNodeId;
-      const isCityUpgradePending = pendingCityNodeId === numericNodeId;
+      const isCityUpgradePending = activeCityPlacementId === numericNodeId;
       if (
         building.type === "settlement" &&
         (isCityUpgradeHover || isCityUpgradePending)
@@ -444,7 +414,7 @@ export function CatanBoard({
           if (!renderNode) {
             return;
           }
-          if (nodeActionType === "city" && pendingCityNodeId === nodeId) {
+          if (nodeActionType === "city" && activeCityPlacementId === nodeId) {
             return;
           }
 
@@ -462,7 +432,6 @@ export function CatanBoard({
               onClick={() => {
                 handleBuildCommit();
                 if (nodeActionType === "city") {
-                  beginCityPlacementHold(nodeId);
                   moves.placeCity(nodeId);
                 } else {
                   moves.placeSettlement(nodeId);
