@@ -130,10 +130,7 @@ describe("AudioManager", () => {
   });
 
   it("applies per-play rate and volume randomization", () => {
-    vi.spyOn(Math, "random")
-      .mockReturnValueOnce(0)
-      .mockReturnValueOnce(0.5)
-      .mockReturnValueOnce(0.5);
+    vi.spyOn(Math, "random").mockReturnValueOnce(0.5).mockReturnValueOnce(0.5);
 
     const bus = createEffectBus();
     const audio = createAudioManager({
