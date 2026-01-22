@@ -122,3 +122,4 @@
 - Game-over audio cues now emit `game:win`/`game:lose` from `app/catana/effects/GameEffects.js`; mappings live in `app/catana/effects/soundThemes.js`.
 - Moves now call `maybeLogGameOver` to append a single `game:over` entry, guarded by `G.gameOverLogged`.
 - `formatLogEntry` handles `game:over` with winner text in `app/catana/utils/gameText.js`.
+- `app/catana/Game.js` now reveals full state when `G.core.gameOver` is set, ensuring final VP/dev-card counts are visible to all players.
