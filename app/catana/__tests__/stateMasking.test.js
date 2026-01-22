@@ -99,6 +99,16 @@ describe("Catan.playerView (state masking)", () => {
     expect(result.core.devDeck).toEqual(["knight", "knight", "victoryPoint"]);
   });
 
+  it("reveals everything after core gameOver", () => {
+    const G = makeG();
+    G.core.gameOver = { winnerId: "0", reason: "victoryPoints" };
+    const ctx = { gameover: undefined };
+    const result = Catan.playerView({ G, ctx, playerID: "1" });
+
+    expect(result).toBe(G);
+    expect(result.core.playerStateById["0"].devCards).toEqual(["knight"]);
+  });
+
   it("spectators see counts but all card values are hidden", () => {
     const G = makeG();
     const ctx = { gameover: undefined };
