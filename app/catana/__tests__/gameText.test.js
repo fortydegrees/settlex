@@ -62,6 +62,21 @@ describe("formatLogEntry", () => {
     const tokens = formatLogEntry({ type: "phase:placement" });
     expect(tokens).toEqual([{ kind: "divider", variant: "strong" }]);
   });
+
+  it("formats game over entries", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "game:over",
+        actorId: "1",
+        data: { winnerId: "1" }
+      },
+      { "1": "Ada" }
+    );
+    expect(tokens.map((t) => t.kind)).toContain("player");
+    expect(
+      tokens.some((t) => t.kind === "text" && t.text.includes("won"))
+    ).toBe(true);
+  });
 });
 
 describe("STATUS_TEXT", () => {
