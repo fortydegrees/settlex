@@ -17,12 +17,16 @@ import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GameLogPanel } from "./components/GameLogPanel";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { DebugPanel } from "./components/DebugPanel";
+import { GameOverOverlay } from "./components/GameOverOverlay";
+import { GameOverModal } from "./components/GameOverModal";
+import { PostgameOverlay } from "./components/PostgameOverlay";
 import { GameEffects } from "./effects/GameEffects";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import { Howler } from "howler";
+import { getVictoryPoints } from "@settlex/game-core";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 
@@ -48,6 +52,9 @@ export function GameScreen(bgioProps) {
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
   const [isMuted, setIsMuted] = useState(readStoredMute);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
+  const [showPostgame, setShowPostgame] = useState(false);
+  const gameOverSeenRef = useRef(false);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
@@ -64,7 +71,12 @@ export function GameScreen(bgioProps) {
   const coreTurn = core?.turn;
   const playerViewMap = buildPlayerViewMap(core);
   const player = playerViewMap[playerID];
-  const gameStatus = getGameStatus(core, bgioProps.ctx, playerAction);
+  const gameOverState = bgioProps.ctx?.gameover ?? core?.gameOver;
+  const isGameOver = Boolean(gameOverState);
+  const rawGameStatus = getGameStatus(core, bgioProps.ctx, playerAction);
+  const gameStatus = isGameOver
+    ? { text: "Game Over", statusType: rawGameStatus.statusType, activePlayerId: null }
+    : rawGameStatus;
   const devPlay = bgioProps.G.devCardPlay;
   const devPlayForMe = devPlay?.playerId === playerID;
   const devPlayMode =
@@ -84,12 +96,57 @@ export function GameScreen(bgioProps) {
     }
     return map;
   }, [bgioProps.matchData]);
+  const winnerId = gameOverState?.winnerId ?? gameOverState?.winner ?? null;
+  const winnerName =
+    winnerId != null
+      ? nameMap[winnerId] ?? `Player ${winnerId}`
+      : "Unknown";
+  const isWinner =
+    winnerId != null && playerID != null && String(winnerId) === String(playerID);
+  const winnerVP =
+    winnerId != null && core ? getVictoryPoints(core, String(winnerId)) : null;
 
+  const scoreboard = useMemo(() => {
+    if (!core) return [];
+    return Object.values(playerViewMap)
+      .map((view) => ({
+        id: view.id,
+        name: nameMap[view.id] ?? view.name ?? `Player ${view.id}`,
+        vp: getVictoryPoints(core, view.id)
+      }))
+      .sort((a, b) => b.vp - a.vp);
+  }, [core, playerViewMap, nameMap]);
+
+  const postgameSummary = useMemo(() => {
+    if (!isGameOver) return [];
+    return [
+      { label: "Winner", value: winnerName },
+      { label: "Reason", value: gameOverState?.reason ?? "Victory Points" },
+      { label: "Final VP", value: winnerVP != null ? `${winnerVP}` : "—" }
+    ];
+  }, [isGameOver, winnerName, gameOverState?.reason, winnerVP]);
 
   useEffect(() => {
     const interval = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!isGameOver) {
+      gameOverSeenRef.current = false;
+      setShowGameOverModal(false);
+      setShowPostgame(false);
+      return;
+    }
+    if (!gameOverSeenRef.current) {
+      gameOverSeenRef.current = true;
+      setShowGameOverModal(true);
+      setShowPostgame(false);
+      setPlayerAction(null);
+      setShowTradeModal(false);
+      setTradePresetResource(null);
+    }
+  }, [isGameOver]);
 
   useEffect(() => {
     setTimerSnapshot(null);
@@ -183,7 +240,7 @@ export function GameScreen(bgioProps) {
           (timerSnapshot.serverDelayMs ?? 0)
       )
     : null;
-  const hideTimer = timerSnapshot?.stageKey?.startsWith("preGame:");
+  const hideTimer = isGameOver || timerSnapshot?.stageKey?.startsWith("preGame:");
   const visibleTimerMs = hideTimer ? null : timerMs;
 
   useEffect(() => {
@@ -204,7 +261,8 @@ export function GameScreen(bgioProps) {
   // the client-side derived ctx.phase might lag or differ if the game engine isn't strictly mapping G to ctx phases 1:1.
   // Relying on G.core.turn.pendingDiscards is more robust because that IS the source of truth for "who needs to discard".
   // Also, G.core.turn.phase should be 'robberDiscard' if pendingDiscards > 0, but let's be safe.
-  const needsToDiscard = coreTurn?.pendingDiscards?.includes(playerID) ?? false;
+  const needsToDiscard =
+    !isGameOver && (coreTurn?.pendingDiscards?.includes(playerID) ?? false);
   
   const discardCount = needsToDiscard ? Math.floor(player.resources.length / 2) : 0;
 
@@ -236,7 +294,8 @@ export function GameScreen(bgioProps) {
   };
 
   const canRoll = Boolean(
-    playerID &&
+    !isGameOver &&
+      playerID &&
       bgioProps.ctx.currentPlayer === playerID &&
       bgioProps.ctx.activePlayers?.[playerID] === "preRoll" &&
       core?.phase === "normal" &&
@@ -244,7 +303,8 @@ export function GameScreen(bgioProps) {
   );
 
   const canEnd = Boolean(
-    playerID &&
+    !isGameOver &&
+      playerID &&
       bgioProps.ctx.currentPlayer === playerID &&
       bgioProps.ctx.activePlayers?.[playerID] === "postRoll" &&
       core?.phase === "normal" &&
@@ -254,7 +314,11 @@ export function GameScreen(bgioProps) {
   );
 
   const hasModalOpen =
-    showTradeModal || needsToDiscard || (devPlayForMe && devPlayMode);
+    showTradeModal ||
+    needsToDiscard ||
+    (devPlayForMe && devPlayMode) ||
+    showGameOverModal ||
+    showPostgame;
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
@@ -303,6 +367,7 @@ export function GameScreen(bgioProps) {
       );
       if (isEditable) return;
       if (hasModalOpen) return;
+      if (isGameOver) return;
 
       event.preventDefault();
 
@@ -317,7 +382,7 @@ export function GameScreen(bgioProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [canRoll, canEnd, hasModalOpen, moves]);
+  }, [canRoll, canEnd, hasModalOpen, isGameOver, moves]);
 
   const effects = useMemo(() => {
     return {
@@ -427,6 +492,8 @@ export function GameScreen(bgioProps) {
         currentPlayerId={bgioProps.ctx?.currentPlayer}
         playerID={playerID}
         phase={bgioProps.ctx?.phase}
+        gameOverState={gameOverState}
+        isWinner={isWinner}
       />
 
       {/* our cards and action dock 
@@ -439,7 +506,7 @@ TODO: accurately colour it
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
           onTradeClick={handleTradeOpen}
-          isActive={gameStatus.activePlayerId === player.id}
+          isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}
           gameStatus={gameStatus}
           canRoll={canRoll}
@@ -450,7 +517,7 @@ TODO: accurately colour it
 
       {/* MODALS */}
       {/* 1. Force Discard Modal */}
-      {!!player && needsToDiscard && (
+      {!!player && needsToDiscard && !isGameOver && (
         <TradeDiscardModal
           mode="discard"
           player={player}
@@ -461,7 +528,7 @@ TODO: accurately colour it
       )}
 
       {/* 2. Manual Trade Modal */}
-      {!!player && showTradeModal && !needsToDiscard && (
+      {!!player && showTradeModal && !needsToDiscard && !isGameOver && (
         <TradeDiscardModal
           mode="trade"
           player={player}
@@ -475,7 +542,7 @@ TODO: accurately colour it
         />
       )}
 
-      {!!player && devPlayForMe && devPlayMode && !needsToDiscard && (
+      {!!player && devPlayForMe && devPlayMode && !needsToDiscard && !isGameOver && (
         <TradeDiscardModal
           mode={devPlayMode}
           player={player}
@@ -493,11 +560,42 @@ TODO: accurately colour it
               player={opponent}
               core={bgioProps.G.core}
               coreTopology={bgioProps.G.coreTopology}
-              isActive={gameStatus.activePlayerId === opponent.id}
+              isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}
               statusType={gameStatus.statusType}
             />
           ))}
         </div>
+      )}
+
+      {showGameOverModal && (
+        <GameOverOverlay>
+          <GameOverModal
+            title={isWinner ? "You win!" : `${winnerName} wins!`}
+            subtitle={
+              winnerVP != null ? `Victory Points: ${winnerVP}` : "Final score locked."
+            }
+            scoreboard={scoreboard}
+            onViewPostgame={() => {
+              setShowPostgame(true);
+              setShowGameOverModal(false);
+            }}
+            onRematch={() => {}}
+            onLobby={() => {
+              window.location.href = "/catana";
+            }}
+            onClose={() => setShowGameOverModal(false)}
+          />
+        </GameOverOverlay>
+      )}
+
+      {showPostgame && (
+        <PostgameOverlay
+          summary={postgameSummary}
+          onClose={() => {
+            setShowPostgame(false);
+            setShowGameOverModal(true);
+          }}
+        />
       )}
       <DebugPanel bgioProps={bgioProps} /> 
     </div>

@@ -5,11 +5,20 @@ import { createAudioManager } from "./AudioManager";
 import { registerEffects } from "./registry";
 import { EffectLayer } from "./EffectLayer";
 
-export function GameEffects({ effects = {}, boardRef, currentPlayerId, playerID, phase }) {
+export function GameEffects({
+  effects = {},
+  boardRef,
+  currentPlayerId,
+  playerID,
+  phase,
+  gameOverState,
+  isWinner
+}) {
   const bus = useMemo(() => createEffectBus(), []);
   const layerRef = useRef(null);
   const audio = useMemo(() => createAudioManager({ bus }), [bus]);
   const lastTurnRef = useRef({ currentPlayerId: null, initialized: false });
+  const gameOverCueRef = useRef(false);
 
   const context = useMemo(
     () => ({
@@ -85,6 +94,18 @@ export function GameEffects({ effects = {}, boardRef, currentPlayerId, playerID,
       bus.emit({ type: "cue", payload: { name: "turn:start" } });
     }
   }, [bus, currentPlayerId, playerID, phase]);
+
+  useEffect(() => {
+    const hasGameOver = Boolean(gameOverState);
+    if (!hasGameOver) {
+      gameOverCueRef.current = false;
+      return;
+    }
+    if (gameOverCueRef.current) return;
+    const cueName = isWinner ? "game:win" : "game:lose";
+    bus.emit({ type: "cue", payload: { name: cueName } });
+    gameOverCueRef.current = true;
+  }, [bus, gameOverState, isWinner]);
 
   return <EffectLayer ref={layerRef} />;
 }
