@@ -118,6 +118,14 @@ export function formatLogEntry(entry, nameMap = {}) {
       }
       break;
     }
+    case "game:over": {
+      const winnerId = data.winnerId ?? actorId;
+      if (winnerId != null && winnerId !== actorId) {
+        tokens.push(playerToken(String(winnerId), nameMap));
+      }
+      tokens.push(textToken(" won the game"));
+      break;
+    }
     case "forced:discardSelection": {
       const targetId = data.playerId ?? data.playerID;
       tokens.push(textToken(" auto-selected discard for "));
