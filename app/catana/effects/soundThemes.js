@@ -1,10 +1,10 @@
 export const DEFAULT_THEME = {
-  "resource:pop:start": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.6 },
-  "resource:travel:start": { src: "/sounds/card_woosh.mp3", volume: 0.6 },
+  "resource:pop:start": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.4 },
+  "resource:travel:start": { src: "/sounds/card_woosh.mp3", volume: 0.4 },
   "build:settlement": { src: "/sounds/settle.mp3", volume: 0.6 },
   "build:city": { src: "/sounds/settle.mp3", volume: 0.6 },
   "build:road": { src: "/sounds/road.mp3", volume: 0.6 },
-  "build:place": { src: "/sounds/settle_place.mp3", volume: 0.6 },
+  "build:place": { src: "/sounds/build_settlement.mp3", volume: 0.8 },
   "dice:roll": {
     variants: [
       "/sounds/dice_roll1.mp3",
