@@ -91,8 +91,8 @@ export const Catan =  {
   // Each player sees their own resources/devCards but only counts for others
   // Uses placeholder values to preserve .length for UI compatibility
   playerView: ({ G, ctx, playerID }) => {
-    // After game over, reveal everything
-    if (ctx.gameover) return G;
+    // After game over (core or ctx), reveal everything
+    if (ctx.gameover || G.core?.gameOver) return G;
 
     // Deep clone to avoid mutating authoritative state
     const masked = JSON.parse(JSON.stringify(G));
