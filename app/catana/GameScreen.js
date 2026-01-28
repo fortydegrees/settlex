@@ -15,6 +15,7 @@ import { EffectsBoardWrapper } from "bgio-effects/react";
 import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GameLogPanel } from "./components/GameLogPanel";
+import { GlassPillButton } from "./components/GlassPillButton";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { DebugPanel } from "./components/DebugPanel";
 import { GameOverOverlay } from "./components/GameOverOverlay";
@@ -27,6 +28,7 @@ import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import { Howler } from "howler";
 import { getVictoryPoints } from "@settlex/game-core";
+import { TrophyIcon } from "@heroicons/react/24/outline";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 
@@ -127,6 +129,8 @@ export function GameScreen(bgioProps) {
       { label: "Final VP", value: winnerVP != null ? `${winnerVP}` : "—" }
     ];
   }, [isGameOver, winnerName, gameOverState?.reason, winnerVP]);
+  const showResultsButton =
+    isGameOver && !showGameOverModal && !showPostgame;
 
   useEffect(() => {
     const interval = setInterval(() => setNowMs(Date.now()), 250);
@@ -485,6 +489,18 @@ export function GameScreen(bgioProps) {
           )}
         </svg>
       </button>
+
+      {showResultsButton && (
+        <GlassPillButton
+          className="fixed right-4 top-4 z-40"
+          onClick={() => setShowGameOverModal(true)}
+          aria-label="Open game results"
+          data-allow-interaction="true"
+        >
+          <TrophyIcon className="h-4 w-4" aria-hidden="true" />
+          <span>Results</span>
+        </GlassPillButton>
+      )}
 
       <GameLogPanel entries={bgioProps.G?.gameLog ?? []} nameMap={nameMap} />
 
