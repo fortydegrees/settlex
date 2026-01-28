@@ -216,3 +216,4 @@
 - Added game-over modal + postgame overlay scaffolding and wired GameScreen to show them on win.
 - Added game-over audio cues (win/lose) and guarded `ctx.activePlayers` access in Board.
 - Revealed full player state when `G.core.gameOver` is set so final VP/dev-card scores display correctly for all players.
+- Restyled game-over modal/postgame overlay to the blue/glass theme and added winner confetti via canvas-confetti.
