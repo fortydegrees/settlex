@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createEmptyState, ResourceType } from "@settlex/game-core";
-import { autoDiscard, buyDevCard } from "../Moves";
+import { autoDiscard, buyDevCard, maybeLogGameOver } from "../Moves";
 
 const makeContext = (overrides = {}) => {
   const core = createEmptyState(["0", "1"]);
@@ -72,5 +72,14 @@ describe("game log moves", () => {
     expect(context.G.gameLog[0].type).toBe("forced:discardSelection");
     expect(context.G.gameLog[1].type).toBe("discard");
     expect(context.G.gameLog[1].forced).toBe(true);
+  });
+
+  it("logs game over once", () => {
+    const context = makeContext();
+    context.G.core.gameOver = { winnerId: "0", reason: "victoryPoints" };
+    maybeLogGameOver(context.G, context.ctx);
+    expect(context.G.gameLog).toHaveLength(1);
+    maybeLogGameOver(context.G, context.ctx);
+    expect(context.G.gameLog).toHaveLength(1);
   });
 });

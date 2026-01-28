@@ -288,7 +288,7 @@ export function CatanBoard({
   }, [ctx.activePlayers, isActive, G]);
 
   useEffect(() => {
-    if (Object.entries(ctx.activePlayers).flat().includes("settlement")) {
+    if (Object.entries(ctx.activePlayers ?? {}).flat().includes("settlement")) {
       if (hoveredNode) {
         const newHoveredTiles = [];
         for (const tile of G.tiles) {

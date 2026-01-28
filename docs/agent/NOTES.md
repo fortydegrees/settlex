@@ -117,3 +117,11 @@
 - City placement effects emit `build:city`, mapped to the settlement sound in `app/catana/effects/soundThemes.js`.
 - Turn-start cue logic now lives in `app/catana/effects/turnStartCue.js` and handles placement-start dings without repeating on consecutive placement turns.
 - Piece placement now uses separate board layers for roads vs. node pieces via `placementRoadLayerRef` and `placementLayerRef` in `app/catana/Board.js`.
+- Game-over UI uses `GameOverOverlay`, `GameOverModal`, and `PostgameOverlay` under `app/catana/components/`.
+- `GameScreen` derives `gameOverState` from `ctx.gameover`/`G.core.gameOver`, opens the modal on transition, and builds a scoreboard via `getVictoryPoints`.
+- Game-over audio cues now emit `game:win`/`game:lose` from `app/catana/effects/GameEffects.js`; mappings live in `app/catana/effects/soundThemes.js`.
+- Moves now call `maybeLogGameOver` to append a single `game:over` entry, guarded by `G.gameOverLogged`.
+- `formatLogEntry` handles `game:over` with winner text in `app/catana/utils/gameText.js`.
+- `app/catana/Game.js` now reveals full state when `G.core.gameOver` is set, ensuring final VP/dev-card counts are visible to all players.
+- Game-over UI now uses blue/glass styling (modeled after `.worktrees/game-over-modal`) and fires confetti on winner clients via `canvas-confetti`.
+- `GameOverModal` expects `scoreboard` entries with `color` and `isWinner` fields for styling.
