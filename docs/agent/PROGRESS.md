@@ -220,3 +220,4 @@
 
 ## Status (2026-01-28)
 - Added a failing test guard to require a "Results" label in the game-over screen source.
+- Added a reusable glass pill button and top-right Results control to reopen the game-over modal.

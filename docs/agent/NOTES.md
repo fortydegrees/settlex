@@ -126,3 +126,4 @@
 - Game-over UI now uses blue/glass styling (modeled after `.worktrees/game-over-modal`) and fires confetti on winner clients via `canvas-confetti`.
 - `GameOverModal` expects `scoreboard` entries with `color` and `isWinner` fields for styling.
 - Game-over test now asserts the `GameScreen` source contains a "Results" label.
+- Added a reusable `GlassPillButton` and a top-right Results pill in `app/catana/GameScreen.js` to reopen the game-over modal after closing it.
