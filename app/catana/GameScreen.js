@@ -28,7 +28,6 @@ import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import { Howler } from "howler";
 import { getVictoryPoints } from "@settlex/game-core";
-import { TrophyIcon } from "@heroicons/react/24/outline";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 
@@ -497,7 +496,7 @@ export function GameScreen(bgioProps) {
           aria-label="Open game results"
           data-allow-interaction="true"
         >
-          <TrophyIcon className="h-4 w-4" aria-hidden="true" />
+          <span aria-hidden="true">🏆</span>
           <span>Results</span>
         </GlassPillButton>
       )}
