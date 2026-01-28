@@ -125,3 +125,4 @@
 - `app/catana/Game.js` now reveals full state when `G.core.gameOver` is set, ensuring final VP/dev-card counts are visible to all players.
 - Game-over UI now uses blue/glass styling (modeled after `.worktrees/game-over-modal`) and fires confetti on winner clients via `canvas-confetti`.
 - `GameOverModal` expects `scoreboard` entries with `color` and `isWinner` fields for styling.
+- Game-over test now asserts the `GameScreen` source contains a "Results" label.

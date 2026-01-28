@@ -13,5 +13,6 @@ describe("GameScreen game over", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
     expect(contents).toContain("gameOverState");
     expect(contents).toContain("GameOverModal");
+    expect(contents).toContain("Results");
   });
 });

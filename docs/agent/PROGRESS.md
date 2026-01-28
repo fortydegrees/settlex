@@ -217,3 +217,6 @@
 - Added game-over audio cues (win/lose) and guarded `ctx.activePlayers` access in Board.
 - Revealed full player state when `G.core.gameOver` is set so final VP/dev-card scores display correctly for all players.
 - Restyled game-over modal/postgame overlay to the blue/glass theme and added winner confetti via canvas-confetti.
+
+## Status (2026-01-28)
+- Added a failing test guard to require a "Results" label in the game-over screen source.
