@@ -18,5 +18,7 @@ export const DEFAULT_THEME = {
     shuffle: true,
     randomize: { volume: [0.9, 1.0], rate: [0.98, 1.02] }
   },
-  "turn:start": { src: "/sounds/turn-start.mp3", volume: 0.6, allowWhenHidden: true }
+  "turn:start": { src: "/sounds/turn-start.mp3", volume: 0.6, allowWhenHidden: true },
+  "game:win": { src: "/sounds/turn-start.mp3", volume: 0.7 },
+  "game:lose": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.5 }
 };

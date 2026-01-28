@@ -51,6 +51,17 @@ const logResourceDistributions = (G, ctx, distributions, options) => {
   });
 };
 
+export const maybeLogGameOver = (G, ctx) => {
+  if (!G?.core?.gameOver || G.gameOverLogged) return;
+  const { winnerId, reason } = G.core.gameOver;
+  appendGameLog(G, ctx, {
+    type: "game:over",
+    actorId: winnerId ?? "system",
+    data: { winnerId, reason }
+  });
+  G.gameOverLogged = true;
+};
+
 //used for giving cards to a player by clicking on icon for testing
 //TODO: remove
 export const DEBUG_takeCardsFromBank = {
@@ -163,6 +174,7 @@ export const placeSettlement = {
       forced: options?.forced
     });
     logResourceDistributions(G, ctx, distributions, options);
+    maybeLogGameOver(G, ctx);
 
     if (isPlacement) {
       updateValids(context, "road", nodeId);
@@ -285,6 +297,7 @@ export const placeRoad = {
       data: { edgeId: edge, initialPlacement: isPlacement },
       forced: options?.forced
     });
+    maybeLogGameOver(G, ctx);
 
     //if we're in placement phase, end turn after placing road
     if (isPlacement) {
@@ -337,6 +350,7 @@ export const placeCity = {
       data: { nodeId },
       forced: options?.forced
     });
+    maybeLogGameOver(G, ctx);
   }
 };
 
@@ -783,6 +797,7 @@ export const buyDevCard = {
       actorId: playerID,
       data: {}
     });
+    maybeLogGameOver(G, context.ctx);
   }
 };
 
@@ -818,6 +833,7 @@ export const playDevCardStart = {
         data: { cardType: "knight" },
         forced: options?.forced
       });
+      maybeLogGameOver(G, ctx);
       G.robberReturnToStage = currentStage;
       events.setStage("moveRobber");
       return;
@@ -941,6 +957,7 @@ export const placeRoadFromDevCard = {
       data: { edgeId: edge, free: true, via: "devCard" },
       forced: options?.forced
     });
+    maybeLogGameOver(G, ctx);
 
     devPlay.pendingRoads -= 1;
     if (devPlay.pendingRoads <= 0) {
