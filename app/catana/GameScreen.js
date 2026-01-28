@@ -112,10 +112,12 @@ export function GameScreen(bgioProps) {
       .map((view) => ({
         id: view.id,
         name: nameMap[view.id] ?? view.name ?? `Player ${view.id}`,
-        vp: getVictoryPoints(core, view.id)
+        vp: getVictoryPoints(core, view.id),
+        color: view.color,
+        isWinner: String(view.id) === String(winnerId)
       }))
       .sort((a, b) => b.vp - a.vp);
-  }, [core, playerViewMap, nameMap]);
+  }, [core, playerViewMap, nameMap, winnerId]);
 
   const postgameSummary = useMemo(() => {
     if (!isGameOver) return [];
@@ -575,6 +577,7 @@ TODO: accurately colour it
               winnerVP != null ? `Victory Points: ${winnerVP}` : "Final score locked."
             }
             scoreboard={scoreboard}
+            isWinner={isWinner}
             onViewPostgame={() => {
               setShowPostgame(true);
               setShowGameOverModal(false);
@@ -591,6 +594,7 @@ TODO: accurately colour it
       {showPostgame && (
         <PostgameOverlay
           summary={postgameSummary}
+          scoreboard={scoreboard}
           onClose={() => {
             setShowPostgame(false);
             setShowGameOverModal(true);
