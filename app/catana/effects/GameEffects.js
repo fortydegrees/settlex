@@ -4,6 +4,7 @@ import { createEffectBus } from "./EffectBus";
 import { createAudioManager } from "./AudioManager";
 import { registerEffects } from "./registry";
 import { EffectLayer } from "./EffectLayer";
+import { DEFAULT_TURN_START_STATE, getTurnStartCueDecision } from "./turnStartCue";
 
 export function GameEffects({
   effects = {},
@@ -17,7 +18,7 @@ export function GameEffects({
   const bus = useMemo(() => createEffectBus(), []);
   const layerRef = useRef(null);
   const audio = useMemo(() => createAudioManager({ bus }), [bus]);
-  const lastTurnRef = useRef({ currentPlayerId: null, initialized: false });
+  const turnStartRef = useRef({ ...DEFAULT_TURN_START_STATE });
   const gameOverCueRef = useRef(false);
 
   const context = useMemo(
@@ -79,18 +80,14 @@ export function GameEffects({
   );
 
   useEffect(() => {
-    if (!currentPlayerId || !playerID) return;
-    if (!lastTurnRef.current.initialized) {
-      lastTurnRef.current = { currentPlayerId, initialized: true };
-      return;
-    }
-    if (phase === "preGame") {
-      lastTurnRef.current = { currentPlayerId, initialized: true };
-      return;
-    }
-    if (currentPlayerId === lastTurnRef.current.currentPlayerId) return;
-    lastTurnRef.current = { currentPlayerId, initialized: true };
-    if (currentPlayerId === playerID) {
+    const decision = getTurnStartCueDecision({
+      currentPlayerId,
+      playerID,
+      phase,
+      prevState: turnStartRef.current
+    });
+    turnStartRef.current = decision.nextState;
+    if (decision.play) {
       bus.emit({ type: "cue", payload: { name: "turn:start" } });
     }
   }, [bus, currentPlayerId, playerID, phase]);

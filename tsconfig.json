@@ -26,8 +26,10 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "app/catana/game/collections.js", "app/catana/utils/randomQueue.js", "app/catana/components/ActionsDock/hooks/useMousePosition.js"  ],
+    "**/*.tsx",
+    "app/catana/utils/randomQueue.js",
+    "app/catana/components/ActionsDock/hooks/useMousePosition.js"
+  ],
   "exclude": [
     "node_modules",
     "game-core"

@@ -1,4 +1,4 @@
-import { RESOURCE_ICON_SVGS, ResourceType } from "./game/types";
+import { RESOURCE_ICON_SVGS, ResourceType } from "./types";
 import {  animated } from "@react-spring/web";
 export function Card({ resource, style }) {
   var bgColor;

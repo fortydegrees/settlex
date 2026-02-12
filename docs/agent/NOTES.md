@@ -1,6 +1,7 @@
 # NOTES
 
 - Use `pnpm dev:log` to capture dev-server output at `.logs/dev.log` for debugging without manual copy/paste.
+- Catana UI/brand design skill doc lives at `docs/agent/skills/catana-brand/SKILL.md` (sky gradient + glass recipes for lobby/blog/marketing pages).
 - boardgame.io RNG is passed as `random` in setup/moves; use `random.Number()` for deterministic floats.
 - ESLint is now configured via `.eslintrc.json` with `react/jsx-key`; `pnpm lint` may emit existing warnings (hooks/img).
 - Trading rules live in `game-core/src/rules/trading.ts`; port eligibility uses `coreTopology.portsByNodeId` and `ruleset.tradeRates`.
@@ -127,3 +128,40 @@
 - `GameOverModal` expects `scoreboard` entries with `color` and `isWinner` fields for styling.
 - Game-over test now asserts the `GameScreen` source contains a "Results" label.
 - Added a reusable `GlassPillButton` and a top-right Results pill in `app/catana/GameScreen.js` to reopen the game-over modal after closing it.
+- Catana lobby UI lives at `/catana/lobby` (`app/catana/lobby/`), talks to the boardgame.io Lobby API on port 8080 to list/create/join rooms, and stores player creds in `localStorage` under `catana:lobby:credentials:<matchID>:<playerID>`.
+- `app/catana/Game.js` now gates `DEBUG_loadState`, `DEBUG_setScenario`, and `DEBUG_takeCardsFromBank` behind `NODE_ENV !== "production"` for both stage moves and top-level moves.
+- Regression coverage for debug-move exposure lives in `app/catana/__tests__/Game.debugMoves.test.js`.
+- Legacy `app/catana/game/` files were removed; active `types.js` exports moved to `app/catana/types.js` and all imports were rewired.
+- `tsconfig.json` no longer includes deleted `app/catana/game/collections.js`.
+- `app/catana/__tests__/Game.placementPhase.test.js` now calls `turnOrder.playOrder({ G })` (required by boardgame.io `TurnOrder.CUSTOM_FROM`), and root `pnpm exec vitest run` is green.
+- Root `package.json` `verify` now runs `pnpm exec vitest run` so app/server tests are included in standard verification.
+- Build-intent cleanup helper lives in `app/catana/utils/playerAction.js`; `GameScreen` uses it to clear stale `placeRoad`/`placeCity` local state on turn/stage handoff so status/highlights do not linger after end-turn.
+- PufferLib integration lives under `ai/pufferlib/` and is intentionally isolated from game engine/UI code.
+- JS env wrapper: `ai/pufferlib/js/settlexEnv.cjs`; bridge host: `ai/pufferlib/js/engine_host.cjs`.
+- JS verification tests: `ai/pufferlib/js/__tests__/settlexEnv.test.js` and `ai/pufferlib/js/__tests__/engineHost.test.js`.
+- Python package: `ai/pufferlib/python/settlex_puffer/` with `bridge.py`, `env.py`, `policy.py`, `smoke.py`, `train.py`.
+- `SettlexMaskedPolicy` in `ai/pufferlib/python/settlex_puffer/policy.py` reads the action mask appended to observation and applies hard logit masking.
+- Train entrypoint (`python -m settlex_puffer.train`) creates a Puffer `GymnasiumPufferEnv` via the JS host, uses `Serial` vectorization, and defaults to CPU-friendly settings.
+- Smoke entrypoint (`python -m settlex_puffer.smoke`) runs random legal actions against the same host for integration checks.
+- Current RL action space intentionally excludes player-trade negotiation and explicit VP dev-card play actions; discard choices are auto-resolved in robber-discard phase.
+- Build game-core before RL runs (`pnpm -C game-core build`) since the JS env imports `game-core/dist/index.js`.
+- RL action space now includes explicit dev-card actions (`knight`, `roadBuilding`, `monopoly`, `yearOfPlenty`) in `ai/pufferlib/js/settlexEnv.cjs`; robber return mode is preserved for knight plays (`preRoll` vs `postRoll`).
+- `devRoadBuilding` is a dedicated env mode where road actions are free and consumed from a pending road-building effect state.
+- Dev-card env tests live in `ai/pufferlib/js/__tests__/settlexEnv.devCards.test.js`.
+- Checkpoint evaluation helper lives in `ai/pufferlib/python/settlex_puffer/evaluate.py` (`python -m settlex_puffer.evaluate`) and reports win-rate for a target seat vs random opponents.
+- `ai/pufferlib/python/settlex_puffer/train.py` now defaults `--minibatch-size` to `128` and clamps minibatch when `--batch-size auto` to prevent `batch_size < minibatch_size` startup failures on short/local runs.
+- Server bot adapter modules:
+  - `server/bots/pufferStateAdapter.js` (state->observation/action-mask + action->move mapping)
+  - `server/bots/PufferPolicyClient.js` (persistent Python JSONL worker client)
+  - `server/bots/pufferBotManager.js` (bot seat detection + policy/random fallback)
+- Python inference worker for serving checkpoints lives at `ai/pufferlib/python/settlex_puffer/infer_server.py`; invoke via `python -m settlex_puffer.infer_server --checkpoint <path>`.
+- `server/timers/TimerManager.js` now supports bot scheduling (`autoBot`) with configurable delay and per-state re-triggering even when stage/turn remain unchanged.
+- `server/timers/dispatchUtils.js` now supports passing move args in dispatched actions (`buildAutoMoveAction({ ..., args })`).
+- Match lobby page (`app/catana/lobby/[matchID]/MatchPageClient.js`) includes a **Fill Open Seats With Bots** action that joins open seats with `data.bot = "puffer"` for dynamic bot detection.
+- Main lobby page (`app/catana/lobby/LobbyPageClient.js`) now includes a **Play Against Bot** CTA that creates a 2-player match and auto-fills seat `1` with `[BOT] Puffer` (`data.bot = "puffer"`), then routes the human player to the match.
+- Server runtime should use `ServerCatan` from `server/serverGame.js` so authoritative execution excludes debug-only moves and UI effects plugin wiring.
+- `server/dispatch/dispatchMatchUpdate.js` is the single dispatch path for auto-timeout and bot moves; it handles errors and avoids per-move state refetches.
+- Shared hex neighbor wiring lives in `game-core/src/board/hexWiring.ts`; both board generators call it (avoid reintroducing separate wiring implementations).
+- `app/catana/GameScreen.js` timer ticker is intentionally gated by visible timer state to avoid whole-screen rerenders when timers are hidden/inactive.
+- `app/catana/components/PlayerActionContainer.js` uses memoized `resourceCounts` for resource badges instead of repeated `.filter(...)` scans.
+- `app/catana/components/GameLogPanel.js` memoizes `formattedEntries` to avoid re-tokenizing the entire log on unrelated rerenders.

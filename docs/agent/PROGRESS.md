@@ -221,3 +221,90 @@
 ## Status (2026-01-28)
 - Added a failing test guard to require a "Results" label in the game-over screen source.
 - Added a reusable glass pill button and top-right Results control to reopen the game-over modal.
+
+## Status (2026-02-04)
+- Added a Catana-styled lobby UI under `app/catana/lobby/` with room list + join/create flows.
+- Added a Catana frontend design skill doc at `docs/agent/skills/catana-brand/SKILL.md` to codify the sky+glass visual recipes for new pages (lobby/blog/marketing).
+
+## Status (2026-02-06)
+- Gated `DEBUG_*` moves in `app/catana/Game.js` so they are only exposed when `NODE_ENV !== "production"`.
+- Added `app/catana/__tests__/Game.debugMoves.test.js` to assert debug moves are hidden in production and available in non-production.
+- Removed legacy `app/catana/game/*` files, moved active exports to `app/catana/types.js`, and updated Catana imports to the new path.
+- Removed the stale deleted-file include from `tsconfig.json`.
+- Fixed `app/catana/__tests__/Game.placementPhase.test.js` by passing `{ G }` into `turnOrder.playOrder(...)`; full root Vitest now passes (71 files / 267 tests).
+- Updated root `verify` script to run full repo tests via `pnpm exec vitest run` (instead of only `game-core` tests) before lint.
+- Fixed stale build-placement UI state after turn handoff: `GameScreen` now clears local `playerAction` when the viewer is no longer eligible to build (phase/stage/player mismatch).
+- Added `app/catana/utils/playerAction.js` + `app/catana/__tests__/playerAction.test.js` to codify reset rules (including turn-end while placing road/city).
+- Spacebar end-turn now mirrors the button path by clearing local build intent before calling `moves.endTurn()`.
+
+## Status (2026-02-06)
+- Added a standalone Settlex RL harness under `ai/pufferlib/` that uses `game-core` as-is (no engine code changes required).
+- Added `ai/pufferlib/js/settlexEnv.cjs`, a deterministic self-play env with fixed discrete action space and per-step action masking over placement/main/robber flows.
+- Added `ai/pufferlib/js/engine_host.cjs`, a JSONL stdio bridge so Python can step/reset/spec the JS engine wrapper.
+- Added JS tests: `ai/pufferlib/js/__tests__/settlexEnv.test.js` and `ai/pufferlib/js/__tests__/engineHost.test.js`.
+- Added Python integration in `ai/pufferlib/python/settlex_puffer/`:
+  - Gym wrapper (`env.py`) + host client (`bridge.py`)
+  - masked policy (`policy.py`) that enforces legal-action logits
+  - smoke runner (`smoke.py`) and PufferLib train entrypoint (`train.py`)
+- Added packaging + docs: `ai/pufferlib/python/pyproject.toml` and `ai/pufferlib/README.md`.
+- Verified end-to-end:
+  - JS tests pass for env/host
+  - random-policy smoke rollout runs
+  - short CPU PufferLib train run completes and writes checkpoints to a run directory
+
+## Status (2026-02-06)
+- Expanded RL action space with explicit dev-card play actions in `ai/pufferlib/js/settlexEnv.cjs`:
+  - `playDev:knight`
+  - `playDev:roadBuilding`
+  - `playDev:monopoly:<resource>`
+  - `playDev:yearOfPlenty:<resource>+<resource>`
+- Added dev-card flow tests in `ai/pufferlib/js/__tests__/settlexEnv.devCards.test.js` covering mask exposure and phase transitions.
+- Added checkpoint evaluation script `ai/pufferlib/python/settlex_puffer/evaluate.py` and CLI entrypoint `settlex-puffer-eval` for win-rate tracking vs random opponents.
+- Re-verified smoke + short CPU training run after dev-card action expansion.
+
+## Status (2026-02-06)
+- Updated Puffer trainer defaults in `ai/pufferlib/python/settlex_puffer/train.py` to avoid common startup failures (`minibatch_size` now defaults to `128`).
+- Added a guard that clamps `minibatch_size` when `batch_size=auto` so short/local runs do not trip `batch_size < minibatch_size` errors.
+- Re-verified short CPU training run and checkpoint evaluation after the trainer config fix.
+
+## Status (2026-02-06)
+- Added server-side Puffer bot adapter plumbing:
+  - `server/bots/pufferStateAdapter.js` maps live `G/ctx` -> policy observation/mask and maps policy actions -> boardgame move payloads.
+  - `server/bots/PufferPolicyClient.js` runs a persistent Python JSONL inference worker.
+  - `server/bots/pufferBotManager.js` manages bot seat detection, policy inference, and random/legal fallback.
+- Added Python inference worker `ai/pufferlib/python/settlex_puffer/infer_server.py` and script entrypoint `settlex-puffer-infer`.
+- Integrated bot dispatch path in `server/server.js` with multi-step move support (`buildAutoMoveAction` now accepts args) and bot-seat caching from lobby metadata.
+- Extended `TimerManager` to schedule fast `autoBot` ticks for bot-controlled stages and to re-schedule when state updates in the same turn/stage.
+- Added lobby UX to fill open seats with bots in `app/catana/lobby/[matchID]/MatchPageClient.js` using `data.bot = "puffer"`.
+- Added tests:
+  - `server/__tests__/pufferStateAdapter.test.js`
+  - `server/__tests__/pufferBotManager.test.js`
+  - `app/catana/__tests__/MatchPageClient.botFill.test.js`
+  - updates in `server/__tests__/dispatchUtils.test.js` and `server/__tests__/TimerManager.test.js`
+
+## Status (2026-02-06)
+- Added a direct main lobby CTA in `app/catana/lobby/LobbyPageClient.js`: **Play Against Bot**.
+- New flow creates a 2-player match, joins the human to seat `0`, auto-joins seat `1` as `[BOT] Puffer` with `data.bot = "puffer"`, and routes to the match page.
+- Added source-level regression test `app/catana/__tests__/LobbyPageClient.playVsBot.test.js`.
+
+## Status (2026-02-11)
+- Added explicit server-only game config at `server/serverGame.js` (`ServerCatan`) with debug moves and effects plugin disabled.
+- Refactored `app/catana/Game.js` to export `createCatanGame(...)` and keep `Catan` as the client/default config.
+- Removed global mutable `STATIC_GRAPH` usage from `app/catana/Game.js` setup flow.
+- Added dispatch extraction `server/dispatch/dispatchMatchUpdate.js` with top-level error handling and reduced DB reads (initial + final sync fetch instead of per planned move).
+- Added server regression tests:
+  - `server/__tests__/serverGameConfig.test.js`
+  - `server/__tests__/dispatchMatchUpdate.test.js`
+- Added shared board wiring helpers in `game-core/src/board/hexWiring.ts` and reused them in:
+  - `game-core/src/board/generateBoard.ts`
+  - `game-core/src/board/generateBoardClass.ts`
+- Added board wiring tests in `game-core/src/board/hexWiring.test.ts`.
+- Added render performance guards and updates:
+  - `app/catana/GameScreen.js`: memoized player-view map + timer ticker only when timer is visible.
+  - `app/catana/components/PlayerActionContainer.js`: precomputed resource counts (removed repeated per-resource filters).
+  - `app/catana/components/GameLogPanel.js`: memoized formatted log entries.
+  - `app/catana/__tests__/renderPerfGuards.test.js`.
+- Expanded `game-core` rule coverage for critical failure paths:
+  - `game-core/src/rules/turnFlow.test.ts`
+  - `game-core/src/rules/trading.test.ts`
+  - `game-core/src/rules/devCards.test.ts`

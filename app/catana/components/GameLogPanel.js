@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { formatLogEntry } from "../utils/gameText";
-import { RESOURCE_ICON_SVGS } from "../game/types";
+import { RESOURCE_ICON_SVGS } from "../types";
 
 const AUTO_SCROLL_IDLE_MS = 3000;
 
@@ -60,6 +60,20 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
   const idleTimeoutRef = useRef(null);
   const isAutoScrollingRef = useRef(false);
   const isHoveringRef = useRef(false);
+  const formattedEntries = useMemo(
+    () =>
+      entries
+        .map((entry, entryIndex) => {
+          const tokens = formatLogEntry(entry, nameMap);
+          if (!tokens || tokens.length === 0) return null;
+          return {
+            key: entry.id ?? `${entryIndex}-${entry.type}`,
+            tokens
+          };
+        })
+        .filter(Boolean),
+    [entries, nameMap]
+  );
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -70,7 +84,7 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
     requestAnimationFrame(() => {
       isAutoScrollingRef.current = false;
     });
-  }, [entries.length]);
+  }, [formattedEntries.length]);
 
   useEffect(() => {
     return () => {
@@ -128,15 +142,13 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
             onMouseLeave={handleMouseLeave}
           >
             <div className="space-y-2 text-sm pt-2">
-              {entries.map((entry, entryIndex) => {
-                const tokens = formatLogEntry(entry, nameMap);
-                if (!tokens || tokens.length === 0) return null;
+              {formattedEntries.map((entry) => {
                 return (
                   <div
-                    key={entry.id ?? `${entryIndex}-${entry.type}`}
+                    key={entry.key}
                     className="flex flex-wrap items-center gap-1"
                   >
-                    {tokens.map((token, tokenIndex) =>
+                    {entry.tokens.map((token, tokenIndex) =>
                       renderToken(token, tokenIndex)
                     )}
                   </div>

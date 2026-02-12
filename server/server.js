@@ -1,51 +1,42 @@
 // src/server.js
 import { Server, Origins, SocketIO } from "boardgame.io/dist/cjs/server.js"
-import { Master } from "boardgame.io/dist/cjs/master.js"
-import { Catan } from "../app/catana/Game.js"
+import { ServerCatan } from "./serverGame.js"
 import { TimerManager } from "./timers/TimerManager.js"
-import { buildAutoMoveAction } from "./timers/dispatchUtils.js"
 import { createTimerPubSub } from "./timers/timerPubSub.js"
-
-const MATCH_PREFIX = "MATCH-"
+import { createPufferBotManagerFromEnv } from "./bots/pufferBotManager.js"
+import { dispatchMatchUpdate } from "./dispatch/dispatchMatchUpdate.js"
+const DEFAULT_BOT_MOVE_DELAY_MS = 450
 
 let serverInstance
+const botManager = createPufferBotManagerFromEnv()
+
 const dispatch = async ({ matchID, move, playerID }) => {
-  if (!serverInstance || !move) return
-
-  const { state, metadata } = await serverInstance.db.fetch(matchID, {
-    state: true,
-    metadata: true,
+  await dispatchMatchUpdate({
+    serverInstance,
+    botManager,
+    move,
+    playerID,
+    matchID,
+    game: ServerCatan
   })
-  if (!state) return
-
-  const action = buildAutoMoveAction({ move, playerID, metadata })
-
-  const transportAPI = {
-    send: () => {},
-    sendAll: (payload) => {
-      serverInstance.transport.pubSub.publish(
-        `${MATCH_PREFIX}${matchID}`,
-        payload
-      )
-    },
-  }
-
-  const master = new Master(
-    Catan,
-    serverInstance.db,
-    transportAPI,
-    serverInstance.auth
-  )
-
-  await master.onUpdate(action, state._stateID, matchID, playerID)
 }
 
-const timerManager = new TimerManager({ dispatch })
+const parsedBotDelay = Number(process.env.SETTLEX_BOT_MOVE_DELAY_MS)
+const botMoveDelayMs = Number.isFinite(parsedBotDelay)
+  ? parsedBotDelay
+  : DEFAULT_BOT_MOVE_DELAY_MS
+
+const timerManager = new TimerManager({
+  dispatch,
+  isBotPlayer: ({ matchID, playerID }) =>
+    botManager.isBotPlayerForMatch(matchID, playerID),
+  botMoveDelayMs
+})
 const pubSub = createTimerPubSub(timerManager)
 const transport = new SocketIO({ pubSub })
 
 const server = Server({
-  games: [Catan],
+  games: [ServerCatan],
   origins: [Origins.LOCALHOST_IN_DEVELOPMENT],
   transport,
 })

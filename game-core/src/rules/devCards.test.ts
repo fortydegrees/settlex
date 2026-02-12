@@ -41,6 +41,58 @@ describe("dev cards - purchase", () => {
     expect(state.devDeck).toHaveLength(0);
     expect(state.playerStateById["0"].devCards).toEqual(["knight"]);
   });
+
+  it("rejects purchase when dev cards are disabled", () => {
+    const state = createEmptyState(["0"]);
+    state.ruleset.devCardsEnabled = false;
+    state.devDeck = ["knight"];
+    state.playerStateById["0"].resources = [
+      ResourceType.SHEEP,
+      ResourceType.WHEAT,
+      ResourceType.ORE
+    ];
+
+    expect(buyDevCard(state, "0")).toEqual({
+      ok: false,
+      error: "dev-cards-disabled"
+    });
+  });
+
+  it("rejects purchase for unknown player", () => {
+    const state = createEmptyState(["0"]);
+    state.devDeck = ["knight"];
+
+    expect(buyDevCard(state, "2")).toEqual({
+      ok: false,
+      error: "unknown-player"
+    });
+  });
+
+  it("rejects purchase when deck is empty", () => {
+    const state = createEmptyState(["0"]);
+    state.devDeck = [];
+    state.playerStateById["0"].resources = [
+      ResourceType.SHEEP,
+      ResourceType.WHEAT,
+      ResourceType.ORE
+    ];
+
+    expect(buyDevCard(state, "0")).toEqual({
+      ok: false,
+      error: "deck-empty"
+    });
+  });
+
+  it("rejects purchase when resources are insufficient", () => {
+    const state = createEmptyState(["0"]);
+    state.devDeck = ["knight"];
+    state.playerStateById["0"].resources = [ResourceType.SHEEP, ResourceType.WHEAT];
+
+    expect(buyDevCard(state, "0")).toEqual({
+      ok: false,
+      error: "insufficient-resources"
+    });
+  });
 });
 const tiles = [
   {

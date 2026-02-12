@@ -1,0 +1,28 @@
+[project]
+name = "settlex-puffer"
+version = "0.1.0"
+description = "PufferLib training harness for Settlex"
+requires-python = ">=3.10"
+dependencies = [
+  "gymnasium>=0.29.1",
+  "numpy>=1.26.0",
+  "pufferlib>=3.0.0",
+  "torch>=2.2.0",
+]
+
+[project.scripts]
+settlex-puffer-train = "settlex_puffer.train:main"
+settlex-puffer-smoke = "settlex_puffer.smoke:main"
+settlex-puffer-eval = "settlex_puffer.evaluate:main"
+settlex-puffer-infer = "settlex_puffer.infer_server:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["settlex_puffer*"]

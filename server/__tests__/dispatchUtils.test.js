@@ -25,4 +25,19 @@ describe("buildAutoMoveAction", () => {
 
     expect(action.payload.credentials).toBeNull();
   });
+
+  it("passes move args through to payload", () => {
+    const action = buildAutoMoveAction({
+      move: "moveRobber",
+      playerID: "1",
+      args: [42, "victim-2"],
+      metadata: {
+        players: {
+          "1": { credentials: "secret-1" }
+        }
+      }
+    });
+
+    expect(action.payload.args).toEqual([42, "victim-2"]);
+  });
 });

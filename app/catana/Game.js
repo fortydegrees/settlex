@@ -13,7 +13,9 @@ const DEBUG_MOVES = {
   DEBUG_loadState,
   DEBUG_setScenario
 };
-import nx from "jsnetworkx";
+
+const isDebugEnvironment = (nodeEnv = process.env.NODE_ENV) =>
+  nodeEnv !== "production";
 //setup board and convert tiles/edges into right format to render
 
 //   new BalancedBoard({
@@ -29,9 +31,6 @@ import nx from "jsnetworkx";
 
 
 // const b = new Board(spec, true)
-
-
-export const STATIC_GRAPH = new nx.Graph();
 
 export const getPlacementOrder = (numPlayers) => {
   const ids = Array.from({ length: numPlayers }, (_, i) => i.toString());
@@ -76,13 +75,19 @@ const TURN_ORDER_ONCE = {
   },
 };
 
-export const Catan =  {
+export const createCatanGame = ({
+  includeDebugMoves = isDebugEnvironment(),
+  includeEffects = true
+} = {}) => {
+  const debugMoves = includeDebugMoves ? DEBUG_MOVES : {};
+  const plugins = includeEffects ? [configuredEffectsPlugin] : [];
+  return {
   //get spec to use (i.e. script to generate board)
   //spec is game rules, e.g. dev cards, vps to win
   //strategy is how to generate map
 
   name: 'catan',
-  plugins: [configuredEffectsPlugin],
+  plugins,
   minPlayers: 2,
 
   maxPlayers: 4,
@@ -139,11 +144,6 @@ export const Catan =  {
     const valids = { nodes: [], edges: [], tiles: [] };
     const diceRoll = [3,4]
     const robberTile = tiles.find((tile) => tile.tile.resource === ResourceType.DESERT)?.tile.id ?? null;
-    for (const tile of tiles) {
-      STATIC_GRAPH.addNodesFrom(Object.values(tile.tile.nodes));
-      STATIC_GRAPH.addEdgesFrom(Object.values(tile.tile.edges));
-    }
-
     const coreTopology = buildTopology(tiles);
     const playerIds = Array.from({ length: ctx.numPlayers }, (_, i) => i.toString());
     const core = createEmptyState(playerIds);
@@ -211,7 +211,7 @@ export const Catan =  {
       turn: {
         activePlayers: { all: "waiting" },
         stages: {
-          waiting: { moves: { readyUp, autoStartGame, ...DEBUG_MOVES } }
+          waiting: { moves: { readyUp, autoStartGame, ...debugMoves } }
         }
       },
       start: true,
@@ -239,8 +239,8 @@ export const Catan =  {
             updateValids(context, "settlement")
         },
         stages: {
-          settlement: { moves: { placeSettlement, autoPlaceSettlement, ...DEBUG_MOVES } },
-          road: { moves: { placeRoad, autoPlaceRoad, ...DEBUG_MOVES } },
+          settlement: { moves: { placeSettlement, autoPlaceSettlement, ...debugMoves } },
+          road: { moves: { placeRoad, autoPlaceRoad, ...debugMoves } },
         },
       },
 
@@ -282,13 +282,13 @@ export const Catan =  {
             autoResolveDevCard,
             cancelDevCardPlay,
             placeRoadFromDevCard,
-            ...DEBUG_MOVES
+            ...debugMoves
           }},
           robberDiscard: { // Explicit phase for discarding
              moves: {
                discardResources,
                autoDiscard,
-               ...DEBUG_MOVES
+               ...debugMoves
              }
           },
           // overSeven: { //only available to some. have to manage stage
@@ -316,14 +316,14 @@ export const Catan =  {
               //endTurn,
               endTurn,
               autoEndTurn,
-              ...DEBUG_MOVES
+              ...debugMoves
             }
           },
           moveRobber: {
             moves:{
               moveRobber,
               autoMoveRobber,
-              ...DEBUG_MOVES
+              ...debugMoves
             }
           }
         },
@@ -334,9 +334,8 @@ export const Catan =  {
     },
   },
 
-  moves: {
-    DEBUG_loadState,
-    DEBUG_setScenario,
-    DEBUG_takeCardsFromBank
-  },
+  moves: debugMoves,
+  };
 };
+
+export const Catan = createCatanGame();

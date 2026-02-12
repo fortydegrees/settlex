@@ -10,10 +10,24 @@ import {
 import { getVpDisplay } from "./PlayerAvatarStatsUtils";
 import "./PlayerAvatarStats.css";
 
+// Explicit gradient classes so Tailwind JIT includes them.
+const AVATAR_GRADIENTS = {
+  red: "from-red-500 to-red-800",
+  blue: "from-blue-500 to-blue-800",
+  green: "from-green-500 to-green-800",
+  orange: "from-orange-500 to-orange-800",
+  purple: "from-purple-500 to-purple-800",
+  pink: "from-pink-500 to-pink-800",
+  cyan: "from-cyan-500 to-cyan-800",
+  amber: "from-amber-500 to-amber-800",
+};
+
 export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, statusType }) => {
   if (!player) return null;
 
-  const avatarColor = `from-${player.color}-500 to-${player.color}-800`;
+  // Prefer the player's chosen color; fall back to seat-index color.
+  const colorKey = player.chosenColor || player.color;
+  const avatarColor = AVATAR_GRADIENTS[colorKey] || AVATAR_GRADIENTS[player.color] || "from-slate-500 to-slate-800";
   const currentRoadLength = core && coreTopology
     ? getLongestRoadLength(core, coreTopology, player.id)
     : 0;
@@ -36,7 +50,7 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, 
         <div
           className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
         >
-          🤠
+          {player.emoji || "🤠"}
         </div>
         <span className="absolute right-0 top-0 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
           {vpDisplay}

@@ -3,18 +3,36 @@ Personal TODO
 [ ] game status box, e.g. 'waiting for player 1 to roll'. 'player 1 choosing robber location'
     kinda done wiht CC, looks a bit ugly tho
 
-[ ] chat box
 
 [ ] sounds
-    mute button
-    ticking when close to turn timer end
+    [ ] dice - current sound feels too 'light'
+    [ ] end turn
+        good_tock.mp3 - could split into press/release
+    [ ] settle -> city
+        could 'woosh' the settle out, then settle.mp3/thud for city coming in
+    [ ] trading
+            could this not just be our card movement sound we already have for distribution?
+    [ ] play dev
+    [ ] place robber
+    [ ] steal card
+    [ ] discard sound/over 7
+    [ ] +1 VP
+    [ ] take road/army
+    [ ] game start / loaded
+            different from all players ready? probs not necessary as only show game board when all players ready..
+    [ ] game end - win/lose?
+    [ ] ticking when close to turn timer end
+    [ ] chat sound
+
+game log messages for receiving longest road/army
 
 
 [ ] sidebar UI.
     game rules- 2 player, VPs to win, discard limit etc
     game log
     chat
-    bank
+    bank?
+    dice graph? (disable for ranked games)
 
 animations
     resource disribution
@@ -23,13 +41,13 @@ animations
         https://codesandbox.io/p/sandbox/uqpn4f
         https://codesandbox.io/p/sandbox/90qj1i?file=%2Fsrc%2FApp.tsx
     game win/end
+        winning player's pieces rise and flash/glow. move their 'opponent box' to the centre with a crown. "{x/you} win(s")
     longest road/army award
     robber Moves
     dev card playing
-    building
-    dice roll
-    thought bubble
-        maybe have like an 'idle' animation where it jus kind of 'bubbles' a tiny amount?
+    build city
+        city just flashes directly _on_ point, then settle 'wooshes' up (reverse settle place animation), city place down (same animation as settle place)
+    +1 vp. appears on board/relevant place, then like moves to their VP indicator?
     maritime trade
 not obvious when playing a knight. e.g. the card just disappears when clicked.
     status thing doesn't update
@@ -43,7 +61,7 @@ weird legacy bounce animation in player action container when placing roads does
 [ ] change all design svgs from colonist ones
 
 [ ] implement player colour properly
-    user can set/choose (or we just randomly assign red/blue)
+    user can set/choose (in lobby) (or we just randomly assign red/blue)
     this propagates into the UI (e.g avatar box, log box, settlement colours)
 
 
@@ -97,7 +115,7 @@ optimize sound/mp3s
 hover over road/settle/city buttons and it subtly shows you the resources required
     but could be annoying if you're a pro. but why would you hover over if they're disabled?
 
-confirm button/UX/UI for actions, e.g. placing settle etc
+confirm button/UX/UI for actions, e.g. placing settle etc. can disable in settings
     make sure works on mobile too
 
 for dice roll/resource provision animation, do we do something if it's a number no-one's on? atm nothing happens. 
@@ -114,6 +132,9 @@ remove trade button for 1v1? (how to make it obvious you can press resources to 
 if user idle, kick them/end game.
 
 hotkeys? currently have spacebar
+
+animate emojis/avatars
+    https://codepen.io/aaroniker/pen/GRRVWvE
 
 [design] should VPs always be 'unplayable' e.g. darker/grayed?
 
@@ -146,11 +167,16 @@ achievements
 settings
     'pro mode' / no animations 
         if we disable animations, need to handle like server/turn timing correctly. e.g. we 'wait' like 2s while the dice is rolling before a turn starts.
+    disable confirmation/per-action confirmation (e.g dont confirm on roads, do ask on settles)
     checkbox for fanned/stacked dev cards or not
     'card' display or just numerical resources.
     drag mode/click mode
     auto-roll if no devs
     confirm playing dev cards y/n
+
+
+different animtions from different perspectives?
+    e.g. building city: for non-user player, the settlement 'wooshes' out and then the city drops in (vs for the player where the city just drops in)
     
 
 tutorial/trainer
@@ -202,6 +228,7 @@ dev card box/spacing.
 
 
 could put/move the dice pre/post roll next to whoever's turn it is? as a good/better indicator? like dice move/animate towards a player on endTurn, then they click roll, they roll into the middle for all users to see, then like return back to the person whose turn it is as slightly grayed out (so can still see what number was rolled)
+    it could go above the dev card box, as these are the two action spots pre-turn. (and then move to above end turn/get out the way)
 
 can we make the emoji/avatar 'bounce'/double bounce every 5 seconds or so also? or maybe just bounce at the start o the turn
 	-maybe not needed if we have the dice roll/movement animation

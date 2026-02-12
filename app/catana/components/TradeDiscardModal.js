@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { RESOURCE_ICON_SVGS, STANDARD_RESOURCES, ResourceType } from "../game/types";
+import { RESOURCE_ICON_SVGS, STANDARD_RESOURCES, ResourceType } from "../types";
 import { bestTradeRate } from "@settlex/game-core";
 
 // Helper to count occurrences of each resource in a list

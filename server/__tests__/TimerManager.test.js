@@ -416,4 +416,85 @@ describe("TimerManager", () => {
     expect(snapshot?.remainingMs).toBeGreaterThan(0);
   });
 
+  it("schedules a fast autoBot action for bot-controlled turns", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({
+      dispatch,
+      botMoveDelayMs: 250,
+      isBotPlayer: ({ playerID }) => playerID === "1"
+    });
+
+    manager.onState(
+      "match-bot",
+      baseState({
+        _stateID: 7,
+        ctx: {
+          phase: "main",
+          currentPlayer: "1",
+          activePlayers: { "1": "postRoll" },
+          turn: 3
+        }
+      })
+    );
+
+    vi.advanceTimersByTime(249);
+    expect(dispatch).not.toHaveBeenCalledWith({
+      matchID: "match-bot",
+      move: "autoBot",
+      playerID: "1"
+    });
+
+    vi.advanceTimersByTime(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-bot",
+      move: "autoBot",
+      playerID: "1"
+    });
+  });
+
+  it("re-schedules autoBot when state id changes in same stage and turn", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({
+      dispatch,
+      botMoveDelayMs: 250,
+      isBotPlayer: ({ playerID }) => playerID === "1"
+    });
+
+    manager.onState(
+      "match-bot",
+      baseState({
+        _stateID: 10,
+        ctx: {
+          phase: "main",
+          currentPlayer: "1",
+          activePlayers: { "1": "postRoll" },
+          turn: 4
+        }
+      })
+    );
+    vi.advanceTimersByTime(250);
+
+    manager.onState(
+      "match-bot",
+      baseState({
+        _stateID: 11,
+        ctx: {
+          phase: "main",
+          currentPlayer: "1",
+          activePlayers: { "1": "postRoll" },
+          turn: 4
+        }
+      })
+    );
+    vi.advanceTimersByTime(250);
+
+    const botCalls = dispatch.mock.calls.filter(
+      ([payload]) =>
+        payload?.matchID === "match-bot" &&
+        payload?.move === "autoBot" &&
+        payload?.playerID === "1"
+    );
+    expect(botCalls).toHaveLength(2);
+  });
+
 });
