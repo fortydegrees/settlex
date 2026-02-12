@@ -1,5 +1,5 @@
 import React from "react";
-import { RESOURCE_ICON_SVGS } from "../game/types";
+import { RESOURCE_ICON_SVGS } from "../types";
 
 export const DebugPanel = ({ bgioProps }) => {
   const { G, ctx, moves, playerID } = bgioProps;

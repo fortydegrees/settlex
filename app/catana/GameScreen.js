@@ -9,6 +9,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 import { getGameStatus } from "./utils/gameStatus";
+import { shouldResetPlayerAction } from "./utils/playerAction";
 
 import { EffectsBoardWrapper } from "bgio-effects/react";
 
@@ -70,8 +71,8 @@ export function GameScreen(bgioProps) {
 
   const core = bgioProps.G.core;
   const coreTurn = core?.turn;
-  const playerViewMap = buildPlayerViewMap(core);
-  const player = playerViewMap[playerID];
+  const playerViewMap = useMemo(() => buildPlayerViewMap(core), [core]);
+  const rawPlayer = playerViewMap[playerID];
   const gameOverState = bgioProps.ctx?.gameover ?? core?.gameOver;
   const isGameOver = Boolean(gameOverState);
   const rawGameStatus = getGameStatus(core, bgioProps.ctx, playerAction);
@@ -86,17 +87,24 @@ export function GameScreen(bgioProps) {
       : devPlay?.type === "monopoly"
       ? "dev-monopoly"
       : null;
-  const nameMap = useMemo(() => {
-    const map = {};
+  const { nameMap, emojiMap, colorMap } = useMemo(() => {
+    const names = {};
+    const emojis = {};
+    const colors = {};
     const matchData = bgioProps.matchData;
     if (Array.isArray(matchData)) {
       matchData.forEach((player) => {
         if (player?.id == null) return;
-        map[player.id] = player.name || `Player ${player.id}`;
+        names[player.id] = player.name || `Player ${player.id}`;
+        if (player.data?.emoji) emojis[player.id] = player.data.emoji;
+        if (player.data?.color) colors[player.id] = player.data.color;
       });
     }
-    return map;
+    return { nameMap: names, emojiMap: emojis, colorMap: colors };
   }, [bgioProps.matchData]);
+  const player = rawPlayer
+    ? { ...rawPlayer, name: nameMap[rawPlayer.id], emoji: emojiMap[rawPlayer.id], chosenColor: colorMap[rawPlayer.id] }
+    : null;
   const winnerId = gameOverState?.winnerId ?? gameOverState?.winner ?? null;
   const winnerName =
     winnerId != null
@@ -130,11 +138,6 @@ export function GameScreen(bgioProps) {
   }, [isGameOver, winnerName, gameOverState?.reason, winnerVP]);
   const showResultsButton =
     isGameOver && !showGameOverModal && !showPostgame;
-
-  useEffect(() => {
-    const interval = setInterval(() => setNowMs(Date.now()), 250);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (!isGameOver) {
@@ -249,6 +252,12 @@ export function GameScreen(bgioProps) {
   const visibleTimerMs = hideTimer ? null : timerMs;
 
   useEffect(() => {
+    if (!timerSnapshot || hideTimer) return;
+    const interval = setInterval(() => setNowMs(Date.now()), 250);
+    return () => clearInterval(interval);
+  }, [timerSnapshot, hideTimer]);
+
+  useEffect(() => {
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
       if (playerAction !== "roadBuilding") {
         setPlayerAction("roadBuilding");
@@ -258,7 +267,27 @@ export function GameScreen(bgioProps) {
     if (playerAction === "roadBuilding") {
       setPlayerAction(null);
     }
-  }, [bgioProps.G.devCardPlay, playerID, playerAction]);
+  }, [devPlay, playerID, playerAction]);
+
+  useEffect(() => {
+    if (
+      shouldResetPlayerAction({
+        playerAction,
+        playerID,
+        ctx: bgioProps.ctx,
+        corePhase: core?.phase,
+        isGameOver
+      })
+    ) {
+      setPlayerAction(null);
+    }
+  }, [
+    playerAction,
+    playerID,
+    bgioProps.ctx,
+    core?.phase,
+    isGameOver
+  ]);
 
   // Discard Logic
   // Check if pendingDiscards list includes the current player
@@ -327,9 +356,14 @@ export function GameScreen(bgioProps) {
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
-  const opponents = Object.values(playerViewMap).filter(
-    (view) => view.id !== playerID
-  );
+  const opponents = Object.values(playerViewMap)
+    .filter((view) => view.id !== playerID)
+    .map((view) => ({
+      ...view,
+      name: nameMap[view.id],
+      emoji: emojiMap[view.id],
+      chosenColor: colorMap[view.id],
+    }));
 
   //const otherPlayerCards = bgioProps.G.players[opponentID].resourceCards; //TODO: horrible, clean up. might need to check if playerID exists (e.g. what about spectator)
 
@@ -381,6 +415,7 @@ export function GameScreen(bgioProps) {
         return;
       }
       if (canEnd) {
+        setPlayerAction(null);
         moves.endTurn();
       }
     };

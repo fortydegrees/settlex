@@ -1,3 +1,12 @@
+<EXTREMELY_IMPORTANT>
+This repo uses Superpowers.
+
+At the start of the session, run:
+`~/.codex/superpowers/.codex/superpowers-codex bootstrap`
+
+If you see “missing skills” (e.g. "using-superpowers" not found), re-run bootstrap in this session.
+</EXTREMELY_IMPORTANT>
+
 # AGENTS.md — Settlex
 
 ## Goal
@@ -32,6 +41,7 @@ Ship small, correct changes with a stable, testable game engine.
 - Engine (shared): `game-core/`
 - Legacy/experimental: `spec/`, `strategy/`, `utils/`
 - Agent docs: `docs/agent/`
+- **Design system**: `docs/agent/skills/catana-brand/SKILL.md` — Read this before building any UI
 
 ## Effects + audio (GSAP + cue bus)
 - Entry point: `app/catana/effects/GameEffects.js` (EffectBus + AudioManager + cue emit)
@@ -48,3 +58,4 @@ Ship small, correct changes with a stable, testable game engine.
 - Engine logic must be deterministic; no `Math.random` or time-based logic.
 - Game rules are server-authoritative; UI should be a thin client.
 - Ask before adding dependencies or changing build tooling.
+- Before building UI components, read `docs/agent/skills/catana-brand/SKILL.md` and follow its design patterns.

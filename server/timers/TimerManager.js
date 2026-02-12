@@ -41,9 +41,20 @@ const STAGE_TIMEOUT_MOVES = {
   "main:roadBuilding": "autoPlaceRoad"
 };
 
+const BOT_ACTION_STAGE_KEYS = new Set([
+  "placement:settlement",
+  "placement:road",
+  "main:preRoll",
+  "main:postRoll",
+  "main:moveRobber",
+  "main:roadBuilding"
+]);
+
 export class TimerManager {
-  constructor({ dispatch }) {
+  constructor({ dispatch, isBotPlayer, botMoveDelayMs = 400 }) {
     this.dispatch = dispatch;
+    this.isBotPlayer = typeof isBotPlayer === "function" ? isBotPlayer : null;
+    this.botMoveDelayMs = botMoveDelayMs;
     this.matches = new Map();
   }
 
@@ -52,7 +63,10 @@ export class TimerManager {
     const prev = this.matches.get(matchID) ?? {};
     const turnNumber = state.ctx.turn;
 
+    this.scheduleBotAction(matchID, state, prev, stageKey);
+
     if (prev.stageKey === stageKey && prev.turnNumber === turnNumber) {
+      this.matches.set(matchID, prev);
       return;
     }
 
@@ -260,5 +274,37 @@ export class TimerManager {
       return ROLL_DELAY_MOVES.has(entry.action?.payload?.type);
     });
     return hasRoll ? ROLL_ANIMATION_BUFFER_MS : 0;
+  }
+
+  scheduleBotAction(matchID, state, record, stageKey) {
+    if (!this.isBotPlayer || !state) return;
+    const playerID = state.ctx?.currentPlayer;
+    if (playerID == null) return;
+
+    const stage = stageKey ?? this.getStageKey(state);
+    const isBot = this.isBotPlayer({ matchID, playerID, state });
+    const isBotStage = BOT_ACTION_STAGE_KEYS.has(stage);
+    if (!isBot || !isBotStage) {
+      if (record.botTimeoutId) {
+        clearTimeout(record.botTimeoutId);
+        record.botTimeoutId = undefined;
+      }
+      record.botDispatchKey = undefined;
+      return;
+    }
+
+    const stateID = state._stateID ?? 0;
+    const dispatchKey = `${stateID}:${stage}:${playerID}`;
+    if (record.botDispatchKey === dispatchKey) {
+      return;
+    }
+
+    if (record.botTimeoutId) {
+      clearTimeout(record.botTimeoutId);
+    }
+    record.botDispatchKey = dispatchKey;
+    record.botTimeoutId = setTimeout(() => {
+      this.dispatch({ matchID, move: "autoBot", playerID });
+    }, this.botMoveDelayMs);
   }
 }

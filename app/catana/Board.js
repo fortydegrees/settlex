@@ -13,7 +13,7 @@ import {
   useEffectListener,
   useEffectState
 } from "bgio-effects/react";
-import { TileTypes } from "./game/types";
+import { TileTypes } from "./types";
 import { buildableNodes, canPlaceRobber } from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";

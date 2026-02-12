@@ -3,7 +3,7 @@ import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { getBadgeClasses } from "./CardStackStyles";
-import { RESOURCE_ICON_SVGS } from "../game/types";
+import { RESOURCE_ICON_SVGS } from "../types";
 import React, { useMemo } from "react";
 import {
   ForwardIcon,
@@ -23,7 +23,7 @@ const formatTimer = (ms) => {
   return `${minutes}:${seconds}`;
 };
 
-export const CardIcon = ({ playerCards, resource, player, onResourceClick }) => {
+export const CardIcon = ({ resourceCount, resource, player, onResourceClick }) => {
   const handleClick = () => {
     if (onResourceClick) {
       onResourceClick(resource);
@@ -38,7 +38,7 @@ export const CardIcon = ({ playerCards, resource, player, onResourceClick }) => 
       
     >
       <div className="w-6 select-none text-white mr-1 text-3xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-        {playerCards.filter((item) => item === resource).length}
+        {resourceCount}
       </div>
       {resource === ResourceType.BRICK || resource === ResourceType.ORE ? (
         <img
@@ -93,6 +93,13 @@ export const PlayerActionContainer = ({
     if (!G.core || !player?.devCards || !canStartDev) return {};
     return getPlayableDevCardCounts(G.core, player.id);
   }, [G.core, player?.devCards, player.id, canStartDev]);
+  const resourceCounts = useMemo(() => {
+    const counts = {};
+    for (const resource of player.resources) {
+      counts[resource] = (counts[resource] ?? 0) + 1;
+    }
+    return counts;
+  }, [player.resources]);
   const timerText = formatTimer(timerMs);
 
   const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
@@ -136,7 +143,6 @@ export const PlayerActionContainer = ({
       action: () => setPlayerAction("placeCity"),
       img: "/svgs/city_red.svg",
       count: player.citiesRemaining,
-      enabled: false,
       enabled: false,
       style: null,
     },
@@ -196,13 +202,13 @@ export const PlayerActionContainer = ({
     }
   };
 
-  const dynamicActions = useMemo(() => ACTIONS.map((action) => {
+  const dynamicActions = ACTIONS.map((action) => {
     if (!action) return null;
     return {
       ...action,
       enabled: isActionEnabled(action.name),
     };
-  }), [bgioProps]);
+  });
 
   const canTradeNow = isActionEnabled("trade");
   const rollEnabled = Boolean(canRoll);
@@ -275,7 +281,7 @@ export const PlayerActionContainer = ({
                 const canQuickTrade = canQuickTradeResource(resource);
                 return (
                   <CardIcon
-                    playerCards={player.resources}
+                    resourceCount={resourceCounts[resource] ?? 0}
                     key={resource}
                     resource={resource}
                     //TODO: change this for more players:

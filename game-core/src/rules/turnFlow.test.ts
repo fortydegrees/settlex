@@ -44,6 +44,59 @@ describe("turnFlow - discard", () => {
     expect(state.turn.pendingDiscards).toEqual([]);
     expect(state.turn.phase).toBe("robberMove");
   });
+
+  it("rejects discard when player is not pending", () => {
+    const state = createEmptyState(["0"]);
+    state.turn.phase = "robberDiscard";
+    state.turn.pendingDiscards = [];
+    state.playerStateById["0"].resources = Array(8).fill(ResourceType.WOOD);
+
+    const result = applyDiscard(state, "0", Array(4).fill(ResourceType.WOOD));
+    expect(result).toEqual({ ok: false, error: "discard-not-pending" });
+  });
+
+  it("rejects discard with wrong card count", () => {
+    const state = createEmptyState(["0"]);
+    state.turn.phase = "robberDiscard";
+    state.turn.pendingDiscards = ["0"];
+    state.playerStateById["0"].resources = Array(8).fill(ResourceType.WOOD);
+
+    const result = applyDiscard(state, "0", Array(3).fill(ResourceType.WOOD));
+    expect(result).toEqual({ ok: false, error: "invalid-discard-count" });
+  });
+
+  it("rejects discard when a listed resource is missing", () => {
+    const state = createEmptyState(["0"]);
+    state.turn.phase = "robberDiscard";
+    state.turn.pendingDiscards = ["0"];
+    state.playerStateById["0"].resources = [
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.WOOD
+    ];
+
+    const result = applyDiscard(state, "0", [
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.BRICK,
+      ResourceType.WOOD
+    ]);
+    expect(result).toEqual({ ok: false, error: "missing-resource" });
+  });
+
+  it("rejects discard for unknown pending player", () => {
+    const state = createEmptyState(["0"]);
+    state.turn.phase = "robberDiscard";
+    state.turn.pendingDiscards = ["2"];
+
+    const result = applyDiscard(state, "2", []);
+    expect(result).toEqual({ ok: false, error: "unknown-player" });
+  });
 });
 
 import { applyResourceDistribution } from "./turnFlow";
@@ -125,6 +178,45 @@ it("gives none if bank lacks enough of a resource", () => {
   expect(state.bank.resources).toHaveLength(1);
 });
 
+it("still distributes other resources when one resource type is short in bank", () => {
+  const mixedTiles = [
+    {
+      coordinate: [0, 0, 0] as [number, number, number],
+      type: TileTypes.LAND,
+      tile: {
+        id: 10,
+        resource: ResourceType.WOOD,
+        number: 8,
+        nodes: { NORTH: 1 },
+        edges: {}
+      }
+    },
+    {
+      coordinate: [1, -1, 0] as [number, number, number],
+      type: TileTypes.LAND,
+      tile: {
+        id: 11,
+        resource: ResourceType.BRICK,
+        number: 8,
+        nodes: { NORTH: 2 },
+        edges: {}
+      }
+    }
+  ];
+  const mixedBoard = buildTopology(mixedTiles);
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.BRICK];
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+  state.buildingsByNodeId[2] = { ownerId: "0", type: "settlement" };
+
+  const result = applyResourceDistribution(state, mixedBoard, 8);
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([ResourceType.BRICK]);
+  expect(state.bank.resources).toEqual([]);
+});
+
 import { canPlaceRobber, applyMoveRobber, getRobberVictims } from "./turnFlow";
 
 it("blocks robber placement on tiles adjacent to players <= vp threshold", () => {
@@ -175,6 +267,37 @@ it("does not move robber when victim selection is ambiguous", () => {
 
   expect(result.ok).toBe(false);
   expect(state.robberTileId).toBe(null);
+});
+
+it("rejects robber move when target victim is invalid", () => {
+  const state = createEmptyState(["0", "1", "2"]);
+  state.buildingsByNodeId[1] = { ownerId: "1", type: "settlement" };
+  state.buildingsByNodeId[2] = { ownerId: "2", type: "settlement" };
+  state.playerStateById["1"].resources = [ResourceType.WOOD];
+  state.playerStateById["2"].resources = [ResourceType.BRICK];
+
+  const result = applyMoveRobber(state, board, 1, "0", 0.2, "9");
+  expect(result).toEqual({ ok: false, error: "invalid-victim" });
+});
+
+it("rejects robber move on illegal tiles", () => {
+  const portTiles = [
+    {
+      coordinate: [0, 0, 0] as [number, number, number],
+      type: TileTypes.PORT,
+      tile: {
+        id: 2,
+        resource: ResourceType.BRICK,
+        nodes: { NORTH: 1, SOUTH: 2 },
+        edges: {}
+      }
+    }
+  ];
+  const portBoard = buildTopology(portTiles);
+  const state = createEmptyState(["0"]);
+
+  const result = applyMoveRobber(state, portBoard, 2, "0");
+  expect(result).toEqual({ ok: false, error: "illegal-robber" });
 });
 
 it("applyMoveRobber updates tile when legal", () => {

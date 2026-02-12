@@ -96,8 +96,9 @@ describe("placement phase turn order", () => {
     const turnOrder = Catan.phases.placement.turn.order;
     // TurnOrder.CUSTOM returns an object with playOrder function
     expect(turnOrder.playOrder).toBeTypeOf("function");
+    const G = { placementOrder: ["0", "1", "1", "0"] };
     // Verify it returns the snake draft order
-    expect(turnOrder.playOrder()).toEqual(["0", "1", "1", "0"]);
+    expect(turnOrder.playOrder({ G })).toEqual(["0", "1", "1", "0"]);
   });
 
   it("placement starts in settlement stage", () => {

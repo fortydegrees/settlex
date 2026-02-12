@@ -70,7 +70,7 @@ export function ResourceDistributionLab({ layerRef, emitCue }) {
         </label>
 
         <button
-          className="rounded bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-400"
+          className="rounded bg-lime-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-lime-400"
           onClick={handleReplay}
           type="button"
         >
