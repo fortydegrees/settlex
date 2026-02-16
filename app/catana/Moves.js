@@ -51,6 +51,39 @@ const logResourceDistributions = (G, ctx, distributions, options) => {
   });
 };
 
+const getAwardOwners = (core) => ({
+  longestRoadOwnerId: core?.awards?.longestRoadOwnerId ?? null,
+  largestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? null
+});
+
+const logAwardChanges = (G, ctx, previousAwards, options) => {
+  if (!previousAwards) return;
+  const currentAwards = getAwardOwners(G?.core);
+  const changes = [
+    {
+      type: "award:longestRoad",
+      previousOwnerId: previousAwards.longestRoadOwnerId,
+      nextOwnerId: currentAwards.longestRoadOwnerId
+    },
+    {
+      type: "award:largestArmy",
+      previousOwnerId: previousAwards.largestArmyOwnerId,
+      nextOwnerId: currentAwards.largestArmyOwnerId
+    }
+  ];
+
+  changes.forEach(({ type, previousOwnerId, nextOwnerId }) => {
+    if (!nextOwnerId) return;
+    if (nextOwnerId === previousOwnerId) return;
+    appendGameLog(G, ctx, {
+      type,
+      actorId: nextOwnerId,
+      data: previousOwnerId ? { previousOwnerId } : {},
+      forced: options?.forced
+    });
+  });
+};
+
 export const maybeLogGameOver = (G, ctx) => {
   if (!G?.core?.gameOver || G.gameOverLogged) return;
   const { winnerId, reason } = G.core.gameOver;
@@ -135,6 +168,7 @@ export const placeSettlement = {
     const { G, playerID, events, ctx, effects } = context;
     const nodeId = parseInt(node);
     const isPlacement = ctx.phase === "placement";
+    const previousAwards = getAwardOwners(G.core);
     if (G.core) {
       G.core.phase = isPlacement ? "placement" : "normal";
     }
@@ -165,7 +199,7 @@ export const placeSettlement = {
           resource: d.resource
         };
       });
-      effects.distributeCardsFromTile(cardAnims);
+      effects?.distributeCardsFromTile?.(cardAnims);
     }
     appendGameLog(G, ctx, {
       type: "build:settlement",
@@ -173,6 +207,7 @@ export const placeSettlement = {
       data: { nodeId, initialPlacement: isPlacement },
       forced: options?.forced
     });
+    logAwardChanges(G, ctx, previousAwards, options);
     logResourceDistributions(G, ctx, distributions, options);
     maybeLogGameOver(G, ctx);
 
@@ -272,6 +307,7 @@ export const placeRoad = {
   move: (context, edge, options) => {
     const { G, playerID, events, ctx, effects } = context;
     const isPlacement = ctx.phase === "placement";
+    const previousAwards = getAwardOwners(G.core);
     if (G.core) {
       G.core.phase = isPlacement ? "placement" : "normal";
     }
@@ -297,6 +333,7 @@ export const placeRoad = {
       data: { edgeId: edge, initialPlacement: isPlacement },
       forced: options?.forced
     });
+    logAwardChanges(G, ctx, previousAwards, options);
     maybeLogGameOver(G, ctx);
 
     //if we're in placement phase, end turn after placing road
@@ -333,6 +370,7 @@ export const placeCity = {
     if (ctx.phase === "placement") {
       return;
     }
+    const previousAwards = getAwardOwners(G.core);
     const nodeId = parseInt(node);
     const result = applyBuildCity(G.core, G.coreTopology, nodeId, playerID);
     if (!result.ok) {
@@ -350,6 +388,7 @@ export const placeCity = {
       data: { nodeId },
       forced: options?.forced
     });
+    logAwardChanges(G, ctx, previousAwards, options);
     maybeLogGameOver(G, ctx);
   }
 };
@@ -409,7 +448,7 @@ export const rollDice = {
     const { G, random, effects, events } = context;
     const roll = random.D6(2);
     G.diceRoll = roll;
-    effects.roll([roll[0], roll[1]]);
+    effects?.roll?.([roll[0], roll[1]]);
 
     const diceScore = roll[0] + roll[1];
     const result = applyRollDice(G.core, G.coreTopology, diceScore);
@@ -441,7 +480,7 @@ export const rollDice = {
       });
 
       // Pass combined payload so both flash simultaneously
-      effects.distributeCardsFromTile({
+      effects?.distributeCardsFromTile?.({
         cards: cardAnims,
         blockedTileIds: result.blockedTiles || [],
       });
@@ -817,6 +856,7 @@ export const playDevCardStart = {
 
     const currentStage = ctx.activePlayers?.[playerID] ?? "postRoll";
     if (cardType === "knight") {
+      const previousAwards = getAwardOwners(G.core);
       const played = playDevCard(G.core, playerID, "knight");
       if (!played.ok) {
         console.log(`Invalid play dev card: ${played.error}`);
@@ -833,6 +873,7 @@ export const playDevCardStart = {
         data: { cardType: "knight" },
         forced: options?.forced
       });
+      logAwardChanges(G, ctx, previousAwards, options);
       maybeLogGameOver(G, ctx);
       G.robberReturnToStage = currentStage;
       events.setStage("moveRobber");
@@ -940,6 +981,7 @@ export const placeRoadFromDevCard = {
     if (devPlay.playerId !== playerID) return;
     if (!isDevCardStage(ctx, playerID)) return;
 
+    const previousAwards = getAwardOwners(G.core);
     const result = applyFreeRoad(G.core, G.coreTopology, edge, playerID);
     if (!result.ok) {
       console.log(`Invalid dev road: ${result.error}`);
@@ -957,6 +999,7 @@ export const placeRoadFromDevCard = {
       data: { edgeId: edge, free: true, via: "devCard" },
       forced: options?.forced
     });
+    logAwardChanges(G, ctx, previousAwards, options);
     maybeLogGameOver(G, ctx);
 
     devPlay.pendingRoads -= 1;

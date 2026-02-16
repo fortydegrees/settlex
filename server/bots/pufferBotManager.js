@@ -2,9 +2,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PufferPolicyClient } from "./PufferPolicyClient.js";
 import { createPufferStateAdapter } from "./pufferStateAdapter.js";
+import { chooseActionWithExpectimax } from "./pufferSearch.js";
 
 const STAGE_FALLBACK_MOVES = {
-  "preGame:waiting": "autoStartGame",
+  "preGame:waiting": "readyUp",
   "main:preRoll": "autoRoll",
   "main:robberDiscard": "autoDiscard",
   "placement:settlement": "autoPlaceSettlement",
@@ -64,11 +65,19 @@ export class PufferBotManager {
     pythonExecutable = "python3",
     pythonCwd = null,
     stochastic = false,
-    botPlayerIds = []
+    botPlayerIds = [],
+    search = "off",
+    searchBudgetMs = 250,
+    searchTopK = 12,
+    searchMaxDepth = 2
   } = {}) {
     this.botPlayerIds = new Set(botPlayerIds.map((id) => String(id)));
     this.matchBotPlayerIds = new Map();
     this.policyDisabled = false;
+    this.search = String(search || "off");
+    this.searchBudgetMs = Math.max(25, Number(searchBudgetMs) || 250);
+    this.searchTopK = Math.max(1, Number(searchTopK) || 12);
+    this.searchMaxDepth = Math.max(1, Number(searchMaxDepth) || 2);
 
     if (checkpointPath) {
       const fileDir = path.dirname(fileURLToPath(import.meta.url));
@@ -130,11 +139,15 @@ export class PufferBotManager {
       return [];
     }
 
+    const stageKey = getStageKey(state);
+    if (stageKey === "preGame:waiting") {
+      return [{ move: "readyUp", args: [] }];
+    }
+
     if (state?.ctx?.currentPlayer !== String(playerID)) {
       return [];
     }
 
-    const stageKey = getStageKey(state);
     if (stageKey === "main:robberDiscard") {
       return [{ move: "autoDiscard", args: [] }];
     }
@@ -158,10 +171,30 @@ export class PufferBotManager {
     let actionId = -1;
     if (this.policyClient && !this.policyDisabled) {
       try {
-        actionId = await this.policyClient.infer({
-          observation: adapter.observation,
-          actionMask: adapter.actionMask
-        });
+        if (this.search === "expectimax") {
+          const searchResult = await chooseActionWithExpectimax({
+            adapter,
+            policyClient: this.policyClient,
+            playerID,
+            budgetMs: this.searchBudgetMs,
+            topK: this.searchTopK,
+            maxDepth: this.searchMaxDepth
+          });
+          if (searchResult?.meta) {
+            console.info(
+              `[puffer-search] nodes=${searchResult.meta.nodesExpanded} timedOut=${searchResult.meta.timedOut} value=${searchResult.meta.bestValue.toFixed(3)}`
+            );
+          }
+          actionId = Number.isInteger(searchResult?.actionId) ? searchResult.actionId : -1;
+        }
+
+        if (!Number.isInteger(actionId) || actionId < 0) {
+          actionId = await this.policyClient.infer({
+            observation: adapter.observation,
+            actionMask: adapter.actionMask,
+            spec: adapter.spec
+          });
+        }
       } catch (error) {
         console.warn(`[puffer-policy] falling back to random legal action: ${error}`);
         this.policyDisabled = true;
@@ -197,6 +230,10 @@ export function createPufferBotManagerFromEnv() {
       "python3",
     pythonCwd: process.env.SETTLEX_PUFFER_PYTHON_CWD ?? null,
     stochastic: process.env.SETTLEX_PUFFER_STOCHASTIC === "1",
+    search: process.env.SETTLEX_PUFFER_SEARCH ?? "off",
+    searchBudgetMs: process.env.SETTLEX_PUFFER_SEARCH_BUDGET_MS ?? 250,
+    searchTopK: process.env.SETTLEX_PUFFER_SEARCH_TOPK ?? 12,
+    searchMaxDepth: process.env.SETTLEX_PUFFER_SEARCH_MAX_DEPTH ?? 2,
     botPlayerIds
   });
 }

@@ -12,6 +12,30 @@ function firstLegal(mask) {
 }
 
 describe("SettlexSelfPlayEnv", () => {
+  it("defaults to duel rules for 2-player games", () => {
+    const env = new SettlexSelfPlayEnv({ numPlayers: 2, maxSteps: 800 });
+    env.reset(5);
+
+    expect(env.state.ruleset.victoryPointsToWin).toBe(15);
+    expect(env.state.ruleset.discardLimit).toBe(9);
+
+    env.close();
+  });
+
+  it("allows explicit standard rules override for 2-player games", () => {
+    const env = new SettlexSelfPlayEnv({
+      numPlayers: 2,
+      maxSteps: 800,
+      rulesetId: "standard",
+    });
+    env.reset(6);
+
+    expect(env.state.ruleset.victoryPointsToWin).toBe(10);
+    expect(env.state.ruleset.discardLimit).toBe(7);
+
+    env.close();
+  });
+
   it("reset starts in placement settlement mode with legal actions", () => {
     const env = new SettlexSelfPlayEnv({ numPlayers: 4, maxSteps: 800 });
     const out = env.reset(7);
@@ -65,6 +89,79 @@ describe("SettlexSelfPlayEnv", () => {
     const next = env.step(illegal);
     expect(next.info.illegalAction).toBe(true);
     expect(next.done).toBe(false);
+
+    env.close();
+  });
+
+  it("publishes observation schema metadata for board-layout features", () => {
+    const env = new SettlexSelfPlayEnv({ numPlayers: 2, maxSteps: 800 });
+    env.reset(13);
+
+    const spec = env.getSpec();
+    expect(spec.observationSchemaVersion).toBe("v2");
+    expect(spec.observationLayout).toBeTruthy();
+
+    const { global, tiles, nodes, edges } = spec.observationLayout;
+    expect(global.size).toBeGreaterThan(0);
+    expect(tiles.count).toBe(env.landTileIds.length);
+    expect(nodes.count).toBe(env.nodeIds.length);
+    expect(edges.count).toBe(env.edgeIds.length);
+    expect(spec.baseObservationSize).toBe(
+      global.size + tiles.count * tiles.featureSize + nodes.count * nodes.featureSize + edges.count * edges.featureSize
+    );
+
+    env.close();
+  });
+
+  it("encodes land tile resource/number and node port/pip features", () => {
+    const env = new SettlexSelfPlayEnv({ numPlayers: 2, maxSteps: 800 });
+    const out = env.reset(23);
+    const spec = env.getSpec();
+    const base = env._buildBaseObservation(out.actorId);
+    const layout = spec.observationLayout;
+
+    const tileById = new Map(
+      env.topology.tiles
+        .filter((tile) => String(tile.type).toLowerCase() === "land")
+        .map((tile) => [tile.tile.id, tile])
+    );
+
+    const nonDesertTileId = env.landTileIds.find((tileId) => {
+      const tile = tileById.get(tileId);
+      return tile?.tile?.resource && String(tile.tile.resource) !== "Desert";
+    });
+    expect(nonDesertTileId).toBeDefined();
+
+    const tileIndex = env.landTileIds.indexOf(nonDesertTileId);
+    expect(tileIndex).toBeGreaterThanOrEqual(0);
+    const tileStart = layout.tiles.offset + tileIndex * layout.tiles.featureSize;
+
+    const resourceVec = base.slice(
+      tileStart + layout.tiles.resourceOffset,
+      tileStart + layout.tiles.resourceOffset + layout.tiles.resourceSize
+    );
+    const numberVec = base.slice(
+      tileStart + layout.tiles.numberOffset,
+      tileStart + layout.tiles.numberOffset + layout.tiles.numberSize
+    );
+
+    expect(resourceVec.reduce((sum, value) => sum + value, 0)).toBe(1);
+    expect(numberVec.reduce((sum, value) => sum + value, 0)).toBe(1);
+
+    const portNodeId = Number(Object.keys(env.topology.portsByNodeId)[0]);
+    expect(Number.isInteger(portNodeId)).toBe(true);
+    const portNodeIndex = env.nodeIds.indexOf(portNodeId);
+    expect(portNodeIndex).toBeGreaterThanOrEqual(0);
+
+    const nodeStart = layout.nodes.offset + portNodeIndex * layout.nodes.featureSize;
+    const portVec = base.slice(
+      nodeStart + layout.nodes.portOffset,
+      nodeStart + layout.nodes.portOffset + layout.nodes.portSize
+    );
+    const totalPips = base[nodeStart + layout.nodes.totalPipsOffset];
+
+    expect(portVec.reduce((sum, value) => sum + value, 0)).toBe(1);
+    expect(totalPips).toBeGreaterThanOrEqual(0);
 
     env.close();
   });

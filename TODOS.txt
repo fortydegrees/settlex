@@ -24,7 +24,7 @@ Personal TODO
     [ ] ticking when close to turn timer end
     [ ] chat sound
 
-game log messages for receiving longest road/army
+[x] game log messages for receiving longest road/army
 
 
 [ ] sidebar UI.
@@ -109,7 +109,7 @@ improve the trade/discard modal/dialog/popup design
 easy build roads (by just clicking on available edge)
 settlement still shows when hovering to place city. looks a bit janky. settle/city placement in general could be better
 road spacing looks janky
-minor animation/transition for the width of the opponent card box. there's a css property for this right? but yeah when it 'grows' it just jumps rn (e.g. when going from 3 cards to 4)
+[x] minor animation/transition for the width of the opponent card box. there's a css property for this right? but yeah when it 'grows' it just jumps rn (e.g. when going from 3 cards to 4)
 optimize sound/mp3s
 
 hover over road/settle/city buttons and it subtly shows you the resources required
@@ -141,7 +141,7 @@ animate emojis/avatars
 animate card loss e.g. '-1' float thing in red when trading - https://www.youtube.com/watch?v=lMToUv8xngw (9:48)
  image.png
 
-double click to zoom in, double click again to zoom out to the same/previous zoom level.
+[x] double click to zoom in, double click again to zoom out to the same/previous zoom level.
 
 check that like randomness setup is done correctly. like generating dev card deck in setup etc.
 

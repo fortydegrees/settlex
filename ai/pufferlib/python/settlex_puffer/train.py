@@ -5,12 +5,25 @@ from pathlib import Path
 from typing import Any
 import sys
 
+import torch
+
+# Torch wheels available on older Intel macOS builds may not expose
+# unsigned integer dtypes beyond uint8. PufferLib 3.0 references these
+# attributes at import time.
+if not hasattr(torch, "uint16"):
+    torch.uint16 = torch.int16  # type: ignore[attr-defined]
+if not hasattr(torch, "uint32"):
+    torch.uint32 = torch.int32  # type: ignore[attr-defined]
+if not hasattr(torch, "uint64"):
+    torch.uint64 = torch.int64  # type: ignore[attr-defined]
+
 import pufferlib.emulation
 import pufferlib.pufferl
 import pufferlib.vector
 
 from .env import SettlexGymEnv
 from .policy import SettlexMaskedPolicy
+from .policy_factorized import SettlexFactorizedPolicy
 
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -40,6 +53,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-steps", type=int, default=1200)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--hidden-size", type=int, default=256)
+    parser.add_argument(
+        "--policy-arch",
+        type=str,
+        default="factorized-relational",
+        choices=["masked-mlp", "factorized-relational"],
+    )
+    parser.add_argument("--attention-heads", type=int, default=4)
+    parser.add_argument("--attention-layers", type=int, default=2)
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--board-config-id", type=str, default="standard-official")
     parser.add_argument("--batch-size", type=parse_auto_int, default="auto")
@@ -86,7 +107,20 @@ def main() -> None:
         seed=args.seed,
     )
 
-    policy = SettlexMaskedPolicy(vecenv, hidden_size=args.hidden_size)
+    bootstrap_env = SettlexGymEnv(host_options=host_options)
+    spec_info = bootstrap_env.spec_info
+    bootstrap_env.close()
+
+    if args.policy_arch == "masked-mlp":
+        policy = SettlexMaskedPolicy(vecenv, hidden_size=args.hidden_size)
+    else:
+        policy = SettlexFactorizedPolicy(
+            vecenv,
+            hidden_size=args.hidden_size,
+            attention_heads=args.attention_heads,
+            attention_layers=args.attention_layers,
+            spec_info=spec_info,
+        )
 
     argv_backup = sys.argv[:]
     sys.argv = [sys.argv[0]]

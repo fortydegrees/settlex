@@ -11,6 +11,7 @@ describe("MatchPageClient bot fill control", () => {
 
     expect(source).toContain("Fill Open Seats With Bots");
     expect(source).toContain('bot: "puffer"');
+    expect(source).toContain('emoji: "🤖"');
     expect(source).toContain("fillOpenSeatsWithBots");
   });
 });

@@ -15,6 +15,8 @@ settlex-puffer-train = "settlex_puffer.train:main"
 settlex-puffer-smoke = "settlex_puffer.smoke:main"
 settlex-puffer-eval = "settlex_puffer.evaluate:main"
 settlex-puffer-infer = "settlex_puffer.infer_server:main"
+settlex-puffer-eval-curve = "settlex_puffer.eval_curve:main"
+settlex-puffer-plot-curve = "settlex_puffer.plot_curve:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

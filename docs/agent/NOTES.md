@@ -1,5 +1,38 @@
 # NOTES
 
+- Primary iteration surface for tile palette tuning is now the Next dev route `/catana/dev/palette-preview` (`app/catana/dev/palette-preview/page.js` + `app/catana/dev/palette-preview/PaletteBoardPreviewClient.js`).
+- This route mirrors the C/D board-preview controls from the static concept page (palette dropdown, number-token toggle, selected resource row, and 19-hex board preview).
+- Dev route token chips intentionally reuse board-editor sizing/offset math from `app/board-editor/Tile.js` to keep token scale/alignment close to in-game visuals while testing palette changes.
+- Route layout guardrails: injected SVGs are constrained to parent bounds (`.tileSvg` + `svg` both `width/height: 100%`), and board rows use fixed-dimension flex tiles (not CSS-var grid templates) to avoid oversized/overlapping tile regressions.
+- Number-token vertical offset in the dev palette route is now a light transform shift (instead of a large `marginTop`) to avoid chips appearing visually below the tile area in overlay mode.
+- Current dev-route token centering uses neutral token transform (`translateY(0)`) and relies on overlay centering for placement.
+- Updated token overlay anchoring to explicit bounds (`top/right/bottom/left` + `width/height: 100%` + `z-index`) because `inset: 0` behaved inconsistently and could place chips below the SVG.
+- Critical implementation detail: `TileFrame` is a child component, so parent `style jsx` selectors did not reliably style `.tileFrame`/`.tokenWrap`; tile sizing + overlay positioning now live as inline styles inside `TileFrame` to guarantee on-tile token placement.
+- Token sizing in `/catana/dev/palette-preview` is now dynamic per rendered tile (via `ResizeObserver`): `tokenSize = tileHeight / 2`, then chip dimensions/text/margins follow the same `NumberToken` formulas as game/editor (`width=size/1.75`, `height=size/1.75`, `marginTop=size/1.66`).
+- Resource palette preview page: `public/svgs/concepts/resource-palette-preview.html` (currently renders five option sets, including `Slate Ore / Split Greens` and `Accessibility Patterns`).
+- Secondary preview page: `public/svgs/concepts/resource-palette-board-preview.html` with a palette dropdown (`C`/`D`), number-token toggle, selected-row tile preview, and full-board (19 hex) preview.
+- Pop-focused rows can apply per-row SVG color boosts via `tileFilter` (`saturate(...) contrast(...)`) while preserving shared tile geometry and border.
+- Tile body depth is intentionally subtle: flat `base` fill plus low-opacity radial lift/shade overlays (inspired by `public/svgs/tile_ore.svg`) rather than a heavy center-to-edge radial.
+- The preview now includes a gradient lab control panel (`#gradient-style`, `#body-depth`, `#ring-depth`, `#ring-direction`, `#edge-shadow-lift`, `#stripe-strength`, `#stripe-toggle`) for live shading experiments.
+- Ring shadow stops and seam separator shadow strokes are softened dynamically by `edge-shadow-lift` (shadow blended toward base + reduced shadow opacity).
+- Current lab defaults are `Ore Directional` + `Diagonal TR->BL` with `edge-shadow-lift=62` and stripes off.
+- Wheat tuning now avoids special-case sheen effects; brightness is driven by palette/filter only.
+- Option B wheat calibration: `base #ffd43b`, `highlight #ffed8e`, `shadow #c26a06`, with Option B filter adjusted to `saturate(1.22) contrast(1.05)` to reduce overly dark shadows.
+- `Slate Ore / Split Greens` row keeps ore in slate/steel tones and increases sheep-vs-lumber separation (brighter yellow-green sheep vs cooler/darker emerald lumber).
+- `Accessibility Patterns` row adds subtle per-resource pattern layers via `resource.pattern` + `patternOpacity` in `tileSvg(...)`:
+- ore `speckle-facets`, wheat `grain`, sheep `dots`, lumber `vertical-lines`, brick `brick-rects`.
+- Wheat tuner controls are available in the preview panel (`#wheat-base`, `#wheat-highlight-lift`, `#wheat-shadow-drop`, `#wheat-sat-shift`, `#wheat-hue-shift`).
+- Tuner currently applies to Option D and Option E wheat only; highlight/shadow are auto-derived from the selected base using HSL offsets.
+- Board preview page number tokens now mirror `app/board-editor/Tile.js` styling math (chip shape, sizing ratio, downward offset, number/pip scale) and can be toggled globally via `#show-number-tokens`.
+- Board preview token overlay is rendered as SVG in tile viewBox space, which keeps token text/chip scale stable across responsive tile sizes.
+- Gradient presets currently include `Subtle Flat`, `Ore Directional` (non-linear directional ring shading), and `Striped Mid Band` (repeating light pattern on the middle ring).
+- Preview tiles reuse the classic seam-strong structure from wheat and keep the global outer border locked to `#fbbf24`; only inner gradients/seam separator colors vary by resource.
+- Tile set template scaffold added at `public/svgs/concepts/tile_template.svg` with fixed `346x400` geometry, a hard-edge cream border, shared inner clip path, and swappable base/facet gradients for resource variants.
+- New concept asset: `public/svgs/concepts/tile_lumber_final.svg` (same border/inner hex geometry as `tile_ore_final.svg`, with layered green triangular facets for the forest tile art).
+- Opponent card stacks now use `transition-[width] duration-200 ease-out motion-reduce:transition-none` in `app/catana/components/OpponentPlayerBox.js` so width changes animate smoothly as counts grow.
+- Award ownership changes are logged from `app/catana/Moves.js` as `award:longestRoad` / `award:largestArmy` when owner IDs change, including `previousOwnerId` when awards are taken.
+- `app/catana/utils/gameText.js` formats award log entries as “claimed Longest Road/Largest Army” and includes “from <player>” when applicable.
+- `react-zoom-pan-pinch` local fork supports `doubleClick.mode = "toggle"` (zoom in at/below initial scale, reset when above initial); Catana `GameScreen` and board-editor use this mode.
 - Use `pnpm dev:log` to capture dev-server output at `.logs/dev.log` for debugging without manual copy/paste.
 - Catana UI/brand design skill doc lives at `docs/agent/skills/catana-brand/SKILL.md` (sky gradient + glass recipes for lobby/blog/marketing pages).
 - boardgame.io RNG is passed as `random` in setup/moves; use `random.Number()` for deterministic floats.
@@ -137,6 +170,16 @@
 - Root `package.json` `verify` now runs `pnpm exec vitest run` so app/server tests are included in standard verification.
 - Build-intent cleanup helper lives in `app/catana/utils/playerAction.js`; `GameScreen` uses it to clear stale `placeRoad`/`placeCity` local state on turn/stage handoff so status/highlights do not linger after end-turn.
 - PufferLib integration lives under `ai/pufferlib/` and is intentionally isolated from game engine/UI code.
+- Blogpost draft / implementation notes live at `ai/pufferlib/writeup.md` (includes per-section “Why this / Tradeoffs / Alternatives” callouts).
+- Blog/eval curve utilities for writeups:
+- `ai/pufferlib/python/settlex_puffer/eval_curve.py` writes seeded checkpoint metrics to CSV (`eval_curve.csv`) and can run continuously with `--watch` during training.
+- `ai/pufferlib/python/settlex_puffer/plot_curve.py` plots one or more curve CSV files into PNG for blog figures (requires `matplotlib` in the venv).
+- Shared planning doc for this effort lives at:
+- `docs/plans/2026-02-14-puffer-4-part-roadmap.md` (separates blog series milestones from engineering performance milestones and defines required evidence per part).
+- V3 imitation-learning planning notes live at:
+- `ai/pufferlib/writeup-v3-notes.md` (captures open questions: timing, dataset size in games/actions, opening-only vs full-game demos, curriculum ideas, leakage risks).
+- Intel macOS note: some x86 torch wheels do not expose `torch.uint64`; `pufferlib` 3.0 references it at import time.
+- `ai/pufferlib/python/settlex_puffer/train.py` now aliases missing `torch.uint64` to `torch.int64` before importing `pufferlib.*` to keep training runnable on older Intel laptops.
 - JS env wrapper: `ai/pufferlib/js/settlexEnv.cjs`; bridge host: `ai/pufferlib/js/engine_host.cjs`.
 - JS verification tests: `ai/pufferlib/js/__tests__/settlexEnv.test.js` and `ai/pufferlib/js/__tests__/engineHost.test.js`.
 - Python package: `ai/pufferlib/python/settlex_puffer/` with `bridge.py`, `env.py`, `policy.py`, `smoke.py`, `train.py`.
@@ -159,9 +202,74 @@
 - `server/timers/dispatchUtils.js` now supports passing move args in dispatched actions (`buildAutoMoveAction({ ..., args })`).
 - Match lobby page (`app/catana/lobby/[matchID]/MatchPageClient.js`) includes a **Fill Open Seats With Bots** action that joins open seats with `data.bot = "puffer"` for dynamic bot detection.
 - Main lobby page (`app/catana/lobby/LobbyPageClient.js`) now includes a **Play Against Bot** CTA that creates a 2-player match and auto-fills seat `1` with `[BOT] Puffer` (`data.bot = "puffer"`), then routes the human player to the match.
+- `app/catana/Game.js` now resolves ruleset at setup time: 2-player defaults to `DUEL_RULESET` (`15 VP`, `discardLimit 9`), while 3+ players default to `STANDARD_RULESET`; optional `setupData.rulesetId` supports explicit `"duel"` / `"standard"` override.
 - Server runtime should use `ServerCatan` from `server/serverGame.js` so authoritative execution excludes debug-only moves and UI effects plugin wiring.
 - `server/dispatch/dispatchMatchUpdate.js` is the single dispatch path for auto-timeout and bot moves; it handles errors and avoids per-move state refetches.
 - Shared hex neighbor wiring lives in `game-core/src/board/hexWiring.ts`; both board generators call it (avoid reintroducing separate wiring implementations).
 - `app/catana/GameScreen.js` timer ticker is intentionally gated by visible timer state to avoid whole-screen rerenders when timers are hidden/inactive.
 - `app/catana/components/PlayerActionContainer.js` uses memoized `resourceCounts` for resource badges instead of repeated `.filter(...)` scans.
 - `app/catana/components/GameLogPanel.js` memoizes `formattedEntries` to avoid re-tokenizing the entire log on unrelated rerenders.
+- `server/serverGame.js` currently keeps `includeEffects: true`; move code still emits via `context.effects`, so disabling effects at server config requires a deeper refactor first.
+- `app/catana/Moves.js` now uses optional effect emits (`effects?.roll?.(...)`, `effects?.distributeCardsFromTile?.(...)`) as a defensive guard against missing plugin wiring.
+- Puffer bot mode inference must account for boardgame stage (`ctx.activePlayers`) and not only `G.core.turn.phase`; after knight play, stage can be `moveRobber` while core phase still reads `preRoll`.
+- `server/bots/pufferStateAdapter.js` sets `env.modeOverride` from live stage for robber flows (`moveRobber`, `robberDiscard`) to keep action masks aligned with legal moves.
+- Placement actor inference in `server/bots/pufferStateAdapter.js` should not rely on raw `ctx.turn` alone; placement can begin after pre-game with an offset turn count. Anchor placement index to `ctx.currentPlayer` first to avoid bot fallback auto-placement on second settlement/road.
+- `ai/pufferlib/js/settlexEnv.cjs` now resolves ruleset by player count in `rulesetId: "auto"` mode:
+  - 2 players -> duel (`15 VP`, discard limit `9`)
+  - 3-4 players -> standard (`10 VP`, discard limit `7`)
+- `SettlexSelfPlayEnv` accepts `rulesetId: "duel" | "standard" | "auto"` for explicit training/eval control.
+- RL observation schema is now `v2` with explicit board-layout tensors (tiles/nodes/edges) in `ai/pufferlib/js/settlexEnv.cjs`; schema contract is exposed via `observationLayout`, `observationSchemaHash`, and `actionSpaceHash`.
+- `server/bots/pufferStateAdapter.js` now hydrates static tile/node feature caches and forwards spec/hash metadata to policy requests to prevent training-serving schema drift.
+- Factorized relational policy lives in `ai/pufferlib/python/settlex_puffer/policy_factorized.py`; training defaults to this architecture unless `--policy-arch masked-mlp` is provided.
+- `ai/pufferlib/python/settlex_puffer/infer_server.py` supports:
+  - `mode=act` (default action inference)
+  - `mode=score_actions` (masked logits + value)
+  - `mode=eval_batch` (batched value inference)
+  and validates schema/action hashes when provided.
+- Live bot search module is `server/bots/pufferSearch.js` (expectimax-style, top-k candidate expansion + dice expectation); toggle with `SETTLEX_PUFFER_SEARCH=expectimax`.
+- Search tuning env vars:
+  - `SETTLEX_PUFFER_SEARCH_BUDGET_MS` (default 250)
+  - `SETTLEX_PUFFER_SEARCH_TOPK` (default 12)
+  - `SETTLEX_PUFFER_SEARCH_MAX_DEPTH` (default 2)
+- Regression note: factorized action parsing must deduplicate node IDs across `placeSettlement:*` and `buildCity:*`; otherwise node factor indices can exceed node token count.
+- Bot pregame auto-actions are now multi-seat aware in `server/timers/TimerManager.js`: during `preGame:waiting`, dispatch scheduling targets all unready bot players (from `G.core.players`) instead of only `ctx.currentPlayer`.
+- `server/bots/pufferBotManager.js` now maps `preGame:waiting` bot actions to `readyUp` (not `autoStartGame`) so bots mark themselves ready and normal ready flow is preserved.
+- Bot seat join payloads now use `emoji: "🤖"` in both lobby entry points:
+  - `app/catana/lobby/LobbyPageClient.js` (`Play Against Bot`)
+  - `app/catana/lobby/[matchID]/MatchPageClient.js` (`Fill Open Seats With Bots`)
+- Adapter hydration for bot policy/search must clone core state before simulation:
+  - `server/bots/pufferStateAdapter.js` now clones `G.core` when assigning `env.state`.
+  - Avoids mutating possibly frozen boardgame state objects during expectimax rollouts (`TypeError: Cannot add property <edgeId>, object is not extensible`).
+- Canonical base SVG template for first Catana tileset is `public/svgs/concepts/tile_template_base.svg`.
+- Tile base contract IDs:
+  - `tileInnerHex` (inner geometry path),
+  - `tileInnerClip` (clipPath for art),
+  - `tileArt` (future per-resource fill container; keep art inside this group).
+- Tile base border uses a flat hard-edged ring fill (`#fbbf24`) with canonical geometry `346x400` / `viewBox="0 0 346 400"`; no gradient border treatment.
+- Classic (non-pattern) tileset shell concept lives in `public/svgs/concepts/tile_template_classic.svg`:
+  - keep global mould unchanged (`#fbbf24` hard-edged ring),
+  - apply inner depth within clipped art area only (base radial + two inset ring bands),
+  - use a centered badge container and swap only the `tileBadgeIcon` group per resource.
+- Reference ore variant for this shell is `public/svgs/concepts/tile_ore_classic.svg` (silver palette + geometric rock icon).
+- Classic shell badge vertical anchor is intentionally shifted upward with `transform=\"translate(0 -48)\"` to reserve bottom-middle space for the number token.
+- Ore classic refinement: removed the circular badge plate in `public/svgs/concepts/tile_ore_classic.svg`; icon now sits directly on the tile field while keeping the raised vertical anchor.
+- Ore badge variation set (for icon/background separation testing):
+  - `public/svgs/concepts/tile_ore_classic_v2_stroke.svg` -> strongest outline readability.
+  - `public/svgs/concepts/tile_ore_classic_v3_keyline.svg` -> subtle keyline + shadow, lighter treatment.
+  - `public/svgs/concepts/tile_ore_classic_v4_plate.svg` -> angular faceted backplate (non-circular) under icon.
+- Keyline ore seam-separator mockups:
+  - `public/svgs/concepts/tile_ore_classic_v3_keyline_seam_soft.svg` -> low-contrast seam line between ring layers.
+  - `public/svgs/concepts/tile_ore_classic_v3_keyline_seam_strong.svg` -> higher-contrast seam stack for stronger ring separation.
+- Classic strong-seam, no-badge resource set files:
+  - `public/svgs/concepts/tile_wheat_classic_v1_seam_strong.svg`
+  - `public/svgs/concepts/tile_sheep_classic_v1_seam_strong.svg`
+  - `public/svgs/concepts/tile_lumber_classic_v1_seam_strong.svg`
+  - `public/svgs/concepts/tile_brick_classic_v1_seam_strong.svg`
+- These variants keep the global amber mould unchanged and vary only inner gradients/seam colors per resource.
+- Blog-series planning for Puffer is now metric-first (not strictly win-rate-first) in `docs/plans/2026-02-14-puffer-4-part-roadmap.md`:
+  - reliability/quality/speed/cost improvements can each be valid per-post outcomes when measured explicitly.
+- Current recommended series sequence is expanded to 9 parts:
+  - baseline, representation, eval discipline, reward/episode control, imitation warm-start, search, local throughput, cloud scaling, native simulator decision.
+- Part 1 is treated as a stable baseline narrative (not a bug-fix narrative); bug classes can still be referenced as historical context but are not the main arc.
+- Roadmap now includes explicit part-by-part "opening problem -> closing lead-in" handoffs to make sequential blog writing easier and keep transitions consistent.
+- Part 1 narrative constraint: do not claim a training plateau unless supported by data; preferred handoff to Part 2 is qualitative (bot runs and beats weak baseline but shows weak spatial/placement intuition due to representation limits).

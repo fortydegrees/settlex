@@ -265,7 +265,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
               data: {
                 bot: "puffer",
                 isBot: true,
-                emoji: "BOT",
+                emoji: "🤖",
               },
             }),
           },

@@ -18,4 +18,10 @@ describe("OpponentPlayerBox", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).not.toMatch(/maxVisible/);
   });
+
+  it("animates card stack width changes", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("transition-[width]");
+    expect(contents).toContain("motion-reduce:transition-none");
+  });
 });

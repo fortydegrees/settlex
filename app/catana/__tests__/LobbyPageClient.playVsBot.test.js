@@ -11,6 +11,7 @@ describe("LobbyPageClient play-vs-bot entrypoint", () => {
 
     expect(source).toContain("Play Against Bot");
     expect(source).toContain('bot: "puffer"');
+    expect(source).toContain('emoji: "🤖"');
     expect(source).toContain("const playAgainstBot = async");
   });
 });

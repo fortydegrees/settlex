@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400">
+  <defs>
+    <path id="oreClassicInnerHex" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+    <clipPath id="oreClassicInnerClip" clipPathUnits="userSpaceOnUse">
+      <use href="#oreClassicInnerHex" />
+    </clipPath>
+
+    <radialGradient id="oreClassicBodyGradient" gradientUnits="userSpaceOnUse" cx="156" cy="126" r="228">
+      <stop offset="0" stop-color="#dee7ed" />
+      <stop offset="0.56" stop-color="#adbdc9" />
+      <stop offset="1" stop-color="#718592" />
+    </radialGradient>
+
+    <linearGradient id="oreClassicRingOuterGradient" gradientUnits="userSpaceOnUse" x1="173" y1="28" x2="173" y2="372">
+      <stop offset="0" stop-color="#f9fbfd" />
+      <stop offset="0.35" stop-color="#cad5de" />
+      <stop offset="1" stop-color="#8598a6" />
+    </linearGradient>
+
+    <linearGradient id="oreClassicRingInnerGradient" gradientUnits="userSpaceOnUse" x1="173" y1="44" x2="173" y2="356">
+      <stop offset="0" stop-color="#edf3f7" />
+      <stop offset="0.64" stop-color="#b1bfca" />
+      <stop offset="1" stop-color="#7c8f9e" />
+    </linearGradient>
+
+    <radialGradient id="oreClassicVignette" gradientUnits="userSpaceOnUse" cx="173" cy="226" r="196">
+      <stop offset="0" stop-color="#1f2937" stop-opacity="0" />
+      <stop offset="1" stop-color="#1f2937" stop-opacity="0.2" />
+    </radialGradient>
+  </defs>
+
+  <path
+    id="tileBorder"
+    fill="#fbbf24"
+    fill-rule="evenodd"
+    d="M173 0L346 100V300L173 400L0 300V100Z M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z"
+  />
+
+  <g id="tileArt" clip-path="url(#oreClassicInnerClip)">
+    <use href="#oreClassicInnerHex" fill="url(#oreClassicBodyGradient)" />
+
+    <path
+      fill="url(#oreClassicRingOuterGradient)"
+      fill-rule="evenodd"
+      d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z"
+    />
+
+    <path
+      fill="url(#oreClassicRingInnerGradient)"
+      fill-rule="evenodd"
+      d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z"
+    />
+
+    <g id="oreBadge" transform="translate(0 -48)">
+      <path
+        id="oreBadgeShadow"
+        d="M128 224L140 189L166 173L192 181L205 212L220 205L233 221L219 248L188 246L158 250L144 236Z"
+        fill="#0f172a"
+        opacity="0.2"
+        transform="translate(3 4)"
+      />
+      <path
+        id="oreBadgeKeyline"
+        d="M128 224L140 189L166 173L192 181L205 212L220 205L233 221L219 248L188 246L158 250L144 236Z"
+        fill="none"
+        stroke="#f8fafc"
+        stroke-width="2"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+        opacity="0.55"
+      />
+
+      <g id="oreBadgeIcon">
+        <path d="M130 222L141 191L166 176L191 184L203 212L189 242L158 247Z" fill="#64748b" />
+        <path d="M189 242L203 212L222 205L231 222L218 246Z" fill="#475569" />
+        <path d="M166 176L184 164L206 170L191 184Z" fill="#cbd5e1" />
+        <path d="M141 191L166 176L191 184L177 205L151 209Z" fill="#94a3b8" />
+        <path d="M177 205L191 184L203 212L189 242L171 231Z" fill="#334155" />
+        <path d="M151 209L177 205L171 231L158 247L145 234Z" fill="#718394" />
+        <path d="M165 213L173 202L185 209L179 221Z" fill="#e2e8f0" opacity="0.78" />
+      </g>
+    </g>
+
+    <use href="#oreClassicInnerHex" fill="url(#oreClassicVignette)" />
+  </g>
+</svg>

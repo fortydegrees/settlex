@@ -9,6 +9,7 @@ import torch
 
 from .env import SettlexGymEnv
 from .policy import SettlexMaskedPolicy
+from .policy_factorized import SettlexFactorizedPolicy
 
 
 def parse_args() -> argparse.Namespace:
@@ -20,6 +21,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--player-id", type=str, default="0")
     parser.add_argument("--seed", type=int, default=123)
     parser.add_argument("--hidden-size", type=int, default=256)
+    parser.add_argument(
+        "--policy-arch",
+        type=str,
+        default="auto",
+        choices=["auto", "masked-mlp", "factorized-relational"],
+    )
+    parser.add_argument("--attention-heads", type=int, default=4)
+    parser.add_argument("--attention-layers", type=int, default=2)
     parser.add_argument("--num-players", type=int, default=4)
     parser.add_argument("--max-steps", type=int, default=1200)
     parser.add_argument("--board-config-id", type=str, default="standard-official")
@@ -55,7 +64,7 @@ def random_legal_action(mask: np.ndarray, rng: np.random.Generator) -> int:
 
 
 def policy_action(
-    policy: SettlexMaskedPolicy,
+    policy,
     observation: np.ndarray,
     stochastic: bool,
     rng: np.random.Generator,
@@ -86,9 +95,22 @@ def main() -> None:
     }
 
     env = SettlexGymEnv(host_options=host_options)
-    policy = SettlexMaskedPolicy(env, hidden_size=args.hidden_size)
-
     state_dict = torch.load(checkpoint, map_location="cpu")
+    arch = args.policy_arch
+    if arch == "auto":
+        arch = "factorized-relational" if "global_proj.weight" in state_dict else "masked-mlp"
+
+    if arch == "masked-mlp":
+        policy = SettlexMaskedPolicy(env, hidden_size=args.hidden_size)
+    else:
+        policy = SettlexFactorizedPolicy(
+            env,
+            hidden_size=args.hidden_size,
+            attention_heads=args.attention_heads,
+            attention_layers=args.attention_layers,
+            spec_info=env.spec_info,
+        )
+
     policy.load_state_dict(state_dict)
     policy.eval()
 

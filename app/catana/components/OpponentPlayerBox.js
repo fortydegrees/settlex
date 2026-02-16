@@ -10,6 +10,8 @@ export const OpponentPlayerBox = ({ player, core, coreTopology, isActive, status
 
   const resourceCount = player.resources?.length ?? 0;
   const devCount = player.devCards?.length ?? 0;
+  const stackMotionClass =
+    "transition-[width] duration-200 ease-out motion-reduce:transition-none";
   const discardLimit = core?.ruleset?.discardLimit ?? 7;
   const resourceBadgeTone = getOpponentResourceBadgeTone({
     resourceCount,
@@ -33,12 +35,14 @@ export const OpponentPlayerBox = ({ player, core, coreTopology, isActive, status
             src={resCardBackIcon}
             alt="Resource cards"
             badgeTone={resourceBadgeTone}
+            className={stackMotionClass}
           />
         </div>
         <CardStack
           count={devCount}
           src={devCardBackIcon}
           alt="Dev cards"
+          className={stackMotionClass}
         />
       </div>
     </div>

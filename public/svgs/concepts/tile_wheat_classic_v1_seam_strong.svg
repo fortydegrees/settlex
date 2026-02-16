@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400">
+  <defs>
+    <path id="wheatClassicInnerHex" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+    <path id="wheatClassicRingSplitHex" d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z" />
+    <clipPath id="wheatClassicInnerClip" clipPathUnits="userSpaceOnUse">
+      <use href="#wheatClassicInnerHex" />
+    </clipPath>
+
+    <radialGradient id="wheatClassicBodyGradient" gradientUnits="userSpaceOnUse" cx="156" cy="126" r="228">
+      <stop offset="0" stop-color="#f9d96c" />
+      <stop offset="0.56" stop-color="#e6b648" />
+      <stop offset="1" stop-color="#b67f23" />
+    </radialGradient>
+
+    <linearGradient id="wheatClassicRingOuterGradient" gradientUnits="userSpaceOnUse" x1="173" y1="28" x2="173" y2="372">
+      <stop offset="0" stop-color="#fff3c4" />
+      <stop offset="0.35" stop-color="#f0c15e" />
+      <stop offset="1" stop-color="#bf8629" />
+    </linearGradient>
+
+    <linearGradient id="wheatClassicRingInnerGradient" gradientUnits="userSpaceOnUse" x1="173" y1="44" x2="173" y2="356">
+      <stop offset="0" stop-color="#ffe89a" />
+      <stop offset="0.64" stop-color="#e9b658" />
+      <stop offset="1" stop-color="#b77723" />
+    </linearGradient>
+
+    <radialGradient id="wheatClassicVignette" gradientUnits="userSpaceOnUse" cx="173" cy="226" r="196">
+      <stop offset="0" stop-color="#5f3b0f" stop-opacity="0" />
+      <stop offset="1" stop-color="#5f3b0f" stop-opacity="0.2" />
+    </radialGradient>
+  </defs>
+
+  <path
+    id="tileBorder"
+    fill="#fbbf24"
+    fill-rule="evenodd"
+    d="M173 0L346 100V300L173 400L0 300V100Z M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z"
+  />
+
+  <g id="tileArt" clip-path="url(#wheatClassicInnerClip)">
+    <use href="#wheatClassicInnerHex" fill="url(#wheatClassicBodyGradient)" />
+
+    <path
+      fill="url(#wheatClassicRingOuterGradient)"
+      fill-rule="evenodd"
+      d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z"
+    />
+
+    <path
+      fill="url(#wheatClassicRingInnerGradient)"
+      fill-rule="evenodd"
+      d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z"
+    />
+
+    <g id="ringSeparators" pointer-events="none">
+      <use href="#wheatClassicInnerHex" fill="none" stroke="#8e5b17" stroke-width="5.2" opacity="0.95" />
+      <use href="#wheatClassicInnerHex" fill="none" stroke="#fff5d4" stroke-width="1.5" opacity="0.3" />
+      <use href="#wheatClassicRingSplitHex" fill="none" stroke="#7a4e13" stroke-width="2" opacity="0.56" />
+      <use href="#wheatClassicRingSplitHex" fill="none" stroke="#fff5d4" stroke-width="1" opacity="0.35" />
+    </g>
+
+    <use href="#wheatClassicInnerHex" fill="url(#wheatClassicVignette)" />
+  </g>
+</svg>

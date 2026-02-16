@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400">
+  <defs>
+    <path id="tileInnerHex" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+    <clipPath id="tileInnerClip" clipPathUnits="userSpaceOnUse">
+      <use href="#tileInnerHex" />
+    </clipPath>
+
+    <radialGradient id="tileBodyGradient" gradientUnits="userSpaceOnUse" cx="154" cy="124" r="224">
+      <stop offset="0" stop-color="#d8e3ea" />
+      <stop offset="0.56" stop-color="#a6b8c5" />
+      <stop offset="1" stop-color="#6f8594" />
+    </radialGradient>
+
+    <linearGradient id="tileRingOuterGradient" gradientUnits="userSpaceOnUse" x1="173" y1="28" x2="173" y2="372">
+      <stop offset="0" stop-color="#f8fbfd" />
+      <stop offset="0.34" stop-color="#c4d0d9" />
+      <stop offset="1" stop-color="#8296a4" />
+    </linearGradient>
+
+    <linearGradient id="tileRingInnerGradient" gradientUnits="userSpaceOnUse" x1="173" y1="44" x2="173" y2="356">
+      <stop offset="0" stop-color="#e8f0f5" />
+      <stop offset="0.62" stop-color="#a8bac7" />
+      <stop offset="1" stop-color="#778d9d" />
+    </linearGradient>
+
+    <radialGradient id="tileBadgeFill" gradientUnits="userSpaceOnUse" cx="154" cy="170" r="120">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.98" />
+      <stop offset="0.74" stop-color="#d8e1e8" />
+      <stop offset="1" stop-color="#bcc9d3" />
+    </radialGradient>
+
+    <linearGradient id="tileBadgeStroke" gradientUnits="userSpaceOnUse" x1="173" y1="140" x2="173" y2="288">
+      <stop offset="0" stop-color="#f8fbfd" />
+      <stop offset="1" stop-color="#8d9eaa" />
+    </linearGradient>
+
+    <radialGradient id="tileVignette" gradientUnits="userSpaceOnUse" cx="173" cy="224" r="194">
+      <stop offset="0" stop-color="#0f172a" stop-opacity="0" />
+      <stop offset="1" stop-color="#0f172a" stop-opacity="0.18" />
+    </radialGradient>
+  </defs>
+
+  <path
+    id="tileBorder"
+    fill="#fbbf24"
+    fill-rule="evenodd"
+    d="M173 0L346 100V300L173 400L0 300V100Z M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z"
+  />
+
+  <g id="tileArt" clip-path="url(#tileInnerClip)">
+    <use href="#tileInnerHex" fill="url(#tileBodyGradient)" />
+
+    <path
+      id="tileRingOuter"
+      fill="url(#tileRingOuterGradient)"
+      fill-rule="evenodd"
+      d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z"
+    />
+
+    <path
+      id="tileRingInner"
+      fill="url(#tileRingInnerGradient)"
+      fill-rule="evenodd"
+      d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z"
+    />
+
+    <g id="tileBadge" transform="translate(0 -48)">
+      <circle cx="173" cy="212" r="67" fill="url(#tileBadgeFill)" />
+      <circle cx="173" cy="212" r="62" fill="none" stroke="url(#tileBadgeStroke)" stroke-width="8" />
+
+      <!-- Replace with per-resource icon path group -->
+      <g id="tileBadgeIcon" fill="#475569">
+        <path d="M173 168L198 192L187 236H159L148 192Z" />
+        <path d="M173 168L187 236L173 255L159 236Z" fill="#64748b" />
+        <path d="M173 168L159 236L148 192Z" fill="#94a3b8" />
+        <path d="M173 168L198 192L187 236Z" fill="#334155" opacity="0.6" />
+      </g>
+    </g>
+
+    <use href="#tileInnerHex" fill="url(#tileVignette)" />
+  </g>
+</svg>

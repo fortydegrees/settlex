@@ -92,10 +92,14 @@ export class PufferPolicyClient {
       entry.reject(new Error(String(message.error)));
       return;
     }
-    entry.resolve(Number(message.action));
+    try {
+      entry.resolve(entry.parse(message));
+    } catch (error) {
+      entry.reject(error);
+    }
   }
 
-  infer({ observation, actionMask, stochastic = this.stochastic }) {
+  infer({ observation, actionMask, stochastic = this.stochastic, spec = null }) {
     this.start();
     if (!this.proc || !this.proc.stdin.writable) {
       return Promise.reject(new Error("Puffer policy worker is not writable."));
@@ -106,11 +110,85 @@ export class PufferPolicyClient {
       id: requestId,
       observation,
       action_mask: actionMask,
-      stochastic: Boolean(stochastic)
+      stochastic: Boolean(stochastic),
+      spec: spec ?? undefined
     };
 
     return new Promise((resolve, reject) => {
-      this.pending.set(requestId, { resolve, reject });
+      this.pending.set(requestId, {
+        resolve,
+        reject,
+        parse: (message) => Number(message.action)
+      });
+      this.proc.stdin.write(`${JSON.stringify(payload)}\n`, (error) => {
+        if (!error) return;
+        this.pending.delete(requestId);
+        reject(error);
+      });
+    });
+  }
+
+  evalBatch({ observations, actionMasks, spec = null }) {
+    this.start();
+    if (!this.proc || !this.proc.stdin.writable) {
+      return Promise.reject(new Error("Puffer policy worker is not writable."));
+    }
+
+    const requestId = String(this.nextRequestId++);
+    const payload = {
+      id: requestId,
+      mode: "eval_batch",
+      observations,
+      action_masks: actionMasks,
+      spec: spec ?? undefined
+    };
+
+    return new Promise((resolve, reject) => {
+      this.pending.set(requestId, {
+        resolve,
+        reject,
+        parse: (message) => {
+          const values = Array.isArray(message.values)
+            ? message.values.map((v) => Number(v))
+            : [];
+          return { values };
+        }
+      });
+      this.proc.stdin.write(`${JSON.stringify(payload)}\n`, (error) => {
+        if (!error) return;
+        this.pending.delete(requestId);
+        reject(error);
+      });
+    });
+  }
+
+  scoreActions({ observation, actionMask, spec = null }) {
+    this.start();
+    if (!this.proc || !this.proc.stdin.writable) {
+      return Promise.reject(new Error("Puffer policy worker is not writable."));
+    }
+
+    const requestId = String(this.nextRequestId++);
+    const payload = {
+      id: requestId,
+      mode: "score_actions",
+      observation,
+      action_mask: actionMask,
+      spec: spec ?? undefined
+    };
+
+    return new Promise((resolve, reject) => {
+      this.pending.set(requestId, {
+        resolve,
+        reject,
+        parse: (message) => {
+          const logits = Array.isArray(message.logits)
+            ? message.logits.map((v) => Number(v))
+            : [];
+          const value = Number(message.value ?? 0);
+          return { logits, value };
+        }
+      });
       this.proc.stdin.write(`${JSON.stringify(payload)}\n`, (error) => {
         if (!error) return;
         this.pending.delete(requestId);

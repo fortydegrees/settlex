@@ -118,6 +118,22 @@ export function formatLogEntry(entry, nameMap = {}) {
       }
       break;
     }
+    case "award:longestRoad": {
+      tokens.push(textToken(" claimed Longest Road"));
+      if (data.previousOwnerId != null && data.previousOwnerId !== actorId) {
+        tokens.push(textToken(" from "));
+        tokens.push(playerToken(String(data.previousOwnerId), nameMap));
+      }
+      break;
+    }
+    case "award:largestArmy": {
+      tokens.push(textToken(" claimed Largest Army"));
+      if (data.previousOwnerId != null && data.previousOwnerId !== actorId) {
+        tokens.push(textToken(" from "));
+        tokens.push(playerToken(String(data.previousOwnerId), nameMap));
+      }
+      break;
+    }
     case "game:over": {
       const winnerId = data.winnerId ?? actorId;
       if (winnerId != null && winnerId !== actorId) {

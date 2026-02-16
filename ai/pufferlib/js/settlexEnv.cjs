@@ -26,6 +26,27 @@ const MODE_ORDER = [
   "robberDiscard",
 ];
 
+const LAND_TILE_RESOURCE_TYPES = [
+  core.ResourceType.WOOD,
+  core.ResourceType.BRICK,
+  core.ResourceType.SHEEP,
+  core.ResourceType.WHEAT,
+  core.ResourceType.ORE,
+  core.ResourceType.DESERT,
+];
+
+const ROLL_NUMBER_FEATURES = [2, 3, 4, 5, 6, 8, 9, 10, 11, 12];
+
+const PORT_FEATURES = [
+  null,
+  core.ResourceType.ANY,
+  core.ResourceType.WOOD,
+  core.ResourceType.BRICK,
+  core.ResourceType.SHEEP,
+  core.ResourceType.WHEAT,
+  core.ResourceType.ORE,
+];
+
 function buildYearOfPlentyPairs() {
   const pairs = [];
   for (let i = 0; i < RESOURCE_TYPES.length; i += 1) {
@@ -79,11 +100,55 @@ function countDevCards(cards) {
   return counts;
 }
 
+function oneHot(value, vocabulary) {
+  return vocabulary.map((entry) => (entry === value ? 1 : 0));
+}
+
+function getPipWeight(rollNumber) {
+  if (!Number.isInteger(rollNumber)) {
+    return 0;
+  }
+  if (typeof core.getNumDots === "function") {
+    return core.getNumDots(rollNumber);
+  }
+  if (rollNumber < 7) {
+    return rollNumber - 1;
+  }
+  return 13 - rollNumber;
+}
+
+function hashString(value) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function resolveRuleset(options) {
+  const requested = options.rulesetId ?? "auto";
+  if (requested === "duel") {
+    return { rulesetId: "duel", rulesetSpec: core.DUEL_RULESET };
+  }
+  if (requested === "standard") {
+    return { rulesetId: "standard", rulesetSpec: core.STANDARD_RULESET };
+  }
+  if (requested !== "auto") {
+    throw new Error(`Unsupported rulesetId: ${requested}`);
+  }
+  if (options.numPlayers === 2) {
+    return { rulesetId: "duel", rulesetSpec: core.DUEL_RULESET };
+  }
+  return { rulesetId: "standard", rulesetSpec: core.STANDARD_RULESET };
+}
+
 class SettlexSelfPlayEnv {
   constructor(options = {}) {
     this.options = {
       boardConfigId: options.boardConfigId ?? "standard-official",
       numPlayers: options.numPlayers ?? 4,
+      rulesetId: options.rulesetId ?? "auto",
       maxSteps: options.maxSteps ?? 1200,
       includeActionMaskInObservation:
         options.includeActionMaskInObservation ?? true,
@@ -119,16 +184,24 @@ class SettlexSelfPlayEnv {
 
     this.actionCount = 0;
     this.baseObservationSize = 0;
+    this.observationSchemaVersion = "v2";
+    this.observationLayout = null;
+    this.observationSchemaHash = "";
+    this.actionSpaceHash = "";
 
     this.nodeIds = [];
     this.edgeIds = [];
     this.landTileIds = [];
+    this.nodeFeatureById = new Map();
+    this.landTileById = new Map();
 
     this.tradeActions = [];
     this.monopolyActions = [...RESOURCE_TYPES];
     this.yearOfPlentyActions = buildYearOfPlentyPairs();
     this.pendingRoadBuilding = null;
     this.pendingRobberReturnMode = null;
+    this.modeOverride = null;
+    this.rulesetId = "standard";
 
     this.actionLayout = {
       roll: 0,
@@ -162,22 +235,31 @@ class SettlexSelfPlayEnv {
       this.reset(this.seed);
     }
 
+    const actionLabels = Array.from({ length: this.actionCount }, (_, i) =>
+      this._actionLabel(i)
+    );
+
     return {
       actionCount: this.actionCount,
       baseObservationSize: this.baseObservationSize,
       observationSize:
         this.baseObservationSize +
         (this.options.includeActionMaskInObservation ? this.actionCount : 0),
+      observationSchemaVersion: this.observationSchemaVersion,
+      observationLayout: this.observationLayout
+        ? JSON.parse(JSON.stringify(this.observationLayout))
+        : null,
+      observationSchemaHash: this.observationSchemaHash,
+      actionSpaceHash: this.actionSpaceHash,
       actionLayout: { ...this.actionLayout },
       modes: [...MODE_ORDER],
       players: [...this.players],
       boardConfigId: this.options.boardConfigId,
       numPlayers: this.options.numPlayers,
+      rulesetId: this.rulesetId,
       maxSteps: this.options.maxSteps,
       includeActionMaskInObservation: this.options.includeActionMaskInObservation,
-      actionLabels: Array.from({ length: this.actionCount }, (_, i) =>
-        this._actionLabel(i)
-      ),
+      actionLabels,
     };
   }
 
@@ -313,9 +395,11 @@ class SettlexSelfPlayEnv {
     this.pendingRobberReturnMode = null;
 
     const boardConfig = core.resolveBoardConfig(this.options.boardConfigId);
+    const { rulesetId, rulesetSpec } = resolveRuleset(this.options);
     this.tiles = core.generateBoard(boardConfig, () => this.rng());
     this.topology = core.buildTopology(this.tiles);
-    this.state = core.createEmptyState(this.players);
+    this.state = core.createEmptyState(this.players, rulesetSpec);
+    this.rulesetId = rulesetId;
 
     this.state.phase = "placement";
     this.state.turn.currentPlayerId = this.players[0];
@@ -339,8 +423,15 @@ class SettlexSelfPlayEnv {
       .filter((tile) => tile.type === core.TileTypes.LAND)
       .map((tile) => tile.tile.id)
       .sort((a, b) => a - b);
+    this.landTileById = new Map(
+      this.topology.tiles
+        .filter((tile) => tile.type === core.TileTypes.LAND)
+        .map((tile) => [tile.tile.id, tile])
+    );
+    this.nodeFeatureById = this._buildStaticNodeFeatures();
 
     this._configureActionSpace();
+    this.observationLayout = this._buildObservationLayout();
 
     // Shuffle the development deck to match in-game setup behavior.
     shuffleInPlace(this.state.devDeck, this.rng);
@@ -351,6 +442,17 @@ class SettlexSelfPlayEnv {
     const initialMask = this._computeActionMask(this._getActorId());
     const baseObs = this._buildBaseObservation(this._getActorId());
     this.baseObservationSize = baseObs.length;
+    this.actionSpaceHash = hashString(
+      JSON.stringify(
+        Array.from({ length: this.actionCount }, (_, i) => this._actionLabel(i))
+      )
+    );
+    this.observationSchemaHash = hashString(
+      JSON.stringify({
+        version: this.observationSchemaVersion,
+        layout: this.observationLayout,
+      })
+    );
 
     // Guarantee dimensions are stable.
     if (initialMask.length !== this.actionCount) {
@@ -418,11 +520,122 @@ class SettlexSelfPlayEnv {
     );
   }
 
+  _buildStaticNodeFeatures() {
+    const featureByNodeId = new Map();
+    const landTiles = [...this.landTileById.values()];
+
+    for (const nodeId of this.nodeIds) {
+      const pipByResource = {};
+      for (const resource of RESOURCE_TYPES) {
+        pipByResource[resource] = 0;
+      }
+      let totalPips = 0;
+
+      for (const tile of landTiles) {
+        const nodes = Object.values(tile.tile.nodes ?? {});
+        if (!nodes.includes(nodeId)) {
+          continue;
+        }
+        const resource = tile.tile.resource;
+        if (!RESOURCE_TYPES.includes(resource)) {
+          continue;
+        }
+        const pips = getPipWeight(tile.tile.number);
+        pipByResource[resource] += pips;
+        totalPips += pips;
+      }
+
+      featureByNodeId.set(nodeId, {
+        port: this.topology.portsByNodeId[nodeId] ?? null,
+        pipByResource,
+        totalPips,
+      });
+    }
+
+    return featureByNodeId;
+  }
+
+  _buildObservationLayout() {
+    const perPlayerFeatureSize = 19;
+    const globalSize =
+      MODE_ORDER.length +
+      this.players.length +
+      this.players.length * perPlayerFeatureSize +
+      11 +
+      RESOURCE_TYPES.length +
+      1 + // hasRolled
+      1 + // pendingRoadBuilding roadsToPlace
+      2 + // pendingRobberReturnMode one-hot
+      this.nodeIds.length + // pending road start node one-hot
+      1; // normalized step
+
+    const tilesOffset = globalSize;
+    const tileFeatureSize =
+      LAND_TILE_RESOURCE_TYPES.length + ROLL_NUMBER_FEATURES.length + 1 + 1;
+    const tileFeaturesSize = this.landTileIds.length * tileFeatureSize;
+
+    const nodesOffset = tilesOffset + tileFeaturesSize;
+    const nodeFeatureSize =
+      PORT_FEATURES.length +
+      RESOURCE_TYPES.length +
+      1 + // total adjacent pips
+      this.players.length * 2; // settlement/city occupancy
+    const nodeFeaturesSize = this.nodeIds.length * nodeFeatureSize;
+
+    const edgesOffset = nodesOffset + nodeFeaturesSize;
+    const edgeFeatureSize = this.players.length + 1; // unowned + owner one-hot
+    const edgeFeaturesSize = this.edgeIds.length * edgeFeatureSize;
+
+    return {
+      global: {
+        offset: 0,
+        size: globalSize,
+        perPlayerFeatureSize,
+      },
+      tiles: {
+        offset: tilesOffset,
+        count: this.landTileIds.length,
+        featureSize: tileFeatureSize,
+        resourceOffset: 0,
+        resourceSize: LAND_TILE_RESOURCE_TYPES.length,
+        numberOffset: LAND_TILE_RESOURCE_TYPES.length,
+        numberSize: ROLL_NUMBER_FEATURES.length,
+        pipOffset: LAND_TILE_RESOURCE_TYPES.length + ROLL_NUMBER_FEATURES.length,
+        robberOffset:
+          LAND_TILE_RESOURCE_TYPES.length + ROLL_NUMBER_FEATURES.length + 1,
+      },
+      nodes: {
+        offset: nodesOffset,
+        count: this.nodeIds.length,
+        featureSize: nodeFeatureSize,
+        portOffset: 0,
+        portSize: PORT_FEATURES.length,
+        pipByResourceOffset: PORT_FEATURES.length,
+        pipByResourceSize: RESOURCE_TYPES.length,
+        totalPipsOffset: PORT_FEATURES.length + RESOURCE_TYPES.length,
+        settlementOffset: PORT_FEATURES.length + RESOURCE_TYPES.length + 1,
+        cityOffset:
+          PORT_FEATURES.length + RESOURCE_TYPES.length + 1 + this.players.length,
+      },
+      edges: {
+        offset: edgesOffset,
+        count: this.edgeIds.length,
+        featureSize: edgeFeatureSize,
+        ownerOffset: 0,
+        ownerSize: this.players.length + 1,
+      },
+      baseObservationSize: globalSize + tileFeaturesSize + nodeFeaturesSize + edgeFeaturesSize,
+    };
+  }
+
   _modeOneHot(mode) {
     return MODE_ORDER.map((value) => (value === mode ? 1 : 0));
   }
 
   _getMode() {
+    if (this.modeOverride && MODE_ORDER.includes(this.modeOverride)) {
+      return this.modeOverride;
+    }
     if (this.state.phase === "placement") {
       return this.placementStage === "road"
         ? "placement_road"
@@ -1111,35 +1324,6 @@ class SettlexSelfPlayEnv {
       obs.push(this.state.awards.largestArmyOwnerId === playerId ? 1 : 0);
     }
 
-    for (const nodeId of this.nodeIds) {
-      const building = this.state.buildingsByNodeId[nodeId];
-      for (const playerId of this.players) {
-        obs.push(
-          building && building.ownerId === playerId && building.type === "settlement"
-            ? 1
-            : 0
-        );
-      }
-      for (const playerId of this.players) {
-        obs.push(
-          building && building.ownerId === playerId && building.type === "city"
-            ? 1
-            : 0
-        );
-      }
-    }
-
-    for (const edgeId of this.edgeIds) {
-      const owner = this.state.roadsByEdgeId[edgeId] ?? null;
-      for (const playerId of this.players) {
-        obs.push(owner === playerId ? 1 : 0);
-      }
-    }
-
-    for (const tileId of this.landTileIds) {
-      obs.push(this.state.robberTileId === tileId ? 1 : 0);
-    }
-
     for (let roll = 2; roll <= 12; roll += 1) {
       obs.push(this.state.turn.lastRollTotal === roll ? 1 : 0);
     }
@@ -1163,6 +1347,60 @@ class SettlexSelfPlayEnv {
     }
 
     obs.push(this.steps / this.options.maxSteps);
+
+    for (const tileId of this.landTileIds) {
+      const tile = this.landTileById.get(tileId);
+      const resource = tile?.tile?.resource ?? null;
+      const rollNumber = tile?.tile?.number ?? null;
+      const rollPips = getPipWeight(rollNumber);
+
+      obs.push(...oneHot(resource, LAND_TILE_RESOURCE_TYPES));
+      obs.push(...oneHot(rollNumber, ROLL_NUMBER_FEATURES));
+      obs.push(rollPips / 5);
+      obs.push(this.state.robberTileId === tileId ? 1 : 0);
+    }
+
+    for (const nodeId of this.nodeIds) {
+      const staticFeature = this.nodeFeatureById.get(nodeId);
+      const port = staticFeature?.port ?? null;
+      obs.push(...oneHot(port, PORT_FEATURES));
+
+      for (const resource of RESOURCE_TYPES) {
+        const pips = staticFeature?.pipByResource?.[resource] ?? 0;
+        obs.push(pips / 15);
+      }
+      obs.push((staticFeature?.totalPips ?? 0) / 15);
+
+      const building = this.state.buildingsByNodeId[nodeId];
+      for (const playerId of this.players) {
+        obs.push(
+          building && building.ownerId === playerId && building.type === "settlement"
+            ? 1
+            : 0
+        );
+      }
+      for (const playerId of this.players) {
+        obs.push(
+          building && building.ownerId === playerId && building.type === "city"
+            ? 1
+            : 0
+        );
+      }
+    }
+
+    for (const edgeId of this.edgeIds) {
+      const owner = this.state.roadsByEdgeId[edgeId] ?? null;
+      obs.push(owner == null ? 1 : 0);
+      for (const playerId of this.players) {
+        obs.push(owner === playerId ? 1 : 0);
+      }
+    }
+
+    if (this.observationLayout && obs.length !== this.observationLayout.baseObservationSize) {
+      throw new Error(
+        `Observation size mismatch: expected ${this.observationLayout.baseObservationSize}, got ${obs.length}`
+      );
+    }
 
     return obs;
   }

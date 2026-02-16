@@ -77,6 +77,44 @@ describe("formatLogEntry", () => {
       tokens.some((t) => t.kind === "text" && t.text.includes("won"))
     ).toBe(true);
   });
+
+  it("formats longest road award entries", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "award:longestRoad",
+        actorId: "1",
+        data: { previousOwnerId: "0" }
+      },
+      { "0": "Ada", "1": "Bren" }
+    );
+    expect(
+      tokens.some(
+        (t) => t.kind === "text" && t.text.includes("Longest Road")
+      )
+    ).toBe(true);
+    expect(
+      tokens.some((t) => t.kind === "player" && t.id === "0")
+    ).toBe(true);
+  });
+
+  it("formats largest army award entries", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "award:largestArmy",
+        actorId: "1",
+        data: { previousOwnerId: "0" }
+      },
+      { "0": "Ada", "1": "Bren" }
+    );
+    expect(
+      tokens.some(
+        (t) => t.kind === "text" && t.text.includes("Largest Army")
+      )
+    ).toBe(true);
+    expect(
+      tokens.some((t) => t.kind === "player" && t.id === "0")
+    ).toBe(true);
+  });
 });
 
 describe("STATUS_TEXT", () => {

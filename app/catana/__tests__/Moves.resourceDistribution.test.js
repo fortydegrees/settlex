@@ -89,4 +89,18 @@ describe("placeSettlement resource distribution wiring", () => {
       resource: ResourceType.WHEAT
     });
   });
+
+  it("does not throw when effects plugin is unavailable", () => {
+    const { context, nodeToCheck } = makeContext();
+
+    applyPlaceSettlement.mockReturnValueOnce({
+      ok: true,
+      distributions: [
+        { tileId: 1, playerId: "0", resource: ResourceType.WHEAT }
+      ]
+    });
+
+    delete context.effects;
+    expect(() => placeSettlement.move(context, nodeToCheck)).not.toThrow();
+  });
 });

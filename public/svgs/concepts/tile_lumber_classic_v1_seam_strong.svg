@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400">
+  <defs>
+    <path id="lumberClassicInnerHex" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+    <path id="lumberClassicRingSplitHex" d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z" />
+    <clipPath id="lumberClassicInnerClip" clipPathUnits="userSpaceOnUse">
+      <use href="#lumberClassicInnerHex" />
+    </clipPath>
+
+    <radialGradient id="lumberClassicBodyGradient" gradientUnits="userSpaceOnUse" cx="156" cy="126" r="228">
+      <stop offset="0" stop-color="#9fd483" />
+      <stop offset="0.56" stop-color="#4f9a4a" />
+      <stop offset="1" stop-color="#236441" />
+    </radialGradient>
+
+    <linearGradient id="lumberClassicRingOuterGradient" gradientUnits="userSpaceOnUse" x1="173" y1="28" x2="173" y2="372">
+      <stop offset="0" stop-color="#d8f2c8" />
+      <stop offset="0.35" stop-color="#6fb56a" />
+      <stop offset="1" stop-color="#2f744d" />
+    </linearGradient>
+
+    <linearGradient id="lumberClassicRingInnerGradient" gradientUnits="userSpaceOnUse" x1="173" y1="44" x2="173" y2="356">
+      <stop offset="0" stop-color="#bde4a7" />
+      <stop offset="0.64" stop-color="#5fa55b" />
+      <stop offset="1" stop-color="#2a6847" />
+    </linearGradient>
+
+    <radialGradient id="lumberClassicVignette" gradientUnits="userSpaceOnUse" cx="173" cy="226" r="196">
+      <stop offset="0" stop-color="#0f2d22" stop-opacity="0" />
+      <stop offset="1" stop-color="#0f2d22" stop-opacity="0.2" />
+    </radialGradient>
+  </defs>
+
+  <path
+    id="tileBorder"
+    fill="#fbbf24"
+    fill-rule="evenodd"
+    d="M173 0L346 100V300L173 400L0 300V100Z M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z"
+  />
+
+  <g id="tileArt" clip-path="url(#lumberClassicInnerClip)">
+    <use href="#lumberClassicInnerHex" fill="url(#lumberClassicBodyGradient)" />
+
+    <path
+      fill="url(#lumberClassicRingOuterGradient)"
+      fill-rule="evenodd"
+      d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z"
+    />
+
+    <path
+      fill="url(#lumberClassicRingInnerGradient)"
+      fill-rule="evenodd"
+      d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z"
+    />
+
+    <g id="ringSeparators" pointer-events="none">
+      <use href="#lumberClassicInnerHex" fill="none" stroke="#25513b" stroke-width="5.2" opacity="0.95" />
+      <use href="#lumberClassicInnerHex" fill="none" stroke="#d9f0d1" stroke-width="1.5" opacity="0.3" />
+      <use href="#lumberClassicRingSplitHex" fill="none" stroke="#1f4533" stroke-width="2" opacity="0.56" />
+      <use href="#lumberClassicRingSplitHex" fill="none" stroke="#d9f0d1" stroke-width="1" opacity="0.35" />
+    </g>
+
+    <use href="#lumberClassicInnerHex" fill="url(#lumberClassicVignette)" />
+  </g>
+</svg>
