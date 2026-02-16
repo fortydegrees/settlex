@@ -1,10 +1,10 @@
 <EXTREMELY_IMPORTANT>
 This repo uses Superpowers.
 
-At the start of the session, run:
-`~/.codex/superpowers/.codex/superpowers-codex bootstrap`
+At the start of the session, ensure native skill discovery is configured:
+`~/.agents/skills/superpowers -> ~/.codex/superpowers/skills`
 
-If you see “missing skills” (e.g. "using-superpowers" not found), re-run bootstrap in this session.
+If you see “missing skills” (e.g. "using-superpowers" not found), verify the symlink and restart Codex.
 </EXTREMELY_IMPORTANT>
 
 # AGENTS.md — Settlex

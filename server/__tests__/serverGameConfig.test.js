@@ -27,7 +27,8 @@ describe("ServerCatan config", () => {
     }
   });
 
-  it("does not register client-only effects plugins", () => {
-    expect(ServerCatan.plugins ?? []).toEqual([]);
+  it("keeps effects plugin wiring available for move context", () => {
+    expect(Array.isArray(ServerCatan.plugins)).toBe(true);
+    expect(ServerCatan.plugins.length).toBeGreaterThan(0);
   });
 });

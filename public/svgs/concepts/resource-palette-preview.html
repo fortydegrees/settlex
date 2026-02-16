@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catana Resource Palette Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --page-bg-start: #38bdf8;
+      --page-bg-end: #2563eb;
+      --panel-bg: rgba(255, 255, 255, 0.68);
+      --panel-ring: rgba(255, 255, 255, 0.46);
+      --text-strong: #0f172a;
+      --text-muted: #334155;
+      --tile-border: #fbbf24;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Outfit", sans-serif;
+      color: var(--text-strong);
+      background: radial-gradient(ellipse at center, var(--page-bg-start), var(--page-bg-end));
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      border-radius: 20px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+      border: 1px solid var(--panel-ring);
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+      letter-spacing: 0.02em;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 8px 0 18px;
+      color: var(--text-muted);
+      font-size: 0.96rem;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.58);
+    }
+
+    .control {
+      display: grid;
+      gap: 6px;
+    }
+
+    .control label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .control select,
+    .control input[type="range"],
+    .control input[type="color"] {
+      width: 100%;
+      accent-color: #16a34a;
+    }
+
+    .control select {
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-family: "Outfit", sans-serif;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    .control input[type="color"] {
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(255, 255, 255, 0.88);
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .control.checkbox {
+      align-content: end;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .control.checkbox input {
+      margin: 0;
+      width: 16px;
+      height: 16px;
+    }
+
+    .control.checkbox label {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .control-note {
+      margin: -2px 0 16px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.35;
+    }
+
+    .control-note.secondary {
+      margin-top: -10px;
+      margin-bottom: 14px;
+    }
+
+    .option {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.56);
+      border: 1px solid rgba(255, 255, 255, 0.52);
+    }
+
+    .option h2 {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .option-note {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    .grid {
+      margin-top: 12px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+
+    .card {
+      border-radius: 14px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.14);
+      transition: transform 160ms ease-out;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+    }
+
+    .tile-wrap {
+      width: 100%;
+      aspect-ratio: 346 / 400;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.4);
+      display: grid;
+      place-items: center;
+    }
+
+    .tile-wrap svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: var(--tile-filter, none);
+    }
+
+    .label {
+      margin: 10px 0 8px;
+      font-weight: 700;
+      font-size: 0.96rem;
+      text-transform: capitalize;
+    }
+
+    .swatches {
+      display: grid;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .swatch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.2);
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 12px;
+      }
+
+      .shell {
+        padding: 12px;
+      }
+
+      .option {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <h1>Resource Tile Palette Preview</h1>
+    <p class="subtitle">
+      Based on the classic seam-strong wheat tile geometry. Outer border is fixed at <code>#fbbf24</code> for all variants.
+    </p>
+    <section class="controls" aria-label="Gradient lab controls">
+      <div class="control">
+        <label for="gradient-style">Gradient Style</label>
+        <select id="gradient-style"></select>
+      </div>
+      <div class="control">
+        <label for="body-depth">Body Depth</label>
+        <input id="body-depth" type="range" min="55" max="170" value="100" />
+      </div>
+      <div class="control">
+        <label for="ring-depth">Ring Depth</label>
+        <input id="ring-depth" type="range" min="55" max="170" value="100" />
+      </div>
+      <div class="control">
+        <label for="ring-direction">Ring Direction</label>
+        <select id="ring-direction"></select>
+      </div>
+      <div class="control">
+        <label for="edge-shadow-lift">Edge Shadow Lift</label>
+        <input id="edge-shadow-lift" type="range" min="0" max="70" value="62" />
+      </div>
+      <div class="control">
+        <label for="stripe-strength">Stripe Strength</label>
+        <input id="stripe-strength" type="range" min="0" max="100" value="65" />
+      </div>
+      <div class="control checkbox">
+        <input id="stripe-toggle" type="checkbox" />
+        <label for="stripe-toggle">Enable striped middle ring overlay</label>
+      </div>
+      <div class="control">
+        <label for="wheat-base">Option D/E Wheat Base</label>
+        <input id="wheat-base" type="color" value="#ffd43b" />
+      </div>
+      <div class="control">
+        <label for="wheat-highlight-lift">Wheat Highlight Lift</label>
+        <input id="wheat-highlight-lift" type="range" min="6" max="34" value="16" />
+      </div>
+      <div class="control">
+        <label for="wheat-shadow-drop">Wheat Shadow Drop</label>
+        <input id="wheat-shadow-drop" type="range" min="10" max="42" value="23" />
+      </div>
+      <div class="control">
+        <label for="wheat-sat-shift">Wheat Saturation Shift</label>
+        <input id="wheat-sat-shift" type="range" min="-20" max="20" value="-4" />
+      </div>
+      <div class="control">
+        <label for="wheat-hue-shift">Wheat Hue Nudge</label>
+        <input id="wheat-hue-shift" type="range" min="-18" max="18" value="-4" />
+      </div>
+    </section>
+    <p id="style-note" class="control-note"></p>
+    <p id="wheat-note" class="control-note secondary"></p>
+    <div id="app"></div>
+  </main>
+
+  <script>
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function formatPercentFromScale(scale) {
+      return `${Math.round(scale * 100)}%`;
+    }
+
+    function parseHex(hex) {
+      const normalized = hex.replace("#", "");
+      if (normalized.length !== 6) {
+        return { r: 0, g: 0, b: 0 };
+      }
+
+      return {
+        r: Number.parseInt(normalized.slice(0, 2), 16),
+        g: Number.parseInt(normalized.slice(2, 4), 16),
+        b: Number.parseInt(normalized.slice(4, 6), 16)
+      };
+    }
+
+    function toHexChannel(value) {
+      const clamped = clamp(Math.round(value), 0, 255);
+      return clamped.toString(16).padStart(2, "0");
+    }
+
+    function blendHex(sourceHex, targetHex, mix) {
+      const source = parseHex(sourceHex);
+      const target = parseHex(targetHex);
+      const t = clamp(mix, 0, 1);
+      const r = source.r + (target.r - source.r) * t;
+      const g = source.g + (target.g - source.g) * t;
+      const b = source.b + (target.b - source.b) * t;
+      return `#${toHexChannel(r)}${toHexChannel(g)}${toHexChannel(b)}`;
+    }
+
+    function hexToHsl(hex) {
+      const rgb = parseHex(hex);
+      const red = rgb.r / 255;
+      const green = rgb.g / 255;
+      const blue = rgb.b / 255;
+      const maxChannel = Math.max(red, green, blue);
+      const minChannel = Math.min(red, green, blue);
+      const chroma = maxChannel - minChannel;
+      let hue = 0;
+      let saturation = 0;
+      const lightness = (maxChannel + minChannel) / 2;
+
+      if (chroma !== 0) {
+        if (maxChannel === red) {
+          hue = ((green - blue) / chroma) % 6;
+        } else if (maxChannel === green) {
+          hue = ((blue - red) / chroma) + 2;
+        } else {
+          hue = ((red - green) / chroma) + 4;
+        }
+
+        saturation = chroma / (1 - Math.abs((2 * lightness) - 1));
+      }
+
+      const normalizedHue = ((hue * 60) + 360) % 360;
+      return {
+        h: normalizedHue,
+        s: saturation * 100,
+        l: lightness * 100
+      };
+    }
+
+    function hslToHex(hue, saturation, lightness) {
+      const normalizedHue = (((hue % 360) + 360) % 360) / 360;
+      const normalizedSat = clamp(saturation, 0, 100) / 100;
+      const normalizedLight = clamp(lightness, 0, 100) / 100;
+
+      if (normalizedSat === 0) {
+        const gray = normalizedLight * 255;
+        return `#${toHexChannel(gray)}${toHexChannel(gray)}${toHexChannel(gray)}`;
+      }
+
+      const tempQ = normalizedLight < 0.5
+        ? normalizedLight * (1 + normalizedSat)
+        : normalizedLight + normalizedSat - (normalizedLight * normalizedSat);
+      const tempP = (2 * normalizedLight) - tempQ;
+
+      function hueToChannel(channelT) {
+        let normalizedT = channelT;
+        if (normalizedT < 0) normalizedT += 1;
+        if (normalizedT > 1) normalizedT -= 1;
+        if (normalizedT < (1 / 6)) return tempP + ((tempQ - tempP) * 6 * normalizedT);
+        if (normalizedT < (1 / 2)) return tempQ;
+        if (normalizedT < (2 / 3)) return tempP + ((tempQ - tempP) * ((2 / 3) - normalizedT) * 6);
+        return tempP;
+      }
+
+      const red = hueToChannel(normalizedHue + (1 / 3)) * 255;
+      const green = hueToChannel(normalizedHue) * 255;
+      const blue = hueToChannel(normalizedHue - (1 / 3)) * 255;
+      return `#${toHexChannel(red)}${toHexChannel(green)}${toHexChannel(blue)}`;
+    }
+
+    const ringDirectionOptions = {
+      preset: "Preset Direction",
+      vertical: "Vertical (dark bottom)",
+      reverseVertical: "Vertical Reversed (dark top)",
+      diagonalDown: "Diagonal TL->BR",
+      diagonalUp: "Diagonal TR->BL",
+      horizontal: "Horizontal L->R"
+    };
+
+    const ringDirectionVectors = {
+      vertical: {
+        outer: { x1: 173, y1: 28, x2: 173, y2: 372 },
+        inner: { x1: 173, y1: 44, x2: 173, y2: 356 }
+      },
+      reverseVertical: {
+        outer: { x1: 173, y1: 372, x2: 173, y2: 28 },
+        inner: { x1: 173, y1: 356, x2: 173, y2: 44 }
+      },
+      diagonalDown: {
+        outer: { x1: 120, y1: 34, x2: 236, y2: 366 },
+        inner: { x1: 130, y1: 50, x2: 224, y2: 350 }
+      },
+      diagonalUp: {
+        outer: { x1: 226, y1: 34, x2: 110, y2: 366 },
+        inner: { x1: 216, y1: 50, x2: 122, y2: 350 }
+      },
+      horizontal: {
+        outer: { x1: 30, y1: 200, x2: 316, y2: 200 },
+        inner: { x1: 44, y1: 200, x2: 302, y2: 200 }
+      }
+    };
+
+    function resolveRingDirection(baseDirection, mode, ringLayer) {
+      if (mode === "preset") {
+        return baseDirection;
+      }
+
+      const modeVectors = ringDirectionVectors[mode];
+      if (!modeVectors) {
+        return baseDirection;
+      }
+
+      return modeVectors[ringLayer] || baseDirection;
+    }
+
+    const gradientPresets = {
+      subtleFlat: {
+        label: "Subtle Flat (ore-like)",
+        note: "Mostly flat body color with very light lift/shade overlays. Closest to the restrained ore depth feel.",
+        bodyLift: {
+          cx: 158, cy: 130, r: 224,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 0.2 },
+            { offset: 0.5, tone: "highlight", opacity: 0.08 },
+            { offset: 1, tone: "highlight", opacity: 0 }
+          ]
+        },
+        bodyShade: {
+          cx: 182, cy: 244, r: 244,
+          stops: [
+            { offset: 0, tone: "shadow", opacity: 0 },
+            { offset: 0.72, tone: "shadow", opacity: 0.08 },
+            { offset: 1, tone: "shadow", opacity: 0.18 }
+          ]
+        },
+        ringOuter: {
+          x1: 173, y1: 28, x2: 173, y2: 372,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 1 },
+            { offset: 0.35, tone: "base", opacity: 1 },
+            { offset: 1, tone: "shadow", opacity: 1 }
+          ]
+        },
+        ringInner: {
+          x1: 173, y1: 44, x2: 173, y2: 356,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 1 },
+            { offset: 0.64, tone: "base", opacity: 1 },
+            { offset: 1, tone: "shadow", opacity: 1 }
+          ]
+        },
+        stripe: { defaultEnabled: false, opacity: 0.2, size: 12, width: 3, angle: 18 }
+      },
+      oreDirectional: {
+        label: "Ore Directional",
+        note: "Directional highlights and non-linear ring falloff so the ring does not read as simple top-to-bottom shading.",
+        bodyLift: {
+          cx: 140, cy: 120, r: 220,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 0.22 },
+            { offset: 0.45, tone: "highlight", opacity: 0.1 },
+            { offset: 1, tone: "highlight", opacity: 0 }
+          ]
+        },
+        bodyShade: {
+          cx: 224, cy: 250, r: 260,
+          stops: [
+            { offset: 0, tone: "shadow", opacity: 0 },
+            { offset: 0.65, tone: "shadow", opacity: 0.09 },
+            { offset: 1, tone: "shadow", opacity: 0.2 }
+          ]
+        },
+        ringOuter: {
+          x1: 126, y1: 40, x2: 248, y2: 362,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 1 },
+            { offset: 0.24, tone: "base", opacity: 1 },
+            { offset: 0.56, tone: "highlight", opacity: 0.82 },
+            { offset: 1, tone: "shadow", opacity: 1 }
+          ]
+        },
+        ringInner: {
+          x1: 118, y1: 62, x2: 252, y2: 338,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 1 },
+            { offset: 0.3, tone: "base", opacity: 1 },
+            { offset: 0.52, tone: "highlight", opacity: 0.78 },
+            { offset: 1, tone: "shadow", opacity: 1 }
+          ]
+        },
+        stripe: { defaultEnabled: false, opacity: 0.18, size: 12, width: 2, angle: 18 }
+      },
+      stripedBand: {
+        label: "Striped Mid Band",
+        note: "Keeps subtle depth but adds a repeating light stripe pass to the middle ring for playful texture.",
+        bodyLift: {
+          cx: 160, cy: 136, r: 226,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 0.2 },
+            { offset: 0.52, tone: "highlight", opacity: 0.08 },
+            { offset: 1, tone: "highlight", opacity: 0 }
+          ]
+        },
+        bodyShade: {
+          cx: 188, cy: 246, r: 250,
+          stops: [
+            { offset: 0, tone: "shadow", opacity: 0 },
+            { offset: 0.7, tone: "shadow", opacity: 0.08 },
+            { offset: 1, tone: "shadow", opacity: 0.17 }
+          ]
+        },
+        ringOuter: {
+          x1: 154, y1: 34, x2: 228, y2: 366,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 1 },
+            { offset: 0.4, tone: "base", opacity: 1 },
+            { offset: 1, tone: "shadow", opacity: 1 }
+          ]
+        },
+        ringInner: {
+          x1: 160, y1: 48, x2: 218, y2: 352,
+          stops: [
+            { offset: 0, tone: "highlight", opacity: 1 },
+            { offset: 0.34, tone: "base", opacity: 1 },
+            { offset: 0.66, tone: "highlight", opacity: 0.88 },
+            { offset: 1, tone: "shadow", opacity: 1 }
+          ]
+        },
+        stripe: { defaultEnabled: true, opacity: 0.22, size: 13, width: 3, angle: 20 }
+      }
+    };
+
+    const uiState = {
+      presetId: "oreDirectional",
+      bodyDepthScale: 1,
+      ringDepthScale: 1,
+      ringDirection: "diagonalUp",
+      edgeShadowLift: 0.62,
+      stripeStrengthScale: 0.65,
+      stripeEnabled: false,
+      wheatBaseHex: "#ffd43b",
+      wheatHighlightLift: 16,
+      wheatShadowDrop: 23,
+      wheatSaturationShift: -4,
+      wheatHueShift: -4
+    };
+
+    const wheatTuneTargetOptions = new Set(["option-d", "option-e"]);
+
+    function buildStopMarkup(stops, resource, depthScale, zone) {
+      return stops.map((stop) => {
+        const baseColor = resource[stop.tone] || stop.tone || resource.base;
+        const softenedColor = zone === "ring" && stop.tone === "shadow"
+          ? blendHex(baseColor, resource.base, uiState.edgeShadowLift)
+          : baseColor;
+        const baseOpacity = stop.opacity === undefined ? 1 : stop.opacity;
+        let opacity = clamp(baseOpacity * depthScale, 0, 1);
+
+        if (zone === "ring" && stop.tone === "shadow") {
+          opacity = clamp(opacity * (1 - (0.45 * uiState.edgeShadowLift)), 0, 1);
+        }
+
+        return `<stop offset="${stop.offset}" stop-color="${softenedColor}" stop-opacity="${opacity.toFixed(3)}" />`;
+      }).join("");
+    }
+
+    function buildResourcePatternDef(resource, patternId) {
+      if (!resource.pattern) {
+        return "";
+      }
+
+      const opacity = clamp(resource.patternOpacity ?? 0.08, 0, 0.2);
+      const lightInk = blendHex(resource.highlight, resource.base, 0.34);
+      const darkInk = blendHex(resource.shadow, resource.base, 0.44);
+      const fillOpacity = opacity.toFixed(3);
+      const accentOpacity = (opacity * 0.82).toFixed(3);
+
+      if (resource.pattern === "grain") {
+        return `
+    <pattern id="${patternId}" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(24)">
+      <path d="M0 1H12 M0 7H12" stroke="${lightInk}" stroke-width="1.2" stroke-linecap="round" stroke-opacity="${fillOpacity}" />
+    </pattern>`;
+      }
+
+      if (resource.pattern === "dots") {
+        return `
+    <pattern id="${patternId}" width="12" height="12" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.1" fill="${lightInk}" fill-opacity="${fillOpacity}" />
+      <circle cx="9" cy="9" r="1.1" fill="${darkInk}" fill-opacity="${accentOpacity}" />
+      <circle cx="3" cy="9" r="0.8" fill="${lightInk}" fill-opacity="${accentOpacity}" />
+    </pattern>`;
+      }
+
+      if (resource.pattern === "vertical-lines") {
+        return `
+    <pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="1.8" height="10" fill="${darkInk}" fill-opacity="${fillOpacity}" />
+      <rect x="5" y="0" width="1.2" height="10" fill="${lightInk}" fill-opacity="${accentOpacity}" />
+    </pattern>`;
+      }
+
+      if (resource.pattern === "brick-rects") {
+        return `
+    <pattern id="${patternId}" width="14" height="10" patternUnits="userSpaceOnUse">
+      <rect x="0.5" y="0.5" width="6" height="4" rx="0.8" fill="${darkInk}" fill-opacity="${fillOpacity}" />
+      <rect x="7.5" y="0.5" width="6" height="4" rx="0.8" fill="${lightInk}" fill-opacity="${accentOpacity}" />
+      <rect x="4" y="5.5" width="6" height="4" rx="0.8" fill="${darkInk}" fill-opacity="${accentOpacity}" />
+    </pattern>`;
+      }
+
+      if (resource.pattern === "speckle-facets") {
+        return `
+    <pattern id="${patternId}" width="14" height="14" patternUnits="userSpaceOnUse">
+      <polygon points="2,3 5,1 7,4 4,6" fill="${darkInk}" fill-opacity="${fillOpacity}" />
+      <polygon points="9,7 12,5 13,8 11,10 8,9" fill="${lightInk}" fill-opacity="${accentOpacity}" />
+      <circle cx="4" cy="11" r="1.1" fill="${lightInk}" fill-opacity="${fillOpacity}" />
+      <circle cx="11" cy="2" r="0.9" fill="${darkInk}" fill-opacity="${accentOpacity}" />
+    </pattern>`;
+      }
+
+      return "";
+    }
+
+    function styleNoteText(preset) {
+      const stripes = uiState.stripeEnabled ? `on (${formatPercentFromScale(uiState.stripeStrengthScale)})` : "off";
+      const directionLabel = ringDirectionOptions[uiState.ringDirection] || ringDirectionOptions.preset;
+      const shadowLift = `${Math.round(uiState.edgeShadowLift * 100)}%`;
+      return `${preset.note} Body depth ${formatPercentFromScale(uiState.bodyDepthScale)}. Ring depth ${formatPercentFromScale(uiState.ringDepthScale)}. Ring direction ${directionLabel}. Edge shadow lift ${shadowLift}. Stripes ${stripes}.`;
+    }
+
+    function computeWheatTunedColors() {
+      const baseHex = uiState.wheatBaseHex;
+      const baseHsl = hexToHsl(baseHex);
+      const targetHue = baseHsl.h + uiState.wheatHueShift;
+      const targetSat = clamp(baseHsl.s + uiState.wheatSaturationShift, 12, 100);
+      const highlightHex = hslToHex(targetHue, targetSat + 5, baseHsl.l + uiState.wheatHighlightLift);
+      const shadowHex = hslToHex(targetHue, targetSat + 8, baseHsl.l - uiState.wheatShadowDrop);
+      return {
+        base: baseHex,
+        highlight: highlightHex,
+        shadow: shadowHex
+      };
+    }
+
+    function getOptionResources(option) {
+      const clonedResources = option.resources.map((resource) => ({ ...resource }));
+      if (!wheatTuneTargetOptions.has(option.id)) {
+        return clonedResources;
+      }
+
+      const wheatColors = computeWheatTunedColors();
+      return clonedResources.map((resource) => (
+        resource.key === "wheat"
+          ? { ...resource, base: wheatColors.base, highlight: wheatColors.highlight, shadow: wheatColors.shadow }
+          : resource
+      ));
+    }
+
+    const paletteOptions = [
+      {
+        id: "option-a",
+        name: "Option A - Juicy Pop (Balanced)",
+        note: "Adds a moderate saturation/contrast bump for a livelier look, with extra pop on wheat and brick.",
+        tileFilter: "saturate(1.08) contrast(1.04)",
+        resources: [
+          { key: "ore", base: "#8ea6c5", highlight: "#dbe8f8", shadow: "#475569", ink: "#0f172a" },
+          { key: "wheat", base: "#facc15", highlight: "#fff3a3", shadow: "#b45309", ink: "#0f172a" },
+          { key: "sheep", base: "#a3e635", highlight: "#d9f99d", shadow: "#4d7c0f", ink: "#0f172a" },
+          { key: "lumber", base: "#22c55e", highlight: "#86efac", shadow: "#166534", ink: "#0f172a" },
+          { key: "brick", base: "#f97316", highlight: "#fdba74", shadow: "#c2410c", ink: "#0f172a" }
+        ]
+      },
+      {
+        id: "option-b",
+        name: "Option B - Vibrance+ (Playful)",
+        note: "Higher saturation and stronger highlight/shadow separation for a juicier board feel without changing the amber outer mould.",
+        tileFilter: "saturate(1.22) contrast(1.05)",
+        resources: [
+          { key: "ore", base: "#7ea1cc", highlight: "#e6f0ff", shadow: "#334155", ink: "#0f172a" },
+          { key: "wheat", base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a" },
+          { key: "sheep", base: "#84cc16", highlight: "#d9f99d", shadow: "#3f6212", ink: "#0f172a" },
+          { key: "lumber", base: "#16a34a", highlight: "#86efac", shadow: "#14532d", ink: "#0f172a" },
+          { key: "brick", base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" }
+        ]
+      },
+      {
+        id: "option-c",
+        name: "Option C - Bright Wheat / Split Greens",
+        note: "Brighter wheat plus stronger sheep-vs-lumber separation: wool stays lime-yellow while lumber shifts deeper emerald.",
+        tileFilter: "saturate(1.2) contrast(1.06)",
+        resources: [
+          { key: "ore", base: "#86a8ce", highlight: "#e8f2ff", shadow: "#3c4f66", ink: "#0f172a" },
+          { key: "wheat", base: "#f4bd1f", highlight: "#ffe682", shadow: "#a85500", ink: "#0f172a" },
+          { key: "sheep", base: "#a3e635", highlight: "#ecfccb", shadow: "#4d7c0f", ink: "#0f172a" },
+          { key: "lumber", base: "#10b981", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
+          { key: "brick", base: "#fb923c", highlight: "#fed7aa", shadow: "#c2410c", ink: "#0f172a" }
+        ]
+      },
+      {
+        id: "option-d",
+        name: "Option D - Slate Ore / Split Greens",
+        note: "Ore shifts to slate-steel (not ocean-adjacent) and sheep/lumber separation increases for faster peripheral scanning.",
+        tileFilter: "saturate(1.18) contrast(1.04)",
+        resources: [
+          { key: "ore", base: "#94a3b8", highlight: "#dbe4ef", shadow: "#334155", ink: "#0f172a" },
+          { key: "wheat", base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a" },
+          { key: "sheep", base: "#bef264", highlight: "#f0fdb4", shadow: "#65a30d", ink: "#0f172a" },
+          { key: "lumber", base: "#059669", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
+          { key: "brick", base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" }
+        ]
+      },
+      {
+        id: "option-e",
+        name: "Option E - Accessibility Patterns",
+        note: "Uses the slate/split-greens palette plus subtle 6-10% pattern overlays per resource for glanceability and color-vision support.",
+        tileFilter: "saturate(1.16) contrast(1.03)",
+        resources: [
+          { key: "ore", base: "#94a3b8", highlight: "#dbe4ef", shadow: "#334155", ink: "#0f172a", pattern: "speckle-facets", patternOpacity: 0.09 },
+          { key: "wheat", base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a", pattern: "grain", patternOpacity: 0.08 },
+          { key: "sheep", base: "#bef264", highlight: "#f0fdb4", shadow: "#65a30d", ink: "#0f172a", pattern: "dots", patternOpacity: 0.07 },
+          { key: "lumber", base: "#059669", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a", pattern: "vertical-lines", patternOpacity: 0.08 },
+          { key: "brick", base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a", pattern: "brick-rects", patternOpacity: 0.09 }
+        ]
+      }
+    ];
+
+    const tileBorder = "#fbbf24";
+
+    function tileSvg(resource, key, preset) {
+      const bodyLiftId = `${key}-body-lift`;
+      const bodyShadeId = `${key}-body-shade`;
+      const ringOuterId = `${key}-ring-outer`;
+      const ringInnerId = `${key}-ring-inner`;
+      const vignetteId = `${key}-vignette`;
+      const resourcePatternId = `${key}-resource-pattern`;
+      const stripePatternId = `${key}-mid-stripe`;
+      const stripeEnabled = uiState.stripeEnabled;
+      const hasResourcePattern = Boolean(resource.pattern);
+      const stripeOpacity = clamp(preset.stripe.opacity * uiState.stripeStrengthScale * uiState.ringDepthScale, 0, 0.45);
+      const stripeSize = preset.stripe.size;
+      const stripeWidth = preset.stripe.width;
+      const stripeAngle = preset.stripe.angle;
+      const ringOuterDirection = resolveRingDirection(preset.ringOuter, uiState.ringDirection, "outer");
+      const ringInnerDirection = resolveRingDirection(preset.ringInner, uiState.ringDirection, "inner");
+      const softenedShadow = blendHex(resource.shadow, resource.base, uiState.edgeShadowLift * 0.92);
+      const outerSeparatorShadowOpacity = (0.95 * (1 - (0.4 * uiState.edgeShadowLift))).toFixed(3);
+      const innerSeparatorShadowOpacity = (0.56 * (1 - (0.45 * uiState.edgeShadowLift))).toFixed(3);
+
+      const bodyLiftStops = buildStopMarkup(preset.bodyLift.stops, resource, uiState.bodyDepthScale, "body");
+      const bodyShadeStops = buildStopMarkup(preset.bodyShade.stops, resource, uiState.bodyDepthScale, "body");
+      const ringOuterStops = buildStopMarkup(preset.ringOuter.stops, resource, uiState.ringDepthScale, "ring");
+      const ringInnerStops = buildStopMarkup(preset.ringInner.stops, resource, uiState.ringDepthScale, "ring");
+      const resourcePatternDef = buildResourcePatternDef(resource, resourcePatternId);
+
+      return `
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400" role="img" aria-label="${resource.key} tile">
+  <defs>
+    <path id="${key}-inner-hex" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+    <path id="${key}-split-hex" d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z" />
+    <clipPath id="${key}-inner-clip" clipPathUnits="userSpaceOnUse">
+      <use href="#${key}-inner-hex" />
+    </clipPath>
+    <radialGradient id="${bodyLiftId}" gradientUnits="userSpaceOnUse" cx="${preset.bodyLift.cx}" cy="${preset.bodyLift.cy}" r="${preset.bodyLift.r}">
+      ${bodyLiftStops}
+    </radialGradient>
+    <radialGradient id="${bodyShadeId}" gradientUnits="userSpaceOnUse" cx="${preset.bodyShade.cx}" cy="${preset.bodyShade.cy}" r="${preset.bodyShade.r}">
+      ${bodyShadeStops}
+    </radialGradient>
+    <linearGradient id="${ringOuterId}" gradientUnits="userSpaceOnUse" x1="${ringOuterDirection.x1}" y1="${ringOuterDirection.y1}" x2="${ringOuterDirection.x2}" y2="${ringOuterDirection.y2}">
+      ${ringOuterStops}
+    </linearGradient>
+    <linearGradient id="${ringInnerId}" gradientUnits="userSpaceOnUse" x1="${ringInnerDirection.x1}" y1="${ringInnerDirection.y1}" x2="${ringInnerDirection.x2}" y2="${ringInnerDirection.y2}">
+      ${ringInnerStops}
+    </linearGradient>
+    ${resourcePatternDef}
+    <pattern id="${stripePatternId}" width="${stripeSize}" height="${stripeSize}" patternUnits="userSpaceOnUse" patternTransform="rotate(${stripeAngle})">
+      <rect width="${stripeWidth}" height="${stripeSize}" fill="${resource.highlight}" fill-opacity="${stripeOpacity.toFixed(3)}" />
+    </pattern>
+    <radialGradient id="${vignetteId}" gradientUnits="userSpaceOnUse" cx="173" cy="226" r="196">
+      <stop offset="0" stop-color="${resource.ink}" stop-opacity="0" />
+      <stop offset="1" stop-color="${resource.ink}" stop-opacity="0.2" />
+    </radialGradient>
+  </defs>
+
+  <path
+    id="tileBorder"
+    fill="${tileBorder}"
+    fill-rule="evenodd"
+    d="M173 0L346 100V300L173 400L0 300V100Z M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z"
+  />
+
+  <g id="tileArt" clip-path="url(#${key}-inner-clip)">
+    <use href="#${key}-inner-hex" fill="${resource.base}" />
+    <use href="#${key}-inner-hex" fill="url(#${bodyLiftId})" />
+    <use href="#${key}-inner-hex" fill="url(#${bodyShadeId})" />
+
+    <path
+      fill="url(#${ringOuterId})"
+      fill-rule="evenodd"
+      d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z"
+    />
+
+    <path
+      fill="url(#${ringInnerId})"
+      fill-rule="evenodd"
+      d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z"
+    />
+    ${hasResourcePattern ? `
+    <use href="#${key}-inner-hex" fill="url(#${resourcePatternId})" />` : ""}
+    ${stripeEnabled ? `
+    <path
+      fill="url(#${stripePatternId})"
+      fill-rule="evenodd"
+      d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z"
+    />` : ""}
+
+    <g id="ringSeparators" pointer-events="none">
+      <use href="#${key}-inner-hex" fill="none" stroke="${softenedShadow}" stroke-width="5.2" opacity="${outerSeparatorShadowOpacity}" />
+      <use href="#${key}-inner-hex" fill="none" stroke="${resource.highlight}" stroke-width="1.5" opacity="0.3" />
+      <use href="#${key}-split-hex" fill="none" stroke="${softenedShadow}" stroke-width="2" opacity="${innerSeparatorShadowOpacity}" />
+      <use href="#${key}-split-hex" fill="none" stroke="${resource.highlight}" stroke-width="1" opacity="0.35" />
+    </g>
+
+    <use href="#${key}-inner-hex" fill="url(#${vignetteId})" />
+  </g>
+</svg>`;
+    }
+
+    function swatchRow(label, value) {
+      return `
+        <div class="swatch">
+          <span class="dot" style="background:${value}"></span>
+          <span>${label}: <code>${value}</code></span>
+        </div>`;
+    }
+
+    function render() {
+      const preset = gradientPresets[uiState.presetId];
+      const styleNote = document.getElementById("style-note");
+      const wheatNote = document.getElementById("wheat-note");
+      const tunedWheat = computeWheatTunedColors();
+      styleNote.textContent = styleNoteText(preset);
+      wheatNote.textContent = `Option D/E wheat tuner: base ${tunedWheat.base}, highlight ${tunedWheat.highlight}, shadow ${tunedWheat.shadow}.`;
+
+      const root = document.getElementById("app");
+      root.innerHTML = paletteOptions.map((option) => {
+        const displayResources = getOptionResources(option);
+        const cards = displayResources.map((resource) => {
+          const key = `${option.id}-${resource.key}`;
+          const tileFilterStyle = option.tileFilter ? ` style="--tile-filter:${option.tileFilter}"` : "";
+          return `
+            <article class="card">
+              <div class="tile-wrap"${tileFilterStyle}>${tileSvg(resource, key, preset)}</div>
+              <p class="label">${resource.key}</p>
+              <div class="swatches">
+                ${swatchRow("base", resource.base)}
+                ${swatchRow("highlight", resource.highlight)}
+                ${swatchRow("shadow", resource.shadow)}
+                ${swatchRow("ink", resource.ink)}
+              </div>
+            </article>`;
+        }).join("");
+
+        return `
+          <section class="option">
+            <h2>${option.name}</h2>
+            <p class="option-note">${option.note}</p>
+            <div class="grid">${cards}</div>
+          </section>`;
+      }).join("");
+    }
+
+    function setupControls() {
+      const styleSelect = document.getElementById("gradient-style");
+      const bodyDepthInput = document.getElementById("body-depth");
+      const ringDepthInput = document.getElementById("ring-depth");
+      const ringDirectionSelect = document.getElementById("ring-direction");
+      const edgeShadowLiftInput = document.getElementById("edge-shadow-lift");
+      const stripeStrengthInput = document.getElementById("stripe-strength");
+      const stripeToggleInput = document.getElementById("stripe-toggle");
+      const wheatBaseInput = document.getElementById("wheat-base");
+      const wheatHighlightLiftInput = document.getElementById("wheat-highlight-lift");
+      const wheatShadowDropInput = document.getElementById("wheat-shadow-drop");
+      const wheatSatShiftInput = document.getElementById("wheat-sat-shift");
+      const wheatHueShiftInput = document.getElementById("wheat-hue-shift");
+
+      styleSelect.innerHTML = Object.entries(gradientPresets)
+        .map(([id, preset]) => `<option value="${id}">${preset.label}</option>`)
+        .join("");
+      ringDirectionSelect.innerHTML = Object.entries(ringDirectionOptions)
+        .map(([id, label]) => `<option value="${id}">${label}</option>`)
+        .join("");
+
+      styleSelect.value = uiState.presetId;
+      ringDirectionSelect.value = uiState.ringDirection;
+      edgeShadowLiftInput.value = String(Math.round(uiState.edgeShadowLift * 100));
+      stripeToggleInput.checked = gradientPresets[uiState.presetId].stripe.defaultEnabled;
+      wheatBaseInput.value = uiState.wheatBaseHex;
+      wheatHighlightLiftInput.value = String(uiState.wheatHighlightLift);
+      wheatShadowDropInput.value = String(uiState.wheatShadowDrop);
+      wheatSatShiftInput.value = String(uiState.wheatSaturationShift);
+      wheatHueShiftInput.value = String(uiState.wheatHueShift);
+      uiState.stripeEnabled = stripeToggleInput.checked;
+
+      styleSelect.addEventListener("change", (event) => {
+        uiState.presetId = event.target.value;
+        stripeToggleInput.checked = gradientPresets[uiState.presetId].stripe.defaultEnabled;
+        uiState.stripeEnabled = stripeToggleInput.checked;
+        render();
+      });
+
+      bodyDepthInput.addEventListener("input", (event) => {
+        uiState.bodyDepthScale = Number(event.target.value) / 100;
+        render();
+      });
+
+      ringDepthInput.addEventListener("input", (event) => {
+        uiState.ringDepthScale = Number(event.target.value) / 100;
+        render();
+      });
+
+      ringDirectionSelect.addEventListener("change", (event) => {
+        uiState.ringDirection = event.target.value;
+        render();
+      });
+
+      edgeShadowLiftInput.addEventListener("input", (event) => {
+        uiState.edgeShadowLift = Number(event.target.value) / 100;
+        render();
+      });
+
+      stripeStrengthInput.addEventListener("input", (event) => {
+        uiState.stripeStrengthScale = Number(event.target.value) / 100;
+        render();
+      });
+
+      stripeToggleInput.addEventListener("change", (event) => {
+        uiState.stripeEnabled = event.target.checked;
+        render();
+      });
+
+      wheatBaseInput.addEventListener("input", (event) => {
+        uiState.wheatBaseHex = event.target.value;
+        render();
+      });
+
+      wheatHighlightLiftInput.addEventListener("input", (event) => {
+        uiState.wheatHighlightLift = Number(event.target.value);
+        render();
+      });
+
+      wheatShadowDropInput.addEventListener("input", (event) => {
+        uiState.wheatShadowDrop = Number(event.target.value);
+        render();
+      });
+
+      wheatSatShiftInput.addEventListener("input", (event) => {
+        uiState.wheatSaturationShift = Number(event.target.value);
+        render();
+      });
+
+      wheatHueShiftInput.addEventListener("input", (event) => {
+        uiState.wheatHueShift = Number(event.target.value);
+        render();
+      });
+    }
+
+    setupControls();
+    render();
+  </script>
+</body>
+</html>

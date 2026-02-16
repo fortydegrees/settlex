@@ -1,4 +1,12 @@
-import { buildTopology, createEmptyState, generateBoard, resolveBoardConfig, ResourceType } from "@settlex/game-core";
+import {
+  buildTopology,
+  createEmptyState,
+  DUEL_RULESET,
+  STANDARD_RULESET,
+  generateBoard,
+  resolveBoardConfig,
+  ResourceType
+} from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
 import { appendGameLog } from "./utils/gameLog.js";
@@ -75,6 +83,20 @@ const TURN_ORDER_ONCE = {
   },
 };
 
+const resolveRulesetSpec = ({ numPlayers, setupData }) => {
+  const requestedRulesetId = setupData?.rulesetId;
+  if (requestedRulesetId === "duel") {
+    return { rulesetId: "duel", rulesetSpec: DUEL_RULESET };
+  }
+  if (requestedRulesetId === "standard") {
+    return { rulesetId: "standard", rulesetSpec: STANDARD_RULESET };
+  }
+  if (numPlayers === 2) {
+    return { rulesetId: "duel", rulesetSpec: DUEL_RULESET };
+  }
+  return { rulesetId: "standard", rulesetSpec: STANDARD_RULESET };
+};
+
 export const createCatanGame = ({
   includeDebugMoves = isDebugEnvironment(),
   includeEffects = true
@@ -146,7 +168,11 @@ export const createCatanGame = ({
     const robberTile = tiles.find((tile) => tile.tile.resource === ResourceType.DESERT)?.tile.id ?? null;
     const coreTopology = buildTopology(tiles);
     const playerIds = Array.from({ length: ctx.numPlayers }, (_, i) => i.toString());
-    const core = createEmptyState(playerIds);
+    const { rulesetId, rulesetSpec } = resolveRulesetSpec({
+      numPlayers: ctx.numPlayers,
+      setupData
+    });
+    const core = createEmptyState(playerIds, rulesetSpec);
     core.phase = ctx.phase === "placement" ? "placement" : "normal";
     core.robberTileId = robberTile;
     const placementOrder = getPlacementOrder(ctx.numPlayers);
@@ -162,6 +188,7 @@ export const createCatanGame = ({
     return {
       core,
       coreTopology,
+      rulesetId,
       boardConfigId,
       tiles,
       valids,

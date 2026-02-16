@@ -489,6 +489,7 @@ export function GameScreen(bgioProps) {
         maxPositionY={500}
         maxScale={6}
         minScale={0.3}
+        doubleClick={{ mode: "toggle" }}
       >
         <TransformComponent>
           <CatanBoard

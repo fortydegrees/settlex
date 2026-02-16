@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400">
+  <defs>
+    <!-- Keep this inner hex path consistent across all tiles in this set -->
+    <clipPath id="tileInnerClip">
+      <path d="M 173 15 L 333.2 107.5 L 333.2 292.5 L 173 385 L 12.8 292.5 L 12.8 107.5 Z" />
+    </clipPath>
+
+    <!-- Replace these with per-resource colors while preserving IDs/structure -->
+    <linearGradient id="tileBaseGradient" gradientUnits="userSpaceOnUse" x1="32" y1="28" x2="314" y2="372">
+      <stop offset="0" stop-color="#73db74" />
+      <stop offset="1" stop-color="#2f9a52" />
+    </linearGradient>
+    <radialGradient id="tileGlowGradient" gradientUnits="userSpaceOnUse" cx="154" cy="120" r="220">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.26" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="facetLight" gradientUnits="userSpaceOnUse" x1="173" y1="40" x2="173" y2="370">
+      <stop offset="0" stop-color="#a1ef95" />
+      <stop offset="1" stop-color="#5dbf6c" />
+    </linearGradient>
+    <linearGradient id="facetMid" gradientUnits="userSpaceOnUse" x1="74" y1="60" x2="274" y2="356">
+      <stop offset="0" stop-color="#72cf7a" />
+      <stop offset="1" stop-color="#2d915b" />
+    </linearGradient>
+    <linearGradient id="facetDark" gradientUnits="userSpaceOnUse" x1="76" y1="56" x2="282" y2="354">
+      <stop offset="0" stop-color="#2f8758" />
+      <stop offset="1" stop-color="#1b5e4b" />
+    </linearGradient>
+    <linearGradient id="tileVignette" gradientUnits="userSpaceOnUse" x1="28" y1="34" x2="318" y2="366">
+      <stop offset="0" stop-color="#11453a" stop-opacity="0.04" />
+      <stop offset="1" stop-color="#11453a" stop-opacity="0.3" />
+    </linearGradient>
+  </defs>
+
+  <!-- Border frame (hard edges, no rounded corners) -->
+  <path fill="#faf3e9" d="M 173 0 L 346 100 L 346 300 L 173 400 L 0 300 L 0 100 Z" />
+
+  <!-- Tile art lives inside this clip only -->
+  <g clip-path="url(#tileInnerClip)">
+    <path fill="url(#tileBaseGradient)" d="M 173 15 L 333.2 107.5 L 333.2 292.5 L 173 385 L 12.8 292.5 L 12.8 107.5 Z" />
+    <path fill="url(#tileGlowGradient)" d="M 173 15 L 333.2 107.5 L 333.2 292.5 L 173 385 L 12.8 292.5 L 12.8 107.5 Z" />
+
+    <!-- Example layered facets (swap shapes/colors by resource) -->
+    <polygon fill="url(#facetDark)" opacity="0.55" points="16,112 86,82 86,220 16,292" />
+    <polygon fill="url(#facetLight)" opacity="0.75" points="96,70 173,220 36,220" />
+    <polygon fill="url(#facetDark)" opacity="0.48" points="170,72 236,214 104,214" />
+    <polygon fill="url(#facetMid)" opacity="0.56" points="250,92 322,224 188,224" />
+    <polygon fill="url(#facetMid)" opacity="0.7" points="176,128 254,282 98,282" />
+    <polygon fill="url(#facetDark)" opacity="0.46" points="46,202 120,352 12,292" />
+    <polygon fill="url(#facetDark)" opacity="0.58" points="246,198 334,292 173,385" />
+    <polygon fill="url(#facetMid)" opacity="0.36" points="296,150 334,224 260,224" />
+
+    <path fill="url(#tileVignette)" d="M 173 15 L 333.2 107.5 L 333.2 292.5 L 173 385 L 12.8 292.5 L 12.8 107.5 Z" />
+  </g>
+
+  <!-- Optional editing guides: hidden in production -->
+  <g id="guides" display="none" opacity="0.35">
+    <path fill="none" stroke="#ffffff" stroke-width="1" d="M 173 15 L 333.2 107.5 L 333.2 292.5 L 173 385 L 12.8 292.5 L 12.8 107.5 Z" />
+    <circle cx="173" cy="200" r="42" fill="none" stroke="#ffffff" stroke-width="1" />
+  </g>
+</svg>

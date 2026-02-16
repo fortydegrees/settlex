@@ -14,6 +14,18 @@ import {
   resetTransformations,
 } from "../handlers/handlers.utils";
 
+const SCALE_EPSILON = 1e-10;
+
+export const getDoubleClickMode = (
+  mode: "zoomIn" | "zoomOut" | "reset" | "toggle",
+  currentScale: number,
+  initialScale: number,
+): "zoomIn" | "zoomOut" | "reset" => {
+  if (mode !== "toggle") return mode;
+
+  return currentScale > initialScale + SCALE_EPSILON ? "reset" : "zoomIn";
+};
+
 export const handleDoubleClickStop = (
   contextInstance: ReactZoomPanPinchContext,
   event: MouseEvent | TouchEvent,
@@ -55,17 +67,19 @@ export function handleDoubleClick(
   const { onZoomStart, onZoom } = contextInstance.props;
   const { disabled, mode, step, animationTime, animationType } =
     setup.doubleClick;
+  const initialScale = contextInstance.props.initialScale ?? 1;
+  const doubleClickMode = getDoubleClickMode(mode, scale, initialScale);
 
   if (disabled) return;
   if (doubleClickStopEventTimer) return;
 
-  if (mode === "reset") {
+  if (doubleClickMode === "reset") {
     return handleDoubleClickResetMode(contextInstance, event);
   }
 
   if (!contentComponent) return console.error("No ContentComponent found");
 
-  const delta = mode === "zoomOut" ? -1 : 1;
+  const delta = doubleClickMode === "zoomOut" ? -1 : 1;
 
   const newScale = handleCalculateButtonZoom(contextInstance, delta, step);
 

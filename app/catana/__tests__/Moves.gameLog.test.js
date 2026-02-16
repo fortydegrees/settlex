@@ -1,6 +1,27 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createEmptyState, ResourceType } from "@settlex/game-core";
-import { autoDiscard, buyDevCard, maybeLogGameOver } from "../Moves";
+import {
+  autoDiscard,
+  buyDevCard,
+  maybeLogGameOver,
+  placeRoad,
+  playDevCardStart
+} from "../Moves";
+
+vi.mock("@settlex/game-core", async () => {
+  const actual = await vi.importActual("@settlex/game-core");
+  return {
+    ...actual,
+    applyBuildRoad: vi.fn((state, _topology, _edgeId, playerId) => {
+      state.awards.longestRoadOwnerId = playerId;
+      return { ok: true, state };
+    }),
+    applyKnight: vi.fn((state, playerId) => {
+      state.awards.largestArmyOwnerId = playerId;
+      return { ok: true, state };
+    })
+  };
+});
 
 const makeContext = (overrides = {}) => {
   const core = createEmptyState(["0", "1"]);
@@ -22,7 +43,8 @@ const makeContext = (overrides = {}) => {
     log: { setMetadata: () => {} },
     events: {
       endStage: () => {},
-      setActivePlayers: () => {}
+      setActivePlayers: () => {},
+      setStage: () => {}
     },
     ...overrides
   };
@@ -81,5 +103,40 @@ describe("game log moves", () => {
     expect(context.G.gameLog).toHaveLength(1);
     maybeLogGameOver(context.G, context.ctx);
     expect(context.G.gameLog).toHaveLength(1);
+  });
+
+  it("logs longest road award changes from road placement", () => {
+    const context = makeContext();
+    context.G.core.awards.longestRoadOwnerId = "1";
+
+    placeRoad.move(context, "1,2");
+
+    expect(context.G.gameLog.map((entry) => entry.type)).toEqual([
+      "build:road",
+      "award:longestRoad"
+    ]);
+    expect(context.G.gameLog[1]).toMatchObject({
+      type: "award:longestRoad",
+      actorId: "0",
+      data: { previousOwnerId: "1" }
+    });
+  });
+
+  it("logs largest army award changes from knight play", () => {
+    const context = makeContext();
+    context.G.core.playerStateById["0"].devCards = ["knight"];
+    context.G.core.awards.largestArmyOwnerId = "1";
+
+    playDevCardStart.move(context, "knight");
+
+    expect(context.G.gameLog.map((entry) => entry.type)).toEqual([
+      "dev:play",
+      "award:largestArmy"
+    ]);
+    expect(context.G.gameLog[1]).toMatchObject({
+      type: "award:largestArmy",
+      actorId: "0",
+      data: { previousOwnerId: "1" }
+    });
   });
 });

@@ -497,4 +497,48 @@ describe("TimerManager", () => {
     expect(botCalls).toHaveLength(2);
   });
 
+  it("auto-dispatches pregame autoBot for bot seats even when current player is human", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({
+      dispatch,
+      botMoveDelayMs: 250,
+      isBotPlayer: ({ playerID }) => playerID === "1"
+    });
+
+    manager.onState(
+      "match-bot",
+      baseState({
+        _stateID: 12,
+        G: {
+          core: {
+            players: ["0", "1"]
+          },
+          preGame: {
+            readyByPlayerId: {}
+          }
+        },
+        ctx: {
+          phase: "preGame",
+          currentPlayer: "0",
+          activePlayers: { all: "waiting" },
+          turn: 1
+        }
+      })
+    );
+
+    vi.advanceTimersByTime(249);
+    expect(dispatch).not.toHaveBeenCalledWith({
+      matchID: "match-bot",
+      move: "autoBot",
+      playerID: "1"
+    });
+
+    vi.advanceTimersByTime(1);
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-bot",
+      move: "autoBot",
+      playerID: "1"
+    });
+  });
+
 });

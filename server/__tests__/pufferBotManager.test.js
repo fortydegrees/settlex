@@ -54,6 +54,19 @@ describe("PufferBotManager", () => {
     expect(moves).toEqual([{ move: "autoDiscard", args: [] }]);
   });
 
+  it("uses readyUp in preGame waiting stage for bot seats", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["0"] });
+    const state = createState({
+      phase: "preGame",
+      currentPlayer: "1",
+      activePlayers: { all: "waiting" },
+      turn: 1
+    });
+
+    const moves = await manager.chooseMoves(state, "0");
+    expect(moves).toEqual([{ move: "readyUp", args: [] }]);
+  });
+
   it("chooses a legal mapped move with random fallback when no checkpoint is configured", async () => {
     const manager = new PufferBotManager({ botPlayerIds: ["0"] });
     const state = createState({

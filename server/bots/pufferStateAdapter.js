@@ -11,6 +11,15 @@ function sortEdgeId(a, b) {
   return a1 - b1;
 }
 
+function hashString(value) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
 function defaultPlacementOrder(players) {
   if (players.length <= 1) {
     return [...players];
@@ -27,7 +36,25 @@ function inferPlacementStage(ctx) {
 
 function inferPlacementIndex(ctx, placementOrder) {
   const rawTurn = Number(ctx?.turn ?? 1);
-  const turnIndex = Number.isFinite(rawTurn) ? rawTurn - 1 : 0;
+  const preferredTurnIndex = Number.isFinite(rawTurn) ? rawTurn - 1 : 0;
+  const currentPlayerId = String(ctx?.currentPlayer ?? "");
+
+  const matchingIndices = placementOrder.reduce((indices, playerId, index) => {
+    if (String(playerId) === currentPlayerId) {
+      indices.push(index);
+    }
+    return indices;
+  }, []);
+
+  if (matchingIndices.length > 0) {
+    return matchingIndices.reduce((best, candidate) => {
+      const bestDistance = Math.abs(best - preferredTurnIndex);
+      const candidateDistance = Math.abs(candidate - preferredTurnIndex);
+      return candidateDistance < bestDistance ? candidate : best;
+    }, matchingIndices[0]);
+  }
+
+  const turnIndex = preferredTurnIndex;
   const maxIndex = Math.max(0, placementOrder.length - 1);
   return Math.max(0, Math.min(maxIndex, turnIndex));
 }
@@ -43,6 +70,34 @@ function buildPendingRoadBuilding(G, ctx) {
     roadsToPlace: devPlay.pendingRoads,
     returnToMode: stage === "preRoll" ? "preRoll" : "postRoll"
   };
+}
+
+function inferModeOverride(ctx) {
+  if (!ctx) return null;
+
+  const stage =
+    ctx?.activePlayers?.[ctx.currentPlayer] ??
+    ctx?.activePlayers?.all ??
+    "";
+
+  if (ctx.phase === "placement") {
+    if (stage === "road") return "placement_road";
+    if (stage === "settlement") return "placement_settlement";
+  }
+
+  if (ctx.phase === "main") {
+    if (stage === "moveRobber") return "robberMove";
+    if (stage === "robberDiscard") return "robberDiscard";
+  }
+
+  return null;
+}
+
+function cloneValue(value) {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+  return JSON.parse(JSON.stringify(value));
 }
 
 function hydrateEnvFromMatchState(state, options = {}) {
@@ -73,7 +128,7 @@ function hydrateEnvFromMatchState(state, options = {}) {
   env.rng = Math.random;
   env.steps = Math.max(0, Number(ctx.turn ?? 1) - 1);
 
-  env.state = G.core;
+  env.state = cloneValue(G.core);
   env.topology = G.coreTopology;
   env.tiles = G.tiles ?? [];
 
@@ -84,6 +139,7 @@ function hydrateEnvFromMatchState(state, options = {}) {
 
   env.pendingRoadBuilding = buildPendingRoadBuilding(G, ctx);
   env.pendingRobberReturnMode = G.robberReturnToStage ?? null;
+  env.modeOverride = inferModeOverride(ctx);
 
   env.nodeIds = [...env.topology.nodeIds].sort((a, b) => a - b);
   env.edgeIds = [...env.topology.edgeIds].sort(sortEdgeId);
@@ -91,9 +147,26 @@ function hydrateEnvFromMatchState(state, options = {}) {
     .filter((tile) => String(tile.type).toLowerCase() === "land")
     .map((tile) => tile.tile.id)
     .sort((a, b) => a - b);
+  env.landTileById = new Map(
+    env.topology.tiles
+      .filter((tile) => String(tile.type).toLowerCase() === "land")
+      .map((tile) => [tile.tile.id, tile])
+  );
+  env.nodeFeatureById = env._buildStaticNodeFeatures();
 
   env._configureActionSpace();
+  env.observationLayout = env._buildObservationLayout();
   env.baseObservationSize = env._buildBaseObservation(env._getActorId()).length;
+  const actionLabels = Array.from({ length: env.actionCount }, (_, index) =>
+    env._actionLabel(index)
+  );
+  env.actionSpaceHash = hashString(JSON.stringify(actionLabels));
+  env.observationSchemaHash = hashString(
+    JSON.stringify({
+      version: env.observationSchemaVersion,
+      layout: env.observationLayout
+    })
+  );
 
   return env;
 }
@@ -181,17 +254,18 @@ function mapDecodedActionToMoves({ state, env, actorId, modeBefore, decoded }) {
 
 export function createPufferStateAdapter(state, options = {}) {
   const env = hydrateEnvFromMatchState(state, options);
+  const spec = env.getSpec();
   const actorId = env._getActorId();
   const mode = env._getMode();
   const actionMask = env._computeActionMask(actorId);
-  const actionLabels = Array.from({ length: env.actionCount }, (_, index) =>
-    env._actionLabel(index)
-  );
+  const actionLabels = spec.actionLabels;
   const observation = env.options.includeActionMaskInObservation
     ? env._buildBaseObservation(actorId).concat(actionMask)
     : env._buildBaseObservation(actorId);
 
   return {
+    env,
+    spec,
     actorId,
     mode,
     observation,

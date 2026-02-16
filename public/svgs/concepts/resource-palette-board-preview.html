@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resource Palette Board Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --page-bg-start: #38bdf8;
+      --page-bg-end: #2563eb;
+      --panel-bg: rgba(255, 255, 255, 0.7);
+      --panel-ring: rgba(255, 255, 255, 0.48);
+      --text-strong: #0f172a;
+      --text-muted: #334155;
+      --tile-border: #fbbf24;
+      --board-tile-w: 112px;
+      --board-tile-h: 129px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Outfit", sans-serif;
+      color: var(--text-strong);
+      background: radial-gradient(ellipse at center, var(--page-bg-start), var(--page-bg-end));
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      border-radius: 20px;
+      background: var(--panel-bg);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.2);
+      border: 1px solid var(--panel-ring);
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2.7vw, 2.1rem);
+      letter-spacing: 0.02em;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 8px 0 14px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.58);
+      margin-bottom: 12px;
+    }
+
+    .control {
+      display: grid;
+      gap: 6px;
+    }
+
+    .control label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .control select {
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-family: "Outfit", sans-serif;
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.9);
+      width: 100%;
+    }
+
+    .control.checkbox {
+      align-content: end;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .control.checkbox input {
+      margin: 0;
+      width: 16px;
+      height: 16px;
+      accent-color: #16a34a;
+    }
+
+    .control.checkbox label {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .control-note {
+      margin: 0 0 14px;
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+
+    .section {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+    }
+
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 1.04rem;
+      font-weight: 700;
+    }
+
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 1fr));
+      gap: 10px;
+    }
+
+    .tile-card {
+      border-radius: 12px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+
+    .tile-stack {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 346 / 400;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .tile-stack svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      filter: var(--tile-filter, none);
+    }
+
+    .tile-label {
+      margin: 8px 0 0;
+      font-size: 0.86rem;
+      text-transform: capitalize;
+      font-weight: 700;
+      color: #0f172a;
+      text-align: center;
+    }
+
+    .token-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: block;
+    }
+
+    .board {
+      display: grid;
+      gap: 4px;
+      justify-items: center;
+    }
+
+    .board-row {
+      display: grid;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .board-row.r3 {
+      grid-template-columns: repeat(3, var(--board-tile-w));
+    }
+
+    .board-row.r4 {
+      grid-template-columns: repeat(4, var(--board-tile-w));
+    }
+
+    .board-row.r5 {
+      grid-template-columns: repeat(5, var(--board-tile-w));
+    }
+
+    .board-tile {
+      position: relative;
+      width: var(--board-tile-w);
+      height: var(--board-tile-h);
+      overflow: hidden;
+    }
+
+    .board-tile svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: var(--tile-filter, none);
+    }
+
+    @media (max-width: 980px) {
+      .tile-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      }
+
+      :root {
+        --board-tile-w: 94px;
+        --board-tile-h: 109px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 12px;
+      }
+
+      .shell {
+        padding: 12px;
+      }
+
+      :root {
+        --board-tile-w: 76px;
+        --board-tile-h: 88px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <h1>Palette Row + Board Preview</h1>
+    <p class="subtitle">Pick Option C or D, toggle number tokens, and preview both the resource row and a full 19-hex board.</p>
+
+    <section class="controls" aria-label="palette board controls">
+      <div class="control">
+        <label for="palette-select">Palette Option</label>
+        <select id="palette-select">
+          <option value="C">Option C</option>
+          <option value="D" selected>Option D</option>
+        </select>
+      </div>
+      <div class="control checkbox">
+        <input id="show-number-tokens" type="checkbox" checked />
+        <label for="show-number-tokens">Show number tokens</label>
+      </div>
+    </section>
+
+    <p id="palette-note" class="control-note"></p>
+
+    <section class="section">
+      <h2>Selected Resource Row</h2>
+      <div id="row-preview" class="tile-grid"></div>
+    </section>
+
+    <section class="section">
+      <h2>Board Preview (19 Hexes)</h2>
+      <div id="board-preview" class="board"></div>
+    </section>
+  </main>
+
+  <script>
+    const tileBorder = "#fbbf24";
+
+    const DESERT_COLORS = {
+      base: "#e9c77c",
+      highlight: "#f8e2aa",
+      shadow: "#a8742a",
+      ink: "#0f172a"
+    };
+
+    const PALETTES = {
+      C: {
+        name: "Option C - Bright Wheat / Split Greens",
+        note: "Brighter wheat + stronger sheep/lumber separation.",
+        tileFilter: "saturate(1.2) contrast(1.06)",
+        resources: {
+          ore: { base: "#86a8ce", highlight: "#e8f2ff", shadow: "#3c4f66", ink: "#0f172a" },
+          wheat: { base: "#f4bd1f", highlight: "#ffe682", shadow: "#a85500", ink: "#0f172a" },
+          sheep: { base: "#a3e635", highlight: "#ecfccb", shadow: "#4d7c0f", ink: "#0f172a" },
+          lumber: { base: "#10b981", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
+          brick: { base: "#fb923c", highlight: "#fed7aa", shadow: "#c2410c", ink: "#0f172a" },
+          desert: DESERT_COLORS
+        }
+      },
+      D: {
+        name: "Option D - Slate Ore / Split Greens",
+        note: "Slate ore + brighter sheep vs cooler darker lumber for fast scanning.",
+        tileFilter: "saturate(1.18) contrast(1.04)",
+        resources: {
+          ore: { base: "#94a3b8", highlight: "#dbe4ef", shadow: "#334155", ink: "#0f172a" },
+          wheat: { base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a" },
+          sheep: { base: "#bef264", highlight: "#f0fdb4", shadow: "#65a30d", ink: "#0f172a" },
+          lumber: { base: "#059669", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
+          brick: { base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" },
+          desert: DESERT_COLORS
+        }
+      }
+    };
+
+    const ROW_RESOURCE_ORDER = ["ore", "wheat", "sheep", "lumber", "brick"];
+    const ROW_SAMPLE_NUMBERS = { ore: 10, wheat: 8, sheep: 4, lumber: 11, brick: 6 };
+
+    const BOARD_ROWS = [
+      ["ore", "wheat", "sheep"],
+      ["lumber", "brick", "wheat", "ore"],
+      ["sheep", "lumber", "desert", "brick", "wheat"],
+      ["ore", "sheep", "lumber", "wheat"],
+      ["brick", "sheep", "lumber"]
+    ];
+
+    const BOARD_NUMBERS = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
+
+    function numberToPips(number) {
+      if (number === 2 || number === 12) return "•";
+      if (number === 3 || number === 11) return "••";
+      if (number === 4 || number === 10) return "•••";
+      if (number === 5 || number === 9) return "••••";
+      if (number === 6 || number === 8) return "•••••";
+      return "";
+    }
+
+    function numberTokenMarkup(number) {
+      if (!number) {
+        return "";
+      }
+
+      const hotColor = (number === 6 || number === 8) ? "#dc2626" : "#000000";
+      const pips = numberToPips(number);
+      return `
+<svg class="token-overlay" viewBox="0 0 346 400" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="tokenShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#0f172a" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <g filter="url(#tokenShadow)">
+    <rect x="116" y="263" width="114" height="114" rx="8" ry="8" fill="#f1f5f9" />
+  </g>
+  <text
+    x="173"
+    y="313"
+    text-anchor="middle"
+    font-family="Outfit, sans-serif"
+    font-size="80"
+    font-weight="900"
+    fill="${hotColor}"
+    dominant-baseline="middle"
+  >${number}</text>
+  <text
+    x="173"
+    y="357"
+    text-anchor="middle"
+    font-family="Outfit, sans-serif"
+    font-size="36"
+    font-weight="700"
+    letter-spacing="-0.4"
+    fill="${hotColor}"
+    dominant-baseline="middle"
+  >${pips}</text>
+</svg>`;
+    }
+
+    function tileSvg(colors, key) {
+      const bodyLiftId = `${key}-body-lift`;
+      const bodyShadeId = `${key}-body-shade`;
+      const ringOuterId = `${key}-ring-outer`;
+      const ringInnerId = `${key}-ring-inner`;
+      const vignetteId = `${key}-vignette`;
+
+      return `
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400" role="img" aria-label="tile">
+  <defs>
+    <path id="${key}-inner-hex" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+    <path id="${key}-split-hex" d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z" />
+    <clipPath id="${key}-inner-clip" clipPathUnits="userSpaceOnUse">
+      <use href="#${key}-inner-hex" />
+    </clipPath>
+
+    <radialGradient id="${bodyLiftId}" gradientUnits="userSpaceOnUse" cx="140" cy="120" r="220">
+      <stop offset="0" stop-color="${colors.highlight}" stop-opacity="0.22" />
+      <stop offset="0.45" stop-color="${colors.highlight}" stop-opacity="0.10" />
+      <stop offset="1" stop-color="${colors.highlight}" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="${bodyShadeId}" gradientUnits="userSpaceOnUse" cx="224" cy="250" r="260">
+      <stop offset="0" stop-color="${colors.shadow}" stop-opacity="0" />
+      <stop offset="0.65" stop-color="${colors.shadow}" stop-opacity="0.09" />
+      <stop offset="1" stop-color="${colors.shadow}" stop-opacity="0.20" />
+    </radialGradient>
+
+    <linearGradient id="${ringOuterId}" gradientUnits="userSpaceOnUse" x1="226" y1="34" x2="110" y2="366">
+      <stop offset="0" stop-color="${colors.highlight}" stop-opacity="1" />
+      <stop offset="0.24" stop-color="${colors.base}" stop-opacity="1" />
+      <stop offset="0.56" stop-color="${colors.highlight}" stop-opacity="0.82" />
+      <stop offset="1" stop-color="${colors.shadow}" stop-opacity="0.72" />
+    </linearGradient>
+
+    <linearGradient id="${ringInnerId}" gradientUnits="userSpaceOnUse" x1="216" y1="50" x2="122" y2="350">
+      <stop offset="0" stop-color="${colors.highlight}" stop-opacity="1" />
+      <stop offset="0.30" stop-color="${colors.base}" stop-opacity="1" />
+      <stop offset="0.52" stop-color="${colors.highlight}" stop-opacity="0.78" />
+      <stop offset="1" stop-color="${colors.shadow}" stop-opacity="0.72" />
+    </linearGradient>
+
+    <radialGradient id="${vignetteId}" gradientUnits="userSpaceOnUse" cx="173" cy="226" r="196">
+      <stop offset="0" stop-color="${colors.ink}" stop-opacity="0" />
+      <stop offset="1" stop-color="${colors.ink}" stop-opacity="0.18" />
+    </radialGradient>
+  </defs>
+
+  <path
+    id="tileBorder"
+    fill="${tileBorder}"
+    fill-rule="evenodd"
+    d="M173 0L346 100V300L173 400L0 300V100Z M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z"
+  />
+
+  <g id="tileArt" clip-path="url(#${key}-inner-clip)">
+    <use href="#${key}-inner-hex" fill="${colors.base}" />
+    <use href="#${key}-inner-hex" fill="url(#${bodyLiftId})" />
+    <use href="#${key}-inner-hex" fill="url(#${bodyShadeId})" />
+
+    <path
+      fill="url(#${ringOuterId})"
+      fill-rule="evenodd"
+      d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z"
+    />
+
+    <path
+      fill="url(#${ringInnerId})"
+      fill-rule="evenodd"
+      d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z"
+    />
+
+    <g id="ringSeparators" pointer-events="none">
+      <use href="#${key}-inner-hex" fill="none" stroke="${colors.shadow}" stroke-width="5.2" opacity="0.68" />
+      <use href="#${key}-inner-hex" fill="none" stroke="${colors.highlight}" stroke-width="1.5" opacity="0.3" />
+      <use href="#${key}-split-hex" fill="none" stroke="${colors.shadow}" stroke-width="2" opacity="0.39" />
+      <use href="#${key}-split-hex" fill="none" stroke="${colors.highlight}" stroke-width="1" opacity="0.35" />
+    </g>
+
+    <use href="#${key}-inner-hex" fill="url(#${vignetteId})" />
+  </g>
+</svg>`;
+    }
+
+    function buildBoardTiles() {
+      const rows = [];
+      let numberIndex = 0;
+
+      for (const row of BOARD_ROWS) {
+        const rowTiles = row.map((resourceKey) => {
+          if (resourceKey === "desert") {
+            return { resourceKey, number: null };
+          }
+
+          const number = BOARD_NUMBERS[numberIndex] || null;
+          numberIndex += 1;
+          return { resourceKey, number };
+        });
+
+        rows.push(rowTiles);
+      }
+
+      return rows;
+    }
+
+    const state = {
+      selectedPalette: "D",
+      showNumbers: true,
+      boardRows: buildBoardTiles()
+    };
+
+    function renderRowPreview(palette) {
+      const rowRoot = document.getElementById("row-preview");
+      rowRoot.innerHTML = ROW_RESOURCE_ORDER.map((resourceKey) => {
+        const key = `row-${state.selectedPalette}-${resourceKey}`;
+        const colors = palette.resources[resourceKey];
+        const numberMarkup = state.showNumbers ? numberTokenMarkup(ROW_SAMPLE_NUMBERS[resourceKey]) : "";
+
+        return `
+          <article class="tile-card">
+            <div class="tile-stack" style="--tile-filter:${palette.tileFilter}">
+              ${tileSvg(colors, key)}
+              ${numberMarkup}
+            </div>
+            <p class="tile-label">${resourceKey}</p>
+          </article>`;
+      }).join("");
+    }
+
+    function renderBoardPreview(palette) {
+      const boardRoot = document.getElementById("board-preview");
+      boardRoot.innerHTML = state.boardRows.map((rowTiles) => {
+        const rowClass = `r${rowTiles.length}`;
+
+        const tileMarkup = rowTiles.map((tile, index) => {
+          const key = `board-${state.selectedPalette}-${tile.resourceKey}-${rowClass}-${index}`;
+          const colors = palette.resources[tile.resourceKey] || DESERT_COLORS;
+          const numberMarkup = state.showNumbers ? numberTokenMarkup(tile.number) : "";
+
+          return `
+            <div class="board-tile" style="--tile-filter:${palette.tileFilter}">
+              ${tileSvg(colors, key)}
+              ${numberMarkup}
+            </div>`;
+        }).join("");
+
+        return `<div class="board-row ${rowClass}">${tileMarkup}</div>`;
+      }).join("");
+    }
+
+    function render() {
+      const palette = PALETTES[state.selectedPalette];
+      const note = document.getElementById("palette-note");
+      note.textContent = `${palette.name}. ${palette.note} Number tokens ${state.showNumbers ? "enabled" : "disabled"}.`;
+
+      renderRowPreview(palette);
+      renderBoardPreview(palette);
+    }
+
+    function setup() {
+      const paletteSelect = document.getElementById("palette-select");
+      const showNumbersInput = document.getElementById("show-number-tokens");
+
+      paletteSelect.value = state.selectedPalette;
+      showNumbersInput.checked = state.showNumbers;
+
+      paletteSelect.addEventListener("change", (event) => {
+        state.selectedPalette = event.target.value;
+        render();
+      });
+
+      showNumbersInput.addEventListener("change", (event) => {
+        state.showNumbers = event.target.checked;
+        render();
+      });
+    }
+
+    setup();
+    render();
+  </script>
+</body>
+</html>

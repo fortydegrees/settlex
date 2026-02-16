@@ -73,6 +73,7 @@ export default function Example() {
             maxPositionY={500}
             maxScale={6}
             minScale={0.3}
+            doubleClick={{ mode: "toggle" }}
           >
             <TransformComponent>
               <Board editable={true}/>

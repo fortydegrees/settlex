@@ -752,7 +752,7 @@ export function LobbyPageClient() {
             data: {
               bot: "puffer",
               isBot: true,
-              emoji: "BOT",
+              emoji: "🤖",
               color: "blue",
             },
           }),

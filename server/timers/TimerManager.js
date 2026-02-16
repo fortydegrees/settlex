@@ -276,35 +276,109 @@ export class TimerManager {
     return hasRoll ? ROLL_ANIMATION_BUFFER_MS : 0;
   }
 
+  clearBotDispatch(record, playerID) {
+    const key = String(playerID);
+    if (record.botTimeoutIds?.[key]) {
+      clearTimeout(record.botTimeoutIds[key]);
+      delete record.botTimeoutIds[key];
+    }
+    if (record.botDispatchKeys?.[key]) {
+      delete record.botDispatchKeys[key];
+    }
+  }
+
+  clearAllBotDispatches(record) {
+    if (!record?.botTimeoutIds) {
+      record.botTimeoutIds = {};
+    }
+    if (!record?.botDispatchKeys) {
+      record.botDispatchKeys = {};
+    }
+
+    for (const key of Object.keys(record.botTimeoutIds)) {
+      clearTimeout(record.botTimeoutIds[key]);
+    }
+    record.botTimeoutIds = {};
+    record.botDispatchKeys = {};
+  }
+
+  scheduleBotDispatch(matchID, record, stage, stateID, playerID) {
+    const key = String(playerID);
+    const dispatchKey = `${stateID}:${stage}:${key}`;
+    if (record.botDispatchKeys?.[key] === dispatchKey) {
+      return;
+    }
+
+    if (!record.botTimeoutIds) {
+      record.botTimeoutIds = {};
+    }
+    if (!record.botDispatchKeys) {
+      record.botDispatchKeys = {};
+    }
+
+    if (record.botTimeoutIds[key]) {
+      clearTimeout(record.botTimeoutIds[key]);
+    }
+    record.botDispatchKeys[key] = dispatchKey;
+    record.botTimeoutIds[key] = setTimeout(() => {
+      this.dispatch({ matchID, move: "autoBot", playerID: key });
+    }, this.botMoveDelayMs);
+  }
+
   scheduleBotAction(matchID, state, record, stageKey) {
     if (!this.isBotPlayer || !state) return;
-    const playerID = state.ctx?.currentPlayer;
-    if (playerID == null) return;
 
     const stage = stageKey ?? this.getStageKey(state);
+    const stateID = state._stateID ?? 0;
+
+    if (stage === "preGame:waiting") {
+      const readyByPlayerId = state.G?.preGame?.readyByPlayerId ?? {};
+      const players = state.G?.core?.players ?? state.ctx?.playOrder ?? [];
+      const targetPlayerIds = players
+        .map((playerID) => String(playerID))
+        .filter(
+          (playerID) =>
+            this.isBotPlayer({ matchID, playerID, state }) &&
+            !readyByPlayerId[playerID]
+        );
+
+      if (targetPlayerIds.length === 0) {
+        this.clearAllBotDispatches(record);
+        return;
+      }
+
+      const target = new Set(targetPlayerIds);
+      for (const scheduledPlayerId of Object.keys(record.botDispatchKeys ?? {})) {
+        if (!target.has(scheduledPlayerId)) {
+          this.clearBotDispatch(record, scheduledPlayerId);
+        }
+      }
+      for (const targetPlayerId of targetPlayerIds) {
+        this.scheduleBotDispatch(
+          matchID,
+          record,
+          stage,
+          stateID,
+          targetPlayerId
+        );
+      }
+      return;
+    }
+
+    const playerID = state.ctx?.currentPlayer;
+    if (playerID == null) {
+      this.clearAllBotDispatches(record);
+      return;
+    }
+
     const isBot = this.isBotPlayer({ matchID, playerID, state });
     const isBotStage = BOT_ACTION_STAGE_KEYS.has(stage);
     if (!isBot || !isBotStage) {
-      if (record.botTimeoutId) {
-        clearTimeout(record.botTimeoutId);
-        record.botTimeoutId = undefined;
-      }
-      record.botDispatchKey = undefined;
+      this.clearAllBotDispatches(record);
       return;
     }
 
-    const stateID = state._stateID ?? 0;
-    const dispatchKey = `${stateID}:${stage}:${playerID}`;
-    if (record.botDispatchKey === dispatchKey) {
-      return;
-    }
-
-    if (record.botTimeoutId) {
-      clearTimeout(record.botTimeoutId);
-    }
-    record.botDispatchKey = dispatchKey;
-    record.botTimeoutId = setTimeout(() => {
-      this.dispatch({ matchID, move: "autoBot", playerID });
-    }, this.botMoveDelayMs);
+    this.clearAllBotDispatches(record);
+    this.scheduleBotDispatch(matchID, record, stage, stateID, playerID);
   }
 }
