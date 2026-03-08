@@ -6,6 +6,7 @@ import {
   SQRT3,
 } from "./utils/coordinates";
 import { Piece } from "./Piece";
+import { getClassicSvgPath, getThemedSvgPath } from "./theme/themes";
 
 export function ActionNode({
   nodeId,
@@ -20,6 +21,7 @@ export function ActionNode({
   piece,
   buildingType,
   buildingColor,
+  themeId,
 }) {
   const [centerX, centerY] = center;
   const w = SQRT3 * size;
@@ -36,6 +38,8 @@ export function ActionNode({
   const isHovered = hoveredNode === nodeId;
   const isNodeType = type === "node";
   const isCity = buildingType === "city";
+  const buildingFile =
+    buildingType && buildingColor ? `${buildingType}_${buildingColor}.svg` : null;
 
   const gradientClass = isHovered && isNodeType
     ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
@@ -66,7 +70,8 @@ export function ActionNode({
       {isHovered && (
         isNodeType ? (
           <Piece
-            buildingSVG={`/svgs/${buildingType}_${buildingColor}.svg`}
+            buildingSVG={getThemedSvgPath(themeId, buildingFile)}
+            buildingSVGFallback={getClassicSvgPath(buildingFile)}
             size={size * 0.8}
             left={x}
             top={y}

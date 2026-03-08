@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  getBoardViewportScale,
   getCardAnimationConfig,
   getDistributionTimings,
+  getTileCardStartPosition,
   getRandomizedOffsets,
   scheduleResourceCues
 } from "../../effects/resourceDistribution";
@@ -35,6 +37,22 @@ describe("resourceDistribution cues", () => {
     expect(config.from.y).toBe(17);
     expect(config.travel.x).toBe(100);
     expect(config.travel.y).toBe(200);
+  });
+
+  it("supports board-space scaling and normalizes to HUD scale during travel", () => {
+    const config = getCardAnimationConfig({
+      startX: 10,
+      startY: 20,
+      endX: 100,
+      endY: 200,
+      scaleMultiplier: 2,
+      endScale: 1
+    });
+
+    expect(config.from.scale).toBeCloseTo(0.4, 5);
+    expect(config.pop.scale).toBeCloseTo(2.3, 5);
+    expect(config.settle.scale).toBe(2);
+    expect(config.travel.scale).toBe(1);
   });
 
   it("computes jitter offsets from provided random", () => {
@@ -75,5 +93,26 @@ describe("resourceDistribution cues", () => {
     });
 
     expect(timings.travelCueAt).toBeCloseTo(timings.travelStart - 0.02, 5);
+  });
+
+  it("converts tile start position into viewport space with zoom scale", () => {
+    const boardRect = { left: 10, top: 20, width: 2000 };
+    const layoutContainerWidth = 1000;
+    const scale = getBoardViewportScale({
+      boardRect,
+      layoutContainerWidth
+    });
+    const { startX, startY } = getTileCardStartPosition({
+      boardRect,
+      tileX: 300,
+      tileY: 400,
+      size: 100,
+      cardWidth: 50,
+      scale
+    });
+
+    expect(scale).toBe(2);
+    expect(startX).toBe(585);
+    expect(startY).toBe(620);
   });
 });

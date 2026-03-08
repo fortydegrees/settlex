@@ -1,4 +1,4 @@
-const UI_PLAYER_COLORS = ["red", "blue", "green", "orange"];
+export const UI_PLAYER_COLORS = ["red", "blue", "green", "orange"];
 
 export function buildPlayerViewMap(core) {
   const map = {};

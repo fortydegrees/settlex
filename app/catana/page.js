@@ -17,6 +17,7 @@ const CatanClient = Client({
   game: Catan,
   board: GameScreenWithEffects,
   multiplayer: SocketIO({ server: "localhost:8000" }),
+  debug: false,
 });
 
 const Page = () => {

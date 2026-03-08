@@ -3,15 +3,22 @@ import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { getBadgeClasses } from "./CardStackStyles";
-import { RESOURCE_ICON_SVGS } from "../types";
 import React, { useMemo } from "react";
 import {
   ForwardIcon,
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
-import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, getPlayableDevCardCounts, ResourceType, buildableNodes, buildableEdges } from "@settlex/game-core";
+import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, getPlayableDevCardCounts, buildableNodes, buildableEdges } from "@settlex/game-core";
 import { getMaritimeTradeRateIfTradable } from "../utils/trade";
+import {
+  RESOURCE_ICON_FILES_BY_RESOURCE,
+  getClassicResourceIconPath,
+  getClassicSvgPath,
+  getResourceIconPath,
+  getThemedSvgPath,
+  handleThemeImageError,
+} from "../theme/themes";
 
 const SHOW_STATUS_TEXT = true;
 
@@ -23,12 +30,20 @@ const formatTimer = (ms) => {
   return `${minutes}:${seconds}`;
 };
 
-export const CardIcon = ({ resourceCount, resource, player, onResourceClick }) => {
+export const CardIcon = ({
+  resourceCount,
+  resource,
+  player,
+  onResourceClick,
+  themeId,
+}) => {
   const handleClick = () => {
     if (onResourceClick) {
       onResourceClick(resource);
     }
   };
+  const iconSrc = getResourceIconPath(themeId, resource);
+  const iconFallback = getClassicResourceIconPath(resource);
 
   return (
     <div
@@ -37,28 +52,16 @@ export const CardIcon = ({ resourceCount, resource, player, onResourceClick }) =
       onClick={onResourceClick ? handleClick : undefined}
       
     >
-      <div className="w-6 select-none text-white mr-1 text-3xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+      <div className="w-7 text-center leading-none select-none text-white mr-1 text-3xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
         {resourceCount}
       </div>
-      {resource === ResourceType.BRICK || resource === ResourceType.ORE ? (
-        <img
-          src={RESOURCE_ICON_SVGS[resource]}
-          className="h-6"
-          draggable={false}
-        />
-      ) : resource == ResourceType.SHEEP ? (
-        <img
-          src={RESOURCE_ICON_SVGS[resource]}
-          className="h-7"
-          draggable={false}
-        />
-      ) : (
-        <img
-          src={RESOURCE_ICON_SVGS[resource]}
-          className="h-8"
-          draggable={false}
-        />
-      )}
+      <img
+        src={iconSrc}
+        alt=""
+        className="h-10 w-10 object-contain"
+        draggable={false}
+        onError={(event) => handleThemeImageError(event, iconFallback)}
+      />
     </div>
   );
 };
@@ -73,7 +76,8 @@ export const PlayerActionContainer = ({
   gameStatus,
   canRoll,
   canEnd,
-  timerMs
+  timerMs,
+  themeId,
 }) => {
 
   
@@ -117,7 +121,8 @@ export const PlayerActionContainer = ({
     {
       name: "trade",
       action: onTradeClick, // Opens the modal
-      img: "/svgs/icon_trade.svg", // Placeholder icon for trade, maybe use a custom one later
+      img: getThemedSvgPath(themeId, "icon_trade.svg"), // Placeholder icon for trade, maybe use a custom one later
+      fallbackImg: getClassicSvgPath("icon_trade.svg"),
       count: 0,
       enabled: ctx.currentPlayer === player.id && ctx.phase === 'main', // Only enable trade during main phase & turn
       style: null, 
@@ -125,7 +130,8 @@ export const PlayerActionContainer = ({
     {
       name: "road",
       action: () => setPlayerAction("placeRoad"),
-      img: "/svgs/road_red.svg",
+      img: getThemedSvgPath(themeId, "road_red.svg"),
+      fallbackImg: getClassicSvgPath("road_red.svg"),
       count: player.roadsRemaining,
       enabled: false,
       style: { transform: "rotate(90deg) scale(0.9)" },
@@ -133,7 +139,8 @@ export const PlayerActionContainer = ({
     {
       name: "settlement",
       action: () => setPlayerAction("placeSettlement"),
-      img: "/svgs/settlement_red.svg",
+      img: getThemedSvgPath(themeId, "settlement_red.svg"),
+      fallbackImg: getClassicSvgPath("settlement_red.svg"),
       count: player.settlementsRemaining,
       enabled: false,
       style: null,
@@ -141,7 +148,8 @@ export const PlayerActionContainer = ({
     {
       name: "city",
       action: () => setPlayerAction("placeCity"),
-      img: "/svgs/city_red.svg",
+      img: getThemedSvgPath(themeId, "city_red.svg"),
+      fallbackImg: getClassicSvgPath("city_red.svg"),
       count: player.citiesRemaining,
       enabled: false,
       style: null,
@@ -149,7 +157,8 @@ export const PlayerActionContainer = ({
     {
       name: "devCard",
       action: () => moves.buyDevCard(),
-      img: "/svgs/icon_devcard.svg",
+      img: getThemedSvgPath(themeId, "icon_devcard.svg"),
+      fallbackImg: getClassicSvgPath("icon_devcard.svg"),
       count: 0,
       enabled: false,
       style: null,
@@ -277,7 +286,7 @@ export const PlayerActionContainer = ({
             )}
             </Dock>
             <div className="flex self-end mb-4">
-              {Object.keys(RESOURCE_ICON_SVGS).map((resource) => {
+              {Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE).map((resource) => {
                 const canQuickTrade = canQuickTradeResource(resource);
                 return (
                   <CardIcon
@@ -287,6 +296,7 @@ export const PlayerActionContainer = ({
                     //TODO: change this for more players:
                     player={player.id}
                     onResourceClick={canQuickTrade ? handleResourceClick : null}
+                    themeId={themeId}
                   />
                 );
               })}

@@ -1,6 +1,11 @@
-import { RESOURCE_ICON_SVGS, ResourceType } from "./types";
+import { ResourceType } from "./types";
+import {
+  getClassicResourceIconPath,
+  getResourceIconPath,
+  handleThemeImageError,
+} from "./theme/themes";
 import {  animated } from "@react-spring/web";
-export function Card({ resource, style }) {
+export function Card({ resource, style, themeId }) {
   var bgColor;
   var margin;
   switch (resource) {
@@ -35,9 +40,12 @@ export function Card({ resource, style }) {
       style={{ ...style, backgroundColor: bgColor }}
     >
       <img
-        src={RESOURCE_ICON_SVGS[resource]}
+        src={getResourceIconPath(themeId, resource)}
         className={margin}
         draggable={false}
+        onError={(event) =>
+          handleThemeImageError(event, getClassicResourceIconPath(resource))
+        }
       />
     </animated.div>
   );

@@ -15,41 +15,111 @@ describe("formatLogEntry", () => {
       name: "Bren"
     });
     expect(
-      tokens.some(
-        (token) =>
-          token.kind === "resource" &&
-          token.resource === "Ore" &&
-          token.count === 2
+      tokens.filter(
+        (token) => token.kind === "resource" && token.resource === "Ore"
       )
-    ).toBe(true);
+    ).toHaveLength(2);
+    expect(
+      tokens.filter(
+        (token) => token.kind === "resource" && token.resource === "Wheat"
+      )
+    ).toHaveLength(1);
+    expect(
+      tokens.some((token) => token.kind === "text" && token.text === ", ")
+    ).toBe(false);
   });
 
-  it("skips forced roll/endTurn markers", () => {
+  it("supports emoji + color metadata for player tokens", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "roll",
+        actorId: "1",
+        data: { dice: [3, 4] }
+      },
+      {
+        "1": { name: "dp", emoji: "🦊", color: "blue" }
+      }
+    );
+    expect(tokens[0]).toMatchObject({
+      kind: "player",
+      id: "1",
+      name: "dp",
+      emoji: "🦊",
+      color: "blue"
+    });
+  });
+
+  it("expands trade resources into icon-per-card tokens", () => {
+    const tokens = formatLogEntry({
+      type: "trade:maritime",
+      actorId: "0",
+      data: {
+        give: { Wood: 2, Brick: 1 },
+        receive: { Ore: 1 }
+      }
+    });
+    expect(
+      tokens.filter(
+        (token) => token.kind === "resource" && token.resource === "Wood"
+      )
+    ).toHaveLength(2);
+    expect(
+      tokens.filter(
+        (token) => token.kind === "resource" && token.resource === "Brick"
+      )
+    ).toHaveLength(1);
+    expect(
+      tokens.filter(
+        (token) => token.kind === "resource" && token.resource === "Ore"
+      )
+    ).toHaveLength(1);
+    expect(
+      tokens.some((token) => token.kind === "text" && token.text === ", ")
+    ).toBe(false);
+  });
+
+  it("skips forced marker entries", () => {
     expect(formatLogEntry({ type: "forced:roll" })).toEqual([]);
     expect(formatLogEntry({ type: "forced:endTurn" })).toEqual([]);
+    expect(formatLogEntry({ type: "forced:placeSettlement" })).toEqual([]);
+    expect(formatLogEntry({ type: "forced:placeRoad" })).toEqual([]);
+    expect(formatLogEntry({ type: "forced:moveRobber" })).toEqual([]);
+    expect(formatLogEntry({ type: "forced:discardSelection" })).toEqual([]);
+    expect(formatLogEntry({ type: "forced:devCardResolution" })).toEqual([]);
   });
 
-  it("does not append auto tag for rolls", () => {
+  it("does not append timeout tag for rolls", () => {
     const tokens = formatLogEntry({
       type: "roll",
       actorId: "0",
       forced: true,
       data: { dice: [1, 2], total: 3 }
     });
-    expect(tokens.some((token) => token.kind === "text" && token.text === " (auto)")).toBe(
+    expect(tokens.some((token) => token.kind === "text" && token.text === " (timeout)")).toBe(
       false
     );
   });
 
-  it("does not append auto tag for resource gains", () => {
+  it("does not append timeout tag for resource gains", () => {
     const tokens = formatLogEntry({
       type: "resource:gain",
       actorId: "0",
       forced: true,
       data: { resources: { Wheat: 1 } }
     });
-    expect(tokens.some((token) => token.kind === "text" && token.text === " (auto)")).toBe(
+    expect(tokens.some((token) => token.kind === "text" && token.text === " (timeout)")).toBe(
       false
+    );
+  });
+
+  it("appends timeout tag for forced player actions", () => {
+    const tokens = formatLogEntry({
+      type: "build:settlement",
+      actorId: "0",
+      forced: true
+    });
+    expect(tokens.some((token) => token.kind === "text" && token.text === " (timeout)")).toBe(
+      true
     );
   });
 
@@ -113,6 +183,22 @@ describe("formatLogEntry", () => {
     ).toBe(true);
     expect(
       tokens.some((t) => t.kind === "player" && t.id === "0")
+    ).toBe(true);
+  });
+
+  it("formats robber skip entries", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "robber:skip",
+        actorId: "1"
+      },
+      { "1": "Bren" }
+    );
+    expect(tokens[0]).toMatchObject({ kind: "player", id: "1", name: "Bren" });
+    expect(
+      tokens.some(
+        (t) => t.kind === "text" && t.text.includes("no valid tile")
+      )
     ).toBe(true);
   });
 });
