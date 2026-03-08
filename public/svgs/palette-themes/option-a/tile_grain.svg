@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400" role="img" aria-label="tile option-a-wheat">
+  <defs>
+    <path id="option-a-wheat-inner-hex" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+    <path id="option-a-wheat-split-hex" d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z" />
+    <clipPath id="option-a-wheat-inner-clip" clipPathUnits="userSpaceOnUse">
+      <use href="#option-a-wheat-inner-hex" />
+    </clipPath>
+
+    <radialGradient id="option-a-wheat-body-lift" gradientUnits="userSpaceOnUse" cx="140" cy="120" r="220">
+      <stop offset="0" stop-color="#fef08a" stop-opacity="0.374" />
+      <stop offset="0.45" stop-color="#fef08a" stop-opacity="0.17" />
+      <stop offset="1" stop-color="#fef08a" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="option-a-wheat-body-shade" gradientUnits="userSpaceOnUse" cx="224" cy="250" r="260">
+      <stop offset="0" stop-color="#f59e0b" stop-opacity="0" />
+      <stop offset="0.65" stop-color="#f59e0b" stop-opacity="0.153" />
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0.34" />
+    </radialGradient>
+
+    <linearGradient id="option-a-wheat-ring-outer" gradientUnits="userSpaceOnUse" x1="173" y1="28" x2="173" y2="372">
+      <stop offset="0" stop-color="#fef08a" stop-opacity="0.72" />
+      <stop offset="0.24" stop-color="#fcd34d" stop-opacity="0.72" />
+      <stop offset="0.56" stop-color="#fef08a" stop-opacity="0.59" />
+      <stop offset="1" stop-color="#f6a413" stop-opacity="0.681" />
+    </linearGradient>
+
+    <linearGradient id="option-a-wheat-ring-inner" gradientUnits="userSpaceOnUse" x1="173" y1="44" x2="173" y2="356">
+      <stop offset="0" stop-color="#fef08a" stop-opacity="0.72" />
+      <stop offset="0.30" stop-color="#fcd34d" stop-opacity="0.72" />
+      <stop offset="0.52" stop-color="#fef08a" stop-opacity="0.562" />
+      <stop offset="1" stop-color="#f6a413" stop-opacity="0.681" />
+    </linearGradient>
+
+    <radialGradient id="option-a-wheat-vignette" gradientUnits="userSpaceOnUse" cx="173" cy="226" r="196">
+      <stop offset="0" stop-color="#b45309" stop-opacity="0" />
+      <stop offset="1" stop-color="#b45309" stop-opacity="0.2" />
+    </radialGradient>
+  </defs>
+
+  <path fill="#fbbf24" fill-rule="evenodd" d="M173 0L346 100V300L173 400L0 300V100Z M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z" />
+
+  <g clip-path="url(#option-a-wheat-inner-clip)">
+    <use href="#option-a-wheat-inner-hex" fill="#fcd34d" />
+    <use href="#option-a-wheat-inner-hex" fill="url(#option-a-wheat-body-lift)" />
+    <use href="#option-a-wheat-inner-hex" fill="url(#option-a-wheat-body-shade)" />
+
+    <path fill="url(#option-a-wheat-ring-outer)" fill-rule="evenodd" d="M173 15L333.2 107.5V292.5L173 385L12.8 292.5V107.5Z M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z" />
+    <path fill="url(#option-a-wheat-ring-inner)" fill-rule="evenodd" d="M173 29L321 114.4V285.6L173 371L25 285.6V114.4Z M173 33.5L317 116.7V283.3L173 366.5L29 283.3V116.7Z" />
+
+    <g pointer-events="none">
+      <use href="#option-a-wheat-inner-hex" fill="none" stroke="#f6a412" stroke-width="5.2" opacity="0.904" />
+      <use href="#option-a-wheat-inner-hex" fill="none" stroke="#fef08a" stroke-width="1.5" opacity="0.3" />
+      <use href="#option-a-wheat-split-hex" fill="none" stroke="#f6a412" stroke-width="2" opacity="0.53" />
+      <use href="#option-a-wheat-split-hex" fill="none" stroke="#fef08a" stroke-width="1" opacity="0.35" />
+    </g>
+
+    <use href="#option-a-wheat-inner-hex" fill="url(#option-a-wheat-vignette)" />
+  </g>
+</svg>

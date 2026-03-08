@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="resource icon template 256">
+  <!--
+    Canonical resource icon template.
+    - Keep art within the safe box (24..232) for cross-surface consistency.
+    - Optional tighter box (32..224) for chunky/iconic marks.
+    - Export final icons with viewBox="0 0 256 256" and no fixed width/height.
+  -->
+  <g id="guides" opacity="0.55">
+    <rect x="0.5" y="0.5" width="255" height="255" fill="none" stroke="#334155" stroke-width="1" />
+    <rect x="24" y="24" width="208" height="208" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6 4" />
+    <rect x="32" y="32" width="192" height="192" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="3 3" />
+    <line x1="128" y1="0" x2="128" y2="256" stroke="#475569" stroke-width="1" />
+    <line x1="0" y1="128" x2="256" y2="128" stroke="#475569" stroke-width="1" />
+    <circle cx="128" cy="128" r="2.5" fill="#475569" />
+  </g>
+
+  <g id="placeholder-icon" opacity="0.9">
+    <!-- Replace this with final icon artwork -->
+    <circle cx="128" cy="128" r="72" fill="none" stroke="#94a3b8" stroke-width="8" />
+    <path d="M128 72 L160 128 L128 184 L96 128 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="6" />
+  </g>
+</svg>

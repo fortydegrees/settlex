@@ -100,11 +100,13 @@ export const calculateBounds = (
   );
 
 
+  const zoomMultiplier = newScale < 1 ? 1 + (1 - newScale) : newScale;
+
   const bounds3 = {
-    minPositionX: contextInstance.props.minPositionX  * newScale,
-    minPositionY: contextInstance.props.minPositionY * newScale,
-    maxPositionX: contextInstance.props.maxPositionX * (newScale < 1 ? (1 + (1- newScale)) : newScale),
-    maxPositionY: contextInstance.props.maxPositionY * (newScale < 1 ? (1 + (1- newScale)) : newScale)
+    minPositionX: contextInstance.props.minPositionX * zoomMultiplier,
+    minPositionY: contextInstance.props.minPositionY * zoomMultiplier,
+    maxPositionX: contextInstance.props.maxPositionX * zoomMultiplier,
+    maxPositionY: contextInstance.props.maxPositionY * zoomMultiplier
   }
 
   return bounds3;

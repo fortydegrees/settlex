@@ -11,31 +11,47 @@ export const STATUS_TEXT = {
 };
 
 const textToken = (text) => ({ kind: "text", text });
-const playerToken = (id, nameMap) => ({
-  kind: "player",
-  id,
-  name: nameMap?.[id] ?? (id === "system" ? "System" : `Player ${id}`)
-});
+const resolvePlayerMeta = (id, playerMap = {}) => {
+  const value = playerMap?.[id];
+  if (typeof value === "string") {
+    return { name: value };
+  }
+  if (value && typeof value === "object") {
+    return value;
+  }
+  return {};
+};
+
+const playerToken = (id, playerMap) => {
+  const meta = resolvePlayerMeta(id, playerMap);
+  return {
+    kind: "player",
+    id,
+    name: meta.name ?? (id === "system" ? "System" : `Player ${id}`),
+    emoji: meta.emoji ?? null,
+    color: meta.color ?? null
+  };
+};
 
 const resourceTokensFromMap = (resourceMap) => {
   if (!resourceMap) return [];
   const entries = Object.entries(resourceMap);
   if (entries.length === 0) return [];
   const tokens = [];
-  entries.forEach(([resource, count], index) => {
-    if (index > 0) {
-      tokens.push(textToken(", "));
+  entries.forEach(([resource, count]) => {
+    const copies = Math.max(0, Math.floor(Number(count) || 0));
+    for (let i = 0; i < copies; i += 1) {
+      tokens.push({ kind: "resource", resource });
     }
-    tokens.push({ kind: "resource", resource, count });
   });
   return tokens;
 };
 
-export function formatLogEntry(entry, nameMap = {}) {
+export function formatLogEntry(entry, playerMap = {}) {
   if (!entry) return [];
   const { type, actorId, data = {}, forced } = entry;
 
-  if (type === "forced:roll" || type === "forced:endTurn") {
+  if (typeof type === "string" && type.startsWith("forced:")) {
     return [];
   }
 
@@ -53,7 +69,7 @@ export function formatLogEntry(entry, nameMap = {}) {
 
   const tokens = [];
   if (actorId != null) {
-    tokens.push(playerToken(actorId, nameMap));
+    tokens.push(playerToken(actorId, playerMap));
   }
 
   switch (type) {
@@ -110,11 +126,15 @@ export function formatLogEntry(entry, nameMap = {}) {
       tokens.push(textToken(" moved the robber"));
       break;
     }
+    case "robber:skip": {
+      tokens.push(textToken(" had no valid tile for robber movement"));
+      break;
+    }
     case "robber:steal": {
       tokens.push(textToken(" stole a resource"));
       if (data.victimId != null) {
         tokens.push(textToken(" from "));
-        tokens.push(playerToken(data.victimId, nameMap));
+        tokens.push(playerToken(data.victimId, playerMap));
       }
       break;
     }
@@ -122,7 +142,7 @@ export function formatLogEntry(entry, nameMap = {}) {
       tokens.push(textToken(" claimed Longest Road"));
       if (data.previousOwnerId != null && data.previousOwnerId !== actorId) {
         tokens.push(textToken(" from "));
-        tokens.push(playerToken(String(data.previousOwnerId), nameMap));
+        tokens.push(playerToken(String(data.previousOwnerId), playerMap));
       }
       break;
     }
@@ -130,24 +150,16 @@ export function formatLogEntry(entry, nameMap = {}) {
       tokens.push(textToken(" claimed Largest Army"));
       if (data.previousOwnerId != null && data.previousOwnerId !== actorId) {
         tokens.push(textToken(" from "));
-        tokens.push(playerToken(String(data.previousOwnerId), nameMap));
+        tokens.push(playerToken(String(data.previousOwnerId), playerMap));
       }
       break;
     }
     case "game:over": {
       const winnerId = data.winnerId ?? actorId;
       if (winnerId != null && winnerId !== actorId) {
-        tokens.push(playerToken(String(winnerId), nameMap));
+        tokens.push(playerToken(String(winnerId), playerMap));
       }
       tokens.push(textToken(" won the game"));
-      break;
-    }
-    case "forced:discardSelection": {
-      const targetId = data.playerId ?? data.playerID;
-      tokens.push(textToken(" auto-selected discard for "));
-      if (targetId != null) {
-        tokens.push(playerToken(String(targetId), nameMap));
-      }
       break;
     }
     default: {
@@ -157,7 +169,7 @@ export function formatLogEntry(entry, nameMap = {}) {
   }
 
   if (forced && type !== "roll" && type !== "turn:end" && type !== "resource:gain") {
-    tokens.push(textToken(" (auto)"));
+    tokens.push(textToken(" (timeout)"));
   }
 
   return tokens;

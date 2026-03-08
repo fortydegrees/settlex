@@ -9,10 +9,17 @@ import {
 } from "../utils/coordinates";
 import { isDocumentHidden } from "../utils/visibility";
 import { PLACE_PIECE_DEFAULT_TUNING } from "./placePieceDefaults";
+import {
+  getBackgroundImageWithFallback,
+  getThemedSvgPath,
+  isRasterAssetPath
+} from "../theme/themes";
 
 const PIECE_SCALE = 0.8;
 const PIECE_OFFSET_X = 0.5;
 const PIECE_OFFSET_Y = 0.63;
+const RASTER_SETTLEMENT_SCALE = 0.88;
+const RASTER_SETTLEMENT_Y_LIFT_PX = 5;
 
 const SHADOW_GRADIENT =
   "radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0) 70%)";
@@ -34,31 +41,45 @@ function createRing({ size, x, y, gradient, zIndex }) {
   return ring;
 }
 
-function createSettlementEl({ size, x, y, color }) {
+function createSettlementEl({ size, x, y, color, themeId }) {
+  const pieceFile = `settlement_${color}.svg`;
+  const themedPiecePath = getThemedSvgPath(themeId, pieceFile);
+  const usesRasterAsset = isRasterAssetPath(themedPiecePath);
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
   el.style.left = `${x - size * PIECE_OFFSET_X}px`;
-  el.style.top = `${y - size * PIECE_OFFSET_Y}px`;
-  el.style.backgroundImage = `url('/svgs/settlement_${color}.svg')`;
+  el.style.top = `${y - size * (usesRasterAsset ? 0.59 : PIECE_OFFSET_Y) - (usesRasterAsset ? RASTER_SETTLEMENT_Y_LIFT_PX : 0)}px`;
+  el.style.backgroundImage = getBackgroundImageWithFallback(
+    themeId,
+    pieceFile
+  );
   el.style.backgroundRepeat = "no-repeat";
-  el.style.backgroundSize = "cover";
+  el.style.backgroundSize = usesRasterAsset ? "contain" : "cover";
+  el.style.backgroundPosition = usesRasterAsset ? "center bottom" : "center";
   el.style.pointerEvents = "none";
   el.style.zIndex = "1001";
   return el;
 }
 
-function createCityEl({ size, x, y, color }) {
+function createCityEl({ size, x, y, color, themeId }) {
+  const pieceFile = `city_${color}.svg`;
+  const themedPiecePath = getThemedSvgPath(themeId, pieceFile);
+  const usesRasterAsset = isRasterAssetPath(themedPiecePath);
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
   el.style.left = `${x - size * PIECE_OFFSET_X}px`;
-  el.style.top = `${y - size * PIECE_OFFSET_Y}px`;
-  el.style.backgroundImage = `url('/svgs/city_${color}.svg')`;
+  el.style.top = `${y - size * (usesRasterAsset ? 0.59 : PIECE_OFFSET_Y)}px`;
+  el.style.backgroundImage = getBackgroundImageWithFallback(
+    themeId,
+    pieceFile
+  );
   el.style.backgroundRepeat = "no-repeat";
-  el.style.backgroundSize = "cover";
+  el.style.backgroundSize = usesRasterAsset ? "contain" : "cover";
+  el.style.backgroundPosition = usesRasterAsset ? "center bottom" : "center";
   el.style.pointerEvents = "none";
   el.style.zIndex = "1001";
   return el;
@@ -76,12 +97,15 @@ function createRoadWrapper({ size, x, y }) {
   return el;
 }
 
-function createRoadInner({ size, transform, color }) {
+function createRoadInner({ size, transform, color, themeId }) {
   const el = document.createElement("div");
   el.style.width = `${size}px`;
   el.style.height = `${size * 0.2}px`;
   el.style.transform = transform;
-  el.style.backgroundImage = `url('/svgs/road_${color}.svg')`;
+  el.style.backgroundImage = getBackgroundImageWithFallback(
+    themeId,
+    `road_${color}.svg`
+  );
   el.style.backgroundRepeat = "no-repeat";
   el.style.backgroundSize = "contain";
   el.style.pointerEvents = "none";
@@ -206,7 +230,8 @@ export function createPiecePlacementRunner({
   getTiles,
   getPlayerColor,
   emitCue,
-  useBoardSpace = false
+  useBoardSpace = false,
+  themeId
 } = {}) {
   return function run(payload) {
     if (typeof document === "undefined") return;
@@ -248,11 +273,22 @@ export function createPiecePlacementRunner({
       });
       if (!placement) return;
 
-      const pieceSize = size * PIECE_SCALE * scale;
+      const settlementFile = `settlement_${color}.svg`;
+      const settlementPath = getThemedSvgPath(themeId, settlementFile);
+      const settlementScale = isRasterAssetPath(settlementPath)
+        ? RASTER_SETTLEMENT_SCALE
+        : 1;
+      const pieceSize = size * PIECE_SCALE * scale * settlementScale;
       const x = offsetLeft + placement.x * scale;
       const y = offsetTop + placement.y * scale;
 
-      const pieceEl = createSettlementEl({ size: pieceSize, x, y, color });
+      const pieceEl = createSettlementEl({
+        size: pieceSize,
+        x,
+        y,
+        color,
+        themeId
+      });
       const shadowEl = createRing({
         size: pieceSize * tuning.shadowSizeSettlement,
         x,
@@ -297,7 +333,7 @@ export function createPiecePlacementRunner({
       const x = offsetLeft + placement.x * scale;
       const y = offsetTop + placement.y * scale;
 
-      const pieceEl = createCityEl({ size: pieceSize, x, y, color });
+      const pieceEl = createCityEl({ size: pieceSize, x, y, color, themeId });
       const shadowEl = createRing({
         size: pieceSize * tuning.shadowSizeSettlement,
         x,
@@ -355,7 +391,8 @@ export function createPiecePlacementRunner({
           placement.direction,
           roadSize
         ),
-        color
+        color,
+        themeId
       });
       const shadowEl = createRing({
         size: roadSize * tuning.shadowSizeRoad,

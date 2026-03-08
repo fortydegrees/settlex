@@ -31,4 +31,15 @@ describe("render performance guards", () => {
     expect(contents).toMatch(/useMemo/);
     expect(contents).toContain("formattedEntries");
   });
+
+  it("memoizes GameLogPanel component", () => {
+    const contents = readCatanaFile("components/GameLogPanel.js");
+    expect(contents).toContain("React.memo");
+  });
+
+  it("builds log player colors from stable maps instead of full player view objects", () => {
+    const contents = readCatanaFile("GameScreen.js");
+    expect(contents).toContain("seatColorMap");
+    expect(contents).not.toContain("playerViewMap[id]?.color");
+  });
 });

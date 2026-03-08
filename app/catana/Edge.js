@@ -3,14 +3,16 @@ import React from "react";
 import { tilePixelVector, getEdgeTransform } from "./utils/coordinates";
 import useWindowSize from "./utils/useWindowSize";
 import { ActionNode } from "./ActionNode";
+import { getBackgroundImageWithFallback } from "./theme/themes";
 
-function Road({ color, size, tileX, tileY, transform }) {
+function Road({ color, size, tileX, tileY, transform, themeId }) {
+  const roadFile = `road_${color}.svg`;
   return (
     <div
       className="opacity-animation"
       style={{
         transform,
-        backgroundImage: `url('/svgs/road_${color}.svg')`,
+        backgroundImage: getBackgroundImageWithFallback(themeId, roadFile),
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
         position: "absolute",
@@ -23,13 +25,14 @@ function Road({ color, size, tileX, tileY, transform }) {
   );
 }
 
-function PlacedRoad({ id, color, size, tileX, tileY, transform }) {
+function PlacedRoad({ id, color, size, tileX, tileY, transform, themeId }) {
+  const roadFile = `road_${color}.svg`;
   return (
     <div
       id={id}
       style={{
         transform,
-        backgroundImage: `url('/svgs/road_${color}.svg')`,
+        backgroundImage: getBackgroundImageWithFallback(themeId, roadFile),
         backgroundSize: "contain",
         backgroundRepeat: "no-repeat",
         position: "absolute",
@@ -54,6 +57,7 @@ function PlaceableEdge({
   hoveredNode,
   setHoveredNode,
   onPlace,
+  themeId,
 }) {
   const { width } = useWindowSize();
   const [centerX, centerY] = center;
@@ -72,6 +76,7 @@ function PlaceableEdge({
           tileX={tileX}
           tileY={tileY}
           transform={transform}
+          themeId={themeId}
         />
       )}
 
@@ -90,6 +95,7 @@ function PlaceableEdge({
               tileX={tileX}
               tileY={tileY}
               transform={transform}
+              themeId={themeId}
             />
           ) : null
         }
@@ -116,6 +122,7 @@ function HoverableEdge({
   hoveredEdge,
   setHoveredEdge,
   onPlace,
+  themeId,
 }) {
   const { width } = useWindowSize();
   const [centerX, centerY] = center;
@@ -134,6 +141,7 @@ function HoverableEdge({
           tileX={tileX}
           tileY={tileY}
           transform={transform}
+          themeId={themeId}
         />
       )}
 
@@ -172,6 +180,7 @@ export function Edge({
   moves,
   setPlayerAction,
   onPlaceCommitted,
+  themeId,
 }) {
   const { width } = useWindowSize();
   const [centerX, centerY] = center;
@@ -190,6 +199,7 @@ export function Edge({
         initialPlacement={initialPlacement}
         hoveredNode={hoveredNode}
         setHoveredNode={setHoveredNode}
+        themeId={themeId}
         onPlace={(edgeId) => {
           onPlaceCommitted?.();
           if (roadBuilding) {
@@ -215,6 +225,7 @@ export function Edge({
         color={color}
         hoveredEdge={hoveredNode}
         setHoveredEdge={setHoveredNode}
+        themeId={themeId}
         onPlace={(edgeId) => {
           onPlaceCommitted?.();
           moves.placeRoad(edgeId);
@@ -232,6 +243,7 @@ export function Edge({
       tileX={tileX}
       tileY={tileY}
       transform={transform}
+      themeId={themeId}
     />
   );
 }

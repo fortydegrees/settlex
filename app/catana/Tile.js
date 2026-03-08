@@ -1,15 +1,23 @@
-import React, { useState, useRef } from "react";
-import Image from "./components/NextImage";
-import robberIcon from "../../public/svgs/icon_robber.svg";
+import React, { useState } from "react";
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
-import {
-  STANDARD_RESOURCES,
-  RESOURCE_SVGS,
-  ResourceType,
-} from "../board-editor/utils/types";
 import { useDrag } from "react-dnd";
 import "./Tile.css";
-import { ActionNode } from "./ActionNode";
+import {
+  getClassicResourceIconPath,
+  getBackgroundImageWithFallback,
+  getClassicSvgPath,
+  getResourceIconPath,
+  getTileFile,
+  getThemedSvgPath,
+  handleThemeImageError,
+} from "./theme/themes";
+
+// Resource icons now use one shared transform across all resources.
+// Baseline values come from the previous Sheep placement.
+const TILE_ICON_TOP_FACTOR = 0.204;
+const TILE_ICON_SCALE = 0.68;
+const EMOJI_TILE_ICON_SCALE_MULTIPLIER = 0.85;
+const EMOJI_TILE_ICON_TOP_MULTIPLIER = 1.16;
 
 const numberToPips = (number) => {
   switch (number) {
@@ -93,6 +101,7 @@ export function Tile({
   hasRobber,
   canPlaceRobber,
   moves,
+  themeId,
 }) {
   const w = SQRT3 * size;
   const h = 2 * size;
@@ -107,13 +116,25 @@ export function Tile({
     }
   }, [canPlaceRobber]);
 
+  const robberSrc = getThemedSvgPath(themeId, "icon_robber.svg");
+  const robberFallbackSrc = getClassicSvgPath("icon_robber.svg");
+  const tileResourceIconSrc = getResourceIconPath(themeId, resource);
+  const tileResourceIconFallbackSrc = getClassicResourceIconPath(resource);
+  const tileIconScale =
+    themeId === "emoji"
+      ? TILE_ICON_SCALE * EMOJI_TILE_ICON_SCALE_MULTIPLIER
+      : TILE_ICON_SCALE;
+  const tileIconTop =
+    themeId === "emoji"
+      ? size * TILE_ICON_TOP_FACTOR * EMOJI_TILE_ICON_TOP_MULTIPLIER
+      : size * TILE_ICON_TOP_FACTOR;
   var style = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     width: w,
     height: h,
-    backgroundImage: `url('${RESOURCE_SVGS[resource]}')`,
+    backgroundImage: getBackgroundImageWithFallback(themeId, getTileFile(resource)),
     backgroundSize: "contain",
     backgroundRepeat: "no-repeat",
 
@@ -173,18 +194,43 @@ export function Tile({
             }}
           />
         )}
+        {tileResourceIconSrc && (
+          <img
+            src={tileResourceIconSrc}
+            alt=""
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: tileIconTop,
+              transform: "translateX(-50%)",
+              width: size * tileIconScale,
+              height: size * tileIconScale,
+              pointerEvents: "none",
+            }}
+            draggable={false}
+            onError={(event) =>
+              handleThemeImageError(event, tileResourceIconFallbackSrc)
+            }
+          />
+        )}
         {number && <NumberToken size={size} number={number} />}
         {hasRobber && (
-          <Image
-            src={robberIcon}
+          <img
+            src={robberSrc}
             alt="Robber"
             style={{
-              position: 'absolute',
-              transform: `translateX(-60%)`,
-              animation: isBlockedFlashing ? 'robberPulse 0.5s ease-in-out 2' : 'none'
+              position: "absolute",
+              transform: "translateX(-60%)",
+              animation: isBlockedFlashing
+                ? "robberPulse 0.5s ease-in-out 2"
+                : "none",
+              width: size / 1.5,
+              height: size / 1.5,
             }}
-            width={size / 1.5}
-            height={size / 1.5}
+            draggable={false}
+            onError={(event) =>
+              handleThemeImageError(event, robberFallbackSrc)
+            }
           />
         )}
         {canPlaceRobber && isHovered && (
@@ -200,13 +246,15 @@ export function Tile({
                zIndex: 3 // Ensure it's above the tile but below/same level as action
              }}
            >
-             <Image
-               src={robberIcon}
+             <img
+               src={robberSrc}
                alt="Robber Ghost"
                className="animate-bounce"
                style={{ width: '100%', height: '100%' }} // Fill the wrapper
-               width={size / 1.5}
-               height={size / 1.5}
+               draggable={false}
+               onError={(event) =>
+                 handleThemeImageError(event, robberFallbackSrc)
+               }
              />
            </div>
         )}

@@ -1,6 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { RESOURCE_ICON_SVGS, STANDARD_RESOURCES, ResourceType } from "../types";
+import { STANDARD_RESOURCES, ResourceType } from "../types";
 import { bestTradeRate } from "@settlex/game-core";
+import {
+  getClassicResourceIconPath,
+  getResourceIconPath,
+  handleThemeImageError,
+} from "../theme/themes";
 
 // Helper to count occurrences of each resource in a list
 const countResources = (resources) => {
@@ -20,6 +25,7 @@ export const TradeDiscardModal = ({
   G, // Need access to G and topology for trade rates
   tradePresetResource,
   bgioProps, // Or entire bgioProps
+  themeId,
 }) => {
   // State for tracking selected resources
   // Format: { [ResourceType]: number }
@@ -266,10 +272,16 @@ export const TradeDiscardModal = ({
                     >
                       <div className="relative mb-1">
                         <img
-                          src={RESOURCE_ICON_SVGS[res]}
+                          src={getResourceIconPath(themeId, res)}
                           alt={res}
                           className="h-10 w-10 drop-shadow-md"
                           draggable={false}
+                          onError={(event) =>
+                            handleThemeImageError(
+                              event,
+                              getClassicResourceIconPath(res)
+                            )
+                          }
                         />
                         <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                           {available}
@@ -329,10 +341,16 @@ export const TradeDiscardModal = ({
                         } ${isSame ? 'opacity-30 cursor-not-allowed' : ''}`}
                       >
                          <img
-                           src={RESOURCE_ICON_SVGS[res]}
+                           src={getResourceIconPath(themeId, res)}
                            alt={res}
                            className="h-8 w-8 drop-shadow-md"
                            draggable={false}
+                           onError={(event) =>
+                             handleThemeImageError(
+                               event,
+                               getClassicResourceIconPath(res)
+                             )
+                           }
                          />
                       </button>
                     );
@@ -370,10 +388,16 @@ export const TradeDiscardModal = ({
                     >
                       <div className="relative mb-1">
                         <img
-                          src={RESOURCE_ICON_SVGS[res]}
+                          src={getResourceIconPath(themeId, res)}
                           alt={res}
                           className="h-10 w-10 drop-shadow-md"
                           draggable={false}
+                          onError={(event) =>
+                            handleThemeImageError(
+                              event,
+                              getClassicResourceIconPath(res)
+                            )
+                          }
                         />
                         {isDevYop && bankFinite && (
                           <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">

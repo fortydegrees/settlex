@@ -1,7 +1,11 @@
 import { gsap } from "gsap";
-import { RESOURCE_ICON_SVGS } from "../types";
 import { tilePixelVector } from "../utils/coordinates";
 import { isDocumentHidden } from "../utils/visibility";
+import {
+  getClassicResourceIconPath,
+  getResourceIconPath,
+  handleThemeImageError,
+} from "../theme/themes";
 
 const CARD_CLASS = "rounded border-2 border-white p-2 drop-shadow-lg";
 
@@ -42,16 +46,18 @@ const JITTER_X = 4;
 const JITTER_Y = 6;
 const ROTATE_DEG = 3;
 
-function createCardElement(resource) {
+function createCardElement(resource, themeId) {
   const el = document.createElement("div");
   el.className = CARD_CLASS;
   el.style.position = "absolute";
   el.style.backgroundColor = RESOURCE_COLORS[resource] ?? "#FFFFFF";
 
   const img = document.createElement("img");
-  img.src = RESOURCE_ICON_SVGS[resource];
+  img.src = getResourceIconPath(themeId, resource);
   img.alt = "";
   img.className = RESOURCE_IMAGE_CLASS[resource] ?? "";
+  img.onerror = (event) =>
+    handleThemeImageError(event, getClassicResourceIconPath(resource));
   el.appendChild(img);
   return el;
 }
@@ -86,25 +92,27 @@ export function getCardAnimationConfig({
   endY,
   jitterX = 0,
   jitterY = 0,
-  rotate = 0
+  rotate = 0,
+  scaleMultiplier = 1,
+  endScale = 1
 }) {
   return {
     from: {
       x: startX + jitterX,
       y: startY + jitterY,
       opacity: 0,
-      scale: POP_SCALES.from,
+      scale: POP_SCALES.from * scaleMultiplier,
       rotation: rotate
     },
     pop: {
       opacity: 1,
-      scale: POP_SCALES.overshoot,
+      scale: POP_SCALES.overshoot * scaleMultiplier,
       rotation: rotate,
       duration: POP_DURATIONS.pop,
       ease: "back.out(2)"
     },
     settle: {
-      scale: POP_SCALES.settle,
+      scale: POP_SCALES.settle * scaleMultiplier,
       rotation: 0,
       duration: POP_DURATIONS.settle,
       ease: "power2.out"
@@ -112,6 +120,7 @@ export function getCardAnimationConfig({
     travel: {
       x: endX,
       y: endY,
+      scale: endScale,
       duration: TRAVEL_DURATION,
       ease: "power2.out"
     }
@@ -126,13 +135,40 @@ export function getRandomizedOffsets(random = Math.random) {
   };
 }
 
+export function getBoardViewportScale({
+  boardRect,
+  layoutContainerWidth
+} = {}) {
+  if (!boardRect) return 1;
+  const boardWidth = Number(boardRect.width);
+  const containerWidth = Number(layoutContainerWidth);
+  if (!Number.isFinite(boardWidth) || boardWidth <= 0) return 1;
+  if (!Number.isFinite(containerWidth) || containerWidth <= 0) return 1;
+  return boardWidth / containerWidth;
+}
+
+export function getTileCardStartPosition({
+  boardRect,
+  tileX,
+  tileY,
+  size,
+  cardWidth,
+  scale = 1
+}) {
+  return {
+    startX: boardRect.left + tileX * scale - cardWidth / 2,
+    startY: boardRect.top + (tileY - size) * scale
+  };
+}
+
 export function createResourceDistributionRunner({
   layerEl,
   getLayerEl,
   getLayout,
   getBoardRect,
   emitCue,
-  random = Math.random
+  random = Math.random,
+  themeId
 } = {}) {
   return function run(payload) {
     if (typeof document === "undefined") return;
@@ -150,6 +186,10 @@ export function createResourceDistributionRunner({
     const { size, center } = layout;
     const boardRect = getBoardRect();
     if (!boardRect) return;
+    const scale = getBoardViewportScale({
+      boardRect,
+      layoutContainerWidth: layout.containerWidth
+    });
 
     cards.forEach((card, index) => {
       const [centerX, centerY] = center;
@@ -157,8 +197,14 @@ export function createResourceDistributionRunner({
 
       const cardWidth = size * 0.5;
       const cardHeight = size * 0.7;
-      const startX = boardRect.left + tileX - cardWidth / 2;
-      const startY = boardRect.top + tileY - size;
+      const { startX, startY } = getTileCardStartPosition({
+        boardRect,
+        tileX,
+        tileY,
+        size,
+        cardWidth,
+        scale
+      });
 
       const specificId = `p${card.playerID}-${card.resource}`;
       const genericId = `p${card.playerID}-resources`;
@@ -169,7 +215,7 @@ export function createResourceDistributionRunner({
       const endX = targetRect.left;
       const endY = targetRect.top - 15;
 
-      const el = createCardElement(card.resource);
+      const el = createCardElement(card.resource, themeId);
       el.style.width = `${cardWidth}px`;
       el.style.height = `${cardHeight}px`;
       resolvedLayer.appendChild(el);
@@ -182,7 +228,9 @@ export function createResourceDistributionRunner({
         endY,
         jitterX,
         jitterY,
-        rotate
+        rotate,
+        scaleMultiplier: scale,
+        endScale: 1
       });
       const timings = getDistributionTimings({
         index,

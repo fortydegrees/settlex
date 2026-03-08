@@ -1,13 +1,9 @@
 import React, { useState, useRef } from "react";
 
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
-import {
-  STANDARD_RESOURCES,
-  RESOURCE_SVGS,
-  ResourceType,
-} from "../board-editor/utils/types";
 import { useDrag } from "react-dnd";
 import "./Tile.css";
+import { getBackgroundImageWithFallback } from "./theme/themes";
 
 export function Port({
   id,
@@ -18,7 +14,8 @@ export function Port({
   absolute,
   boardCenter,
   draggable,
-tile
+  tile,
+  themeId,
 }) {
   const w = SQRT3 * size;
   const h = 2 * size;
@@ -27,7 +24,7 @@ tile
 
 
 
-const direction = tile.direction
+const direction = tile.direction;
 
   const connectorStyles = {
     NORTH: {
@@ -85,7 +82,10 @@ const direction = tile.direction
           alignItems: "center",
           width: w,
           height: h,
-          backgroundImage: `url('/svgs/port_${tile.resource}.svg')`,
+          backgroundImage: getBackgroundImageWithFallback(
+            themeId,
+            `port_${tile.resource}.svg`
+          ),
           //port_pier
           backgroundSize: "contain",
           backgroundRepeat: "no-repeat",
@@ -107,7 +107,7 @@ const direction = tile.direction
           alignItems: "center",
           width: w,
           height: h,
-          backgroundImage: `url('/svgs/port_pier.svg')`,
+          backgroundImage: getBackgroundImageWithFallback(themeId, "port_pier.svg"),
           //port_pier
           backgroundSize: "contain",
           backgroundRepeat: "no-repeat",
@@ -125,7 +125,7 @@ const direction = tile.direction
           alignItems: "center",
           width: w,
           height: h,
-          backgroundImage: `url('/svgs/port_pier.svg')`,
+          backgroundImage: getBackgroundImageWithFallback(themeId, "port_pier.svg"),
           //port_pier
           backgroundSize: "contain",
           backgroundRepeat: "no-repeat",

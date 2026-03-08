@@ -251,11 +251,11 @@
       </div>
       <div class="control">
         <label for="body-depth">Body Depth</label>
-        <input id="body-depth" type="range" min="55" max="170" value="100" />
+        <input id="body-depth" type="range" min="55" max="170" value="170" />
       </div>
       <div class="control">
         <label for="ring-depth">Ring Depth</label>
-        <input id="ring-depth" type="range" min="55" max="170" value="100" />
+        <input id="ring-depth" type="range" min="55" max="170" value="72" />
       </div>
       <div class="control">
         <label for="ring-direction">Ring Direction</label>
@@ -263,7 +263,7 @@
       </div>
       <div class="control">
         <label for="edge-shadow-lift">Edge Shadow Lift</label>
-        <input id="edge-shadow-lift" type="range" min="0" max="70" value="62" />
+        <input id="edge-shadow-lift" type="range" min="0" max="70" value="12" />
       </div>
       <div class="control">
         <label for="stripe-strength">Stripe Strength</label>
@@ -274,8 +274,8 @@
         <label for="stripe-toggle">Enable striped middle ring overlay</label>
       </div>
       <div class="control">
-        <label for="wheat-base">Option D/E Wheat Base</label>
-        <input id="wheat-base" type="color" value="#ffd43b" />
+        <label for="wheat-base">Wheat Base (A/D/E tuner)</label>
+        <input id="wheat-base" type="color" value="#fcd34d" />
       </div>
       <div class="control">
         <label for="wheat-highlight-lift">Wheat Highlight Lift</label>
@@ -563,20 +563,20 @@
 
     const uiState = {
       presetId: "oreDirectional",
-      bodyDepthScale: 1,
-      ringDepthScale: 1,
-      ringDirection: "diagonalUp",
-      edgeShadowLift: 0.62,
+      bodyDepthScale: 1.7,
+      ringDepthScale: 0.72,
+      ringDirection: "vertical",
+      edgeShadowLift: 0.12,
       stripeStrengthScale: 0.65,
       stripeEnabled: false,
-      wheatBaseHex: "#ffd43b",
+      wheatBaseHex: "#fcd34d",
       wheatHighlightLift: 16,
       wheatShadowDrop: 23,
       wheatSaturationShift: -4,
       wheatHueShift: -4
     };
 
-    const wheatTuneTargetOptions = new Set(["option-d", "option-e"]);
+    const wheatTuneTargetOptions = new Set([]);
 
     function buildStopMarkup(stops, resource, depthScale, zone) {
       return stops.map((stop) => {
@@ -689,16 +689,16 @@
 
     const paletteOptions = [
       {
-        id: "option-a",
-        name: "Option A - Juicy Pop (Balanced)",
-        note: "Adds a moderate saturation/contrast bump for a livelier look, with extra pop on wheat and brick.",
-        tileFilter: "saturate(1.08) contrast(1.04)",
+        id: "option-c",
+        name: "Option C - Bright Gold Wheat / Split Greens",
+        note: "Updated bright-gold wheat target: lighter body and top highlight so the center reads more golden, while sheep/lumber remain strongly separated.",
+        tileFilter: "saturate(1.2) contrast(1.05)",
         resources: [
-          { key: "ore", base: "#8ea6c5", highlight: "#dbe8f8", shadow: "#475569", ink: "#0f172a" },
-          { key: "wheat", base: "#facc15", highlight: "#fff3a3", shadow: "#b45309", ink: "#0f172a" },
-          { key: "sheep", base: "#a3e635", highlight: "#d9f99d", shadow: "#4d7c0f", ink: "#0f172a" },
-          { key: "lumber", base: "#22c55e", highlight: "#86efac", shadow: "#166534", ink: "#0f172a" },
-          { key: "brick", base: "#f97316", highlight: "#fdba74", shadow: "#c2410c", ink: "#0f172a" }
+          { key: "ore", base: "#86a8ce", highlight: "#e8f2ff", shadow: "#3c4f66", ink: "#0f172a" },
+          { key: "wheat", base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
+          { key: "sheep", base: "#a3e635", highlight: "#ecfccb", shadow: "#4d7c0f", ink: "#0f172a" },
+          { key: "lumber", base: "#10b981", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
+          { key: "brick", base: "#fb923c", highlight: "#fed7aa", shadow: "#c2410c", ink: "#0f172a" }
         ]
       },
       {
@@ -708,23 +708,23 @@
         tileFilter: "saturate(1.22) contrast(1.05)",
         resources: [
           { key: "ore", base: "#7ea1cc", highlight: "#e6f0ff", shadow: "#334155", ink: "#0f172a" },
-          { key: "wheat", base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a" },
+          { key: "wheat", base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
           { key: "sheep", base: "#84cc16", highlight: "#d9f99d", shadow: "#3f6212", ink: "#0f172a" },
           { key: "lumber", base: "#16a34a", highlight: "#86efac", shadow: "#14532d", ink: "#0f172a" },
           { key: "brick", base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" }
         ]
       },
       {
-        id: "option-c",
-        name: "Option C - Bright Wheat / Split Greens",
-        note: "Brighter wheat plus stronger sheep-vs-lumber separation: wool stays lime-yellow while lumber shifts deeper emerald.",
-        tileFilter: "saturate(1.2) contrast(1.06)",
+        id: "option-a",
+        name: "Option A - Juicy Pop (Balanced)",
+        note: "Adds a moderate saturation/contrast bump for a livelier look, with extra pop on wheat and brick.",
+        tileFilter: "saturate(1.08) contrast(1.04)",
         resources: [
-          { key: "ore", base: "#86a8ce", highlight: "#e8f2ff", shadow: "#3c4f66", ink: "#0f172a" },
-          { key: "wheat", base: "#f4bd1f", highlight: "#ffe682", shadow: "#a85500", ink: "#0f172a" },
-          { key: "sheep", base: "#a3e635", highlight: "#ecfccb", shadow: "#4d7c0f", ink: "#0f172a" },
-          { key: "lumber", base: "#10b981", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
-          { key: "brick", base: "#fb923c", highlight: "#fed7aa", shadow: "#c2410c", ink: "#0f172a" }
+          { key: "ore", base: "#8ea6c5", highlight: "#dbe8f8", shadow: "#475569", ink: "#0f172a" },
+          { key: "wheat", base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
+          { key: "sheep", base: "#a3e635", highlight: "#d9f99d", shadow: "#4d7c0f", ink: "#0f172a" },
+          { key: "lumber", base: "#22c55e", highlight: "#86efac", shadow: "#166534", ink: "#0f172a" },
+          { key: "brick", base: "#f97316", highlight: "#fdba74", shadow: "#c2410c", ink: "#0f172a" }
         ]
       },
       {
@@ -734,7 +734,7 @@
         tileFilter: "saturate(1.18) contrast(1.04)",
         resources: [
           { key: "ore", base: "#94a3b8", highlight: "#dbe4ef", shadow: "#334155", ink: "#0f172a" },
-          { key: "wheat", base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a" },
+          { key: "wheat", base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
           { key: "sheep", base: "#bef264", highlight: "#f0fdb4", shadow: "#65a30d", ink: "#0f172a" },
           { key: "lumber", base: "#059669", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
           { key: "brick", base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" }
@@ -747,7 +747,7 @@
         tileFilter: "saturate(1.16) contrast(1.03)",
         resources: [
           { key: "ore", base: "#94a3b8", highlight: "#dbe4ef", shadow: "#334155", ink: "#0f172a", pattern: "speckle-facets", patternOpacity: 0.09 },
-          { key: "wheat", base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a", pattern: "grain", patternOpacity: 0.08 },
+          { key: "wheat", base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309", pattern: "grain", patternOpacity: 0.08 },
           { key: "sheep", base: "#bef264", highlight: "#f0fdb4", shadow: "#65a30d", ink: "#0f172a", pattern: "dots", patternOpacity: 0.07 },
           { key: "lumber", base: "#059669", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a", pattern: "vertical-lines", patternOpacity: 0.08 },
           { key: "brick", base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a", pattern: "brick-rects", patternOpacity: 0.09 }
@@ -871,7 +871,9 @@
       const wheatNote = document.getElementById("wheat-note");
       const tunedWheat = computeWheatTunedColors();
       styleNote.textContent = styleNoteText(preset);
-      wheatNote.textContent = `Option D/E wheat tuner: base ${tunedWheat.base}, highlight ${tunedWheat.highlight}, shadow ${tunedWheat.shadow}.`;
+      wheatNote.textContent = wheatTuneTargetOptions.size > 0
+        ? `Wheat tuner active for ${wheatTuneTargetOptions.size} row(s): base ${tunedWheat.base}, highlight ${tunedWheat.highlight}, shadow ${tunedWheat.shadow}.`
+        : "Wheat colors are currently locked on all rows (A/B/C/D/E) to compare ring/highlight tuning only.";
 
       const root = document.getElementById("app");
       root.innerHTML = paletteOptions.map((option) => {

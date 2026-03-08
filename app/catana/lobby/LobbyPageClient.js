@@ -2,9 +2,14 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  PLAYER_COLOR_OPTIONS,
+  getPlayerColorOption
+} from "../theme/playerColors";
+import { sanitizeDisplayName } from "../utils/playerIdentity";
 
 const GAME_NAME = "catan";
-const BOT_NAME_PREFIX = "[BOT] Puffer";
+const BOT_NAME_PREFIX = "Puffer";
 const STORAGE_KEY_NAME = "catana:lobby:playerName";
 const STORAGE_KEY_EMOJI = "catana:lobby:playerEmoji";
 const STORAGE_KEY_COLOR = "catana:lobby:playerColor";
@@ -23,21 +28,6 @@ const EMOJI_OPTIONS = [
   "😏", "🤠", "🤓", "😈",
   "🥸", "😇", "🤑", "🤪",
 ];
-
-// Each entry has explicit Tailwind classes so the JIT compiler includes them.
-const COLOR_OPTIONS = [
-  { id: "red", swatch: "bg-red-500", gradient: "from-red-500 to-red-800" },
-  { id: "blue", swatch: "bg-blue-500", gradient: "from-blue-500 to-blue-800" },
-  { id: "green", swatch: "bg-green-500", gradient: "from-green-500 to-green-800" },
-  { id: "orange", swatch: "bg-orange-500", gradient: "from-orange-500 to-orange-800" },
-  { id: "purple", swatch: "bg-purple-500", gradient: "from-purple-500 to-purple-800" },
-  { id: "pink", swatch: "bg-pink-500", gradient: "from-pink-500 to-pink-800" },
-  { id: "cyan", swatch: "bg-cyan-500", gradient: "from-cyan-500 to-cyan-800" },
-  { id: "amber", swatch: "bg-amber-500", gradient: "from-amber-500 to-amber-800" },
-];
-
-const getColorOption = (id) =>
-  COLOR_OPTIONS.find((c) => c.id === id) || COLOR_OPTIONS[0];
 
 const getLobbyBaseUrl = () => {
   if (typeof window === "undefined") return "http://localhost:8080";
@@ -211,7 +201,9 @@ function IdentityModal({ onSubmit, onClose, initialName, initialEmoji, initialCo
   const [color, setColor] = useState(
     () =>
       initialColor ||
-      COLOR_OPTIONS[Math.floor(Math.random() * COLOR_OPTIONS.length)].id
+      PLAYER_COLOR_OPTIONS[
+        Math.floor(Math.random() * PLAYER_COLOR_OPTIONS.length)
+      ].id
   );
   const inputRef = useRef(null);
   const formRef = useRef(null);
@@ -251,13 +243,13 @@ function IdentityModal({ onSubmit, onClose, initialName, initialEmoji, initialCo
           <EmojiPicker
             value={emoji}
             onChange={setEmoji}
-            colorGradient={getColorOption(color).gradient}
+            colorGradient={getPlayerColorOption(color).gradient}
           />
         </div>
 
         {/* Color swatches */}
         <div className="mt-4 flex justify-center gap-2">
-          {COLOR_OPTIONS.map((c) => (
+          {PLAYER_COLOR_OPTIONS.map((c) => (
             <button
               key={c.id}
               type="button"
@@ -379,24 +371,29 @@ function SearchingModal({ onCancel, startedAt }) {
 function SeatDots({ players }) {
   return (
     <div className="flex gap-1">
-      {players.map((seat) => (
-        <span
-          key={seat.id}
-          className={`h-2.5 w-2.5 rounded-full ${
-            seat.name
-              ? "bg-lime-400 ring-1 ring-lime-300"
-              : "bg-white/40 ring-1 ring-white/50"
-          }`}
-          title={seat.name || "Open"}
-        />
-      ))}
+      {players.map((seat) => {
+        const displayName = sanitizeDisplayName(seat.name);
+        return (
+          <span
+            key={seat.id}
+            className={`h-2.5 w-2.5 rounded-full ${
+              seat.name
+                ? "bg-lime-400 ring-1 ring-lime-300"
+                : "bg-white/40 ring-1 ring-white/50"
+            }`}
+            title={seat.name ? displayName || `Player ${seat.id}` : "Open"}
+          />
+        );
+      })}
     </div>
   );
 }
 
 function RoomRow({ match, onJoin, isPending }) {
   const openSeats = match.players.filter((p) => !p?.name && p?.id != null);
-  const takenNames = match.players.filter((p) => p?.name).map((p) => p.name);
+  const takenNames = match.players
+    .filter((p) => p?.name)
+    .map((p) => sanitizeDisplayName(p.name) || p.name);
   const firstOpenSeat = openSeats[0];
   const isFull = openSeats.length === 0;
 
@@ -855,7 +852,9 @@ export function LobbyPageClient() {
             className="mb-5 flex items-center gap-1.5 rounded-full bg-white/70 px-4 py-1.5 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/60 backdrop-blur-sm transition hover:bg-white/85 hover:scale-[1.02]"
           >
             {playerColor && (
-              <span className={`h-4 w-4 rounded-full ${getColorOption(playerColor).swatch}`} />
+              <span
+                className={`h-4 w-4 rounded-full ${getPlayerColorOption(playerColor).swatch}`}
+              />
             )}
             <span>{playerEmoji || EMOJI_OPTIONS[0]}</span>
             <span>{playerName}</span>
