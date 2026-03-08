@@ -131,7 +131,8 @@ describe("game log moves", () => {
 
     expect(context.G.gameLog.map((entry) => entry.type)).toEqual([
       "dev:play",
-      "award:largestArmy"
+      "award:largestArmy",
+      "robber:skip"
     ]);
     expect(context.G.gameLog[1]).toMatchObject({
       type: "award:largestArmy",

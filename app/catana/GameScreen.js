@@ -6,10 +6,11 @@ import {
 } from "../../react-zoom-pan-pinch";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 
-import { buildPlayerViewMap } from "./utils/playerView";
+import { buildPlayerViewMap, UI_PLAYER_COLORS } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 import { getGameStatus } from "./utils/gameStatus";
 import { shouldResetPlayerAction } from "./utils/playerAction";
+import { sanitizeDisplayName } from "./utils/playerIdentity";
 
 import { EffectsBoardWrapper } from "bgio-effects/react";
 
@@ -18,7 +19,6 @@ import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GameLogPanel } from "./components/GameLogPanel";
 import { GlassPillButton } from "./components/GlassPillButton";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
-import { DebugPanel } from "./components/DebugPanel";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
 import { PostgameOverlay } from "./components/PostgameOverlay";
@@ -29,8 +29,14 @@ import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import { Howler } from "howler";
 import { getVictoryPoints } from "@settlex/game-core";
+import {
+  CATANA_THEME_STORAGE_KEY,
+  getThemeOptions,
+  resolveThemeId,
+} from "./theme/themes";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
+const DEV_THEME_OPTIONS = getThemeOptions();
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
@@ -38,6 +44,17 @@ const readStoredMute = () => {
     return window.localStorage.getItem(AUDIO_MUTE_STORAGE_KEY) === "true";
   } catch (err) {
     return false;
+  }
+};
+
+const readStoredThemeId = () => {
+  if (typeof window === "undefined") return resolveThemeId(null);
+  try {
+    return resolveThemeId(
+      window.localStorage.getItem(CATANA_THEME_STORAGE_KEY)
+    );
+  } catch (err) {
+    return resolveThemeId(null);
   }
 };
 
@@ -54,6 +71,7 @@ export function GameScreen(bgioProps) {
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
   const [isMuted, setIsMuted] = useState(readStoredMute);
+  const [themeId, setThemeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
   const gameOverSeenRef = useRef(false);
@@ -95,7 +113,8 @@ export function GameScreen(bgioProps) {
     if (Array.isArray(matchData)) {
       matchData.forEach((player) => {
         if (player?.id == null) return;
-        names[player.id] = player.name || `Player ${player.id}`;
+        const cleanName = sanitizeDisplayName(player.name);
+        names[player.id] = cleanName || `Player ${player.id}`;
         if (player.data?.emoji) emojis[player.id] = player.data.emoji;
         if (player.data?.color) colors[player.id] = player.data.color;
       });
@@ -127,6 +146,40 @@ export function GameScreen(bgioProps) {
       }))
       .sort((a, b) => b.vp - a.vp);
   }, [core, playerViewMap, nameMap, winnerId]);
+
+  const seatOrderKey = useMemo(
+    () => (Array.isArray(core?.players) ? core.players.map(String).join("|") : ""),
+    [core?.players]
+  );
+  const seatPlayerIds = useMemo(
+    () => (seatOrderKey ? seatOrderKey.split("|") : []),
+    [seatOrderKey]
+  );
+  const seatColorMap = useMemo(() => {
+    const map = {};
+    seatPlayerIds.forEach((id, index) => {
+      map[id] = UI_PLAYER_COLORS[index % UI_PLAYER_COLORS.length] ?? UI_PLAYER_COLORS[0];
+    });
+    return map;
+  }, [seatPlayerIds]);
+
+  const logPlayerMap = useMemo(() => {
+    const ids = new Set([
+      ...Object.keys(seatColorMap ?? {}),
+      ...Object.keys(nameMap ?? {}),
+      ...Object.keys(emojiMap ?? {}),
+      ...Object.keys(colorMap ?? {})
+    ]);
+    const map = {};
+    ids.forEach((id) => {
+      map[id] = {
+        name: nameMap[id] ?? `Player ${id}`,
+        emoji: emojiMap[id] ?? null,
+        color: colorMap[id] ?? seatColorMap[id] ?? null
+      };
+    });
+    return map;
+  }, [seatColorMap, nameMap, emojiMap, colorMap]);
 
   const postgameSummary = useMemo(() => {
     if (!isGameOver) return [];
@@ -239,6 +292,15 @@ export function GameScreen(bgioProps) {
       // ignore storage errors
     }
   }, [isMuted]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(CATANA_THEME_STORAGE_KEY, themeId);
+    } catch (err) {
+      // ignore storage errors
+    }
+  }, [themeId]);
 
   const timerMs = timerSnapshot
     ? Math.max(
@@ -435,7 +497,8 @@ export function GameScreen(bgioProps) {
           },
           getBoardRect: () =>
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
-          emitCue
+          emitCue,
+          themeId
         });
 
         return (event) => runner(event?.payload);
@@ -455,13 +518,16 @@ export function GameScreen(bgioProps) {
           getTiles: () => bgioProps.G?.tiles ?? [],
           getPlayerColor: (playerId) => playerViewMap[playerId]?.color,
           emitCue,
-          useBoardSpace: true
+          useBoardSpace: true,
+          themeId
         });
 
         return (event) => runner(event?.payload);
       }
     };
-  }, [width, height, bgioProps.G, playerViewMap]);
+  }, [width, height, bgioProps.G, playerViewMap, themeId]);
+  const showDevThemeSwitcher = process.env.NODE_ENV !== "production";
+
   // console.log('p', player)
   // console.log('opps', opponents)
   const handleToggleMute = () => {
@@ -498,6 +564,7 @@ export function GameScreen(bgioProps) {
             placementRoadLayerRef={placementRoadLayerRef}
             playerAction={playerAction}
             setPlayerAction={setPlayerAction}
+            themeId={themeId}
             {...bgioProps}
           />
         </TransformComponent>
@@ -525,6 +592,30 @@ export function GameScreen(bgioProps) {
         </svg>
       </button>
 
+      {showDevThemeSwitcher && (
+        <label
+          className="fixed left-16 top-4 z-40 flex h-10 items-center gap-2 rounded-full bg-white/65 px-3 text-slate-700 shadow-lg ring-1 ring-white/50 backdrop-blur-sm"
+          data-allow-interaction="true"
+        >
+          <span className="text-xs font-semibold uppercase tracking-widest text-slate-700">
+            Theme
+          </span>
+          <select
+            value={themeId}
+            onChange={(event) => setThemeId(resolveThemeId(event.target.value))}
+            className="rounded-md border border-white/60 bg-white/80 px-2 py-1 text-sm text-slate-800"
+            data-allow-interaction="true"
+            aria-label="Theme"
+          >
+            {DEV_THEME_OPTIONS.map((theme) => (
+              <option key={theme.id} value={theme.id}>
+                {theme.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       {showResultsButton && (
         <GlassPillButton
           className="fixed right-4 top-4 z-40"
@@ -537,7 +628,11 @@ export function GameScreen(bgioProps) {
         </GlassPillButton>
       )}
 
-      <GameLogPanel entries={bgioProps.G?.gameLog ?? []} nameMap={nameMap} />
+      <GameLogPanel
+        entries={bgioProps.G?.gameLog ?? []}
+        playerMap={logPlayerMap}
+        themeId={themeId}
+      />
 
       <GameEffects
         boardRef={boardRef}
@@ -565,6 +660,7 @@ TODO: accurately colour it
           canRoll={canRoll}
           canEnd={canEnd}
           timerMs={visibleTimerMs}
+          themeId={themeId}
         />
       )}
 
@@ -576,6 +672,7 @@ TODO: accurately colour it
           player={player}
           requiredDiscardCount={discardCount}
           onConfirm={handleDiscardConfirm}
+          themeId={themeId}
           // No cancel for forced discard
         />
       )}
@@ -592,6 +689,7 @@ TODO: accurately colour it
           }}
           G={bgioProps.G}
           tradePresetResource={tradePresetResource}
+          themeId={themeId}
         />
       )}
 
@@ -602,6 +700,7 @@ TODO: accurately colour it
           onConfirm={handleDevPlayConfirm}
           onCancel={handleDevPlayCancel}
           G={bgioProps.G}
+          themeId={themeId}
         />
       )}
 
@@ -652,7 +751,6 @@ TODO: accurately colour it
           }}
         />
       )}
-      <DebugPanel bgioProps={bgioProps} /> 
     </div>
   );
 }

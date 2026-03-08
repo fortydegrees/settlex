@@ -5,6 +5,7 @@ import { Node } from "./Node";
 import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
 import { Port } from "./Port";
+import { BoardUnderlay } from "./BoardUnderlay";
 import "./Board.css";
 import { getBoardLayout } from "./utils/boardLayout";
 import useWindowSize from "./utils/useWindowSize";
@@ -50,6 +51,7 @@ robber (and merchant etc)
 export function CatanBoard({
   playerAction,
   setPlayerAction,
+  themeId,
   isMobile,
   ctx,
   G,
@@ -327,6 +329,7 @@ export function CatanBoard({
           hasRobber={tile.id == G.core?.robberTileId}
           canPlaceRobber={robberTiles && robberTiles.includes(tile.id)}
           moves={moves}
+          themeId={themeId}
         />
       );
     } else if (type == TileTypes.PORT) {
@@ -337,11 +340,11 @@ export function CatanBoard({
           size={size}
           coordinate={coordinate}
           tile={tile}
+          themeId={themeId}
         />
       );
     }
   });
-
 
   Object.entries(G.core?.buildingsByNodeId ?? {}).forEach(
     ([nodeId, building]) => {
@@ -375,6 +378,7 @@ export function CatanBoard({
           direction={renderNode.direction}
           buildingType={building.type}
           buildingColor={owner.color}
+          themeId={themeId}
         />
       );
     }
@@ -396,6 +400,7 @@ export function CatanBoard({
         coordinate={renderEdge.tile_coordinate}
         direction={renderEdge.direction}
         color={owner.color}
+        themeId={themeId}
       />
     );
   });
@@ -456,6 +461,7 @@ export function CatanBoard({
               }}
               setHoveredNode={setHoveredNode}
               hoveredNode={hoveredNode}
+              themeId={themeId}
             />
           );
         });
@@ -489,6 +495,7 @@ export function CatanBoard({
             setPlayerAction={setPlayerAction}
             hoveredNode={hoveredNode}
             onPlaceCommitted={handleBuildCommit}
+            themeId={themeId}
           />
         );
         return null;
@@ -518,6 +525,7 @@ export function CatanBoard({
           setPlayerAction={setPlayerAction}
           hoveredNode={hoveredNode}
           onPlaceCommitted={handleBuildCommit}
+          themeId={themeId}
         />
       );
       return null;
@@ -544,6 +552,7 @@ export function CatanBoard({
     <div ref={setBoardRefs}>
       {" "}
       <div className="relative h-screen w-screen">
+        <BoardUnderlay center={center} size={size} themeId={themeId} />
         {tiles}
         <div
           ref={placementRoadLayerRef}

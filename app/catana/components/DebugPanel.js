@@ -1,5 +1,5 @@
 import React from "react";
-import { RESOURCE_ICON_SVGS } from "../types";
+import { RESOURCE_ICON_FILES_BY_RESOURCE } from "../theme/themes";
 
 export const DebugPanel = ({ bgioProps }) => {
   const { G, ctx, moves, playerID } = bgioProps;
@@ -142,7 +142,7 @@ export const DebugPanel = ({ bgioProps }) => {
       <div className="flex flex-col gap-1">
         <div className="font-semibold text-gray-700">Add 1x:</div>
         <div className="grid grid-cols-5 gap-1">
-          {Object.keys(RESOURCE_ICON_SVGS).map((res) => (
+          {Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE).map((res) => (
              <button
                 key={res}
                 className="flex items-center justify-center p-1 bg-white border rounded hover:bg-gray-100"

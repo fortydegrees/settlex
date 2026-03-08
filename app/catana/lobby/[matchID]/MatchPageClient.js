@@ -8,9 +8,10 @@ import { SocketIO } from "boardgame.io/multiplayer";
 import { Catan } from "../../Game";
 import { GameScreenWithEffects } from "../../GameScreen";
 import { GlassPillButton } from "../../components/GlassPillButton";
+import { sanitizeDisplayName } from "../../utils/playerIdentity";
 
 const GAME_NAME = "catan";
-const BOT_NAME_PREFIX = "[BOT] Puffer";
+const BOT_NAME_PREFIX = "Puffer";
 const PLAYER_NAME_STORAGE_KEY = "catana:lobby:playerName";
 const PLAYER_EMOJI_STORAGE_KEY = "catana:lobby:playerEmoji";
 const PLAYER_COLOR_STORAGE_KEY = "catana:lobby:playerColor";
@@ -89,7 +90,7 @@ function seatLabel(seat) {
   if (!seat) return "Seat";
   const id = Number.isFinite(Number(seat.id)) ? Number(seat.id) : null;
   if (!seat.name) return id != null ? `Open Seat ${id + 1}` : "Open Seat";
-  return seat.name;
+  return sanitizeDisplayName(seat.name) || seat.name;
 }
 
 function normalizeMatch(raw) {
@@ -122,6 +123,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
       game: Catan,
       board: GameScreenWithEffects,
       multiplayer: SocketIO({ server: gameServer }),
+      debug: false,
     });
   }, [gameServer]);
 
@@ -388,6 +390,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
                 <div className="space-y-2">
                   {match.players.map((seat) => {
                     const taken = Boolean(seat.name);
+                    const displayName = sanitizeDisplayName(seat.name) || seat.name;
                     return (
                       <div
                         key={seat.id}
@@ -400,7 +403,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
                         <div className="text-sm font-semibold">
                           Seat {Number(seat.id) + 1}
                         </div>
-                        <div className="text-sm">{taken ? seat.name : "Open"}</div>
+                        <div className="text-sm">{taken ? displayName : "Open"}</div>
                       </div>
                     );
                   })}

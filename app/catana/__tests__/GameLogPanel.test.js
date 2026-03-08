@@ -26,6 +26,12 @@ describe("GameLogPanel", () => {
     expect(contents).toContain("game-log-scroll");
   });
 
+  it("applies subtle feed animation hooks", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("game-log-fade");
+    expect(contents).toContain("game-log-entry");
+  });
+
   it("auto-scrolls to the latest entry", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("scrollHeight");

@@ -6,12 +6,19 @@ describe("Moves robber flow", () => {
   it("rollDice sends players to moveRobber when a 7 is rolled", () => {
     const state = createEmptyState(["0", "1"]);
     state.phase = "normal";
-    const coreTopology = buildTopology([]);
+    const tiles = [
+      {
+        coordinate: [0, 0, 0],
+        type: TileTypes.LAND,
+        tile: { id: 1, resource: "Wood", nodes: {} }
+      }
+    ];
+    const coreTopology = buildTopology(tiles);
     const events = { setStage: vi.fn() };
     const effects = { roll: vi.fn() };
     const random = { D6: vi.fn(() => [3, 4]) };
     const context = {
-      G: { core: state, coreTopology },
+      G: { core: state, coreTopology, tiles },
       random,
       events,
       effects
@@ -48,6 +55,35 @@ describe("Moves robber flow", () => {
     expect(events.setStage).toHaveBeenCalledWith("postRoll");
   });
 
+  it("rollDice auto-skips robber move when no valid tile exists", () => {
+    const state = createEmptyState(["0", "1"]);
+    state.phase = "normal";
+    state.robberTileId = 1;
+    const tiles = [
+      {
+        coordinate: [0, 0, 0],
+        type: TileTypes.LAND,
+        tile: { id: 1, resource: "Wood", nodes: {} }
+      }
+    ];
+    const coreTopology = buildTopology(tiles);
+    const events = { setStage: vi.fn() };
+    const effects = { roll: vi.fn() };
+    const context = {
+      G: { core: state, coreTopology, tiles, gameLog: [], gameLogSeq: 0 },
+      ctx: { currentPlayer: "0", activePlayers: { "0": "preRoll" } },
+      random: { D6: vi.fn(() => [3, 4]) },
+      events,
+      effects
+    };
+
+    rollDice.move(context);
+
+    expect(events.setStage).toHaveBeenCalledWith("postRoll");
+    expect(state.turn.phase).toBe("postRoll");
+    expect(context.G.gameLog.some((entry) => entry.type === "robber:skip")).toBe(true);
+  });
+
   it("autoMoveRobber skips illegal robber tiles", () => {
     const state = createEmptyState(["0", "1"]);
     state.phase = "normal";
@@ -80,5 +116,34 @@ describe("Moves robber flow", () => {
     autoMoveRobber.move(context);
 
     expect(state.robberTileId).toBe(2);
+  });
+
+  it("autoMoveRobber advances when no legal robber tile exists", () => {
+    const state = createEmptyState(["0", "1"]);
+    state.phase = "normal";
+    state.turn.phase = "robberMove";
+    state.robberTileId = 1;
+    const tiles = [
+      {
+        coordinate: [0, 0, 0],
+        type: TileTypes.LAND,
+        tile: { id: 1, resource: "Wood", nodes: {} }
+      }
+    ];
+    const coreTopology = buildTopology(tiles);
+    const events = { setStage: vi.fn() };
+    const context = {
+      G: { core: state, coreTopology, tiles, gameLog: [], gameLogSeq: 0 },
+      ctx: { currentPlayer: "1", activePlayers: { "1": "moveRobber" } },
+      random: { Number: () => 0, Shuffle: (arr) => arr },
+      events,
+      log: { setMetadata: vi.fn() }
+    };
+
+    autoMoveRobber.move(context);
+
+    expect(events.setStage).toHaveBeenCalledWith("postRoll");
+    expect(state.turn.phase).toBe("postRoll");
+    expect(context.G.gameLog.some((entry) => entry.type === "robber:skip")).toBe(true);
   });
 });

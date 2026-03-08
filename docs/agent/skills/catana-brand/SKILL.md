@@ -5,6 +5,9 @@ description: Use when building UI components, pages, or features for Catana. Pro
 
 # Catana Design System
 
+Related specs:
+- `docs/agent/skills/catana-brand/RESOURCE_ICON_STYLE_GUIDE.md` (authoritative resource-icon system and handoff contract)
+
 ## Philosophy
 
 Catana is joyful and vibrant—a celebration of the board game experience. The design *pops*: bold colors, confident choices, nothing timid. It's flat and modern (no textures, no skeuomorphism) but warm and alive through animation and color.

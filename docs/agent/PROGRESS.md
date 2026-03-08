@@ -1,5 +1,478 @@
 # PROGRESS
 
+## Status (2026-03-07, generated standard-board underlay implemented)
+- Replaced the superseded hand-shaped `board_island_base_*` approach with a generated standard-board underlay asset:
+- `public/svgs/board_underlay_standard.svg`
+- Added pure underlay helpers:
+- `app/catana/utils/boardUnderlayGeometry.mjs` (+ JS re-export wrapper)
+- `app/catana/utils/boardUnderlayLayout.js`
+- Added reproducible generator script:
+- `scripts/generate-board-underlay.mjs`
+- Added runtime underlay component:
+- `app/catana/BoardUnderlay.js`
+- Updated runtime wiring:
+- `app/catana/theme/themes.js` now exposes `getBoardUnderlayPath(themeId)`
+- `app/catana/Board.js` now renders `<BoardUnderlay ... />` before `{tiles}`
+- Removed superseded files:
+- `app/catana/BoardIslandBase.js`
+- `app/catana/utils/islandBaseLayout.js`
+- `public/svgs/board_island_base_tight.svg`
+- `public/svgs/board_island_base_medium.svg`
+- `public/svgs/board_island_base_broad.svg`
+- Important geometry correction: the true perimeter of the standard 19-land-tile pointy-top board is `30` boundary edges / ordered points, not `18`.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/utils/boardUnderlayGeometry.test.js app/catana/__tests__/utils/boardUnderlayLayout.test.js app/catana/__tests__/themeAssets.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/uiNoDragImages.test.js`
+- `pnpm lint` (warnings only; no new underlay-specific lint errors)
+- Visual QA:
+- desktop board screenshot: `.playwright-cli/page-2026-03-07T11-51-37-369Z.png`
+- narrow/mobile board screenshot: `.playwright-cli/page-2026-03-07T11-53-52-707Z.png`
+- Known unrelated runtime issue during QA: `/timer/:matchID` still hits an existing localhost CORS problem from `http://localhost:8000`, but the board itself renders and the underlay loads correctly.
+
+## Status (2026-03-07, generated-underlay island direction approved)
+- Approved a launch-scoped replacement for the manual Catana island SVG variants.
+- New direction:
+- keep `game-core` unchanged,
+- do not add native water tiles yet,
+- do not render per-edge coast pieces,
+- instead generate one board-shaped underlay SVG from the actual standard 19-land-tile footprint and check that asset into the repo.
+- The generated asset is intended to replace the hand-shaped `board_island_base_*` files and their variant plumbing once implemented.
+- The underlay will remain a decorative Catana UI layer rendered behind land tiles, but its shape will be reproducible from board geometry instead of hand-edited silhouettes.
+- Added design doc `docs/plans/2026-03-07-generated-island-underlay-design.md`.
+- Added implementation plan `docs/plans/2026-03-07-generated-island-underlay-plan.md`.
+
+## Status (2026-03-06, Catana island base manual SVG variants)
+- Replaced the old fused-hex island underlay with three hand-drawn layered SVG variants:
+- `public/svgs/board_island_base_tight.svg`
+- `public/svgs/board_island_base_medium.svg`
+- `public/svgs/board_island_base_broad.svg`
+- Updated `app/catana/theme/themes.js` so `getBoardIslandBasePath(themeId, variantId?)` resolves explicit `tight / medium / broad` island assets and falls back to `medium`.
+- Wired `medium` as the current default asset for the live board while keeping the other two variants available for visual comparison.
+- Kept the layout math unchanged in `app/catana/utils/islandBaseLayout.js`; the new pass changes only the SVG art direction, not board geometry.
+- Manual design changes in the new SVGs:
+- simplified curve-friendly coastline instead of enlarged fused hexes,
+- exactly four visible layers: blue outer glow, pale surf ring, sand shell, inner land tint,
+- removed texture/pattern details and kept the style flat/vector to match Catana.
+- Added a local preview surface at `output/imagegen/island-variants/index.html` plus generated board-overlay assets for comparing the three SVG variants against the current board art.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/BoardIslandBase.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/utils/islandBaseLayout.test.js`
+- Current state: `medium` is only a provisional default pending visual sign-off; `tight` and `broad` are available as direct comparison references.
+
+## Status (2026-03-06, medium island base scaled up inside fixed frame)
+- Enlarged only the art inside `public/svgs/board_island_base_medium.svg` without changing `app/catana/utils/islandBaseLayout.js`.
+- Updated the medium variant layer scales to make the backing plate more visible around the outer ring:
+- blue glow: `scale(1.14 1.12)`
+- pale surf ring: `scale(1.09 1.075)`
+- sand shell: `scale(1.045 1.035)`
+- inner land tint: `scale(0.76 0.72)` with slightly reduced opacity
+- This keeps the same board-relative frame sizing while fixing the “backing board is too hidden under the tiles” problem.
+- Re-verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/BoardIslandBase.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/utils/islandBaseLayout.test.js`
+- Live QA: captured a fresh `/catana/lobby/<match>?playerID=0` emoji-theme screenshot after the SVG-only scale change; the plate is now clearly visible around the board perimeter.
+
+## Status (2026-03-06, medium island silhouette redrawn as softened board hex)
+- Replaced the `medium` variant path in `public/svgs/board_island_base_medium.svg` with a 12-point softened super-hex silhouette tied to the board footprint.
+- The new outline uses six broad side bulges and six major corners, so the backing plate reads as an expanded/smoothed version of the board shape instead of a round island/blob.
+- Kept the existing four-layer treatment and the previously enlarged in-SVG scale values; only the `medium` path geometry changed in this pass.
+- Added regression coverage in `app/catana/__tests__/themeAssets.test.js` to lock the new softened-hex path signature.
+- Re-verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/BoardIslandBase.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/utils/islandBaseLayout.test.js`
+- Live QA: fresh emoji-theme board screenshot now shows a curvy/wavy hex underlay rather than the earlier rounder plate.
+
+## Status (2026-03-05, Catana island base underlay)
+- Added a shared board underlay asset at `public/svgs/board_island_base.svg` to visually connect the land hexes into one island mass.
+- Added `getBoardIslandBasePath(...)` in `app/catana/theme/themes.js` so the island base resolves through the same theme helper layer as other board assets.
+- Added `app/catana/utils/islandBaseLayout.js` with `getIslandBaseFrame(...)` to keep the island sizing math pure and testable (`8.9x` width, `8.24x` height, rounded frame output).
+- Added `app/catana/BoardIslandBase.js` as a decorative, non-interactive image underlay (`pointerEvents: none`, `aria-hidden`).
+- Wired the underlay into `app/catana/Board.js` before `{tiles}` so ports, tokens, pieces, and effect layers still render above it.
+- Replaced the initial oversized blob silhouette with a tighter board-shaped shoreline built from enlarged hex footprints, so the coast hugs the outer ring instead of reading like a circular platter.
+- Added focused coverage:
+- `app/catana/__tests__/themeAssets.test.js`
+- `app/catana/__tests__/utils/islandBaseLayout.test.js`
+- `app/catana/__tests__/BoardIslandBase.test.js`
+- `app/catana/__tests__/Board.layering.test.js`
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/utils/islandBaseLayout.test.js app/catana/__tests__/BoardIslandBase.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/uiNoDragImages.test.js`
+- Visual QA:
+- Desktop `/catana` spectator view now reads as a single island instead of floating tiles.
+- Smaller mobile-style viewport keeps the island readable; unrelated existing issue noted: top HUD is clipped on the narrow viewport.
+
+## Status (2026-03-05, island base design + implementation plan)
+- Added design doc `docs/plans/2026-03-05-island-base-design.md` for a flat SVG island underlay behind the Catana land tiles.
+- Added implementation plan `docs/plans/2026-03-05-island-base-plan.md`.
+- Approved direction is a non-interactive abstract island plate: muted green land mass, thin sand rim, soft outer glow/shadow, rendered below tiles and ports.
+- Planned implementation keeps board geometry unchanged and routes the SVG through theme helpers for future overrides.
+
+## Status (2026-03-05, zoom/pan bounds asymmetry fix)
+- Fixed asymmetric zoomed-out pan bounds in `react-zoom-pan-pinch/core/bounds/bounds.utils.ts`.
+- Root cause: `calculateBounds(...)` used different multipliers for negative vs positive bounds when `scale < 1`, creating one-sided horizontal movement limits and rebound bias.
+- Updated bounds scaling to use one shared zoom multiplier on both min/max sides for both axes.
+- Added regression coverage in `react-zoom-pan-pinch/core/bounds/bounds.utils.test.ts` to lock symmetric horizontal bounds behavior when limits are symmetric.
+- Verified with:
+- `pnpm exec vitest run react-zoom-pan-pinch/core/bounds/bounds.utils.test.ts`
+- `pnpm verify` (fails in this workspace on unrelated existing expectation drift: `app/catana/__tests__/Moves.gameLog.test.js` expects no `robber:skip` entry)
+
+## Status (2026-03-05, emoji tile icon overlay nudged lower)
+- Adjusted emoji-only tile icon vertical placement in `app/catana/Tile.js` to sit a bit lower on the tile face.
+- Increased `EMOJI_TILE_ICON_TOP_MULTIPLIER` to `1.16` and applied it only when `themeId === "emoji"` (`size * TILE_ICON_TOP_FACTOR * 1.16`) for an extra downward nudge.
+- This keeps non-emoji themes on the existing top alignment.
+- Extended `app/catana/__tests__/Tile.iconSizing.test.js` to assert emoji-only top positioning wiring.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/Tile.iconSizing.test.js`
+
+## Status (2026-03-05, emoji tile icon overlay scaled down 15%)
+- Updated tile overlay icon sizing in `app/catana/Tile.js` so only the `emoji` theme uses a smaller icon footprint.
+- Added `EMOJI_TILE_ICON_SCALE_MULTIPLIER = 0.85`, applied on top of existing `TILE_ICON_SCALE` for tile overlays (`size * 0.68 * 0.85`).
+- Non-emoji themes keep current tile icon size behavior unchanged.
+- Added coverage in `app/catana/__tests__/Tile.iconSizing.test.js` to lock emoji-only scaling wiring.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/Tile.iconSizing.test.js`
+
+## Status (2026-03-05, emoji icons switched to Fluent flat SVGs)
+- Replaced emoji theme icon files with Microsoft Fluent `Flat` SVG assets, preserving local file names and existing theme routing:
+- `icon_wood.svg` <- `assets/Wood/Flat/wood_flat.svg`
+- `icon_brick.svg` <- `assets/Brick/Flat/brick_flat.svg`
+- `icon_sheep.svg` <- `assets/Ewe/Flat/ewe_flat.svg`
+- `icon_wheat.svg` <- `assets/Sheaf of rice/Flat/sheaf_of_rice_flat.svg`
+- `icon_ore.svg` <- `assets/Rock/Flat/rock_flat.svg`
+- `icon_desert.svg` <- `assets/Cactus/Flat/cactus_flat.svg`
+- This supersedes the earlier same-day `Color` variant swap for the same six files.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji icons switched to Fluent color SVGs)
+- Replaced emoji glyph-based icon wrappers in `public/svgs/palette-themes/emoji/` with Microsoft Fluent `Color` SVG assets, keeping existing local filenames and theme routing intact:
+- `icon_wood.svg` <- `assets/Wood/Color/wood_color.svg`
+- `icon_brick.svg` <- `assets/Brick/Color/brick_color.svg`
+- `icon_sheep.svg` <- `assets/Ewe/Color/ewe_color.svg`
+- `icon_wheat.svg` <- `assets/Sheaf of rice/Color/sheaf_of_rice_color.svg`
+- `icon_ore.svg` <- `assets/Rock/Color/rock_color.svg`
+- `icon_desert.svg` <- `assets/Cactus/Color/cactus_color.svg`
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji desert tone tuning - lighter midpoint)
+- Tuned `public/svgs/palette-themes/emoji/tile_desert.svg` to a lighter midpoint between the original bright version and the first dim pass.
+- Adjusted border/fill/inner-stroke gradient stops upward and reduced vignette strength (`0.04→0.02` center, `0.24→0.20` edge) to keep the desert subdued but less heavy.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji desert icon routing + SVG dim pass)
+- Removed desert cactus marker from tile art and switched to the same overlay icon model used by other tiles:
+- Added `public/svgs/palette-themes/emoji/icon_desert.svg` (`🌵`).
+- Updated `app/catana/theme/themes.js` so `getResourceIconPath("emoji", "Desert")` returns `/svgs/palette-themes/emoji/icon_desert.svg`, while non-emoji themes still return no desert icon.
+- Applied a dimmer desert palette directly in `public/svgs/palette-themes/emoji/tile_desert.svg` (darker/muted gradient stops + stronger vignette) for a permanent subdued desert look.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji desert cactus icon)
+- Added cactus emoji icon directly into emoji desert tile art:
+- `public/svgs/palette-themes/emoji/tile_desert.svg`
+- Desert icon is now part of the SVG (top-centered `🌵`) so it follows the same emoji-theme visual style without changing shared resource-icon path logic.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji desert tile styled + wired)
+- Added emoji-specific desert tile override in `app/catana/theme/themes.js`:
+- `"tile_desert.svg": "/svgs/palette-themes/emoji/tile_desert.svg"`
+- Added new rounded-corner desert tile asset in the same visual language as the edited emoji resource tiles:
+- `public/svgs/palette-themes/emoji/tile_desert.svg`
+- Desert tile now uses the same inner rounded hex geometry + gradient/stroke/vignette layering approach as the updated emoji tile set.
+- Extended `app/catana/__tests__/themeAssets.test.js` to assert `emoji` resolves `tile_desert.svg` through the emoji theme folder.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji rounded-tiles geometry pass 2)
+- Reworked emoji rounded tile composition to restore a full tile footprint and reduce “squished” appearance on board.
+- Each emoji resource tile now uses:
+- a full-size rounded outer hex (border shell close to original tile extents), and
+- an inset rounded inner hex (resource fill area) with highlight/vignette overlays.
+- Updated files:
+- `public/svgs/palette-themes/emoji/tile_brick.svg`
+- `public/svgs/palette-themes/emoji/tile_lumber.svg`
+- `public/svgs/palette-themes/emoji/tile_wool.svg`
+- `public/svgs/palette-themes/emoji/tile_grain.svg`
+- `public/svgs/palette-themes/emoji/tile_ore.svg`
+- Kept emoji theme fallback behavior from prior fix (`disableBackgroundFallback`) so classic tiles do not bleed through transparent corners.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji rounded-tiles bleed fix + geometry retune)
+- Fixed emoji tile rendering bleed-through by disabling layered classic background fallback for the `emoji` theme in `app/catana/theme/themes.js` (`disableBackgroundFallback: true`).
+- Root cause was tile background layering (`url(themed), url(classic)`): transparent regions in rounded emoji tiles exposed classic sharp-corner tile art beneath.
+- Retuned rounded geometry in all emoji resource tile SVGs to use a fuller board footprint (closer to native tile bounds) while preserving rounded corners:
+- `public/svgs/palette-themes/emoji/tile_brick.svg`
+- `public/svgs/palette-themes/emoji/tile_lumber.svg`
+- `public/svgs/palette-themes/emoji/tile_wool.svg`
+- `public/svgs/palette-themes/emoji/tile_grain.svg`
+- `public/svgs/palette-themes/emoji/tile_ore.svg`
+- Added assertion in `app/catana/__tests__/themeAssets.test.js` that `getBackgroundImageWithFallback("emoji", "tile_ore.svg")` resolves to a single emoji tile URL (no classic layered fallback).
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-05, emoji theme rounded tile geometry)
+- Updated `emoji` theme tile mapping in `app/catana/theme/themes.js` to use emoji-local tile assets instead of Palette B tile files:
+- `tile_ore.svg`, `tile_grain.svg`, `tile_wool.svg`, `tile_lumber.svg`, `tile_brick.svg` now resolve to `/svgs/palette-themes/emoji/*`.
+- Added rounded-corner tile SVGs for all resource tiles in:
+- `public/svgs/palette-themes/emoji/tile_brick.svg`
+- `public/svgs/palette-themes/emoji/tile_lumber.svg`
+- `public/svgs/palette-themes/emoji/tile_wool.svg`
+- `public/svgs/palette-themes/emoji/tile_grain.svg`
+- `public/svgs/palette-themes/emoji/tile_ore.svg`
+- Each tile keeps the existing theme contract (`346x400` tile artboard) and uses resource-specific fill/border gradients with rounded-corner hex geometry.
+- Updated test coverage in `app/catana/__tests__/themeAssets.test.js` to assert emoji tile overrides are used.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-04, emoji theme variant)
+- Added a new `emoji` Catana theme in `app/catana/theme/themes.js`.
+- `emoji` reuses Palette B tile assets (`option-b`) and only overrides resource icons to:
+- `public/svgs/palette-themes/emoji/icon_wood.svg`
+- `public/svgs/palette-themes/emoji/icon_brick.svg`
+- `public/svgs/palette-themes/emoji/icon_sheep.svg`
+- `public/svgs/palette-themes/emoji/icon_wheat.svg`
+- `public/svgs/palette-themes/emoji/icon_ore.svg`
+- Emoji icons are SVG wrappers containing centered emoji glyphs, so all existing icon consumers (tile overlay, resource bar, game log, trade/discard UI, etc.) continue to work without component-level logic changes.
+- Expanded theme asset coverage in `app/catana/__tests__/themeAssets.test.js` to assert emoji theme registration and path resolution contract.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-03-04, log metadata + identity/color utilities refactor)
+- Added shared player identity helper `app/catana/utils/playerIdentity.js` with `sanitizeDisplayName(...)` and reused it across:
+- `app/catana/GameScreen.js`
+- `app/catana/lobby/LobbyPageClient.js`
+- `app/catana/lobby/[matchID]/MatchPageClient.js`
+- Added shared player color helper `app/catana/theme/playerColors.js` (`PLAYER_COLOR_OPTIONS`, `getPlayerColorOption`, `getPlayerNameHex`) and reused it across:
+- `app/catana/lobby/LobbyPageClient.js`
+- `app/catana/components/PlayerAvatarStats.js`
+- `app/catana/components/GameLogPanel.js`
+- Updated `GameScreen` log metadata assembly to use a stable `seatColorMap` fallback (from seat order) instead of `playerViewMap[id]?.color`, reducing avoidable log-token churn.
+- Memoized the log component export with `React.memo` in `app/catana/components/GameLogPanel.js`.
+- Existing `[BOT]` prefixes are now sanitized at render time in lobby/match seat labels and in-game name mapping, while newer bots keep clean `Puffer` names from join payloads.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/playerIdentity.test.js app/catana/__tests__/playerColors.test.js`
+- `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/MatchPageClient.botFill.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/uiNoDragImages.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/gameText.test.js`
+
+## Status (2026-03-04, bot display-name cleanup)
+- Removed the `[BOT]` name prefix in lobby bot join payloads so bot names are cleaner now that emoji-based identity is visible in log/UI.
+- Updated:
+- `app/catana/lobby/LobbyPageClient.js`
+- `app/catana/lobby/[matchID]/MatchPageClient.js`
+- Bot names now render as `Puffer <seat>` instead of `[BOT] Puffer <seat>`.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/MatchPageClient.botFill.test.js`
+
+## Status (2026-03-04, game log player avatar + color metadata)
+- Updated game-log player token formatting to support player metadata objects (`name`, `emoji`, `color`) in `app/catana/utils/gameText.js` while keeping backward compatibility with plain string name maps.
+- Wired `GameScreen` to build and pass `playerMap` into `GameLogPanel`, combining:
+- player names from match metadata,
+- avatar emoji from match metadata,
+- chosen lobby colors from match metadata (`player.data.color`), with seat-color fallback only when missing.
+- Updated `GameLogPanel` player rendering to show `{emoji} {name}` and tint the name to the player's chosen avatar color.
+- Expanded log tint support for all lobby color IDs (`red`, `blue`, `green`, `orange`, `purple`, `pink`, `cyan`, `amber`).
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/gameText.test.js`
+- `pnpm exec vitest run app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/uiNoDragImages.test.js`
+- `pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js`
+
+## Status (2026-03-04, game log resource icons as full cards)
+- Updated game-log resource formatting so resource counts expand into full per-card icon tokens (no `2x` labels and no comma separators).
+- This applies across all log events that use resource maps, including `discard`, `resource:gain`, and `trade:maritime`.
+- Updated `app/catana/components/GameLogPanel.js` to render resource tokens as icons only (with resource `title` for hover context).
+- Added test coverage updates in `app/catana/__tests__/gameText.test.js` to assert icon-per-card token expansion and comma removal.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/gameText.test.js`
+- `pnpm exec vitest run app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/uiNoDragImages.test.js`
+- Note: `pnpm exec vitest run app/catana/__tests__/Moves.gameLog.test.js` currently fails in this workspace from an unrelated expectation drift (`robber:skip` extra entry).
+
+## Status (2026-03-02, robber no-valid-tile skip flow)
+- Added a guarded robber fallback in `app/catana/Moves.js` so when there are zero legal robber tiles, gameplay does not stall.
+- New helper flow now logs `robber:skip`, keeps robber position unchanged, and advances to the correct return stage (`preRoll` or `postRoll`) as if robber resolution completed.
+- Wired the skip path into all robber entry points:
+- `rollDice` when a 7 enters robber flow with no candidates,
+- `discardResources` when pending discards finish into robber flow,
+- `playDevCardStart` for knight-triggered robber flow,
+- `autoMoveRobber` timeout fallback when no candidate tile exists.
+- Added log text support in `app/catana/utils/gameText.js` for `robber:skip` ("had no valid tile for robber movement").
+- Added/updated coverage in:
+- `app/catana/__tests__/Moves.robber.test.js` (7-roll skip path + auto-timeout skip path),
+- `app/catana/__tests__/Moves.devCards.test.js` (knight-triggered skip path + existing moveRobber path with legal tiles),
+- `app/catana/__tests__/gameText.test.js` (`robber:skip` formatting).
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/gameText.test.js`
+
+## Status (2026-03-02, game log timeout copy cleanup)
+- Updated game-log text rendering in `app/catana/utils/gameText.js` to hide all internal `forced:*` marker entries from the UI.
+- Forced player actions now render with ` (timeout)` instead of ` (auto)` (for example: `Player placed a settlement (timeout)`).
+- This keeps bot usernames/actions unchanged in normal play while making timeout-forced moves explicit and readable.
+- Added/updated coverage in `app/catana/__tests__/gameText.test.js` for:
+- hiding all `forced:*` entry types,
+- preserving no timeout suffix for roll/resource gain,
+- adding timeout suffix for forced player actions.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/gameText.test.js`
+- `pnpm exec vitest run app/catana/__tests__/Moves.gameLog.test.js`
+
+## Status (2026-03-02, Option B icon normalization pass)
+- Normalized the active Option B resource icon assets to a shared canonical artboard (`256x256`, `viewBox="0 0 256 256"`):
+- `public/svgs/palette-themes/option-b/icon_wood.svg`
+- `public/svgs/palette-themes/option-b/icon_brick.svg`
+- `public/svgs/palette-themes/option-b/icon_sheep.svg`
+- `public/svgs/palette-themes/option-b/icon_wheat.svg`
+- `public/svgs/palette-themes/option-b/icon_ore.svg`
+- Each icon now uses an explicit normalization transform (`<g id="icon-artwork" transform="...">`) so rendering comes from one consistent coordinate contract instead of mixed source viewBoxes.
+- Re-tuned tile icon placement in `app/catana/Tile.js` for normalized assets:
+- `TILE_ICON_TOP_FACTOR` `0.186`,
+- `TILE_ICON_SCALE` `0.58`,
+- retained only small per-resource optical deltas in `TILE_ICON_SCALE_BY_RESOURCE` and `TILE_ICON_TOP_NUDGE_BY_RESOURCE`.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/uiNoDragImages.test.js`
+
+## Status (2026-02-23, road blocking at opponent intersections)
+- Fixed normal-play road legality in `game-core/src/rules/buildability.ts`.
+- `buildableEdges(...)` now excludes road-endpoint nodes occupied by opponent settlements/cities when deriving expansion candidates.
+- This enforces the Catan rule that roads cannot be extended through an opponent-owned intersection.
+- Added regression coverage in `game-core/src/rules/buildability.test.ts`:
+- `does not allow extending a road through an opponent settlement`.
+- Verified with:
+- `pnpm -C game-core test -- src/rules/buildability.test.ts`
+- `pnpm -C game-core test`
+
+## Status (2026-02-23, canonical resource icon template)
+- Added a canonical square resource icon template at `public/svgs/concepts/resource_icon_template_256.svg`.
+- Template establishes the shared icon contract:
+- `256x256` artboard with root `viewBox="0 0 256 256"`,
+- centered crosshair/anchor guides,
+- `192x192` safe area for visible art,
+- optional tile top-band guide for in-tile readability checks.
+- Added design spec at `docs/plans/2026-02-23-resource-icon-canonical-template-spec.md` with migration strategy (keep current nudges until all icons are normalized, then collapse to shared tile icon positioning).
+
+## Status (2026-02-23, icon scale normalization pass)
+- Added per-resource tile icon scale tuning in `app/catana/Tile.js` (`TILE_ICON_SCALE_BY_RESOURCE`) to account for different icon viewBox/aspect ratios.
+- Applied smaller in-tile icon scales for wood/wheat (`Wood 0.56`, `Wheat 0.54`) while keeping others at `0.62`.
+- Shifted all tile icons slightly lower again (`TILE_ICON_TOP_FACTOR 0.165`) with updated per-resource downward nudges (sheep still lowest).
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-02-23, per-resource tile icon nudge)
+- Further adjusted tile icon overlay placement in `app/catana/Tile.js` by introducing per-resource vertical nudges:
+- global top factor raised to `0.155`,
+- per-resource offsets via `TILE_ICON_TOP_NUDGE_BY_RESOURCE`,
+- sheep intentionally pushed lower than wood/tree (`Sheep: +0.03`, `Wood: +0.00`).
+- Kept shared icon scale at `0.62` and preserved theme-aware icon fallback behavior.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-02-23, tile icon alignment tuning)
+- Adjusted in-tile resource icon overlay sizing/placement in `app/catana/Tile.js` to better match classic embedded icon composition:
+- icon scale reduced from `0.72 * size` to `0.62 * size`,
+- icon top offset moved from `0.10 * size` to `0.14 * size`.
+- Added named constants (`TILE_ICON_TOP_FACTOR`, `TILE_ICON_SCALE`) for quick visual iteration.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-02-23, palette-b focus + tile icons)
+- Simplified in-game theme options in `app/catana/theme/themes.js` to `Classic` + `Palette B` (removed other palette variants and removed `custom` from the theme registry).
+- Kept palette overrides focused on `option-b` and expanded `palette-b` overrides to include shared resource icons:
+- `icon_wood.svg`, `icon_brick.svg`, `icon_sheep.svg`, `icon_wheat.svg`, `icon_ore.svg`.
+- Copied current canonical icon SVGs into `public/svgs/palette-themes/option-b/` so Palette B now owns an editable icon set without breaking Classic.
+- Added tile-level resource icon overlay in `app/catana/Tile.js` (theme-aware icon path + classic fallback), positioned near top-center of the hex so tile art and shared icon language stay aligned.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-02-22, oreDirectional defaults synced)
+- Replaced the temporary subtle-flat bake and synchronized all in-game palette SVG sets to the saved gradient-lab defaults from `resource-palette-preview.html`:
+- preset `Ore Directional`,
+- body depth `170%`,
+- ring depth `72%`,
+- ring direction `Vertical (dark bottom)`,
+- edge shadow lift `12%`,
+- stripes `off`.
+- Applied this profile across all palette folders under `public/svgs/palette-themes/` (`option-a`, `option-b`, `option-c`, `option-d`, `option-c-rich`, `option-d-rich`) while preserving each tile's base/highlight/shadow/ink colors.
+- Profile parity matches the preview math, including ring-shadow color lift and separator-shadow softening/opacity derived from `edge shadow lift`.
+
+## Status (2026-02-22, resource distribution zoom size normalization)
+- Updated resource-card distribution sizing to respect board zoom at spawn and normalize during travel in `app/catana/effects/resourceDistribution.js`.
+- Card pop/settle scale now multiplies by current board viewport scale, preserving tile-relative size at origin.
+- Travel animation now interpolates scale back to HUD baseline (`scale: 1`) so cards land at a consistent UI size.
+- Added focused coverage in `app/catana/__tests__/effects/resourceDistribution.test.js` for board-space scaling + HUD normalization.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/effects/resourceDistribution.test.js`
+- `pnpm exec vitest run app/catana/__tests__/effects`
+
+## Status (2026-02-22, resource distribution zoom spawn fix)
+- Fixed resource-card distribution spawn origin under board zoom in `app/catana/effects/resourceDistribution.js`.
+- Root cause was mixed coordinate spaces: tile positions were board-local while board origin used viewport coordinates (`getBoundingClientRect`) without applying current zoom scale.
+- Added explicit viewport-scale conversion (`getBoardViewportScale`) and zoom-aware tile start mapping (`getTileCardStartPosition`) before GSAP spawn.
+- Added focused unit coverage in `app/catana/__tests__/effects/resourceDistribution.test.js` for scaled start-position math.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/effects/resourceDistribution.test.js`
+- `pnpm exec vitest run app/catana/__tests__/effects`
+
+## Status (2026-02-22, subtle-flat pass)
+- Converted all in-game palette tile SVG sets under `public/svgs/palette-themes/` to the `Subtle Flat` gradient profile (including rich variants) to reduce glossy/washed-out ring behavior.
+- Applied subtle-flat geometry/stops consistently for body and ring gradients:
+- body lift: lighter, flatter radial (`cx 158, cy 130, r 224`; `0.2 -> 0.08 -> 0`)
+- body shade: restrained depth (`cx 182, cy 244, r 244`; `0 -> 0.08 -> 0.18`)
+- ring gradients: simple vertical highlight-to-shadow ramps (removed mid-ring extra highlight stop)
+- Verified there is no board-wide saturation/brightness CSS filter affecting all tiles; tile-level filter in `app/catana/Tile.js` only applies during robber hover/placement states.
+- Verified theme wiring/tests remain green:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-02-22, rich variants)
+- Added richer in-game palette variants to the dev `Theme` selector: `Palette C Rich` (`palette-c-rich`) and `Palette D Rich` (`palette-d-rich`).
+- Added tile-only override asset sets at:
+- `public/svgs/palette-themes/option-c-rich/`
+- `public/svgs/palette-themes/option-d-rich/`
+- Rich variants are tuned to reduce washout by lowering highlight opacity and increasing shadow/vignette depth while preserving the same hue families.
+- Updated `app/catana/theme/themes.js` theme registry with the two new IDs and override mappings.
+- Extended `app/catana/__tests__/themeAssets.test.js` for new theme registration, ID resolution, and rich-variant path mapping.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-02-22)
+- Added in-game palette theme options to the dev `Theme` selector via `app/catana/theme/themes.js`: `Palette C`, `Palette B`, `Palette A`, `Palette D` (theme IDs: `palette-c`, `palette-b`, `palette-a`, `palette-d`).
+- Kept non-tile assets on classic paths for these palettes and added per-file tile overrides for:
+- `tile_ore.svg`, `tile_grain.svg`, `tile_wool.svg`, `tile_lumber.svg`, `tile_brick.svg`,
+- mapped to `public/svgs/palette-themes/option-{c,b,a,d}/...`.
+- This avoids breakage for assets that do not exist in palette folders (e.g. robber/building icons) while still swapping resource tile art on-board.
+- Extended theme asset tests in `app/catana/__tests__/themeAssets.test.js` to cover:
+- palette theme registration,
+- tile override path resolution,
+- non-overridden asset fallback to classic base paths.
+- Verified with targeted test runs:
+- `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js`
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+
+## Status (2026-02-20)
+- Disabled debug UI surfaces on gameplay screens:
+- Removed `DebugPanel` render/import from `app/catana/GameScreen.js`.
+- Set `debug: false` on boardgame.io clients in `app/catana/page.js` and `app/catana/lobby/[matchID]/MatchPageClient.js` to suppress the built-in debug overlay.
+- Added coverage in `app/catana/__tests__/DebugUiVisibility.test.js`.
+- Added subtle game-log feed motion polish in `app/catana/components/GameLogPanel.js` and `app/globals.css`.
+- New log rows now get a short fade/slide-in via `game-log-entry` so incoming events feel more alive without heavy animation.
+- Added a top-edge fade mask (`game-log-fade`) on the scroll region so older entries soften as they move out of focus.
+- Updated log autoscroll to use smooth scrolling when motion is allowed and preserve instant scrolling for reduced-motion users.
+- Added test coverage in `app/catana/__tests__/GameLogPanel.test.js` for the new feed animation hooks.
+
+## Status (2026-02-16)
+- Added a dev-only in-game `Theme` dropdown in `app/catana/GameScreen.js` that switches visual assets live without refreshing.
+- Added lightweight theme infrastructure at `app/catana/theme/themes.js`:
+- `classic` theme base: `/svgs`
+- `custom` theme base: `/svgs-custom`
+- helper APIs for asset path resolution + fallback
+- localStorage persistence key `catana:themeId`
+- Wired `themeId` through board/HUD rendering paths so these update live:
+- tiles (`Tile.js`)
+- ports (`Port.js`)
+- robber icon (`Tile.js`)
+- settlements/cities/roads (`Node.js`, `Edge.js`, `ActionNode.js`, `Piece.js`)
+- resource icons (`PlayerActionContainer.js`, `TradeDiscardModal.js`, `GameLogPanel.js`, `resourceDistribution.js`, `DebugPanel.js`, `Card.js`)
+- Updated placement effect visuals (`app/catana/effects/placePiece.js`) to use current theme assets for settlement/city/road animation overlays.
+- Added focused tests:
+- `app/catana/__tests__/themeAssets.test.js` (theme helper behavior)
+- `app/catana/__tests__/GameScreen.themeSwitcher.test.js` (dev switcher wiring/persistence hooks)
+- Updated `app/catana/__tests__/uiNoDragImages.test.js` for new resource-icon path helper usage.
+
 ## Status (2026-02-15)
 - Added a Next dev route for palette iteration at `app/catana/dev/palette-preview/page.js` (URL: `/catana/dev/palette-preview`).
 - Route is development-only and calls `notFound()` outside development mode.
@@ -18,6 +491,41 @@
 - token `size` now auto-derives from each tile's rendered height (`height / 2`) via `ResizeObserver` in `TileFrame`,
 - token vertical placement uses the same in-game offset math (`marginTop: size / 1.66`),
 - this naturally makes top-row chips larger/lower than board-preview chips when tile sizes differ.
+- Retuned wheat palette in `/catana/dev/palette-preview` to a cleaner amber ramp inspired by the provided reference:
+- `base #fbbf24` (amber-400),
+- `highlight #fcd34d` (amber-300),
+- `shadow #f59e0b` (amber-500),
+- applied consistently to both Option C and Option D while leaving gradient structure unchanged.
+- Second wheat brightness pass to better match the bright top reference look (while still no special-case sheen):
+- `base #fbbf24` (unchanged),
+- `highlight #fde68a` (lighter top pop),
+- `shadow #eab308` (less brown/dark than prior orange shadow),
+- applied to both Option C and Option D.
+- Reintroduced pre-SVG wheat baselines as selectable options in `/catana/dev/palette-preview`:
+- `Option A` = legacy pre-SVG C (`#f4bd1f / #ffe682 / #a85500`),
+- `Option B` = legacy pre-SVG D (`#ffd43b / #ffed8e / #c26a06`),
+- `Option C` = current lighter wheat experiment (`#fbbf24 / #fde68a / #eab308`).
+- Updated palette selector and helper copy to A/B/C and defaulted selection to Option C for ongoing wheat tuning.
+- Retuned Option C wheat again because A vs C still read too similar in the tile body:
+- moved to a stronger bright-gold body set (`base #fcd34d`, `highlight #fef08a`, `shadow #f59e0b`) and warmer vignette tint (`ink #b45309`) so the center/base reads visibly lighter, not only the ring.
+- Slightly increased Option C filter to `saturate(1.2) contrast(1.05)` for clearer separation against A.
+- Applied the same updated Option C bright-gold wheat set to `public/svgs/concepts/resource-palette-preview.html`:
+- Option C wheat now matches the dev-route values (`#fcd34d`, `#fef08a`, `#f59e0b`, `ink #b45309`) with `tileFilter` aligned to `saturate(1.2) contrast(1.05)` for parity while iterating ring highlight/seam controls.
+- Applied the same wheat set to rows A, D, and E in `public/svgs/concepts/resource-palette-preview.html` and restored row B.
+- Current row order on that page is now `Option C`, `Option B`, `Option A`, `Option D`, `Option E`.
+- Applied the same bright-gold wheat set to row B as well, so all rendered rows (C/B/A/D/E) now share wheat colors while ring/seam tuning is compared.
+- Saved new default gradient-lab preset values in `public/svgs/concepts/resource-palette-preview.html`:
+- style `Ore Directional`,
+- body depth `170%`,
+- ring depth `72%`,
+- ring direction `Vertical (dark bottom)`,
+- edge shadow lift `12%`,
+- stripes `off`.
+- Kept wheat locked for cross-row ring/highlight comparison and updated the lock-note copy to reflect all current rows (`A/B/C/D/E`).
+- Updated `/catana/dev/palette-preview` dropdown to include all five palette rows for parity with the HTML concept page:
+- options now `C, B, A, D, E` (in that order),
+- row palettes mirror the current concept-page set, including shared bright-gold wheat across rows,
+- Option E note clarifies that accessibility pattern overlays are not rendered in this board-preview route.
 
 ## Status (2026-02-14)
 - Added RL experiment tooling for blog/eval reporting:
@@ -530,3 +1038,86 @@
 - Added a `Narrative Handoff (Open -> Close)` section with concrete opening problem and closing lead-in lines for Parts 1-9 to make post-to-post transitions explicit during writing.
 - Refined Part 1 -> Part 2 framing to avoid unsupported "plateau" claims:
   - Part 1 should close on observed qualitative representation limits (e.g., weak placement intuition), unless quantitative plateau evidence exists.
+
+## Status (2026-02-23, wheat icon shading variants)
+- Added two shading-variant copies of the working wheat resource icon for visual comparison without changing base silhouette:
+  - `design/working_draft/wheat_icon_shading_subtle.svg`
+  - `design/working_draft/wheat_icon_shading_rich.svg`
+- Both variants keep the same shape and experiment with local grain/lobe accent fills (two-tone look), with:
+  - `subtle`: lower-opacity accents and minimal extra detail,
+  - `rich`: stronger accents plus a central stem highlight strip.
+
+## Status (2026-02-23, resource icon outsourcing guide)
+- Added an authoritative Catana resource icon handoff guide:
+  - `docs/agent/skills/catana-brand/RESOURCE_ICON_STYLE_GUIDE.md`
+- Guide captures:
+  - brand-aligned icon style pillars,
+  - canonical 256 template and safe-area contract,
+  - per-resource silhouette briefs (wood/brick/sheep/wheat/ore),
+  - tokenized color strategy, no-sticker/no-heavy-gloss constraints,
+  - acceptance checklist for small-size/in-game legibility.
+- Added discoverability link from:
+  - `docs/agent/skills/catana-brand/SKILL.md`
+
+## Status (2026-03-04, tile icon transform normalization)
+- Updated tile resource-icon placement in `app/catana/Tile.js` to use one uniform transform for all resources.
+- Removed per-resource scale and top-offset overrides so icon redesign can proceed on a single canonical placement.
+- Set the global transform to the previous Sheep baseline:
+  - top factor: `0.204`
+  - scale: `0.68`
+
+## Status (2026-03-05, emoji settlement PNG preview override)
+- Added a temporary emoji-theme asset override in `app/catana/theme/themes.js` so all settlement piece files (`settlement_<color>.svg`) resolve to:
+  - `/test_designs/settlement_red.png`
+- Purpose: quick in-game visual testing of a PNG settlement concept without modifying piece placement/rendering logic.
+- Added test coverage in `app/catana/__tests__/themeAssets.test.js` for emoji settlement override resolution.
+
+## Status (2026-03-05, raster prototype auto-fit for pieces)
+- Updated piece rendering to auto-detect raster assets (`.png/.jpg/.webp/.gif`) and apply raster-friendly placement:
+  - `app/catana/Piece.js`
+  - `app/catana/effects/placePiece.js`
+- Raster assets now render with:
+  - `background-size: contain` (instead of `cover`)
+  - `background-position: center bottom`
+  - slightly adjusted vertical anchor (`0.59` vs SVG `0.63`)
+- SVG assets keep existing behavior unchanged.
+- Added helper and test coverage:
+  - `isRasterAssetPath(...)` in `app/catana/theme/themes.js`
+  - assertions in `app/catana/__tests__/themeAssets.test.js`
+
+## Status (2026-03-05, settlement PNG prototype size tuning)
+- Tuned settlement prototype rendering to appear smaller when the themed settlement asset is raster:
+  - `app/catana/Piece.js`
+  - `app/catana/effects/placePiece.js`
+- Added a settlement-only raster render scale constant (`0.88`) so PNG mockups stay closer to previous SVG visual footprint on board.
+- Non-raster/SVG settlement assets and city/road rendering remain unchanged.
+
+## Status (2026-03-05, settlement PNG vertical alignment nudge)
+- Added a settlement-only raster Y lift (`5px`) to better align the temporary PNG prototype on board nodes.
+- Applied consistently to both static board rendering and placement animation rendering:
+  - `app/catana/Piece.js`
+  - `app/catana/effects/placePiece.js`
+
+## Status (2026-03-04, resource bar icon legibility)
+- Increased resource bar icon display sizes in `app/catana/components/PlayerActionContainer.js`:
+  - Brick/Ore icons from `h-6` -> `h-9`
+  - Sheep icon from `h-7` -> `h-10`
+  - Wood/Wheat icons from `h-8` -> `h-10`
+- Increased resource count text size in the same component from `text-3xl` -> `text-4xl` and widened count slot (`w-6` -> `w-8`) for clearer readability.
+- Added a UI guard test in `app/catana/__tests__/uiNoDragImages.test.js` to ensure larger icon classes remain in place.
+
+## Status (2026-03-04, resource bar spacing + count stability)
+- Tightened count-to-icon spacing in `app/catana/components/PlayerActionContainer.js` (`mr-2` -> `mr-1`) so rows feel less spread out.
+- Reduced count size (`text-4xl` -> `text-3xl`) while keeping legibility.
+- Added number stability helpers to reduce visual shift between digits:
+  - fixed count slot width `w-7`,
+  - centered text `text-center`,
+  - compact line box `leading-none`.
+- Removed `tabular-nums` so the resource count uses default font rendering.
+
+## Status (2026-03-04, resource bar icon style normalization)
+- Replaced per-resource icon sizing branches in `app/catana/components/PlayerActionContainer.js` with one shared icon style for all resources.
+- Resource icons now render with a uniform fixed slot/class:
+  - `h-10 w-10 object-contain`
+- This ensures consistent count-to-icon spacing regardless of individual SVG intrinsic width/padding differences.
+- Updated UI guard test in `app/catana/__tests__/uiNoDragImages.test.js` to assert the shared class and no longer expect mixed `h-9`/`h-10` sizing.

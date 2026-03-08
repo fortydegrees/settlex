@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="346" height="400" viewBox="0 0 346 400" role="img" aria-label="tile emoji-wheat">
+  <defs>
+    <linearGradient id="emoji-grain-border" x1="26" y1="18" x2="320" y2="382" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f8e4ad"/>
+      <stop offset="0.5" stop-color="#e9bf66"/>
+      <stop offset="1" stop-color="#c98e33"/>
+    </linearGradient>
+    <linearGradient id="emoji-grain-fill" x1="62" y1="36" x2="284" y2="364" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fef08a"/>
+      <stop offset="0.5" stop-color="#fcd34d"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="emoji-grain-inner-stroke" x1="48" y1="30" x2="298" y2="370" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffbeb"/>
+      <stop offset="0.5" stop-color="#fde68a"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <radialGradient id="emoji-grain-vignette" cx="173" cy="224" r="188" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f172a" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0f172a" stop-opacity="0.16"/>
+    </radialGradient>
+  </defs>
+
+
+
+  <path id="emoji-grain-inner" d="M162.6 21
+           Q173 15 183.4 21
+           L322.8 101.5
+           Q333.2 107.5 333.2 119.5
+           L333.2 280.5
+           Q333.2 292.5 322.8 298.5
+           L183.4 379
+           Q173 385 162.6 379
+           L23.2 298.5
+           Q12.8 292.5 12.8 280.5
+           L12.8 119.5
+           Q12.8 107.5 23.2 101.5
+           Z"
+        fill="url(#emoji-grain-fill)"/>
+
+  <use href="#emoji-grain-inner" fill="none" stroke="url(#emoji-grain-inner-stroke)" stroke-width="8"/>
+  <use href="#emoji-grain-inner" fill="none" stroke="#fef3c7" stroke-opacity="0.36" stroke-width="1.5"/>
+  <use href="#emoji-grain-inner" fill="url(#emoji-grain-vignette)"/>
+</svg>

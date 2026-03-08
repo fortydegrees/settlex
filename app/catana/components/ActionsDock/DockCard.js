@@ -11,6 +11,7 @@ import { useWindowResize } from "./hooks/useWindowResize";
 import { useDock } from "./DockContext";
 
 import "./dockStyles.css";
+import { handleThemeImageError } from "../../theme/themes";
 
 const INITIAL_WIDTH = 48;
 
@@ -153,6 +154,9 @@ export const DockCard = ({ action }) => {
             src={action.img}
             alt=""
             draggable={false}
+            onError={(event) =>
+              handleThemeImageError(event, action.fallbackImg)
+            }
           />
 
           {(action.count > 0) && (
