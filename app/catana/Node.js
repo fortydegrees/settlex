@@ -1,6 +1,7 @@
 import React from "react";
 import { tilePixelVector, getNodeDelta, SQRT3 } from "./utils/coordinates";
 import { Piece } from "./Piece";
+import { getClassicSvgPath, getThemedSvgPath } from "./theme/themes";
 
 
 export function Node({
@@ -12,6 +13,7 @@ export function Node({
   direction,
   buildingType,
   buildingColor,
+  themeId,
   flashing,
   onClick,
 }) {
@@ -31,11 +33,14 @@ export function Node({
     //then either do immediate road, or not
   //upgrade settlement to city
   //other CK stuff
-  const buildingSVG = `/svgs/${buildingType}_${buildingColor}.svg`
+  const buildingFile = `${buildingType}_${buildingColor}.svg`;
+  const buildingSVG = getThemedSvgPath(themeId, buildingFile);
+  const buildingSVGFallback = getClassicSvgPath(buildingFile);
   return (
 //TODO: make this better
         <Piece
           buildingSVG={buildingSVG}
+          buildingSVGFallback={buildingSVGFallback}
           size={size * 0.8} //this should really be in Piece.js
           left={x}
           top={y}

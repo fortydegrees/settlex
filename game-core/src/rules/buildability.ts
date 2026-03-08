@@ -41,8 +41,14 @@ export function buildableEdges(
     for (const [edgeId, ownerId] of Object.entries(state.roadsByEdgeId)) {
       if (ownerId !== playerId) continue;
       const [a, b] = board.edgeNodes[edgeId];
-      nodes.add(a);
-      nodes.add(b);
+      const aBuilding = state.buildingsByNodeId[a];
+      if (!aBuilding || aBuilding.ownerId === playerId) {
+        nodes.add(a);
+      }
+      const bBuilding = state.buildingsByNodeId[b];
+      if (!bBuilding || bBuilding.ownerId === playerId) {
+        nodes.add(b);
+      }
     }
     for (const [nodeId, building] of Object.entries(state.buildingsByNodeId)) {
       if (building.ownerId === playerId) nodes.add(Number(nodeId));

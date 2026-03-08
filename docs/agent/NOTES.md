@@ -1,5 +1,29 @@
 # NOTES
 
+- Generated-underlay implementation is now the active direction and the manual `board_island_base_*` family is gone.
+- Runtime source of truth:
+- `app/catana/BoardUnderlay.js`
+- `app/catana/theme/themes.js` -> `getBoardUnderlayPath(themeId)`
+- `app/catana/utils/boardUnderlayLayout.js`
+- Generated-asset source of truth:
+- `scripts/generate-board-underlay.mjs`
+- `app/catana/utils/boardUnderlayGeometry.mjs`
+- output asset: `public/svgs/board_underlay_standard.svg`
+- Important correction from implementation:
+- the standard board footprint produces `30` outer boundary edges / points when derived from the real pointy-top hex geometry.
+- Do not assume `18`; that earlier count was wrong.
+- Current generated visual recipe:
+- outer blue transition
+- pale surf band
+- sand body
+- inner muted land tint
+- All four layers are generated from the same derived perimeter loop and checked into one static SVG for launch.
+- Runtime is intentionally static:
+- no `game-core` changes,
+- no native water tiles yet,
+- no per-render geometry generation,
+- no per-edge coast strip system.
+
 - Catana island underlay direction has changed again for launch:
 - do not continue investing in the hand-shaped `board_island_base_tight / medium / broad` SVG family.
 - approved replacement is one checked-in generated asset derived from the real standard board footprint, with no `game-core` changes.

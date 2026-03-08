@@ -1,0 +1,29 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    Canonical Catana resource icon template.
+    Keep final exported icons on this artboard so tile/port/HUD usage is consistent.
+
+    Contract:
+    - Root viewBox: 0 0 256 256
+    - Keep all visible artwork inside iconSafeArea (32px padding)
+    - Prefer main visual mass near centerGuide (128,128)
+    - Recommended stroke width at this size: 6-10
+  -->
+
+  <g id="guides" opacity="0.85">
+    <rect x="0.5" y="0.5" width="255" height="255" stroke="#94A3B8" stroke-dasharray="6 6"/>
+    <rect id="iconSafeArea" x="32" y="32" width="192" height="192" stroke="#22C55E" stroke-dasharray="4 4"/>
+    <line x1="128" y1="0" x2="128" y2="256" stroke="#0EA5E9" stroke-dasharray="3 5"/>
+    <line x1="0" y1="128" x2="256" y2="128" stroke="#0EA5E9" stroke-dasharray="3 5"/>
+    <circle id="centerGuide" cx="128" cy="128" r="4" fill="#0EA5E9"/>
+
+    <!-- Optional tile icon target band: helps preview how icon reads near tile top-center -->
+    <rect x="56" y="30" width="144" height="112" rx="8" stroke="#F59E0B" stroke-dasharray="2 4"/>
+  </g>
+
+  <!-- Replace this group with final icon artwork. -->
+  <g id="resourceIconArtwork" transform="translate(128 128)">
+    <path d="M0 -60L50 30H-50L0 -60Z" fill="#94A3B8"/>
+    <circle cx="0" cy="28" r="14" fill="#475569"/>
+  </g>
+</svg>

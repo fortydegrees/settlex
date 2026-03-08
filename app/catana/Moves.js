@@ -302,6 +302,52 @@ const pickRandom = (items, random) => {
   return items[0];
 };
 
+const getRobberCandidateTileIds = (G) => {
+  const tiles = G?.tiles ?? [];
+  return tiles
+    .filter((tile) => tile.type === TileTypes.LAND)
+    .map((tile) => tile.tile.id)
+    .filter((tileId) => tileId !== G.core?.robberTileId)
+    .filter((tileId) => canPlaceRobber(G.core, G.coreTopology, tileId));
+};
+
+const getRobberReturnStage = (context) =>
+  context.G.robberReturnToStage ||
+  context.ctx.activePlayers?.[context.ctx.currentPlayer]?.returnTo ||
+  "postRoll";
+
+const finishRobberResolution = (context) => {
+  const { G, events } = context;
+  const returnTo = getRobberReturnStage(context);
+  if (G.core) {
+    G.core.turn.phase = returnTo === "preRoll" ? "preRoll" : "postRoll";
+  }
+  G.robberReturnToStage = null;
+  events.setStage(returnTo);
+  return returnTo;
+};
+
+const skipRobberMoveNoValidTile = (context, options) => {
+  const { G, ctx } = context;
+  appendGameLog(G, ctx, {
+    type: "robber:skip",
+    actorId: ctx.currentPlayer,
+    data: { reason: "no-valid-tile" },
+    forced: options?.forced
+  });
+  return finishRobberResolution(context);
+};
+
+const beginRobberMoveStage = (context, options) => {
+  const { G, events } = context;
+  if (getRobberCandidateTileIds(G).length === 0) {
+    skipRobberMoveNoValidTile(context, options);
+    return false;
+  }
+  events.setStage("moveRobber");
+  return true;
+};
+
 
 export const placeRoad = {
   move: (context, edge, options) => {
@@ -398,7 +444,7 @@ export const placeCity = {
 //or postRoll (if played from rolling a 7 or knight mid-turn)
 export const moveRobber = {
   move: (context, tileID, options) =>{
-    const { G, events, ctx, random } = context;
+    const { G, ctx, random } = context;
     
     // Generate a random number for stealing (deterministic)
     // We pass this to the core logic, which will use modulo to select the actual card if needed
@@ -430,15 +476,7 @@ export const moveRobber = {
       });
     }
 
-    const returnTo =
-      G.robberReturnToStage ||
-      context.ctx.activePlayers?.[context.ctx.currentPlayer]?.returnTo ||
-      "postRoll";
-    if (G.core) {
-      G.core.turn.phase = returnTo === "preRoll" ? "preRoll" : "postRoll";
-    }
-    G.robberReturnToStage = null;
-    events.setStage(returnTo);
+    finishRobberResolution(context);
 }
 }
 
@@ -500,7 +538,7 @@ export const rollDice = {
         });
 
       } else {
-        events.setStage("moveRobber");
+        beginRobberMoveStage(context, options);
       }
       return;
     }
@@ -584,13 +622,7 @@ export const discardResources = {
     // Check if we need to advance phase/stage for the *game*
     // applyDiscard updates pendingDiscards and potentially state.turn.phase to 'robberMove'
     if (G.core.turn.phase === "robberMove") {
-       // Everyone has discarded. Now the CURRENT PLAYER needs to move the robber.
-       // We explicitly set the active player back to the current player for the moveRobber stage.
-       events.setActivePlayers({
-         currentPlayer: "moveRobber",
-         // ensure others are not active? setActivePlayers overwrites previous configuration by default unless strictly additive?
-         // Documentation says "This takes the stage configuration to the value..." implying it sets the state.
-       });
+       beginRobberMoveStage(context, options);
     }
   }
 };
@@ -681,15 +713,12 @@ export const autoEndTurn = {
 
 export const autoMoveRobber = {
   move: (context) => {
-    const { G, ctx, random, events, log } = context;
-    const tiles = G.tiles ?? [];
-    const candidates = tiles
-      .filter((tile) => tile.type === TileTypes.LAND)
-      .map((tile) => tile.tile.id)
-      .filter((tileId) => tileId !== G.core?.robberTileId)
-      .filter((tileId) => canPlaceRobber(G.core, G.coreTopology, tileId));
+    const { G, ctx, random, log } = context;
+    const candidates = getRobberCandidateTileIds(G);
     const tileId = pickRandom(candidates, random);
     if (tileId == null) {
+      log?.setMetadata?.({ message: "auto-robber: no valid tile, skipping" });
+      skipRobberMoveNoValidTile(context, { forced: true });
       return;
     }
     const potentialVictims = getRobberVictims(
@@ -752,16 +781,8 @@ export const autoMoveRobber = {
       });
     }
 
-    const returnTo =
-      G.robberReturnToStage ||
-      context.ctx.activePlayers?.[context.ctx.currentPlayer]?.returnTo ||
-      "postRoll";
-    if (G.core) {
-      G.core.turn.phase = returnTo === "preRoll" ? "preRoll" : "postRoll";
-    }
-    G.robberReturnToStage = null;
     log.setMetadata({ message: `auto-moving robber to ${tileId}` });
-    events.setStage(returnTo);
+    finishRobberResolution(context);
   }
 };
 
@@ -876,7 +897,7 @@ export const playDevCardStart = {
       logAwardChanges(G, ctx, previousAwards, options);
       maybeLogGameOver(G, ctx);
       G.robberReturnToStage = currentStage;
-      events.setStage("moveRobber");
+      beginRobberMoveStage(context, options);
       return;
     }
 

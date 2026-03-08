@@ -1,5 +1,33 @@
 # PROGRESS
 
+## Status (2026-03-07, generated standard-board underlay implemented)
+- Replaced the superseded hand-shaped `board_island_base_*` approach with a generated standard-board underlay asset:
+- `public/svgs/board_underlay_standard.svg`
+- Added pure underlay helpers:
+- `app/catana/utils/boardUnderlayGeometry.mjs` (+ JS re-export wrapper)
+- `app/catana/utils/boardUnderlayLayout.js`
+- Added reproducible generator script:
+- `scripts/generate-board-underlay.mjs`
+- Added runtime underlay component:
+- `app/catana/BoardUnderlay.js`
+- Updated runtime wiring:
+- `app/catana/theme/themes.js` now exposes `getBoardUnderlayPath(themeId)`
+- `app/catana/Board.js` now renders `<BoardUnderlay ... />` before `{tiles}`
+- Removed superseded files:
+- `app/catana/BoardIslandBase.js`
+- `app/catana/utils/islandBaseLayout.js`
+- `public/svgs/board_island_base_tight.svg`
+- `public/svgs/board_island_base_medium.svg`
+- `public/svgs/board_island_base_broad.svg`
+- Important geometry correction: the true perimeter of the standard 19-land-tile pointy-top board is `30` boundary edges / ordered points, not `18`.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/utils/boardUnderlayGeometry.test.js app/catana/__tests__/utils/boardUnderlayLayout.test.js app/catana/__tests__/themeAssets.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/uiNoDragImages.test.js`
+- `pnpm lint` (warnings only; no new underlay-specific lint errors)
+- Visual QA:
+- desktop board screenshot: `.playwright-cli/page-2026-03-07T11-51-37-369Z.png`
+- narrow/mobile board screenshot: `.playwright-cli/page-2026-03-07T11-53-52-707Z.png`
+- Known unrelated runtime issue during QA: `/timer/:matchID` still hits an existing localhost CORS problem from `http://localhost:8000`, but the board itself renders and the underlay loads correctly.
+
 ## Status (2026-03-07, generated-underlay island direction approved)
 - Approved a launch-scoped replacement for the manual Catana island SVG variants.
 - New direction:

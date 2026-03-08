@@ -8,26 +8,22 @@ import {
   getPublicVictoryPoints,
 } from "@settlex/game-core";
 import { getVpDisplay } from "./PlayerAvatarStatsUtils";
+import { getPlayerColorOption } from "../theme/playerColors";
 import "./PlayerAvatarStats.css";
-
-// Explicit gradient classes so Tailwind JIT includes them.
-const AVATAR_GRADIENTS = {
-  red: "from-red-500 to-red-800",
-  blue: "from-blue-500 to-blue-800",
-  green: "from-green-500 to-green-800",
-  orange: "from-orange-500 to-orange-800",
-  purple: "from-purple-500 to-purple-800",
-  pink: "from-pink-500 to-pink-800",
-  cyan: "from-cyan-500 to-cyan-800",
-  amber: "from-amber-500 to-amber-800",
-};
 
 export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, statusType }) => {
   if (!player) return null;
 
   // Prefer the player's chosen color; fall back to seat-index color.
-  const colorKey = player.chosenColor || player.color;
-  const avatarColor = AVATAR_GRADIENTS[colorKey] || AVATAR_GRADIENTS[player.color] || "from-slate-500 to-slate-800";
+  const chosenColor = player.chosenColor;
+  const seatColor = player.color;
+  const chosenGradient = chosenColor
+    ? getPlayerColorOption(chosenColor).gradient
+    : null;
+  const seatGradient = seatColor
+    ? getPlayerColorOption(seatColor).gradient
+    : null;
+  const avatarColor = chosenGradient || seatGradient || "from-slate-500 to-slate-800";
   const currentRoadLength = core && coreTopology
     ? getLongestRoadLength(core, coreTopology, player.id)
     : 0;

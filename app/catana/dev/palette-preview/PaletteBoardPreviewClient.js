@@ -11,25 +11,64 @@ const DESERT_COLORS = {
 
 const PALETTES = {
   C: {
-    name: "Option C - Bright Wheat / Split Greens",
-    note: "Brighter wheat + stronger sheep/lumber separation.",
-    tileFilter: "saturate(1.2) contrast(1.06)",
+    name: "Option C - Bright Gold Wheat / Split Greens",
+    note: "Updated bright-gold wheat target with strong sheep/lumber separation.",
+    tileFilter: "saturate(1.2) contrast(1.05)",
     resources: {
       ore: { base: "#86a8ce", highlight: "#e8f2ff", shadow: "#3c4f66", ink: "#0f172a" },
-      wheat: { base: "#f4bd1f", highlight: "#ffe682", shadow: "#a85500", ink: "#0f172a" },
+      wheat: { base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
       sheep: { base: "#a3e635", highlight: "#ecfccb", shadow: "#4d7c0f", ink: "#0f172a" },
       lumber: { base: "#10b981", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
       brick: { base: "#fb923c", highlight: "#fed7aa", shadow: "#c2410c", ink: "#0f172a" },
       desert: DESERT_COLORS,
     },
   },
+  B: {
+    name: "Option B - Vibrance+ (Playful)",
+    note: "Higher saturation and stronger highlight/shadow separation for a juicier board feel.",
+    tileFilter: "saturate(1.22) contrast(1.05)",
+    resources: {
+      ore: { base: "#7ea1cc", highlight: "#e6f0ff", shadow: "#334155", ink: "#0f172a" },
+      wheat: { base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
+      sheep: { base: "#84cc16", highlight: "#d9f99d", shadow: "#3f6212", ink: "#0f172a" },
+      lumber: { base: "#16a34a", highlight: "#86efac", shadow: "#14532d", ink: "#0f172a" },
+      brick: { base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" },
+      desert: DESERT_COLORS,
+    },
+  },
+  A: {
+    name: "Option A - Juicy Pop (Balanced)",
+    note: "Moderate saturation/contrast bump with balanced resource separation.",
+    tileFilter: "saturate(1.08) contrast(1.04)",
+    resources: {
+      ore: { base: "#8ea6c5", highlight: "#dbe8f8", shadow: "#475569", ink: "#0f172a" },
+      wheat: { base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
+      sheep: { base: "#a3e635", highlight: "#d9f99d", shadow: "#4d7c0f", ink: "#0f172a" },
+      lumber: { base: "#22c55e", highlight: "#86efac", shadow: "#166534", ink: "#0f172a" },
+      brick: { base: "#f97316", highlight: "#fdba74", shadow: "#c2410c", ink: "#0f172a" },
+      desert: DESERT_COLORS,
+    },
+  },
   D: {
     name: "Option D - Slate Ore / Split Greens",
-    note: "Slate ore + brighter sheep vs cooler darker lumber for fast scanning.",
+    note: "Slate-steel ore with strong sheep/lumber separation for faster scanning.",
     tileFilter: "saturate(1.18) contrast(1.04)",
     resources: {
       ore: { base: "#94a3b8", highlight: "#dbe4ef", shadow: "#334155", ink: "#0f172a" },
-      wheat: { base: "#ffd43b", highlight: "#ffed8e", shadow: "#c26a06", ink: "#0f172a" },
+      wheat: { base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
+      sheep: { base: "#bef264", highlight: "#f0fdb4", shadow: "#65a30d", ink: "#0f172a" },
+      lumber: { base: "#059669", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
+      brick: { base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" },
+      desert: DESERT_COLORS,
+    },
+  },
+  E: {
+    name: "Option E - Accessibility Patterns",
+    note: "Same base colors as D; pattern overlays are not shown in this board preview route.",
+    tileFilter: "saturate(1.16) contrast(1.03)",
+    resources: {
+      ore: { base: "#94a3b8", highlight: "#dbe4ef", shadow: "#334155", ink: "#0f172a" },
+      wheat: { base: "#fcd34d", highlight: "#fef08a", shadow: "#f59e0b", ink: "#b45309" },
       sheep: { base: "#bef264", highlight: "#f0fdb4", shadow: "#65a30d", ink: "#0f172a" },
       lumber: { base: "#059669", highlight: "#6ee7b7", shadow: "#065f46", ink: "#0f172a" },
       brick: { base: "#f97316", highlight: "#fed7aa", shadow: "#9a3412", ink: "#0f172a" },
@@ -295,11 +334,11 @@ function TileFrame({ colors, svgKey, tileFilter, number, showNumberTokens }) {
 }
 
 export function PaletteBoardPreviewClient() {
-  const [selectedPaletteId, setSelectedPaletteId] = useState("D");
+  const [selectedPaletteId, setSelectedPaletteId] = useState("C");
   const [showNumberTokens, setShowNumberTokens] = useState(true);
 
   const boardRows = useMemo(() => buildBoardTiles(), []);
-  const palette = PALETTES[selectedPaletteId] || PALETTES.D;
+  const palette = PALETTES[selectedPaletteId] || PALETTES.C;
 
   return (
     <main className="min-h-screen px-4 py-6 text-slate-900 sm:px-6">
@@ -308,7 +347,7 @@ export function PaletteBoardPreviewClient() {
           Palette Row + Board Preview
         </h1>
         <p className="mb-3 mt-2 text-[0.95rem] text-slate-700">
-          Pick Option C or D, toggle number tokens, and preview both the resource row and a full 19-hex board.
+          Pick Option C/B/A/D/E, toggle number tokens, and preview both the resource row and a full 19-hex board.
         </p>
 
         <section className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-2.5 rounded-xl border border-white/60 bg-white/65 p-3">
@@ -323,7 +362,10 @@ export function PaletteBoardPreviewClient() {
               onChange={(event) => setSelectedPaletteId(event.target.value)}
             >
               <option value="C">Option C</option>
+              <option value="B">Option B</option>
+              <option value="A">Option A</option>
               <option value="D">Option D</option>
+              <option value="E">Option E</option>
             </select>
           </div>
 

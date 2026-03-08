@@ -1,10 +1,15 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { formatLogEntry } from "../utils/gameText";
-import { RESOURCE_ICON_SVGS } from "../types";
+import {
+  getClassicResourceIconPath,
+  getResourceIconPath,
+  handleThemeImageError,
+} from "../theme/themes";
+import { getPlayerNameHex } from "../theme/playerColors";
 
 const AUTO_SCROLL_IDLE_MS = 3000;
 
-const renderToken = (token, index) => {
+const renderToken = (token, index, themeId) => {
   if (!token) return null;
   if (token.kind === "divider") {
     const isStrong = token.variant === "strong";
@@ -20,28 +25,43 @@ const renderToken = (token, index) => {
     );
   }
   if (token.kind === "player") {
+    const nameColor = token.color ? getPlayerNameHex(token.color) ?? token.color : null;
     return (
-      <span key={`player-${index}`} className="font-semibold text-slate-900">
-        {token.name}
+      <span
+        key={`player-${index}`}
+        className="inline-flex items-center gap-1 font-semibold"
+      >
+        {token.emoji ? <span aria-hidden="true">{token.emoji}</span> : null}
+        <span
+          className={nameColor ? "" : "text-slate-900"}
+          style={nameColor ? { color: nameColor } : undefined}
+        >
+          {token.name}
+        </span>
       </span>
     );
   }
   if (token.kind === "resource") {
-    const icon = RESOURCE_ICON_SVGS[token.resource];
+    const icon = getResourceIconPath(themeId, token.resource);
+    const iconFallback = getClassicResourceIconPath(token.resource);
     return (
-      <span
-        key={`resource-${index}`}
-        className="inline-flex items-center gap-1"
-      >
-        <span className="text-xs font-semibold text-slate-700">
-          {token.count}x
+      icon ? (
+        <img
+          key={`resource-${index}`}
+          src={icon}
+          alt=""
+          title={token.resource}
+          className="h-4 w-4"
+          draggable={false}
+          onError={(event) =>
+            handleThemeImageError(event, iconFallback)
+          }
+        />
+      ) : (
+        <span key={`resource-${index}`} className="text-slate-700">
+          {token.resource}
         </span>
-        {icon ? (
-          <img src={icon} alt="" className="h-4 w-4" draggable={false} />
-        ) : (
-          <span className="text-slate-700">{token.resource}</span>
-        )}
-      </span>
+      )
     );
   }
   if (token.kind === "text") {
@@ -54,7 +74,7 @@ const renderToken = (token, index) => {
   return null;
 };
 
-export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
+const GameLogPanelComponent = ({ entries = [], playerMap = {}, themeId }) => {
   const scrollRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
   const idleTimeoutRef = useRef(null);
@@ -64,7 +84,7 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
     () =>
       entries
         .map((entry, entryIndex) => {
-          const tokens = formatLogEntry(entry, nameMap);
+          const tokens = formatLogEntry(entry, playerMap);
           if (!tokens || tokens.length === 0) return null;
           return {
             key: entry.id ?? `${entryIndex}-${entry.type}`,
@@ -72,7 +92,7 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
           };
         })
         .filter(Boolean),
-    [entries, nameMap]
+    [entries, playerMap]
   );
 
   useEffect(() => {
@@ -80,7 +100,19 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
     if (!shouldAutoScrollRef.current) return;
     if (isHoveringRef.current) return;
     isAutoScrollingRef.current = true;
-    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const targetTop = scrollRef.current.scrollHeight;
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!prefersReducedMotion && typeof scrollRef.current.scrollTo === "function") {
+      try {
+        scrollRef.current.scrollTo({ top: targetTop, behavior: "smooth" });
+      } catch (err) {
+        scrollRef.current.scrollTop = targetTop;
+      }
+    } else {
+      scrollRef.current.scrollTop = targetTop;
+    }
     requestAnimationFrame(() => {
       isAutoScrollingRef.current = false;
     });
@@ -135,7 +167,7 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
         <div className="min-h-0 flex-1 pb-4">
           <div
             ref={scrollRef}
-            className="game-log-scroll h-full overflow-y-auto px-4"
+            className="game-log-scroll game-log-fade h-full overflow-y-auto px-4"
             onWheel={markManualScroll}
             onTouchMove={markManualScroll}
             onMouseEnter={handleMouseEnter}
@@ -146,10 +178,10 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
                 return (
                   <div
                     key={entry.key}
-                    className="flex flex-wrap items-center gap-1"
+                    className="game-log-entry flex flex-wrap items-center gap-1"
                   >
                     {entry.tokens.map((token, tokenIndex) =>
-                      renderToken(token, tokenIndex)
+                      renderToken(token, tokenIndex, themeId)
                     )}
                   </div>
                 );
@@ -161,3 +193,6 @@ export const GameLogPanel = ({ entries = [], nameMap = {} }) => {
     </div>
   );
 };
+
+export const GameLogPanel = React.memo(GameLogPanelComponent);
+GameLogPanel.displayName = "GameLogPanel";
