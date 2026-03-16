@@ -9,12 +9,12 @@ function createContext(props: {
 }) {
   return {
     wrapperComponent: {
-      offsetWidth: 1200,
+      offsetWidth: 1000,
       offsetHeight: 800,
     },
     contentComponent: {
-      offsetWidth: 800,
-      offsetHeight: 600,
+      offsetWidth: 1000,
+      offsetHeight: 800,
     },
     setup: {
       centerZoomedOut: false,
@@ -24,16 +24,39 @@ function createContext(props: {
 }
 
 describe("calculateBounds", () => {
-  it("keeps horizontal bounds symmetric for symmetric limits when zoomed out", () => {
+  it("uses content size for zoomed-in lower bounds and preserves configured top padding", () => {
     const context = createContext({
       minPositionX: -500,
       maxPositionX: 500,
       minPositionY: -200,
-      maxPositionY: 200,
+      maxPositionY: 500,
     });
 
-    const bounds = calculateBounds(context, 0.3);
+    const bounds = calculateBounds(context, 2);
 
-    expect(Math.abs(bounds.minPositionX)).toBe(bounds.maxPositionX);
+    expect(bounds).toEqual({
+      minPositionX: -1500,
+      maxPositionX: 500,
+      minPositionY: -1000,
+      maxPositionY: 500,
+    });
+  });
+
+  it("adds configured pan room around the centered zoomed-out position", () => {
+    const context = createContext({
+      minPositionX: -500,
+      maxPositionX: 500,
+      minPositionY: -200,
+      maxPositionY: 500,
+    });
+
+    const bounds = calculateBounds(context, 0.5);
+
+    expect(bounds).toEqual({
+      minPositionX: -250,
+      maxPositionX: 750,
+      minPositionY: 0,
+      maxPositionY: 700,
+    });
   });
 });

@@ -52,13 +52,17 @@ export const getBounds = (
       ? diffHeight * (centerZoomedOut ? 1 : 0.5)
       : 0;
 
-      
-  const minPositionX =  props.minPositionX - wrapperWidth - newContentWidth - (diffWidth * (centerZoomedOut ? 1 : 0.5));
-  //const minPositionX =  props.minPositionX + (diffWidth * (centerZoomedOut ? 1 : 0.5));
-  const maxPositionX = scaleWidthFactor;
-  //const minPositionY = props.minPositionY - wrapperHeight - newContentHeight - scaleHeightFactor;
-  const minPositionY = props.minPositionY  - scaleHeightFactor;
-  const maxPositionY = scaleHeightFactor;
+  const extraMinX = props.minPositionX ?? 0;
+  const extraMaxX = props.maxPositionX ?? 0;
+  const extraMinY = props.minPositionY ?? 0;
+  const extraMaxY = props.maxPositionY ?? 0;
+
+  const minPositionX =
+    wrapperWidth - newContentWidth - scaleWidthFactor + extraMinX;
+  const maxPositionX = scaleWidthFactor + extraMaxX;
+  const minPositionY =
+    wrapperHeight - newContentHeight - scaleHeightFactor + extraMinY;
+  const maxPositionY = scaleHeightFactor + extraMaxY;
 
   //console.log('bdz', minPositionX, maxPositionX, minPositionY, maxPositionY)
   //if scale = 1, minPositionX, maxPositionX, minPositionY, maxPositionY should be default value
@@ -85,10 +89,7 @@ export const calculateBounds = (
     newDiffHeight,
   } = getComponentsSizes(wrapperComponent, contentComponent, newScale);
 
-  const { minPositionX, maxPositionX, minPositionY, maxPositionY } = contextInstance.props
-
-
-  const bounds = getBounds(
+  return getBounds(
     wrapperWidth,
     newContentWidth,
     newDiffWidth,
@@ -98,18 +99,6 @@ export const calculateBounds = (
     contextInstance.props,
     Boolean(centerZoomedOut),
   );
-
-
-  const zoomMultiplier = newScale < 1 ? 1 + (1 - newScale) : newScale;
-
-  const bounds3 = {
-    minPositionX: contextInstance.props.minPositionX * zoomMultiplier,
-    minPositionY: contextInstance.props.minPositionY * zoomMultiplier,
-    maxPositionX: contextInstance.props.maxPositionX * zoomMultiplier,
-    maxPositionY: contextInstance.props.maxPositionY * zoomMultiplier
-  }
-
-  return bounds3;
 };
 
 /**

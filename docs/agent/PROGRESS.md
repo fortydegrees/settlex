@@ -1,5 +1,25 @@
 # PROGRESS
 
+## Status (2026-03-16, bottom HUD hitbox narrowed for board panning)
+- Fixed the bottom HUD overlay in `app/catana/components/PlayerActionContainer.js` so blank space across the full-width bottom strip no longer intercepts pointer events.
+- The fixed bottom container is now `pointer-events-none` by default, while the actual centered dock and right-side dice/end-turn column opt back into `pointer-events-auto`.
+- This preserves the existing layout while allowing board pan gestures to start in the empty area around the bottom-right HUD instead of being blocked by the full-width flex wrapper.
+- Added focused coverage in:
+- `app/catana/__tests__/PlayerActionContainer.hitbox.test.js`
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/GameScreen.interactionGuards.test.js app/catana/__tests__/GameScreen.zoomPan.test.js`
+
+## Status (2026-03-16, zoom/pan bottom-edge fix)
+- Fixed board zoom/pan bounds in the local `react-zoom-pan-pinch` fork so bounds now come from the actual transformed content size plus configured extra pan room, instead of treating the extra offsets as the entire scaled bounds.
+- This restores enough negative pan range to zoom into the bottom and right edges of the board while keeping the existing extra sea/headroom allowances in `GameScreen`.
+- Updated `app/catana/GameScreen.js` to set `disablePadding={true}` on `TransformWrapper`, so wheel zoom no longer overshoots and snaps back on zoom stop.
+- Added regression coverage in:
+- `react-zoom-pan-pinch/core/bounds/bounds.utils.test.ts`
+- `app/catana/__tests__/GameScreen.zoomPan.test.js`
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.audioMute.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js app/catana/__tests__/GameScreen.gameOver.test.js app/catana/__tests__/GameScreen.interactionGuards.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/GameScreen.zoomPan.test.js react-zoom-pan-pinch/core/bounds/bounds.utils.test.ts react-zoom-pan-pinch/core/double-click/double-click.logic.test.ts`
+- `pnpm verify`
+
 ## Status (2026-03-16, dedicated high-contrast port icons)
 - Added a dedicated port-icon asset path in `app/catana/theme/themes.js`:
 - `getPortIconPath(themeId, resource)`

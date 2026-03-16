@@ -1,5 +1,15 @@
 # NOTES
 
+- `app/catana/components/PlayerActionContainer.js` now treats the fixed bottom HUD as pointer-transparent by default and re-enables pointer events only on the actual control clusters.
+- Keep the outer bottom container `pointer-events-none`; if it is changed back to pointer-active, blank space around the dice/end-turn area will block board pan-start gestures again.
+- Regression coverage for this lives in `app/catana/__tests__/PlayerActionContainer.hitbox.test.js`.
+
+- Local `react-zoom-pan-pinch` bounds math now derives from actual transformed content size plus configured extra pan room in `react-zoom-pan-pinch/core/bounds/bounds.utils.ts`; do not revert to the old `props * scale` bounds model or bottom/right board zooming will clamp too early again.
+- `app/catana/GameScreen.js` now sets `disablePadding={true}` on `TransformWrapper` so wheel zoom clamps continuously instead of overshooting and snapping back on stop.
+- Regression coverage for this behavior lives in:
+- `react-zoom-pan-pinch/core/bounds/bounds.utils.test.ts`
+- `app/catana/__tests__/GameScreen.zoomPan.test.js`
+
 - Port markers now have a separate icon pipeline from tile overlays:
 - `app/catana/theme/themes.js` exposes `getPortIconPath(themeId, resource)` and `getClassicPortIconPath(resource)`.
 - Keep tile-face emoji resource overlays on Fluent `Flat`, but keep emoji-theme port markers on dedicated Fluent `High Contrast` files under `public/svgs/palette-themes/emoji/port_icon_*.svg`.

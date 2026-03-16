@@ -261,9 +261,12 @@ export const PlayerActionContainer = ({
     : "bg-blue-200 bg-opacity-50 ring-slate-300";
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 px-4">
+    <div className="fixed bottom-4 left-0 right-0 pointer-events-none px-4">
       <div className="relative flex items-end">
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-0 flex items-end">
+      <div
+        className="absolute left-1/2 -translate-x-1/2 bottom-0 flex items-end pointer-events-auto"
+        data-allow-interaction="true"
+      >
         {/* Avatar + centered dock */}
         <PlayerAvatarStats
           player={player}
@@ -320,8 +323,11 @@ export const PlayerActionContainer = ({
         </div>
       </div>
 
-      <div className="flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
-        <div className="flex w-36 flex-col items-center">
+      <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
+        <div
+          className="pointer-events-auto flex w-36 flex-col items-center"
+          data-allow-interaction="true"
+        >
           {ctx.phase === "main" && (
             <>
               {/* Dice */}
