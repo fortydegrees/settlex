@@ -551,6 +551,7 @@ export function GameScreen(bgioProps) {
         maxPositionY={500}
         maxScale={6}
         minScale={0.3}
+        disablePadding={true}
         doubleClick={{ mode: "toggle" }}
       >
         <TransformComponent>
