@@ -29,10 +29,23 @@ describe("CatanBoard layering", () => {
 
   it("mounts the board underlay before tiles", () => {
     const underlayIndex = boardContents.indexOf("<BoardUnderlay");
+    const channelIndex = boardContents.indexOf("<BoardPortChannels");
     const tilesIndex = boardContents.indexOf("{tiles}");
 
     expect(underlayIndex).toBeGreaterThan(-1);
+    expect(channelIndex).toBeGreaterThan(-1);
     expect(tilesIndex).toBeGreaterThan(-1);
     expect(underlayIndex).toBeLessThan(tilesIndex);
+    expect(underlayIndex).toBeLessThan(channelIndex);
+    expect(channelIndex).toBeLessThan(tilesIndex);
+  });
+
+  it("renders placed buildings after the tile and port layer", () => {
+    const tilesIndex = boardContents.indexOf("{tiles}");
+    const buildingsIndex = boardContents.indexOf("{buildings}");
+
+    expect(tilesIndex).toBeGreaterThan(-1);
+    expect(buildingsIndex).toBeGreaterThan(-1);
+    expect(tilesIndex).toBeLessThan(buildingsIndex);
   });
 });

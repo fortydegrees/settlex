@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="240" viewBox="0 0 80 240" fill="none">
+  <defs>
+    <linearGradient id="hybridSand" x1="40" y1="8" x2="40" y2="232" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#DFA751"/>
+      <stop offset="1" stop-color="#C17A26"/>
+    </linearGradient>
+    <linearGradient id="hybridGlass" x1="40" y1="23" x2="40" y2="217" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="rgba(255,255,255,0.65)"/>
+      <stop offset="0.4" stop-color="rgba(186,238,255,0.7)"/>
+      <stop offset="1" stop-color="rgba(117,214,246,0.42)"/>
+    </linearGradient>
+    <linearGradient id="hybridSpark" x1="40" y1="30" x2="40" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="rgba(255,255,255,0.55)"/>
+      <stop offset="1" stop-color="rgba(255,255,255,0.05)"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M17 9.5C19.8 6.7 23.5 5 27.4 5H52.6C56.5 5 60.2 6.7 63 9.5L67 13.5C69.8 16.3 71.5 20 71.5 23.9V216.1C71.5 220 69.8 223.7 67 226.5L63 230.5C60.2 233.3 56.5 235 52.6 235H27.4C23.5 235 19.8 233.3 17 230.5L13 226.5C10.2 223.7 8.5 220 8.5 216.1V23.9C8.5 20 10.2 16.3 13 13.5L17 9.5Z"
+    fill="url(#hybridSand)"
+  />
+  <path
+    d="M23.3 17C25.2 15.1 27.8 14 30.5 14H49.5C52.2 14 54.8 15.1 56.7 17L59 19.3C60.9 21.2 62 23.8 62 26.5V213.5C62 216.2 60.9 218.8 59 220.7L56.7 223C54.8 224.9 52.2 226 49.5 226H30.5C27.8 226 25.2 224.9 23.3 223L21 220.7C19.1 218.8 18 216.2 18 213.5V26.5C18 23.8 19.1 21.2 21 19.3L23.3 17Z"
+    fill="url(#hybridGlass)"
+  />
+  <path
+    d="M30 29C31.7 27.3 34 26.3 36.4 26.3H43.6C46 26.3 48.3 27.3 50 29L51 30C52.7 31.7 53.7 34 53.7 36.4V203.6C53.7 206 52.7 208.3 51 210L50 211C48.3 212.7 46 213.7 43.6 213.7H36.4C34 213.7 31.7 212.7 30 211L29 210C27.3 208.3 26.3 206 26.3 203.6V36.4C26.3 34 27.3 31.7 29 30L30 29Z"
+    fill="url(#hybridSpark)"
+  />
+  <path
+    d="M22.5 20.5C24.6 18.4 27.4 17.3 30.4 17.3H49.6C52.6 17.3 55.4 18.4 57.5 20.5"
+    stroke="rgba(255,255,255,0.72)"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+  <path
+    d="M18 29.5H62"
+    stroke="#B97520"
+    stroke-width="2.1"
+    stroke-linecap="round"
+    opacity="0.24"
+  />
+  <path
+    d="M18 210.5H62"
+    stroke="#B97520"
+    stroke-width="2.1"
+    stroke-linecap="round"
+    opacity="0.18"
+  />
+</svg>

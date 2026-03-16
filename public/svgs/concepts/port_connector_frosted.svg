@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="240" viewBox="0 0 80 240" fill="none">
+  <defs>
+    <linearGradient id="frostOuter" x1="40" y1="7" x2="40" y2="233" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="rgba(255,255,255,0.68)"/>
+      <stop offset="0.46" stop-color="rgba(144,225,255,0.72)"/>
+      <stop offset="1" stop-color="rgba(95,195,242,0.88)"/>
+    </linearGradient>
+    <linearGradient id="frostInner" x1="40" y1="18" x2="40" y2="222" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="rgba(255,255,255,0.62)"/>
+      <stop offset="1" stop-color="rgba(204,242,255,0.2)"/>
+    </linearGradient>
+    <linearGradient id="warmCore" x1="40" y1="30" x2="40" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F3D776"/>
+      <stop offset="1" stop-color="#E0B24F"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M18 9C20.6 6.4 24 5 27.7 5H52.3C56 5 59.4 6.4 62 9L67.3 14.3C69.9 16.9 71.3 20.3 71.3 24V216C71.3 219.7 69.9 223.1 67.3 225.7L62 231C59.4 233.6 56 235 52.3 235H27.7C24 235 20.6 233.6 18 231L12.7 225.7C10.1 223.1 8.7 219.7 8.7 216V24C8.7 20.3 10.1 16.9 12.7 14.3L18 9Z"
+    fill="url(#frostOuter)"
+  />
+  <path
+    d="M21.5 16C23.7 13.9 26.7 12.8 29.7 12.8H50.3C53.3 12.8 56.3 13.9 58.5 16L61 18.5C63.1 20.7 64.2 23.7 64.2 26.7V213.3C64.2 216.3 63.1 219.3 61 221.5L58.5 224C56.3 226.1 53.3 227.2 50.3 227.2H29.7C26.7 227.2 23.7 226.1 21.5 224L19 221.5C16.9 219.3 15.8 216.3 15.8 213.3V26.7C15.8 23.7 16.9 20.7 19 18.5L21.5 16Z"
+    fill="url(#frostInner)"
+  />
+  <path
+    d="M31.4 28.5H48.6C52.2 28.5 55 31.3 55 34.9V205.1C55 208.7 52.2 211.5 48.6 211.5H31.4C27.8 211.5 25 208.7 25 205.1V34.9C25 31.3 27.8 28.5 31.4 28.5Z"
+    fill="url(#warmCore)"
+    opacity="0.75"
+  />
+  <path
+    d="M22 20.5C24.1 18.5 26.9 17.5 29.9 17.5H50.1C53.1 17.5 55.9 18.5 58 20.5"
+    stroke="rgba(255,255,255,0.82)"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+  <path
+    d="M24.5 41.5H55.5"
+    stroke="rgba(255,255,255,0.3)"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <path
+    d="M24.5 197.5H55.5"
+    stroke="rgba(255,255,255,0.22)"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+</svg>

@@ -1,2 +1,16 @@
-
-<svg xmlns="http://www.w3.org/2000/svg" width="80" height="240"><style>.st26{fill:#603913}</style><g id="Layer_1"><path fill="#dd952f" d="M5.8.4h67.7v239.2H5.8z"/><path class="st26" d="M73 1v238H6.2V1h66.6m1-1H5.3v240h68.6V0z"/><g opacity=".6"><path class="st26" d="M4.2 25.4H75v7.5H4.2zM4.2 59.2H75v7.5H4.2zM4.2 93H75v7.5H4.2zM4.2 129.7H75v7.5H4.2zM5 166.2h70.8v7.5H5zM4.2 202.8H75v7.5H4.2z"/></g></g></svg>
+<svg viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+    <!-- outer -->
+    <path d="M28 26 Q 86 54 148 66" fill="none" stroke="#CFEFFF" stroke-width="30" stroke-linecap="round"/>
+    <path d="M28 114 Q 86 86 148 74" fill="none" stroke="#CFEFFF" stroke-width="30" stroke-linecap="round"/>
+  
+    <!-- middle -->
+    <path d="M36 33 Q 88 57 146 67" fill="none" stroke="#F5F6F2" stroke-width="20" stroke-linecap="round"/>
+    <path d="M36 107 Q 88 83 146 73" fill="none" stroke="#F5F6F2" stroke-width="20" stroke-linecap="round"/>
+  
+    <!-- sand -->
+    <path d="M45 41 Q 90 61 143 68" fill="none" stroke="#D8CB97" stroke-width="12" stroke-linecap="round"/>
+    <path d="M45 99 Q 90 79 143 72" fill="none" stroke="#D8CB97" stroke-width="12" stroke-linecap="round"/>
+  
+    <!-- center channel -->
+    <path d="M84 52 Q 114 64 140 70 Q 114 76 84 88" fill="#9DCCE8" opacity="0.45"/>
+  </svg>

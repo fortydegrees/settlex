@@ -7,6 +7,7 @@ import {
   getClassicSvgPath,
   getBoardUnderlayPath,
   getBackgroundImageWithFallback,
+  getPortIconPath,
   getResourceIconPath,
   isRasterAssetPath,
   resolveThemeId,
@@ -17,12 +18,12 @@ describe("Catana theme assets", () => {
     expect(CATANA_THEMES.classic.assetBase).toBe("/svgs");
     expect(CATANA_THEMES["palette-b"].id).toBe("palette-b");
     expect(CATANA_THEMES.emoji.id).toBe("emoji");
-    expect(DEFAULT_THEME_ID).toBe("classic");
+    expect(DEFAULT_THEME_ID).toBe("emoji");
   });
 
   it("resolves unknown theme ids to default", () => {
     expect(resolveThemeId("palette-b")).toBe("palette-b");
-    expect(resolveThemeId("unknown")).toBe("classic");
+    expect(resolveThemeId("unknown")).toBe("emoji");
   });
 
   it("builds themed and classic svg paths", () => {
@@ -72,6 +73,16 @@ describe("Catana theme assets", () => {
       "/svgs/palette-themes/emoji/icon_desert.svg"
     );
     expect(getResourceIconPath("classic", "Desert")).toBeNull();
+  });
+
+  it("resolves dedicated port icon assets separately from tile resource icons", () => {
+    expect(getPortIconPath("emoji", "Ore")).toBe(
+      "/svgs/palette-themes/emoji/port_icon_ore.svg"
+    );
+    expect(getPortIconPath("emoji", "Any")).toBe(
+      "/svgs/palette-themes/emoji/port_icon_any.svg"
+    );
+    expect(getPortIconPath("classic", "Ore")).toBe("/svgs/icon_ore.svg");
   });
 
   it("builds CSS background fallback with themed first and classic second", () => {

@@ -31,12 +31,10 @@ import { Howler } from "howler";
 import { getVictoryPoints } from "@settlex/game-core";
 import {
   CATANA_THEME_STORAGE_KEY,
-  getThemeOptions,
   resolveThemeId,
 } from "./theme/themes";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
-const DEV_THEME_OPTIONS = getThemeOptions();
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
@@ -71,7 +69,7 @@ export function GameScreen(bgioProps) {
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
   const [isMuted, setIsMuted] = useState(readStoredMute);
-  const [themeId, setThemeId] = useState(readStoredThemeId);
+  const [themeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
   const gameOverSeenRef = useRef(false);
@@ -526,8 +524,6 @@ export function GameScreen(bgioProps) {
       }
     };
   }, [width, height, bgioProps.G, playerViewMap, themeId]);
-  const showDevThemeSwitcher = process.env.NODE_ENV !== "production";
-
   // console.log('p', player)
   // console.log('opps', opponents)
   const handleToggleMute = () => {
@@ -591,30 +587,6 @@ export function GameScreen(bgioProps) {
           )}
         </svg>
       </button>
-
-      {showDevThemeSwitcher && (
-        <label
-          className="fixed left-16 top-4 z-40 flex h-10 items-center gap-2 rounded-full bg-white/65 px-3 text-slate-700 shadow-lg ring-1 ring-white/50 backdrop-blur-sm"
-          data-allow-interaction="true"
-        >
-          <span className="text-xs font-semibold uppercase tracking-widest text-slate-700">
-            Theme
-          </span>
-          <select
-            value={themeId}
-            onChange={(event) => setThemeId(resolveThemeId(event.target.value))}
-            className="rounded-md border border-white/60 bg-white/80 px-2 py-1 text-sm text-slate-800"
-            data-allow-interaction="true"
-            aria-label="Theme"
-          >
-            {DEV_THEME_OPTIONS.map((theme) => (
-              <option key={theme.id} value={theme.id}>
-                {theme.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
 
       {showResultsButton && (
         <GlassPillButton
