@@ -1,5 +1,6 @@
-export const DEFAULT_THEME_ID = "classic";
+export const DEFAULT_THEME_ID = "emoji";
 export const CATANA_THEME_STORAGE_KEY = "catana:themeId";
+const CLASSIC_THEME_ID = "classic";
 
 const PALETTE_TILE_FILE_NAMES = Object.freeze([
   "tile_ore.svg",
@@ -15,6 +16,15 @@ const PALETTE_RESOURCE_ICON_FILE_NAMES = Object.freeze([
   "icon_sheep.svg",
   "icon_wheat.svg",
   "icon_ore.svg",
+]);
+
+const PORT_ICON_FILE_NAMES = Object.freeze([
+  "port_icon_wood.svg",
+  "port_icon_brick.svg",
+  "port_icon_sheep.svg",
+  "port_icon_wheat.svg",
+  "port_icon_ore.svg",
+  "port_icon_any.svg",
 ]);
 
 const PLAYER_PIECE_COLOR_IDS = Object.freeze([
@@ -47,6 +57,16 @@ const createResourceIconAssetOverrides = (optionFolder) =>
   Object.freeze(
     Object.fromEntries(
       PALETTE_RESOURCE_ICON_FILE_NAMES.map((fileName) => [
+        fileName,
+        `/svgs/palette-themes/${optionFolder}/${fileName}`,
+      ])
+    )
+  );
+
+const createPortIconAssetOverrides = (optionFolder) =>
+  Object.freeze(
+    Object.fromEntries(
+      PORT_ICON_FILE_NAMES.map((fileName) => [
         fileName,
         `/svgs/palette-themes/${optionFolder}/${fileName}`,
       ])
@@ -96,6 +116,7 @@ export const CATANA_THEMES = Object.freeze({
       ...createTileAssetOverrides("emoji"),
       "tile_desert.svg": "/svgs/palette-themes/emoji/tile_desert.svg",
       ...createResourceIconAssetOverrides("emoji"),
+      ...createPortIconAssetOverrides("emoji"),
       // Temporary design-test override so all settlement colors render from one PNG mockup.
       ...createSettlementTestAssetOverrides(),
     }),
@@ -108,6 +129,15 @@ export const RESOURCE_ICON_FILES_BY_RESOURCE = Object.freeze({
   Sheep: "icon_sheep.svg",
   Wheat: "icon_wheat.svg",
   Ore: "icon_ore.svg",
+});
+
+export const PORT_ICON_FILES_BY_RESOURCE = Object.freeze({
+  Wood: "port_icon_wood.svg",
+  Brick: "port_icon_brick.svg",
+  Sheep: "port_icon_sheep.svg",
+  Wheat: "port_icon_wheat.svg",
+  Ore: "port_icon_ore.svg",
+  Any: "port_icon_any.svg",
 });
 
 export const TILE_FILES_BY_RESOURCE = Object.freeze({
@@ -150,7 +180,7 @@ export function isRasterAssetPath(path) {
 }
 
 export function getClassicSvgPath(fileName) {
-  return getThemedSvgPath(DEFAULT_THEME_ID, fileName);
+  return getThemedSvgPath(CLASSIC_THEME_ID, fileName);
 }
 
 export function getBoardUnderlayPath(themeId) {
@@ -181,6 +211,10 @@ export function getResourceIconFile(resource) {
   return RESOURCE_ICON_FILES_BY_RESOURCE[resource] ?? null;
 }
 
+export function getPortIconFile(resource) {
+  return PORT_ICON_FILES_BY_RESOURCE[resource] ?? null;
+}
+
 export function getResourceIconPath(themeId, resource) {
   const resolvedThemeId = resolveThemeId(themeId);
   if (resolvedThemeId === "emoji" && resource === "Desert") {
@@ -193,6 +227,28 @@ export function getResourceIconPath(themeId, resource) {
 export function getClassicResourceIconPath(resource) {
   const fileName = getResourceIconFile(resource);
   return fileName ? getClassicSvgPath(fileName) : null;
+}
+
+export function getPortIconPath(themeId, resource) {
+  const resolvedThemeId = resolveThemeId(themeId);
+  if (resolvedThemeId === "emoji") {
+    const fileName = getPortIconFile(resource);
+    return fileName ? getThemedSvgPath(themeId, fileName) : null;
+  }
+
+  if (resource === "Any") {
+    return getClassicSvgPath("port_icon_any.svg");
+  }
+
+  return getResourceIconPath(themeId, resource);
+}
+
+export function getClassicPortIconPath(resource) {
+  if (resource === "Any") {
+    return getClassicSvgPath("port_icon_any.svg");
+  }
+
+  return getClassicResourceIconPath(resource);
 }
 
 export function getTileFile(resource) {

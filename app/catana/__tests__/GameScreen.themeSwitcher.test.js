@@ -8,18 +8,23 @@ const __dirname = path.dirname(__filename);
 
 const screenPath = path.resolve(__dirname, "..", "GameScreen.js");
 
-describe("GameScreen dev theme switcher", () => {
-  it("stores theme selection in local storage", () => {
+describe("GameScreen theme wiring", () => {
+  it("stores the resolved theme in local storage", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
     expect(contents).toContain("CATANA_THEME_STORAGE_KEY");
     expect(contents).toMatch(/localStorage\.setItem\(CATANA_THEME_STORAGE_KEY/);
   });
 
-  it("adds a dev-only theme select control", () => {
+  it("does not render the old dev theme select control", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
-    expect(contents).toMatch(/Theme/);
-    expect(contents).toMatch(/<select/);
-    expect(contents).toMatch(/process\.env\.NODE_ENV/);
+    expect(contents).not.toMatch(/<select/);
+    expect(contents).not.toMatch(/setThemeId\(resolveThemeId\(event\.target\.value\)\)/);
+    expect(contents).not.toMatch(/showDevThemeSwitcher/);
+  });
+
+  it("falls back to the default theme when no stored theme exists", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+    expect(contents).toMatch(/return resolveThemeId\(null\);/);
   });
 
   it("passes themeId into board and hud components", () => {

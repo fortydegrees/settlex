@@ -6,6 +6,7 @@ import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
 import { Port } from "./Port";
 import { BoardUnderlay } from "./BoardUnderlay";
+import { BoardPortChannels } from "./BoardPortChannels";
 import "./Board.css";
 import { getBoardLayout } from "./utils/boardLayout";
 import useWindowSize from "./utils/useWindowSize";
@@ -553,6 +554,13 @@ export function CatanBoard({
       {" "}
       <div className="relative h-screen w-screen">
         <BoardUnderlay center={center} size={size} themeId={themeId} />
+        <BoardPortChannels
+          tiles={G.tiles}
+          center={center}
+          size={size}
+          width={containerWidth}
+          height={containerHeight}
+        />
         {tiles}
         <div
           ref={placementRoadLayerRef}

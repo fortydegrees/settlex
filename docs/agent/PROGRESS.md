@@ -1,5 +1,94 @@
 # PROGRESS
 
+## Status (2026-03-16, dedicated high-contrast port icons)
+- Added a dedicated port-icon asset path in `app/catana/theme/themes.js`:
+- `getPortIconPath(themeId, resource)`
+- `getClassicPortIconPath(resource)`
+- Emoji-theme resource ports now resolve to a separate Fluent `High Contrast` asset family under:
+- `public/svgs/palette-themes/emoji/port_icon_wood.svg`
+- `public/svgs/palette-themes/emoji/port_icon_brick.svg`
+- `public/svgs/palette-themes/emoji/port_icon_sheep.svg`
+- `public/svgs/palette-themes/emoji/port_icon_wheat.svg`
+- `public/svgs/palette-themes/emoji/port_icon_ore.svg`
+- Generic `3:1` ports now use a dedicated question-mark SVG instead of the old three-dot glyph:
+- `public/svgs/palette-themes/emoji/port_icon_any.svg`
+- `public/svgs/port_icon_any.svg` (classic/non-emoji fallback)
+- Follow-up art tuning:
+- softened all dedicated port icon ink from hard black `#212121` to lighter sand-brown `#A8986F` so the symbols sit more calmly on the pale port disk.
+- replaced the dedicated brick port icon with the same mortar-and-bricks silhouette used by the tile brick icon, restyled into the softer port-ink treatment so tile and port brick shapes now match.
+- Updated `app/catana/Port.js` so both specific-resource and generic ports render through the image-based port-icon path and retain classic fallback behavior on image error.
+- Tile emoji icons remain the existing Fluent `Flat` assets; only port markers now use the separate higher-contrast set.
+- Added focused coverage in:
+- `app/catana/__tests__/themeAssets.test.js`
+- `app/catana/__tests__/Port.render.test.js`
+- `app/catana/__tests__/Port.iconAssets.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/Port.iconAssets.test.js app/catana/__tests__/themeAssets.test.js app/catana/__tests__/Port.render.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/BoardPortChannels.render.test.js app/catana/__tests__/utils/portLayout.test.js`
+- `pnpm lint` (passes with existing unrelated warnings only)
+
+## Status (2026-03-16, port connector test tightened)
+- Tightened `app/catana/__tests__/BoardPortChannels.render.test.js` to assert two connector bars per port group, not just total connectors.
+- Removed the unused `connector` param from `getConnectorBarStyle` in `app/catana/BoardPortChannels.js`.
+- Verification:
+- `pnpm vitest app/catana/__tests__/BoardPortChannels.render.test.js`
+
+## Status (2026-03-09, runtime-composed port markers implemented)
+- Replaced the old literal port asset stack in `app/catana/Port.js` with a runtime-composed marker system.
+- Added pure port layout helper:
+- `app/catana/utils/portLayout.js`
+- Added focused runtime styling:
+- `app/catana/Port.css`
+- Added focused tests:
+- `app/catana/__tests__/utils/portLayout.test.js`
+- `app/catana/__tests__/Port.render.test.js`
+- Implemented MVP port structure:
+- two explicit connector planks,
+- one embedded circular harbor marker,
+- reused themed resource icon for specific ports,
+- bottom-centered rate badge (`2:1` for specific ports, `3:1` for generic ports),
+- simple neutral 3-dot glyph for generic `Any` ports.
+- Important implementation correction from code review:
+- connector anchors are now derived from actual coastal node directions using `getNodeDelta(...)`, not from legacy hand-tuned fractions.
+- Follow-up visual tuning:
+- port marker footprint was reduced from the first MVP pass,
+- connector anchors now start inset from the coastal node centers and terminate sooner so the planks read as shoreline bridges rather than running underneath settlement/city positions.
+- Important implementation note:
+- `app/catana/Port.js` now uses `React.createElement(...)` instead of JSX because the Vitest/Vite server-render path for this file failed import analysis on JSX in `.js`.
+- Residual MVP gap:
+- focused tests now prove node-anchored connector geometry for one shoreline direction plus isolated port markup structure,
+- but there is still no full live-board visual regression check for all six port directions.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/utils/portLayout.test.js app/catana/__tests__/Port.render.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/themeAssets.test.js`
+- `pnpm lint` (passes with existing unrelated warnings only)
+
+## Status (2026-03-09, port marker MVP direction approved)
+- Approved a launch-scoped replacement for the current copied/literal Catana port visuals.
+- New direction:
+- use an embedded abstract shoreline marker instead of scenic harbor art,
+- keep the marker mostly map-like with light glass/frosted accents,
+- reuse the existing themed resource icons as the center glyph for specific ports,
+- render the trade rate as a separate bottom-centered badge (`2:1` / `3:1`),
+- render exactly two explicit bridge/causeway connectors to the eligible coastal nodes.
+- Decided against both extremes for launch:
+- not a literal boat/sign harbor treatment,
+- not a fully illustrated mini-island scene,
+- not a floating UI chip disconnected from the board.
+- Added design doc `docs/plans/2026-03-09-port-marker-mvp-design.md`.
+- Added implementation plan `docs/plans/2026-03-09-port-marker-mvp-plan.md`.
+
+## Status (2026-03-08, board theme picker removed and emoji defaulted)
+- Removed the in-game theme picker UI from `app/catana/GameScreen.js`.
+- Kept theme plumbing intact on the board/game screen:
+- `themeId` is still read, stored, and passed into board/HUD/modal components.
+- Default/fallback theme resolution now uses `emoji` in `app/catana/theme/themes.js`.
+- Preserved classic asset fallback behavior for helper paths like `getClassicSvgPath(...)` so non-emoji fallback rendering still points at `/svgs/*`.
+- Updated focused tests:
+- `app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+- `app/catana/__tests__/themeAssets.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/themeAssets.test.js`
+- `pnpm lint` (passes with existing unrelated warnings only)
+
 ## Status (2026-03-07, generated standard-board underlay implemented)
 - Replaced the superseded hand-shaped `board_island_base_*` approach with a generated standard-board underlay asset:
 - `public/svgs/board_underlay_standard.svg`
@@ -1121,3 +1210,88 @@
   - `h-10 w-10 object-contain`
 - This ensures consistent count-to-icon spacing regardless of individual SVG intrinsic width/padding differences.
 - Updated UI guard test in `app/catana/__tests__/uiNoDragImages.test.js` to assert the shared class and no longer expect mixed `h-9`/`h-10` sizing.
+
+## Status (2026-03-09, port connector visual targeting)
+- Replaced the experimental free-angle connector geometry with the original fixed six-way bridge transform system from the older port implementation.
+- `app/catana/utils/portLayout.js` now uses:
+  - the legacy connector direction map,
+  - fixed `0 / ±60deg` rotations,
+  - the legacy `port_pier.svg` bridge asset for consistent shoreline alignment.
+- This restores the previously proven coast/port bridge angles instead of continuously solving connector vectors.
+- Follow-up fix: bridge placement is now anchored from the actual connected node coordinates rather than the old hardcoded per-direction offsets, so the restored legacy angles line up with the current curved board geometry.
+- Final fix: port connectors now resolve from the same `nodeRenderById` render-map entries used by `ActionNode` and settlement placement.
+  - `app/catana/Board.js` passes `nodeRenderById` into each `Port`.
+  - `app/catana/Port.js` resolves `tile.nodes` through that map and hands the exact render nodes to `getPortRenderModel(...)`.
+  - `app/catana/utils/portLayout.js` computes each bridge from the real rendered node tile-coordinate + node-direction pair, including ports whose two coastal nodes come from different land tiles.
+- Added focused regression coverage in `app/catana/__tests__/utils/portLayout.test.js` for east and southeast ports using actual node-anchored connector expectations.
+
+## Status (2026-03-10, port connector rollback for manual tuning)
+- Rolled back the latest node-render-driven bridge placement change while keeping the new port marker/icon system intact.
+- `app/catana/Board.js` no longer passes `nodeRenderById` into `Port`.
+- `app/catana/Port.js` again asks `getPortRenderModel(...)` for direction-based connector placement only.
+- `app/catana/utils/portLayout.js` is back on the simpler legacy direction map for bridges (`0 / ±60deg` rotations from the port tile direction).
+- Follow-up correction: the rollback now restores the original hand-tuned diagonal bridge offsets as well, not the intermediate node-centered variant.
+- This leaves the new port icons/badge system in place while restoring the older bridge positioning so manual tweaking can continue from that baseline.
+
+## Status (2026-03-10, port connector concept SVGs)
+- Added three standalone connector concept assets for design exploration in `public/svgs/concepts/`:
+  - `port_connector_sandbar.svg`
+  - `port_connector_frosted.svg`
+  - `port_connector_hybrid.svg`
+- All three use the existing `80x240` pier footprint so they can be swapped into the current port connector slot without changing layout math.
+
+## Status (2026-03-10, port bridge layering)
+- Wrapped each port’s marker/connector/badge in a dedicated low-z `.portLayer` stacking context in `app/catana/Port.js` / `app/catana/Port.css`.
+- Port internal z-order is now:
+  - marker: `z-index: 1`
+  - connector/pier: `z-index: 2`
+  - rate badge: `z-index: 3`
+- Because the board still renders `{tiles}` before `{buildings}`, placed settlements/cities/roads remain above the full port layer while the connector now sits on top of the circular port marker.
+
+## Status (2026-03-10, smaller port icon footprint)
+- Reduced the port marker icon footprint in `app/catana/Port.css`:
+  - resource icon: `52%` -> `46%`
+  - generic "3 dots" glyph: `44% x 22%` -> `40% x 20%`
+- Added a regression in `app/catana/__tests__/Port.render.test.js` so future styling changes keep the smaller icon sizing.
+
+## Status (2026-03-12, board-level port channels)
+- Replaced the visible old per-port bridge treatment with a board-level `BoardPortChannels` SVG layer in `app/catana/BoardPortChannels.js`.
+- `app/catana/Board.js` now renders that layer between `BoardUnderlay` and `{tiles}`, so the channels read as part of the map while the circular port markers still sit on top.
+- `app/catana/Port.js` no longer renders the old `port-connector` divs; the port component is back to marker + badge only.
+- The current channel art direction is:
+  - one tapered channel per port,
+  - warm sand outer band using the shared board sand `#E5D08A`,
+  - pale blue inner lane,
+  - curved path geometry rather than rotated pier assets.
+- The current tuning pass widened the coast-side end of the channels and switched from straight polygons to curved SVG paths to better match the softer underlay silhouette.
+- Added coverage in:
+  - `app/catana/__tests__/BoardPortChannels.render.test.js`
+  - `app/catana/__tests__/Board.layering.test.js`
+  - `app/catana/__tests__/Port.render.test.js`
+
+## Status (2026-03-16, simple port connectors)
+- Simplified the board-level port connection treatment in `app/catana/BoardPortChannels.js` from one heavier merged shoreline channel per port to two short sandy connector bars per port.
+- Kept the existing layer slot unchanged:
+  - `BoardUnderlay`
+  - `BoardPortChannels`
+  - `{tiles}` / port token
+  - placed pieces
+- Preserved the existing correct connector targeting by reusing `getPortRenderModel(...).connectors` from `app/catana/utils/portLayout.js` rather than introducing new geometry logic.
+- Updated `app/catana/__tests__/BoardPortChannels.render.test.js` to assert:
+  - one channel group per port,
+  - two connector bars per port,
+  - no old merged channel markup.
+- Design outcome:
+  - lighter than the board-channel experiment,
+  - keeps the important “these two nodes access this port” signal,
+  - easier to tune visually than the merged coastline-extension treatment.
+
+## Status (2026-03-16, node-anchored simple port connectors)
+- Refined the simple connector pass so the visible sandy bars are now anchored near the real coastal node circles instead of being centered inside the old legacy connector shells.
+- `app/catana/utils/portLayout.js` now exposes `nodeDirection` on each connector so the render layer can place bars from actual node-facing geometry.
+- `app/catana/BoardPortChannels.js` now computes each bar from:
+  - the port tile center,
+  - `getNodeDelta(...)` for the correct coastal vertex,
+  - the current port marker center,
+  - a short clamped length that stops before the token.
+- This keeps the lighter “two separate sandy markers” direction while fixing the mid-water floating/undersized look from the first simple-bar attempt.

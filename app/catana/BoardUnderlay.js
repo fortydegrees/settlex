@@ -28,7 +28,7 @@ export function BoardUnderlay({ center, size, themeId }) {
       height: frame.height,
       pointerEvents: "none",
       userSelect: "none",
-      opacity: 0.94,
+      opacity: 1,
     },
   });
 }
