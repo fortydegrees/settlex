@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-03-18, settlement/road/city asset design brief approved)
+- Wrote the approved Catana design brief for replacement `settlement`, `road`, and `city` assets in:
+- `docs/superpowers/specs/2026-03-18-piece-assets-design.md`
+- Locked the MVP direction to a `hybrid soft-edge` piece family:
+- angled tabletop perspective,
+- silhouette-first forms,
+- low detail,
+- `city` as a direct upgrade of `settlement`,
+- controlled exploration of edge treatment and shading instead of committing to Colonist-style outlines/bevels.
+- Defined the concept-generation contract for the first image pass:
+- one concept sheet per run containing all three pieces together,
+- `3 x 3` matrix across edge treatment (`soft tinted`, `hybrid`, `minimal`) and shading (`flat planes`, `restrained gradients`, `hybrid`),
+- output intended as tracing reference for later SVG production, not final art.
+- No production SVGs generated in this pass yet; this entry records the approved design and prompt contract only.
+
 ## Status (2026-03-16, bottom HUD hitbox narrowed for board panning)
 - Fixed the bottom HUD overlay in `app/catana/components/PlayerActionContainer.js` so blank space across the full-width bottom strip no longer intercepts pointer events.
 - The fixed bottom container is now `pointer-events-none` by default, while the actual centered dock and right-side dice/end-turn column opt back into `pointer-events-auto`.

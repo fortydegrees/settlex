@@ -1,5 +1,29 @@
 # NOTES
 
+- Approved design baseline for MVP build pieces (`settlement`, `road`, `city`) now lives in:
+- `docs/superpowers/specs/2026-03-18-piece-assets-design.md`
+
+- Do not treat the current Colonist-derived piece SVGs as geometry to preserve. The approved direction is a new Catana-native family that only keeps the useful parts of the old language:
+- angled tabletop perspective,
+- immediate on-board readability,
+- player-color compatibility.
+
+- Piece-family rules for the next concept pass:
+- silhouette-first,
+- low detail,
+- no tiny windows/brick seams/trim,
+- no glossy Colonist bevel language,
+- no harsh black cartoon outline.
+
+- `city` should remain a direct upgrade of `settlement`, not a separate icon family. If a future concept makes city feel unrelated, reject it even if the standalone art looks good.
+
+- Gradient shading is explicitly still in scope for these piece assets, but only in restrained form. Tile-like soft gradients are acceptable; glossy bevel gradients are not.
+
+- The first concept run should stay controlled:
+- generate `settlement`, `road`, and `city` together in one sheet,
+- vary only edge treatment and shading mode,
+- judge the outputs primarily for board readability and traceability into SVG.
+
 - `app/catana/components/PlayerActionContainer.js` now treats the fixed bottom HUD as pointer-transparent by default and re-enables pointer events only on the actual control clusters.
 - Keep the outer bottom container `pointer-events-none`; if it is changed back to pointer-active, blank space around the dice/end-turn area will block board pan-start gestures again.
 - Regression coverage for this lives in `app/catana/__tests__/PlayerActionContainer.hitbox.test.js`.
