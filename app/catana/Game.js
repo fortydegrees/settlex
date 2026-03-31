@@ -8,7 +8,7 @@ import {
   ResourceType
 } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
-import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
+import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, DEBUG_takeDevCards, DEBUG_captureScenarioState, DEBUG_clearCapturedScenarioState, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
 import { appendGameLog } from "./utils/gameLog.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 import {
@@ -18,12 +18,144 @@ import {
 
 const DEBUG_MOVES = {
   DEBUG_takeCardsFromBank,
+  DEBUG_takeDevCards,
+  DEBUG_captureScenarioState,
+  DEBUG_clearCapturedScenarioState,
   DEBUG_loadState,
   DEBUG_setScenario
 };
 
 const isDebugEnvironment = (nodeEnv = process.env.NODE_ENV) =>
   nodeEnv !== "production";
+
+const isScenarioStateLike = (value) =>
+  Boolean(
+    value &&
+      typeof value === "object" &&
+      value.core &&
+      Array.isArray(value.core.players)
+  );
+
+const extractScenarioState = (value) => {
+  if (isScenarioStateLike(value?.state)) return value.state;
+  if (isScenarioStateLike(value?.G)) return value.G;
+  if (isScenarioStateLike(value)) return value;
+  return null;
+};
+
+const cloneScenarioState = (value) => JSON.parse(JSON.stringify(value));
+
+const mergeScenarioState = (baseState, scenarioState) => ({
+  ...baseState,
+  ...scenarioState,
+  core: scenarioState.core ?? baseState.core,
+  coreTopology: scenarioState.coreTopology ?? baseState.coreTopology,
+  tiles: scenarioState.tiles ?? baseState.tiles,
+  valids: scenarioState.valids ?? baseState.valids,
+  diceRoll: scenarioState.diceRoll ?? baseState.diceRoll,
+  robberTileId: scenarioState.robberTileId ?? baseState.robberTileId,
+  placementOrder: scenarioState.placementOrder ?? baseState.placementOrder,
+  preGame: scenarioState.preGame ?? baseState.preGame,
+  devCardPlay: scenarioState.devCardPlay ?? baseState.devCardPlay,
+  robberReturnToStage:
+    scenarioState.robberReturnToStage ?? baseState.robberReturnToStage,
+  gameLog: scenarioState.gameLog ?? baseState.gameLog,
+  gameLogSeq: scenarioState.gameLogSeq ?? baseState.gameLogSeq,
+  rulesetId: scenarioState.rulesetId ?? baseState.rulesetId,
+  boardConfigId: scenarioState.boardConfigId ?? baseState.boardConfigId
+});
+
+const derivePlacementStage = (scenarioState, currentPlayerId) => {
+  const hasRoadTargets = (scenarioState?.valids?.edges?.length ?? 0) > 0;
+  if (hasRoadTargets) return "road";
+  const pendingRoadNodeId =
+    scenarioState?.core?.pendingRoadFromNodeIdByPlayer?.[currentPlayerId];
+  if (pendingRoadNodeId != null) return "road";
+  return "settlement";
+};
+
+const deriveNormalActivePlayers = (scenarioState, currentPlayerId) => {
+  const turnPhase = scenarioState?.core?.turn?.phase;
+  if (turnPhase === "robberDiscard") {
+    const pendingDiscards = scenarioState?.core?.turn?.pendingDiscards ?? [];
+    if (pendingDiscards.length > 0) {
+      return pendingDiscards.reduce((acc, playerId) => {
+        acc[playerId] = "robberDiscard";
+        return acc;
+      }, {});
+    }
+    if (currentPlayerId != null) {
+      return { [currentPlayerId]: "robberDiscard" };
+    }
+  }
+
+  if (turnPhase === "robberMove") {
+    return currentPlayerId != null ? { [currentPlayerId]: "moveRobber" } : null;
+  }
+
+  if (turnPhase === "postRoll") {
+    return currentPlayerId != null ? { [currentPlayerId]: "postRoll" } : null;
+  }
+
+  return currentPlayerId != null ? { [currentPlayerId]: "preRoll" } : null;
+};
+
+const seedContextFromScenario = (ctx, scenarioState) => {
+  const scenarioPlayers = scenarioState?.core?.players?.map(String) ?? null;
+  const currentPlayerId =
+    scenarioState?.core?.turn?.currentPlayerId != null
+      ? String(scenarioState.core.turn.currentPlayerId)
+      : null;
+
+  if (scenarioPlayers?.length) {
+    ctx.playOrder = [...scenarioPlayers];
+    ctx.numPlayers = scenarioPlayers.length;
+  }
+
+  if (currentPlayerId != null) {
+    ctx.currentPlayer = currentPlayerId;
+    const nextPlayOrderPos = ctx.playOrder?.indexOf?.(currentPlayerId) ?? -1;
+    if (nextPlayOrderPos >= 0) {
+      ctx.playOrderPos = nextPlayOrderPos;
+    }
+  }
+
+  if (scenarioState?.core?.phase === "placement") {
+    ctx.phase = "placement";
+    const stage = derivePlacementStage(scenarioState, currentPlayerId);
+    ctx.activePlayers =
+      currentPlayerId != null ? { [currentPlayerId]: stage } : ctx.activePlayers;
+    return;
+  }
+
+  if (scenarioState?.core?.phase === "normal") {
+    ctx.phase = "main";
+    const activePlayers = deriveNormalActivePlayers(
+      scenarioState,
+      currentPlayerId
+    );
+    if (activePlayers) {
+      ctx.activePlayers = activePlayers;
+    }
+  }
+};
+
+const validateScenarioSetupData = (setupData, numPlayers) => {
+  const scenarioState = extractScenarioState(setupData?.devScenarioState);
+  if (!scenarioState) return undefined;
+  if (!isDebugEnvironment()) {
+    return "Dev scenarios are disabled in production.";
+  }
+  const scenarioPlayerCount = scenarioState.core?.players?.length;
+  if (
+    Number.isFinite(scenarioPlayerCount) &&
+    Number.isFinite(numPlayers) &&
+    scenarioPlayerCount !== numPlayers
+  ) {
+    return `Scenario requires ${scenarioPlayerCount} players.`;
+  }
+  return undefined;
+};
 //setup board and convert tiles/edges into right format to render
 
 //   new BalancedBoard({
@@ -114,6 +246,9 @@ export const createCatanGame = ({
 
   maxPlayers: 4,
 
+  validateSetupData: (setupData, numPlayers) =>
+    validateScenarioSetupData(setupData, numPlayers),
+
   // Hide secret state from opponents
   // Each player sees their own resources/devCards but only counts for others
   // Uses placeholder values to preserve .length for UI compatibility
@@ -185,7 +320,7 @@ export const createCatanGame = ({
       core.devDeck = random.Shuffle(core.devDeck);
     }
 
-    return {
+    const initialState = {
       core,
       coreTopology,
       rulesetId,
@@ -201,6 +336,18 @@ export const createCatanGame = ({
       gameLog: [],
       gameLogSeq: 0
     };
+
+    const scenarioState = extractScenarioState(setupData?.devScenarioState);
+    if (!isDebugEnvironment() || !scenarioState) {
+      return initialState;
+    }
+
+    const nextState = mergeScenarioState(
+      initialState,
+      cloneScenarioState(scenarioState)
+    );
+    seedContextFromScenario(ctx, nextState);
+    return nextState;
   },
 
 //https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
@@ -263,7 +410,17 @@ export const createCatanGame = ({
             if (context.G?.core) {
               context.G.core.phase = "placement";
             }
-            updateValids(context, "settlement")
+            const currentStage =
+              context.ctx?.activePlayers?.[context.ctx.currentPlayer] ?? "settlement";
+            const pendingRoadNodeId =
+              context.G?.core?.pendingRoadFromNodeIdByPlayer?.[
+                context.ctx.currentPlayer
+              ];
+            updateValids(
+              context,
+              currentStage,
+              currentStage === "road" ? pendingRoadNodeId : undefined
+            )
         },
         stages: {
           settlement: { moves: { placeSettlement, autoPlaceSettlement, ...debugMoves } },
@@ -296,7 +453,9 @@ export const createCatanGame = ({
         onBegin: ( context) => {
           console.log("main phase")
 
-            updateValids(context, "preRoll")
+            const currentStage =
+              context.ctx?.activePlayers?.[context.ctx.currentPlayer] ?? "preRoll";
+            updateValids(context, currentStage)
         },
         order: TurnOrder.DEFAULT,
         activePlayers: { currentPlayer: "preRoll" },

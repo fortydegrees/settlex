@@ -10,6 +10,7 @@ import { sanitizeDisplayName } from "../utils/playerIdentity";
 
 const GAME_NAME = "catan";
 const BOT_NAME_PREFIX = "Puffer";
+const isDevEnvironment = process.env.NODE_ENV !== "production";
 const STORAGE_KEY_NAME = "catana:lobby:playerName";
 const STORAGE_KEY_EMOJI = "catana:lobby:playerEmoji";
 const STORAGE_KEY_COLOR = "catana:lobby:playerColor";
@@ -462,10 +463,14 @@ export function LobbyPageClient() {
   const [showCustom, setShowCustom] = useState(false);
   const [createNumPlayers, setCreateNumPlayers] = useState(4);
   const [createPending, setCreatePending] = useState(false);
+  const [scenarioStartPending, setScenarioStartPending] = useState(false);
   const [joinMatchID, setJoinMatchID] = useState("");
   const [joinSeat, setJoinSeat] = useState("0");
   const [joinPendingMatchID, setJoinPendingMatchID] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [savedScenarios, setSavedScenarios] = useState([]);
+  const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
+  const [selectedScenarioId, setSelectedScenarioId] = useState("");
 
   /* ── Identity gate ── */
 
@@ -517,6 +522,22 @@ export function LobbyPageClient() {
     }
   }, [lobbyBaseUrl]);
 
+  const fetchSavedScenarios = useCallback(async () => {
+    if (!isDevEnvironment) return;
+    setIsLoadingScenarios(true);
+    try {
+      const res = await fetch("/api/scenarios", { cache: "no-store" });
+      const json = await res.json();
+      const scenarios = json?.scenarios || [];
+      setSavedScenarios(scenarios);
+      setSelectedScenarioId((current) => current || scenarios[0]?.id || "");
+    } catch (err) {
+      /* ignore */
+    } finally {
+      setIsLoadingScenarios(false);
+    }
+  }, []);
+
   useEffect(() => {
     try {
       const storedName = window.localStorage.getItem(STORAGE_KEY_NAME);
@@ -532,7 +553,8 @@ export function LobbyPageClient() {
       /* ignore */
     }
     refreshMatches();
-  }, [refreshMatches]);
+    fetchSavedScenarios();
+  }, [fetchSavedScenarios, refreshMatches]);
 
   // Auto-refresh when custom section is open
   useEffect(() => {
@@ -540,6 +562,11 @@ export function LobbyPageClient() {
     const id = setInterval(refreshMatches, 2000);
     return () => clearInterval(id);
   }, [showCustom, refreshMatches]);
+
+  useEffect(() => {
+    if (!showCustom || !isDevEnvironment) return;
+    fetchSavedScenarios();
+  }, [fetchSavedScenarios, showCustom]);
 
   /* ── Matchmaking poll ── */
 
@@ -823,6 +850,52 @@ export function LobbyPageClient() {
     }
   };
 
+  const startFromScenario = async () => {
+    const selectedScenario = savedScenarios.find(
+      (scenario) => scenario.id === selectedScenarioId
+    );
+    const scenarioState = selectedScenario?.data;
+    const numPlayers = scenarioState?.core?.players?.length;
+
+    if (!selectedScenario || !scenarioState) {
+      setError("Choose a saved scenario.");
+      return;
+    }
+
+    if (!Number.isFinite(numPlayers) || numPlayers < 2 || numPlayers > 4) {
+      setError("Scenario player count is invalid.");
+      return;
+    }
+
+    setScenarioStartPending(true);
+    setError("");
+    try {
+      const created = await apiRequest({
+        baseUrl: lobbyBaseUrl,
+        route: `/games/${GAME_NAME}/create`,
+        init: {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            numPlayers,
+            setupData: {
+              devScenarioState: scenarioState
+            }
+          }),
+        },
+      });
+
+      const matchID = created?.matchID;
+      if (!matchID) throw new Error("Create succeeded but returned no matchID.");
+      await refreshMatches();
+      await joinRoom({ matchID, playerID: "0" });
+    } catch (err) {
+      setError(err?.message || "Failed to start scenario room.");
+    } finally {
+      setScenarioStartPending(false);
+    }
+  };
+
   const joinByCode = async (event) => {
     event.preventDefault();
     const matchID = joinMatchID.trim();
@@ -831,6 +904,10 @@ export function LobbyPageClient() {
   };
 
   /* ── Render ── */
+
+  const selectedScenario = savedScenarios.find(
+    (scenario) => scenario.id === selectedScenarioId
+  );
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600">
@@ -944,10 +1021,10 @@ export function LobbyPageClient() {
         </button>
 
         {/* ── Custom game section ── */}
-        {showCustom && (
-          <div className="mt-3 w-full space-y-4">
-            <div className="rounded-xl bg-white/25 p-5 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
+         {showCustom && (
+           <div className="mt-3 w-full space-y-4">
+             <div className="rounded-xl bg-white/25 p-5 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
+               <div className="flex items-center gap-3">
                 <span className="text-xs font-semibold uppercase tracking-widest text-slate-700">
                   Players
                 </span>
@@ -973,12 +1050,62 @@ export function LobbyPageClient() {
                   className="rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-lime-600 hover:scale-[1.02] disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:scale-100"
                 >
                   {createPending ? "Creating…" : "Create & Join"}
-                </button>
-              </div>
-            </div>
+                 </button>
+               </div>
+             </div>
 
-            {/* Open games list */}
-            <div className="overflow-hidden rounded-xl bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
+             {isDevEnvironment && (
+               <div className="rounded-xl bg-white/25 p-5 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
+                 <div className="flex items-center justify-between gap-3">
+                   <div>
+                     <div className="text-xs font-semibold uppercase tracking-widest text-slate-700">
+                       Dev Scenario
+                     </div>
+                     <div className="mt-1 text-xs text-slate-600">
+                       Start from scenario
+                     </div>
+                   </div>
+                   <button
+                     onClick={fetchSavedScenarios}
+                     disabled={isLoadingScenarios}
+                     className="rounded-full bg-white/60 px-2 py-0.5 text-xs font-semibold text-slate-600 ring-1 ring-white/50 transition hover:bg-white/80 disabled:text-slate-400"
+                   >
+                     {isLoadingScenarios ? "…" : "Refresh"}
+                   </button>
+                 </div>
+                 <div className="mt-3 flex items-center gap-2">
+                   <select
+                     value={selectedScenarioId}
+                     onChange={(event) => setSelectedScenarioId(event.target.value)}
+                     className="min-w-0 flex-1 rounded-lg bg-white/60 px-3 py-2 text-sm text-slate-800 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70"
+                   >
+                     <option value="">
+                       {isLoadingScenarios ? "Loading scenarios…" : "Choose a scenario"}
+                     </option>
+                     {savedScenarios.map((scenario) => (
+                       <option key={scenario.id} value={scenario.id}>
+                         {scenario.name}
+                       </option>
+                     ))}
+                   </select>
+                   <button
+                     onClick={() => requireIdentity(startFromScenario)}
+                     disabled={!selectedScenarioId || scenarioStartPending}
+                     className="rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-lime-600 hover:scale-[1.02] disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:scale-100"
+                   >
+                     {scenarioStartPending ? "Starting…" : "Start from scenario"}
+                   </button>
+                 </div>
+                 <div className="mt-2 text-xs text-slate-600">
+                   {selectedScenario
+                     ? `${selectedScenario.data?.core?.players?.length ?? "?"} players`
+                     : "Saved scenarios start a room with their stored player count."}
+                 </div>
+               </div>
+             )}
+
+             {/* Open games list */}
+             <div className="overflow-hidden rounded-xl bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
               <div className="flex items-center justify-between border-b border-white/40 bg-white/50 px-4 py-2.5">
                 <span className="text-xs font-semibold uppercase tracking-widest text-slate-700">
                   Open Games &middot; {matches.length} live

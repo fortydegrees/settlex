@@ -40,4 +40,11 @@ describe("placePiece wiring", () => {
     expect(source).toContain("build:road");
     expect(source).toContain("build:city");
   });
+
+  it("does not keep raster-specific settlement placement logic", () => {
+    const source = read("../../effects/placePiece.js");
+    expect(source).not.toContain("isRasterAssetPath");
+    expect(source).not.toContain("RASTER_SETTLEMENT_SCALE");
+    expect(source).not.toContain("RASTER_SETTLEMENT_Y_LIFT_PX");
+  });
 });

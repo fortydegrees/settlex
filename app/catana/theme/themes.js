@@ -27,19 +27,6 @@ const PORT_ICON_FILE_NAMES = Object.freeze([
   "port_icon_any.svg",
 ]);
 
-const PLAYER_PIECE_COLOR_IDS = Object.freeze([
-  "red",
-  "blue",
-  "green",
-  "orange",
-  "purple",
-  "pink",
-  "cyan",
-  "amber",
-]);
-
-const EMOJI_TEST_SETTLEMENT_PNG = "/test_designs/settlement_red.png";
-
 const createPaletteAssetOverrides = (optionFolder, { includeResourceIcons = false } = {}) =>
   Object.freeze(
     Object.fromEntries(
@@ -83,16 +70,6 @@ const createTileAssetOverrides = (optionFolder) =>
     )
   );
 
-const createSettlementTestAssetOverrides = () =>
-  Object.freeze(
-    Object.fromEntries(
-      PLAYER_PIECE_COLOR_IDS.map((colorId) => [
-        `settlement_${colorId}.svg`,
-        EMOJI_TEST_SETTLEMENT_PNG,
-      ])
-    )
-  );
-
 export const CATANA_THEMES = Object.freeze({
   classic: {
     id: "classic",
@@ -117,8 +94,6 @@ export const CATANA_THEMES = Object.freeze({
       "tile_desert.svg": "/svgs/palette-themes/emoji/tile_desert.svg",
       ...createResourceIconAssetOverrides("emoji"),
       ...createPortIconAssetOverrides("emoji"),
-      // Temporary design-test override so all settlement colors render from one PNG mockup.
-      ...createSettlementTestAssetOverrides(),
     }),
   },
 });
@@ -151,7 +126,6 @@ export const TILE_FILES_BY_RESOURCE = Object.freeze({
 });
 
 const normalizeFileName = (fileName = "") => String(fileName).replace(/^\/+/, "");
-const RASTER_ASSET_PATH_RE = /\.(png|jpe?g|webp|gif)(?:$|\?)/i;
 
 export function resolveThemeId(themeId) {
   if (themeId && CATANA_THEMES[themeId]) {
@@ -173,10 +147,6 @@ export function getThemedSvgPath(themeId, fileName) {
     return overridePath;
   }
   return `${theme.assetBase}/${normalized}`;
-}
-
-export function isRasterAssetPath(path) {
-  return RASTER_ASSET_PATH_RE.test(String(path ?? ""));
 }
 
 export function getClassicSvgPath(fileName) {

@@ -1,8 +1,4 @@
 import React from "react";
-import { isRasterAssetPath } from "./theme/themes";
-
-const RASTER_SETTLEMENT_SCALE = 0.88;
-const RASTER_SETTLEMENT_Y_LIFT_PX = 5;
 
 export function Piece({
   coordinate,
@@ -15,15 +11,8 @@ export function Piece({
   buildingSVG,
   buildingSVGFallback
 }) {
-  const usesRasterAsset = isRasterAssetPath(buildingSVG);
-  const isRasterSettlement =
-    usesRasterAsset && /settlement_/i.test(String(buildingSVG ?? ""));
-  const pieceRenderScale = isRasterSettlement ? RASTER_SETTLEMENT_SCALE : 1;
-  const pieceSize = size * pieceRenderScale;
-  const pieceTop =
-    top -
-    pieceSize * (usesRasterAsset ? 0.59 : 0.63) -
-    (isRasterSettlement ? RASTER_SETTLEMENT_Y_LIFT_PX : 0);
+  const pieceSize = size;
+  const pieceTop = top - pieceSize * 0.63;
 
   const className = [
     placing ? "animate-bounce" : "",
@@ -43,8 +32,8 @@ export function Piece({
       key={coordinate}
       style={{
         backgroundImage,
-        backgroundSize: usesRasterAsset ? "contain" : "cover",
-        backgroundPosition: usesRasterAsset ? "center bottom" : "center",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
         position: "absolute",
         pointerEvents: "none",
         backgroundRepeat: "no-repeat",
