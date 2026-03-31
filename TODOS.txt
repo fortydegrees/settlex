@@ -3,13 +3,14 @@ Personal TODO
 [ ] game status box, e.g. 'waiting for player 1 to roll'. 'player 1 choosing robber location'
     kinda done wiht CC, looks a bit ugly tho
 
+[ ] redesign timer - more intense/visual towards end of turn, ticking etc
+
 
 [ ] sounds
     [ ] dice - current sound feels too 'light'
+        [ ] ticking when close to turn timer end
     [ ] end turn
         good_tock.mp3 - could split into press/release
-    [ ] settle -> city
-        could 'woosh' the settle out, then settle.mp3/thud for city coming in
     [ ] trading
             could this not just be our card movement sound we already have for distribution?
     [ ] play dev
@@ -21,11 +22,14 @@ Personal TODO
     [ ] game start / loaded
             different from all players ready? probs not necessary as only show game board when all players ready..
     [ ] game end - win/lose?
-    [ ] ticking when close to turn timer end
     [ ] chat sound
 
-[x] game log messages for receiving longest road/army
 
+[ ] basic resign UX/state messaging
+
+
+
+[ ] auto kick user if AFK/idle
 
 [ ] sidebar UI.
     game rules- 2 player, VPs to win, discard limit etc
@@ -40,6 +44,7 @@ animations
     game start - tile reveal/drop
         https://codesandbox.io/p/sandbox/uqpn4f
         https://codesandbox.io/p/sandbox/90qj1i?file=%2Fsrc%2FApp.tsx
+        https://motion.dev/examples/react-staggered-grid
     game win/end
         winning player's pieces rise and flash/glow. move their 'opponent box' to the centre with a crown. "{x/you} win(s")
     longest road/army award
@@ -54,15 +59,39 @@ not obvious when playing a knight. e.g. the card just disappears when clicked.
     should also be obvious when opponent is playing a knight/dev
         should come out and hover next to board while they're making their decision (for knight + rb)
         for mono/yop, can just like pop out, resource cards animate, then go
+    stealing animation - when you place robber and take card from opponent
 
 
-weird legacy bounce animation in player action container when placing roads doesn't stop/makes it difficult to place multiple in one turn 
+[ ] player action dock is buggy/not good
+    weird legacy bounce animation in player action container when placing roads doesn't stop/makes it difficult to place multiple in one turn 
 
 [ ] change all design svgs from colonist ones
+    [X] settle, road, city
+    longest road award
+    robber / largest army
+    trade icon
+        can just be 2 resoruce icons and arrows?
+        fluent emoji scales?
+    end turn
+    dev cards/buy dev card/opponent dev card card holder
+        YoP, 
+        mono, 
+        knight, 
+            shield emoji + swords?
+        road builder,
+        VP
+            trophy + '+1'?
+    opponent 'cards'/resource holder
+
+[ ] avatar emojis. atm just like system emojis. looks good with apple but do we want/need to provide explicit SVGs for avatars...
+
+[ ] need like a blank/mystery resource thing (e.g. when someone steals a card/resource from another player after robber)
+    need to make sure this is also represented in the log box
 
 [ ] implement player colour properly
     user can set/choose (in lobby) (or we just randomly assign red/blue)
     this propagates into the UI (e.g avatar box, log box, settlement colours)
+        Maybe this is done?
 
 
 [ ] mobile friendly / responsiveness
@@ -71,6 +100,11 @@ weird legacy bounce animation in player action container when placing roads does
         could also add swiping/drag!
     or (more short term) can just compress dev card box/make it stack
     expandable/hideable components, e.g. logbox
+
+[ ] sort timer out properly - adding time etc
+
+[ ] game win
+    reveal proper opponent VPs (e.g. if they have 9 + 1, will show '9' at the end instead of 10)
 
 
 [ ] post-game stats
@@ -86,6 +120,14 @@ weird legacy bounce animation in player action container when placing roads does
     [ ] dialog box to choose which player to steal from if > 2
 
 
+'achievement'/big event pop-up. e.g. longest road award - could be a toast. also make it more obvious when a user is playing a dev card (kinda like CU)?
+    https://github.com/orgs/colonistio/projects/11/views/1?pane=issue&itemId=35420883&issue=colonistio%7Cdesign%7C346
+    
+
+better animate UI transitions? like trading?
+    (simple) current modal just popping in/out: https://codesandbox.io/p/sandbox/ycouuu
+    dev card opening/playing (on mobile at least) could be: https://codesandbox.io/p/sandbox/q6ffu?file=%2Fsrc%2FApp.tsx
+
 === 'big refactors' ===
 settings/customizability/custom themes
 
@@ -94,6 +136,13 @@ UI/frontend testing
 we also want like, backend testing? e.g. user re-connecting to/rejoining game. handling disconnect/server desync properly.
 
 ==potential bugs==
+
+[BUG] if turn ends while placing city/road. status/highlights etc are weird
+
+
+  
+(also wood placement visual bug/animation - appears before animation complete for the user placing the road.)
+    same with settlement...
 
 what if there's no valid robber targets? (e.g. small board, friendly robber)
     knight not playable? have to skip the 'robber place' phase on 7?
@@ -109,7 +158,7 @@ improve the trade/discard modal/dialog/popup design
 easy build roads (by just clicking on available edge)
 settlement still shows when hovering to place city. looks a bit janky. settle/city placement in general could be better
 road spacing looks janky
-[x] minor animation/transition for the width of the opponent card box. there's a css property for this right? but yeah when it 'grows' it just jumps rn (e.g. when going from 3 cards to 4)
+minor animation/transition for the width of the opponent card box. there's a css property for this right? but yeah when it 'grows' it just jumps rn (e.g. when going from 3 cards to 4)
 optimize sound/mp3s
 
 hover over road/settle/city buttons and it subtly shows you the resources required
@@ -127,6 +176,9 @@ for dice roll/resource provision animation, do we do something if it's a number 
 [ ] bank resource display
     - maybe we don't need?
 
+be able to place road immediately after placing settlement (while animation is playing)
+    animations shouldn't block action. 
+
 remove trade button for 1v1? (how to make it obvious you can press resources to maritime trade? tiny little indicator next to icon?)
 
 if user idle, kick them/end game.
@@ -141,7 +193,7 @@ animate emojis/avatars
 animate card loss e.g. '-1' float thing in red when trading - https://www.youtube.com/watch?v=lMToUv8xngw (9:48)
  image.png
 
-[x] double click to zoom in, double click again to zoom out to the same/previous zoom level.
+double click to zoom in, double click again to zoom out to the same/previous zoom level.
 
 check that like randomness setup is done correctly. like generating dev card deck in setup etc.
 
@@ -174,6 +226,10 @@ settings
     auto-roll if no devs
     confirm playing dev cards y/n
 
+animate robber movement when opponent moves robber.
+
+SVG design patterns:
+    https://www.svgbackgrounds.com/set/free-svg-backgrounds-and-patterns/
 
 different animtions from different perspectives?
     e.g. building city: for non-user player, the settlement 'wooshes' out and then the city drops in (vs for the player where the city just drops in)
@@ -203,6 +259,22 @@ custom rules. e.g. custom friendly robber. can't be robbed/blocked on 2VP, but a
 
 
 ==design==
+
+tooltips - e.g. building costs for settlement, dev card descriptions - which can be disabled in the settings
+
+the red 'block' animation thing looks bad, at least on our new tiles. in general interested in changing the tile animations for card/resource distribution
+
+change design of dice - could be like a stack of cards that just pull out the 'tile' number. then it can shuffle etc.
+    but realistically if the dice are set to random, then i feel like it's hard to be the 'random' feeling of dice rolling.
+
+looking at the pioneers of the new world (https://www.reddit.com/r/Catan/comments/1d2sa8j/do_you_like_going_fourth_how_would_you_play_this/). does log box want to be more transparent? like fade out?
+    thinking bubble _above_ player icon?
+    timer below? dice next to them?
+    all actions on lower bar
+
+
+Isometric style - like inbetween 3d (CU) and 2d/pro (colonist):
+    https://aistudio.google.com/apps/bundled/sky_metropolis?showPreview=true&showAssistant=true
 
 is UI 'language' consistent? like game log box has drop shadow. i don't think our resource container does? our end turn button doesnt
 
@@ -240,10 +312,13 @@ change design of card info box. cards below avatar like in catan universe?
 
 victory points/dev card - should/do they 'stack', so they overlap if there are multiple? or just have them side-by-side (like colonist). maybe have this as a player option?
 
-
+longer term - design of ports/'bridges' 
 
 
 === big===
+
+in terms of performance, is moving some animations to a canvas a better option? like canvas-confetti seems good/performant?
+    does this also make it easier if like we decouple animation from UI (e.g. pro mode?)
 
 proper catan game format, like a PGN/FEN kinda stuff.
 
@@ -309,3 +384,6 @@ this would be easier to test, no? game core, derived core, UI. all separated.
   so like if i make it 3D or whatever i should just be able to change like a few basic things.
   the board component
   the tiles/resources etc. 
+
+
+  ===

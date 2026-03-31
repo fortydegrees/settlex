@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import {
   CATANA_THEMES,
@@ -9,9 +12,12 @@ import {
   getBackgroundImageWithFallback,
   getPortIconPath,
   getResourceIconPath,
-  isRasterAssetPath,
   resolveThemeId,
 } from "../theme/themes";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicSvgDir = path.resolve(__dirname, "..", "..", "..", "public", "svgs");
 
 describe("Catana theme assets", () => {
   it("exposes classic, palette-b, and emoji themes", () => {
@@ -40,7 +46,7 @@ describe("Catana theme assets", () => {
     expect(getClassicSvgPath("tile_ore.svg")).toBe("/svgs/tile_ore.svg");
   });
 
-  it("supports emoji theme tile and icon overrides", () => {
+  it("supports emoji theme tile and icon overrides without special-casing settlement pngs", () => {
     expect(getThemeAssetBase("emoji")).toBe("/svgs");
     expect(getThemedSvgPath("emoji", "tile_ore.svg")).toBe(
       "/svgs/palette-themes/emoji/tile_ore.svg"
@@ -55,10 +61,10 @@ describe("Catana theme assets", () => {
       "/svgs/icon_robber.svg"
     );
     expect(getThemedSvgPath("emoji", "settlement_red.svg")).toBe(
-      "/test_designs/settlement_red.png"
+      "/svgs/settlement_red.svg"
     );
     expect(getThemedSvgPath("emoji", "settlement_green.svg")).toBe(
-      "/test_designs/settlement_red.png"
+      "/svgs/settlement_green.svg"
     );
   });
 
@@ -97,8 +103,24 @@ describe("Catana theme assets", () => {
     );
   });
 
-  it("detects raster asset paths for temporary png prototypes", () => {
-    expect(isRasterAssetPath("/test_designs/settlement_red.png")).toBe(true);
-    expect(isRasterAssetPath("/svgs/settlement_red.svg")).toBe(false);
+  it("keeps the classic theme fallback assets on disk", () => {
+    [
+      "board_underlay_standard.svg",
+      "tile_empty.svg",
+      "tile_desert.svg",
+      "tile_ore.svg",
+      "tile_grain.svg",
+      "tile_wool.svg",
+      "tile_lumber.svg",
+      "tile_brick.svg",
+      "icon_brick.svg",
+      "icon_wood.svg",
+      "icon_sheep.svg",
+      "icon_wheat.svg",
+      "icon_ore.svg",
+      "port_icon_any.svg",
+    ].forEach((fileName) => {
+      expect(fs.existsSync(path.join(publicSvgDir, fileName)), fileName).toBe(true);
+    });
   });
 });

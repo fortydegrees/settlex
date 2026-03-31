@@ -22,10 +22,14 @@ node_modules/
 *.pem
 .logs/
 .worktrees/
+.superpowers/
 .claude/
 .playwright-cli/
 output/
 tmp/
+public/svgs/working/
+public/svgs/colonist/
+public/svgs/* copy.svg
 
 # debug
 npm-debug.log*

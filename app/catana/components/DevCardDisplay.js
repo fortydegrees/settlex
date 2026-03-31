@@ -9,10 +9,10 @@ import { getPlayableDevCardGroups } from "./devCardDisplayUtils";
 // Map DevCard types to their SVGs
 const DEV_CARD_SVGS = {
   knight: "/svgs/card_devcard_knight.svg",
-  victoryPoint: "/svgs/card_devcard_vp.svg",
-  roadBuilding: "/svgs/card_devcard_roadbuilding.svg",
-  yearOfPlenty: "/svgs/card_devcard_yearofplenty.svg",
-  monopoly: "/svgs/card_devcard_monopoloy.svg", // Typo in filename 'monopoloy' preserved
+  victoryPoint: "/svgs/victory_point.svg",
+  roadBuilding: "/svgs/roadbuilding.svg",
+  yearOfPlenty: "/svgs/year_of_plenty.svg",
+  monopoly: "/svgs/monopoly.svg",
 };
 
 export const DevCardDisplay = ({

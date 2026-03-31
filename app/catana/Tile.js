@@ -99,7 +99,11 @@ export function Tile({
   isFlashing,
   isBlockedFlashing,
   hasRobber,
+  showOriginRobber = false,
   canPlaceRobber,
+  showRobberHoverGhost = true,
+  onRobberTargetHoverChange,
+  onRobberTargetRegister,
   moves,
   themeId,
 }) {
@@ -107,14 +111,28 @@ export function Tile({
   const h = 2 * size;
 
   const [isHovered, setIsHovered] = useState(false);
+  const robberTargetRef = React.useCallback(
+    (node) => {
+      onRobberTargetRegister?.({
+        tileId: id,
+        element: node ?? null
+      });
+    },
+    [id, onRobberTargetRegister]
+  );
 
   // Reset hover state when the ability to place a robber changes
   // This prevents stale "true" hover states from persisting when a tile becomes valid again later
   React.useEffect(() => {
     if (!canPlaceRobber) {
       setIsHovered(false);
+      onRobberTargetHoverChange?.(null);
+      onRobberTargetRegister?.({
+        tileId: id,
+        element: null
+      });
     }
-  }, [canPlaceRobber]);
+  }, [canPlaceRobber, id, onRobberTargetHoverChange, onRobberTargetRegister]);
 
   const robberSrc = getThemedSvgPath(themeId, "icon_robber.svg");
   const robberFallbackSrc = getClassicSvgPath("icon_robber.svg");
@@ -220,6 +238,7 @@ export function Tile({
             alt="Robber"
             style={{
               position: "absolute",
+              opacity: showOriginRobber ? 0.4 : 1,
               transform: "translateX(-60%)",
               animation: isBlockedFlashing
                 ? "robberPulse 0.5s ease-in-out 2"
@@ -233,7 +252,7 @@ export function Tile({
             }
           />
         )}
-        {canPlaceRobber && isHovered && (
+        {canPlaceRobber && showRobberHoverGhost && isHovered && (
            <div
              style={{ 
                position: 'absolute', 
@@ -260,6 +279,7 @@ export function Tile({
         )}
         {canPlaceRobber && (
           <div
+            ref={robberTargetRef}
             //add shadow when placing settlement
             className={`[background-image:radial-gradient(50%_50%_at_50%_50%,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_100%)] animation-pulse`}
             //className={flashing ? "hover-opacity bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gray-300 to-transparent animation-pulse" : "hover-opacity"}
@@ -272,15 +292,25 @@ export function Tile({
               borderRadius: 100,
               borderColor: "#FFFFFF",
               borderWidth: 1.2,
-              opacity: isHovered ? 0 : 0.8, // Hide the circle when hovering (since we show the ghost robber)
+              opacity:
+                showRobberHoverGhost && isHovered ? 0 : 0.8,
               //fillOpacity:0.2
               //opacity: hoveredNode ? (hoveredNode == nodeId ? 1 : 0.4) : 0.8,
               zIndex: 2,
               //opacity: (hoveredNode ? 1 : 0.5),
             }}
             onClick={()=>moves.moveRobber(id)}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            onMouseEnter={(event) => {
+              setIsHovered(true);
+              onRobberTargetHoverChange?.({
+                tileId: id,
+                element: event.currentTarget
+              });
+            }}
+            onMouseLeave={() => {
+              setIsHovered(false);
+              onRobberTargetHoverChange?.(null);
+            }}
           ></div>
         )}
       </div>

@@ -1,5 +1,224 @@
 # NOTES
 
+- Robber placement UX now has an approved two-mode interaction seam in:
+- `docs/superpowers/specs/2026-03-31-robber-placement-ux-design.md`
+- Planned modes:
+- `minimal`: current tile-local robber placement affordance,
+- `playful`: single overlay robber follower with magnetic stickiness on valid targets.
+- Future settings guidance:
+- do not bake this into robber-specific conditionals only,
+- keep the motion mode easy to surface later through a broader UI-preferences/settings pass,
+- no user-facing settings UI is part of this slice.
+- First-pass guardrails:
+- `playful` is the intended desktop default,
+- reduced-motion and coarse-pointer environments should force `minimal`,
+- keep 3D tilt out of the first implementation unless explicitly revisited.
+
+- Live dev-card icon tuning plan is now in:
+- `docs/superpowers/plans/2026-03-28-dev-card-icon-tuning-plan.md`
+- `public/svgs/icon_devcard.svg` is no longer concept-only:
+- it now uses a tighter crop to fill the actions dock better,
+- an unevenly lifted Catana-blue lower half,
+- and a warmer hammer handle so the disabled-state read stays clearer.
+- Future tweaks should preserve this tuning intent:
+- keep the current hammer-disc concept,
+- prefer smoothing the dark base before changing the bright top blue,
+- judge changes primarily in the actions dock at disabled/enabled states rather than at full SVG size.
+
+- Standalone resource-card emblem exploration now also has an implementation plan:
+- `docs/superpowers/plans/2026-03-24-resource-card-emblem-plan.md`
+- Temp emblem SVGs live in:
+- `tmp/card-back-concepts/resource-emblems/`
+- Current variants:
+- `hybrid-seal.svg`
+- `network-hex.svg`
+- `medallion-cluster.svg`
+- Render sheets:
+- `/tmp/resource-emblem-renders/contact-sheet.png`
+- `/tmp/resource-emblem-renders/contact-sheet-72.png`
+- Working read for future integration:
+- `network-hex` is the clearest `resource board-cluster` symbol,
+- `hybrid-seal` is the strongest if the center mark should still feel like a badge/medallion,
+- `medallion-cluster` is useful as a softer ceremonial fallback but is less literal.
+- This pass is emblem-only:
+- keep `public/svgs/card_rescardback.svg` untouched until one emblem direction is chosen,
+- then integrate the winner into the existing card-back family rather than redesigning from scratch.
+
+- Standalone resource-card emblem design spec now lives in:
+- `docs/superpowers/specs/2026-03-24-resource-card-emblem-design.md`
+- Approved emblem direction:
+- use a Catana tile-style outer hex badge,
+- build the center motif from five connected small hexes,
+- keep it badge-like and simple,
+- use restrained tile-style radial lift rather than flat black iconography or ornate card-art patterning.
+- This pass is emblem-first:
+- do not redesign the full resource-card back until the emblem set is reviewed,
+- keep live `public/svgs/card_rescardback.svg` untouched during concept generation.
+
+- Development-card icon exploration now lives in:
+- `docs/superpowers/specs/2026-03-23-dev-card-icon-variations-design.md`
+- `docs/superpowers/plans/2026-03-23-dev-card-icon-variations-plan.md`
+- Candidate SVGs are in:
+- `tmp/devcard-icon-variants/`
+- Rendered review sheets are in:
+- `/tmp/devcard-icon-renders/contact-sheet.png`
+- `/tmp/devcard-icon-renders/contact-sheet-38.png`
+- Official Fluent flat hammer source for the second pass is in:
+- `tmp/devcard-icon-variants/round2/fluent-hammer-flat.svg`
+- Round-2 Fluent-based variants are in:
+- `tmp/devcard-icon-variants/round2/`
+- Round-2 render sheets are in:
+- `/tmp/devcard-icon-renders/round2/contact-sheet.png`
+- `/tmp/devcard-icon-renders/round2/contact-sheet-38.png`
+- Current variant names:
+- `forge-stamp`
+- `makers-mark`
+- `struck-seal`
+- `guild-token`
+- Dock-scale target for judging these icons is about `38px` because `PlayerActionContainer` uses a `48px` dock card with the image at roughly `80%` width.
+- Current read after rendering:
+- `makers-mark` is the clearest at dock size,
+- `forge-stamp` is the best if we want to stay closest to the recreated medallion base,
+- `struck-seal` adds the most personality,
+- `guild-token` is the strongest anti-copy remix but is also the least bold at small size.
+- Fluent-based round-2 notes:
+- official hammer geometry works better than the first custom hammer shapes because it looks cleaner and more intentional at icon scale.
+- the flatter Catana palette is a better fit than the earlier coral-heavy pass:
+- amber/yellow top,
+- Catana-blue bottom,
+- slate ring,
+- no gradients.
+- `makers-mark-fluent` is the strongest current candidate if the goal is production clarity.
+- Keep the live `public/svgs/icon_devcard.svg` unchanged until one candidate clearly wins; this pass is for visual selection, not replacement.
+
+- Hidden-card-back concept work now lives in:
+- `docs/superpowers/specs/2026-03-23-card-back-concepts-design.md`
+- `docs/superpowers/plans/2026-03-23-card-back-concepts-plan.md`
+- Temp concept SVGs are in:
+- `tmp/card-back-concepts/`
+- Render sheets are in:
+- `/tmp/card-back-concepts-renders/resources-sheet.png`
+- `/tmp/card-back-concepts-renders/dev-sheet.png`
+- `/tmp/card-back-concepts-renders/stack-size-sheet.png`
+- Current strongest reads at actual `CardStack` size:
+- resource: `resource-question-bands`
+- fallback resource: `resource-question-window`
+- dev: `dev-seal`
+- The card-back family should stay flat-printed, not ornate:
+- same silhouette and border system,
+- palette/emblem doing the distinction,
+- no need for faux paper texture, bevels, or dense hex pattern fields.
+- Tile-style radial refinement for the best backs is in:
+- `tmp/card-back-concepts/round2/resource-question-bands-tilelift.svg`
+- `tmp/card-back-concepts/round2/dev-seal-tilelift.svg`
+- Render comparisons:
+- `/tmp/card-back-concepts-renders/round2/resource-compare.png`
+- `/tmp/card-back-concepts-renders/round2/dev-compare.png`
+- `/tmp/card-back-concepts-renders/round2/stack-compare.png`
+- The radial pass should stay restrained:
+- card body gets the light-center / darker-edge treatment,
+- emblem remains mostly flat,
+- the effect is there to make the backs feel more Catana-native, not to reintroduce ornate card rendering.
+- Board-fit polish pass is in:
+- `tmp/card-back-concepts/round3/resource-question-bands-boardfit.svg`
+- `tmp/card-back-concepts/round3/dev-seal-boardfit.svg`
+- Render comparisons:
+- `/tmp/card-back-concepts-renders/round3/resource-compare.png`
+- `/tmp/card-back-concepts-renders/round3/dev-compare.png`
+- `/tmp/card-back-concepts-renders/round3/stack-compare.png`
+- Round-3 guidance:
+- the creamier rim language is closer to the actual board underlay and tile-edge world,
+- but over-softening the dark accents starts to reduce tiny-stack clarity,
+- resource benefits more from this polish than dev does.
+
+- Current local robber SVG pass uses the correct broad-gradient shading model more than the earlier faceted trace, but it also simplified the traced silhouette significantly.
+- If future work continues from this version, the next likely improvement is:
+- keep the same gradient-family approach,
+- restore more of the earlier traced robber's asymmetry, massing, and internal shape relationships instead of reducing it further toward a generic pawn.
+
+- Robber smooth-gradient pass notes:
+- `concept2-smooth-1.png` and `concept2-smooth-2.png` are the strongest references if the goal is broad linear SVG-like lighting.
+- `concept4-smooth-1.png` and `concept4-smooth-2.png` keep more of the chunked geometric body from round 2, but still read smoother than the earlier painted versions.
+- Using strict edit prompts plus `input_fidelity=high` was effective for changing shading without losing the underlying concept shape.
+
+- Robber `imagegen` notes:
+- first edit pass anchored on `icon_robber copy.svg` mostly collapsed back into generic pawn/chess-piece geometry.
+- better results came from using the flatter higher-view robber sketch as the edit anchor and explicitly banning front-on pawn reads.
+- current concept outputs worth tracing from are in:
+- `output/imagegen/robber-projection-round2/`
+- shortlist:
+- `robber-concept-2.png`
+- `robber-concept-4.png`
+
+- The live robber now uses the same approximate projection language as the settlement/city family:
+- do not treat this as a strict solved camera angle,
+- treat it as a shared guide:
+- more visible top surfaces,
+- less front-face height,
+- very limited side reveal,
+- stacked planes doing the perspective work instead of literal 3D convergence.
+
+- `public/svgs/icon_robber.svg` is now a live faceless gray pawn-stack blocker piece, replacing the old character-style robber art.
+- Keep robber in the same visual family as the board pieces, not the flat emoji tile icons:
+- restrained directional gradients are correct,
+- chunky silhouette is more important than literal figurine detail,
+- avoid faces, hoods, sacks, hands, or ninja cues.
+- Small-size read matters:
+- the bolder second-pass head/body/base proportions hold up better than the thinner first-pass version,
+- future tweaks should preserve that stronger small-icon footprint.
+
+- Robber icon direction is now explicitly approved in:
+- `docs/superpowers/specs/2026-03-22-robber-icon-design.md`
+- Implementation plan lives in:
+- `docs/superpowers/plans/2026-03-22-robber-icon-plan.md`
+- Current intended robber language:
+- faceless pawn-stack blocker piece,
+- neutral gray piece-family rendering,
+- restrained directional gradients are in scope because robber belongs to the board-piece family, not the flat emoji tile-icon family.
+- `icon_robber copy.svg` is only loose silhouette inspiration; do not preserve its geometry literally.
+
+- `public/svgs/icon_longest_road.svg` is now intentionally a neutral two-road status glyph derived from Catana's own road-piece silhouette, not a copied badge/emblem.
+- Treat longest-road icon readability at roughly `28px` in `app/catana/components/PlayerAvatarStats.js` as the main acceptance bar for future edits; avoid thin rails, medallion framing, or extra detail that only works at large sizes.
+- Design/source notes for this asset now live in:
+- `docs/superpowers/specs/2026-03-20-longest-road-icon-design.md`
+- `docs/superpowers/plans/2026-03-20-longest-road-icon-plan.md`
+
+- Temporary settlement PNG prototype support has been removed from the live Catana runtime.
+- `app/catana/theme/themes.js` no longer rewrites `settlement_<color>.svg` to `/test_designs/settlement_red.png`.
+- `app/catana/Piece.js` and `app/catana/effects/placePiece.js` are back to the normal shared piece sizing/positioning path; do not reintroduce raster-only settlement scale/offset branches unless there is a new explicit prototype need.
+
+- First live concept output set for `settlement` / `road` / `city` is in:
+- `output/imagegen/piece-assets-concepts/`
+- Review sheet:
+- `output/imagegen/piece-assets-concepts/contact-sheet.png`
+
+- Pass-1 shortlist:
+- `08-minimal-edge-restrained-gradients.png`
+- `03-soft-tinted-hybrid.png`
+- fallback: `09-minimal-edge-hybrid.png`
+
+- Reading from the first image batch:
+- base/plinth treatments make the pieces feel like display miniatures rather than board pieces; avoid that in follow-up prompts.
+- the strongest directions keep the house/city family compact and avoid extra towers unless they still clearly read as a settlement upgrade.
+- restrained gradients are useful when they stay inside large planes; they work best when they do not imply glossy material.
+- minimal-edge directions are more Catana-compatible than the heavier or more decorative edge treatments from this pass.
+
+- Image-generation execution plan for the first `settlement` / `road` / `city` concept pass now lives in:
+- `docs/superpowers/plans/2026-03-18-piece-assets-imagegen-plan.md`
+
+- Temporary prompt batch for the first concept run is:
+- `tmp/imagegen/piece-assets-concepts.jsonl`
+- This file is intentionally temporary and should be deleted after the live run; do not treat it as a durable source file.
+
+- First concept pass runtime contract:
+- generate all 3 pieces together in one landscape sheet,
+- `1536x1024`,
+- `high` quality,
+- shared structured prompt contract from the design spec,
+- only job-level variation is edge treatment + shading mode.
+
+- Live `imagegen` generation is currently blocked only by the local shell environment missing `OPENAI_API_KEY`. The dry-run already passed, so once the key is present the batch command can be run as-is.
+
 - Approved design baseline for MVP build pieces (`settlement`, `road`, `city`) now lives in:
 - `docs/superpowers/specs/2026-03-18-piece-assets-design.md`
 
@@ -732,3 +951,388 @@
     - a short clamped bar length,
     - a small gap outside the action-node circle radius.
   - Result: the bars now sit beside the actual coastal access nodes and point toward the port token instead of hovering midway between node and token.
+- Piece-asset ideation note (2026-03-19):
+  - Broad `imagegen` concept batches were a bad fit for `settlement/city/road`; they drifted into toy renders, side-angle cameras, or over-abstract glyphs.
+  - A tighter iterative workflow works better:
+    - one asset at a time,
+    - one output at a time,
+    - one prompt change at a time,
+    - explicit reference images separated by role.
+  - Useful reference split for piece assets:
+    - board crop for rendering language (`tmp/imagegen/refs/board-style-ref.png`),
+    - current piece art for projection/detail ceiling,
+    - or better, a simplified silhouette anchor when the current rendered piece is causing overfitting (`tmp/imagegen/refs/settlement-silhouette-ref.png`).
+  - The best settlement references so far came from using:
+    - silhouette anchor as image 1,
+    - board crop as image 2,
+    - `edit` mode with `input_fidelity=high`,
+    - plain white background,
+    - explicit bans on glow, side camera, toy-render cues, and architectural detail.
+  - Best current outputs:
+    - `output/imagegen/piece-settlement-iterative/02-silhouette-anchor.png`
+    - `output/imagegen/piece-settlement-iterative/03-house-read.png`
+  - Useful follow-up prompt directions from `03-house-read.png`:
+    - “more piece-like / less literal building” produced a meaningful improvement at `output/imagegen/piece-settlement-iterative/04-more-piece-like.png`.
+    - “broader / more stable” risked introducing an unwanted base/plinth (`05-broader-stable.png`).
+    - “cleaner / flatter” changed too little to be a useful branch (`06-cleaner-flatter.png`).
+    - doorway cleanup on `04` is viable but very subtle (`07-inset-door-shadow.png`).
+  - Roof-forward prompt direction from `04` is viable:
+    - asking for “larger roof / slightly higher flat board-view” preserved the same family while nudging the silhouette toward a more roof-dominant read.
+    - outputs:
+      - `output/imagegen/piece-settlement-iterative/08-roof-forward-subtle.png`
+      - `output/imagegen/piece-settlement-iterative/09-roof-forward-stronger.png`
+      - `output/imagegen/piece-settlement-iterative/10-roof-overhang.png`
+    - These are close variants rather than new concepts; useful when dialing the roof/body ratio without reopening style drift.
+  - Using the user-provided SVG markup as the actual edit input is more effective than using it only as a textual description:
+    - saved markup to `tmp/imagegen/refs/settlement-user-start.svg`,
+    - rasterized to `tmp/imagegen/refs/settlement-user-start.png`,
+    - passed that as image 1,
+    - used the old Colonist settlement raster only as a proportion cue,
+    - used the board crop only as a style cue.
+  - Best outputs from that workflow:
+    - `output/imagegen/piece-settlement-iterative/11-user-svg-proportion-shift.png`
+    - `output/imagegen/piece-settlement-iterative/12-user-svg-stronger-roof.png`
+  - `12` is the better “more top-down / larger roof / smaller visible face” transform and is a strong candidate to redraw into a clean production SVG.
+  - A stricter style-transfer approach works better when the goal is “keep the Colonist piece, change only the rendering language”:
+    - image 1 = Colonist settlement raster on white background as exact geometry/proportion anchor,
+    - image 2 = best newer-style settlement render as style cue,
+    - image 3 = board crop as softness/gradient cue.
+  - Outputs:
+    - `output/imagegen/piece-settlement-iterative/13-colonist-restyle-conservative.png`
+    - `output/imagegen/piece-settlement-iterative/14-colonist-restyle-softer.png`
+  - `14` is the best result from this branch; it keeps the silhouette closer while softening the old harsh outline/bevel feel.
+  - When the true Colonist source is the anchor, there are two distinct prompt modes:
+    - `preserve exact geometry` leads to soft repaints (`15`, `16`),
+    - `preserve roof-first recognizability but redraw the piece` gives a more useful redesign (`17`, `18`).
+  - Best result from the redraw branch:
+    - `output/imagegen/piece-settlement-iterative/17-colonist-rebuild-highfid.png`
+  - `18` shows the failure mode of giving the model too much freedom: it narrows the body and loses the solid settlement feel.
+  - Exact-outline test:
+    - user provided the actual structure guide as SVG (`tmp/imagegen/refs/settlement-outline-user.svg`),
+    - rendered via `sketch-to-render` to `output/imagegen/piece-settlement-iterative/20-user-outline-render.png`.
+  - Important conclusion:
+    - even when given the exact flat-bottom/obtuse-angle line structure, the model still rounds the shape back into a generic house.
+    - That means `imagegen` can help with rendering language, but not with final settlement geometry for this asset family.
+  - Manual rebuild note:
+    - `public/svgs/settlement_red.svg` is now a clean hand-built SVG, not the large traced/vectorized version.
+    - Best workflow for this asset family is:
+      - lock geometry from the known-good outline/silhouette,
+      - apply Catana gradients and plane logic manually in SVG,
+      - use `imagegen` only for loose style ideation, not for final piece geometry.
+    - The Colonist outer-border path is a ring, not a filled silhouette.
+      - Using it directly as the base fill leaves transparent seams.
+      - The correct base layer is the outer contour only, with the roof/body planes painted on top.
+    - Preview outputs for the rebuilt settlement live in:
+      - `tmp/settlement-preview/settlement_red.png`
+      - `tmp/settlement-preview/settlement_comparison_white.png`
+  - Red palette tuning note:
+    - For player-color pieces, Tailwind should be the anchor, not the literal final palette.
+    - Best rule:
+      - keep the UI/player token on the standard Tailwind-aligned color family,
+      - derive a slightly warmer piece palette from that anchor for SVG gradients and shadow planes.
+    - First settlement red pass now lives in:
+      - `public/svgs/settlement_red.svg`
+    - Preview:
+      - `tmp/settlement-preview/settlement_red_warm.png`
+    - Chosen refinement:
+      - `tmp/settlement-color-variants/05-richer-right-roof.png`
+      - This is the current live direction for the red settlement palette.
+  - Road exploration note:
+    - because roads render inside a very shallow strip (`width = size`, `height = size * 0.2`), the asset itself should stay top-down and straight.
+    - Matching the new settlement style should come from:
+      - the same dark shell color,
+      - the same warm-red body palette,
+      - one lighter inset plane that echoes the settlement roof highlight.
+    - Avoid:
+      - black outlines,
+      - literal plank/wood detail,
+      - pseudo-3D side-angle road renders.
+    - Temporary SVG concept set:
+      - `tmp/road-svg-exploration/road_red_variant_classic.svg`
+      - `tmp/road-svg-exploration/road_red_variant_ridge.svg`
+      - `tmp/road-svg-exploration/road_red_variant_chunky.svg`
+    - Softer replacement set:
+      - `tmp/road-svg-exploration/road_red_variant_soft_capsule.svg`
+      - `tmp/road-svg-exploration/road_red_variant_soft_chamfer.svg`
+      - `tmp/road-svg-exploration/road_red_variant_soft_ribbon.svg`
+    - Comparison:
+      - `tmp/road-svg-exploration/road_variants_soft_comparison.png`
+    - Best current road direction:
+      - `soft_chamfer` if we want a little piece identity,
+      - `soft_ribbon` if we want the most minimal / safest option.
+    - Gradient follow-up on the soft capsule silhouette:
+      - `tmp/road-svg-exploration/road_red_variant_soft_capsule_gradient_plain.svg`
+      - `tmp/road-svg-exploration/road_red_variant_soft_capsule_gradient_sheen.svg`
+      - `tmp/road-svg-exploration/road_red_variant_soft_capsule_gradient_edge.svg`
+    - Comparison:
+      - `tmp/road-svg-exploration/road_variants_soft_capsule_gradient_comparison.png`
+    - Best current gradient-led options:
+      - `gradient_plain` for the cleanest board fit,
+      - `gradient_edge` for a slightly richer token without going back to a hard inset panel.
+    - Taper follow-up:
+      - `tmp/road-svg-exploration/road_red_variant_soft_taper_subtle.svg`
+      - `tmp/road-svg-exploration/road_red_variant_soft_taper_mid.svg`
+      - `tmp/road-svg-exploration/road_red_variant_soft_taper_strong.svg`
+    - Comparison:
+      - `tmp/road-svg-exploration/road_variants_taper_comparison.png`
+    - Best current taper result:
+      - `soft_taper_subtle`
+      - Anything stronger starts drifting away from the soft Catana language.
+    - Rounded-hex follow-up:
+      - `tmp/road-svg-exploration/road_red_variant_hex_round_soft.svg`
+      - `tmp/road-svg-exploration/road_red_variant_hex_round_balanced.svg`
+      - `tmp/road-svg-exploration/road_red_variant_hex_round_strong.svg`
+    - Comparison:
+      - `tmp/road-svg-exploration/road_variants_hex_round_comparison.png`
+    - Best current rounded-hex option:
+      - `hex_round_balanced`
+      - It keeps some of the placeholder’s hex-corner identity without reverting to the copied Colonist feel.
+    - Shell-thickness follow-up:
+      - `tmp/road-svg-exploration/road_red_variant_hex_round_balanced_thin.svg`
+      - `tmp/road-svg-exploration/road_red_variant_hex_round_balanced_ultrathin.svg`
+    - Comparison:
+      - `tmp/road-svg-exploration/road_variants_hex_round_thin_comparison.png`
+    - Best current road candidate overall:
+      - `balanced_thin`
+      - It keeps the rounded-hex identity but gets the perimeter weight closer to the settlement.
+    - Shorter-end follow-up:
+      - `tmp/road-svg-exploration/road_red_variant_hex_round_balanced_short_ends.svg`
+      - `tmp/road-svg-exploration/road_red_variant_hex_round_balanced_tight_ends.svg`
+    - Comparison:
+      - `tmp/road-svg-exploration/road_variants_hex_round_short_ends_comparison.png`
+    - Best current refinement:
+      - `balanced_short_ends`
+    - Applied live road direction:
+      - `public/svgs/road_red.svg` currently uses `balanced_thin`
+      - This was chosen before trying the shorter-end refinement, as requested.
+    - Board-context debugging follow-up:
+      - the live `balanced_thin` road still read like a post/sign marker when a settlement overlapped it on-board.
+      - Diagnosis:
+        - the road end-cap was too visually dominant,
+        - and the road art was occupying too much of its fixed render box.
+    - Same-box rounded reset:
+      - the correct rule is not “copy the blue road design,” it is:
+        - keep the blue road’s template box / effective footprint,
+        - but redraw the road with the softer rounded Catana design language.
+      - `public/svgs/road_red.svg` now shares the exact same viewBox as `public/svgs/road_blue.svg`:
+        - `-70.835 76.935 193.57 39.71`
+      - Within that same coordinate system, the red road is now a rounded capsule-like form with:
+        - dark settlement-matched shell,
+        - warm-red body gradient,
+        - soft highlight overlay.
+      - Supporting previews:
+        - `tmp/road-preview/road_red_rounded_same_box.png`
+        - `tmp/road-preview/road_red_rounded_same_box_board_mock.png`
+    - Native-stroke road follow-up:
+      - replaced the fake outer shell layer on `public/svgs/road_red.svg` with a true SVG stroke.
+      - This is a better fit for the road than for the settlement because the road is just one simple shape.
+      - Current stroke settings:
+        - `stroke="#a4221a"`
+        - `stroke-width="3.25"`
+        - `stroke-linejoin="round"`
+        - `paint-order="stroke fill"`
+      - Supporting previews:
+        - `tmp/road-preview/road_red_stroke_white.png`
+        - `tmp/road-preview/road_red_stroke_board_mock.png`
+    - Gradient-axis correction:
+      - the intended placeholder-like effect was not a lengthwise gradient.
+      - The correct read is:
+        - gradient runs across the road thickness,
+        - the middle band reads darker/richer,
+        - the top and bottom edges read lighter.
+      - Updated `public/svgs/road_red.svg` accordingly without changing geometry or stroke.
+      - Supporting previews:
+        - `tmp/road-preview/road_red_stroke_cross_gradient_white.png`
+        - `tmp/road-preview/road_red_stroke_cross_gradient_board_mock.png`
+    - Blue road parity:
+      - rebuilt `public/svgs/road_blue.svg` to match the current live red-road structure.
+      - Shared rules now applied to blue:
+        - same rounded road geometry,
+        - same shared road template viewBox,
+        - same native-stroke treatment,
+        - same cross-road gradient logic.
+      - Blue-specific palette:
+        - light blue edges,
+        - darker center band,
+        - darker blue rim.
+      - Supporting previews:
+        - `tmp/road-preview/road_blue_new_white.png`
+        - `tmp/road-preview/road_blue_new_board_mock.png`
+  - Blue settlement parity:
+    - rebuilt `public/svgs/settlement_blue.svg` from the live red settlement geometry rather than the older Colonist-style blue asset.
+    - Shared rules now applied to blue settlement:
+      - same silhouette,
+      - same perspective,
+      - same shading plane structure,
+      - same Catana rendering language.
+    - Blue-specific palette:
+      - dark blue shell,
+      - mid-to-light blue body ramps,
+      - darker blue door,
+      - cooler roof highlight.
+    - Supporting previews:
+      - `tmp/settlement-preview/settlement_blue_new.png`
+      - `tmp/settlement-preview/settlement_red_blue_comparison.png`
+  - Slight road length increase:
+    - user wanted adjacent connecting roads to sit a bit closer without changing board layout code.
+    - Implemented by stretching the live road path inside the existing shared road viewBox.
+    - Exact occupancy change:
+      - old: `M-53.5 ... H104`
+      - new: `M-57 ... H107.5`
+    - This keeps:
+      - same renderer footprint,
+      - same rotation behavior,
+      - same stroke/gradient treatment.
+    - Supporting previews:
+      - `tmp/road-preview/road_red_longer.png`
+      - `tmp/road-preview/road_blue_longer.png`
+      - `tmp/road-preview/road_red_blue_longer_comparison.png`
+  - Road clipping follow-up:
+    - after lengthening, the road tips were clipping slightly on-board.
+    - Confirmed root cause:
+      - the rendered road pixels were touching the SVG image bounds horizontally,
+      - so after rotation the tips were getting chopped.
+    - Fix:
+      - kept the longer road path,
+      - added a tiny horizontal pad to the shared road viewBox.
+      - viewBox changed from:
+        - `-70.835 76.935 193.57 39.71`
+      - to:
+        - `-73.835 76.935 199.57 39.71`
+    - Verification note:
+      - post-fix high-res blue render no longer touches left/right image edges.
+    - Supporting preview:
+      - `tmp/road-preview/road_blue_no_clip_white.png`
+  - City red stretch pass 1:
+    - replaced `public/svgs/city_red.svg` with a settlement-derived first pass instead of the older Colonist-style city asset.
+    - Current structure:
+      - keeps the live settlement roof and roof shading,
+      - adds a taller front body overlay,
+      - adds a lowered/taller door,
+      - adds one centered upper window,
+      - deliberately avoids annex/rear-mass changes in this first pass.
+    - Supporting previews:
+      - `tmp/city-preview/city_red_stretch_pass1.png`
+      - `tmp/city-preview/settlement_city_red_comparison.png`
+  - City red palette alignment:
+    - user replaced `public/svgs/city_red.svg` with an Inkscape city shape they liked and asked whether its reds still matched the settlement palette.
+    - Comparison against `public/svgs/settlement_red.svg` showed:
+      - the front/main house was already in-family,
+      - the rear/right section was slightly too dark and contrasty.
+    - Applied a narrow color pass only to rear gradients:
+      - softened the rear roof/cap top stop from near-maroon into the settlement red family,
+      - softened the rear body gradient so it no longer out-punched the front house,
+      - kept geometry untouched.
+    - Supporting previews:
+      - `tmp/city-preview/city_red_live_palette_check_tuned.png`
+      - `tmp/city-preview/settlement_city_red_palette_comparison_tuned.png`
+  - City blue palette transfer:
+    - user asked to make `public/svgs/city_blue.svg` the same way `settlement_blue.svg` had been derived from `settlement_red.svg`.
+    - The old `city_blue.svg` was still the black-stroked Colonist-style asset, so it was replaced completely.
+    - New approach:
+      - copied the live tuned `city_red.svg` structure,
+      - translated its fills/gradients into the existing blue palette family from `public/svgs/settlement_blue.svg`,
+      - preserved the relative darker door/shell and lighter rear-cap logic from the red city.
+    - Supporting previews:
+      - `tmp/city-preview/city_blue_new.png`
+      - `tmp/city-preview/city_red_blue_comparison.png`
+      - `tmp/city-preview/settlement_city_blue_comparison.png`
+  - City blue rear-roof softening:
+    - user felt the small right roof/fill cut on the blue city read a bit too sharp compared with the settlement.
+    - We decided to try the smallest possible fix first:
+      - no geometry edits,
+      - reduce contrast by darkening only the lightest stop in the rear body gradient.
+    - Exact tweak:
+      - `linearGradient#e` top stop changed from `#82d8ff` to `#6fc3ff`.
+    - Result:
+      - rear roof/body seam is less abrupt,
+      - overall blue city still preserves the same structure and relative shading logic.
+    - Supporting previews:
+      - `tmp/city-preview/city_blue_softened.png`
+      - `tmp/city-preview/city_blue_softened_comparison.png`
+  - Dev-only scenario tooling:
+    - the old scenario path was brittle because saved files captured raw boardgame.io `ctx`, while `DEBUG_loadState` only swapped `G`.
+    - new approach:
+      - normalize scenario files through `app/api/scenarios/route.js`,
+      - save new scenarios as `{ state: <G> }`,
+      - treat old `{ G, ctx }` files as readable legacy input only.
+    - `app/catana/Game.js` now supports setup-time scenario boot through `setupData.devScenarioState`:
+      - merges saved Catana state onto a fresh setup shell,
+      - seeds `ctx.phase`, `ctx.currentPlayer`, `ctx.playOrderPos`, and `ctx.activePlayers` from the saved Catana turn state,
+      - only outside production.
+    - `app/catana/components/DebugPanel.js` is back as a dev-only left-side panel above the game log, but scope is intentionally narrow:
+      - select target player,
+      - grant resources,
+      - grant specific dev cards,
+      - save the current match as a named scenario,
+      - load remains a lobby-only action.
+    - Scenario saving now captures an authoritative server-side snapshot into `G.debugScenarioState` before the panel POSTs to `/api/scenarios`, so saved files are not polluted by the client-masked `"hidden"` values from `playerView`.
+    - `app/catana/lobby/LobbyPageClient.js` now has a dev-only `Start from scenario` control in the custom-game section.
+    - new debug move:
+      - `DEBUG_takeDevCards` mirrors `DEBUG_takeCardsFromBank` for exact dev-card seeding during UI/effects testing.
+  - Card-back visual tuning:
+    - `public/svgs/resource_back.svg` is now the active resource-back concept baseline.
+    - approved palette direction was the `B` study:
+      - lighten the blue field/frame to feel closer to Catana sky/board blues,
+      - add subtle cream gradients to the large cream surfaces,
+      - keep the existing gold accents and overall geometry intact for now.
+    - final divider choice:
+      - replace the full-width center divider with split side bars,
+      - use the `15px` split-bar variant as the final resource-back treatment.
+    - `public/svgs/resource_back_hex_design.svg` is a separate resource-back exploration with a stronger central badge.
+    - approved inner-motif treatment for that file:
+      - keep the five mini hexes,
+      - use a uniform local deboss gradient on each mini hex instead of group-spanning shading,
+      - target the `balanced` contrast level rather than the softer or crisper variants.
+    - `public/svgs/devback_design.svg` is the dev-card sibling concept built from the same shell language:
+      - keep the cream border, inner line, and side-stub layout aligned with the resource-back family,
+      - use a brighter board-orange field instead of blue; the earlier amber-clay pass read too muddy against the live Catana board,
+      - keep the enlarged central dev-card seal, but tone it down with a cream material gradient and slightly more breathing room.
+      - current live field gradient is intentionally closer to the brick/dev-card warm family than to terracotta brown so the dev back still feels cheerful and distinct next to the blue resource back.
+    - Canonical hidden-card back filenames are now updated to the approved final art:
+      - `public/svgs/card_rescardback.svg` should now mirror the simpler `resource_back.svg` concept for production board use,
+      - `public/svgs/card_devcardback.svg` should mirror the `devback-seal-flat-rim.svg` concept.
+    - No `CardStack` sizing changes were needed for the opponent board display:
+      - the approved replacements keep essentially the same portrait ratio as the old backs,
+      - they render cleanly at the existing `52x72` hidden-card size and current overlap offsets.
+    - Board-scale read note:
+      - the five-hex resource badge in `resource_back_hex_design.svg` was a stronger zoomed-in concept, but it read slightly overdesigned/busy at the actual hidden-card size,
+      - the simpler single-hex resource back is the better live production choice unless the opponent card size is increased later.
+    - Final dev-back board-scale polish:
+      - increase the dev seal slightly so it sits closer to the visual weight of the resource hex,
+      - keep the middle stubs rather than removing them,
+      - lighten and lengthen those dev stubs on the orange field so they remain visible and preserve the shared family structure.
+    - `public/svgs/icon_devcard_.svg` is now the experimental copy of the dev emblem with the newer card-back seal treatment:
+      - keep `public/svgs/icon_devcard.svg` as the untouched production icon,
+      - use the flatter cream outer rim from `public/svgs/card_devcardback.svg` instead of the older gray/glossy ring,
+      - omit the separate glossy rim stroke so the copy matches the updated dev-card-back badge language more closely.
+    - `public/svgs/year_of_plenty.svg` now has a restrained depth pass:
+      - soft warm drop shadows sit under each overlapping resource-card back,
+      - the `+2` uses a much subtler matching shadow so it gains separation without reading embossed,
+      - the stronger clipped between-card shadow layer is still useful and should stay unless the card stack is redesigned.
+      - follow-up review: the card shadows wanted a little more presence, but the text shadow was already at the right strength.
+      - root canvas fix: keep this file on the normal `1256 x 1750` card coordinate system; an accidental giant root canvas makes Inkscape framing/visibility confusing even when the art itself is fine.
+      - Inkscape compatibility fix: keep `year_of_plenty.svg` self-contained.
+        - Broken copied refs like `url(#softShadow)`, `url(#hexShadow)`, `url(#outerCream)`, `url(#faceCream)`, and `url(#topWarm)` can render “fine enough” in browsers but cause Inkscape to hide the embedded card artwork.
+      - Inkscape may also choke on `feDropShadow`; prefer explicit `feFlood` + `feComposite` + `feGaussianBlur` + `feOffset` + `feMerge` chains for this file’s shadows.
+    - `public/svgs/roadbuilding.svg` road-piece palette note:
+      - keep the geometry and gradient structure aligned with `public/svgs/road_red.svg` / `public/svgs/road_blue.svg`,
+      - for the dev-card version, the middle band should stay warm sand/gold rather than drifting into cool gray-beige,
+      - the outline should read like darker card trim (`gold-brown`) rather than a player-color stroke.
+    - Monopoly/player bust note:
+      - keep `public/svgs/bust_in_silhouette_color.svg` as the dark giver/other-player silhouette,
+      - use `public/svgs/bust_in_silhouette_warm.svg` for the friendlier receiving-player read,
+      - the warm variant should stay faceless and only borrow the smiling-face palette family, not its literal emoji facial features.
+    - `public/svgs/monopoly_working.svg` composition polish note:
+      - cream/gold arrows fit the Catana card family better than saturated lime arrows here,
+      - the top giver row should stay slightly smaller/lighter than the central card fan so it does not become a single heavy dark band,
+      - the warm receiving bust should be a little larger and higher than the first draft so the card reads more clearly as `many opponents giving to one player`.
+      - after manual drag edits, keep the 3-card version on a proper center system:
+        - middle card centered on the main vertical axis,
+        - left/right cards level with each other,
+        - arrows on one shared y with equal left/center/right spacing.
+    - Robber placement UX integration note:
+      - the separate `codex/robber-placement-ux` worktree carried working robber preview code that is now ported into the root branch, so future robber UX changes should happen in the live root workspace unless a new worktree is explicitly created for isolation.
+      - root-branch robber placement now expects `app/catana/GameScreen.js` to pass `DEFAULT_ROBBER_PLACEMENT_MOTION_MODE` into `app/catana/Board.js`, which resolves to `playful` by default and falls back to `minimal` for reduced-motion and coarse-pointer environments.
+      - the playful path is split across `app/catana/Board.js`, `app/catana/Tile.js`, `app/catana/RobberPlacementPreview.js`, `app/catana/utils/robberPlacementMotion.js`, and `app/catana/utils/robberPlacementPreviewMotion.js`.
+      - the earlier preview flicker fix depends on memoizing land-tile geometry from primitive `boardCenterX` / `boardCenterY` values rather than the `center` array identity in `Board.js`.

@@ -9,17 +9,11 @@ import {
 } from "../utils/coordinates";
 import { isDocumentHidden } from "../utils/visibility";
 import { PLACE_PIECE_DEFAULT_TUNING } from "./placePieceDefaults";
-import {
-  getBackgroundImageWithFallback,
-  getThemedSvgPath,
-  isRasterAssetPath
-} from "../theme/themes";
+import { getBackgroundImageWithFallback } from "../theme/themes";
 
 const PIECE_SCALE = 0.8;
 const PIECE_OFFSET_X = 0.5;
 const PIECE_OFFSET_Y = 0.63;
-const RASTER_SETTLEMENT_SCALE = 0.88;
-const RASTER_SETTLEMENT_Y_LIFT_PX = 5;
 
 const SHADOW_GRADIENT =
   "radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.18) 45%, rgba(0,0,0,0) 70%)";
@@ -43,21 +37,19 @@ function createRing({ size, x, y, gradient, zIndex }) {
 
 function createSettlementEl({ size, x, y, color, themeId }) {
   const pieceFile = `settlement_${color}.svg`;
-  const themedPiecePath = getThemedSvgPath(themeId, pieceFile);
-  const usesRasterAsset = isRasterAssetPath(themedPiecePath);
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
   el.style.left = `${x - size * PIECE_OFFSET_X}px`;
-  el.style.top = `${y - size * (usesRasterAsset ? 0.59 : PIECE_OFFSET_Y) - (usesRasterAsset ? RASTER_SETTLEMENT_Y_LIFT_PX : 0)}px`;
+  el.style.top = `${y - size * PIECE_OFFSET_Y}px`;
   el.style.backgroundImage = getBackgroundImageWithFallback(
     themeId,
     pieceFile
   );
   el.style.backgroundRepeat = "no-repeat";
-  el.style.backgroundSize = usesRasterAsset ? "contain" : "cover";
-  el.style.backgroundPosition = usesRasterAsset ? "center bottom" : "center";
+  el.style.backgroundSize = "cover";
+  el.style.backgroundPosition = "center";
   el.style.pointerEvents = "none";
   el.style.zIndex = "1001";
   return el;
@@ -65,21 +57,19 @@ function createSettlementEl({ size, x, y, color, themeId }) {
 
 function createCityEl({ size, x, y, color, themeId }) {
   const pieceFile = `city_${color}.svg`;
-  const themedPiecePath = getThemedSvgPath(themeId, pieceFile);
-  const usesRasterAsset = isRasterAssetPath(themedPiecePath);
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.width = `${size}px`;
   el.style.height = `${size}px`;
   el.style.left = `${x - size * PIECE_OFFSET_X}px`;
-  el.style.top = `${y - size * (usesRasterAsset ? 0.59 : PIECE_OFFSET_Y)}px`;
+  el.style.top = `${y - size * PIECE_OFFSET_Y}px`;
   el.style.backgroundImage = getBackgroundImageWithFallback(
     themeId,
     pieceFile
   );
   el.style.backgroundRepeat = "no-repeat";
-  el.style.backgroundSize = usesRasterAsset ? "contain" : "cover";
-  el.style.backgroundPosition = usesRasterAsset ? "center bottom" : "center";
+  el.style.backgroundSize = "cover";
+  el.style.backgroundPosition = "center";
   el.style.pointerEvents = "none";
   el.style.zIndex = "1001";
   return el;
@@ -273,12 +263,7 @@ export function createPiecePlacementRunner({
       });
       if (!placement) return;
 
-      const settlementFile = `settlement_${color}.svg`;
-      const settlementPath = getThemedSvgPath(themeId, settlementFile);
-      const settlementScale = isRasterAssetPath(settlementPath)
-        ? RASTER_SETTLEMENT_SCALE
-        : 1;
-      const pieceSize = size * PIECE_SCALE * scale * settlementScale;
+      const pieceSize = size * PIECE_SCALE * scale;
       const x = offsetLeft + placement.x * scale;
       const y = offsetTop + placement.y * scale;
 

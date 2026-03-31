@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 import { Tile } from "./Tile";
 import { Node } from "./Node";
 import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
 import { Port } from "./Port";
+import { RobberPlacementPreview } from "./RobberPlacementPreview";
 import { BoardUnderlay } from "./BoardUnderlay";
 import { BoardPortChannels } from "./BoardPortChannels";
 import "./Board.css";
@@ -20,7 +21,9 @@ import { buildableNodes, canPlaceRobber } from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
+import { resolveRobberPlacementMotionMode } from "./utils/robberPlacementMotion";
 import { isDocumentHidden } from "./utils/visibility";
+import { tilePixelVector } from "./utils/coordinates";
 
 const getValidRobberTiles = (G) => {
   // Use core function for validation
@@ -52,6 +55,7 @@ robber (and merchant etc)
 export function CatanBoard({
   playerAction,
   setPlayerAction,
+  robberPlacementMotionMode,
   themeId,
   isMobile,
   ctx,
@@ -81,8 +85,14 @@ export function CatanBoard({
   const [flashingTiles, setFlashingTiles] = useState([]);
   const [blockedFlashingTiles, setBlockedFlashingTiles] = useState([]);
   const [robberTiles, setRobberTiles] = useState([]);
+  const [hoveredRobberTarget, setHoveredRobberTarget] = useState(null);
+  const [robberTargetElementsByTileId, setRobberTargetElementsByTileId] = useState(
+    {}
+  );
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
   const [localPendingCityNodeId, setLocalPendingCityNodeId] = useState(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [hasCoarsePointer, setHasCoarsePointer] = useState(false);
 
   const [buildableRoads, setBuildableRoads] = useState([])
   const mainBuildableNodes = useMemo(() => {
@@ -111,12 +121,24 @@ export function CatanBoard({
     width,
     height,
   });
+  const [boardCenterX, boardCenterY] = center;
   const { nodeRenderById, edgeRenderById } = useMemo(
     () => buildRenderMaps(G.tiles),
     [G.tiles]
   );
   const playerViewMap = useMemo(() => buildPlayerViewMap(G.core), [G.core]);
   const currentPlayerView = playerViewMap[ctx.currentPlayer];
+  const isRobberPlacementActive =
+    isActive && Object.entries(ctx.activePlayers ?? {}).flat().includes("moveRobber");
+  const resolvedRobberPlacementMotionMode = useMemo(
+    () =>
+      resolveRobberPlacementMotionMode({
+        requestedMode: robberPlacementMotionMode,
+        prefersReducedMotion,
+        hasCoarsePointer
+      }),
+    [robberPlacementMotionMode, prefersReducedMotion, hasCoarsePointer]
+  );
 
   const [placePiecePayload, isPlacePieceActive] = useEffectState("placePiece");
   const activeCityPlacementId =
@@ -134,6 +156,63 @@ export function CatanBoard({
       setLocalPendingCityNodeId(null);
     }
   }, [localPendingCityNodeId, activeCityPlacementId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
+    const updateMotionPreferences = () => {
+      setPrefersReducedMotion(reducedMotionQuery.matches);
+      setHasCoarsePointer(coarsePointerQuery.matches);
+    };
+    const subscribe = (query, handler) => {
+      if (typeof query.addEventListener === "function") {
+        query.addEventListener("change", handler);
+        return () => query.removeEventListener("change", handler);
+      }
+      if (typeof query.addListener === "function") {
+        query.addListener(handler);
+        return () => query.removeListener(handler);
+      }
+      return () => {};
+    };
+
+    updateMotionPreferences();
+    const unsubscribeReducedMotion = subscribe(
+      reducedMotionQuery,
+      updateMotionPreferences
+    );
+    const unsubscribeCoarsePointer = subscribe(
+      coarsePointerQuery,
+      updateMotionPreferences
+    );
+
+    return () => {
+      unsubscribeReducedMotion();
+      unsubscribeCoarsePointer();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return undefined;
+    }
+
+    const previousBodyCursor = document.body.style.cursor;
+    const previousDocumentCursor = document.documentElement.style.cursor;
+    if (isRobberPlacementActive) {
+      document.body.style.cursor = "grabbing";
+      document.documentElement.style.cursor = "grabbing";
+    }
+
+    return () => {
+      document.body.style.cursor = previousBodyCursor;
+      document.documentElement.style.cursor = previousDocumentCursor;
+    };
+  }, [isRobberPlacementActive]);
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -263,32 +342,21 @@ export function CatanBoard({
   //for displaying actionNodes based on stage the player is in (e.g. moving robber)
   //NOT for building road, as this is not a stage
   useEffect(() => {
-    // Only show robber tiles if it's the CURRENT player's turn and they are in the moveRobber stage
-    const isCurrentPlayerActive = ctx.currentPlayer === ctx.playerID; // Or however playerID is passed. Wait, `ctx.playerID` isn't standard bgio.
-    // In bgio-client, props include `playerID` (the viewer).
-    // The `ctx.currentPlayer` is the player whose turn it is.
-    
-    // We need to know who is VIEWING the board.
-    // The component receives `playerID` from props (if using Client).
-    // But `CatanBoard` props destructuring didn't include `playerID`.
-    // Let's check props.
-    
-    // Actually, `ctx.activePlayers` logic below was:
-    // if (Object.entries(ctx.activePlayers).flat().includes("moveRobber"))
-    
-    // This is true if ANYONE is in moveRobber stage.
-    // We want to show it ONLY if the VIEWING player is in moveRobber stage.
-    
-    // Let's assume `isActive` prop handles "is this player able to move".
-    // `isActive` is passed by boardgame.io Client. It is true if it's your turn (or you are active in a stage).
-    
-    if (isActive && Object.entries(ctx.activePlayers || {}).flat().includes("moveRobber")) {
-      var robberTiles = getValidRobberTiles(G);
-      setRobberTiles(robberTiles);
-    } else {
-      setRobberTiles([]);
+    if (isRobberPlacementActive) {
+      setRobberTiles(getValidRobberTiles(G));
+      return;
     }
-  }, [ctx.activePlayers, isActive, G]);
+
+    setRobberTiles([]);
+    setHoveredRobberTarget(null);
+    setRobberTargetElementsByTileId({});
+  }, [isRobberPlacementActive, G]);
+
+  useEffect(() => {
+    if (resolvedRobberPlacementMotionMode !== "playful") {
+      setHoveredRobberTarget(null);
+    }
+  }, [resolvedRobberPlacementMotionMode]);
 
   useEffect(() => {
     if (Object.entries(ctx.activePlayers ?? {}).flat().includes("settlement")) {
@@ -304,7 +372,92 @@ export function CatanBoard({
         setHoveredTiles([]);
       }
     }
-  }, [hoveredNode]);
+  }, [hoveredNode, G.tiles, ctx.activePlayers]);
+
+  const handleRobberTargetHoverChange = useCallback((payload) => {
+    if (!payload?.element?.getBoundingClientRect) {
+      setHoveredRobberTarget(null);
+      return;
+    }
+
+    const rect = payload.element.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
+      setHoveredRobberTarget(null);
+      return;
+    }
+
+    setHoveredRobberTarget({
+      tileId: payload.tileId,
+      centerX,
+      centerY
+    });
+  }, []);
+
+  const handleRobberTargetRegister = useCallback(({ tileId, element }) => {
+    setRobberTargetElementsByTileId((currentTargets) => {
+      const currentElement = currentTargets[tileId] ?? null;
+      const nextElement = element ?? null;
+
+      if (currentElement === nextElement) {
+        return currentTargets;
+      }
+
+      if (!nextElement) {
+        if (!(tileId in currentTargets)) {
+          return currentTargets;
+        }
+
+        const nextTargets = { ...currentTargets };
+        delete nextTargets[tileId];
+        return nextTargets;
+      }
+
+      return {
+        ...currentTargets,
+        [tileId]: nextElement
+      };
+    });
+  }, []);
+
+  const magneticRobberTargets = useMemo(
+    () =>
+      robberTiles
+        .map((tileId) => ({
+          tileId,
+          element: robberTargetElementsByTileId[tileId]
+        }))
+        .filter((target) => Boolean(target.element)),
+    [robberTiles, robberTargetElementsByTileId]
+  );
+  const landRobberPreviewTiles = useMemo(() => {
+    if (!size) {
+      return [];
+    }
+
+    return G.tiles.flatMap(({ coordinate, type, tile }) => {
+      if (type !== TileTypes.LAND) {
+        return [];
+      }
+
+      const [tileCenterX, tileCenterY] = tilePixelVector(
+        coordinate,
+        size,
+        boardCenterX,
+        boardCenterY
+      );
+
+      return [
+        {
+          tileId: tile.id,
+          centerX: tileCenterX,
+          centerY: tileCenterY
+        }
+      ];
+    });
+  }, [G.tiles, size, boardCenterX, boardCenterY]);
 
   if (!size) {
     return null;
@@ -328,7 +481,13 @@ export function CatanBoard({
           isFlashing={flashingTiles.includes(tile.id)}
           isBlockedFlashing={blockedFlashingTiles.includes(tile.id)}
           hasRobber={tile.id == G.core?.robberTileId}
+          showOriginRobber={
+            isRobberPlacementActive && tile.id == G.core?.robberTileId
+          }
           canPlaceRobber={robberTiles && robberTiles.includes(tile.id)}
+          showRobberHoverGhost={resolvedRobberPlacementMotionMode === "minimal"}
+          onRobberTargetHoverChange={handleRobberTargetHoverChange}
+          onRobberTargetRegister={handleRobberTargetRegister}
           moves={moves}
           themeId={themeId}
         />
@@ -570,6 +729,18 @@ export function CatanBoard({
           ref={placementLayerRef}
           className="absolute inset-0 pointer-events-none z-30"
         />
+        {resolvedRobberPlacementMotionMode === "playful" &&
+        isRobberPlacementActive ? (
+          <RobberPlacementPreview
+            active
+            hoveredTarget={hoveredRobberTarget}
+            magneticTargets={magneticRobberTargets}
+            landTileCenters={landRobberPreviewTiles}
+            boardTileSize={size}
+            themeId={themeId}
+            size={size / 1.5}
+          />
+        ) : null}
 
         {buildings}
         {actions}

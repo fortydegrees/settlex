@@ -4,6 +4,21 @@ import path from 'path';
 
 const SCENARIOS_DIR = path.join(process.cwd(), 'app', 'catana', 'scenarios');
 
+const isScenarioState = (value) =>
+  Boolean(
+    value &&
+      typeof value === 'object' &&
+      value.core &&
+      Array.isArray(value.core.players)
+  );
+
+const extractScenarioState = (value) => {
+  if (isScenarioState(value?.state)) return value.state;
+  if (isScenarioState(value?.G)) return value.G;
+  if (isScenarioState(value)) return value;
+  return null;
+};
+
 // Ensure directory exists
 if (!fs.existsSync(SCENARIOS_DIR)) {
   fs.mkdirSync(SCENARIOS_DIR, { recursive: true });
@@ -19,10 +34,14 @@ export async function GET() {
         const content = fs.readFileSync(filePath, 'utf8');
         try {
             const data = JSON.parse(content);
+            const state = extractScenarioState(data);
+            if (!state) {
+                return null;
+            }
             return {
                 id: file, // Use filename as ID
                 name: file.replace('.json', ''),
-                data: data
+                data: state
             };
         } catch (e) {
             console.error(`Error parsing scenario ${file}`, e);
@@ -41,9 +60,10 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { name, data } = body;
+    const state = extractScenarioState(data);
 
-    if (!name || !data) {
-      return NextResponse.json({ error: 'Name and data are required' }, { status: 400 });
+    if (!name || !state) {
+      return NextResponse.json({ error: 'Name and scenario state are required' }, { status: 400 });
     }
 
     // Sanitize filename roughly
@@ -51,7 +71,7 @@ export async function POST(request) {
     const filename = `${safeName}.json`;
     const filePath = path.join(SCENARIOS_DIR, filename);
 
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    fs.writeFileSync(filePath, JSON.stringify({ state }, null, 2));
 
     return NextResponse.json({ success: true, filename });
   } catch (error) {

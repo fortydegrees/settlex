@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 const DEBUG_MOVE_NAMES = [
   "DEBUG_loadState",
   "DEBUG_setScenario",
-  "DEBUG_takeCardsFromBank"
+  "DEBUG_takeCardsFromBank",
+  "DEBUG_takeDevCards",
+  "DEBUG_captureScenarioState",
+  "DEBUG_clearCapturedScenarioState"
 ];
 
 const loadCatanForEnv = async (nodeEnv) => {

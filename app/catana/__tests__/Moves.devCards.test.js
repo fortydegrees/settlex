@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createEmptyState, buildTopology, ResourceType, TileTypes } from "@settlex/game-core";
-import { playDevCardStart, placeRoadFromDevCard } from "../Moves";
+import { DEBUG_takeDevCards, playDevCardStart, placeRoadFromDevCard } from "../Moves";
 
 const tiles = [
   {
@@ -19,6 +19,22 @@ const tiles = [
 const coreTopology = buildTopology(tiles);
 
 describe("dev card play moves", () => {
+  it("DEBUG_takeDevCards gives selected dev cards to the chosen player", () => {
+    const state = createEmptyState(["0", "1"]);
+    state.devDeck = ["knight", "monopoly", "roadBuilding"];
+    const log = { setMetadata: vi.fn() };
+    const context = { G: { core: state }, log };
+
+    DEBUG_takeDevCards.move(context, "0", ["monopoly", "roadBuilding"]);
+
+    expect(state.playerStateById["0"].devCards).toEqual([
+      "monopoly",
+      "roadBuilding"
+    ]);
+    expect(state.devDeck).toEqual(["knight"]);
+    expect(log.setMetadata).toHaveBeenCalled();
+  });
+
   it("playDevCardStart sets devCardPlay for year of plenty", () => {
     const state = createEmptyState(["0"]);
     state.playerStateById["0"].devCards = ["yearOfPlenty"];

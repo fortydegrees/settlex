@@ -132,6 +132,47 @@ export const DEBUG_takeCardsFromBank = {
   
 };
 
+export const DEBUG_takeDevCards = {
+  move: (context, playerID, cards) => {
+    const { G, log } = context;
+    const devDeck = G.core?.devDeck ?? [];
+    const playerState = G.core?.playerStateById?.[playerID];
+    if (!playerState) {
+      return;
+    }
+
+    const grantedCards = [];
+    for (const card of cards ?? []) {
+      const cardIndex = devDeck.indexOf(card);
+      if (cardIndex === -1) {
+        continue;
+      }
+
+      devDeck.splice(cardIndex, 1);
+      playerState.devCards.push(card);
+      grantedCards.push(card);
+    }
+
+    log?.setMetadata?.({
+      message: `player ${playerID} received dev cards ${grantedCards.join(",")}`,
+    });
+  }
+};
+
+export const DEBUG_captureScenarioState = {
+  move: (context) => {
+    const snapshot = JSON.parse(JSON.stringify(context.G ?? {}));
+    delete snapshot.debugScenarioState;
+    context.G.debugScenarioState = snapshot;
+  }
+};
+
+export const DEBUG_clearCapturedScenarioState = {
+  move: (context) => {
+    context.G.debugScenarioState = null;
+  }
+};
+
 
 //need to allow arrays for both arguments
 export const takeCardsFromBank = (context, cards, playerID) => {

@@ -18,6 +18,7 @@ import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GameLogPanel } from "./components/GameLogPanel";
 import { GlassPillButton } from "./components/GlassPillButton";
+import { DebugPanel } from "./components/DebugPanel";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
@@ -27,6 +28,9 @@ import { createResourceDistributionRunner } from "./effects/resourceDistribution
 import { createPiecePlacementRunner } from "./effects/placePiece";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
+import {
+  DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
+} from "./utils/robberPlacementMotion";
 import { Howler } from "howler";
 import { getVictoryPoints } from "@settlex/game-core";
 import {
@@ -35,6 +39,7 @@ import {
 } from "./theme/themes";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
+const isDevEnvironment = process.env.NODE_ENV !== "production";
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
@@ -72,6 +77,7 @@ export function GameScreen(bgioProps) {
   const [themeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
+  const robberPlacementMotionMode = DEFAULT_ROBBER_PLACEMENT_MOTION_MODE;
   const gameOverSeenRef = useRef(false);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
@@ -561,6 +567,7 @@ export function GameScreen(bgioProps) {
             placementRoadLayerRef={placementRoadLayerRef}
             playerAction={playerAction}
             setPlayerAction={setPlayerAction}
+            robberPlacementMotionMode={robberPlacementMotionMode}
             themeId={themeId}
             {...bgioProps}
           />
@@ -600,6 +607,8 @@ export function GameScreen(bgioProps) {
           <span>Results</span>
         </GlassPillButton>
       )}
+
+      {isDevEnvironment && <DebugPanel bgioProps={bgioProps} />}
 
       <GameLogPanel
         entries={bgioProps.G?.gameLog ?? []}
