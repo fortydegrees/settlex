@@ -15,9 +15,12 @@ describe("render performance guards", () => {
     expect(contents).toMatch(/useMemo\(\(\) => buildPlayerViewMap\(core\), \[core\]\)/);
   });
 
-  it("only starts the timer ticker when timer is visible", () => {
+  it("only starts the ticker when a visible timer or disconnect countdown is active", () => {
     const contents = readCatanaFile("GameScreen.js");
-    expect(contents).toMatch(/if \(!timerSnapshot \|\| hideTimer\) return;/);
+    expect(contents).toContain("hasDisconnectCountdown");
+    expect(contents).toMatch(
+      /if \(!timerSnapshot \|\| hideTimer\) \{\s+if \(!hasDisconnectCountdown\) return;\s+\}/
+    );
   });
 
   it("precomputes resource counts in PlayerActionContainer", () => {

@@ -379,7 +379,9 @@ export function GameScreen(bgioProps) {
   const hasDisconnectCountdown = Boolean(activeDisconnectPlayerId);
 
   useEffect(() => {
-    if ((!timerSnapshot || hideTimer) && !hasDisconnectCountdown) return;
+    if (!timerSnapshot || hideTimer) {
+      if (!hasDisconnectCountdown) return;
+    }
     const interval = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(interval);
   }, [timerSnapshot, hideTimer, hasDisconnectCountdown]);
