@@ -17,6 +17,28 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+@keyframes seat-presence-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(148, 163, 184, 0),
+      0 0 0 0 rgba(245, 158, 11, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(148, 163, 184, 0.18),
+      0 0 16px 2px rgba(245, 158, 11, 0.12);
+  }
+}
+
+.seat-disconnected-panel {
+  filter: saturate(0.82);
+  opacity: 0.84;
+}
+
+.seat-disconnect-pulse {
+  animation: seat-presence-pulse 3s ease-in-out infinite;
+}
+
 /* Chevron styling - triangle pointing down */
 .turn-chevron {
   display: block;
@@ -26,4 +48,11 @@
   border-right: 14px solid transparent;
   border-top: 16px solid #f59e0b;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-active-glow,
+  .seat-disconnect-pulse {
+    animation: none;
+  }
 }

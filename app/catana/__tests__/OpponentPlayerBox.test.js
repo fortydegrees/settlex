@@ -24,4 +24,10 @@ describe("OpponentPlayerBox", () => {
     expect(contents).toContain("transition-[width]");
     expect(contents).toContain("motion-reduce:transition-none");
   });
+
+  it("passes presence state into the avatar and disconnected seat styling", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("presence={presence}");
+    expect(contents).toContain("seat-disconnected-panel");
+  });
 });

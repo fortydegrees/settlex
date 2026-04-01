@@ -40,6 +40,14 @@ describe("terminal match moves", () => {
     });
     expect(context.G.gameLog).toEqual([
       expect.objectContaining({
+        type: "server:resign",
+        actorId: "system",
+        data: {
+          playerId: "0",
+          winnerId: "1"
+        }
+      }),
+      expect.objectContaining({
         type: "game:over",
         actorId: "1",
         data: {

@@ -24,6 +24,20 @@ const renderToken = (token, index, themeId) => {
       />
     );
   }
+  if (token.kind === "label") {
+    return (
+      <span
+        key={`label-${index}`}
+        className={
+          token.variant === "server"
+            ? "inline-flex rounded-full bg-amber-100/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700 not-italic"
+            : "inline-flex rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-700"
+        }
+      >
+        {token.text}
+      </span>
+    );
+  }
   if (token.kind === "player") {
     const nameColor = token.color ? getPlayerNameHex(token.color) ?? token.color : null;
     return (
@@ -66,7 +80,12 @@ const renderToken = (token, index, themeId) => {
   }
   if (token.kind === "text") {
     return (
-      <span key={`text-${index}`} className="text-slate-800">
+      <span
+        key={`text-${index}`}
+        className={
+          token.variant === "server" ? "text-slate-600" : "text-slate-800"
+        }
+      >
         {token.text}
       </span>
     );
@@ -86,9 +105,12 @@ const GameLogPanelComponent = ({ entries = [], playerMap = {}, themeId }) => {
         .map((entry, entryIndex) => {
           const tokens = formatLogEntry(entry, playerMap);
           if (!tokens || tokens.length === 0) return null;
+          const isServerEntry =
+            typeof entry?.type === "string" && entry.type.startsWith("server:");
           return {
             key: entry.id ?? `${entryIndex}-${entry.type}`,
-            tokens
+            tokens,
+            isServerEntry
           };
         })
         .filter(Boolean),
@@ -178,7 +200,9 @@ const GameLogPanelComponent = ({ entries = [], playerMap = {}, themeId }) => {
                 return (
                   <div
                     key={entry.key}
-                    className="game-log-entry flex flex-wrap items-center gap-1"
+                    className={`game-log-entry flex flex-wrap items-center gap-1 ${
+                      entry.isServerEntry ? "italic" : ""
+                    }`}
                   >
                     {entry.tokens.map((token, tokenIndex) =>
                       renderToken(token, tokenIndex, themeId)

@@ -10,7 +10,8 @@ export const STATUS_TEXT = {
   PLACING_CITY: "Place City"
 };
 
-const textToken = (text) => ({ kind: "text", text });
+const textToken = (text, extra = {}) => ({ kind: "text", text, ...extra });
+const labelToken = (text, extra = {}) => ({ kind: "label", text, ...extra });
 const resolvePlayerMeta = (id, playerMap = {}) => {
   const value = playerMap?.[id];
   if (typeof value === "string") {
@@ -47,6 +48,65 @@ const resourceTokensFromMap = (resourceMap) => {
   return tokens;
 };
 
+const getServerEventPlayerId = (entry) =>
+  entry?.data?.playerId ?? entry?.playerId ?? null;
+
+const findOtherPlayerId = (playerId, playerMap = {}) =>
+  Object.keys(playerMap ?? {}).find((id) => id !== String(playerId)) ?? null;
+
+const formatServerEntry = (entry, playerMap = {}) => {
+  const affectedPlayerId = getServerEventPlayerId(entry);
+  const winnerId =
+    entry?.data?.winnerId ?? findOtherPlayerId(affectedPlayerId, playerMap);
+  const tokens = [labelToken("server", { variant: "server" })];
+
+  switch (entry?.type) {
+    case "server:disconnect":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(
+        textToken(" disconnected. Reconnect window started.", {
+          variant: "server"
+        })
+      );
+      return tokens;
+    case "server:reconnect":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(textToken(" reconnected.", { variant: "server" }));
+      return tokens;
+    case "server:disconnectForfeit":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(textToken(" failed to reconnect. ", { variant: "server" }));
+      if (winnerId != null) {
+        tokens.push(playerToken(String(winnerId), playerMap));
+        tokens.push(textToken(" wins by forfeit.", { variant: "server" }));
+      } else {
+        tokens.push(textToken(" lost by forfeit.", { variant: "server" }));
+      }
+      return tokens;
+    case "server:resign":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(textToken(" resigned. ", { variant: "server" }));
+      if (winnerId != null) {
+        tokens.push(playerToken(String(winnerId), playerMap));
+        tokens.push(textToken(" wins.", { variant: "server" }));
+      }
+      return tokens;
+    default:
+      return [
+        ...tokens,
+        textToken(String(entry?.type ?? "server"), { variant: "server" })
+      ];
+  }
+};
+
 export function formatLogEntry(entry, playerMap = {}) {
   if (!entry) return [];
   const { type, actorId, data = {}, forced } = entry;
@@ -65,6 +125,10 @@ export function formatLogEntry(entry, playerMap = {}) {
 
   if (type === "phase:placement") {
     return [{ kind: "divider", variant: "strong" }];
+  }
+
+  if (typeof type === "string" && type.startsWith("server:")) {
+    return formatServerEntry(entry, playerMap);
   }
 
   const tokens = [];

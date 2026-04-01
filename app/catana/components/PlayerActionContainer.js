@@ -70,6 +70,7 @@ export const PlayerActionContainer = ({
   setPlayerAction,
   bgioProps,
   player,
+  presence,
   onTradeClick,
   isActive,
   statusType,
@@ -105,6 +106,7 @@ export const PlayerActionContainer = ({
     return counts;
   }, [player.resources]);
   const timerText = formatTimer(timerMs);
+  const isDisconnected = presence?.status === "disconnected";
 
   const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
 
@@ -256,8 +258,10 @@ export const PlayerActionContainer = ({
   const isOverLimit = totalResources > discardLimit;
 
   // Determine container styling based on limit status
-  const containerStyle = isOverLimit 
-    ? "bg-rose-500 bg-opacity-40 ring-rose-500" 
+  const containerStyle = isDisconnected
+    ? "bg-slate-400/30 ring-slate-500 seat-disconnected-panel seat-disconnect-pulse"
+    : isOverLimit
+    ? "bg-rose-500 bg-opacity-40 ring-rose-500"
     : "bg-blue-200 bg-opacity-50 ring-slate-300";
 
   return (
@@ -270,6 +274,7 @@ export const PlayerActionContainer = ({
         {/* Avatar + centered dock */}
         <PlayerAvatarStats
           player={player}
+          presence={presence}
           core={G.core}
           coreTopology={G.coreTopology}
           isMe={isMe}
