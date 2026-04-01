@@ -8,7 +8,7 @@ import {
   ResourceType
 } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
-import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, DEBUG_takeDevCards, DEBUG_captureScenarioState, DEBUG_clearCapturedScenarioState, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
+import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, DEBUG_takeDevCards, DEBUG_captureScenarioState, DEBUG_clearCapturedScenarioState, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, resign, resolveDisconnectForfeit, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
 import { appendGameLog } from "./utils/gameLog.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 import {
@@ -231,9 +231,13 @@ const resolveRulesetSpec = ({ numPlayers, setupData }) => {
 
 export const createCatanGame = ({
   includeDebugMoves = isDebugEnvironment(),
-  includeEffects = true
+  includeEffects = true,
+  includeServerMoves = false
 } = {}) => {
   const debugMoves = includeDebugMoves ? DEBUG_MOVES : {};
+  const serverMoves = includeServerMoves
+    ? { resolveDisconnectForfeit }
+    : {};
   const plugins = includeEffects ? [configuredEffectsPlugin] : [];
   return {
   //get spec to use (i.e. script to generate board)
@@ -520,7 +524,11 @@ export const createCatanGame = ({
     },
   },
 
-  moves: debugMoves,
+  moves: {
+    resign,
+    ...serverMoves,
+    ...debugMoves
+  },
   };
 };
 
