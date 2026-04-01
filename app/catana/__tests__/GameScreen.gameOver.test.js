@@ -14,5 +14,14 @@ describe("GameScreen game over", () => {
     expect(contents).toContain("gameOverState");
     expect(contents).toContain("GameOverModal");
     expect(contents).toContain("Results");
+    expect(contents).toContain("Disconnect Forfeit");
+    expect(contents).toContain("Resignation");
+  });
+
+  it("wires a confirm-backed resign action", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+    expect(contents).toContain("window.confirm");
+    expect(contents).toContain("moves.resign");
+    expect(contents).toContain("Resign this match?");
   });
 });

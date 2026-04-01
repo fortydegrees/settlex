@@ -11,7 +11,23 @@ import { getVpDisplay } from "./PlayerAvatarStatsUtils";
 import { getPlayerColorOption } from "../theme/playerColors";
 import "./PlayerAvatarStats.css";
 
-export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, statusType }) => {
+const formatPresenceTimer = (ms) => {
+  if (ms == null) return null;
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
+
+export const PlayerAvatarStats = ({
+  player,
+  core,
+  coreTopology,
+  isMe,
+  isActive,
+  statusType,
+  presence
+}) => {
   if (!player) return null;
 
   // Prefer the player's chosen color; fall back to seat-index color.
@@ -34,27 +50,53 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, 
   const totalPoints = core ? getVictoryPoints(core, player.id) : 0;
   const publicPoints = core ? getPublicVictoryPoints(core, player.id) : 0;
   const vpDisplay = getVpDisplay({ publicPoints, totalPoints, isMe });
+  const isDisconnected = presence?.status === "disconnected";
+  const disconnectLabel = isDisconnected
+    ? `Disconnected${
+        presence?.remainingMs != null
+          ? ` ${formatPresenceTimer(presence.remainingMs)}`
+          : ""
+      }`
+    : null;
 
   return (
-    <>
-      <span className="flex relative">
-        {isActive && (
-          <span className="absolute -top-5 left-1/2 -translate-x-1/2">
-            <span className="turn-chevron" />
+    <div className="flex items-center gap-2">
+      <div className="flex min-w-[5.5rem] flex-col items-center gap-1">
+        <span className="flex relative">
+          {isActive && (
+            <span className="absolute -top-5 left-1/2 -translate-x-1/2">
+              <span className="turn-chevron" />
+            </span>
+          )}
+          <div
+            className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${
+              isDisconnected ? "opacity-85 saturate-75" : ""
+            } ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
+          >
+            {player.emoji || "🤠"}
+          </div>
+          <span className="absolute right-0 top-0 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
+            {vpDisplay}
           </span>
-        )}
-        <div
-          className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
-        >
-          {player.emoji || "🤠"}
-        </div>
-        <span className="absolute right-0 top-0 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
-          {vpDisplay}
+          {isDisconnected && (
+            <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-100/95 text-base shadow-sm ring-2 ring-white">
+              ⚠️
+            </span>
+          )}
+          {/* Only show status bubble for opponents, not for self */}
+          {!isMe && <StatusBubble statusType={statusType} isVisible={isActive} />}
         </span>
-        {/* Only show status bubble for opponents, not for self */}
-        {!isMe && <StatusBubble statusType={statusType} isVisible={isActive} />}
-      </span>
-      <span className="bg-blue-200 bg-opacity-50 rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300">
+        {disconnectLabel ? (
+          <span className="rounded-full bg-slate-700/85 px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.04em] text-amber-50 shadow-sm whitespace-nowrap">
+            {disconnectLabel}
+          </span>
+        ) : null}
+      </div>
+      <span
+        className={`bg-blue-200 bg-opacity-50 rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300 ${
+          isDisconnected ? "seat-disconnected-panel seat-disconnect-pulse" : ""
+        }`}
+      >
         <div className="flex flex-col gap-y-1">
           <div className="flex items-center">
             <div className="w-8 h-8 flex items-center justify-center">
@@ -94,6 +136,6 @@ export const PlayerAvatarStats = ({ player, core, coreTopology, isMe, isActive, 
           </div>
         </div>
       </span>
-    </>
+    </div>
   );
 };

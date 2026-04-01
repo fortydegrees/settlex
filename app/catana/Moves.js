@@ -105,7 +105,12 @@ const getOpponentWinnerId = (G, losingPlayerId) => {
   return playerIds.find((playerId) => playerId !== String(losingPlayerId)) ?? null;
 };
 
-const resolveTerminalForfeit = (context, losingPlayerId, reason) => {
+const resolveTerminalForfeit = (
+  context,
+  losingPlayerId,
+  reason,
+  { serverLogType = null } = {}
+) => {
   const { G, ctx, events } = context;
   if (!G?.core || G.core.gameOver || losingPlayerId == null) {
     return;
@@ -117,6 +122,16 @@ const resolveTerminalForfeit = (context, losingPlayerId, reason) => {
   }
 
   const gameOver = { winnerId, reason };
+  if (serverLogType) {
+    appendGameLog(G, ctx, {
+      type: serverLogType,
+      actorId: "system",
+      data: {
+        playerId: String(losingPlayerId),
+        winnerId
+      }
+    });
+  }
   G.core.gameOver = gameOver;
   maybeLogGameOver(G, ctx);
   events?.endGame?.(gameOver);
@@ -128,7 +143,8 @@ export const resign = {
     resolveTerminalForfeit(
       context,
       losingPlayerId,
-      GAME_OVER_REASONS.RESIGNATION
+      GAME_OVER_REASONS.RESIGNATION,
+      { serverLogType: "server:resign" }
     );
   }
 };

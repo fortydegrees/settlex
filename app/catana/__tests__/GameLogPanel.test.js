@@ -32,6 +32,13 @@ describe("GameLogPanel", () => {
     expect(contents).toContain("game-log-entry");
   });
 
+  it("adds styling hooks for authoritative server entries", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain('startsWith("server:")');
+    expect(contents).toContain('kind === "label"');
+    expect(contents).toContain("italic");
+  });
+
   it("auto-scrolls to the latest entry", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("scrollHeight");

@@ -11,6 +11,11 @@ import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 import { getGameStatus } from "./utils/gameStatus";
 import { shouldResetPlayerAction } from "./utils/playerAction";
 import { sanitizeDisplayName } from "./utils/playerIdentity";
+import {
+  getDisconnectRemainingMs,
+  mergeVisibleLogEntries,
+  readPresenceSnapshot
+} from "./utils/disconnectPresence";
 
 import { EffectsBoardWrapper } from "bgio-effects/react";
 
@@ -61,6 +66,13 @@ const readStoredThemeId = () => {
   }
 };
 
+const getGameOverReasonCopy = (reason) => {
+  if (reason === "victoryPoints" || !reason) return "Victory Points";
+  if (reason === "Resignation") return "Resignation";
+  if (reason === "Disconnect Forfeit") return "Disconnect Forfeit";
+  return String(reason);
+};
+
 export function GameScreen(bgioProps) {
   //playerAction is things that appear to the user (not spectator)
   //e.g. placeRoad, placeSettle, placeCity, moveRobber, trading
@@ -71,6 +83,7 @@ export function GameScreen(bgioProps) {
   const [tradePresetResource, setTradePresetResource] = useState(null);
   const [timerSnapshot, setTimerSnapshot] = useState(null);
   const [timerSeeded, setTimerSeeded] = useState(false);
+  const [disconnectPresence, setDisconnectPresence] = useState(null);
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
   const [isMuted, setIsMuted] = useState(readStoredMute);
@@ -184,15 +197,45 @@ export function GameScreen(bgioProps) {
     });
     return map;
   }, [seatColorMap, nameMap, emojiMap, colorMap]);
+  const visibleLogEntries = useMemo(
+    () =>
+      mergeVisibleLogEntries(
+        bgioProps.G?.gameLog ?? [],
+        disconnectPresence?.events ?? []
+      ),
+    [bgioProps.G?.gameLog, disconnectPresence]
+  );
+  const activeDisconnectPlayerId =
+    disconnectPresence?.activeDisconnectPlayerId ?? null;
+  const disconnectRemainingMs = getDisconnectRemainingMs(
+    disconnectPresence,
+    nowMs
+  );
+  const disconnectStateByPlayerId = useMemo(() => {
+    const statusByPlayerId = disconnectPresence?.statusByPlayerId ?? {};
+    const map = {};
+
+    Object.entries(statusByPlayerId).forEach(([id, status]) => {
+      if (status?.status !== "disconnected") return;
+      map[id] = {
+        status: "disconnected",
+        remainingMs:
+          activeDisconnectPlayerId === id ? disconnectRemainingMs : null
+      };
+    });
+
+    return map;
+  }, [disconnectPresence, activeDisconnectPlayerId, disconnectRemainingMs]);
+  const gameOverReasonText = getGameOverReasonCopy(gameOverState?.reason);
 
   const postgameSummary = useMemo(() => {
     if (!isGameOver) return [];
     return [
       { label: "Winner", value: winnerName },
-      { label: "Reason", value: gameOverState?.reason ?? "Victory Points" },
+      { label: "Reason", value: gameOverReasonText },
       { label: "Final VP", value: winnerVP != null ? `${winnerVP}` : "—" }
     ];
-  }, [isGameOver, winnerName, gameOverState?.reason, winnerVP]);
+  }, [isGameOver, winnerName, gameOverReasonText, winnerVP]);
   const showResultsButton =
     isGameOver && !showGameOverModal && !showPostgame;
 
@@ -216,6 +259,7 @@ export function GameScreen(bgioProps) {
   useEffect(() => {
     setTimerSnapshot(null);
     setTimerSeeded(false);
+    setDisconnectPresence(null);
     setReadySent(false);
   }, [matchID]);
 
@@ -240,6 +284,22 @@ export function GameScreen(bgioProps) {
       serverDelayMs
     });
   }, [bgioProps.timerSnapshot, bgioProps.timerServerTimeMs]);
+
+  useEffect(() => {
+    if (
+      bgioProps.disconnectPresence === undefined &&
+      bgioProps.disconnectServerTimeMs === undefined
+    ) {
+      return;
+    }
+
+    setDisconnectPresence(
+      readPresenceSnapshot(
+        bgioProps.disconnectPresence,
+        bgioProps.disconnectServerTimeMs
+      )
+    );
+  }, [bgioProps.disconnectPresence, bgioProps.disconnectServerTimeMs]);
 
   useEffect(() => {
     if (!matchID || typeof window === "undefined") return;
@@ -316,12 +376,13 @@ export function GameScreen(bgioProps) {
     : null;
   const hideTimer = isGameOver || timerSnapshot?.stageKey?.startsWith("preGame:");
   const visibleTimerMs = hideTimer ? null : timerMs;
+  const hasDisconnectCountdown = Boolean(activeDisconnectPlayerId);
 
   useEffect(() => {
-    if (!timerSnapshot || hideTimer) return;
+    if ((!timerSnapshot || hideTimer) && !hasDisconnectCountdown) return;
     const interval = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(interval);
-  }, [timerSnapshot, hideTimer]);
+  }, [timerSnapshot, hideTimer, hasDisconnectCountdown]);
 
   useEffect(() => {
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
@@ -391,6 +452,18 @@ export function GameScreen(bgioProps) {
   const handleTradeOpen = (resource) => {
     setTradePresetResource(resource ?? null);
     setShowTradeModal(true);
+  };
+
+  const handleResign = () => {
+    if (isGameOver) return;
+    if (typeof moves.resign !== "function") return;
+    if (typeof window !== "undefined") {
+      const didConfirm = window.confirm(
+        "Resign this match? You will immediately lose."
+      );
+      if (!didConfirm) return;
+    }
+    moves.resign();
   };
 
   const canRoll = Boolean(
@@ -596,6 +669,17 @@ export function GameScreen(bgioProps) {
         </svg>
       </button>
 
+      {!isGameOver && !!player && (
+        <GlassPillButton
+          className="fixed right-4 top-4 z-40"
+          onClick={handleResign}
+          aria-label="Resign match"
+          data-allow-interaction="true"
+        >
+          <span>Resign</span>
+        </GlassPillButton>
+      )}
+
       {showResultsButton && (
         <GlassPillButton
           className="fixed right-4 top-4 z-40"
@@ -611,7 +695,7 @@ export function GameScreen(bgioProps) {
       {isDevEnvironment && <DebugPanel bgioProps={bgioProps} />}
 
       <GameLogPanel
-        entries={bgioProps.G?.gameLog ?? []}
+        entries={visibleLogEntries}
         playerMap={logPlayerMap}
         themeId={themeId}
       />
@@ -635,6 +719,7 @@ TODO: accurately colour it
           bgioProps={bgioProps}
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
+          presence={disconnectStateByPlayerId[player.id] ?? null}
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}
@@ -692,6 +777,7 @@ TODO: accurately colour it
             <OpponentPlayerBox
               key={opponent.id}
               player={opponent}
+              presence={disconnectStateByPlayerId[opponent.id] ?? null}
               core={bgioProps.G.core}
               coreTopology={bgioProps.G.coreTopology}
               isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}
@@ -706,7 +792,11 @@ TODO: accurately colour it
           <GameOverModal
             title={isWinner ? "You win!" : `${winnerName} wins!`}
             subtitle={
-              winnerVP != null ? `Victory Points: ${winnerVP}` : "Final score locked."
+              gameOverState?.reason === "victoryPoints"
+                ? winnerVP != null
+                  ? `Victory Points: ${winnerVP}`
+                  : "Victory Points"
+                : gameOverReasonText
             }
             scoreboard={scoreboard}
             isWinner={isWinner}
