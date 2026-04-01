@@ -25,26 +25,35 @@ class InMemoryPubSub {
   }
 }
 
-export function createTimerPubSub(timerManager) {
+export function createTimerPubSub(timerManager, { disconnectManager } = {}) {
   const base = new InMemoryPubSub();
-  const attachTimerSnapshot = (payload, matchID, state) => {
-    if (!state) return payload;
+  const latestStateByMatch = new Map();
+
+  const buildStateWithSnapshots = (matchID, state) => {
+    if (!state) return state;
     const timerSnapshot = timerManager.getTimerSnapshot(matchID, state);
     const serverTimeMs = Date.now();
+    return {
+      ...state,
+      timerSnapshot,
+      timerServerTimeMs: serverTimeMs,
+      disconnectPresence: disconnectManager?.getSnapshot?.(matchID) ?? null,
+      disconnectServerTimeMs: serverTimeMs
+    };
+  };
+
+  const attachSnapshots = (payload, matchID, state) => {
+    if (!state) return payload;
 
     if (payload?.type === "update") {
       const args = payload.args ?? [];
       const deltalog = args.length > 2 ? args[2] : undefined;
-      const stateWithTimer = {
-        ...state,
-        timerSnapshot,
-        timerServerTimeMs: serverTimeMs
-      };
+      const stateWithSnapshots = buildStateWithSnapshots(matchID, state);
       return {
         ...payload,
         args: deltalog === undefined
-          ? [matchID, stateWithTimer]
-          : [matchID, stateWithTimer, deltalog]
+          ? [matchID, stateWithSnapshots]
+          : [matchID, stateWithSnapshots, deltalog]
       };
     }
 
@@ -52,14 +61,10 @@ export function createTimerPubSub(timerManager) {
       const args = payload.args ?? [];
       const prevStateID = args[1];
       const prevState = args[2];
-      const stateWithTimer = {
-        ...state,
-        timerSnapshot,
-        timerServerTimeMs: serverTimeMs
-      };
+      const stateWithSnapshots = buildStateWithSnapshots(matchID, state);
       return {
         ...payload,
-        args: [matchID, prevStateID, prevState, stateWithTimer]
+        args: [matchID, prevStateID, prevState, stateWithSnapshots]
       };
     }
 
@@ -68,7 +73,6 @@ export function createTimerPubSub(timerManager) {
 
   return {
     publish(channelId, payload) {
-      let updatedPayload = payload;
       if (channelId.startsWith(MATCH_PREFIX)) {
         const matchID = channelId.slice(MATCH_PREFIX.length);
         const state =
@@ -81,12 +85,36 @@ export function createTimerPubSub(timerManager) {
           (payload?.type === "patch" ? payload?.args?.[4] : null);
 
         if (state) {
+          latestStateByMatch.set(matchID, state);
           timerManager.onState(matchID, state, deltalog);
+          disconnectManager?.onState?.(matchID, state, deltalog);
         }
 
-        updatedPayload = attachTimerSnapshot(payload, matchID, state);
+        if (payload?.type === "matchData") {
+          const matchData = payload?.args?.[1] ?? [];
+          disconnectManager?.onMatchData?.(matchID, matchData);
+          const cachedState = latestStateByMatch.get(matchID) ?? null;
+          if (cachedState) {
+            disconnectManager?.onState?.(matchID, cachedState, null);
+          }
+          base.publish(channelId, payload);
+          if (cachedState) {
+            base.publish(
+              channelId,
+              attachSnapshots(
+                { type: "update", args: [matchID, cachedState] },
+                matchID,
+                cachedState
+              )
+            );
+          }
+          return;
+        }
+
+        base.publish(channelId, attachSnapshots(payload, matchID, state));
+        return;
       }
-      base.publish(channelId, updatedPayload);
+      base.publish(channelId, payload);
     },
     subscribe(channelId, callback) {
       base.subscribe(channelId, callback);

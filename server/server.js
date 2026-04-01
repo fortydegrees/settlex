@@ -3,6 +3,7 @@ import { Server, Origins, SocketIO } from "boardgame.io/dist/cjs/server.js"
 import { ServerCatan } from "./serverGame.js"
 import { TimerManager } from "./timers/TimerManager.js"
 import { createTimerPubSub } from "./timers/timerPubSub.js"
+import { DisconnectPresenceManager } from "./presence/DisconnectPresenceManager.js"
 import { createPufferBotManagerFromEnv } from "./bots/pufferBotManager.js"
 import { dispatchMatchUpdate } from "./dispatch/dispatchMatchUpdate.js"
 const DEFAULT_BOT_MOVE_DELAY_MS = 450
@@ -32,7 +33,8 @@ const timerManager = new TimerManager({
     botManager.isBotPlayerForMatch(matchID, playerID),
   botMoveDelayMs
 })
-const pubSub = createTimerPubSub(timerManager)
+const disconnectManager = new DisconnectPresenceManager({ dispatch })
+const pubSub = createTimerPubSub(timerManager, { disconnectManager })
 const transport = new SocketIO({ pubSub })
 
 const server = Server({
