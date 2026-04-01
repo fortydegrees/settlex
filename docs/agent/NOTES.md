@@ -1,5 +1,20 @@
 # NOTES
 
+- Disconnect/resign authoritative behavior for the current Catana MVP:
+- scope is 1v1 only,
+- a player disconnect starts a 60 second reconnect grace window,
+- reconnect before the deadline clears the disconnected seat state immediately,
+- missing the deadline ends the match as `Disconnect Forfeit`,
+- resign ends the match immediately as `Resignation`.
+- Presence state is server-owned:
+- `DisconnectPresenceManager` lives outside `G.core`,
+- `timerPubSub` pushes `disconnectPresence` and `disconnectServerTimeMs` through live board payloads,
+- `matchData` connection changes trigger a rebroadcast of cached state so the UI updates without a polling loop.
+- Log rendering rule for this feature:
+- server disconnect/reconnect/forfeit events are merged client-side with `G.gameLog`,
+- resign adds a `server:resign` entry before the normal `game:over` entry,
+- `app/catana/utils/disconnectPresence.js` and `app/catana/utils/gameText.js` are the seams for future presence/log changes.
+
 - Robber placement UX now has an approved two-mode interaction seam in:
 - `docs/superpowers/specs/2026-03-31-robber-placement-ux-design.md`
 - Planned modes:

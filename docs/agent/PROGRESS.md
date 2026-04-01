@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-04-01, disconnect/resign authoritative flow shipped)
+- Added the approved 1v1 disconnect/resign MVP across server and client.
+- Server/runtime behavior now includes:
+- server-owned disconnect presence state with a 60 second reconnect window,
+- rebroadcast of cached board state on `matchData` disconnect/reconnect changes,
+- immediate resign loss,
+- disconnect timeout resolving as opponent win.
+- Client/UI behavior now includes:
+- authoritative `server:*` log lines merged with `G.gameLog`,
+- disconnected seat badge, countdown pill, dimming, and subtle pulse,
+- minimal resign control with confirmation,
+- game-over copy that recognizes `Resignation` and `Disconnect Forfeit`.
+- Focused verification completed with:
+- `pnpm exec vitest run server/__tests__/DisconnectPresenceManager.test.js server/__tests__/timerPubSub.test.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/disconnectPresence.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/PlayerAvatarStatsPresence.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+
 ## Status (2026-03-31, robber placement UX design approved)
 - Wrote the approved robber-placement UX spec in:
 - `docs/superpowers/specs/2026-03-31-robber-placement-ux-design.md`
