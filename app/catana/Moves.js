@@ -95,6 +95,55 @@ export const maybeLogGameOver = (G, ctx) => {
   G.gameOverLogged = true;
 };
 
+export const GAME_OVER_REASONS = {
+  RESIGNATION: "Resignation",
+  DISCONNECT_FORFEIT: "Disconnect Forfeit"
+};
+
+const getOpponentWinnerId = (G, losingPlayerId) => {
+  const playerIds = G?.core?.players?.map(String) ?? [];
+  return playerIds.find((playerId) => playerId !== String(losingPlayerId)) ?? null;
+};
+
+const resolveTerminalForfeit = (context, losingPlayerId, reason) => {
+  const { G, ctx, events } = context;
+  if (!G?.core || G.core.gameOver || losingPlayerId == null) {
+    return;
+  }
+
+  const winnerId = getOpponentWinnerId(G, losingPlayerId);
+  if (winnerId == null) {
+    return;
+  }
+
+  const gameOver = { winnerId, reason };
+  G.core.gameOver = gameOver;
+  maybeLogGameOver(G, ctx);
+  events?.endGame?.(gameOver);
+};
+
+export const resign = {
+  move: (context) => {
+    const losingPlayerId = context.playerID ?? context.ctx?.currentPlayer;
+    resolveTerminalForfeit(
+      context,
+      losingPlayerId,
+      GAME_OVER_REASONS.RESIGNATION
+    );
+  }
+};
+
+export const resolveDisconnectForfeit = {
+  client: false,
+  move: (context) => {
+    resolveTerminalForfeit(
+      context,
+      context.playerID,
+      GAME_OVER_REASONS.DISCONNECT_FORFEIT
+    );
+  }
+};
+
 //used for giving cards to a player by clicking on icon for testing
 //TODO: remove
 export const DEBUG_takeCardsFromBank = {
