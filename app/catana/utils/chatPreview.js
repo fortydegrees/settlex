@@ -14,11 +14,8 @@ const getPreviewSeatIds = (playerID, playerMap = {}) => {
     .filter((id) => playerMap?.[id] != null)
     .sort(compareSeatIds);
 
-  const currentId =
-    playerID != null && seatIds.includes(String(playerID))
-      ? String(playerID)
-      : seatIds[0] ?? (playerID != null ? String(playerID) : "system");
-
+  const explicitId = playerID != null ? String(playerID) : null;
+  const currentId = explicitId ?? seatIds[0] ?? "system";
   const opponentId = seatIds.find((id) => id !== currentId) ?? currentId;
 
   return { currentId, opponentId };

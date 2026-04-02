@@ -23,8 +23,7 @@ const ChatPanelComponent = ({ playerID, playerMap = {}, themeId }) => {
   return React.createElement(
     "div",
     {
-      className:
-        "fixed right-4 bottom-4 z-30 w-80 space-y-3 md:w-96 pointer-events-auto",
+      className: "space-y-3 pointer-events-auto",
       "data-allow-interaction": "true",
     },
     React.createElement(
@@ -38,7 +37,7 @@ const ChatPanelComponent = ({ playerID, playerMap = {}, themeId }) => {
     React.createElement(FeedPanel, {
       title: "Chat",
       rows: previewRows,
-      rootClassName: "relative w-full",
+      rootClassName: "w-full",
       panelClassName:
         "flex h-[20vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
       headerClassName:
@@ -83,7 +82,7 @@ const ChatPanelComponent = ({ playerID, playerMap = {}, themeId }) => {
         React.createElement("input", {
           disabled: true,
           type: "text",
-          placeholder: "Type a message",
+          placeholder: "Preview only",
           className: composerInputClassName,
         }),
         React.createElement(
@@ -93,7 +92,7 @@ const ChatPanelComponent = ({ playerID, playerMap = {}, themeId }) => {
             type: "button",
             className: composerButtonClassName,
           },
-          "Send"
+          "Preview"
         )
       )
     )

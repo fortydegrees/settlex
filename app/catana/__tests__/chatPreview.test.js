@@ -35,6 +35,18 @@ describe("buildChatPreviewEntries", () => {
     expect(entries.map((entry) => entry.actorId)).toEqual(["7", "7"]);
   });
 
+  it("keeps an explicit playerID as the current speaker even when it is not in the player map", () => {
+    const entries = buildChatPreviewEntries({
+      playerID: "7",
+      playerMap: {
+        "1": "Ada",
+        "2": "Bren",
+      },
+    });
+
+    expect(entries.map((entry) => entry.actorId)).toEqual(["7", "1"]);
+  });
+
   it("keeps preview ids stable across renders", () => {
     const first = buildChatPreviewEntries({
       playerID: "1",
