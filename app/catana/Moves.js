@@ -694,6 +694,12 @@ export const endTurn = {
       console.log(`Invalid end turn: ${result.error}`);
       return;
     }
+
+    if (G.devCardPlay?.playerId === ctx.currentPlayer) {
+      G.devCardPlay = null;
+    }
+    G.robberReturnToStage = null;
+
     appendGameLog(G, ctx, {
       type: "turn:end",
       actorId: ctx.currentPlayer,

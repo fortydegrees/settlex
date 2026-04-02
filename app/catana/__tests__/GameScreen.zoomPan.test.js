@@ -13,4 +13,11 @@ describe("GameScreen zoom and pan config", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
     expect(contents).toMatch(/disablePadding=\{true\}/);
   });
+
+  it("tracks the live transform scale so overlay previews can match board zoom", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+    expect(contents).toContain("boardViewportScale");
+    expect(contents).toContain("onTransformed");
+    expect(contents).toContain("setBoardViewportScale");
+  });
 });

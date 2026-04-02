@@ -18,6 +18,15 @@ describe("GameScreen game over", () => {
     expect(contents).toContain("Resignation");
   });
 
+  it("tracks winner confetti outside the modal so reopening results does not replay it", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+
+    expect(contents).toContain("winnerConfettiSeenRef");
+    expect(contents).toContain("winnerConfettiSeenRef.current = false");
+    expect(contents).toContain("shouldFireConfetti={isWinner && !winnerConfettiSeenRef.current}");
+    expect(contents).toContain("onConfettiFired={() => {\n              winnerConfettiSeenRef.current = true;\n            }}");
+  });
+
   it("wires a confirm-backed resign action", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
     expect(contents).toContain("window.confirm");

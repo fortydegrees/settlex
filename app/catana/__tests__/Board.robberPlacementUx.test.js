@@ -31,6 +31,12 @@ describe("Board robber placement UX", () => {
     expect(contents).toContain("boardTileSize={size}");
   });
 
+  it("passes the live board zoom scale into the playful preview", () => {
+    const contents = fs.readFileSync(boardPath, "utf8");
+    expect(contents).toContain("boardViewportScale");
+    expect(contents).toContain("boardViewportScale={boardViewportScale}");
+  });
+
   it("uses a grabbing cursor during robber placement", () => {
     const contents = fs.readFileSync(boardPath, "utf8");
     expect(contents).toContain('document.body.style.cursor = "grabbing"');

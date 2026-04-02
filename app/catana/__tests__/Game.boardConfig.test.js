@@ -41,6 +41,33 @@ describe("Catan setup board config", () => {
     expect(G.core.ruleset.discardLimit).toBe(7);
   });
 
+  it("defaults Year of Plenty bank counts to hidden", () => {
+    const ctx = { numPlayers: 3, phase: "placement" };
+    const random = {
+      Number: () => 0.5,
+      Shuffle: (items) => items
+    };
+
+    const G = Catan.setup({ ctx, random }, {});
+
+    expect(G.gameSettings.showYearOfPlentyBankCounts).toBe(false);
+  });
+
+  it("preserves an explicit Year of Plenty bank count setting from setupData", () => {
+    const ctx = { numPlayers: 3, phase: "placement" };
+    const random = {
+      Number: () => 0.5,
+      Shuffle: (items) => items
+    };
+
+    const G = Catan.setup(
+      { ctx, random },
+      { gameSettings: { showYearOfPlentyBankCounts: true } }
+    );
+
+    expect(G.gameSettings.showYearOfPlentyBankCounts).toBe(true);
+  });
+
   it("boots dev scenarios into the saved turn context outside production", async () => {
     const previousEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "test";

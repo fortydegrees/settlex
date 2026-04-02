@@ -35,6 +35,7 @@ const timerManager = new TimerManager({
 })
 const disconnectManager = new DisconnectPresenceManager({ dispatch })
 const pubSub = createTimerPubSub(timerManager, {
+  botManager,
   disconnectManager,
   stateLoader: async (matchID) => {
     const response = await serverInstance?.db?.fetch(matchID, { state: true })

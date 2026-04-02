@@ -1,7 +1,28 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("gsap", () => {
+  const makeTimeline = () => {
+    const timeline = {
+      addLabel: vi.fn(() => timeline),
+      call: vi.fn(() => timeline),
+      to: vi.fn(() => timeline)
+    };
+    return timeline;
+  };
+
+  return {
+    gsap: {
+      set: vi.fn(),
+      timeline: vi.fn(makeTimeline)
+    }
+  };
+});
+
 import {
   getBoardViewportScale,
+  getCardTravelTargetPosition,
   getCardAnimationConfig,
+  createResourceDistributionRunner,
   getDistributionTimings,
   getTileCardStartPosition,
   getRandomizedOffsets,
@@ -114,5 +135,103 @@ describe("resourceDistribution cues", () => {
     expect(scale).toBe(2);
     expect(startX).toBe(585);
     expect(startY).toBe(620);
+  });
+
+  it("keeps the legacy lift for specific resource-row targets", () => {
+    expect(
+      getCardTravelTargetPosition({
+        targetRect: { left: 120, top: 200, height: 40 },
+        cardHeight: 63,
+        targetKind: "specific"
+      })
+    ).toEqual({
+      endX: 120,
+      endY: 185
+    });
+  });
+
+  it("centers vertically when targeting a generic resource stack", () => {
+    expect(
+      getCardTravelTargetPosition({
+        targetRect: { left: 120, top: 200, height: 72 },
+        cardHeight: 63,
+        targetKind: "stack"
+      })
+    ).toEqual({
+      endX: 120,
+      endY: 204.5
+    });
+  });
+
+  it("spawns bespoke resource-card fronts for the distributed resource", () => {
+    const makeElement = (tagName) => ({
+      tagName: tagName.toUpperCase(),
+      className: "",
+      style: {},
+      children: [],
+      appendChild(child) {
+        this.children.push(child);
+        return child;
+      },
+      remove() {}
+    });
+    const layerEl = makeElement("div");
+    const targetEl = {
+      getBoundingClientRect: () => ({ left: 320, top: 180 })
+    };
+    const fakeDocument = {
+      hidden: false,
+      createElement(tagName) {
+        return makeElement(tagName);
+      },
+      getElementById(id) {
+        return id === "p0-Wood" ? targetEl : null;
+      }
+    };
+    const previousDocument = global.document;
+
+    global.document = fakeDocument;
+
+    try {
+      const run = createResourceDistributionRunner({
+        layerEl,
+        getLayout: () => ({
+          size: 100,
+          center: [0, 0],
+          containerWidth: 1000
+        }),
+        getBoardRect: () => ({
+          left: 10,
+          top: 20,
+          width: 1000
+        }),
+        random: () => 0.5,
+        themeId: "classic"
+      });
+
+      run([
+        {
+          coordinate: [0, 0, 0],
+          playerID: 0,
+          resource: "Wood"
+        }
+      ]);
+
+      expect(layerEl.children).toHaveLength(1);
+      expect(layerEl.children[0].style.backgroundColor ?? "").toBe("");
+      expect(layerEl.children[0].style.width).toBe("45px");
+      expect(layerEl.children[0].style.height).toBe("63px");
+      expect(layerEl.children[0].children).toHaveLength(1);
+      expect(layerEl.children[0].children[0].tagName).toBe("IMG");
+      expect(layerEl.children[0].children[0].src).toBe("/svgs/cards/resource/card_wood.svg");
+      expect(layerEl.children[0].children[0].draggable).toBe(false);
+      expect(layerEl.children[0].children[0].style.objectFit).toBe("contain");
+    } finally {
+      if (previousDocument === undefined) {
+        delete global.document;
+      } else {
+        global.document = previousDocument;
+      }
+    }
   });
 });

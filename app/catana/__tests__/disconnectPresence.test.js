@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getActiveDisconnectStateByPlayerId,
   getDisconnectRemainingMs,
   mergeVisibleLogEntries,
   readPresenceSnapshot
@@ -41,6 +42,38 @@ describe("disconnectPresence helpers", () => {
     );
 
     expect(getDisconnectRemainingMs(snapshot, 16_120)).toBe(49_880);
+  });
+
+  it("only exposes a disconnected seat while the reconnect window is still active", () => {
+    const activeSnapshot = readPresenceSnapshot(
+      {
+        activeDisconnectPlayerId: "1",
+        deadlineAtMs: 66_000,
+        remainingMs: 60_000,
+        statusByPlayerId: {
+          "1": { status: "disconnected" }
+        },
+        events: []
+      },
+      6_000,
+      6_120
+    );
+
+    expect(getActiveDisconnectStateByPlayerId(activeSnapshot, 16_120)).toEqual({
+      "1": {
+        status: "disconnected",
+        remainingMs: 49_880
+      }
+    });
+
+    const expiredSnapshot = {
+      ...activeSnapshot,
+      activeDisconnectPlayerId: null
+    };
+
+    expect(getActiveDisconnectStateByPlayerId(expiredSnapshot, 16_120)).toEqual(
+      {}
+    );
   });
 
   it("merges server presence events after the referenced game log sequence", () => {

@@ -14,6 +14,8 @@ export function getBoardLayout({ width, height }) {
   const containerHeight = height - 144 - 38 - 40;
   const containerWidth = width;
   const size = computeDefaultSize({ width: containerWidth, height: containerHeight });
-  const center = [containerWidth / 2, containerHeight / 2];
+  // Size the board against the reserved UI height, but keep the board itself
+  // centered in the viewport so the first load feels visually balanced.
+  const center = [containerWidth / 2, height / 2];
   return { containerWidth, containerHeight, size, center };
 }

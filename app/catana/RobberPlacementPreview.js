@@ -7,6 +7,8 @@ import {
   handleThemeImageError
 } from "./theme/themes";
 import {
+  getRobberPreviewViewportScale,
+  getScaledRobberPreviewSize,
   getLockedRobberPreviewPosition,
   getMagneticRobberTarget,
   getRobberPreviewLeanAngle,
@@ -71,6 +73,7 @@ export function RobberPlacementPreview({
   magneticTargets = [],
   landTileCenters = [],
   boardTileSize,
+  boardViewportScale = 1,
   themeId,
   size = PREVIEW_SIZE_PX
 }) {
@@ -87,10 +90,24 @@ export function RobberPlacementPreview({
   const desiredPositionRef = useRef({ x: null, y: null });
   const activeTargetTileIdRef = useRef(null);
   const lastLockedTargetTileIdRef = useRef(null);
+  const effectivePreviewSizeRef = useRef(
+    getScaledRobberPreviewSize({
+      baseSize: size,
+      boardViewportScale
+    })
+  );
   const [hasPosition, setHasPosition] = useState(false);
+  const previewViewportScale = getRobberPreviewViewportScale(boardViewportScale);
 
   const robberSrc = getThemedSvgPath(themeId, "icon_robber.svg");
   const robberFallbackSrc = getClassicSvgPath("icon_robber.svg");
+
+  useEffect(() => {
+    effectivePreviewSizeRef.current = getScaledRobberPreviewSize({
+      baseSize: size,
+      boardViewportScale: previewViewportScale
+    });
+  }, [boardViewportScale, previewViewportScale, size]);
 
   const syncDesiredPosition = useCallback(() => {
     const node = previewRef.current;
@@ -262,7 +279,10 @@ export function RobberPlacementPreview({
           : { x: nextX, y: nextY };
         const boardShadowVisible = isPointOverRobberBoardLand({
           pointX: nextPosition.x,
-          pointY: nextPosition.y + size * PREVIEW_SHADOW_GROUND_OFFSET_FACTOR,
+          pointY:
+            nextPosition.y +
+            effectivePreviewSizeRef.current *
+              PREVIEW_SHADOW_GROUND_OFFSET_FACTOR,
           landTileCenters,
           tileSize: boardTileSize
         });
@@ -343,36 +363,45 @@ export function RobberPlacementPreview({
       }}
     >
       <div
-        ref={previewShadowRef}
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: `${PREVIEW_SHADOW_TOP_PERCENT}%`,
-          width: `${PREVIEW_SHADOW_WIDTH_PERCENT}%`,
-          height: `${PREVIEW_SHADOW_HEIGHT_PERCENT}%`,
-          borderRadius: 999,
-          background:
-            "radial-gradient(ellipse at center, rgba(15, 23, 42, 0.58) 0%, rgba(15, 23, 42, 0.28) 48%, rgba(15, 23, 42, 0.12) 72%, rgba(15, 23, 42, 0) 100%)",
-          transform: "translate(-50%, 0)",
-          filter: `blur(${PREVIEW_SHADOW_BLUR_PX}px)`
-        }}
-      />
-      <div
-        ref={previewGraphicRef}
         style={{
           width: "100%",
-          height: "100%"
+          height: "100%",
+          transform: `scale(${previewViewportScale})`,
+          transformOrigin: PREVIEW_HEAD_ROTATION_ORIGIN
         }}
       >
-        {/* Decorative preview image; keep raw img to match existing themed asset usage. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={robberSrc}
-          alt="Robber placement preview"
-          style={{ width: "100%", height: "100%" }}
-          draggable={false}
-          onError={(event) => handleThemeImageError(event, robberFallbackSrc)}
+        <div
+          ref={previewShadowRef}
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: `${PREVIEW_SHADOW_TOP_PERCENT}%`,
+            width: `${PREVIEW_SHADOW_WIDTH_PERCENT}%`,
+            height: `${PREVIEW_SHADOW_HEIGHT_PERCENT}%`,
+            borderRadius: 999,
+            background:
+              "radial-gradient(ellipse at center, rgba(15, 23, 42, 0.58) 0%, rgba(15, 23, 42, 0.28) 48%, rgba(15, 23, 42, 0.12) 72%, rgba(15, 23, 42, 0) 100%)",
+            transform: "translate(-50%, 0)",
+            filter: `blur(${PREVIEW_SHADOW_BLUR_PX}px)`
+          }}
         />
+        <div
+          ref={previewGraphicRef}
+          style={{
+            width: "100%",
+            height: "100%"
+          }}
+        >
+          {/* Decorative preview image; keep raw img to match existing themed asset usage. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={robberSrc}
+            alt="Robber placement preview"
+            style={{ width: "100%", height: "100%" }}
+            draggable={false}
+            onError={(event) => handleThemeImageError(event, robberFallbackSrc)}
+          />
+        </div>
       </div>
     </div>,
     document.body

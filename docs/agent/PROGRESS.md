@@ -10,6 +10,41 @@
 - out-of-turn resign during robber discard,
 - turn-config and scenario-seeding active-player shape for global moves.
 
+## Status (2026-04-02, game-over confetti replay fixed)
+- Fixed the winner-confetti replay bug when reopening the Results modal after game end.
+- Root cause:
+- `GameOverModal` kept its own `useRef` confetti guard, so closing and reopening the modal remounted it and replayed the celebration.
+- Current behavior:
+- `GameScreen` now owns the winner-confetti seen state for the active game-over,
+- the confetti flag resets only when the game-over state clears,
+- reopening Results in the same finished game no longer re-fires confetti.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/GameOverModal.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+
+## Status (2026-04-02, disconnect pulse collision fixed)
+- Fixed the disconnect-seat pulse bug on the current `main` worktree.
+- Root causes addressed:
+- board-level `@keyframes pulse` in `app/catana/Board.css` was colliding with Tailwind's `animate-pulse`,
+- `GameScreen` was still exposing disconnect presence after the reconnect window had closed because it trusted `statusByPlayerId` instead of the active countdown.
+- UI behavior now:
+- board-only pulse keyframes use `board-pulse`,
+- disconnect pulse is applied once at the seat wrapper level via `seat-disconnected-pulse`,
+- disconnected avatar / panel / card surfaces no longer pulse independently,
+- disconnect visuals clear when the active reconnect window ends.
+- Verification:
+- `pnpm vitest run app/catana/__tests__/GameScreen.gameOver.test.js app/catana/__tests__/Board.pulseAnimation.test.js app/catana/__tests__/disconnectPresence.test.js app/catana/__tests__/PlayerAvatarStatsPresence.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/PlayerActionBadges.test.js`
+
+## Status (2026-04-02, disconnect seat visual polish tightened)
+- Tightened the disconnect-seat styling on merged `main` after screenshot review.
+- Visual adjustments in this pass:
+- restored the white glass ring treatment on the road/army panel, opponent card box, and disconnected player dock,
+- moved the warning glyph inward so it no longer sits on the avatar border,
+- switched the disconnect countdown pill to the repo's rose danger styling,
+- suppressed the opponent thought bubble while a seat is disconnected,
+- changed disconnected avatar/panels to a stronger grayscale read with a light Tailwind pulse.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/PlayerAvatarStatsPresence.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/PlayerActionBadges.test.js`
+
 ## Status (2026-04-02, disconnect seat styling regression fixed)
 - Fixed the avatar / road-army layout regression introduced by the disconnect-presence UI.
 - Root cause:
@@ -47,15 +82,13 @@
 ## Status (2026-04-02, global reconnect banner implemented)
 - Implemented the reconnect-banner MVP across root layout, Catana lobby flows, and game-over cleanup.
 - New client/runtime seams:
-- `app/catana/utils/activeMatchStorage.js` for saved active-match and credential-key helpers,
-- `app/catana/utils/reconnectBanner.js` for lightweight banner candidate resolution and stale-record cleanup,
-- `app/catana/components/GlobalReconnectBanner.js` mounted as a fixed overlay from `app/layout.js`.
+- `app/catana/utils/activeMatchStorage.js`
+- `app/catana/utils/reconnectBanner.js`
+- `app/catana/components/GlobalReconnectBanner.js`
 - Lifecycle wiring now:
 - writes `catana:last-active-match` when a human seat is successfully joined or resumed,
 - clears that record on known game-over for the same seated match,
 - clears it when matchmaking search is cancelled after leaving the queued seat.
-- Focused verification:
-- `pnpm vitest run app/catana/__tests__/activeMatchStorage.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/ReconnectBannerPersistence.source.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js app/catana/__tests__/MatchPageClient.botFill.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
 
 ## Status (2026-04-02, Catana left meta rail shipped)
 - Added `app/catana/components/LeftMetaRail.js` as the fixed bottom-left owner for the meta panels.
@@ -68,14 +101,8 @@
 - `pnpm exec vitest run app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/renderPerfGuards.test.js`
 
 ## Status (2026-04-02, global reconnect banner plan written)
-- Wrote the implementation plan for the approved reconnect-banner MVP in:
+- Wrote the implementation plan in:
 - `docs/superpowers/plans/2026-04-02-global-reconnect-banner-plan.md`
-- Plan direction keeps the work split into:
-- shared active-match storage helpers,
-- a pure reconnect-banner candidate resolver,
-- a thin fixed-overlay global banner mounted from `app/layout.js`,
-- join/resume/game-over wiring in existing Catana pages.
-- Plan also explicitly calls out the dirty-worktree constraint so reconnect-banner commits do not accidentally bundle the separate uncommitted disconnect-follow-up server changes.
 
 ## Status (2026-04-02, Catana chat preview fix pass)
 - Fixed `buildChatPreviewEntries(...)` so an explicit `playerID` stays the current speaker even when it is absent from `playerMap`.
@@ -90,14 +117,27 @@
 ## Status (2026-04-02, global reconnect banner design approved)
 - Wrote the approved reconnect-banner design spec in:
 - `docs/superpowers/specs/2026-04-02-global-reconnect-banner-design.md`
-- Wrote a repo-level MVP compromise ledger in:
+- Wrote the repo-level MVP compromise ledger in:
 - `docs/mvp-compromises.md`
-- Approved MVP direction:
-- global banner mounted from the root layout,
-- most recent match only,
-- local `lastActiveMatch` record plus existing lobby match endpoint for lightweight validation,
-- dismiss only until refresh,
-- no new authoritative reconnect-status endpoint in the first pass.
+
+## Status (2026-04-02, Catana in-match chat panel implementation plan written)
+- Wrote the implementation plan in:
+- `docs/superpowers/plans/2026-04-02-chat-panel-plan.md`
+- Plan direction for this slice:
+- extract a shared feed-panel shell,
+- move the existing game log onto that shell,
+- add a presentational chat panel beneath it,
+- mount both inside a single fixed left rail,
+- move the dev-only debug panel into that same rail.
+
+## Status (2026-04-02, Catana in-match chat panel design approved)
+- Wrote the approved in-match chat panel spec in:
+- `docs/superpowers/specs/2026-04-02-chat-panel-design.md`
+- Approved direction for this slice:
+- keep the current game log on the left,
+- add chat as a second panel stacked below it,
+- use the same width and equal-height panels for the first pass,
+- keep chat presentational only for now, with transport/send wiring deferred.
 
 ## Status (2026-04-02, Catana chat preview panel shipped)
 - Added `formatChatEntry` to `app/catana/utils/gameText.js` so chat entries reuse the existing player token model without resource expansion.
@@ -118,13 +158,8 @@
 - `dispatchMatchUpdate` now executes `resolveDisconnectForfeit` as the active seat while targeting the disconnected loser,
 - stage move maps now expose `resign` and `resolveDisconnectForfeit` in every live stage where boardgame.io checks availability,
 - `timerPubSub` can load current state on `matchData` when no cached board state has been seen yet.
-- Regression coverage added for:
-- disconnect-forfeit dispatch payload shaping,
-- cold-cache `matchData` rebroadcast of `disconnectPresence`,
-- stage-map availability of `resign` / `resolveDisconnectForfeit`.
 - Verification:
 - `pnpm verify`
-- direct master-level reproduction now ends the match with `Disconnect Forfeit` when the disconnected seat is not the active player.
 
 ## Status (2026-04-01, disconnect/resign authoritative flow shipped)
 - Added the approved 1v1 disconnect/resign MVP across server and client.
@@ -138,8 +173,61 @@
 - disconnected seat badge, countdown pill, dimming, and subtle pulse,
 - minimal resign control with confirmation,
 - game-over copy that recognizes `Resignation` and `Disconnect Forfeit`.
-- Focused verification completed with:
-- `pnpm exec vitest run server/__tests__/DisconnectPresenceManager.test.js server/__tests__/timerPubSub.test.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/disconnectPresence.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/PlayerAvatarStatsPresence.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+
+## Status (2026-04-01, Catana opponent empty-card placeholder cleanup)
+- Removed the white inset outline from empty opponent card placeholders while keeping the transparent/faded card silhouettes.
+- Runtime changes:
+- `app/catana/components/CardStack.js` now uses only the faded empty-state opacity treatment and no longer adds the white ring classes for zero-count stacks.
+- Added focused regression coverage in:
+- `app/catana/__tests__/CardStack.emptyState.test.js`
+
+## Status (2026-04-01, Catana board initial viewport centering)
+- Fixed the first-load Catana board framing so the board is centered on the browser viewport instead of the reduced board-safe height.
+- Runtime changes:
+- `app/catana/utils/boardLayout.js` still sizes the board against the reserved UI height, but now anchors the board center to the full viewport midpoint.
+- Added regression coverage in:
+- `app/catana/__tests__/utils/boardLayout.test.js`
+- `app/catana/__tests__/GameScreen.zoomPan.test.js`
+
+## Status (2026-04-01, turn-scoped modal cleanup on timeout/end turn)
+- Fixed stale turn-scoped UI so modal flows close when the viewer loses the turn or leaves the required stage.
+- Runtime changes:
+- `app/catana/GameScreen.js` now derives trade/dev-dialog visibility from a shared turn-context guard.
+- `app/catana/Moves.js` now clears unresolved `devCardPlay` state when a turn ends, preventing `Year of Plenty` / `Monopoly` dialogs from surviving an auto-timeout end turn.
+- Added focused regression coverage in:
+- `app/catana/__tests__/turnUiState.test.js`
+- `app/catana/__tests__/Moves.endTurn.test.js`
+
+## Status (2026-04-01, resource-card fronts for brick/sheep/wood)
+- Added standalone resource-front SVGs in:
+- `public/svgs/new_cards/brick_dev.svg`
+- `public/svgs/new_cards/sheep_dev.svg`
+- `public/svgs/new_cards/wood_dev.svg`
+- Direction for this pass:
+- reuse the current cream resource-card shell,
+- replace the blue inner field with resource-matched radial gradients pulled from the `emoji` tile palette,
+- remove the white hex badge and center the resource emblem directly on the field.
+
+## Status (2026-03-31, bot matches start immediately)
+- Fixed the solo-bot pregame delay so `Play Against Bot` no longer waits for the full pregame timeout before starting.
+- Runtime changes:
+- `server/timers/timerPubSub.js` seeds dynamic bot seats from transport `matchData` payloads before later pregame state updates are processed.
+- `server/bots/pufferBotManager.js` supports syncing bot-seat detection from filtered `matchData` arrays as well as full metadata records.
+- `server/server.js` passes the bot manager into the timer pubsub wrapper so the cache is primed during live transport updates.
+- Added focused regression coverage in:
+- `server/__tests__/timerPubSub.test.js`
+
+## Status (2026-04-01, resource distribution bespoke card fronts)
+- Updated the tile resource-distribution effect in:
+- `app/catana/effects/resourceDistribution.js`
+- Resource distribution pop-outs now use the bespoke per-resource card fronts from:
+- `public/svgs/cards/resource/`
+- Updated card-back/front consumers to the moved asset folders:
+- `app/catana/components/OpponentPlayerBox.js`
+- `app/catana/components/DevCardDisplay.js`
+- Added focused regression coverage in:
+- `app/catana/__tests__/effects/resourceDistribution.test.js`
+- `app/catana/__tests__/DevCardDisplay.assets.test.js`
 
 ## Status (2026-04-02, shared feed-shell contract established)
 - Extracted the Catana feed shell into shared components in:
@@ -2245,3 +2333,9 @@
   - restored the `playful` robber follower as the default root-branch behavior while preserving the `minimal` path behind `resolveRobberPlacementMotionMode`,
   - merged the board/tile integration, portal preview, magnetic target logic, head-led lean, origin-robber dimming, and board-only landing shadow into the branch that also carries the current graphics work,
   - and verified the focused robber-placement Vitest slice plus targeted ESLint pass in the root repo after the port.
+- Fixed the robber placement preview so it scales with live board zoom during placement:
+  - threaded the current `TransformWrapper` scale out of `GameScreen.js` and into `Board.js`,
+  - passed that live board viewport scale into `RobberPlacementPreview.js` so the overlay preview no longer stays visually fixed while the board zoom changes,
+  - and added regression coverage for the scale helper plus the zoom-state wiring in the board/screen source tests.
+- Hid explicit bank count badges in the `Year of Plenty` picker by default while keeping the finite-bank selection caps unchanged.
+- Added a match-scoped `G.gameSettings.showYearOfPlentyBankCounts` flag in `app/catana/Game.js` so the old visible-count behavior can be re-enabled later as a lobby/game option.

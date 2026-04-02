@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import confetti from "canvas-confetti";
 
 export function GameOverModal({
@@ -6,25 +6,25 @@ export function GameOverModal({
   subtitle,
   scoreboard = [],
   isWinner = false,
+  shouldFireConfetti = false,
+  onConfettiFired,
   onViewPostgame,
   onRematch,
   onLobby,
   onClose
 }) {
-  const confettiFired = useRef(false);
   const winner = scoreboard[0];
 
   useEffect(() => {
-    if (!isWinner) return;
-    if (confettiFired.current) return;
-    confettiFired.current = true;
+    if (!isWinner || !shouldFireConfetti) return;
     confetti({
       particleCount: 140,
       spread: 70,
       origin: { y: 0.6 },
       colors: ["#fbbf24", "#f59e0b", "#d97706", "#ffffff", "#fef3c7"],
     });
-  }, [isWinner]);
+    onConfettiFired?.();
+  }, [isWinner, shouldFireConfetti, onConfettiFired]);
 
   return (
     <div className="relative w-full max-w-xl rounded-xl bg-blue-200/95 p-8 shadow-2xl ring-2 ring-slate-300 backdrop-blur-sm">

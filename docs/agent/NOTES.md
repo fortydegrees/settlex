@@ -7,6 +7,32 @@
 - preserve those `Stage.NULL` seats when robber-discard calls `events.setActivePlayers(...)`,
 - continue relying on stage-specific move maps so off-turn seats only gain access to global moves like `resign`, not normal turn actions.
 
+- Game-over confetti note:
+- winner celebration state must live above `GameOverModal`.
+- The modal unmounts when closed, so any local `useRef`/mount-only confetti guard will replay when the Results button reopens it.
+- Current fix:
+- `GameScreen` owns a `winnerConfettiSeenRef`,
+- it resets only when `isGameOver` clears,
+- `GameOverModal` receives `shouldFireConfetti` plus `onConfettiFired` and stays presentation-only.
+
+- Disconnect pulse bug note:
+- `app/catana/Board.css` must not define a global `@keyframes pulse`; that collides with Tailwind's `animate-pulse` and makes disconnected seat boxes scale instead of softly fading.
+- Current fix:
+- board-local animation uses `board-pulse`,
+- disconnect seats use a dedicated `seat-disconnected-pulse` class from `PlayerAvatarStats.css`,
+- pulse is applied at the seat wrapper level (`OpponentPlayerBox` / `PlayerActionContainer`) rather than independently on the avatar and side panels.
+- Disconnect-visibility rule:
+- `GameScreen` should only surface disconnect presence while `activeDisconnectPlayerId` still has positive time remaining.
+- Do not keep pulsing or warning-badging seats after the reconnect window has closed; game-over UI/log state is the handoff after timeout.
+
+- Disconnect seat visual-polish follow-up:
+- keep disconnected seat surfaces on the normal Catana white-glass ring (`ring-white/60`) even when the fill shifts into rose danger tint; rose-only rings read muddy against the blue board backdrop.
+- The disconnect countdown pill should use the same rose danger family already used elsewhere (`bg-rose-100`, `text-rose-700`, `ring-rose-200`) instead of a neutral slate chip.
+- While disconnected:
+- suppress `StatusBubble` entirely,
+- inset the warning glyph inside the avatar box (`bottom-1 right-1`) so it does not sit on the avatar ring,
+- prefer grayscale + desaturation on the avatar/panels and a light Tailwind `animate-pulse` over the older bespoke pulse helper.
+
 - Catana live chat panel:
 - `app/catana/components/ChatPanel.js` now renders live `boardgame.io` chat messages instead of the old preview transcript.
 - `app/catana/utils/chatMessages.js` owns the small adapter helpers for turning `chatMessages` into UI rows and for trimming/submitting drafts through `sendChatMessage`.
@@ -113,6 +139,94 @@
 - server disconnect/reconnect/forfeit events are merged client-side with `G.gameLog`,
 - resign adds a `server:resign` entry before the normal `game:over` entry,
 - `app/catana/utils/disconnectPresence.js` and `app/catana/utils/gameText.js` are the seams for future presence/log changes.
+
+- The approved implementation plan for the in-match chat UI lives in:
+- `docs/superpowers/plans/2026-04-02-chat-panel-plan.md`
+- Planned structure for the first implementation pass:
+- `app/catana/components/FeedPanel.js` and `FeedTokenRow.js` become the shared meta-feed primitives,
+- `GameLogPanel.js` becomes a thin adapter over that shell,
+- `ChatPanel.js` adds the presentational chat feed and disabled composer,
+- `LeftMetaRail.js` becomes the single owner of the fixed left-side log/chat layout,
+- `DebugPanel.js` should join that rail instead of keeping its own hard-coded bottom offset.
+- Follow-on guidance:
+- when minimize / resize work happens later, extend the left rail and shared feed shell rather than adding more standalone fixed-position panel math.
+
+- In-match left-side meta feeds now have an approved chat-panel design in:
+- `docs/superpowers/specs/2026-04-02-chat-panel-design.md`
+- Current UI direction:
+- keep the existing game log on top,
+- stack chat below it in the same left column,
+- keep both panels at the current log width with equal heights for the first pass.
+- Implementation guidance:
+- prefer extracting a shared feed-panel shell from `app/catana/components/GameLogPanel.js` rather than cloning panel markup for chat,
+- reuse the same player-name color/highlight treatment for chat sender rows,
+- keep chat transport, minimize, and per-panel resizing out of the first pass.
+
+- Opponent empty card placeholders should stay as faint transparent cards only.
+- In `app/catana/components/CardStack.js`, preserve the empty-state `opacity-30` treatment but do not reintroduce the white inset ring/outline classes for zero-count stacks.
+- `app/catana/__tests__/CardStack.emptyState.test.js` guards that empty stacks stay faded without `ring-blue-100` / `ring-inset`.
+
+- Catana board first-load framing now centers on the full viewport, not the reduced board-safe height.
+- Keep this split in `app/catana/utils/boardLayout.js`:
+- size should still be computed from the reduced height budget so the board stays fully visible around the top/bottom HUD,
+- center should use the viewport midpoint so the board does not appear too high on initial load.
+- `app/catana/__tests__/utils/boardLayout.test.js` now guards both expectations:
+- viewport-centered vertical alignment,
+- checked-in underlay fully visible with near-equal top/bottom margins on a real desktop viewport.
+
+- Turn-scoped modal cleanup now has a dedicated guard in:
+- `app/catana/utils/turnUiState.js`
+- Current intent:
+- maritime trade UI is only valid while the viewer is still the current player in `main/postRoll`,
+- `Year of Plenty` / `Monopoly` selection UI is only valid while the viewer still owns the turn in `main/preRoll` or `main/postRoll`,
+- losing the turn or leaving those stages should hide the client modal immediately even before any manual dismiss action.
+- `app/catana/Moves.js` also clears unresolved `G.devCardPlay` on `endTurn`, so auto-timeout turn ends do not leak stale dev-card state into the next turn.
+- Similar-state audit from this pass:
+- build placement already resets through `app/catana/utils/playerAction.js`,
+- discard UI is derived from `core.turn.pendingDiscards`,
+- robber preview hover state in `app/catana/Board.js` already clears when `moveRobber` stops being active.
+
+- Resource-card front variants now live in:
+- `public/svgs/new_cards/brick_dev.svg`
+- `public/svgs/new_cards/sheep_dev.svg`
+- `public/svgs/new_cards/wood_dev.svg`
+- This front treatment should stay aligned with the current wheat/ore examples:
+- keep the cream card frame and gold inner stroke,
+- use the `emoji` tile-family radial colors for the full inner field,
+- do not reintroduce the white center hex for these fronts,
+- center the `emoji` resource emblem directly on the color field instead.
+- Current palette mapping is taken from the `emoji` tile gradients:
+- brick: `#ffd15b -> #ea5a19`
+- sheep: `#d9f99d -> #65a30d`
+- wood: `#7ed957 -> #168f4a`
+
+- Bot pregame readiness for dynamic seats depends on bot detection being seeded before the first meaningful pregame update.
+- `server/timers/timerPubSub.js` now primes `PufferBotManager` from transport `matchData` payloads, not only from later dispatch-path metadata fetches.
+- `server/bots/pufferBotManager.js` supports both:
+- full server metadata objects via `syncMatchBots(...)`,
+- filtered boardgame transport `matchData` arrays via `syncMatchBotsFromMatchData(...)`.
+- This specifically fixes the `Play Against Bot` path where seat `1` was joined as a bot before the human client connected, but the timer manager still treated it as human until the 15s pregame timeout path.
+
+- Resource distribution pop-outs should use the bespoke resource-card fronts in `public/svgs/cards/resource/`.
+- `app/catana/effects/resourceDistribution.js` now maps each resource directly to:
+- `card_wood.svg`
+- `card_brick.svg`
+- `card_sheep.svg`
+- `card_wheat.svg`
+- `card_ore.svg`
+- and falls back to `card_rescardback.svg`.
+- Preserve:
+- direct per-resource front-card art for the effect,
+- the `0.9` size multiplier on animated resource cards unless a future visual pass explicitly retunes it,
+- split target-endpoint behavior:
+- specific resource-row targets use the legacy lifted Y offset,
+- generic opponent stack targets use vertical centering from the target rect height,
+- existing pop/travel timing logic.
+
+- Moved card asset folders now in live use:
+- resource card back/fronts under `public/svgs/cards/resource/`,
+- development card back/fronts under `public/svgs/cards/development/`.
+- `OpponentPlayerBox.js` and `DevCardDisplay.js` should keep referencing those folders, not the old top-level `/svgs/*.svg` card paths.
 
 - Robber placement UX now has an approved two-mode interaction seam in:
 - `docs/superpowers/specs/2026-03-31-robber-placement-ux-design.md`
@@ -1450,3 +1564,9 @@
       - root-branch robber placement now expects `app/catana/GameScreen.js` to pass `DEFAULT_ROBBER_PLACEMENT_MOTION_MODE` into `app/catana/Board.js`, which resolves to `playful` by default and falls back to `minimal` for reduced-motion and coarse-pointer environments.
       - the playful path is split across `app/catana/Board.js`, `app/catana/Tile.js`, `app/catana/RobberPlacementPreview.js`, `app/catana/utils/robberPlacementMotion.js`, and `app/catana/utils/robberPlacementPreviewMotion.js`.
       - the earlier preview flicker fix depends on memoizing land-tile geometry from primitive `boardCenterX` / `boardCenterY` values rather than the `center` array identity in `Board.js`.
+      - zoom-scaling note:
+        - the robber preview is a fixed portal overlay, so it will not inherit board zoom automatically from `react-zoom-pan-pinch`.
+        - if the preview needs to visually match zoom, source the live `TransformWrapper` scale from `GameScreen.js` and pass it down explicitly.
+        - keep the overlay architecture, but apply the zoom scale inside `RobberPlacementPreview.js`; that preserves pointer-following in viewport coordinates without forcing per-frame board `getBoundingClientRect()` reads.
+- `TradeDiscardModal` now hides finite-bank count badges for `Year of Plenty` by default and still enforces availability through the existing `available` / `disableIncrement` logic.
+- The visibility is controlled by top-level match state at `G.gameSettings.showYearOfPlentyBankCounts`, defaulting to `false` in `app/catana/Game.js` so it can become a future lobby/game setting without moving UI state into `game-core`.

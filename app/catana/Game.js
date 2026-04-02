@@ -215,6 +215,11 @@ const TURN_ORDER_ONCE = {
   },
 };
 
+const resolveGameSettings = (setupData) => ({
+  showYearOfPlentyBankCounts:
+    setupData?.gameSettings?.showYearOfPlentyBankCounts === true
+});
+
 const resolveRulesetSpec = ({ numPlayers, setupData }) => {
   const requestedRulesetId = setupData?.rulesetId;
   if (requestedRulesetId === "duel") {
@@ -329,6 +334,7 @@ export const createCatanGame = ({
       core,
       coreTopology,
       rulesetId,
+      gameSettings: resolveGameSettings(setupData),
       boardConfigId,
       tiles,
       valids,

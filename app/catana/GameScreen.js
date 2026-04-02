@@ -4,7 +4,7 @@ import {
   TransformWrapper,
   TransformComponent,
 } from "../../react-zoom-pan-pinch";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 import { buildPlayerViewMap, UI_PLAYER_COLORS } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
@@ -15,10 +15,14 @@ import {
   sanitizeDisplayName,
 } from "./utils/playerIdentity";
 import {
-  getDisconnectRemainingMs,
+  getActiveDisconnectStateByPlayerId,
   mergeVisibleLogEntries,
   readPresenceSnapshot
 } from "./utils/disconnectPresence";
+import {
+  canRenderDevPlayModal,
+  shouldResetTradeModal
+} from "./utils/turnUiState";
 
 import { EffectsBoardWrapper } from "bgio-effects/react";
 
@@ -95,8 +99,10 @@ export function GameScreen(bgioProps) {
   const [themeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
+  const [boardViewportScale, setBoardViewportScale] = useState(1);
   const robberPlacementMotionMode = DEFAULT_ROBBER_PLACEMENT_MOTION_MODE;
   const gameOverSeenRef = useRef(false);
+  const winnerConfettiSeenRef = useRef(false);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
@@ -120,7 +126,6 @@ export function GameScreen(bgioProps) {
     ? { text: "Game Over", statusType: rawGameStatus.statusType, activePlayerId: null }
     : rawGameStatus;
   const devPlay = bgioProps.G.devCardPlay;
-  const devPlayForMe = devPlay?.playerId === playerID;
   const devPlayMode =
     devPlay?.type === "yearOfPlenty"
       ? "dev-yop"
@@ -135,6 +140,23 @@ export function GameScreen(bgioProps) {
       ),
     [bgioProps.matchData, bgioProps.matchMetadata]
   );
+  const shouldCloseTradeModal = shouldResetTradeModal({
+    showTradeModal,
+    playerID,
+    ctx: bgioProps.ctx,
+    corePhase: core?.phase,
+    isGameOver
+  });
+  const tradeModalVisible = showTradeModal && !shouldCloseTradeModal;
+  const devPlayModalVisible =
+    Boolean(devPlayMode) &&
+    canRenderDevPlayModal({
+      devPlay,
+      playerID,
+      ctx: bgioProps.ctx,
+      corePhase: core?.phase,
+      isGameOver
+    });
   const { nameMap, emojiMap, colorMap } = useMemo(() => {
     const names = {};
     const emojis = {};
@@ -219,25 +241,9 @@ export function GameScreen(bgioProps) {
   );
   const activeDisconnectPlayerId =
     disconnectPresence?.activeDisconnectPlayerId ?? null;
-  const disconnectRemainingMs = getDisconnectRemainingMs(
-    disconnectPresence,
-    nowMs
-  );
   const disconnectStateByPlayerId = useMemo(() => {
-    const statusByPlayerId = disconnectPresence?.statusByPlayerId ?? {};
-    const map = {};
-
-    Object.entries(statusByPlayerId).forEach(([id, status]) => {
-      if (status?.status !== "disconnected") return;
-      map[id] = {
-        status: "disconnected",
-        remainingMs:
-          activeDisconnectPlayerId === id ? disconnectRemainingMs : null
-      };
-    });
-
-    return map;
-  }, [disconnectPresence, activeDisconnectPlayerId, disconnectRemainingMs]);
+    return getActiveDisconnectStateByPlayerId(disconnectPresence, nowMs);
+  }, [disconnectPresence, nowMs]);
   const gameOverReasonText = getGameOverReasonCopy(gameOverState?.reason);
 
   const postgameSummary = useMemo(() => {
@@ -254,6 +260,7 @@ export function GameScreen(bgioProps) {
   useEffect(() => {
     if (!isGameOver) {
       gameOverSeenRef.current = false;
+      winnerConfettiSeenRef.current = false;
       setShowGameOverModal(false);
       setShowPostgame(false);
       return;
@@ -442,6 +449,15 @@ export function GameScreen(bgioProps) {
     isGameOver
   ]);
 
+  useEffect(() => {
+    if (!shouldCloseTradeModal) {
+      return;
+    }
+
+    setShowTradeModal(false);
+    setTradePresetResource(null);
+  }, [shouldCloseTradeModal]);
+
   // Discard Logic
   // Check if pendingDiscards list includes the current player
   // NOTE: We used to check bgioProps.ctx.phase === 'robberDiscard' but sometimes
@@ -513,9 +529,9 @@ export function GameScreen(bgioProps) {
   );
 
   const hasModalOpen =
-    showTradeModal ||
+    tradeModalVisible ||
     needsToDiscard ||
-    (devPlayForMe && devPlayMode) ||
+    devPlayModalVisible ||
     showGameOverModal ||
     showPostgame;
 
@@ -634,6 +650,14 @@ export function GameScreen(bgioProps) {
   const handleToggleMute = () => {
     setIsMuted((prev) => !prev);
   };
+  const handleBoardTransformed = useCallback((_ref, state) => {
+    const nextScale =
+      Number.isFinite(state?.scale) && state.scale > 0 ? state.scale : 1;
+
+    setBoardViewportScale((currentScale) =>
+      Math.abs(currentScale - nextScale) < 0.001 ? currentScale : nextScale
+    );
+  }, []);
   return (
     <div
       className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600 select-none"
@@ -658,12 +682,14 @@ export function GameScreen(bgioProps) {
         minScale={0.3}
         disablePadding={true}
         doubleClick={{ mode: "toggle" }}
+        onTransformed={handleBoardTransformed}
       >
         <TransformComponent>
           <CatanBoard
             boardRef={boardRef}
             placementLayerRef={placementLayerRef}
             placementRoadLayerRef={placementRoadLayerRef}
+            boardViewportScale={boardViewportScale}
             playerAction={playerAction}
             setPlayerAction={setPlayerAction}
             robberPlacementMotionMode={robberPlacementMotionMode}
@@ -771,7 +797,7 @@ TODO: accurately colour it
       )}
 
       {/* 2. Manual Trade Modal */}
-      {!!player && showTradeModal && !needsToDiscard && !isGameOver && (
+      {!!player && tradeModalVisible && !needsToDiscard && !isGameOver && (
         <TradeDiscardModal
           mode="trade"
           player={player}
@@ -786,7 +812,7 @@ TODO: accurately colour it
         />
       )}
 
-      {!!player && devPlayForMe && devPlayMode && !needsToDiscard && !isGameOver && (
+      {!!player && devPlayModalVisible && !needsToDiscard && !isGameOver && (
         <TradeDiscardModal
           mode={devPlayMode}
           player={player}
@@ -826,6 +852,10 @@ TODO: accurately colour it
             }
             scoreboard={scoreboard}
             isWinner={isWinner}
+            shouldFireConfetti={isWinner && !winnerConfettiSeenRef.current}
+            onConfettiFired={() => {
+              winnerConfettiSeenRef.current = true;
+            }}
             onViewPostgame={() => {
               setShowPostgame(true);
               setShowGameOverModal(false);

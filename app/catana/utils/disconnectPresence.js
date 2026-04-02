@@ -64,6 +64,25 @@ export function getDisconnectRemainingMs(snapshot, nowMs = Date.now()) {
   );
 }
 
+export function getActiveDisconnectStateByPlayerId(
+  snapshot,
+  nowMs = Date.now()
+) {
+  const activeDisconnectPlayerId = snapshot?.activeDisconnectPlayerId;
+  const remainingMs = getDisconnectRemainingMs(snapshot, nowMs);
+
+  if (!activeDisconnectPlayerId || remainingMs == null || remainingMs <= 0) {
+    return {};
+  }
+
+  return {
+    [activeDisconnectPlayerId]: {
+      status: "disconnected",
+      remainingMs
+    }
+  };
+}
+
 export function mergeVisibleLogEntries(gameLog = [], presenceEvents = []) {
   const logEntries = Array.isArray(gameLog) ? [...gameLog] : [];
   const serverEntries = (Array.isArray(presenceEvents) ? presenceEvents : [])
