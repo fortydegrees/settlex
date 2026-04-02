@@ -1,5 +1,53 @@
 # NOTES
 
+- Out-of-turn resign note:
+- boardgame.io blocks inactive players before the move body runs, so exposing `resign` in stage maps alone is not enough.
+- Current Catana fix:
+- keep non-current seats `Stage.NULL`-active in placement/main turn config,
+- preserve those `Stage.NULL` seats when robber-discard calls `events.setActivePlayers(...)`,
+- continue relying on stage-specific move maps so off-turn seats only gain access to global moves like `resign`, not normal turn actions.
+
+- Catana live chat panel:
+- `app/catana/components/ChatPanel.js` now renders live `boardgame.io` chat messages instead of the old preview transcript.
+- `app/catana/utils/chatMessages.js` owns the small adapter helpers for turning `chatMessages` into UI rows and for trimming/submitting drafts through `sendChatMessage`.
+- The composer is now inside the chat panel footer and uses a minimal single-line input with `Enter to send`; there is no always-visible send button in this pass.
+- Follow-up polish trimmed the chat-specific spacing further:
+- no helper text below the input,
+- smaller footer padding,
+- slightly narrower transcript inset,
+- placeholder copy is now just `Message...` / `Read-only`.
+- Spectators still receive/read chat, but the footer input is disabled and labeled read-only.
+
+- Shared feed row wrapping:
+- `app/catana/components/FeedPanel.js` now supports an optional footer slot inside the same glass card.
+- `app/catana/components/GameLogPanel.js` and `app/catana/components/ChatPanel.js` no longer use row-level `flex-wrap`; message rows are inline-flow text now, so player chips and message text wrap naturally instead of breaking onto separate lines.
+- `app/catana/components/FeedTokenRow.js` text tokens now inherit row color, and resource tokens align inline more cleanly inside wrapped sentences.
+
+- Catana left meta rail:
+- `app/catana/components/LeftMetaRail.js` now owns the fixed bottom-left placement for the dev rail plus the game log and chat stack.
+- `app/catana/components/DebugPanel.js` is now a normal block panel and can be embedded inside the rail.
+- `app/catana/components/GameLogPanel.js` now accepts a `rootClassName` override so the shared feed shell can be positioned by its parent.
+- `app/catana/GameScreen.js` now mounts `LeftMetaRail` instead of placing the log and debug panel separately.
+- The debug visibility regression now checks for the extracted rail path rather than assuming `GameScreen.js` directly imports `DebugPanel`.
+
+- Catana chat preview follow-up:
+- `buildChatPreviewEntries(...)` now keeps an explicit `playerID` as the current speaker even if that seat is missing from the current `playerMap`.
+- `app/catana/components/ChatPanel.js` no longer owns viewport-fixed placement. The parent layout can position it later.
+- The disabled composer copy now reads as preview-only so it does not imply a live send path.
+
+- Catana chat preview slice:
+- `app/catana/utils/gameText.js` now exports `formatChatEntry` for plain-text chat bodies that keep the existing player token metadata.
+- `app/catana/utils/chatPreview.js` provides a deterministic local-only transcript for the presentational chat panel.
+- `app/catana/components/ChatPanel.js` now renders the preview transcript through `FeedPanel`/`FeedTokenRow` and includes disabled glass composer chrome with preview-only copy.
+- The chat panel contract is covered by runtime-oriented server-render tests plus a small source check for the shared shell and token-row wiring.
+
+- Shared Catana feed shell:
+- `app/catana/components/FeedPanel.js` now owns the glass panel chrome and hover-aware auto-scroll logic.
+- `app/catana/components/FeedTokenRow.js` now owns divider/player/resource/text token rendering, including the resource image `draggable={false}` guard.
+- `app/catana/components/GameLogPanel.js` now delegates to the shared shell, and `game-log-*` CSS selectors remain as aliases in `app/globals.css` so the old contract still resolves.
+- `app/catana/components/ChatPanel.js` is now the presentational preview panel for the follow-on chat slice.
+- The shell contract is runtime-tested where the repo supports it; a small amount of source inspection still remains for memo/useMemo guards that are awkward to prove in Vitest without a browser DOM.
+
 - Disconnect seat styling regression note:
 - avoid widening the avatar column in `PlayerAvatarStats` just to fit the disconnect timer pill.
 - The timer pill should overflow below the fixed 80px avatar column; otherwise:

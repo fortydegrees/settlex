@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-02, out-of-turn resign fixed)
+- Fixed the live resign turn-gate so any seated player can resign immediately, even when they are not the current active turn seat.
+- Engine/state changes:
+- `app/catana/Game.js` now keeps non-current seats `Stage.NULL`-active in placement/main turn config and when booting dev scenarios into saved turn context.
+- `app/catana/Moves.js` now preserves those `Stage.NULL` seats when robber-discard narrows active players, so resign still works during discard resolution.
+- Regression coverage added for:
+- out-of-turn resign during a normal turn,
+- out-of-turn resign during robber discard,
+- turn-config and scenario-seeding active-player shape for global moves.
+
 ## Status (2026-04-02, disconnect seat styling regression fixed)
 - Fixed the avatar / road-army layout regression introduced by the disconnect-presence UI.
 - Root cause:
@@ -12,6 +22,27 @@
 - removed the rendered `SERVER` pill from log entries while keeping italic server copy.
 - Verification:
 - `pnpm verify`
+
+## Status (2026-04-02, Catana live chat panel + wrap fix)
+- Replaced the preview-only chat slice with live `boardgame.io` chat wiring in:
+- `app/catana/components/ChatPanel.js`
+- `app/catana/utils/chatMessages.js`
+- `app/catana/components/LeftMetaRail.js`
+- The chat composer now lives inside the chat card footer, anchored at the bottom of the same panel instead of sitting in a separate stacked box.
+- Players can send trimmed text-only chat messages with Enter; spectators see the live transcript but get a disabled read-only composer.
+- Follow-up visual pass:
+- removed the extra helper copy under the chat input,
+- tightened the footer/input padding,
+- reduced the chat transcript inset slightly so the panel reads closer to the reference mock.
+- Fixed the shared feed row wrapping bug by removing the row-level `flex-wrap` layout from the log/chat adapters and letting token rows wrap as normal inline content.
+- Extended or replaced the chat-focused tests in:
+- `app/catana/__tests__/FeedPanel.test.js`
+- `app/catana/__tests__/ChatPanel.test.js`
+- `app/catana/__tests__/chatMessages.test.js`
+- `app/catana/__tests__/GameLogPanel.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/FeedPanel.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/chatMessages.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/DebugUiVisibility.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/uiNoDragImages.test.js app/catana/__tests__/GameScreen.interactionGuards.test.js`
+- `pnpm lint`
 
 ## Status (2026-04-02, global reconnect banner implemented)
 - Implemented the reconnect-banner MVP across root layout, Catana lobby flows, and game-over cleanup.
@@ -26,6 +57,16 @@
 - Focused verification:
 - `pnpm vitest run app/catana/__tests__/activeMatchStorage.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/ReconnectBannerPersistence.source.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js app/catana/__tests__/MatchPageClient.botFill.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
 
+## Status (2026-04-02, Catana left meta rail shipped)
+- Added `app/catana/components/LeftMetaRail.js` as the fixed bottom-left owner for the meta panels.
+- Moved the dev-only debug panel into the rail and normalized `app/catana/components/DebugPanel.js` to a normal block-level panel.
+- Let `app/catana/components/GameLogPanel.js` accept a `rootClassName` override so the log can be placed inside the rail without owning viewport positioning.
+- Rewired `app/catana/GameScreen.js` to mount `LeftMetaRail` with the game log entries, player map, theme, player ID, and BGIO props.
+- Updated the debug visibility regression so it checks the extracted rail path instead of expecting `GameScreen.js` to own the debug panel directly.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+- `pnpm exec vitest run app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/renderPerfGuards.test.js`
+
 ## Status (2026-04-02, global reconnect banner plan written)
 - Wrote the implementation plan for the approved reconnect-banner MVP in:
 - `docs/superpowers/plans/2026-04-02-global-reconnect-banner-plan.md`
@@ -35,6 +76,16 @@
 - a thin fixed-overlay global banner mounted from `app/layout.js`,
 - join/resume/game-over wiring in existing Catana pages.
 - Plan also explicitly calls out the dirty-worktree constraint so reconnect-banner commits do not accidentally bundle the separate uncommitted disconnect-follow-up server changes.
+
+## Status (2026-04-02, Catana chat preview fix pass)
+- Fixed `buildChatPreviewEntries(...)` so an explicit `playerID` stays the current speaker even when it is absent from `playerMap`.
+- Removed viewport-fixed placement responsibility from `ChatPanel.js`; the panel is now layout-neutral and ready for a parent rail to position later.
+- Tightened the chat panel preview copy so the disabled composer reads as preview-only instead of a live input.
+- Adjusted the chat-focused contract tests in:
+- `app/catana/__tests__/chatPreview.test.js`
+- `app/catana/__tests__/ChatPanel.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/gameText.test.js app/catana/__tests__/chatPreview.test.js app/catana/__tests__/ChatPanel.test.js`
 
 ## Status (2026-04-02, global reconnect banner design approved)
 - Wrote the approved reconnect-banner design spec in:
@@ -47,6 +98,17 @@
 - local `lastActiveMatch` record plus existing lobby match endpoint for lightweight validation,
 - dismiss only until refresh,
 - no new authoritative reconnect-status endpoint in the first pass.
+
+## Status (2026-04-02, Catana chat preview panel shipped)
+- Added `formatChatEntry` to `app/catana/utils/gameText.js` so chat entries reuse the existing player token model without resource expansion.
+- Added the deterministic preview transcript helper in `app/catana/utils/chatPreview.js`.
+- Replaced the `ChatPanel.js` scaffold with a presentational preview panel that renders through `FeedPanel`, maps preview rows through `FeedTokenRow`, and shows disabled glass-style composer chrome with preview-only copy.
+- Extended the chat-focused contract tests in:
+- `app/catana/__tests__/gameText.test.js`
+- `app/catana/__tests__/chatPreview.test.js`
+- `app/catana/__tests__/ChatPanel.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/gameText.test.js app/catana/__tests__/chatPreview.test.js app/catana/__tests__/ChatPanel.test.js`
 
 ## Status (2026-04-01, disconnect/reconnect regression follow-up fixed)
 - Fixed the first live regression found in the disconnect/resign MVP:
@@ -78,6 +140,20 @@
 - game-over copy that recognizes `Resignation` and `Disconnect Forfeit`.
 - Focused verification completed with:
 - `pnpm exec vitest run server/__tests__/DisconnectPresenceManager.test.js server/__tests__/timerPubSub.test.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/disconnectPresence.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/PlayerAvatarStatsPresence.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+
+## Status (2026-04-02, shared feed-shell contract established)
+- Extracted the Catana feed shell into shared components in:
+- `app/catana/components/FeedPanel.js`
+- `app/catana/components/FeedTokenRow.js`
+- Added a memoized `ChatPanel.js` scaffold so the perf guard can lock the upcoming chat panel contract.
+- Rewired `GameLogPanel.js` to delegate chrome, auto-scroll, and token rendering to the shared feed shell while keeping the existing `game-log-*` CSS aliases for compatibility.
+- Updated the contract tests in:
+- `app/catana/__tests__/FeedPanel.test.js`
+- `app/catana/__tests__/uiNoDragImages.test.js`
+- `app/catana/__tests__/renderPerfGuards.test.js`
+- Refreshed the `GameLogPanel` source test to reflect the new delegation.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/FeedPanel.test.js app/catana/__tests__/uiNoDragImages.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/GameLogPanel.test.js`
 
 ## Status (2026-03-31, robber placement UX design approved)
 - Wrote the approved robber-placement UX spec in:
