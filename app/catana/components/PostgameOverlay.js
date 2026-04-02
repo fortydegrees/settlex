@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { getPlayerNameHex } from "../theme/playerColors.js";
+
+const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
 
 const TABS = [
   { id: "summary", label: "Summary", enabled: true },
@@ -67,7 +70,7 @@ export function PostgameOverlay({ summary = [], scoreboard = [], onClose }) {
                       </span>
                       <div
                         className="w-8 h-8 rounded-full"
-                        style={{ backgroundColor: player.color || "#888" }}
+                        style={{ backgroundColor: getSwatchColor(player.color) }}
                       />
                       <span className="font-medium text-slate-800">
                         {player.name || `Player ${player.id}`}

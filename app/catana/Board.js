@@ -63,6 +63,8 @@ export function CatanBoard({
   ctx,
   G,
   moves,
+  isActive,
+  playerColorMap,
   boardRef,
   placementLayerRef,
   placementRoadLayerRef,
@@ -135,7 +137,10 @@ export function CatanBoard({
     () => buildRenderMaps(G.tiles),
     [G.tiles]
   );
-  const playerViewMap = useMemo(() => buildPlayerViewMap(G.core), [G.core]);
+  const playerViewMap = useMemo(
+    () => buildPlayerViewMap(G.core, playerColorMap),
+    [G.core, playerColorMap]
+  );
   const currentPlayerView = playerViewMap[ctx.currentPlayer];
   const isRobberPlacementActive =
     isInteractiveStageOwner && playerStage === "moveRobber";

@@ -57,6 +57,24 @@
 - `pnpm vitest run app/catana/__tests__/GameScreen.connectionBanner.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
 - `pnpm vitest run app/catana/__tests__/GameScreen.connectionBanner.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
 
+## Status (2026-04-02, player piece asset migration shipped)
+- Moved all live Catana road, settlement, and city SVGs into `public/svgs/pieces/` and added the missing lobby-colour variants for:
+- `green`
+- `orange`
+- `purple`
+- `pink`
+- `cyan`
+- `amber`
+- Runtime piece pathing now goes through `app/catana/theme/pieceAssets.js`, which builds nested `pieces/<piece>_<color>.svg` filenames plus direct `/svgs/pieces/...` URLs.
+- Board piece rendering now prefers the chosen lobby colour metadata over the old seat-order fallback when that metadata is present, while still falling back to `UI_PLAYER_COLORS` if a seat has no chosen colour.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/pieceAssets.test.js app/catana/__tests__/playerView.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/themeAssets.test.js`
+- `node -e "import('./app/catana/types.js')"`
+- `node -e "import('./app/board-editor/utils/types.js')"`
+- `rg -n "colonist\\.io/dist/images/(settlement|city|road)_" app/catana/types.js app/board-editor/utils/types.js`
+- `rg --files public/svgs | rg '(^|/)(road|settlement|city)_(red|blue|green|orange|purple|pink|cyan|amber)\\.svg$'`
+- `xmllint --noout public/svgs/pieces/*.svg`
+
 ## Status (2026-04-02, out-of-turn resign fixed)
 - Fixed the live resign turn-gate so any seated player can resign immediately, even when they are not the current active turn seat.
 - Engine/state changes:
@@ -2397,3 +2415,24 @@
   - and added regression coverage for the scale helper plus the zoom-state wiring in the board/screen source tests.
 - Hid explicit bank count badges in the `Year of Plenty` picker by default while keeping the finite-bank selection caps unchanged.
 - Added a match-scoped `G.gameSettings.showYearOfPlentyBankCounts` flag in `app/catana/Game.js` so the old visible-count behavior can be re-enabled later as a lobby/game option.
+- Replaced the old 8-color player palette contract with the new 20-color contrast-first candidate set in `app/catana/theme/playerColors.js`:
+  - canonical lobby/piece IDs are now `red`, `sky`, `green`, `teal`, `orange`, `magenta`, `purple`, `maroon`, `olive`, `brown`, `royal`, `violet`, `lime`, `coral`, `lavender`, `tan`, `black`, `white`, `silver`, and `gold`,
+  - legacy reads are normalized through `blue -> sky`, `cyan -> teal`, `pink -> coral`, and `amber -> gold`,
+  - seat fallback colors now use the stronger six-color subset `red`, `sky`, `green`, `orange`, `teal`, `magenta`.
+- Normalized lobby and endgame color usage so canonical IDs work outside the piece renderer:
+  - `LobbyPageClient.js` now normalizes stored/submitted player colors and uses canonical `sky` for the bot seat instead of writing `blue`,
+  - `GameOverModal.js` and `PostgameOverlay.js` now resolve canonical IDs like `sky` / `gold` to actual hex swatch colors before applying inline `backgroundColor`.
+- Added `scripts/generate-player-piece-palette.mjs` as a rerunnable generator for the Catana player-piece family:
+  - it derives road/settlement/city shading from the canonical `PLAYER_COLOR_OPTIONS` hex values,
+  - gives `black`, `white`, `silver`, and `gold` stronger board-readable ramps,
+  - removes unsupported legacy filenames from `public/svgs/pieces/` and rewrites the directory as the canonical 60-file set.
+- Regenerated the full local player-piece inventory under `public/svgs/pieces/`:
+  - road, settlement, and city SVGs now exist for all 20 canonical IDs,
+  - obsolete `blue`, `cyan`, `pink`, and `amber` piece filenames were removed,
+  - inventory/source tests now cover the palette metadata, alias normalization, bot-seat canonical writes, and canonical endgame swatches.
+- Verification for the contrast-palette slice:
+  - `pnpm exec vitest run app/catana/__tests__/playerColors.test.js app/catana/__tests__/pieceAssets.test.js app/catana/__tests__/playerView.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameOverModal.test.js app/catana/__tests__/PostgameOverlay.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js`
+  - `node scripts/generate-player-piece-palette.mjs`
+  - `xmllint --noout public/svgs/pieces/*.svg`
+  - `node -e "import('./app/catana/types.js')"`
+  - `node -e "import('./app/board-editor/utils/types.js')"` (passes with the pre-existing `MODULE_TYPELESS_PACKAGE_JSON` warning)

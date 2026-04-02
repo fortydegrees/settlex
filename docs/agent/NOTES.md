@@ -37,6 +37,19 @@
 - global reconnect and in-game transport warnings should share a common alert-shell component (`StatusBanner`) so they stay in the same UI family.
 - In-game placement should live in the same fixed top-center stack as the opponent row, below that row, rather than as an unrelated viewport-top overlay that can overlap avatar/status UI.
 
+- Player piece asset migration note:
+- Canonical live Catana piece assets now live under `public/svgs/pieces/`.
+- Use `app/catana/theme/pieceAssets.js` for all new piece pathing:
+- `getPieceSvgFile(pieceType, colorId)` when a theme helper expects a nested filename,
+- `getPieceSvgPath(pieceType, colorId)` when a caller needs a direct public URL.
+- Do not reintroduce root-level `road_<color>.svg`, `settlement_<color>.svg`, or `city_<color>.svg` runtime paths.
+- Board colour precedence note:
+- `GameScreen` now builds a resolved `boardColorMap` from chosen lobby metadata first, then seat-order fallback colors.
+- `buildPlayerViewMap(core, colorByPlayerId)` should keep `UI_PLAYER_COLORS` only as fallback when chosen lobby colour metadata is absent.
+- Plain Node ESM note:
+- if a module that can be imported directly by `pnpm serve` pulls in `pieceAssets`, use an explicit relative `.js` extension in that import (`./theme/pieceAssets.js` / `../theme/pieceAssets.js` / `../../catana/theme/pieceAssets.js`).
+- Vite/Next test paths tolerated extensionless imports, but plain Node ESM did not.
+
 - Out-of-turn resign note:
 - boardgame.io blocks inactive players before the move body runs, so exposing `resign` in stage maps alone is not enough.
 - Current Catana fix:
@@ -1609,3 +1622,15 @@
         - keep the overlay architecture, but apply the zoom scale inside `RobberPlacementPreview.js`; that preserves pointer-following in viewport coordinates without forcing per-frame board `getBoundingClientRect()` reads.
 - `TradeDiscardModal` now hides finite-bank count badges for `Year of Plenty` by default and still enforces availability through the existing `available` / `disableIncrement` logic.
 - The visibility is controlled by top-level match state at `G.gameSettings.showYearOfPlentyBankCounts`, defaulting to `false` in `app/catana/Game.js` so it can become a future lobby/game setting without moving UI state into `game-core`.
+- Player-piece contrast palette notes:
+  - canonical player-piece/lobby IDs are now `red`, `sky`, `green`, `teal`, `orange`, `magenta`, `purple`, `maroon`, `olive`, `brown`, `royal`, `violet`, `lime`, `coral`, `lavender`, `tan`, `black`, `white`, `silver`, and `gold`.
+  - keep legacy compatibility on reads through `blue -> sky`, `cyan -> teal`, `pink -> coral`, and `amber -> gold`; new writes should stay canonical.
+  - the strong default seat fallback order is now `red`, `sky`, `green`, `orange`, `teal`, `magenta`.
+  - `LobbyPageClient.js` must normalize stored/submitted colors before join/create requests; otherwise old saved IDs can leak back into fresh matches and break the goal of canonicalizing the picker/runtime.
+  - endgame/player-summary dots cannot use raw `player.color` as CSS anymore because IDs like `sky`, `magenta`, and `gold` are not valid CSS named colors; resolve them through `getPlayerNameHex(...)` first and only then fall back to raw values.
+  - `scripts/generate-player-piece-palette.mjs` is the source for the 20-color road/settlement/city family:
+    - it should stay rerunnable and be preferred over hand-editing the 60 generated SVGs,
+    - it derives all ramps from `app/catana/theme/playerColors.js`,
+    - `black`, `white`, `silver`, and `gold` intentionally use stronger special-case shading so they stay legible on the board.
+  - `public/svgs/pieces/` is now intended to contain only canonical generated piece IDs.
+    - old compatibility IDs like `blue`, `cyan`, `pink`, and `amber` should not come back as standalone files; runtime alias normalization should point them at `sky`, `teal`, `coral`, and `gold`.
