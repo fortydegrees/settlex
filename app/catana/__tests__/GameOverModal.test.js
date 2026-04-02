@@ -27,4 +27,10 @@ describe("GameOverModal", () => {
     expect(contents).toContain("onConfettiFired");
     expect(contents).not.toContain("const confettiFired = useRef(false);");
   });
+
+  it("resolves canonical player color ids before using them for winner swatches", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+
+    expect(contents).toContain("getPlayerNameHex");
+  });
 });

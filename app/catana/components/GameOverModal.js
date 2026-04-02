@@ -1,5 +1,8 @@
 import React, { useEffect } from "react";
 import confetti from "canvas-confetti";
+import { getPlayerNameHex } from "../theme/playerColors.js";
+
+const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
 
 export function GameOverModal({
   title,
@@ -53,7 +56,7 @@ export function GameOverModal({
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-full shadow-inner"
-                style={{ backgroundColor: winner.color || "#888" }}
+                style={{ backgroundColor: getSwatchColor(winner.color) }}
               />
               <span className="text-xl font-bold text-slate-800">
                 {winner.name || `Player ${winner.id}`}
@@ -77,7 +80,7 @@ export function GameOverModal({
             >
               <div
                 className="w-6 h-6 rounded-full"
-                style={{ backgroundColor: row.color || "#888" }}
+                style={{ backgroundColor: getSwatchColor(row.color) }}
               />
               <span className="font-medium text-slate-700">
                 {row.name || `Player ${row.id}`}
