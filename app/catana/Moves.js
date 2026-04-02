@@ -138,8 +138,9 @@ const resolveTerminalForfeit = (
 };
 
 export const resign = {
-  move: (context) => {
-    const losingPlayerId = context.playerID ?? context.ctx?.currentPlayer;
+  move: (context, losingPlayerIdArg) => {
+    const losingPlayerId =
+      losingPlayerIdArg ?? context.playerID ?? context.ctx?.currentPlayer;
     resolveTerminalForfeit(
       context,
       losingPlayerId,
@@ -151,10 +152,10 @@ export const resign = {
 
 export const resolveDisconnectForfeit = {
   client: false,
-  move: (context) => {
+  move: (context, losingPlayerIdArg) => {
     resolveTerminalForfeit(
       context,
-      context.playerID,
+      losingPlayerIdArg ?? context.playerID,
       GAME_OVER_REASONS.DISCONNECT_FORFEIT
     );
   }

@@ -97,4 +97,54 @@ describe("dispatchMatchUpdate", () => {
 
     expect(logger.error).toHaveBeenCalledTimes(1);
   });
+
+  it("dispatches disconnect forfeits as the active player while targeting the disconnected seat", async () => {
+    const serverInstance = createServerInstance();
+    const state = {
+      _stateID: 6,
+      ctx: {
+        currentPlayer: "0",
+        activePlayers: { "0": "preRoll" }
+      }
+    };
+    const metadata = {
+      players: {
+        "0": { credentials: "c0" },
+        "1": { credentials: "c1" }
+      }
+    };
+    serverInstance.db.fetch.mockResolvedValue({ state, metadata });
+
+    const onUpdate = vi.fn().mockResolvedValue(undefined);
+    const MasterClass = vi.fn().mockImplementation(() => ({ onUpdate }));
+
+    await dispatchMatchUpdate({
+      serverInstance,
+      botManager: {
+        syncMatchBots: vi.fn(),
+        isBotPlayerForMatch: () => false,
+        chooseMoves: vi.fn()
+      },
+      move: "resolveDisconnectForfeit",
+      playerID: "1",
+      matchID: "m3",
+      game: { name: "catan" },
+      MasterClass
+    });
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      {
+        type: "MAKE_MOVE",
+        payload: {
+          type: "resolveDisconnectForfeit",
+          args: ["1"],
+          playerID: "0",
+          credentials: "c0"
+        }
+      },
+      6,
+      "m3",
+      "0"
+    );
+  });
 });
