@@ -112,8 +112,7 @@ export const DebugPanel = ({ bgioProps }) => {
 
   return (
     <div
-      className="fixed left-4 z-30 w-72 md:w-80 pointer-events-auto"
-      style={{ bottom: "calc(20vh + 1.5rem)" }}
+      className="pointer-events-auto w-full"
       data-allow-interaction="true"
     >
       <div className="overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text">

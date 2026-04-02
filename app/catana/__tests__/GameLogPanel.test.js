@@ -17,7 +17,8 @@ describe("GameLogPanel", () => {
   it("renders a log container with interaction opt-in", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("Game Log");
-    expect(contents).toContain("data-allow-interaction");
+    expect(contents).toContain("FeedPanel");
+    expect(contents).toContain("FeedTokenRow");
     expect(contents).toContain("formatLogEntry");
   });
 
@@ -40,21 +41,27 @@ describe("GameLogPanel", () => {
     expect(contents).not.toContain("bg-amber-100/90");
   });
 
-  it("auto-scrolls to the latest entry", () => {
+  it("does not use flex-wrap row layout for log entries", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("scrollHeight");
-    expect(contents).toContain("scrollTop");
+    expect(contents).not.toContain("flex-wrap");
+    expect(contents).not.toContain("items-center gap-1");
   });
 
-  it("re-enables auto-scroll after a delay", () => {
+  it("delegates auto-scroll behavior to the shared feed shell", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("AUTO_SCROLL_IDLE_MS");
+    expect(contents).toContain("rows={formattedEntries}");
+    expect(contents).toContain("renderRow");
   });
 
-  it("pauses auto-scroll while hovering the log", () => {
+  it("memoizes the formatted entries", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("onMouseEnter");
-    expect(contents).toContain("isHoveringRef");
+    expect(contents).toContain("useMemo");
+    expect(contents).toContain("formattedEntries");
+  });
+
+  it("memoizes the panel component", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("React.memo");
   });
 
   it("anchors the log to the bottom-left of the screen", () => {

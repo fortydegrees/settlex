@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatLogEntry, STATUS_TEXT } from "../utils/gameText";
+import { formatChatEntry, formatLogEntry, STATUS_TEXT } from "../utils/gameText";
 
 describe("formatLogEntry", () => {
   it("returns player + resource tokens", () => {
@@ -253,6 +253,51 @@ describe("formatLogEntry", () => {
         (t) => t.kind === "text" && t.text.includes("no valid tile")
       )
     ).toBe(true);
+  });
+});
+
+describe("formatChatEntry", () => {
+  it("returns a leading player token and plain text message tokens", () => {
+    const tokens = formatChatEntry(
+      { id: "m1", actorId: "1", message: "ready when you are" },
+      { "1": { name: "Ada", emoji: "🦊", color: "blue" } }
+    );
+
+    expect(tokens[0]).toMatchObject({
+      kind: "player",
+      id: "1",
+      name: "Ada",
+      emoji: "🦊",
+      color: "blue",
+    });
+    expect(tokens).toEqual([
+      {
+        kind: "player",
+        id: "1",
+        name: "Ada",
+        emoji: "🦊",
+        color: "blue",
+      },
+      { kind: "text", text: ": " },
+      { kind: "text", text: "ready when you are" },
+    ]);
+  });
+
+  it("does not expand resource words in chat messages", () => {
+    const tokens = formatChatEntry(
+      {
+        id: "m2",
+        actorId: "1",
+        message: "Ore Wheat Brick are all in play",
+      },
+      { "1": { name: "Ada", emoji: "🦊", color: "blue" } }
+    );
+
+    expect(tokens.some((token) => token.kind === "resource")).toBe(false);
+    expect(tokens[2]).toMatchObject({
+      kind: "text",
+      text: "Ore Wheat Brick are all in play",
+    });
   });
 });
 

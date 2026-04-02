@@ -14,4 +14,14 @@ describe("MatchPageClient bot fill control", () => {
     expect(source).toContain('emoji: "🤖"');
     expect(source).toContain("fillOpenSeatsWithBots");
   });
+
+  it("passes fetched match metadata into the board client for player identity fallbacks", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "app/catana/lobby/[matchID]/MatchPageClient.js"),
+      "utf8"
+    );
+
+    expect(source).toContain("matchMetadata");
+    expect(source).toMatch(/matchMetadata=\{match\?\.players \?\? \[\]\}/);
+  });
 });
