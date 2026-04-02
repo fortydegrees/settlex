@@ -1583,3 +1583,15 @@
         - keep the overlay architecture, but apply the zoom scale inside `RobberPlacementPreview.js`; that preserves pointer-following in viewport coordinates without forcing per-frame board `getBoundingClientRect()` reads.
 - `TradeDiscardModal` now hides finite-bank count badges for `Year of Plenty` by default and still enforces availability through the existing `available` / `disableIncrement` logic.
 - The visibility is controlled by top-level match state at `G.gameSettings.showYearOfPlentyBankCounts`, defaulting to `false` in `app/catana/Game.js` so it can become a future lobby/game setting without moving UI state into `game-core`.
+- Player-piece contrast palette notes:
+  - canonical player-piece/lobby IDs are now `red`, `sky`, `green`, `teal`, `orange`, `magenta`, `purple`, `maroon`, `olive`, `brown`, `royal`, `violet`, `lime`, `coral`, `lavender`, `tan`, `black`, `white`, `silver`, and `gold`.
+  - keep legacy compatibility on reads through `blue -> sky`, `cyan -> teal`, `pink -> coral`, and `amber -> gold`; new writes should stay canonical.
+  - the strong default seat fallback order is now `red`, `sky`, `green`, `orange`, `teal`, `magenta`.
+  - `LobbyPageClient.js` must normalize stored/submitted colors before join/create requests; otherwise old saved IDs can leak back into fresh matches and break the goal of canonicalizing the picker/runtime.
+  - endgame/player-summary dots cannot use raw `player.color` as CSS anymore because IDs like `sky`, `magenta`, and `gold` are not valid CSS named colors; resolve them through `getPlayerNameHex(...)` first and only then fall back to raw values.
+  - `scripts/generate-player-piece-palette.mjs` is the source for the 20-color road/settlement/city family:
+    - it should stay rerunnable and be preferred over hand-editing the 60 generated SVGs,
+    - it derives all ramps from `app/catana/theme/playerColors.js`,
+    - `black`, `white`, `silver`, and `gold` intentionally use stronger special-case shading so they stay legible on the board.
+  - `public/svgs/pieces/` is now intended to contain only canonical generated piece IDs.
+    - old compatibility IDs like `blue`, `cyan`, `pink`, and `amber` should not come back as standalone files; runtime alias normalization should point them at `sky`, `teal`, `coral`, and `gold`.
