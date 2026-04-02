@@ -8,6 +8,10 @@ import { SocketIO } from "boardgame.io/multiplayer";
 import { Catan } from "../../Game";
 import { GameScreenWithEffects } from "../../GameScreen";
 import { GlassPillButton } from "../../components/GlassPillButton";
+import {
+  getCredentialsStorageKey,
+  writeLastActiveMatch
+} from "../../utils/activeMatchStorage";
 import { sanitizeDisplayName } from "../../utils/playerIdentity";
 
 const GAME_NAME = "catan";
@@ -25,9 +29,6 @@ const getGameServerAddress = () => {
   if (typeof window === "undefined") return "localhost:8000";
   return `${window.location.hostname}:8000`;
 };
-
-const getCredentialsStorageKey = ({ matchID, playerID }) =>
-  `catana:lobby:credentials:${matchID}:${playerID}`;
 
 const safeJson = async (res) => {
   try {
@@ -173,6 +174,25 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
       // ignore
     }
   }, [playerName]);
+
+  useEffect(() => {
+    if (!credentials) return;
+    if (playerID == null || playerID === "") return;
+
+    const seatedPlayer = match?.players?.find(
+      (seat) => String(seat?.id) === String(playerID)
+    );
+    const persistedName =
+      sanitizeDisplayName(seatedPlayer?.name) ||
+      sanitizeDisplayName(playerName) ||
+      undefined;
+
+    writeLastActiveMatch(window.localStorage, {
+      matchID,
+      playerID: String(playerID),
+      playerName: persistedName
+    });
+  }, [credentials, match, matchID, playerID, playerName]);
 
   const openSeats = useMemo(() => {
     if (!match?.players) return [];

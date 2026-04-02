@@ -6,6 +6,12 @@ import {
   PLAYER_COLOR_OPTIONS,
   getPlayerColorOption
 } from "../theme/playerColors";
+import {
+  clearLastActiveMatch,
+  getCredentialsStorageKey,
+  readLastActiveMatch,
+  writeLastActiveMatch
+} from "../utils/activeMatchStorage";
 import { sanitizeDisplayName } from "../utils/playerIdentity";
 
 const GAME_NAME = "catan";
@@ -34,9 +40,6 @@ const getLobbyBaseUrl = () => {
   if (typeof window === "undefined") return "http://localhost:8080";
   return `${window.location.protocol}//${window.location.hostname}:8080`;
 };
-
-const getCredentialsStorageKey = ({ matchID, playerID }) =>
-  `catana:lobby:credentials:${matchID}:${playerID}`;
 
 const safeJson = async (res) => {
   try {
@@ -630,6 +633,11 @@ export function LobbyPageClient() {
           getCredentialsStorageKey({ matchID, playerID }),
           credentials
         );
+        writeLastActiveMatch(window.localStorage, {
+          matchID,
+          playerID: String(playerID),
+          playerName: name
+        });
       } catch (err) {
         /* ignore */
       }
@@ -707,6 +715,11 @@ export function LobbyPageClient() {
             getCredentialsStorageKey({ matchID, playerID: "0" }),
             credentials
           );
+          writeLastActiveMatch(window.localStorage, {
+            matchID,
+            playerID: "0",
+            playerName: name
+          });
         } catch (err) {
           /* ignore */
         }
@@ -759,6 +772,11 @@ export function LobbyPageClient() {
             getCredentialsStorageKey({ matchID, playerID: "0" }),
             credentials
           );
+          writeLastActiveMatch(window.localStorage, {
+            matchID,
+            playerID: "0",
+            playerName: name
+          });
         } catch (err) {
           /* ignore */
         }
@@ -815,6 +833,14 @@ export function LobbyPageClient() {
       }
     } catch (err) {
       /* ignore */
+    }
+
+    const activeMatch = readLastActiveMatch(window.localStorage);
+    if (
+      activeMatch?.matchID === searchState.matchID &&
+      activeMatch?.playerID === String(searchState.playerID)
+    ) {
+      clearLastActiveMatch(window.localStorage);
     }
 
     setSearchState(null);
