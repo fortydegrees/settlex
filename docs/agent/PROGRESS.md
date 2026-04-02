@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-02, global reconnect banner plan written)
+- Wrote the implementation plan for the approved reconnect-banner MVP in:
+- `docs/superpowers/plans/2026-04-02-global-reconnect-banner-plan.md`
+- Plan direction keeps the work split into:
+- shared active-match storage helpers,
+- a pure reconnect-banner candidate resolver,
+- a thin fixed-overlay global banner mounted from `app/layout.js`,
+- join/resume/game-over wiring in existing Catana pages.
+- Plan also explicitly calls out the dirty-worktree constraint so reconnect-banner commits do not accidentally bundle the separate uncommitted disconnect-follow-up server changes.
+
 ## Status (2026-04-02, global reconnect banner design approved)
 - Wrote the approved reconnect-banner design spec in:
 - `docs/superpowers/specs/2026-04-02-global-reconnect-banner-design.md`

@@ -1,5 +1,11 @@
 # NOTES
 
+- Reconnect-banner implementation plan is in:
+- `docs/superpowers/plans/2026-04-02-global-reconnect-banner-plan.md`
+- Important execution note:
+- this worktree currently has unrelated uncommitted disconnect-follow-up server changes,
+- reconnect-banner execution should stage only the banner-related files unless the human explicitly asks to bundle the other work.
+
 - Reconnect-banner MVP notes:
 - approved direction is a global app-level banner mounted from `app/layout.js`,
 - it tracks only the most recent saved match,
