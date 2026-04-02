@@ -101,8 +101,6 @@ This group is cumulative:
 
 - `Safest 6 ⊂ Strong 12`
 
-If a smaller default implementation target is needed, this 12-colour set should be the default first target rather than the full 20.
-
 - `red` `#d52a2a`
 - `sky` `#4b92db`
 - `green` `#1d911d`
@@ -124,7 +122,9 @@ This group is cumulative:
 
 - `Safest 6 ⊂ Strong 12 ⊂ Extended 20`
 
-If implementation bandwidth allows, generate the full 20 and use the `Strong 12` set as the most likely keep-set after visual review.
+The intended first implementation target is to generate the full 20-colour candidate set.
+
+The `Strong 12` set is the most likely keep-set after visual review, not an alternative smaller implementation target.
 
 - `red` `#d52a2a`
 - `sky` `#4b92db`
@@ -224,11 +224,15 @@ When the generated SVGs are reviewed later, use these concrete checks:
 - settlements,
 - cities,
 - review at both default zoom and one zoomed-out overview state,
-- require that a reviewer can identify neighbouring candidate colours at a glance without relying on memory of seat order.
+- do not rely on seat-order memory or prior labels during the comparison.
 
 Practical pass/fail rule:
 
-- if two colours are repeatedly confused when shown side by side on the board, keep the stronger one and drop the weaker one from the live player palette.
+- for each likely-collision pair, run 10 side-by-side comparisons:
+- 5 at default board zoom,
+- 5 at a zoomed-out overview state.
+- randomize left/right placement during the comparison.
+- if a reviewer misidentifies the pair 2 or more times out of 10, drop the weaker colour from the live palette.
 - if `white` and `silver` collapse together, keep the one with the clearer outline read.
 - if `gold` and nearby warm colours collapse together, prefer the one with the most distinct hue family and dark-plane separation.
 
@@ -237,7 +241,8 @@ Practical pass/fail rule:
 - There is a documented 20-colour candidate palette with softened board-friendly values.
 - The palette is explicitly grouped into stronger and weaker candidate tiers.
 - The tier relationship is explicit: `6 ⊂ 12 ⊂ 20`.
-- The default likely keep-target is explicit: `Strong 12`.
+- The implementation target is explicit: generate all 20 candidates.
+- The default likely keep-target after review is explicit: `Strong 12`.
 - `black`, `white`, `silver`, and `gold` are handled intentionally rather than treated like generic flat colours.
 - Collision-prone groups are documented up front.
 - Review constraints for later pruning are concrete enough to follow consistently.
