@@ -1,5 +1,10 @@
 # NOTES
 
+- Catana chat preview follow-up:
+- `buildChatPreviewEntries(...)` now keeps an explicit `playerID` as the current speaker even if that seat is missing from the current `playerMap`.
+- `app/catana/components/ChatPanel.js` no longer owns viewport-fixed placement. The parent layout can position it later.
+- The disabled composer copy now reads as preview-only so it does not imply a live send path.
+
 - Catana chat preview slice:
 - `app/catana/utils/gameText.js` now exports `formatChatEntry` for plain-text chat bodies that keep the existing player token metadata.
 - `app/catana/utils/chatPreview.js` provides a deterministic local-only transcript for the presentational chat panel.

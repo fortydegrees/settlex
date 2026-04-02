@@ -34,13 +34,15 @@ describe("ChatPanel", () => {
 
     expect(markup).toContain("Chat");
     expect(markup).toContain("Preview only");
-    expect(markup).toContain("coming soon");
+    expect(markup).toContain("Coming soon");
     expect(markup).toContain("Ada");
     expect(markup).toContain("🦊");
     expect(markup).toContain("Ready when you are.");
     expect(markup).toContain("disabled");
-    expect(markup).toContain("Send");
+    expect(markup).toContain("Preview");
     expect(markup).toContain("feed-panel-scroll");
     expect(markup).toContain("feed-panel-entry");
+    expect(markup).not.toContain("fixed right-4 bottom-4");
+    expect(markup).not.toContain("md:w-96");
   });
 });

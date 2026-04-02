@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-02, Catana chat preview fix pass)
+- Fixed `buildChatPreviewEntries(...)` so an explicit `playerID` stays the current speaker even when it is absent from `playerMap`.
+- Removed viewport-fixed placement responsibility from `ChatPanel.js`; the panel is now layout-neutral and ready for a parent rail to position later.
+- Tightened the chat panel preview copy so the disabled composer reads as preview-only instead of a live input.
+- Adjusted the chat-focused contract tests in:
+- `app/catana/__tests__/chatPreview.test.js`
+- `app/catana/__tests__/ChatPanel.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/gameText.test.js app/catana/__tests__/chatPreview.test.js app/catana/__tests__/ChatPanel.test.js`
+
 ## Status (2026-04-02, Catana chat preview panel shipped)
 - Added `formatChatEntry` to `app/catana/utils/gameText.js` so chat entries reuse the existing player token model without resource expansion.
 - Added the deterministic preview transcript helper in `app/catana/utils/chatPreview.js`.
