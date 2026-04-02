@@ -1,5 +1,29 @@
 # NOTES
 
+- Reconnect-banner MVP notes:
+- approved direction is a global app-level banner mounted from `app/layout.js`,
+- it tracks only the most recent saved match,
+- validation is intentionally lightweight:
+- local `lastActiveMatch` record,
+- existing seat credentials key in localStorage,
+- existing lobby match endpoint for existence check only.
+- This is intentionally not authoritative about reconnectability or unfinished state.
+- The "good enough for MVP" rationale and future hardening path are recorded in:
+- `docs/mvp-compromises.md`
+- Feature spec is in:
+- `docs/superpowers/specs/2026-04-02-global-reconnect-banner-design.md`
+
+- Disconnect/reconnect regression follow-up:
+- boardgame.io rejects timeout moves if they are sent as an inactive player and also checks live stage move maps before executing them.
+- Current fix:
+- `dispatchMatchUpdate` now sends `resolveDisconnectForfeit` as the active/current seat and passes the disconnected loser as a move arg,
+- `app/catana/Moves.js` accepts that loser-id arg for terminal forfeit resolution,
+- `app/catana/Game.js` stage maps now include `resign` in all live stages and include `resolveDisconnectForfeit` in all live server stages.
+- Presence rebroadcast note:
+- `timerPubSub` cannot rely only on cached `update/patch` state because reconnect can happen before any cached state exists in-process.
+- Current fix:
+- on `matchData`, if there is no cached state, `timerPubSub` loads the current board state from storage and rebroadcasts it with `disconnectPresence` attached.
+
 - Disconnect/resign authoritative behavior for the current Catana MVP:
 - scope is 1v1 only,
 - a player disconnect starts a 60 second reconnect grace window,

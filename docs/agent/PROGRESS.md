@@ -1,5 +1,33 @@
 # PROGRESS
 
+## Status (2026-04-02, global reconnect banner design approved)
+- Wrote the approved reconnect-banner design spec in:
+- `docs/superpowers/specs/2026-04-02-global-reconnect-banner-design.md`
+- Wrote a repo-level MVP compromise ledger in:
+- `docs/mvp-compromises.md`
+- Approved MVP direction:
+- global banner mounted from the root layout,
+- most recent match only,
+- local `lastActiveMatch` record plus existing lobby match endpoint for lightweight validation,
+- dismiss only until refresh,
+- no new authoritative reconnect-status endpoint in the first pass.
+
+## Status (2026-04-01, disconnect/reconnect regression follow-up fixed)
+- Fixed the first live regression found in the disconnect/resign MVP:
+- disconnect timeout no longer stalls at `00:00`,
+- reconnect now rebroadcasts authoritative presence even when the pub/sub cache is cold.
+- Server/runtime follow-up changes:
+- `dispatchMatchUpdate` now executes `resolveDisconnectForfeit` as the active seat while targeting the disconnected loser,
+- stage move maps now expose `resign` and `resolveDisconnectForfeit` in every live stage where boardgame.io checks availability,
+- `timerPubSub` can load current state on `matchData` when no cached board state has been seen yet.
+- Regression coverage added for:
+- disconnect-forfeit dispatch payload shaping,
+- cold-cache `matchData` rebroadcast of `disconnectPresence`,
+- stage-map availability of `resign` / `resolveDisconnectForfeit`.
+- Verification:
+- `pnpm verify`
+- direct master-level reproduction now ends the match with `Disconnect Forfeit` when the disconnected seat is not the active player.
+
 ## Status (2026-04-01, disconnect/resign authoritative flow shipped)
 - Added the approved 1v1 disconnect/resign MVP across server and client.
 - Server/runtime behavior now includes:
