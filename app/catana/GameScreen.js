@@ -42,6 +42,10 @@ import {
   CATANA_THEME_STORAGE_KEY,
   resolveThemeId,
 } from "./theme/themes";
+import {
+  clearLastActiveMatch,
+  readLastActiveMatch
+} from "./utils/activeMatchStorage";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const isDevEnvironment = process.env.NODE_ENV !== "production";
@@ -255,6 +259,18 @@ export function GameScreen(bgioProps) {
       setTradePresetResource(null);
     }
   }, [isGameOver]);
+
+  useEffect(() => {
+    if (!isGameOver || !matchID || typeof window === "undefined") return;
+    if (playerID == null || playerID === "") return;
+
+    const activeMatch = readLastActiveMatch(window.localStorage);
+    if (!activeMatch) return;
+    if (activeMatch.matchID !== matchID) return;
+    if (String(activeMatch.playerID) !== String(playerID)) return;
+
+    clearLastActiveMatch(window.localStorage);
+  }, [isGameOver, matchID, playerID]);
 
   useEffect(() => {
     setTimerSnapshot(null);

@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-04-02, global reconnect banner implemented)
+- Implemented the reconnect-banner MVP across root layout, Catana lobby flows, and game-over cleanup.
+- New client/runtime seams:
+- `app/catana/utils/activeMatchStorage.js` for saved active-match and credential-key helpers,
+- `app/catana/utils/reconnectBanner.js` for lightweight banner candidate resolution and stale-record cleanup,
+- `app/catana/components/GlobalReconnectBanner.js` mounted as a fixed overlay from `app/layout.js`.
+- Lifecycle wiring now:
+- writes `catana:last-active-match` when a human seat is successfully joined or resumed,
+- clears that record on known game-over for the same seated match,
+- clears it when matchmaking search is cancelled after leaving the queued seat.
+- Focused verification:
+- `pnpm vitest run app/catana/__tests__/activeMatchStorage.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/ReconnectBannerPersistence.source.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js app/catana/__tests__/MatchPageClient.botFill.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+
 ## Status (2026-04-02, global reconnect banner plan written)
 - Wrote the implementation plan for the approved reconnect-banner MVP in:
 - `docs/superpowers/plans/2026-04-02-global-reconnect-banner-plan.md`

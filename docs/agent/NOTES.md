@@ -1,5 +1,16 @@
 # NOTES
 
+- Reconnect-banner MVP is now live in the current worktree:
+- `app/catana/components/GlobalReconnectBanner.js` mounts from `app/layout.js` as a fixed overlay so full-screen Catana pages do not cover it.
+- The reconnect banner storage/runtime seams are:
+- `app/catana/utils/activeMatchStorage.js`
+- `app/catana/utils/reconnectBanner.js`
+- Current lifecycle behavior:
+- successful lobby join/create flows write `catana:last-active-match`,
+- `MatchPageClient` rewrites that record when stored credentials resume a seated match,
+- `GameScreen` clears it on known game-over for the same `matchID + playerID`,
+- cancelling matchmaking also clears it after the leave request so the banner does not point at an abandoned queue seat.
+
 - Reconnect-banner implementation plan is in:
 - `docs/superpowers/plans/2026-04-02-global-reconnect-banner-plan.md`
 - Important execution note:
