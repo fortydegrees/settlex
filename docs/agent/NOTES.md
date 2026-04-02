@@ -5,6 +5,7 @@
 - `app/catana/components/FeedTokenRow.js` now owns divider/player/resource/text token rendering, including the resource image `draggable={false}` guard.
 - `app/catana/components/GameLogPanel.js` now delegates to the shared shell, and `game-log-*` CSS selectors remain as aliases in `app/globals.css` so the old contract still resolves.
 - `app/catana/components/ChatPanel.js` is a memoized scaffold for the follow-on chat panel slice.
+- The shell contract is runtime-tested where the repo supports it; a small amount of source inspection still remains for memo/useMemo guards that are awkward to prove in Vitest without a browser DOM.
 
 - Robber placement UX now has an approved two-mode interaction seam in:
 - `docs/superpowers/specs/2026-03-31-robber-placement-ux-design.md`

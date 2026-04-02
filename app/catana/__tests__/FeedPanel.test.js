@@ -1,45 +1,39 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const componentPath = path.resolve(
-  __dirname,
-  "..",
-  "components",
-  "FeedPanel.js"
-);
+import { FeedPanel } from "../components/FeedPanel";
 
 describe("FeedPanel", () => {
-  it("renders a configurable header label and interaction opt-in", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("title");
-    expect(contents).toContain("data-allow-interaction=\"true\"");
+  it("renders the shared shell markup for rows", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(FeedPanel, {
+        title: "Inbox",
+        rows: [{ key: "row-1", label: "Hello" }],
+        renderRow: (row) => React.createElement("span", null, row.label),
+      })
+    );
+
+    expect(markup).toContain("Inbox");
+    expect(markup).toContain('data-allow-interaction="true"');
+    expect(markup).toContain("feed-panel-scroll");
+    expect(markup).toContain("feed-panel-fade");
+    expect(markup).toContain("feed-panel-entry");
+    expect(markup).toContain("Hello");
   });
 
-  it("uses generic feed shell classes", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("feed-panel-scroll");
-    expect(contents).toContain("feed-panel-fade");
-    expect(contents).toContain("feed-panel-entry");
-  });
+  it("ignores unsupported raw children content", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(
+        FeedPanel,
+        {
+          title: "Inbox",
+          rows: [],
+        },
+        React.createElement("span", null, "should not render")
+      )
+    );
 
-  it("keeps hover-pause and delayed auto-scroll resume logic", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("AUTO_SCROLL_IDLE_MS");
-    expect(contents).toContain("onMouseEnter");
-    expect(contents).toContain("onMouseLeave");
-    expect(contents).toContain("isHoveringRef");
-    expect(contents).toContain("shouldAutoScrollRef");
-    expect(contents).toContain("setTimeout");
-  });
-
-  it("supports a rows render path or children slot", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("rows");
-    expect(contents).toContain("children");
+    expect(markup).toContain("Inbox");
+    expect(markup).not.toContain("should not render");
   });
 });

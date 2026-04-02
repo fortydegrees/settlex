@@ -1,12 +1,12 @@
 # PROGRESS
 
-## Status (2026-04-02, shared feed-shell contract locked)
+## Status (2026-04-02, shared feed-shell contract established)
 - Extracted the Catana feed shell into shared components in:
 - `app/catana/components/FeedPanel.js`
 - `app/catana/components/FeedTokenRow.js`
 - Added a memoized `ChatPanel.js` scaffold so the perf guard can lock the upcoming chat panel contract.
 - Rewired `GameLogPanel.js` to delegate chrome, auto-scroll, and token rendering to the shared feed shell while keeping the existing `game-log-*` CSS aliases for compatibility.
-- Updated the source-lock tests in:
+- Updated the contract tests in:
 - `app/catana/__tests__/FeedPanel.test.js`
 - `app/catana/__tests__/uiNoDragImages.test.js`
 - `app/catana/__tests__/renderPerfGuards.test.js`

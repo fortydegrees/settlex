@@ -1,20 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect } from "vitest";
+import { FeedTokenRow } from "../components/FeedTokenRow";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const resolveCatana = (...parts) => path.resolve(__dirname, "..", ...parts);
 
-const resolveComponent = (...parts) =>
-  resolveCatana("components", ...parts);
-
 const readFile = (relativePath) =>
   fs.readFileSync(resolveCatana(relativePath), "utf8");
 
-const readComponent = (relativePath) => readFile(path.join("components", relativePath));
+const readComponent = (relativePath) =>
+  readFile(path.join("components", relativePath));
 
 describe("Catana UI images", () => {
   it("marks NextImage as non-draggable by default", () => {
@@ -39,8 +40,15 @@ describe("Catana UI images", () => {
   });
 
   it("disables dragging on shared feed token resource icons", () => {
-    const contents = readComponent("FeedTokenRow.js");
-    expect(contents).toMatch(/<img[\s\S]*draggable=\{false\}/);
+    const markup = renderToStaticMarkup(
+      React.createElement(FeedTokenRow, {
+        token: { kind: "resource", resource: "Wood" },
+        themeId: "emoji",
+      })
+    );
+
+    expect(markup).toContain('draggable="false"');
+    expect(markup).toContain('title="Wood"');
   });
 
   it("disables dragging on trade/discard modal icons", () => {
