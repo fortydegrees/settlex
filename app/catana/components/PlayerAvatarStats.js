@@ -60,8 +60,8 @@ export const PlayerAvatarStats = ({
     : null;
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex min-w-[5.5rem] flex-col items-center gap-1">
+    <div className="flex items-start">
+      <div className="flex w-20 flex-col items-center">
         <span className="flex relative">
           {isActive && (
             <span className="absolute -top-5 left-1/2 -translate-x-1/2">
@@ -79,7 +79,7 @@ export const PlayerAvatarStats = ({
             {vpDisplay}
           </span>
           {isDisconnected && (
-            <span className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-amber-100/95 text-base shadow-sm ring-2 ring-white">
+            <span className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 text-[1.15rem] drop-shadow-[0_1px_3px_rgba(255,255,255,0.95)]">
               ⚠️
             </span>
           )}
@@ -87,14 +87,16 @@ export const PlayerAvatarStats = ({
           {!isMe && <StatusBubble statusType={statusType} isVisible={isActive} />}
         </span>
         {disconnectLabel ? (
-          <span className="rounded-full bg-slate-700/85 px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.04em] text-amber-50 shadow-sm whitespace-nowrap">
+          <span className="mt-1 w-max rounded-full bg-slate-700/85 px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.04em] text-amber-50 shadow-sm whitespace-nowrap">
             {disconnectLabel}
           </span>
         ) : null}
       </div>
       <span
-        className={`bg-blue-200 bg-opacity-50 rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300 ${
-          isDisconnected ? "seat-disconnected-panel seat-disconnect-pulse" : ""
+        className={`rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
+          isDisconnected
+            ? "bg-rose-200/40 ring-rose-300 seat-disconnected-panel seat-disconnect-pulse"
+            : "bg-blue-200 bg-opacity-50 ring-slate-300"
         }`}
       >
         <div className="flex flex-col gap-y-1">

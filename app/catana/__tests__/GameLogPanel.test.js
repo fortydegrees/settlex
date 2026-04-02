@@ -35,8 +35,9 @@ describe("GameLogPanel", () => {
   it("adds styling hooks for authoritative server entries", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain('startsWith("server:")');
-    expect(contents).toContain('kind === "label"');
     expect(contents).toContain("italic");
+    expect(contents).not.toContain("not-italic");
+    expect(contents).not.toContain("bg-amber-100/90");
   });
 
   it("auto-scrolls to the latest entry", () => {

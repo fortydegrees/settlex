@@ -25,11 +25,20 @@ describe("PlayerAvatarStats disconnect presence", () => {
     expect(contents).toContain("⚠️");
     expect(contents).toContain("Disconnected");
     expect(contents).toContain("presence?.remainingMs");
+    expect(contents).not.toContain("bg-amber-100/95");
+    expect(contents).toContain("bg-rose-");
   });
 
   it("uses dedicated disconnected seat pulse styles", () => {
     const contents = fs.readFileSync(stylesPath, "utf8");
     expect(contents).toContain("seat-disconnect-pulse");
     expect(contents).toContain("seat-disconnected-panel");
+  });
+
+  it("keeps the road and army panel flush and top-aligned with the avatar row", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain('className="flex items-start"');
+    expect(contents).not.toContain("min-w-[5.5rem]");
+    expect(contents).not.toContain("gap-2");
   });
 });

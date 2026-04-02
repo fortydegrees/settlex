@@ -30,4 +30,9 @@ describe("OpponentPlayerBox", () => {
     expect(contents).toContain("presence={presence}");
     expect(contents).toContain("seat-disconnected-panel");
   });
+
+  it("top-aligns the opponent card stacks with taller disconnect status content", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain('className="flex items-start"');
+  });
 });
