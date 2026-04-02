@@ -29,6 +29,25 @@ This spec is about palette direction only. It does not yet commit the repo to a 
 
 Use the previously supplied 16 RGB values as the seed palette from another game, then adapt them into softer Catana-friendly values rather than using the raw RGBs directly.
 
+The exact seed values are:
+
+- `rgb(255, 0, 0)`
+- `rgb(39, 146, 255)`
+- `rgb(0, 128, 0)`
+- `rgb(0, 128, 128)`
+- `rgb(250, 140, 1)`
+- `rgb(240, 50, 230)`
+- `rgb(128, 0, 128)`
+- `rgb(155, 1, 1)`
+- `rgb(179, 172, 50)`
+- `rgb(154, 94, 36)`
+- `rgb(16, 49, 255)`
+- `rgb(89, 76, 165)`
+- `rgb(133, 169, 28)`
+- `rgb(255, 102, 104)`
+- `rgb(180, 127, 202)`
+- `rgb(180, 153, 113)`
+
 Add four additional candidates into the same pool:
 
 - `black`
@@ -72,9 +91,17 @@ These are the strongest first-pass colours for immediate in-game separation:
 - `orange` `#d68c2f`
 - `magenta` `#db47d3`
 
+This group is the initial highest-confidence subset of the larger palette.
+
 ### Strong 12
 
-These should still read cleanly on the board in most cases:
+These should still read cleanly on the board in most cases.
+
+This group is cumulative:
+
+- `Safest 6 ⊂ Strong 12`
+
+If a smaller default implementation target is needed, this 12-colour set should be the default first target rather than the full 20.
 
 - `red` `#d52a2a`
 - `sky` `#4b92db`
@@ -91,7 +118,13 @@ These should still read cleanly on the board in most cases:
 
 ### Extended 20
 
-These remain valid candidates, but should be treated as more collision-prone until reviewed in-game:
+These remain valid candidates, but should be treated as more collision-prone until reviewed in-game.
+
+This group is cumulative:
+
+- `Safest 6 ⊂ Strong 12 ⊂ Extended 20`
+
+If implementation bandwidth allows, generate the full 20 and use the `Strong 12` set as the most likely keep-set after visual review.
 
 - `red` `#d52a2a`
 - `sky` `#4b92db`
@@ -132,14 +165,33 @@ These collisions are acceptable in the candidate pool, but they should not be ig
 ### Silver
 
 - keep the same Catana geometry and shading structure,
+- keep the same number of colour planes and the same overall gradient/stop structure as the non-metallic families unless a later pass explicitly expands that system,
 - bias highlights cooler and brighter than the normal palette,
 - deepen shell/stroke tones slightly to prevent it collapsing into `white`.
 
 ### Gold
 
 - keep the same Catana geometry and shading structure,
+- keep the same number of colour planes and the same overall gradient/stop structure as the non-metallic families unless a later pass explicitly expands that system,
 - use warmer highlights and slightly richer dark planes than `olive` or `orange`,
 - aim for “painted metallic” rather than chrome realism.
+
+### Allowed metallic differences
+
+`silver` and `gold` may differ from the normal colours only by:
+
+- stronger highlight-to-shadow separation,
+- cooler highlight bias for `silver`,
+- warmer highlight bias for `gold`,
+- slightly darker outline or shell planes to preserve readability.
+
+They should not introduce:
+
+- new textures,
+- noise overlays,
+- reflective chrome treatment,
+- geometry changes,
+- a separate material system.
 
 ## Implementation Guidance
 
@@ -157,12 +209,38 @@ The first pass should optimize for speed of exploration:
 - consistent Catana shading,
 - easy later removal of near-duplicates.
 
+## Review Constraints For Pruning
+
+When the generated SVGs are reviewed later, use these concrete checks:
+
+- compare pieces at normal in-game board scale, not only zoomed-in asset size,
+- compare on multiple common board contexts:
+- green terrain,
+- orange/brown terrain,
+- blue-adjacent coastline or water,
+- light UI glass surfaces,
+- compare by placing the nearest-neighbour colours side by side for:
+- roads,
+- settlements,
+- cities,
+- review at both default zoom and one zoomed-out overview state,
+- require that a reviewer can identify neighbouring candidate colours at a glance without relying on memory of seat order.
+
+Practical pass/fail rule:
+
+- if two colours are repeatedly confused when shown side by side on the board, keep the stronger one and drop the weaker one from the live player palette.
+- if `white` and `silver` collapse together, keep the one with the clearer outline read.
+- if `gold` and nearby warm colours collapse together, prefer the one with the most distinct hue family and dark-plane separation.
+
 ## Acceptance Criteria For The Palette Pass
 
 - There is a documented 20-colour candidate palette with softened board-friendly values.
 - The palette is explicitly grouped into stronger and weaker candidate tiers.
+- The tier relationship is explicit: `6 ⊂ 12 ⊂ 20`.
+- The default likely keep-target is explicit: `Strong 12`.
 - `black`, `white`, `silver`, and `gold` are handled intentionally rather than treated like generic flat colours.
 - Collision-prone groups are documented up front.
+- Review constraints for later pruning are concrete enough to follow consistently.
 - Future implementation is free to prune candidates after real in-game comparison.
 
 ## Next Step
