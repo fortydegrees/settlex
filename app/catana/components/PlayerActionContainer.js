@@ -19,6 +19,7 @@ import {
   getThemedSvgPath,
   handleThemeImageError,
 } from "../theme/themes";
+import { getPieceSvgFile } from "../theme/pieceAssets";
 
 const SHOW_STATUS_TEXT = true;
 
@@ -132,8 +133,8 @@ export const PlayerActionContainer = ({
     {
       name: "road",
       action: () => setPlayerAction("placeRoad"),
-      img: getThemedSvgPath(themeId, "road_red.svg"),
-      fallbackImg: getClassicSvgPath("road_red.svg"),
+      img: getThemedSvgPath(themeId, getPieceSvgFile("road", "red")),
+      fallbackImg: getClassicSvgPath(getPieceSvgFile("road", "red")),
       count: player.roadsRemaining,
       enabled: false,
       style: { transform: "rotate(90deg) scale(0.9)" },
@@ -141,8 +142,8 @@ export const PlayerActionContainer = ({
     {
       name: "settlement",
       action: () => setPlayerAction("placeSettlement"),
-      img: getThemedSvgPath(themeId, "settlement_red.svg"),
-      fallbackImg: getClassicSvgPath("settlement_red.svg"),
+      img: getThemedSvgPath(themeId, getPieceSvgFile("settlement", "red")),
+      fallbackImg: getClassicSvgPath(getPieceSvgFile("settlement", "red")),
       count: player.settlementsRemaining,
       enabled: false,
       style: null,
@@ -150,8 +151,8 @@ export const PlayerActionContainer = ({
     {
       name: "city",
       action: () => setPlayerAction("placeCity"),
-      img: getThemedSvgPath(themeId, "city_red.svg"),
-      fallbackImg: getClassicSvgPath("city_red.svg"),
+      img: getThemedSvgPath(themeId, getPieceSvgFile("city", "red")),
+      fallbackImg: getClassicSvgPath(getPieceSvgFile("city", "red")),
       count: player.citiesRemaining,
       enabled: false,
       style: null,

@@ -1,13 +1,15 @@
 export const UI_PLAYER_COLORS = ["red", "blue", "green", "orange"];
 
-export function buildPlayerViewMap(core) {
+export function buildPlayerViewMap(core, colorByPlayerId = {}) {
   const map = {};
   if (!core?.players) return map;
   core.players.forEach((id, index) => {
     const state = core.playerStateById?.[id];
+    const fallbackColor =
+      UI_PLAYER_COLORS[index % UI_PLAYER_COLORS.length] ?? UI_PLAYER_COLORS[0];
     map[id] = {
       id,
-      color: UI_PLAYER_COLORS[index % UI_PLAYER_COLORS.length],
+      color: colorByPlayerId[id] ?? fallbackColor,
       resources: state?.resources ?? [],
       roadsRemaining: state?.roadsRemaining ?? 0,
       settlementsRemaining: state?.settlementsRemaining ?? 0,
