@@ -27,7 +27,7 @@ export const CardStack = ({
 
   const cardClass = "object-contain drop-shadow-md";
   const outlineClass = layout.isEmpty
-    ? "opacity-30 ring-1 ring-blue-100 ring-inset"
+    ? "opacity-30"
     : "";
 
   return (

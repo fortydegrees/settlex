@@ -56,6 +56,7 @@ export function CatanBoard({
   playerAction,
   setPlayerAction,
   robberPlacementMotionMode,
+  boardViewportScale = 1,
   themeId,
   isMobile,
   ctx,
@@ -737,6 +738,7 @@ export function CatanBoard({
             magneticTargets={magneticRobberTargets}
             landTileCenters={landRobberPreviewTiles}
             boardTileSize={size}
+            boardViewportScale={boardViewportScale}
             themeId={themeId}
             size={size / 1.5}
           />

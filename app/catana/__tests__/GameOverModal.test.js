@@ -19,4 +19,12 @@ describe("GameOverModal", () => {
     expect(contents).toContain("View Postgame");
     expect(contents).toContain("Return to Lobby");
   });
+
+  it("lets the parent own winner confetti state so remounts do not replay it", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+
+    expect(contents).toContain("shouldFireConfetti");
+    expect(contents).toContain("onConfettiFired");
+    expect(contents).not.toContain("const confettiFired = useRef(false);");
+  });
 });

@@ -6,6 +6,23 @@ export const ROBBER_PREVIEW_MAX_LEAN_DEGREES = 60;
 const ROBBER_PREVIEW_LOCKED_OFFSET_X_FACTOR = -0.34;
 const ROBBER_PREVIEW_LOCKED_OFFSET_Y_FACTOR = 0.12;
 
+export function getRobberPreviewViewportScale(boardViewportScale = 1) {
+  return Number.isFinite(boardViewportScale) && boardViewportScale > 0
+    ? boardViewportScale
+    : 1;
+}
+
+export function getScaledRobberPreviewSize({
+  baseSize,
+  boardViewportScale = 1
+} = {}) {
+  if (!Number.isFinite(baseSize) || baseSize <= 0) {
+    return 0;
+  }
+
+  return baseSize * getRobberPreviewViewportScale(boardViewportScale);
+}
+
 const hasFiniteCenter = (target) =>
   Number.isFinite(target?.centerX) && Number.isFinite(target?.centerY);
 

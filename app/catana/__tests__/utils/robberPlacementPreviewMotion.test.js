@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getScaledRobberPreviewSize,
   getLockedRobberPreviewPosition,
   getRobberPreviewLeanAngle,
   getMagneticRobberTarget,
@@ -65,6 +66,27 @@ describe("robberPlacementPreviewMotion", () => {
     expect(getRobberPreviewLeanAngle(-10_000)).toBe(
       -ROBBER_PREVIEW_MAX_LEAN_DEGREES
     );
+  });
+
+  it("scales the preview size with board viewport zoom and falls back cleanly", () => {
+    expect(
+      getScaledRobberPreviewSize({
+        baseSize: 56,
+        boardViewportScale: 1.5
+      })
+    ).toBe(84);
+    expect(
+      getScaledRobberPreviewSize({
+        baseSize: 56,
+        boardViewportScale: 0.5
+      })
+    ).toBe(28);
+    expect(
+      getScaledRobberPreviewSize({
+        baseSize: 56,
+        boardViewportScale: NaN
+      })
+    ).toBe(56);
   });
 
   it("detects whether a point is inside a pointy-top land hex", () => {

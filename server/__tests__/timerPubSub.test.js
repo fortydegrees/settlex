@@ -1,4 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
+import { PufferBotManager } from "../bots/pufferBotManager";
+import { TimerManager } from "../timers/TimerManager";
 import { createTimerPubSub } from "../timers/timerPubSub";
 
 it("forwards publish payloads to TimerManager", () => {
@@ -236,4 +238,73 @@ it("loads current state on matchData when no cached state exists", async () => {
           "server:reconnect"
       )
   ).toBe(true);
+});
+
+it("seeds bot seats from matchData before a pregame update schedules bot ready-up", () => {
+  vi.useFakeTimers();
+
+  const dispatch = vi.fn();
+  const botManager = new PufferBotManager();
+  const timerManager = new TimerManager({
+    dispatch,
+    botMoveDelayMs: 250,
+    isBotPlayer: ({ matchID, playerID }) =>
+      botManager.isBotPlayerForMatch(matchID, playerID)
+  });
+  const pubSub = createTimerPubSub(timerManager, { botManager });
+
+  pubSub.publish("MATCH-bot", {
+    type: "matchData",
+    args: [
+      "bot",
+      [
+        { id: "0", name: "Alice", data: { color: "red" } },
+        {
+          id: "1",
+          name: "[BOT] Puffer 2",
+          data: { bot: "puffer", isBot: true, emoji: "🤖" }
+        }
+      ]
+    ]
+  });
+
+  pubSub.publish("MATCH-bot", {
+    type: "update",
+    args: [
+      "bot",
+      {
+        _stateID: 7,
+        G: {
+          core: {
+            players: ["0", "1"]
+          },
+          preGame: {
+            readyByPlayerId: { "0": true }
+          }
+        },
+        ctx: {
+          phase: "preGame",
+          currentPlayer: "0",
+          activePlayers: { all: "waiting" },
+          turn: 1
+        }
+      }
+    ]
+  });
+
+  vi.advanceTimersByTime(249);
+  expect(dispatch).not.toHaveBeenCalledWith({
+    matchID: "bot",
+    move: "autoBot",
+    playerID: "1"
+  });
+
+  vi.advanceTimersByTime(1);
+  expect(dispatch).toHaveBeenCalledWith({
+    matchID: "bot",
+    move: "autoBot",
+    playerID: "1"
+  });
+
+  vi.useRealTimers();
 });

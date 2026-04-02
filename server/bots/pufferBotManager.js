@@ -59,6 +59,21 @@ function parseBotPlayerIds(value) {
     .filter((segment) => segment.length > 0);
 }
 
+function seatLooksLikeBot(seat) {
+  const name = String(seat?.name ?? "").trim().toLowerCase();
+  const dataBot = String(seat?.data?.bot ?? "").trim().toLowerCase();
+  const hasBotFlag =
+    seat?.data?.isBot === true ||
+    dataBot === "puffer" ||
+    dataBot === "bot";
+  const hasBotName =
+    name.startsWith("[bot]") ||
+    name.includes("puffer bot") ||
+    name.includes("puffer");
+
+  return hasBotFlag || hasBotName;
+}
+
 export class PufferBotManager {
   constructor({
     checkpointPath = null,
@@ -106,22 +121,20 @@ export class PufferBotManager {
   }
 
   syncMatchBots(matchID, metadata) {
-    const players = metadata?.players ?? {};
     const detected = new Set();
-    for (const [playerID, seat] of Object.entries(players)) {
-      const name = String(seat?.name ?? "").trim().toLowerCase();
-      const dataBot = String(seat?.data?.bot ?? "").trim().toLowerCase();
-      const hasBotFlag =
-        seat?.data?.isBot === true ||
-        dataBot === "puffer" ||
-        dataBot === "bot";
-      const hasBotName =
-        name.startsWith("[bot]") ||
-        name.includes("puffer bot") ||
-        name.includes("puffer");
-      if (hasBotFlag || hasBotName) {
+    for (const [playerID, seat] of Object.entries(metadata?.players ?? {})) {
+      if (seatLooksLikeBot(seat)) {
         detected.add(String(playerID));
       }
+    }
+    this.matchBotPlayerIds.set(String(matchID), detected);
+  }
+
+  syncMatchBotsFromMatchData(matchID, matchData) {
+    const detected = new Set();
+    for (const seat of Array.isArray(matchData) ? matchData : []) {
+      if (seat?.id == null || !seatLooksLikeBot(seat)) continue;
+      detected.add(String(seat.id));
     }
     this.matchBotPlayerIds.set(String(matchID), detected);
   }

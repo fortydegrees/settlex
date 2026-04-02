@@ -27,7 +27,7 @@ class InMemoryPubSub {
 
 export function createTimerPubSub(
   timerManager,
-  { disconnectManager, stateLoader } = {}
+  { botManager, disconnectManager, stateLoader } = {}
 ) {
   const base = new InMemoryPubSub();
   const latestStateByMatch = new Map();
@@ -94,6 +94,9 @@ export function createTimerPubSub(
     publish(channelId, payload) {
       if (channelId.startsWith(MATCH_PREFIX)) {
         const matchID = channelId.slice(MATCH_PREFIX.length);
+        if (payload?.type === "matchData") {
+          botManager?.syncMatchBotsFromMatchData?.(matchID, payload.args?.[1]);
+        }
         const state =
           payload?.state ??
           (payload?.type === "update" ? payload?.args?.[1] : null) ??

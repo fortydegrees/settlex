@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { computeDefaultSize, getBoardLayout } from "../../utils/boardLayout";
+import { getBoardUnderlayFrame } from "../../utils/boardUnderlayLayout";
+import {
+  BOARD_UNDERLAY_DESIGN_SIZE,
+  BOARD_UNDERLAY_VIEWBOX,
+} from "../../utils/boardUnderlayGeometry";
 
 const SQRT3 = Math.sqrt(3);
 
@@ -18,7 +23,7 @@ describe("boardLayout", () => {
     expect(computeDefaultSize({ width, height })).toBeCloseTo(expected, 5);
   });
 
-  it("returns container size + center for layout", () => {
+  it("sizes the board from the reduced layout height but centers it on the viewport", () => {
     const width = 1200;
     const height = 900;
     const layout = getBoardLayout({ width, height });
@@ -26,6 +31,22 @@ describe("boardLayout", () => {
     expect(layout.containerWidth).toBe(width);
     expect(layout.containerHeight).toBe(containerHeight);
     expect(layout.center[0]).toBe(width / 2);
-    expect(layout.center[1]).toBe(containerHeight / 2);
+    expect(layout.center[1]).toBe(height / 2);
+  });
+
+  it("keeps the checked-in board underlay fully visible and vertically balanced on first load", () => {
+    const width = 1920;
+    const height = 1473;
+    const layout = getBoardLayout({ width, height });
+    const frame = getBoardUnderlayFrame({
+      center: layout.center,
+      size: layout.size,
+      viewBox: BOARD_UNDERLAY_VIEWBOX,
+      designSize: BOARD_UNDERLAY_DESIGN_SIZE,
+    });
+
+    expect(frame.top).toBeGreaterThanOrEqual(0);
+    expect(frame.top + frame.height).toBeLessThanOrEqual(height);
+    expect(Math.abs(frame.top - (height - (frame.top + frame.height)))).toBeLessThanOrEqual(1);
   });
 });

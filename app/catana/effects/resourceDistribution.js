@@ -2,28 +2,21 @@ import { gsap } from "gsap";
 import { tilePixelVector } from "../utils/coordinates";
 import { isDocumentHidden } from "../utils/visibility";
 import {
-  getClassicResourceIconPath,
-  getResourceIconPath,
+  getClassicSvgPath,
+  getThemedSvgPath,
   handleThemeImageError,
 } from "../theme/themes";
 
-const CARD_CLASS = "rounded border-2 border-white p-2 drop-shadow-lg";
-
-const RESOURCE_COLORS = {
-  Wood: "#3f952d",
-  Brick: "#d77230",
-  Sheep: "#69c80f",
-  Wheat: "#f2c535",
-  Ore: "#a9aeae"
-};
-
-const RESOURCE_IMAGE_CLASS = {
-  Wood: "mt-2",
-  Brick: "mt-4",
-  Sheep: "mt-3",
-  Wheat: "mt-2",
-  Ore: "mt-4"
-};
+const TOKEN_CLASS = "pointer-events-none drop-shadow-lg";
+const RESOURCE_CARD_BACK_FILE = "cards/resource/card_rescardback.svg";
+const RESOURCE_CARD_SIZE_MULTIPLIER = 0.9;
+const RESOURCE_CARD_FILES_BY_RESOURCE = Object.freeze({
+  Wood: "cards/resource/card_wood.svg",
+  Brick: "cards/resource/card_brick.svg",
+  Sheep: "cards/resource/card_sheep.svg",
+  Wheat: "cards/resource/card_wheat.svg",
+  Ore: "cards/resource/card_ore.svg",
+});
 
 const POP_SCALES = {
   from: 0.2,
@@ -45,19 +38,25 @@ const TRAVEL_DURATION = 0.6;
 const JITTER_X = 4;
 const JITTER_Y = 6;
 const ROTATE_DEG = 3;
+const SPECIFIC_RESOURCE_TARGET_Y_OFFSET = 15;
 
 function createCardElement(resource, themeId) {
   const el = document.createElement("div");
-  el.className = CARD_CLASS;
+  el.className = TOKEN_CLASS;
   el.style.position = "absolute";
-  el.style.backgroundColor = RESOURCE_COLORS[resource] ?? "#FFFFFF";
+  el.style.pointerEvents = "none";
 
   const img = document.createElement("img");
-  img.src = getResourceIconPath(themeId, resource);
+  const fileName = RESOURCE_CARD_FILES_BY_RESOURCE[resource] ?? RESOURCE_CARD_BACK_FILE;
+  img.src = getThemedSvgPath(themeId, fileName);
   img.alt = "";
-  img.className = RESOURCE_IMAGE_CLASS[resource] ?? "";
+  img.draggable = false;
+  img.style.display = "block";
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.objectFit = "contain";
   img.onerror = (event) =>
-    handleThemeImageError(event, getClassicResourceIconPath(resource));
+    handleThemeImageError(event, getClassicSvgPath(RESOURCE_CARD_BACK_FILE));
   el.appendChild(img);
   return el;
 }
@@ -161,6 +160,32 @@ export function getTileCardStartPosition({
   };
 }
 
+export function getCardTravelTargetPosition({
+  targetRect,
+  cardHeight,
+  targetKind = "specific"
+} = {}) {
+  if (!targetRect) {
+    return {
+      endX: 0,
+      endY: 0
+    };
+  }
+
+  const endX = targetRect.left;
+  if (targetKind === "stack") {
+    return {
+      endX,
+      endY: targetRect.top + (targetRect.height - cardHeight) / 2
+    };
+  }
+
+  return {
+    endX,
+    endY: targetRect.top - SPECIFIC_RESOURCE_TARGET_Y_OFFSET
+  };
+}
+
 export function createResourceDistributionRunner({
   layerEl,
   getLayerEl,
@@ -195,8 +220,8 @@ export function createResourceDistributionRunner({
       const [centerX, centerY] = center;
       const [tileX, tileY] = tilePixelVector(card.coordinate, size, centerX, centerY);
 
-      const cardWidth = size * 0.5;
-      const cardHeight = size * 0.7;
+      const cardWidth = size * 0.5 * RESOURCE_CARD_SIZE_MULTIPLIER;
+      const cardHeight = size * 0.7 * RESOURCE_CARD_SIZE_MULTIPLIER;
       const { startX, startY } = getTileCardStartPosition({
         boardRect,
         tileX,
@@ -208,12 +233,19 @@ export function createResourceDistributionRunner({
 
       const specificId = `p${card.playerID}-${card.resource}`;
       const genericId = `p${card.playerID}-resources`;
-      const targetEl = document.getElementById(specificId) || document.getElementById(genericId);
+      const specificTargetEl = document.getElementById(specificId);
+      const genericTargetEl = specificTargetEl
+        ? null
+        : document.getElementById(genericId);
+      const targetEl = specificTargetEl || genericTargetEl;
       if (!targetEl) return;
 
       const targetRect = targetEl.getBoundingClientRect();
-      const endX = targetRect.left;
-      const endY = targetRect.top - 15;
+      const { endX, endY } = getCardTravelTargetPosition({
+        targetRect,
+        cardHeight,
+        targetKind: genericTargetEl ? "stack" : "specific"
+      });
 
       const el = createCardElement(card.resource, themeId);
       el.style.width = `${cardWidth}px`;

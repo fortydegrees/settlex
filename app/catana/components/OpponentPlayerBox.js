@@ -1,6 +1,6 @@
 import React from "react";
-import resCardBackIcon from "../../../public/svgs/card_rescardback.svg";
-import devCardBackIcon from "../../../public/svgs/card_devcardback.svg";
+import resCardBackIcon from "../../../public/svgs/cards/resource/card_rescardback.svg";
+import devCardBackIcon from "../../../public/svgs/cards/development/card_devcardback.svg";
 import { CardStack } from "./CardStack";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { getOpponentResourceBadgeTone } from "./OpponentPlayerBoxUtils";
@@ -40,8 +40,8 @@ export const OpponentPlayerBox = ({
       <div
         className={`ml-2 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
           isDisconnected
-            ? "bg-rose-200/40 ring-rose-300 seat-disconnected-panel seat-disconnect-pulse"
-            : "bg-blue-200 bg-opacity-50 ring-slate-300"
+            ? "bg-rose-100/80 ring-white/60 seat-disconnected-panel seat-disconnected-pulse"
+            : "bg-blue-200 bg-opacity-50 ring-white/60"
         }`}
       >
         <div id={`p${player.id}-resources`}>
