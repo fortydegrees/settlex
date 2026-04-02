@@ -59,10 +59,10 @@ export function CatanBoard({
   boardViewportScale = 1,
   themeId,
   isMobile,
+  playerID,
   ctx,
   G,
   moves,
-  isActive,
   boardRef,
   placementLayerRef,
   placementRoadLayerRef,
@@ -96,24 +96,32 @@ export function CatanBoard({
   const [hasCoarsePointer, setHasCoarsePointer] = useState(false);
 
   const [buildableRoads, setBuildableRoads] = useState([])
+  const playerStage = ctx.activePlayers?.[playerID] ?? null;
+  const isCurrentPlayerPerspective =
+    playerID != null && String(ctx.currentPlayer) === String(playerID);
+  const isInteractiveStageOwner = isCurrentPlayerPerspective && playerStage != null;
+  const isPlacementSettlementStage =
+    ctx.phase === "placement" && playerStage === "settlement";
+  const isPlacementRoadStage =
+    ctx.phase === "placement" && playerStage === "road";
   const mainBuildableNodes = useMemo(() => {
-    if (!G.core) return [];
+    if (!G.core || !playerID || !isCurrentPlayerPerspective) return [];
     const isPlacement = ctx.phase === "placement";
     if (playerAction === "placeSettlement") {
-      return buildableNodes(G.core, G.coreTopology, ctx.currentPlayer, {
+      return buildableNodes(G.core, G.coreTopology, playerID, {
         initialPlacement: isPlacement
       });
     }
     if (playerAction === "placeCity") {
       return Object.entries(G.core.buildingsByNodeId ?? {}).flatMap(
         ([nodeId, building]) =>
-          building.ownerId === ctx.currentPlayer && building.type === "settlement"
+          building.ownerId === playerID && building.type === "settlement"
             ? [Number(nodeId)]
             : []
       );
     }
     return [];
-  }, [G.core, G.coreTopology, ctx.currentPlayer, ctx.phase, playerAction]);
+  }, [G.core, G.coreTopology, ctx.phase, playerAction, playerID, isCurrentPlayerPerspective]);
 
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
   const { width, height } = useWindowSize();
@@ -130,7 +138,7 @@ export function CatanBoard({
   const playerViewMap = useMemo(() => buildPlayerViewMap(G.core), [G.core]);
   const currentPlayerView = playerViewMap[ctx.currentPlayer];
   const isRobberPlacementActive =
-    isActive && Object.entries(ctx.activePlayers ?? {}).flat().includes("moveRobber");
+    isInteractiveStageOwner && playerStage === "moveRobber";
   const resolvedRobberPlacementMotionMode = useMemo(
     () =>
       resolveRobberPlacementMotionMode({
@@ -228,7 +236,7 @@ export function CatanBoard({
   //and we render it from here if it's in hovered/FlashingTiles..
 
   //probably only render it if phase == "main"
-  // if (isActive && ctx.phase === "main"){
+  // if (isInteractiveStageOwner && ctx.phase === "main"){
   //   //before we do calculation check that user has resources/roads left
   //   if (canPlaceRoad(player)){
   //     calculateRoadPlacements(player, board)
@@ -237,10 +245,10 @@ export function CatanBoard({
 
   // Check if player can build a road (has resources, is their turn, in postRoll)
   const canBuildRoad = useMemo(() => {
-    if (!isActive || ctx.phase !== "main") return false;
-    if (ctx.activePlayers?.[ctx.currentPlayer] !== "postRoll") return false;
+    if (!isInteractiveStageOwner || ctx.phase !== "main") return false;
+    if (playerStage !== "postRoll") return false;
     
-    const playerState = G.core?.playerStateById?.[ctx.currentPlayer];
+    const playerState = playerID == null ? null : G.core?.playerStateById?.[playerID];
     if (!playerState) return false;
     if (playerState.roadsRemaining < 1) return false;
     
@@ -248,24 +256,30 @@ export function CatanBoard({
     const hasWood = resources.includes("Wood");
     const hasBrick = resources.includes("Brick");
     return hasWood && hasBrick;
-  }, [isActive, ctx.phase, ctx.activePlayers, ctx.currentPlayer, G.core]);
+  }, [isInteractiveStageOwner, ctx.phase, playerStage, G.core, playerID]);
 
   // Passive hoverable edges - shown when player CAN build but hasn't clicked the button
   const passiveBuildableEdges = useMemo(() => {
-    if (!canBuildRoad || playerAction === "placeRoad") return [];
+    if (!canBuildRoad || playerAction === "placeRoad" || !playerID) return [];
     if (!G.core || !G.coreTopology) return [];
-    return getBuildableEdges(ctx.currentPlayer, G, ctx);
-  }, [canBuildRoad, playerAction, G, ctx]);
+    return getBuildableEdges(playerID, G, ctx);
+  }, [canBuildRoad, playerAction, G, ctx, playerID]);
 
   useEffect(()=>{
-    if ((playerAction === "placeRoad" || playerAction === "roadBuilding") && G.core && G.coreTopology) {
-      const buildable = getBuildableEdges(ctx.currentPlayer, G, ctx)
+    if (
+      playerID &&
+      isCurrentPlayerPerspective &&
+      (playerAction === "placeRoad" || playerAction === "roadBuilding") &&
+      G.core &&
+      G.coreTopology
+    ) {
+      const buildable = getBuildableEdges(playerID, G, ctx)
       setBuildableRoads(buildable)
     }
     else{
       setBuildableRoads([])
     }
-  }, [playerAction, G, ctx])
+  }, [playerAction, G, ctx, playerID, isCurrentPlayerPerspective])
 
   const lastBoardStateRef = useRef({
     phase: ctx.phase,
@@ -360,7 +374,7 @@ export function CatanBoard({
   }, [resolvedRobberPlacementMotionMode]);
 
   useEffect(() => {
-    if (Object.entries(ctx.activePlayers ?? {}).flat().includes("settlement")) {
+    if (isPlacementSettlementStage) {
       if (hoveredNode) {
         const newHoveredTiles = [];
         for (const tile of G.tiles) {
@@ -372,8 +386,10 @@ export function CatanBoard({
       } else {
         setHoveredTiles([]);
       }
+      return;
     }
-  }, [hoveredNode, G.tiles, ctx.activePlayers]);
+    setHoveredTiles([]);
+  }, [hoveredNode, G.tiles, isPlacementSettlementStage]);
 
   const handleRobberTargetHoverChange = useCallback((payload) => {
     if (!payload?.element?.getBoundingClientRect) {
@@ -572,19 +588,19 @@ export function CatanBoard({
   
   {
     !suppressBuildHighlights &&
-    isActive &&
       (() => {
-        const isPlacement = ctx.phase === "placement";
+        const showPlacementNodes = isPlacementSettlementStage;
         const showMainNodes =
-          playerAction === "placeSettlement" || playerAction === "placeCity";
-        const nodeActionIds = isPlacement ? G.valids.nodes : mainBuildableNodes;
-        const nodeActionType = isPlacement
-          ? ctx.activePlayers[ctx.currentPlayer]
+          isInteractiveStageOwner &&
+          (playerAction === "placeSettlement" || playerAction === "placeCity");
+        const nodeActionIds = showPlacementNodes ? G.valids.nodes : mainBuildableNodes;
+        const nodeActionType = showPlacementNodes
+          ? "settlement"
           : playerAction === "placeCity"
             ? "city"
             : "settlement";
 
-        if (!isPlacement && !showMainNodes) {
+        if (!showPlacementNodes && !showMainNodes) {
           return null;
         }
 
@@ -607,7 +623,7 @@ export function CatanBoard({
               direction={renderNode.direction}
               buildingType={nodeActionType}
               buildingColor={currentPlayerView?.color ?? "red"}
-              flashing={isActive}
+              flashing={isInteractiveStageOwner}
               onClick={() => {
                 handleBuildCommit();
                 if (nodeActionType === "city") {
@@ -633,7 +649,7 @@ export function CatanBoard({
   //editable edges e.g placing road during initial placement
   {
     !suppressBuildHighlights &&
-    isActive &&
+    isPlacementRoadStage &&
       G.valids.edges.map((edgeId, x) => {
         const renderEdge = edgeRenderById[edgeId];
         if (!renderEdge) {

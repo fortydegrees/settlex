@@ -352,12 +352,14 @@ function SearchingModal({ onCancel, startedAt }) {
           1v1 &middot; {timeStr}
         </p>
 
-        <button
-          onClick={onCancel}
-          className="mt-6 rounded-lg bg-slate-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700"
-        >
-          Cancel
-        </button>
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            className="mt-6 rounded-lg bg-slate-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700"
+          >
+            Cancel
+          </button>
+        )}
       </div>
 
       <style>{`
@@ -574,7 +576,7 @@ export function LobbyPageClient() {
   /* ── Matchmaking poll ── */
 
   useEffect(() => {
-    if (!searchState) return;
+    if (!searchState?.matchID || searchState.playerID == null) return;
 
     const poll = async () => {
       try {
@@ -601,7 +603,7 @@ export function LobbyPageClient() {
 
   /* ── Actions (all read from playerNameRef for fresh value) ── */
 
-  const joinRoom = async ({ matchID, playerID }) => {
+  const joinRoom = async ({ matchID, playerID, onError }) => {
     if (!matchID) return;
     const name = playerNameRef.current;
     const emoji = getStored(STORAGE_KEY_EMOJI);
@@ -648,6 +650,7 @@ export function LobbyPageClient() {
     } catch (err) {
       setError(err?.message || "Failed to join room.");
       await refreshMatches();
+      onError?.(err);
     } finally {
       setJoinPendingMatchID(null);
     }
@@ -655,7 +658,13 @@ export function LobbyPageClient() {
 
   const play = async () => {
     const name = playerNameRef.current;
+    const startedAt = Date.now();
     setError("");
+    setSearchState({
+      matchID: null,
+      playerID: null,
+      startedAt,
+    });
 
     try {
       const data = await apiRequest({
@@ -675,6 +684,7 @@ export function LobbyPageClient() {
         await joinRoom({
           matchID: openMatch.matchID,
           playerID: String(openSeat.id),
+          onError: () => setSearchState(null),
         });
         return;
       }
@@ -725,8 +735,9 @@ export function LobbyPageClient() {
         }
       }
 
-      setSearchState({ matchID, playerID: "0", startedAt: Date.now() });
+      setSearchState({ matchID, playerID: "0", startedAt });
     } catch (err) {
+      setSearchState(null);
       setError(err?.message || "Matchmaking failed.");
     }
   };
@@ -809,6 +820,10 @@ export function LobbyPageClient() {
 
   const cancelSearch = async () => {
     if (!searchState) return;
+    if (!searchState.matchID || searchState.playerID == null) {
+      setSearchState(null);
+      return;
+    }
 
     try {
       const credentials = window.localStorage.getItem(
@@ -1183,7 +1198,11 @@ export function LobbyPageClient() {
       {/* ── Searching modal ── */}
       {searchState && (
         <SearchingModal
-          onCancel={cancelSearch}
+          onCancel={
+            searchState.matchID && searchState.playerID != null
+              ? cancelSearch
+              : null
+          }
           startedAt={searchState.startedAt}
         />
       )}

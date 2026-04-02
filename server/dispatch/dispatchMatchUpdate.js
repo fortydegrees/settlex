@@ -12,13 +12,36 @@ const buildTransportAPI = (serverInstance, matchID) => ({
 });
 
 const getActiveDispatchPlayerID = (state, fallbackPlayerID) => {
-  const activePlayerIds = Object.keys(state?.ctx?.activePlayers ?? {});
-  if (activePlayerIds.length > 0) {
-    return String(activePlayerIds[0]);
+  const activePlayers = state?.ctx?.activePlayers ?? null;
+  const currentPlayer =
+    state?.ctx?.currentPlayer == null ? null : String(state.ctx.currentPlayer);
+
+  if (activePlayers) {
+    if (currentPlayer && activePlayers[currentPlayer] != null) {
+      return currentPlayer;
+    }
+
+    const stagedPlayerID = Object.entries(activePlayers).find(
+      ([, stage]) => stage != null
+    )?.[0];
+    if (stagedPlayerID != null) {
+      return String(stagedPlayerID);
+    }
+
+    if (currentPlayer && activePlayers[currentPlayer] !== undefined) {
+      return currentPlayer;
+    }
+
+    const firstActivePlayerID = Object.keys(activePlayers)[0];
+    if (firstActivePlayerID != null) {
+      return String(firstActivePlayerID);
+    }
   }
-  if (state?.ctx?.currentPlayer != null) {
-    return String(state.ctx.currentPlayer);
+
+  if (currentPlayer != null) {
+    return currentPlayer;
   }
+
   return fallbackPlayerID == null ? null : String(fallbackPlayerID);
 };
 

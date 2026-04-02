@@ -2,6 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 import { Catan } from "../Game";
 
 describe("Catan setup board config", () => {
+  it("keeps non-current seats Stage.NULL-active so they can use global moves", () => {
+    expect(Catan.phases.placement.turn.activePlayers).toEqual({
+      currentPlayer: "settlement",
+      others: null
+    });
+    expect(Catan.phases.main.turn.activePlayers).toEqual({
+      currentPlayer: "preRoll",
+      others: null
+    });
+  });
+
   it("uses boardConfigId from setupData", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
     const random = {
@@ -108,7 +119,7 @@ describe("Catan setup board config", () => {
       expect(G.core.phase).toBe("normal");
       expect(ctx.phase).toBe("main");
       expect(ctx.currentPlayer).toBe("1");
-      expect(ctx.activePlayers).toEqual({ "1": "postRoll" });
+      expect(ctx.activePlayers).toEqual({ "0": null, "1": "postRoll" });
     } finally {
       process.env.NODE_ENV = previousEnv;
       vi.resetModules();

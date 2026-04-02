@@ -65,6 +65,24 @@ const mergeScenarioState = (baseState, scenarioState) => ({
   boardConfigId: scenarioState.boardConfigId ?? baseState.boardConfigId
 });
 
+const buildResignableActivePlayers = (playerIds, stageAssignments) => {
+  const entries = Object.entries(stageAssignments ?? {});
+  if (entries.length === 0) {
+    return null;
+  }
+
+  const activePlayers = {};
+  for (const playerId of playerIds ?? []) {
+    activePlayers[String(playerId)] = null;
+  }
+
+  for (const [playerId, stage] of entries) {
+    activePlayers[String(playerId)] = stage;
+  }
+
+  return activePlayers;
+};
+
 const derivePlacementStage = (scenarioState, currentPlayerId) => {
   const hasRoadTargets = (scenarioState?.valids?.edges?.length ?? 0) > 0;
   if (hasRoadTargets) return "road";
@@ -75,29 +93,47 @@ const derivePlacementStage = (scenarioState, currentPlayerId) => {
 };
 
 const deriveNormalActivePlayers = (scenarioState, currentPlayerId) => {
+  const playerIds = scenarioState?.core?.players ?? [];
   const turnPhase = scenarioState?.core?.turn?.phase;
   if (turnPhase === "robberDiscard") {
     const pendingDiscards = scenarioState?.core?.turn?.pendingDiscards ?? [];
     if (pendingDiscards.length > 0) {
-      return pendingDiscards.reduce((acc, playerId) => {
-        acc[playerId] = "robberDiscard";
-        return acc;
-      }, {});
+      return buildResignableActivePlayers(
+        playerIds,
+        pendingDiscards.reduce((acc, playerId) => {
+          acc[playerId] = "robberDiscard";
+          return acc;
+        }, {})
+      );
     }
     if (currentPlayerId != null) {
-      return { [currentPlayerId]: "robberDiscard" };
+      return buildResignableActivePlayers(playerIds, {
+        [currentPlayerId]: "robberDiscard"
+      });
     }
   }
 
   if (turnPhase === "robberMove") {
-    return currentPlayerId != null ? { [currentPlayerId]: "moveRobber" } : null;
+    return currentPlayerId != null
+      ? buildResignableActivePlayers(playerIds, {
+          [currentPlayerId]: "moveRobber"
+        })
+      : null;
   }
 
   if (turnPhase === "postRoll") {
-    return currentPlayerId != null ? { [currentPlayerId]: "postRoll" } : null;
+    return currentPlayerId != null
+      ? buildResignableActivePlayers(playerIds, {
+          [currentPlayerId]: "postRoll"
+        })
+      : null;
   }
 
-  return currentPlayerId != null ? { [currentPlayerId]: "preRoll" } : null;
+  return currentPlayerId != null
+    ? buildResignableActivePlayers(playerIds, {
+        [currentPlayerId]: "preRoll"
+      })
+    : null;
 };
 
 const seedContextFromScenario = (ctx, scenarioState) => {
@@ -124,7 +160,11 @@ const seedContextFromScenario = (ctx, scenarioState) => {
     ctx.phase = "placement";
     const stage = derivePlacementStage(scenarioState, currentPlayerId);
     ctx.activePlayers =
-      currentPlayerId != null ? { [currentPlayerId]: stage } : ctx.activePlayers;
+      currentPlayerId != null
+        ? buildResignableActivePlayers(scenarioPlayers, {
+            [currentPlayerId]: stage
+          })
+        : ctx.activePlayers;
     return;
   }
 
@@ -419,7 +459,7 @@ export const createCatanGame = ({
         //   return ctx.random.Shuffle(defaultPlayOrder);
         // },
         //order: TurnOrder.ONCE, //does work, but only goes once.
-        activePlayers: { currentPlayer: "settlement" },
+        activePlayers: { currentPlayer: "settlement", others: null },
         onBegin: ( context) => {
           //TODO: don't think this should be here // updating valids here...
           //TODO: randomize player order (could even do this in a pre-phase)
@@ -490,7 +530,7 @@ export const createCatanGame = ({
             updateValids(context, currentStage)
         },
         order: TurnOrder.DEFAULT,
-        activePlayers: { currentPlayer: "preRoll" },
+        activePlayers: { currentPlayer: "preRoll", others: null },
         stages: {
           preRoll: { moves: {
             rollDice, //after roll dice (and no 7) go to main
