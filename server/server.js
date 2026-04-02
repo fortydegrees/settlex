@@ -34,7 +34,13 @@ const timerManager = new TimerManager({
   botMoveDelayMs
 })
 const disconnectManager = new DisconnectPresenceManager({ dispatch })
-const pubSub = createTimerPubSub(timerManager, { disconnectManager })
+const pubSub = createTimerPubSub(timerManager, {
+  disconnectManager,
+  stateLoader: async (matchID) => {
+    const response = await serverInstance?.db?.fetch(matchID, { state: true })
+    return response?.state ?? null
+  }
+})
 const transport = new SocketIO({ pubSub })
 
 const server = Server({

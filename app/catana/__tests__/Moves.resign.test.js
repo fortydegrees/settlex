@@ -24,6 +24,16 @@ const makeContext = ({ playerID = "0" } = {}) => {
   };
 };
 
+const getStageMoveMaps = (game) => [
+  game.phases.preGame.turn.stages.waiting.moves,
+  game.phases.placement.turn.stages.settlement.moves,
+  game.phases.placement.turn.stages.road.moves,
+  game.phases.main.turn.stages.preRoll.moves,
+  game.phases.main.turn.stages.robberDiscard.moves,
+  game.phases.main.turn.stages.postRoll.moves,
+  game.phases.main.turn.stages.moveRobber.moves
+];
+
 describe("terminal match moves", () => {
   it("resign awards the win to the opponent and logs game over", () => {
     const context = makeContext({ playerID: "0" });
@@ -88,5 +98,20 @@ describe("terminal match moves", () => {
     expect(Catan.moves?.resolveDisconnectForfeit).toBeUndefined();
     expect(ServerCatan.moves?.resign).toBeDefined();
     expect(ServerCatan.moves?.resolveDisconnectForfeit).toBeDefined();
+  });
+
+  it("exposes resign in every live stage move map", () => {
+    for (const stageMoves of getStageMoveMaps(Catan)) {
+      expect(stageMoves?.resign).toBeDefined();
+    }
+    for (const stageMoves of getStageMoveMaps(ServerCatan)) {
+      expect(stageMoves?.resign).toBeDefined();
+    }
+  });
+
+  it("exposes disconnect forfeit in every server live stage move map", () => {
+    for (const stageMoves of getStageMoveMaps(ServerCatan)) {
+      expect(stageMoves?.resolveDisconnectForfeit).toBeDefined();
+    }
   });
 });

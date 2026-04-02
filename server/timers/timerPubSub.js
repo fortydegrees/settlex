@@ -25,7 +25,10 @@ class InMemoryPubSub {
   }
 }
 
-export function createTimerPubSub(timerManager, { disconnectManager } = {}) {
+export function createTimerPubSub(
+  timerManager,
+  { disconnectManager, stateLoader } = {}
+) {
   const base = new InMemoryPubSub();
   const latestStateByMatch = new Map();
 
@@ -71,6 +74,22 @@ export function createTimerPubSub(timerManager, { disconnectManager } = {}) {
     return payload;
   };
 
+  const rememberState = (matchID, state, deltalog = null) => {
+    if (!state) return;
+    latestStateByMatch.set(matchID, state);
+    timerManager.onState(matchID, state, deltalog);
+    disconnectManager?.onState?.(matchID, state, deltalog);
+  };
+
+  const rebroadcastState = (channelId, matchID, state) => {
+    if (!state) return;
+    rememberState(matchID, state, null);
+    base.publish(
+      channelId,
+      attachSnapshots({ type: "update", args: [matchID, state] }, matchID, state)
+    );
+  };
+
   return {
     publish(channelId, payload) {
       if (channelId.startsWith(MATCH_PREFIX)) {
@@ -85,28 +104,24 @@ export function createTimerPubSub(timerManager, { disconnectManager } = {}) {
           (payload?.type === "patch" ? payload?.args?.[4] : null);
 
         if (state) {
-          latestStateByMatch.set(matchID, state);
-          timerManager.onState(matchID, state, deltalog);
-          disconnectManager?.onState?.(matchID, state, deltalog);
+          rememberState(matchID, state, deltalog);
         }
 
         if (payload?.type === "matchData") {
           const matchData = payload?.args?.[1] ?? [];
           disconnectManager?.onMatchData?.(matchID, matchData);
           const cachedState = latestStateByMatch.get(matchID) ?? null;
-          if (cachedState) {
-            disconnectManager?.onState?.(matchID, cachedState, null);
-          }
           base.publish(channelId, payload);
           if (cachedState) {
-            base.publish(
-              channelId,
-              attachSnapshots(
-                { type: "update", args: [matchID, cachedState] },
-                matchID,
-                cachedState
-              )
-            );
+            rebroadcastState(channelId, matchID, cachedState);
+          } else if (typeof stateLoader === "function") {
+            Promise.resolve(stateLoader(matchID))
+              .then((loaded) => {
+                const loadedState = loaded?.state ?? loaded ?? null;
+                if (!loadedState) return;
+                rebroadcastState(channelId, matchID, loadedState);
+              })
+              .catch(() => {});
           }
           return;
         }

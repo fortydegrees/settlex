@@ -238,6 +238,7 @@ export const createCatanGame = ({
   const serverMoves = includeServerMoves
     ? { resolveDisconnectForfeit }
     : {};
+  const terminalStageMoves = { resign, ...serverMoves };
   const plugins = includeEffects ? [configuredEffectsPlugin] : [];
   return {
   //get spec to use (i.e. script to generate board)
@@ -389,7 +390,14 @@ export const createCatanGame = ({
       turn: {
         activePlayers: { all: "waiting" },
         stages: {
-          waiting: { moves: { readyUp, autoStartGame, ...debugMoves } }
+          waiting: {
+            moves: {
+              readyUp,
+              autoStartGame,
+              ...terminalStageMoves,
+              ...debugMoves
+            }
+          }
         }
       },
       start: true,
@@ -427,8 +435,22 @@ export const createCatanGame = ({
             )
         },
         stages: {
-          settlement: { moves: { placeSettlement, autoPlaceSettlement, ...debugMoves } },
-          road: { moves: { placeRoad, autoPlaceRoad, ...debugMoves } },
+          settlement: {
+            moves: {
+              placeSettlement,
+              autoPlaceSettlement,
+              ...terminalStageMoves,
+              ...debugMoves
+            }
+          },
+          road: {
+            moves: {
+              placeRoad,
+              autoPlaceRoad,
+              ...terminalStageMoves,
+              ...debugMoves
+            }
+          },
         },
       },
 
@@ -472,12 +494,14 @@ export const createCatanGame = ({
             autoResolveDevCard,
             cancelDevCardPlay,
             placeRoadFromDevCard,
+            ...terminalStageMoves,
             ...debugMoves
           }},
           robberDiscard: { // Explicit phase for discarding
              moves: {
                discardResources,
                autoDiscard,
+               ...terminalStageMoves,
                ...debugMoves
              }
           },
@@ -499,6 +523,7 @@ export const createCatanGame = ({
               autoResolveDevCard,
               cancelDevCardPlay,
               placeRoadFromDevCard,
+              ...terminalStageMoves,
               // buyDev,55
               // offerTrade,
               // tradeWithBank,
@@ -513,6 +538,7 @@ export const createCatanGame = ({
             moves:{
               moveRobber,
               autoMoveRobber,
+              ...terminalStageMoves,
               ...debugMoves
             }
           }

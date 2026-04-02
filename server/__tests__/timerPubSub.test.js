@@ -170,3 +170,70 @@ it("forwards matchData to disconnect presence and rebroadcasts cached state with
 
   vi.useRealTimers();
 });
+
+it("loads current state on matchData when no cached state exists", async () => {
+  const timerManager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue(null)
+  };
+  const disconnectManager = {
+    onMatchData: vi.fn(),
+    onState: vi.fn(),
+    getSnapshot: vi.fn().mockReturnValue({
+      activeDisconnectPlayerId: null,
+      statusByPlayerId: {
+        "0": { status: "connected" },
+        "1": { status: "connected" }
+      },
+      events: [
+        {
+          id: 2,
+          type: "server:reconnect",
+          playerId: "1",
+          createdAtMs: Date.now(),
+          afterGameLogSeq: 4
+        }
+      ]
+    })
+  };
+  const state = {
+    G: { gameLogSeq: 4 },
+    ctx: {
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "0": "postRoll" }
+    }
+  };
+  const stateLoader = vi.fn().mockResolvedValue(state);
+  const pubSub = createTimerPubSub(timerManager, {
+    disconnectManager,
+    stateLoader
+  });
+  const received = vi.fn();
+  pubSub.subscribe("MATCH-1", received);
+
+  const matchData = [
+    { id: "0", name: "Alice", isConnected: true },
+    { id: "1", name: "Bren", isConnected: true }
+  ];
+
+  pubSub.publish("MATCH-1", {
+    type: "matchData",
+    args: ["1", matchData]
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  expect(stateLoader).toHaveBeenCalledWith("1");
+  expect(disconnectManager.onState).toHaveBeenCalledWith("1", state, null);
+
+  const payloads = received.mock.calls.map(([payload]) => payload);
+  expect(
+    payloads.some(
+      (payload) =>
+        payload.type === "update" &&
+        payload.args?.[1]?.disconnectPresence?.events?.[0]?.type ===
+          "server:reconnect"
+      )
+  ).toBe(true);
+});

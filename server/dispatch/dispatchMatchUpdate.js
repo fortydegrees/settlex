@@ -2,6 +2,7 @@ import { Master } from "boardgame.io/dist/cjs/master.js";
 import { buildAutoMoveAction } from "../timers/dispatchUtils.js";
 
 const MATCH_PREFIX = "MATCH-";
+const TARGETED_SERVER_MOVES = new Set(["resolveDisconnectForfeit"]);
 
 const buildTransportAPI = (serverInstance, matchID) => ({
   send: () => {},
@@ -9,6 +10,40 @@ const buildTransportAPI = (serverInstance, matchID) => ({
     serverInstance.transport.pubSub.publish(`${MATCH_PREFIX}${matchID}`, payload);
   }
 });
+
+const getActiveDispatchPlayerID = (state, fallbackPlayerID) => {
+  const activePlayerIds = Object.keys(state?.ctx?.activePlayers ?? {});
+  if (activePlayerIds.length > 0) {
+    return String(activePlayerIds[0]);
+  }
+  if (state?.ctx?.currentPlayer != null) {
+    return String(state.ctx.currentPlayer);
+  }
+  return fallbackPlayerID == null ? null : String(fallbackPlayerID);
+};
+
+const resolvePlannedDispatch = ({ planned, playerID, state }) => {
+  if (!planned?.move) {
+    return null;
+  }
+
+  const targetPlayerID = playerID == null ? null : String(playerID);
+  const plannedArgs = Array.isArray(planned.args) ? planned.args : [];
+
+  if (TARGETED_SERVER_MOVES.has(planned.move)) {
+    return {
+      move: planned.move,
+      playerID: getActiveDispatchPlayerID(state, targetPlayerID),
+      args: plannedArgs.length > 0 ? plannedArgs : [targetPlayerID]
+    };
+  }
+
+  return {
+    move: planned.move,
+    playerID: targetPlayerID,
+    args: plannedArgs
+  };
+};
 
 export async function dispatchMatchUpdate({
   serverInstance,
@@ -49,14 +84,29 @@ export async function dispatchMatchUpdate({
 
     let stateId = state._stateID;
     for (const planned of plannedMoves) {
-      if (!planned?.move) break;
+      const resolved = resolvePlannedDispatch({ planned, playerID, state });
+      if (!resolved?.move || resolved.playerID == null) break;
       const action = buildAutoMoveAction({
-        move: planned.move,
-        args: planned.args ?? [],
-        playerID,
+        move: resolved.move,
+        args: resolved.args,
+        playerID: resolved.playerID,
         metadata
       });
-      await master.onUpdate(action, stateId, matchID, playerID);
+      const result = await master.onUpdate(
+        action,
+        stateId,
+        matchID,
+        resolved.playerID
+      );
+      if (result?.error) {
+        logger.error("dispatchMatchUpdate rejected action", {
+          matchID,
+          move: resolved.move,
+          playerID: resolved.playerID,
+          error: result.error
+        });
+        break;
+      }
       stateId += 1;
     }
 
