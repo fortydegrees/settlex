@@ -641,6 +641,7 @@ export const rollDice = {
         });
 
         events.setActivePlayers({
+          others: null,
           value: activePlayersConfig,
         });
 

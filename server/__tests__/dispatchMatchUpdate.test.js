@@ -147,4 +147,54 @@ describe("dispatchMatchUpdate", () => {
       "0"
     );
   });
+
+  it("prefers a non-null staged seat over Stage.NULL seats for targeted server moves", async () => {
+    const serverInstance = createServerInstance();
+    const state = {
+      _stateID: 9,
+      ctx: {
+        currentPlayer: "1",
+        activePlayers: { "0": null, "1": "postRoll" }
+      }
+    };
+    const metadata = {
+      players: {
+        "0": { credentials: "c0" },
+        "1": { credentials: "c1" }
+      }
+    };
+    serverInstance.db.fetch.mockResolvedValue({ state, metadata });
+
+    const onUpdate = vi.fn().mockResolvedValue(undefined);
+    const MasterClass = vi.fn().mockImplementation(() => ({ onUpdate }));
+
+    await dispatchMatchUpdate({
+      serverInstance,
+      botManager: {
+        syncMatchBots: vi.fn(),
+        isBotPlayerForMatch: () => false,
+        chooseMoves: vi.fn()
+      },
+      move: "resolveDisconnectForfeit",
+      playerID: "0",
+      matchID: "m4",
+      game: { name: "catan" },
+      MasterClass
+    });
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      {
+        type: "MAKE_MOVE",
+        payload: {
+          type: "resolveDisconnectForfeit",
+          args: ["0"],
+          playerID: "1",
+          credentials: "c1"
+        }
+      },
+      9,
+      "m4",
+      "1"
+    );
+  });
 });

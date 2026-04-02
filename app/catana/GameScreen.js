@@ -30,6 +30,7 @@ import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GlassPillButton } from "./components/GlassPillButton";
 import { LeftMetaRail } from "./components/LeftMetaRail";
+import { StatusBanner } from "./components/StatusBanner";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
@@ -99,10 +100,12 @@ export function GameScreen(bgioProps) {
   const [themeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
+  const [showConnectionBanner, setShowConnectionBanner] = useState(false);
   const [boardViewportScale, setBoardViewportScale] = useState(1);
   const robberPlacementMotionMode = DEFAULT_ROBBER_PLACEMENT_MOTION_MODE;
   const gameOverSeenRef = useRef(false);
   const winnerConfettiSeenRef = useRef(false);
+  const hasSeenTransportConnectionRef = useRef(false);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
@@ -292,7 +295,28 @@ export function GameScreen(bgioProps) {
     setTimerSeeded(false);
     setDisconnectPresence(null);
     setReadySent(false);
+    setShowConnectionBanner(false);
+    hasSeenTransportConnectionRef.current = false;
   }, [matchID]);
+
+  useEffect(() => {
+    if (bgioProps.isConnected) {
+      hasSeenTransportConnectionRef.current = true;
+      setShowConnectionBanner(false);
+      return;
+    }
+
+    if (!hasSeenTransportConnectionRef.current || isGameOver) {
+      setShowConnectionBanner(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setShowConnectionBanner(true);
+    }, 1200);
+
+    return () => clearTimeout(timeoutId);
+  }, [bgioProps.isConnected, isGameOver]);
 
   useEffect(() => {
     if (
@@ -823,19 +847,31 @@ TODO: accurately colour it
         />
       )}
 
-      {opponents.length > 0 && (
-        <div className="fixed left-1/2 -translate-x-1/2 top-6 flex items-center gap-4">
-          {opponents.map((opponent) => (
-            <OpponentPlayerBox
-              key={opponent.id}
-              player={opponent}
-              presence={disconnectStateByPlayerId[opponent.id] ?? null}
-              core={bgioProps.G.core}
-              coreTopology={bgioProps.G.coreTopology}
-              isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}
-              statusType={gameStatus.statusType}
+      {(opponents.length > 0 || showConnectionBanner) && (
+        <div className="pointer-events-none fixed inset-x-0 top-6 z-30 flex flex-col items-center gap-3 px-4">
+          {opponents.length > 0 && (
+            <div className="pointer-events-auto flex items-start gap-4">
+              {opponents.map((opponent) => (
+                <OpponentPlayerBox
+                  key={opponent.id}
+                  player={opponent}
+                  presence={disconnectStateByPlayerId[opponent.id] ?? null}
+                  core={bgioProps.G.core}
+                  coreTopology={bgioProps.G.coreTopology}
+                  isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}
+                  statusType={gameStatus.statusType}
+                />
+              ))}
+            </div>
+          )}
+
+          {showConnectionBanner ? (
+            <StatusBanner
+              variant="danger"
+              title="Connection lost. Trying to reconnect…"
+              className="pointer-events-auto max-w-lg"
             />
-          ))}
+          ) : null}
         </div>
       )}
 

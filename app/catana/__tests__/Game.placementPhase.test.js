@@ -75,7 +75,10 @@ describe("main phase configuration", () => {
   });
 
   it("main phase starts players in preRoll stage", () => {
-    expect(Catan.phases.main.turn.activePlayers).toEqual({ currentPlayer: "preRoll" });
+    expect(Catan.phases.main.turn.activePlayers).toEqual({
+      currentPlayer: "preRoll",
+      others: null
+    });
   });
 
   it("preRoll stage has rollDice move", () => {
@@ -102,7 +105,10 @@ describe("placement phase turn order", () => {
   });
 
   it("placement starts in settlement stage", () => {
-    expect(Catan.phases.placement.turn.activePlayers).toEqual({ currentPlayer: "settlement" });
+    expect(Catan.phases.placement.turn.activePlayers).toEqual({
+      currentPlayer: "settlement",
+      others: null
+    });
   });
 
   it("placement has settlement and road stages", () => {

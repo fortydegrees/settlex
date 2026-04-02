@@ -1,10 +1,68 @@
 # PROGRESS
 
+## Status (2026-04-02, player effective colors implementation plan written)
+- Wrote the implementation plan in:
+- `docs/superpowers/plans/2026-04-02-player-effective-colors-plan.md`
+- Planned direction for this slice:
+- add a pure resolver that converts `core.players` order plus `matchData[].data.color` into one `effectiveColorByPlayerId` map,
+- build `playerViewMap` from that resolved map instead of hardcoded seat colours,
+- thread the same resolved colours through board pieces, placement previews/effects, avatar boxes, log/chat highlights, and postgame colour accents,
+- remove the current `chosenColor` vs seat-colour split inside the match UI.
+
+## Status (2026-04-02, lobby matchmaking feedback made immediate)
+- Fixed the main lobby UX gap where the 1v1 `Play` button could appear inert for the second player while the client joined an already-open match.
+- Root cause:
+- `app/catana/lobby/LobbyPageClient.js` only set `searchState` after the create-and-join path completed, so the existing searching modal never appeared during the "join open seat" path.
+- Current fix:
+- `Play` now sets a local searching state immediately on click before any matchmaking network branch runs,
+- the same searching modal is shown right away for both "join existing match" and "create new waiting match",
+- cancel/poll behavior stays gated until the client has a real `matchID` and `playerID` to leave safely,
+- focused source coverage now guards the immediate-feedback wiring.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/LobbyPageClient*.test.js app/catana/__tests__/ReconnectBannerPersistence.source.test.js`
+- `pnpm exec eslint app/catana/lobby/LobbyPageClient.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js`
+
+## Status (2026-04-02, board join crash fixed)
+- Fixed the `Cannot access 'isCurrentPlayerPerspective' before initialization` crash that blocked the board from loading after the `activePlayers` guard refactor.
+- Root cause:
+- `app/catana/Board.js` declared `mainBuildableNodes` before the turn-context guards it closed over, so the first render hit a temporal-dead-zone error.
+- Current fix:
+- local turn/stage guard constants are declared before the `mainBuildableNodes` memo that depends on them,
+- regression coverage now asserts that declaration order.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/Board.activePlayers.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/Game.boardConfig.test.js server/__tests__/dispatchMatchUpdate.test.js`
+
+## Status (2026-04-02, placement action-node regression fixed)
+- Fixed the board-side regression introduced by widening `ctx.activePlayers` for out-of-turn resign.
+- Root cause:
+- `app/catana/Board.js` was still treating broad `activePlayers` membership as "this viewer can interact", so non-current seats could keep seeing placement/build affordances while their own stage was `null`.
+- Current board gating:
+- derive the local viewer's stage with `ctx.activePlayers?.[playerID] ?? null`,
+- require `ctx.currentPlayer === playerID` plus a non-null local stage before showing live board interactions,
+- gate placement settlement/road highlights off the local player's actual stage instead of any staged seat existing in the match.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/Board.activePlayers.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/Game.boardConfig.test.js server/__tests__/dispatchMatchUpdate.test.js`
+
+## Status (2026-04-02, in-game transport reconnect banner added)
+- Added a client-local "Connection lost. Trying to reconnect..." banner in `app/catana/GameScreen.js`.
+- Scope of this pass:
+- driven by `bgioProps.isConnected` from the `boardgame.io` transport, not by seat presence,
+- only appears after the client has successfully connected at least once,
+- debounced by 1200ms so brief socket flaps do not flash the banner,
+- suppressed again immediately on reconnect or once game-over is active.
+- Follow-up polish:
+- the in-game transport warning now reuses the same shared `StatusBanner` shell as the global reconnect banner,
+- `GameScreen` renders opponents and the transport warning as one fixed top-center stack, so the warning sits below the opponent row instead of overlapping it.
+- Verification:
+- `pnpm vitest run app/catana/__tests__/GameScreen.connectionBanner.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+- `pnpm vitest run app/catana/__tests__/GameScreen.connectionBanner.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+
 ## Status (2026-04-02, out-of-turn resign fixed)
 - Fixed the live resign turn-gate so any seated player can resign immediately, even when they are not the current active turn seat.
 - Engine/state changes:
 - `app/catana/Game.js` now keeps non-current seats `Stage.NULL`-active in placement/main turn config and when booting dev scenarios into saved turn context.
 - `app/catana/Moves.js` now preserves those `Stage.NULL` seats when robber-discard narrows active players, so resign still works during discard resolution.
+- `server/dispatch/dispatchMatchUpdate.js` now prefers a real staged seat over `Stage.NULL` seats for targeted server moves, so server-owned dispatch still chooses the correct actor after widening `activePlayers`.
 - Regression coverage added for:
 - out-of-turn resign during a normal turn,
 - out-of-turn resign during robber discard,

@@ -1,11 +1,50 @@
 # NOTES
 
+- Effective player color workflow:
+- resolve one `effectiveColorByPlayerId` map from `core.players` order plus `matchData[].data.color`,
+- feed that same resolved map into `buildPlayerViewMap(...)`, `GameScreen`, and `Board`,
+- do not keep a separate avatar-only `chosenColor` override once the match UI is live,
+- raw ids such as `amber` are safe as logical color ids / piece-asset suffixes but not as CSS fills; use `getPlayerNameHex(...)` or another explicit color helper for things like postgame swatches.
+
+- Lobby matchmaking feedback note:
+- the main `Play` CTA should enter the searching UI state immediately on click, before the client knows whether it will join an existing open seat or create a new 1v1 match.
+- Keep this split in `app/catana/lobby/LobbyPageClient.js`:
+- a placeholder `searchState` with `startedAt` only is enough to show the modal instantly,
+- polling and cancel/leave behavior must stay disabled until `searchState.matchID` and `searchState.playerID` are both known,
+- `app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js` guards both the immediate modal wiring and the delayed enablement of cancel/poll controls.
+
+- Board turn-context ordering note:
+- when board interaction guards are factored into shared locals, declare them before any memo/effect that closes over them.
+- `app/catana/Board.js` hit a live TDZ crash because `mainBuildableNodes` referenced `isCurrentPlayerPerspective` before that `const` was initialized.
+
+- Placement/action-node guard note:
+- once non-current seats stay in `ctx.activePlayers` as `Stage.NULL`, board/UI code must not treat `activePlayers` membership as "this viewer can act".
+- Current board rule:
+- derive `playerStage = ctx.activePlayers?.[playerID] ?? null`,
+- require `ctx.currentPlayer === playerID` plus a non-null `playerStage` for interactive board affordances,
+- gate placement settlement/road UI from the local player's stage (`settlement` / `road`) rather than from any staged seat existing anywhere in `activePlayers`.
+
+- In-game transport reconnect banner:
+- use `bgioProps.isConnected` for "lost connection to server" UI, not `matchData[].isConnected` or disconnect presence snapshots.
+- These are different concerns:
+- `bgioProps.isConnected` = this browser's live socket/transport state,
+- disconnect presence = server-authoritative seat presence for a specific player in the match.
+- MVP behavior:
+- only surface the red reconnect banner after the client has connected at least once,
+- debounce it for 1200ms to avoid flashing during brief reconnect churn,
+- hide it once `isGameOver` is true; game-over/result UI takes over after that.
+- Visual system follow-up:
+- global reconnect and in-game transport warnings should share a common alert-shell component (`StatusBanner`) so they stay in the same UI family.
+- In-game placement should live in the same fixed top-center stack as the opponent row, below that row, rather than as an unrelated viewport-top overlay that can overlap avatar/status UI.
+
 - Out-of-turn resign note:
 - boardgame.io blocks inactive players before the move body runs, so exposing `resign` in stage maps alone is not enough.
 - Current Catana fix:
 - keep non-current seats `Stage.NULL`-active in placement/main turn config,
 - preserve those `Stage.NULL` seats when robber-discard calls `events.setActivePlayers(...)`,
 - continue relying on stage-specific move maps so off-turn seats only gain access to global moves like `resign`, not normal turn actions.
+- Server follow-up:
+- `dispatchMatchUpdate` must not treat the first `activePlayers` key as the acting seat once `Stage.NULL` seats are present; prefer a non-null staged seat, then `currentPlayer`.
 
 - Game-over confetti note:
 - winner celebration state must live above `GameOverModal`.

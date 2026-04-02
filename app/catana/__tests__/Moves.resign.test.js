@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createEmptyState } from "@settlex/game-core";
+import { Client } from "boardgame.io/dist/cjs/client.js";
 import { Catan } from "../Game";
 import { resign, resolveDisconnectForfeit } from "../Moves";
 import { ServerCatan } from "../../../server/serverGame";
@@ -33,6 +34,32 @@ const getStageMoveMaps = (game) => [
   game.phases.main.turn.stages.postRoll.moves,
   game.phases.main.turn.stages.moveRobber.moves
 ];
+
+const makeRandom = () => ({
+  Number: () => 0.5,
+  Shuffle: (items) => items
+});
+
+const seedClientFromScenario = ({ playerID, scenarioState }) => {
+  const client = Client({ game: Catan, playerID });
+  const baseState = JSON.parse(JSON.stringify(client.getState()));
+  const seededCtx = baseState.ctx;
+  const seededG = Catan.setup(
+    { ctx: seededCtx, random: makeRandom() },
+    { devScenarioState: scenarioState }
+  );
+
+  client.store.dispatch({
+    type: "SYNC",
+    state: {
+      ...baseState,
+      G: seededG,
+      ctx: seededCtx
+    }
+  });
+
+  return client;
+};
 
 describe("terminal match moves", () => {
   it("resign awards the win to the opponent and logs game over", () => {
@@ -113,5 +140,55 @@ describe("terminal match moves", () => {
     for (const stageMoves of getStageMoveMaps(ServerCatan)) {
       expect(stageMoves?.resolveDisconnectForfeit).toBeDefined();
     }
+  });
+
+  it("allows a non-current player to resign during a normal turn", () => {
+    const client = seedClientFromScenario({
+      playerID: "1",
+      scenarioState: {
+        core: {
+          players: ["0", "1"],
+          phase: "normal",
+          turn: {
+            currentPlayerId: "0",
+            phase: "postRoll",
+            pendingDiscards: []
+          }
+        },
+        valids: { nodes: [], edges: [], tiles: [] }
+      }
+    });
+
+    client.moves.resign();
+
+    expect(client.getState().G.core.gameOver).toEqual({
+      winnerId: "0",
+      reason: "Resignation"
+    });
+  });
+
+  it("allows a non-pending player to resign during robber discard", () => {
+    const client = seedClientFromScenario({
+      playerID: "1",
+      scenarioState: {
+        core: {
+          players: ["0", "1"],
+          phase: "normal",
+          turn: {
+            currentPlayerId: "0",
+            phase: "robberDiscard",
+            pendingDiscards: ["0"]
+          }
+        },
+        valids: { nodes: [], edges: [], tiles: [] }
+      }
+    });
+
+    client.moves.resign();
+
+    expect(client.getState().G.core.gameOver).toEqual({
+      winnerId: "0",
+      reason: "Resignation"
+    });
   });
 });
