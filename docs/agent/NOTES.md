@@ -1,5 +1,18 @@
 # NOTES
 
+- Player piece asset migration note:
+- Canonical live Catana piece assets now live under `public/svgs/pieces/`.
+- Use `app/catana/theme/pieceAssets.js` for all new piece pathing:
+- `getPieceSvgFile(pieceType, colorId)` when a theme helper expects a nested filename,
+- `getPieceSvgPath(pieceType, colorId)` when a caller needs a direct public URL.
+- Do not reintroduce root-level `road_<color>.svg`, `settlement_<color>.svg`, or `city_<color>.svg` runtime paths.
+- Board colour precedence note:
+- `GameScreen` now builds a resolved `boardColorMap` from chosen lobby metadata first, then seat-order fallback colors.
+- `buildPlayerViewMap(core, colorByPlayerId)` should keep `UI_PLAYER_COLORS` only as fallback when chosen lobby colour metadata is absent.
+- Plain Node ESM note:
+- if a module that can be imported directly by `pnpm serve` pulls in `pieceAssets`, use an explicit relative `.js` extension in that import (`./theme/pieceAssets.js` / `../theme/pieceAssets.js` / `../../catana/theme/pieceAssets.js`).
+- Vite/Next test paths tolerated extensionless imports, but plain Node ESM did not.
+
 - Out-of-turn resign note:
 - boardgame.io blocks inactive players before the move body runs, so exposing `resign` in stage maps alone is not enough.
 - Current Catana fix:

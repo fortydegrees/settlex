@@ -1,5 +1,23 @@
 # PROGRESS
 
+## Status (2026-04-02, player piece asset migration shipped)
+- Moved all live Catana road, settlement, and city SVGs into `public/svgs/pieces/` and added the missing lobby-colour variants for:
+- `green`
+- `orange`
+- `purple`
+- `pink`
+- `cyan`
+- `amber`
+- Runtime piece pathing now goes through `app/catana/theme/pieceAssets.js`, which builds nested `pieces/<piece>_<color>.svg` filenames plus direct `/svgs/pieces/...` URLs.
+- Board piece rendering now prefers the chosen lobby colour metadata over the old seat-order fallback when that metadata is present, while still falling back to `UI_PLAYER_COLORS` if a seat has no chosen colour.
+- Verified with:
+- `pnpm exec vitest run app/catana/__tests__/pieceAssets.test.js app/catana/__tests__/playerView.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/themeAssets.test.js`
+- `node -e "import('./app/catana/types.js')"`
+- `node -e "import('./app/board-editor/utils/types.js')"`
+- `rg -n "colonist\\.io/dist/images/(settlement|city|road)_" app/catana/types.js app/board-editor/utils/types.js`
+- `rg --files public/svgs | rg '(^|/)(road|settlement|city)_(red|blue|green|orange|purple|pink|cyan|amber)\\.svg$'`
+- `xmllint --noout public/svgs/pieces/*.svg`
+
 ## Status (2026-04-02, out-of-turn resign fixed)
 - Fixed the live resign turn-gate so any seated player can resign immediately, even when they are not the current active turn seat.
 - Engine/state changes:
