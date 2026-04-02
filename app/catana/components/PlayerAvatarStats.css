@@ -31,8 +31,7 @@
 }
 
 .seat-disconnected-panel {
-  filter: saturate(0.82);
-  opacity: 0.84;
+  filter: saturate(0.82) brightness(0.96);
 }
 
 .seat-disconnect-pulse {

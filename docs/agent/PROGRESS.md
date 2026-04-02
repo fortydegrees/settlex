@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-04-02, disconnect seat styling regression fixed)
+- Fixed the avatar / road-army layout regression introduced by the disconnect-presence UI.
+- Root cause:
+- `PlayerAvatarStats` added a widened avatar column plus `items-center` alignment, which created a permanent horizontal gap and made the road/army panel drop when the disconnect timer pill appeared.
+- Styling adjustments in this pass:
+- restored flush avatar-to-stats alignment,
+- top-aligned the opponent row so extra disconnect height does not drag adjacent boxes,
+- removed the warning emoji bubble in favor of a plain corner glyph,
+- shifted disconnected seat tinting to a subtle rose treatment,
+- removed the rendered `SERVER` pill from log entries while keeping italic server copy.
+- Verification:
+- `pnpm verify`
+
 ## Status (2026-04-02, global reconnect banner implemented)
 - Implemented the reconnect-banner MVP across root layout, Catana lobby flows, and game-over cleanup.
 - New client/runtime seams:

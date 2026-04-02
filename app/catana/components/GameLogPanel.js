@@ -25,13 +25,14 @@ const renderToken = (token, index, themeId) => {
     );
   }
   if (token.kind === "label") {
+    if (token.variant === "server") {
+      return null;
+    }
     return (
       <span
         key={`label-${index}`}
         className={
-          token.variant === "server"
-            ? "inline-flex rounded-full bg-amber-100/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700 not-italic"
-            : "inline-flex rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-700"
+          "inline-flex rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-700"
         }
       >
         {token.text}

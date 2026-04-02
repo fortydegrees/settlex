@@ -1,5 +1,15 @@
 # NOTES
 
+- Disconnect seat styling regression note:
+- avoid widening the avatar column in `PlayerAvatarStats` just to fit the disconnect timer pill.
+- The timer pill should overflow below the fixed 80px avatar column; otherwise:
+- the road/army panel gets pushed right in both self and opponent layouts,
+- and `items-center` alignment causes the road/army panel to sink when the disconnect timer is visible.
+- Current fix:
+- `PlayerAvatarStats` uses top alignment with a fixed-width avatar column,
+- `OpponentPlayerBox` uses top alignment so the extra disconnect height does not drag the card stacks,
+- rendered server log entries stay italic but no longer show the separate `SERVER` pill.
+
 - Reconnect-banner MVP is now live in the current worktree:
 - `app/catana/components/GlobalReconnectBanner.js` mounts from `app/layout.js` as a fixed overlay so full-screen Catana pages do not cover it.
 - The reconnect banner storage/runtime seams are:

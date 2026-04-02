@@ -27,7 +27,7 @@ export const OpponentPlayerBox = ({
   });
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-start">
       <PlayerAvatarStats
         player={player}
         presence={presence}
@@ -38,8 +38,10 @@ export const OpponentPlayerBox = ({
         statusType={statusType}
       />
       <div
-        className={`ml-2 bg-blue-200 bg-opacity-50 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ring-slate-300 ${
-          isDisconnected ? "seat-disconnected-panel seat-disconnect-pulse" : ""
+        className={`ml-2 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
+          isDisconnected
+            ? "bg-rose-200/40 ring-rose-300 seat-disconnected-panel seat-disconnect-pulse"
+            : "bg-blue-200 bg-opacity-50 ring-slate-300"
         }`}
       >
         <div id={`p${player.id}-resources`}>

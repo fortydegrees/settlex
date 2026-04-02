@@ -259,7 +259,7 @@ export const PlayerActionContainer = ({
 
   // Determine container styling based on limit status
   const containerStyle = isDisconnected
-    ? "bg-slate-400/30 ring-slate-500 seat-disconnected-panel seat-disconnect-pulse"
+    ? "bg-rose-200/35 ring-rose-300 seat-disconnected-panel seat-disconnect-pulse"
     : isOverLimit
     ? "bg-rose-500 bg-opacity-40 ring-rose-500"
     : "bg-blue-200 bg-opacity-50 ring-slate-300";
