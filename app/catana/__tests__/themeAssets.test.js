@@ -21,13 +21,25 @@ const publicSvgDir = path.resolve(__dirname, "..", "..", "..", "public", "svgs")
 const PIECE_TYPES = ["road", "settlement", "city"];
 const PIECE_COLORS = [
   "red",
-  "blue",
+  "sky",
   "green",
+  "teal",
   "orange",
+  "magenta",
   "purple",
-  "pink",
-  "cyan",
-  "amber",
+  "maroon",
+  "olive",
+  "brown",
+  "royal",
+  "violet",
+  "lime",
+  "coral",
+  "lavender",
+  "tan",
+  "black",
+  "white",
+  "silver",
+  "gold",
 ];
 
 describe("Catana theme assets", () => {

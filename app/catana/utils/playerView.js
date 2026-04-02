@@ -1,4 +1,6 @@
-export const UI_PLAYER_COLORS = ["red", "blue", "green", "orange"];
+import { SEAT_FALLBACK_COLOR_IDS } from "../theme/playerColors.js";
+
+export const UI_PLAYER_COLORS = [...SEAT_FALLBACK_COLOR_IDS];
 
 export function buildPlayerViewMap(core, colorByPlayerId = {}) {
   const map = {};

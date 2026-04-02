@@ -1,10 +1,13 @@
+import {
+  DEFAULT_PLAYER_COLOR_ID,
+  normalizePlayerColorId
+} from "./playerColors.js";
+
 export const PIECE_FOLDER = "pieces";
-export const DEFAULT_PIECE_COLOR = "red";
+export const DEFAULT_PIECE_COLOR = DEFAULT_PLAYER_COLOR_ID;
 
 export function normalizePieceColor(colorId) {
-  const normalizedColor =
-    typeof colorId === "string" ? colorId.trim().toLowerCase() : "";
-  return normalizedColor || DEFAULT_PIECE_COLOR;
+  return normalizePlayerColorId(colorId) || DEFAULT_PIECE_COLOR;
 }
 
 export function getPieceSvgFile(pieceType, colorId) {
