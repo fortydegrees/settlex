@@ -25,9 +25,10 @@ afterEach(() => {
 });
 
 describe("render performance guards", () => {
-  it("memoizes player view map in GameScreen", () => {
+  it("memoizes board color map in GameScreen and passes it into buildPlayerViewMap", () => {
     const contents = readCatanaFile("GameScreen.js");
-    expect(contents).toMatch(/useMemo\(\(\) => buildPlayerViewMap\(core\), \[core\]\)/);
+    expect(contents).toMatch(/const boardColorMap = useMemo\(\(\) => \{/);
+    expect(contents).toMatch(/buildPlayerViewMap\(core, boardColorMap\)/);
   });
 
   it("only starts the ticker when a visible timer or disconnect countdown is active", () => {
@@ -99,9 +100,13 @@ describe("render performance guards", () => {
     expect(contents).toContain("React.memo");
   });
 
-  it("builds log player colors from stable maps instead of full player view objects", () => {
-    const contents = readCatanaFile("GameScreen.js");
-    expect(contents).toContain("seatColorMap");
-    expect(contents).not.toContain("playerViewMap[id]?.color");
+  it("lets Board consume playerColorMap instead of rebuilding colors from seat order", () => {
+    const contents = readCatanaFile("Board.js");
+    expect(contents).toMatch(/buildPlayerViewMap\(G\.core,\s*playerColorMap\)/);
+  });
+
+  it("routes ActionNode building previews through the shared piece asset helper", () => {
+    const contents = readCatanaFile("ActionNode.js");
+    expect(contents).toContain("getPieceSvgFile");
   });
 });

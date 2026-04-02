@@ -4,7 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation";
 import {
   PLAYER_COLOR_OPTIONS,
-  getPlayerColorOption
+  getPlayerColorOption,
+  normalizePlayerColorId
 } from "../theme/playerColors";
 import {
   clearLastActiveMatch,
@@ -28,6 +29,8 @@ const getStored = (key) => {
     return "";
   }
 };
+
+const getStoredPlayerColor = () => normalizePlayerColorId(getStored(STORAGE_KEY_COLOR));
 
 const EMOJI_OPTIONS = [
   "😀", "😃", "😄", "😁",
@@ -204,7 +207,7 @@ function IdentityModal({ onSubmit, onClose, initialName, initialEmoji, initialCo
   );
   const [color, setColor] = useState(
     () =>
-      initialColor ||
+      (initialColor ? normalizePlayerColorId(initialColor) : "") ||
       PLAYER_COLOR_OPTIONS[
         Math.floor(Math.random() * PLAYER_COLOR_OPTIONS.length)
       ].id
@@ -219,7 +222,11 @@ function IdentityModal({ onSubmit, onClose, initialName, initialEmoji, initialCo
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    onSubmit({ name: name.trim(), emoji, color });
+    onSubmit({
+      name: name.trim(),
+      emoji,
+      color: normalizePlayerColorId(color)
+    });
   };
 
   const handleBackdropClick = (e) => {
@@ -252,7 +259,7 @@ function IdentityModal({ onSubmit, onClose, initialName, initialEmoji, initialCo
         </div>
 
         {/* Color swatches */}
-        <div className="mt-4 flex justify-center gap-2">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           {PLAYER_COLOR_OPTIONS.map((c) => (
             <button
               key={c.id}
@@ -489,14 +496,15 @@ export function LobbyPageClient() {
   };
 
   const handleIdentitySubmit = ({ name, emoji, color }) => {
+    const normalizedColor = normalizePlayerColorId(color);
     setPlayerName(name);
     setPlayerEmoji(emoji);
-    setPlayerColor(color);
+    setPlayerColor(normalizedColor);
     playerNameRef.current = name;
     try {
       window.localStorage.setItem(STORAGE_KEY_NAME, name);
       window.localStorage.setItem(STORAGE_KEY_EMOJI, emoji);
-      window.localStorage.setItem(STORAGE_KEY_COLOR, color);
+      window.localStorage.setItem(STORAGE_KEY_COLOR, normalizedColor);
     } catch (err) {
       /* ignore */
     }
@@ -553,7 +561,7 @@ export function LobbyPageClient() {
         playerNameRef.current = storedName;
       }
       if (storedEmoji) setPlayerEmoji(storedEmoji);
-      if (storedColor) setPlayerColor(storedColor);
+      if (storedColor) setPlayerColor(normalizePlayerColorId(storedColor));
     } catch (err) {
       /* ignore */
     }
@@ -607,7 +615,7 @@ export function LobbyPageClient() {
     if (!matchID) return;
     const name = playerNameRef.current;
     const emoji = getStored(STORAGE_KEY_EMOJI);
-    const color = getStored(STORAGE_KEY_COLOR);
+    const color = getStoredPlayerColor();
 
     setJoinPendingMatchID(matchID);
     setError("");
@@ -703,7 +711,7 @@ export function LobbyPageClient() {
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
 
       const emoji = getStored(STORAGE_KEY_EMOJI);
-      const color = getStored(STORAGE_KEY_COLOR);
+      const color = getStoredPlayerColor();
       const joined = await apiRequest({
         baseUrl: lobbyBaseUrl,
         route: `/games/${GAME_NAME}/${matchID}/join`,
@@ -761,7 +769,7 @@ export function LobbyPageClient() {
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
 
       const emoji = getStored(STORAGE_KEY_EMOJI);
-      const color = getStored(STORAGE_KEY_COLOR);
+      const color = getStoredPlayerColor();
       const joined = await apiRequest({
         baseUrl: lobbyBaseUrl,
         route: `/games/${GAME_NAME}/${matchID}/join`,
@@ -806,7 +814,7 @@ export function LobbyPageClient() {
               bot: "puffer",
               isBot: true,
               emoji: "🤖",
-              color: "blue",
+              color: "sky",
             },
           }),
         },

@@ -14,4 +14,14 @@ describe("LobbyPageClient play-vs-bot entrypoint", () => {
     expect(source).toContain('emoji: "🤖"');
     expect(source).toContain("const playAgainstBot = async");
   });
+
+  it("normalizes stored colors and uses canonical ids for bot seats", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "app/catana/lobby/LobbyPageClient.js"),
+      "utf8"
+    );
+
+    expect(source).toContain("normalizePlayerColorId");
+    expect(source).toContain('color: "sky"');
+  });
 });

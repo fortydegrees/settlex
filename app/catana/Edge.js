@@ -4,9 +4,10 @@ import { tilePixelVector, getEdgeTransform } from "./utils/coordinates";
 import useWindowSize from "./utils/useWindowSize";
 import { ActionNode } from "./ActionNode";
 import { getBackgroundImageWithFallback } from "./theme/themes";
+import { getPieceSvgFile } from "./theme/pieceAssets.js";
 
 function Road({ color, size, tileX, tileY, transform, themeId }) {
-  const roadFile = `road_${color}.svg`;
+  const roadFile = getPieceSvgFile("road", color);
   return (
     <div
       className="opacity-animation"
@@ -26,7 +27,7 @@ function Road({ color, size, tileX, tileY, transform, themeId }) {
 }
 
 function PlacedRoad({ id, color, size, tileX, tileY, transform, themeId }) {
-  const roadFile = `road_${color}.svg`;
+  const roadFile = getPieceSvgFile("road", color);
   return (
     <div
       id={id}

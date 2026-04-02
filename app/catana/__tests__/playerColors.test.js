@@ -9,13 +9,25 @@ describe("playerColors", () => {
   it("exposes all supported lobby color ids", () => {
     expect(PLAYER_COLOR_OPTIONS.map((entry) => entry.id)).toEqual([
       "red",
-      "blue",
+      "sky",
       "green",
+      "teal",
       "orange",
+      "magenta",
       "purple",
-      "pink",
-      "cyan",
-      "amber"
+      "maroon",
+      "olive",
+      "brown",
+      "royal",
+      "violet",
+      "lime",
+      "coral",
+      "lavender",
+      "tan",
+      "black",
+      "white",
+      "silver",
+      "gold"
     ]);
   });
 
@@ -23,8 +35,17 @@ describe("playerColors", () => {
     expect(getPlayerColorOption("unknown").id).toBe("red");
   });
 
+  it("maps legacy lobby ids onto the new canonical palette", () => {
+    expect(getPlayerColorOption("blue").id).toBe("sky");
+    expect(getPlayerColorOption("cyan").id).toBe("teal");
+    expect(getPlayerColorOption("pink").id).toBe("coral");
+    expect(getPlayerColorOption("amber").id).toBe("gold");
+  });
+
   it("returns text hex colors for supported ids", () => {
     expect(getPlayerNameHex("orange")).toBeTruthy();
     expect(getPlayerNameHex("purple")).toBeTruthy();
+    expect(getPlayerNameHex("silver")).toBeTruthy();
+    expect(getPlayerNameHex("gold")).toBeTruthy();
   });
 });
