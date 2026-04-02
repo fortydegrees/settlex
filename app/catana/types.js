@@ -8,7 +8,7 @@ export {
   PlayerColor,
   PLAYER_COLORS
 } from "@settlex/game-core";
-import { getPieceSvgPath } from "./theme/pieceAssets";
+import { getPieceSvgPath } from "./theme/pieceAssets.js";
 
 
 

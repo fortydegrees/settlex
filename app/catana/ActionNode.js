@@ -7,7 +7,7 @@ import {
 } from "./utils/coordinates";
 import { Piece } from "./Piece";
 import { getClassicSvgPath, getThemedSvgPath } from "./theme/themes";
-import { getPieceSvgFile } from "./theme/pieceAssets";
+import { getPieceSvgFile } from "./theme/pieceAssets.js";
 
 export function ActionNode({
   nodeId,
