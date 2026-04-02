@@ -7,6 +7,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const gameScreenPath = path.resolve(__dirname, "..", "GameScreen.js");
+const leftMetaRailPath = path.resolve(
+  __dirname,
+  "..",
+  "components",
+  "LeftMetaRail.js"
+);
 const pagePath = path.resolve(__dirname, "..", "page.js");
 const lobbyPagePath = path.resolve(
   __dirname,
@@ -23,11 +29,16 @@ const lobbyMatchClientPath = path.resolve(
 );
 
 describe("debug UI visibility", () => {
-  it("keeps the in-game debug panel dev-only", () => {
-    const contents = fs.readFileSync(gameScreenPath, "utf8");
-    expect(contents).toContain("<DebugPanel");
-    expect(contents).toMatch(/import\s+\{\s*DebugPanel\s*\}/);
-    expect(contents).toMatch(/NODE_ENV\s*!==\s*["']production["']/);
+  it("keeps the in-game debug panel in the extracted rail", () => {
+    const gameScreen = fs.readFileSync(gameScreenPath, "utf8");
+    expect(gameScreen).toContain("LeftMetaRail");
+    expect(gameScreen).not.toContain("<DebugPanel");
+
+    const leftMetaRail = fs.existsSync(leftMetaRailPath)
+      ? fs.readFileSync(leftMetaRailPath, "utf8")
+      : "";
+    expect(leftMetaRail).toContain("DebugPanel");
+    expect(leftMetaRail).toMatch(/NODE_ENV\s*!==\s*["']production["']/);
   });
 
   it("disables boardgame.io debug overlay in catana clients", () => {

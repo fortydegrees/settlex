@@ -83,7 +83,8 @@ describe("render performance guards", () => {
   });
 
   it("wraps ChatPanel and FeedPanel in React.memo", () => {
-    const memoType = React.memo(() => null).$$typeof;
+    const MemoProbe = () => null;
+    const memoType = React.memo(MemoProbe).$$typeof;
     expect(ChatPanel.$$typeof).toBe(memoType);
     expect(FeedPanel.$$typeof).toBe(memoType);
   });
