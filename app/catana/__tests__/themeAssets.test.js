@@ -18,6 +18,17 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicSvgDir = path.resolve(__dirname, "..", "..", "..", "public", "svgs");
+const PIECE_TYPES = ["road", "settlement", "city"];
+const PIECE_COLORS = [
+  "red",
+  "blue",
+  "green",
+  "orange",
+  "purple",
+  "pink",
+  "cyan",
+  "amber",
+];
 
 describe("Catana theme assets", () => {
   it("exposes classic, palette-b, and emoji themes", () => {
@@ -46,7 +57,7 @@ describe("Catana theme assets", () => {
     expect(getClassicSvgPath("tile_ore.svg")).toBe("/svgs/tile_ore.svg");
   });
 
-  it("supports emoji theme tile and icon overrides without special-casing settlement pngs", () => {
+  it("supports emoji theme tile and icon overrides without special-casing piece svg paths", () => {
     expect(getThemeAssetBase("emoji")).toBe("/svgs");
     expect(getThemedSvgPath("emoji", "tile_ore.svg")).toBe(
       "/svgs/palette-themes/emoji/tile_ore.svg"
@@ -60,11 +71,11 @@ describe("Catana theme assets", () => {
     expect(getThemedSvgPath("emoji", "icon_robber.svg")).toBe(
       "/svgs/icon_robber.svg"
     );
-    expect(getThemedSvgPath("emoji", "settlement_red.svg")).toBe(
-      "/svgs/settlement_red.svg"
+    expect(getThemedSvgPath("emoji", "pieces/settlement_red.svg")).toBe(
+      "/svgs/pieces/settlement_red.svg"
     );
-    expect(getThemedSvgPath("emoji", "settlement_green.svg")).toBe(
-      "/svgs/settlement_green.svg"
+    expect(getThemedSvgPath("emoji", "pieces/settlement_green.svg")).toBe(
+      "/svgs/pieces/settlement_green.svg"
     );
   });
 
@@ -120,6 +131,14 @@ describe("Catana theme assets", () => {
       "icon_ore.svg",
       "port_icon_any.svg",
     ].forEach((fileName) => {
+      expect(fs.existsSync(path.join(publicSvgDir, fileName)), fileName).toBe(true);
+    });
+  });
+
+  it("keeps every local player piece asset under the nested pieces directory", () => {
+    PIECE_TYPES.flatMap((pieceType) =>
+      PIECE_COLORS.map((colorId) => `pieces/${pieceType}_${colorId}.svg`)
+    ).forEach((fileName) => {
       expect(fs.existsSync(path.join(publicSvgDir, fileName)), fileName).toBe(true);
     });
   });

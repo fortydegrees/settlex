@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getPieceSvgFile, getPieceSvgPath } from "../theme/pieceAssets";
+import { getPieceSvgFile, getPieceSvgPath } from "../theme/pieceAssets.js";
 
 describe("pieceAssets", () => {
   it("builds nested piece filenames", () => {

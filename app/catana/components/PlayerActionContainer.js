@@ -19,7 +19,7 @@ import {
   getThemedSvgPath,
   handleThemeImageError,
 } from "../theme/themes";
-import { getPieceSvgFile } from "../theme/pieceAssets";
+import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 const SHOW_STATUS_TEXT = true;
 

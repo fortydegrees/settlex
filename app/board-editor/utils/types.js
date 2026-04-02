@@ -1,4 +1,4 @@
-import { getPieceSvgPath } from "../../catana/theme/pieceAssets";
+import { getPieceSvgPath } from "../../catana/theme/pieceAssets.js";
 
 export const ResourceType = {
 
