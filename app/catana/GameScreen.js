@@ -16,9 +16,8 @@ import { EffectsBoardWrapper } from "bgio-effects/react";
 
 import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
-import { GameLogPanel } from "./components/GameLogPanel";
 import { GlassPillButton } from "./components/GlassPillButton";
-import { DebugPanel } from "./components/DebugPanel";
+import { LeftMetaRail } from "./components/LeftMetaRail";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
@@ -39,7 +38,6 @@ import {
 } from "./theme/themes";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
-const isDevEnvironment = process.env.NODE_ENV !== "production";
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
@@ -608,12 +606,12 @@ export function GameScreen(bgioProps) {
         </GlassPillButton>
       )}
 
-      {isDevEnvironment && <DebugPanel bgioProps={bgioProps} />}
-
-      <GameLogPanel
+      <LeftMetaRail
         entries={bgioProps.G?.gameLog ?? []}
-        playerMap={logPlayerMap}
+        logPlayerMap={logPlayerMap}
         themeId={themeId}
+        playerID={playerID}
+        bgioProps={bgioProps}
       />
 
       <GameEffects

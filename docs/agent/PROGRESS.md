@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-02, Catana left meta rail shipped)
+- Added `app/catana/components/LeftMetaRail.js` as the fixed bottom-left owner for the meta panels.
+- Moved the dev-only debug panel into the rail and normalized `app/catana/components/DebugPanel.js` to a normal block-level panel.
+- Let `app/catana/components/GameLogPanel.js` accept a `rootClassName` override so the log can be placed inside the rail without owning viewport positioning.
+- Rewired `app/catana/GameScreen.js` to mount `LeftMetaRail` with the game log entries, player map, theme, player ID, and BGIO props.
+- Updated the debug visibility regression so it checks the extracted rail path instead of expecting `GameScreen.js` to own the debug panel directly.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+- `pnpm exec vitest run app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/renderPerfGuards.test.js`
+
 ## Status (2026-04-02, Catana chat preview fix pass)
 - Fixed `buildChatPreviewEntries(...)` so an explicit `playerID` stays the current speaker even when it is absent from `playerMap`.
 - Removed viewport-fixed placement responsibility from `ChatPanel.js`; the panel is now layout-neutral and ready for a parent rail to position later.

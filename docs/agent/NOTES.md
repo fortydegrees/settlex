@@ -1,5 +1,12 @@
 # NOTES
 
+- Catana left meta rail:
+- `app/catana/components/LeftMetaRail.js` now owns the fixed bottom-left placement for the dev rail plus the game log and chat stack.
+- `app/catana/components/DebugPanel.js` is now a normal block panel and can be embedded inside the rail.
+- `app/catana/components/GameLogPanel.js` now accepts a `rootClassName` override so the shared feed shell can be positioned by its parent.
+- `app/catana/GameScreen.js` now mounts `LeftMetaRail` instead of placing the log and debug panel separately.
+- The debug visibility regression now checks for the extracted rail path rather than assuming `GameScreen.js` directly imports `DebugPanel`.
+
 - Catana chat preview follow-up:
 - `buildChatPreviewEntries(...)` now keeps an explicit `playerID` as the current speaker even if that seat is missing from the current `playerMap`.
 - `app/catana/components/ChatPanel.js` no longer owns viewport-fixed placement. The parent layout can position it later.
