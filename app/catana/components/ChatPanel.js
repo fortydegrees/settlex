@@ -1,102 +1,98 @@
-import React, { useMemo } from "react";
-import { buildChatPreviewEntries } from "../utils/chatPreview";
+import React, { useMemo, useState } from "react";
+import { buildChatEntries, submitChatDraft } from "../utils/chatMessages";
 import { formatChatEntry } from "../utils/gameText";
 import { FeedPanel } from "./FeedPanel";
 import { FeedTokenRow } from "./FeedTokenRow";
 
 const composerInputClassName =
-  "w-full rounded-lg bg-white/60 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-500 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500";
+  "w-full bg-white/50 px-2.5 py-1.5 text-sm text-slate-800 placeholder:text-slate-500 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500";
 
-const composerButtonClassName =
-  "rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm";
+const emptyRows = [
+  {
+    key: "chat-empty",
+    tokens: [{ kind: "text", text: "No messages yet." }],
+  },
+];
 
-const ChatPanelComponent = ({ playerID, playerMap = {}, themeId }) => {
-  const previewRows = useMemo(
-    () =>
-      buildChatPreviewEntries({ playerID, playerMap }).map((entry) => ({
-        key: entry.id,
-        tokens: formatChatEntry(entry, playerMap),
-      })),
-    [playerID, playerMap]
-  );
+const ChatPanelComponent = ({
+  playerID,
+  playerMap = {},
+  themeId,
+  chatMessages = [],
+  sendChatMessage,
+}) => {
+  const [draft, setDraft] = useState("");
+  const canSend = playerID != null && typeof sendChatMessage === "function";
 
-  return React.createElement(
-    "div",
+  const rows = useMemo(() => {
+    const liveRows = buildChatEntries(chatMessages).map((entry) => ({
+      key: entry.id,
+      tokens: formatChatEntry(entry, playerMap),
+    }));
+
+    return liveRows.length > 0 ? liveRows : emptyRows;
+  }, [chatMessages, playerMap]);
+
+  const placeholder = canSend ? "Message..." : "Read-only";
+
+  const footer = React.createElement(
+    "form",
     {
-      className: "space-y-3 pointer-events-auto",
-      "data-allow-interaction": "true",
+      onSubmit: (event) => {
+        event.preventDefault();
+        const result = submitChatDraft({
+          draft,
+          playerID,
+          sendChatMessage,
+        });
+        if (result.sent) {
+          setDraft(result.nextDraft);
+        }
+      },
     },
-    React.createElement(
-      "div",
-      {
-        className:
-          "rounded-full bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-slate-700 shadow-lg ring-1 ring-white/50 backdrop-blur-sm",
-      },
-      "Preview only"
-    ),
-    React.createElement(FeedPanel, {
-      title: "Chat",
-      rows: previewRows,
-      rootClassName: "w-full",
-      panelClassName:
-        "flex h-[20vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
-      headerClassName:
-        "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
-      contentWrapClassName: "min-h-0 flex-1 pb-4",
-      scrollClassName: "feed-panel-scroll chat-panel-scroll",
-      fadeClassName: "feed-panel-fade chat-panel-fade",
-      entryClassName:
-        "feed-panel-entry chat-panel-entry flex flex-wrap items-center gap-1",
-      contentClassName: "space-y-2 text-sm pt-2",
-      renderRow: (entry) =>
-        entry.tokens.map((token, tokenIndex) =>
-          React.createElement(FeedTokenRow, {
-            key: `${entry.key}-${tokenIndex}`,
-            token,
-            themeId,
-          })
-        ),
-    }),
-    React.createElement(
-      "div",
-      {
-        className:
-          "rounded-xl bg-white/25 p-3 shadow-lg ring-1 ring-white/30 backdrop-blur-sm",
-      },
-      React.createElement(
-        "div",
-        {
-          className:
-            "text-xs font-semibold uppercase tracking-widest text-slate-700",
-        },
-        "Coming soon"
-      ),
-      React.createElement(
-        "div",
-        { className: "mt-1 text-xs text-slate-600" },
-        "Live chat wiring is coming soon."
-      ),
-      React.createElement(
-        "div",
-        { className: "mt-3 flex items-center gap-2" },
-        React.createElement("input", {
-          disabled: true,
-          type: "text",
-          placeholder: "Preview only",
-          className: composerInputClassName,
-        }),
-        React.createElement(
-          "button",
-          {
-            disabled: true,
-            type: "button",
-            className: composerButtonClassName,
-          },
-          "Preview"
-        )
-      )
-    )
+    React.createElement("input", {
+      type: "text",
+      value: draft,
+      disabled: !canSend,
+      placeholder,
+      maxLength: 280,
+      onChange: (event) => setDraft(event.target.value),
+      className: composerInputClassName,
+      "aria-label": "Chat message",
+    })
   );
+
+  return React.createElement(FeedPanel, {
+    title: "Chat",
+    rows,
+    footer,
+    autoScrollKey:
+      chatMessages.length > 0
+        ? chatMessages[chatMessages.length - 1]?.id ?? chatMessages.length
+        : "chat-empty",
+    rootClassName: "w-full",
+    panelClassName:
+      "flex h-[20vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
+    headerClassName:
+      "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
+    contentWrapClassName: "min-h-0 flex-1",
+    scrollViewportClassName: "h-full overflow-y-auto px-3",
+    scrollClassName: "feed-panel-scroll chat-panel-scroll",
+    fadeClassName: "feed-panel-fade chat-panel-fade",
+    entryClassName:
+      "feed-panel-entry chat-panel-entry break-words text-sm leading-5 text-slate-800",
+    contentClassName: "space-y-1.5 py-1.5 text-sm",
+    footerClassName:
+      "border-t border-white/35 bg-white/35 backdrop-blur-sm",
+    renderRow: (entry) =>
+      entry.tokens.map((token, tokenIndex) =>
+        React.createElement(FeedTokenRow, {
+          key: `${entry.key}-${tokenIndex}`,
+          token,
+          themeId,
+        })
+      ),
+  });
 };
 
 export const ChatPanel = React.memo(ChatPanelComponent);

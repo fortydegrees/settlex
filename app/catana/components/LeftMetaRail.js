@@ -35,6 +35,8 @@ const LeftMetaRailComponent = ({
         playerID,
         playerMap: logPlayerMap,
         themeId,
+        chatMessages: bgioProps?.chatMessages ?? [],
+        sendChatMessage: bgioProps?.sendChatMessage,
       })
     )
   );

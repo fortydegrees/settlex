@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { sanitizeDisplayName } from "../utils/playerIdentity";
+import {
+  mergePlayerMetadata,
+  sanitizeDisplayName,
+} from "../utils/playerIdentity";
 
 describe("playerIdentity", () => {
   it("removes [BOT] prefix case-insensitively", () => {
@@ -14,5 +17,33 @@ describe("playerIdentity", () => {
   it("returns empty string for non-string values", () => {
     expect(sanitizeDisplayName(null)).toBe("");
     expect(sanitizeDisplayName(undefined)).toBe("");
+  });
+
+  it("fills missing emoji/color metadata from fallback match metadata", () => {
+    const merged = mergePlayerMetadata(
+      [
+        { id: "0", name: "Ada", isConnected: true },
+        { id: "1", name: "Puffer 2", isConnected: true },
+      ],
+      [
+        { id: "0", name: "Ada", data: { emoji: "🦊", color: "blue" } },
+        { id: "1", name: "Puffer 2", data: { emoji: "🤖", color: "red" } },
+      ]
+    );
+
+    expect(merged).toEqual([
+      {
+        id: "0",
+        name: "Ada",
+        isConnected: true,
+        data: { emoji: "🦊", color: "blue" },
+      },
+      {
+        id: "1",
+        name: "Puffer 2",
+        isConnected: true,
+        data: { emoji: "🤖", color: "red" },
+      },
+    ]);
   });
 });

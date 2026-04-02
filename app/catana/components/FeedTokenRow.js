@@ -22,7 +22,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
     const nameColor = token.color ? getPlayerNameHex(token.color) ?? token.color : null;
     return React.createElement(
       "span",
-      { className: "inline-flex items-center gap-1 font-semibold" },
+      { className: "inline-flex items-center gap-1 font-semibold align-baseline" },
       token.emoji ? React.createElement("span", { "aria-hidden": "true" }, token.emoji) : null,
       React.createElement(
         "span",
@@ -43,19 +43,19 @@ export const FeedTokenRow = ({ token, themeId }) => {
           src: icon,
           alt: "",
           title: token.resource,
-          className: "h-4 w-4",
+          className: "mx-0.5 inline-block h-4 w-4 align-[-0.125em]",
           draggable: false,
           onError: (event) => handleThemeImageError(event, iconFallback),
         })
       : React.createElement(
-          "span",
-          { className: "text-slate-700" },
+        "span",
+          { className: "mx-0.5 inline-block" },
           token.resource
         );
   }
 
   if (token.kind === "text") {
-    return React.createElement("span", { className: "text-slate-800" }, token.text);
+    return React.createElement("span", null, token.text);
   }
 
   return null;

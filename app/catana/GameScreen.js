@@ -10,7 +10,10 @@ import { buildPlayerViewMap, UI_PLAYER_COLORS } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 import { getGameStatus } from "./utils/gameStatus";
 import { shouldResetPlayerAction } from "./utils/playerAction";
-import { sanitizeDisplayName } from "./utils/playerIdentity";
+import {
+  mergePlayerMetadata,
+  sanitizeDisplayName,
+} from "./utils/playerIdentity";
 
 import { EffectsBoardWrapper } from "bgio-effects/react";
 
@@ -107,13 +110,20 @@ export function GameScreen(bgioProps) {
       : devPlay?.type === "monopoly"
       ? "dev-monopoly"
       : null;
+  const mergedMatchData = useMemo(
+    () =>
+      mergePlayerMetadata(
+        Array.isArray(bgioProps.matchData) ? bgioProps.matchData : [],
+        Array.isArray(bgioProps.matchMetadata) ? bgioProps.matchMetadata : []
+      ),
+    [bgioProps.matchData, bgioProps.matchMetadata]
+  );
   const { nameMap, emojiMap, colorMap } = useMemo(() => {
     const names = {};
     const emojis = {};
     const colors = {};
-    const matchData = bgioProps.matchData;
-    if (Array.isArray(matchData)) {
-      matchData.forEach((player) => {
+    if (Array.isArray(mergedMatchData)) {
+      mergedMatchData.forEach((player) => {
         if (player?.id == null) return;
         const cleanName = sanitizeDisplayName(player.name);
         names[player.id] = cleanName || `Player ${player.id}`;
@@ -122,7 +132,7 @@ export function GameScreen(bgioProps) {
       });
     }
     return { nameMap: names, emojiMap: emojis, colorMap: colors };
-  }, [bgioProps.matchData]);
+  }, [mergedMatchData]);
   const player = rawPlayer
     ? { ...rawPlayer, name: nameMap[rawPlayer.id], emoji: emojiMap[rawPlayer.id], chosenColor: colorMap[rawPlayer.id] }
     : null;
