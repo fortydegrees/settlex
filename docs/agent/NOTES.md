@@ -1,5 +1,21 @@
 # NOTES
 
+- Catana live chat panel:
+- `app/catana/components/ChatPanel.js` now renders live `boardgame.io` chat messages instead of the old preview transcript.
+- `app/catana/utils/chatMessages.js` owns the small adapter helpers for turning `chatMessages` into UI rows and for trimming/submitting drafts through `sendChatMessage`.
+- The composer is now inside the chat panel footer and uses a minimal single-line input with `Enter to send`; there is no always-visible send button in this pass.
+- Follow-up polish trimmed the chat-specific spacing further:
+- no helper text below the input,
+- smaller footer padding,
+- slightly narrower transcript inset,
+- placeholder copy is now just `Message...` / `Read-only`.
+- Spectators still receive/read chat, but the footer input is disabled and labeled read-only.
+
+- Shared feed row wrapping:
+- `app/catana/components/FeedPanel.js` now supports an optional footer slot inside the same glass card.
+- `app/catana/components/GameLogPanel.js` and `app/catana/components/ChatPanel.js` no longer use row-level `flex-wrap`; message rows are inline-flow text now, so player chips and message text wrap naturally instead of breaking onto separate lines.
+- `app/catana/components/FeedTokenRow.js` text tokens now inherit row color, and resource tokens align inline more cleanly inside wrapped sentences.
+
 - Catana left meta rail:
 - `app/catana/components/LeftMetaRail.js` now owns the fixed bottom-left placement for the dev rail plus the game log and chat stack.
 - `app/catana/components/DebugPanel.js` is now a normal block panel and can be embedded inside the rail.

@@ -21,6 +21,28 @@ describe("FeedPanel", () => {
     expect(markup).toContain("Hello");
   });
 
+  it("renders footer content inside the same panel shell", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(FeedPanel, {
+        title: "Inbox",
+        rows: [{ key: "row-1", label: "Hello" }],
+        renderRow: (row) => React.createElement("span", null, row.label),
+        footer: React.createElement(
+          "form",
+          { "data-footer": "true" },
+          React.createElement("input", {
+            type: "text",
+            placeholder: "Message…",
+          })
+        ),
+      })
+    );
+
+    expect(markup).toContain("Hello");
+    expect(markup).toContain('data-footer="true"');
+    expect(markup).toContain('placeholder="Message…"');
+  });
+
   it("ignores unsupported raw children content", () => {
     const markup = renderToStaticMarkup(
       React.createElement(

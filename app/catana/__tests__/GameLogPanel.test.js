@@ -33,6 +33,12 @@ describe("GameLogPanel", () => {
     expect(contents).toContain("game-log-entry");
   });
 
+  it("does not use flex-wrap row layout for log entries", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).not.toContain("flex-wrap");
+    expect(contents).not.toContain("items-center gap-1");
+  });
+
   it("delegates auto-scroll behavior to the shared feed shell", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("rows={formattedEntries}");

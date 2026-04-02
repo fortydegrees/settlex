@@ -1,5 +1,26 @@
 # PROGRESS
 
+## Status (2026-04-02, Catana live chat panel + wrap fix)
+- Replaced the preview-only chat slice with live `boardgame.io` chat wiring in:
+- `app/catana/components/ChatPanel.js`
+- `app/catana/utils/chatMessages.js`
+- `app/catana/components/LeftMetaRail.js`
+- The chat composer now lives inside the chat card footer, anchored at the bottom of the same panel instead of sitting in a separate stacked box.
+- Players can send trimmed text-only chat messages with Enter; spectators see the live transcript but get a disabled read-only composer.
+- Follow-up visual pass:
+- removed the extra helper copy under the chat input,
+- tightened the footer/input padding,
+- reduced the chat transcript inset slightly so the panel reads closer to the reference mock.
+- Fixed the shared feed row wrapping bug by removing the row-level `flex-wrap` layout from the log/chat adapters and letting token rows wrap as normal inline content.
+- Extended or replaced the chat-focused tests in:
+- `app/catana/__tests__/FeedPanel.test.js`
+- `app/catana/__tests__/ChatPanel.test.js`
+- `app/catana/__tests__/chatMessages.test.js`
+- `app/catana/__tests__/GameLogPanel.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/FeedPanel.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/chatMessages.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/DebugUiVisibility.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/uiNoDragImages.test.js app/catana/__tests__/GameScreen.interactionGuards.test.js`
+- `pnpm lint`
+
 ## Status (2026-04-02, Catana left meta rail shipped)
 - Added `app/catana/components/LeftMetaRail.js` as the fixed bottom-left owner for the meta panels.
 - Moved the dev-only debug panel into the rail and normalized `app/catana/components/DebugPanel.js` to a normal block-level panel.

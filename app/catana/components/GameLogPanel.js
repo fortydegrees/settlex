@@ -34,7 +34,7 @@ const GameLogPanelComponent = ({
       contentWrapClassName="min-h-0 flex-1 pb-4"
       scrollClassName="feed-panel-scroll game-log-scroll"
       fadeClassName="feed-panel-fade game-log-fade"
-      entryClassName="feed-panel-entry game-log-entry flex flex-wrap items-center gap-1"
+      entryClassName="feed-panel-entry game-log-entry text-sm italic leading-5 text-slate-600"
       contentClassName="space-y-2 text-sm pt-2"
       renderRow={(entry) => (
         <>

@@ -14,10 +14,14 @@ const FeedPanelComponent = ({
   title = "Feed",
   rows = [],
   renderRow,
+  footer = null,
+  footerClassName = "border-t border-white/35 bg-white/35 px-3 py-3",
+  autoScrollKey = rows.length,
   rootClassName = "fixed left-4 bottom-4 w-72 md:w-80 z-30 pointer-events-auto",
   panelClassName = "flex h-[20vh] flex-col rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text overflow-hidden",
   headerClassName = "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
   contentWrapClassName = "min-h-0 flex-1 pb-4",
+  scrollViewportClassName = "h-full overflow-y-auto px-4",
   scrollClassName = "feed-panel-scroll",
   fadeClassName = "feed-panel-fade",
   entryClassName = "feed-panel-entry",
@@ -39,7 +43,7 @@ const FeedPanelComponent = ({
       prefersReducedMotion,
       requestAnimationFrameFn: requestAnimationFrame,
     });
-  }, [rows.length]);
+  }, [autoScrollKey]);
 
   useEffect(
     () => () => {
@@ -70,7 +74,7 @@ const FeedPanelComponent = ({
             className: joinClassNames(
               scrollClassName,
               fadeClassName,
-              "h-full overflow-y-auto px-4"
+              scrollViewportClassName
             ),
             onWheel: () => markFeedPanelManualScroll(stateRef.current),
             onTouchMove: () => markFeedPanelManualScroll(stateRef.current),
@@ -94,7 +98,14 @@ const FeedPanelComponent = ({
               )
             : null
         )
-      )
+      ),
+      footer
+        ? React.createElement(
+            "div",
+            { className: footerClassName },
+            footer
+          )
+        : null
     )
   );
 };

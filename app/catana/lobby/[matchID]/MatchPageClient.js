@@ -283,7 +283,14 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
   };
 
   if (credentials && playerID) {
-    return <CatanClient matchID={matchID} playerID={playerID} credentials={credentials} />;
+    return (
+      <CatanClient
+        matchID={matchID}
+        playerID={playerID}
+        credentials={credentials}
+        matchMetadata={match?.players ?? []}
+      />
+    );
   }
 
   return (
