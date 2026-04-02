@@ -20,4 +20,11 @@ describe("buildPlayerViewMap", () => {
     const view = buildPlayerViewMap(core);
     expect(view["0"].knightsPlayed).toBe(4);
   });
+
+  it("prefers provided player color metadata over seat fallback colors", () => {
+    const core = { players: ["0", "1"], playerStateById: { "0": {}, "1": {} } };
+    const view = buildPlayerViewMap(core, { "0": "purple" });
+    expect(view["0"].color).toBe("purple");
+    expect(view["1"].color).toBe("blue");
+  });
 });

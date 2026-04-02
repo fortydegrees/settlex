@@ -10,6 +10,7 @@ import {
 import { isDocumentHidden } from "../utils/visibility";
 import { PLACE_PIECE_DEFAULT_TUNING } from "./placePieceDefaults";
 import { getBackgroundImageWithFallback } from "../theme/themes";
+import { getPieceSvgFile } from "../theme/pieceAssets";
 
 const PIECE_SCALE = 0.8;
 const PIECE_OFFSET_X = 0.5;
@@ -36,7 +37,7 @@ function createRing({ size, x, y, gradient, zIndex }) {
 }
 
 function createSettlementEl({ size, x, y, color, themeId }) {
-  const pieceFile = `settlement_${color}.svg`;
+  const pieceFile = getPieceSvgFile("settlement", color);
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.width = `${size}px`;
@@ -56,7 +57,7 @@ function createSettlementEl({ size, x, y, color, themeId }) {
 }
 
 function createCityEl({ size, x, y, color, themeId }) {
-  const pieceFile = `city_${color}.svg`;
+  const pieceFile = getPieceSvgFile("city", color);
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.width = `${size}px`;
@@ -94,7 +95,7 @@ function createRoadInner({ size, transform, color, themeId }) {
   el.style.transform = transform;
   el.style.backgroundImage = getBackgroundImageWithFallback(
     themeId,
-    `road_${color}.svg`
+    getPieceSvgFile("road", color)
   );
   el.style.backgroundRepeat = "no-repeat";
   el.style.backgroundSize = "contain";

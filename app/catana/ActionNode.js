@@ -7,6 +7,7 @@ import {
 } from "./utils/coordinates";
 import { Piece } from "./Piece";
 import { getClassicSvgPath, getThemedSvgPath } from "./theme/themes";
+import { getPieceSvgFile } from "./theme/pieceAssets";
 
 export function ActionNode({
   nodeId,
@@ -39,7 +40,9 @@ export function ActionNode({
   const isNodeType = type === "node";
   const isCity = buildingType === "city";
   const buildingFile =
-    buildingType && buildingColor ? `${buildingType}_${buildingColor}.svg` : null;
+    buildingType && buildingColor
+      ? getPieceSvgFile(buildingType, buildingColor)
+      : null;
 
   const gradientClass = isHovered && isNodeType
     ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"

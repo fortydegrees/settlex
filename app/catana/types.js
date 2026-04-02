@@ -8,6 +8,7 @@ export {
   PlayerColor,
   PLAYER_COLORS
 } from "@settlex/game-core";
+import { getPieceSvgPath } from "./theme/pieceAssets";
 
 
 
@@ -49,8 +50,8 @@ export const NUMBER_SVGS = (number) => {
 
 export const PIECE_SVGS = (playerColor) =>{
   return {
-      Settlement: `https://colonist.io/dist/images/settlement_${playerColor.toLowerCase()}.svg?v168`,
-    City: `https://colonist.io/dist/images/city_${playerColor.toLowerCase()}.svg?v168`,
-    Road: `https://colonist.io/dist/images/road_${playerColor.toLowerCase()}.svg?v168`,
+      Settlement: getPieceSvgPath("settlement", playerColor),
+    City: getPieceSvgPath("city", playerColor),
+    Road: getPieceSvgPath("road", playerColor),
   };
 }
