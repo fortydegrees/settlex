@@ -26,6 +26,20 @@ describe("render performance guards", () => {
     expect(contents).not.toContain("playerCards.filter(");
   });
 
+  it("controls FeedPanel scroll behavior with refs and effects", () => {
+    const contents = readCatanaFile("components/FeedPanel.js");
+    expect(contents).toContain("useRef");
+    expect(contents).toContain("useEffect");
+    expect(contents).toContain("scrollTo");
+    expect(contents).toContain("requestAnimationFrame");
+    expect(contents).toContain("shouldAutoScrollRef");
+  });
+
+  it("wraps ChatPanel in React.memo", () => {
+    const contents = readCatanaFile("components/ChatPanel.js");
+    expect(contents).toContain("React.memo");
+  });
+
   it("memoizes formatted game log entries", () => {
     const contents = readCatanaFile("components/GameLogPanel.js");
     expect(contents).toMatch(/useMemo/);

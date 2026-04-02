@@ -38,8 +38,8 @@ describe("Catana UI images", () => {
     expect(contents).toMatch(/<img[\s\S]*draggable=\{false\}/);
   });
 
-  it("disables dragging on game log resource icons", () => {
-    const contents = readComponent("GameLogPanel.js");
+  it("disables dragging on shared feed token resource icons", () => {
+    const contents = readComponent("FeedTokenRow.js");
     expect(contents).toMatch(/<img[\s\S]*draggable=\{false\}/);
   });
 
