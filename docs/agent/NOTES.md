@@ -1,10 +1,16 @@
 # NOTES
 
+- Catana chat preview slice:
+- `app/catana/utils/gameText.js` now exports `formatChatEntry` for plain-text chat bodies that keep the existing player token metadata.
+- `app/catana/utils/chatPreview.js` provides a deterministic local-only transcript for the presentational chat panel.
+- `app/catana/components/ChatPanel.js` now renders the preview transcript through `FeedPanel`/`FeedTokenRow` and includes disabled glass composer chrome with preview-only copy.
+- The chat panel contract is covered by runtime-oriented server-render tests plus a small source check for the shared shell and token-row wiring.
+
 - Shared Catana feed shell:
 - `app/catana/components/FeedPanel.js` now owns the glass panel chrome and hover-aware auto-scroll logic.
 - `app/catana/components/FeedTokenRow.js` now owns divider/player/resource/text token rendering, including the resource image `draggable={false}` guard.
 - `app/catana/components/GameLogPanel.js` now delegates to the shared shell, and `game-log-*` CSS selectors remain as aliases in `app/globals.css` so the old contract still resolves.
-- `app/catana/components/ChatPanel.js` is a memoized scaffold for the follow-on chat panel slice.
+- `app/catana/components/ChatPanel.js` is now the presentational preview panel for the follow-on chat slice.
 - The shell contract is runtime-tested where the repo supports it; a small amount of source inspection still remains for memo/useMemo guards that are awkward to prove in Vitest without a browser DOM.
 
 - Robber placement UX now has an approved two-mode interaction seam in:

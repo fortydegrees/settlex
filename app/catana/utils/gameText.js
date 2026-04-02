@@ -174,3 +174,17 @@ export function formatLogEntry(entry, playerMap = {}) {
 
   return tokens;
 }
+
+export function formatChatEntry(entry, playerMap = {}) {
+  if (!entry || entry.actorId == null) {
+    return [];
+  }
+
+  const message = entry.message ?? entry.text ?? "";
+
+  return [
+    playerToken(String(entry.actorId), playerMap),
+    textToken(": "),
+    textToken(String(message))
+  ];
+}

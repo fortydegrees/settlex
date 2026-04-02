@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-04-02, Catana chat preview panel shipped)
+- Added `formatChatEntry` to `app/catana/utils/gameText.js` so chat entries reuse the existing player token model without resource expansion.
+- Added the deterministic preview transcript helper in `app/catana/utils/chatPreview.js`.
+- Replaced the `ChatPanel.js` scaffold with a presentational preview panel that renders through `FeedPanel`, maps preview rows through `FeedTokenRow`, and shows disabled glass-style composer chrome with preview-only copy.
+- Extended the chat-focused contract tests in:
+- `app/catana/__tests__/gameText.test.js`
+- `app/catana/__tests__/chatPreview.test.js`
+- `app/catana/__tests__/ChatPanel.test.js`
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/gameText.test.js app/catana/__tests__/chatPreview.test.js app/catana/__tests__/ChatPanel.test.js`
+
 ## Status (2026-04-02, shared feed-shell contract established)
 - Extracted the Catana feed shell into shared components in:
 - `app/catana/components/FeedPanel.js`
