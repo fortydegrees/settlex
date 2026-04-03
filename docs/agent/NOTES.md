@@ -1,5 +1,10 @@
 # NOTES
 
+- Plus asset note:
+- `public/svgs/plus/circled_plus_green.svg` intentionally keeps the circular silhouette and dimensional filter stack from `circled_m.svg`.
+- The circle palette is remapped to the green gradient family from `check_mark_button.svg`.
+- The center glyph reuses the existing `plus.svg` path at half scale so the plus stays visually balanced inside the circle without introducing a newly drawn shape.
+
 - Idle / AFK grace plan note:
 - the implementation plan keeps three seams separate:
 - server-owned idle policy in `IdlePresenceManager`,

@@ -1,5 +1,13 @@
 # PROGRESS
 
+## Status (2026-04-03, green circled plus asset added)
+- Added a new plus icon asset in:
+- `public/svgs/plus/circled_plus_green.svg`
+- Asset direction for this slice:
+- reuse the circular form and beveled treatment from `circled_m.svg`,
+- swap the blue palette for the green gradient family from `check_mark_button.svg`,
+- replace the center glyph with a scaled plus from `plus.svg` using the existing soft glow + near-white face treatment.
+
 ## Status (2026-04-03, idle / AFK grace implementation plan written)
 - Wrote the implementation plan in:
 - `docs/superpowers/plans/2026-04-03-idle-afk-grace-plan.md`
