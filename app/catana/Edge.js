@@ -160,6 +160,7 @@ function HoverableEdge({
         }}
         setHoveredNode={setHoveredEdge}
         hoveredNode={hoveredEdge}
+        showIdleCircle={false}
       />
     </>
   );
