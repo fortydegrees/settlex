@@ -27,7 +27,7 @@ class InMemoryPubSub {
 
 export function createTimerPubSub(
   timerManager,
-  { botManager, disconnectManager, stateLoader } = {}
+  { botManager, disconnectManager, idleManager, stateLoader } = {}
 ) {
   const base = new InMemoryPubSub();
   const latestStateByMatch = new Map();
@@ -41,7 +41,9 @@ export function createTimerPubSub(
       timerSnapshot,
       timerServerTimeMs: serverTimeMs,
       disconnectPresence: disconnectManager?.getSnapshot?.(matchID) ?? null,
-      disconnectServerTimeMs: serverTimeMs
+      disconnectServerTimeMs: serverTimeMs,
+      idlePresence: idleManager?.getSnapshot?.(matchID) ?? null,
+      idleServerTimeMs: serverTimeMs
     };
   };
 
@@ -79,6 +81,7 @@ export function createTimerPubSub(
     latestStateByMatch.set(matchID, state);
     timerManager.onState(matchID, state, deltalog);
     disconnectManager?.onState?.(matchID, state, deltalog);
+    idleManager?.onState?.(matchID, state, deltalog);
   };
 
   const rebroadcastState = (channelId, matchID, state) => {
@@ -113,6 +116,7 @@ export function createTimerPubSub(
         if (payload?.type === "matchData") {
           const matchData = payload?.args?.[1] ?? [];
           disconnectManager?.onMatchData?.(matchID, matchData);
+          idleManager?.onMatchData?.(matchID, matchData);
           const cachedState = latestStateByMatch.get(matchID) ?? null;
           base.publish(channelId, payload);
           if (cachedState) {

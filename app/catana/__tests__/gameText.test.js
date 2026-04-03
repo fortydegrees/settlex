@@ -201,6 +201,71 @@ describe("formatLogEntry", () => {
     ).toBe(true);
   });
 
+  it("formats server idle entries with response-window copy", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "server:idle",
+        data: { playerId: "1" }
+      },
+      { "1": "Bren" }
+    );
+
+    expect(tokens[0]).toMatchObject({
+      kind: "label",
+      text: "server",
+      variant: "server"
+    });
+    expect(tokens.some((token) => token.kind === "player" && token.id === "1")).toBe(
+      true
+    );
+    expect(
+      tokens.some(
+        (token) =>
+          token.kind === "text" && token.text.includes("idle for 2 turns")
+      )
+    ).toBe(true);
+  });
+
+  it("formats server idle acknowledgement entries", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "server:idleAck",
+        data: { playerId: "1" }
+      },
+      { "1": "Bren" }
+    );
+
+    expect(
+      tokens.some(
+        (token) =>
+          token.kind === "text" && token.text.includes("responded")
+      )
+    ).toBe(true);
+  });
+
+  it("formats server idle forfeits with loser and winner names", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "server:idleForfeit",
+        data: { playerId: "1", winnerId: "0" }
+      },
+      { "0": "Ada", "1": "Bren" }
+    );
+
+    expect(tokens.some((token) => token.kind === "player" && token.id === "1")).toBe(
+      true
+    );
+    expect(tokens.some((token) => token.kind === "player" && token.id === "0")).toBe(
+      true
+    );
+    expect(
+      tokens.some(
+        (token) =>
+          token.kind === "text" && token.text.includes("wins by forfeit")
+      )
+    ).toBe(true);
+  });
+
   it("formats longest road award entries", () => {
     const tokens = formatLogEntry(
       {
