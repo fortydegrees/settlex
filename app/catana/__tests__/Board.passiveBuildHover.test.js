@@ -34,4 +34,14 @@ describe("Board passive build hover wiring", () => {
     expect(source).toContain("passiveCityNodeSet");
     expect(source).toContain("passiveCityNodeSet.has(hoveredNode)");
   });
+
+  it("keeps explicit dock build rendering as the higher-priority branch", () => {
+    const source = fs.readFileSync(boardPath, "utf8");
+    expect(source).toContain(
+      'playerAction === "placeSettlement" || playerAction === "placeCity"'
+    );
+    expect(source).toContain(
+      'playerAction === "placeRoad" || playerAction === "roadBuilding"'
+    );
+  });
 });
