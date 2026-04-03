@@ -30,16 +30,9 @@ export const PlayerAvatarStats = ({
 }) => {
   if (!player) return null;
 
-  // Prefer the player's chosen color; fall back to seat-index color.
-  const chosenColor = player.chosenColor;
-  const seatColor = player.color;
-  const chosenGradient = chosenColor
-    ? getPlayerColorOption(chosenColor).gradient
-    : null;
-  const seatGradient = seatColor
-    ? getPlayerColorOption(seatColor).gradient
-    : null;
-  const avatarColor = chosenGradient || seatGradient || "from-slate-500 to-slate-800";
+  const avatarColor = player.color
+    ? getPlayerColorOption(player.color).gradient
+    : "from-slate-500 to-slate-800";
   const currentRoadLength = core && coreTopology
     ? getLongestRoadLength(core, coreTopology, player.id)
     : 0;

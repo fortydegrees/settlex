@@ -18,5 +18,6 @@ describe("GameScreen player color wiring", () => {
     expect(contents).toContain("getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId] ?? \"red\"");
     expect(contents).toContain("playerColorMap={effectiveColorByPlayerId}");
     expect(contents).not.toContain("const boardColorMap = useMemo(() => {");
+    expect(contents).not.toContain("chosenColor:");
   });
 });
