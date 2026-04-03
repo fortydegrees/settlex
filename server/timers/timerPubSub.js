@@ -32,6 +32,41 @@ export function createTimerPubSub(
   const base = new InMemoryPubSub();
   const latestStateByMatch = new Map();
 
+  const isStateLike = (value) =>
+    Boolean(value && typeof value === "object" && (value.G || value.ctx));
+
+  const getPayloadState = (payload) => {
+    if (isStateLike(payload?.state)) {
+      return payload.state;
+    }
+
+    if (payload?.type === "update") {
+      return isStateLike(payload?.args?.[1]) ? payload.args[1] : null;
+    }
+
+    if (payload?.type === "patch") {
+      return isStateLike(payload?.args?.[3]) ? payload.args[3] : null;
+    }
+
+    return null;
+  };
+
+  const getPayloadDeltalog = (payload, state) => {
+    if (payload?.deltalog != null) {
+      return payload.deltalog;
+    }
+
+    if (payload?.type === "update") {
+      return payload?.args?.[2] ?? state?.deltalog ?? state?.G?.deltalog ?? null;
+    }
+
+    if (payload?.type === "patch") {
+      return payload?.args?.[4] ?? state?.deltalog ?? state?.G?.deltalog ?? null;
+    }
+
+    return null;
+  };
+
   const buildStateWithSnapshots = (matchID, state) => {
     if (!state) return state;
     const timerSnapshot = timerManager.getTimerSnapshot(matchID, state);
@@ -100,14 +135,8 @@ export function createTimerPubSub(
         if (payload?.type === "matchData") {
           botManager?.syncMatchBotsFromMatchData?.(matchID, payload.args?.[1]);
         }
-        const state =
-          payload?.state ??
-          (payload?.type === "update" ? payload?.args?.[1] : null) ??
-          (payload?.type === "patch" ? payload?.args?.[3] : null);
-        const deltalog =
-          payload?.deltalog ??
-          (payload?.type === "update" ? payload?.args?.[2] : null) ??
-          (payload?.type === "patch" ? payload?.args?.[4] : null);
+        const state = getPayloadState(payload);
+        const deltalog = getPayloadDeltalog(payload, state);
 
         if (state) {
           rememberState(matchID, state, deltalog);

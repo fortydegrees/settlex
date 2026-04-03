@@ -28,6 +28,13 @@ describe("GameScreen idle grace", () => {
     expect(contents).toContain("/ack");
   });
 
+  it("uses the API server port for timer seed and idle acknowledge routes", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+
+    expect(contents).toContain(":8080");
+    expect(contents).not.toContain(":8000");
+  });
+
   it("keeps disconnect precedence over idle seat state", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
 

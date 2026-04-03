@@ -1,5 +1,6 @@
 // src/server.js
 import { Server, Origins, SocketIO } from "boardgame.io/dist/cjs/server.js"
+import koaBody from "koa-body"
 import { ServerCatan } from "./serverGame.js"
 import { TimerManager } from "./timers/TimerManager.js"
 import { createTimerPubSub } from "./timers/timerPubSub.js"
@@ -72,7 +73,7 @@ server.router.get("/timer/:matchID", async (ctx) => {
   ctx.body = { matchID, timer, serverTimeMs: Date.now() }
 })
 
-server.router.post("/idle/:matchID/ack", async (ctx) => {
+server.router.post("/idle/:matchID/ack", koaBody(), async (ctx) => {
   const matchID = ctx.params.matchID
   const { playerID, credentials } = ctx.request.body ?? {}
 
