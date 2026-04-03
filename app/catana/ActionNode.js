@@ -23,8 +23,11 @@ export function ActionNode({
   buildingType,
   buildingColor,
   showIdleCircle = true,
+  registerBuildTarget = null,
+  buildTargetMeta = null,
   themeId,
 }) {
+  const actionCircleRef = React.useRef(null);
   const [centerX, centerY] = center;
   const w = SQRT3 * size;
   const h = 2 * size;
@@ -50,9 +53,30 @@ export function ActionNode({
     ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
     : "[background-image:radial-gradient(50%_50%_at_50%_50%,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_100%)]";
 
+  React.useEffect(() => {
+    if (!registerBuildTarget) {
+      return undefined;
+    }
+
+    registerBuildTarget({
+      targetId: nodeId,
+      element: actionCircleRef.current,
+      ...buildTargetMeta
+    });
+
+    return () => {
+      registerBuildTarget({
+        targetId: nodeId,
+        element: null,
+        ...buildTargetMeta
+      });
+    };
+  }, [buildTargetMeta, nodeId, registerBuildTarget]);
+
   return (
     <>
       <div
+        ref={actionCircleRef}
         className={`${gradientClass} animation-pulse`}
         data-action-circle="true"
         style={{

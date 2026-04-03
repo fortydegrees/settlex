@@ -6,6 +6,7 @@ import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
 import { Port } from "./Port";
 import { RobberPlacementPreview } from "./RobberPlacementPreview";
+import { BuildPlacementPreview } from "./BuildPlacementPreview";
 import { BoardUnderlay } from "./BoardUnderlay";
 import { BoardPortChannels } from "./BoardPortChannels";
 import "./Board.css";
@@ -31,6 +32,7 @@ import { resolveRobberPlacementMotionMode } from "./utils/robberPlacementMotion"
 import { isDocumentHidden } from "./utils/visibility";
 import { tilePixelVector } from "./utils/coordinates";
 import { isPassiveBuildEnabled } from "./utils/passiveBuildMode";
+import { getBuildPickupPieceType } from "./utils/playerAction";
 
 const getValidRobberTiles = (G) => {
   // Use core function for validation
@@ -62,6 +64,8 @@ robber (and merchant etc)
 export function CatanBoard({
   playerAction,
   setPlayerAction,
+  buildPickup,
+  setBuildPickup,
   robberPlacementMotionMode,
   boardViewportScale = 1,
   themeId,
@@ -99,6 +103,7 @@ export function CatanBoard({
   const [robberTargetElementsByTileId, setRobberTargetElementsByTileId] = useState(
     {}
   );
+  const [buildTargetElementsById, setBuildTargetElementsById] = useState({});
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
   const [localPendingCityNodeId, setLocalPendingCityNodeId] = useState(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -149,6 +154,14 @@ export function CatanBoard({
     [G.core, playerColorMap]
   );
   const currentPlayerView = playerViewMap[ctx.currentPlayer];
+  const explicitBuildPieceType = getBuildPickupPieceType(playerAction);
+  const activeBuildPickupPieceType = buildPickup?.pieceType ?? null;
+  const isBuildPickupActive =
+    isInteractiveStageOwner &&
+    ctx.phase === "main" &&
+    G.core?.phase === "normal" &&
+    activeBuildPickupPieceType != null &&
+    activeBuildPickupPieceType === explicitBuildPieceType;
   const isRobberPlacementActive =
     isInteractiveStageOwner && playerStage === "moveRobber";
   const resolvedRobberPlacementMotionMode = useMemo(
@@ -224,7 +237,7 @@ export function CatanBoard({
 
     const previousBodyCursor = document.body.style.cursor;
     const previousDocumentCursor = document.documentElement.style.cursor;
-    if (isRobberPlacementActive) {
+    if (isRobberPlacementActive || isBuildPickupActive) {
       document.body.style.cursor = "grabbing";
       document.documentElement.style.cursor = "grabbing";
     }
@@ -233,7 +246,7 @@ export function CatanBoard({
       document.body.style.cursor = previousBodyCursor;
       document.documentElement.style.cursor = previousDocumentCursor;
     };
-  }, [isRobberPlacementActive]);
+  }, [isBuildPickupActive, isRobberPlacementActive]);
 
   //only render actionNodes if it's player's turn.
   //then have functions for canBuildSettlement etc
@@ -345,6 +358,7 @@ export function CatanBoard({
 
   const handleBuildCommit = () => {
     setSuppressBuildHighlights(true);
+    setBuildPickup(null);
   };
 
   // placePiece effects keep state updates delayed; use active effect to suppress overlaps
@@ -401,6 +415,14 @@ export function CatanBoard({
     setHoveredRobberTarget(null);
     setRobberTargetElementsByTileId({});
   }, [isRobberPlacementActive, G]);
+
+  useEffect(() => {
+    if (isBuildPickupActive) {
+      return;
+    }
+
+    setBuildTargetElementsById({});
+  }, [isBuildPickupActive]);
 
   useEffect(() => {
     if (resolvedRobberPlacementMotionMode !== "playful") {
@@ -474,6 +496,43 @@ export function CatanBoard({
     });
   }, []);
 
+  const handleBuildTargetRegister = useCallback(
+    ({ targetId, element, rotationDegrees = 0 }) => {
+      const normalizedTargetId = String(targetId);
+      setBuildTargetElementsById((currentTargets) => {
+        const currentEntry = currentTargets[normalizedTargetId] ?? null;
+        const nextElement = element ?? null;
+        const nextRotation = rotationDegrees ?? 0;
+
+        if (
+          currentEntry?.element === nextElement &&
+          currentEntry?.rotationDegrees === nextRotation
+        ) {
+          return currentTargets;
+        }
+
+        if (!nextElement) {
+          if (!(normalizedTargetId in currentTargets)) {
+            return currentTargets;
+          }
+
+          const nextTargets = { ...currentTargets };
+          delete nextTargets[normalizedTargetId];
+          return nextTargets;
+        }
+
+        return {
+          ...currentTargets,
+          [normalizedTargetId]: {
+            element: nextElement,
+            rotationDegrees: nextRotation
+          }
+        };
+      });
+    },
+    []
+  );
+
   const magneticRobberTargets = useMemo(
     () =>
       robberTiles
@@ -510,6 +569,50 @@ export function CatanBoard({
       ];
     });
   }, [G.tiles, size, boardCenterX, boardCenterY]);
+
+  const magneticBuildTargets = useMemo(() => {
+    if (!isBuildPickupActive) {
+      return [];
+    }
+
+    if (activeBuildPickupPieceType === "road") {
+      return buildableRoads
+        .map((edgeId) => {
+          const target = buildTargetElementsById[String(edgeId)] ?? null;
+          if (!target?.element) {
+            return null;
+          }
+
+          return {
+            id: edgeId,
+            element: target.element,
+            rotationDegrees: target.rotationDegrees ?? 90
+          };
+        })
+        .filter(Boolean);
+    }
+
+    return mainBuildableNodes
+      .map((nodeId) => {
+        const target = buildTargetElementsById[String(nodeId)] ?? null;
+        if (!target?.element) {
+          return null;
+        }
+
+        return {
+          id: nodeId,
+          element: target.element,
+          rotationDegrees: 0
+        };
+      })
+      .filter(Boolean);
+  }, [
+    activeBuildPickupPieceType,
+    buildTargetElementsById,
+    buildableRoads,
+    isBuildPickupActive,
+    mainBuildableNodes
+  ]);
 
   if (!size) {
     return null;
@@ -675,6 +778,9 @@ export function CatanBoard({
               }}
               setHoveredNode={setHoveredNode}
               hoveredNode={hoveredNode}
+              registerBuildTarget={
+                showMainNodes ? handleBuildTargetRegister : null
+              }
               themeId={themeId}
             />
           );
@@ -836,6 +942,9 @@ export function CatanBoard({
           setHoveredNode={setHoveredNode}
           setPlayerAction={setPlayerAction}
           hoveredNode={hoveredNode}
+          registerBuildTarget={
+            playerAction === "placeRoad" ? handleBuildTargetRegister : null
+          }
           onPlaceCommitted={handleBuildCommit}
           themeId={themeId}
         />
@@ -892,6 +1001,20 @@ export function CatanBoard({
             boardViewportScale={boardViewportScale}
             themeId={themeId}
             size={size / 1.5}
+          />
+        ) : null}
+        {isBuildPickupActive ? (
+          <BuildPlacementPreview
+            active
+            pieceType={activeBuildPickupPieceType}
+            pieceColor={currentPlayerView?.color ?? "red"}
+            originRect={buildPickup?.originRect ?? null}
+            magneticTargets={magneticBuildTargets}
+            boardViewportScale={boardViewportScale}
+            themeId={themeId}
+            size={size / 1.3}
+            prefersReducedMotion={prefersReducedMotion}
+            hasCoarsePointer={hasCoarsePointer}
           />
         ) : null}
 
