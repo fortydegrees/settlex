@@ -1,4 +1,13 @@
 const BUILD_ACTIONS = new Set(["placeRoad", "placeSettlement", "placeCity"]);
+const BUILD_PICKUP_PIECE_BY_ACTION = {
+  placeRoad: "road",
+  placeSettlement: "settlement",
+  placeCity: "city"
+};
+
+export function getBuildPickupPieceType(playerAction) {
+  return BUILD_PICKUP_PIECE_BY_ACTION[playerAction] ?? null;
+}
 
 export function shouldResetPlayerAction({
   playerAction,
