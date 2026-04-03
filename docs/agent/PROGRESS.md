@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-04-03, idle / AFK grace design written)
+- Wrote the 1v1 idle / AFK grace design spec in:
+- `docs/superpowers/specs/2026-04-03-idle-afk-grace-design.md`
+- Approved product direction for this slice:
+- count idle strikes only in normal gameplay,
+- one strike = a human seat's turn resolves with only server timeout moves and no human-authored move,
+- any real human move resets the consecutive strike count,
+- `2` consecutive strikes start a `60s` `Idle` grace window,
+- everyone sees seat + log state, only the affected local player sees the modal,
+- acknowledgement goes through a small authenticated custom server endpoint because idle state stays outside `G.core`.
+- Related MVP compromise recorded in:
+- `docs/mvp-compromises.md`
+
 ## Status (2026-04-03, player color conflict-groups design written)
 - Wrote the conflict-policy design in:
 - `docs/superpowers/specs/2026-04-03-player-color-conflicts-design.md`

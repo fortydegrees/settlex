@@ -1,5 +1,17 @@
 # NOTES
 
+- Idle / AFK grace design note:
+- keep idle separate from disconnect.
+- `Disconnected` remains a transport/socket fact owned by `DisconnectPresenceManager`.
+- `Idle` is a gameplay-participation policy driven by repeated fully auto-resolved normal turns.
+- Approved MVP rule:
+- count strikes only in normal gameplay,
+- one strike = a human seat's turn resolves with only server timeout moves and no human-authored move,
+- any real human move resets strikes,
+- `2` consecutive strikes start a `60s` idle grace window.
+- Implementation-shape note:
+- idle state should be published like timer/disconnect snapshots, but acknowledgement should go through a small authenticated custom server endpoint rather than a normal gameplay move because idle state lives outside `G.core`.
+
 - Effective player color workflow:
 - resolve one `effectiveColorByPlayerId` map from `core.players` order plus `matchData[].data.color`,
 - feed that same resolved map into `buildPlayerViewMap(...)`, `GameScreen`, and `Board`,
