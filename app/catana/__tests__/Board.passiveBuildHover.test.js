@@ -21,4 +21,17 @@ describe("Board passive build hover wiring", () => {
     expect(source).toContain('key={`passive-road-${edgeId}`}');
     expect(source).toContain("hoverable");
   });
+
+  it("derives passive settlement and city node targets when passive mode is enabled", () => {
+    const source = fs.readFileSync(boardPath, "utf8");
+    expect(source).toContain("const passiveSettlementNodes = useMemo");
+    expect(source).toContain("const passiveCityNodes = useMemo");
+    expect(source).toContain("showIdleCircle={false}");
+  });
+
+  it("reuses city-hover suppression for passive city upgrades", () => {
+    const source = fs.readFileSync(boardPath, "utf8");
+    expect(source).toContain("passiveCityNodeSet");
+    expect(source).toContain("passiveCityNodeSet.has(hoveredNode)");
+  });
 });

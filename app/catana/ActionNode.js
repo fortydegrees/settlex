@@ -22,6 +22,7 @@ export function ActionNode({
   piece,
   buildingType,
   buildingColor,
+  showIdleCircle = true,
   themeId,
 }) {
   const [centerX, centerY] = center;
@@ -43,6 +44,7 @@ export function ActionNode({
     buildingType && buildingColor
       ? getPieceSvgFile(buildingType, buildingColor)
       : null;
+  const showCircleVisual = showIdleCircle || isHovered;
 
   const gradientClass = isHovered && isNodeType
     ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
@@ -63,7 +65,9 @@ export function ActionNode({
           borderRadius: 100,
           borderColor: "#FFFFFF",
           borderWidth: 1.2,
-          opacity: hoveredNode ? (isHovered ? 1 : 0.4) : 0.8,
+          opacity: showCircleVisual
+            ? hoveredNode ? (isHovered ? 1 : 0.4) : 0.8
+            : 0,
           zIndex: 2,
         }}
         onClick={onClick}

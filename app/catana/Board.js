@@ -19,7 +19,9 @@ import {
 import { TileTypes } from "./types";
 import {
   buildableNodes,
+  canBuildCity as coreCanBuildCity,
   canBuildRoad as coreCanBuildRoad,
+  canBuildSettlement as coreCanBuildSettlement,
   canPlaceRobber
 } from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
@@ -272,6 +274,31 @@ export function CatanBoard({
     if (!coreCanBuildRoad(G.core, playerID).ok) return [];
     return getBuildableEdges(playerID, G, ctx);
   }, [passiveBuildEnabled, G, ctx, playerID]);
+
+  const passiveSettlementNodes = useMemo(() => {
+    if (!passiveBuildEnabled || !playerID) return [];
+    if (!G.core || !G.coreTopology) return [];
+    if (!coreCanBuildSettlement(G.core, playerID).ok) return [];
+    return buildableNodes(G.core, G.coreTopology, playerID, {
+      initialPlacement: false
+    });
+  }, [passiveBuildEnabled, G.core, G.coreTopology, playerID]);
+
+  const passiveCityNodes = useMemo(() => {
+    if (!passiveBuildEnabled || !playerID || !G.core) return [];
+    if (!coreCanBuildCity(G.core, playerID).ok) return [];
+    return Object.entries(G.core.buildingsByNodeId ?? {}).flatMap(
+      ([nodeId, building]) =>
+        building.ownerId === playerID && building.type === "settlement"
+          ? [Number(nodeId)]
+          : []
+    );
+  }, [passiveBuildEnabled, G.core, playerID]);
+
+  const passiveCityNodeSet = useMemo(
+    () => new Set(passiveCityNodes),
+    [passiveCityNodes]
+  );
 
   useEffect(()=>{
     if (
@@ -541,10 +568,12 @@ export function CatanBoard({
       }
       const isCityUpgradeHover =
         playerAction === "placeCity" && hoveredNode === numericNodeId;
+      const isPassiveCityUpgradeHover =
+        passiveCityNodeSet.has(hoveredNode) && hoveredNode === numericNodeId;
       const isCityUpgradePending = effectiveCityPlacementId === numericNodeId;
       if (
         building.type === "settlement" &&
-        (isCityUpgradeHover || isCityUpgradePending)
+        (isCityUpgradeHover || isPassiveCityUpgradeHover || isCityUpgradePending)
       ) {
         return;
       }
@@ -709,6 +738,75 @@ export function CatanBoard({
             setHoveredNode={setHoveredNode}
             hoveredNode={hoveredNode}
             onPlaceCommitted={handleBuildCommit}
+            themeId={themeId}
+          />
+        );
+        return null;
+      });
+  }
+
+  {
+    !suppressBuildHighlights &&
+      passiveBuildEnabled &&
+      passiveSettlementNodes.map((nodeId) => {
+        const renderNode = nodeRenderById[String(nodeId)];
+        if (!renderNode) {
+          return null;
+        }
+        actions.push(
+          <ActionNode
+            key={`passive-settlement-${nodeId}`}
+            nodeId={nodeId}
+            center={center}
+            size={size}
+            coordinate={renderNode.tile_coordinate}
+            direction={renderNode.direction}
+            buildingType="settlement"
+            buildingColor={currentPlayerView?.color ?? "red"}
+            onClick={() => {
+              handleBuildCommit();
+              moves.placeSettlement(nodeId);
+              setHoveredNode(null);
+              setHoveredTiles([]);
+            }}
+            setHoveredNode={setHoveredNode}
+            hoveredNode={hoveredNode}
+            showIdleCircle={false}
+            themeId={themeId}
+          />
+        );
+        return null;
+      });
+  }
+
+  {
+    !suppressBuildHighlights &&
+      passiveBuildEnabled &&
+      passiveCityNodes.map((nodeId) => {
+        const renderNode = nodeRenderById[String(nodeId)];
+        if (!renderNode || effectiveCityPlacementId === nodeId) {
+          return null;
+        }
+        actions.push(
+          <ActionNode
+            key={`passive-city-${nodeId}`}
+            nodeId={nodeId}
+            center={center}
+            size={size}
+            coordinate={renderNode.tile_coordinate}
+            direction={renderNode.direction}
+            buildingType="city"
+            buildingColor={currentPlayerView?.color ?? "red"}
+            onClick={() => {
+              handleBuildCommit();
+              setLocalPendingCityNodeId(nodeId);
+              moves.placeCity(nodeId);
+              setHoveredNode(null);
+              setHoveredTiles([]);
+            }}
+            setHoveredNode={setHoveredNode}
+            hoveredNode={hoveredNode}
+            showIdleCircle={false}
             themeId={themeId}
           />
         );
