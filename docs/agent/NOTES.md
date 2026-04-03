@@ -166,6 +166,33 @@
 - Feature spec is in:
 - `docs/superpowers/specs/2026-04-02-global-reconnect-banner-design.md`
 
+- Player color conflict-policy notes:
+- this slice is intentionally explicit, not heuristic.
+- Approved match-level conflicts are:
+  - `lavender` with `violet`, `purple`, `magenta`
+  - `purple` with `lavender`, `violet`, `magenta`
+  - `violet` with `lavender`, `purple`
+  - `magenta` with `lavender`, `purple`
+  - `red` with `coral`
+- `violet` and `magenta` remain allowed together.
+- `olive` is retired from live selection/assignment and should normalize to `lime` as a legacy alias.
+- Player color conflicts implementation-plan note:
+- the plan for this slice lives at `docs/superpowers/plans/2026-04-03-player-color-conflicts-plan.md`.
+- it assumes TDD in three runtime chunks:
+  - retire `olive`,
+  - add the explicit conflict-aware resolver and wire `GameScreen`,
+  - remove the avatar-side `chosenColor` override.
+- Player color conflicts implementation note:
+- keep the conflict policy in `app/catana/utils/playerColorsInGame.js` explicit and symmetric; do not replace it with fuzzy similarity logic unless product rules change.
+- Current allowed/disallowed nuance:
+  - `violet` + `magenta` is allowed,
+  - `lavender` + `magenta` is not,
+  - `lavender` + `violet` is not,
+  - `purple` + `magenta` is not,
+  - `red` + `coral` is not.
+- `olive` is now legacy-only and should continue normalizing to `lime` everywhere new player colors are read or assigned.
+- `PlayerAvatarStats.js` should continue treating `player.color` as the single in-game avatar/piece color source; do not reintroduce a separate `chosenColor` display override inside matches.
+
 - Disconnect/reconnect regression follow-up:
 - boardgame.io rejects timeout moves if they are sent as an inactive player and also checks live stage move maps before executing them.
 - Current fix:
