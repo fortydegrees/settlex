@@ -4,6 +4,8 @@ import { ServerCatan } from "./serverGame.js"
 import { TimerManager } from "./timers/TimerManager.js"
 import { createTimerPubSub } from "./timers/timerPubSub.js"
 import { DisconnectPresenceManager } from "./presence/DisconnectPresenceManager.js"
+import { IdlePresenceManager } from "./presence/IdlePresenceManager.js"
+import { acknowledgeIdle } from "./presence/acknowledgeIdle.js"
 import { createPufferBotManagerFromEnv } from "./bots/pufferBotManager.js"
 import { dispatchMatchUpdate } from "./dispatch/dispatchMatchUpdate.js"
 const DEFAULT_BOT_MOVE_DELAY_MS = 450
@@ -34,9 +36,15 @@ const timerManager = new TimerManager({
   botMoveDelayMs
 })
 const disconnectManager = new DisconnectPresenceManager({ dispatch })
+const idleManager = new IdlePresenceManager({
+  dispatch,
+  isBotPlayer: ({ matchID, playerID }) =>
+    botManager.isBotPlayerForMatch(matchID, playerID)
+})
 const pubSub = createTimerPubSub(timerManager, {
   botManager,
   disconnectManager,
+  idleManager,
   stateLoader: async (matchID) => {
     const response = await serverInstance?.db?.fetch(matchID, { state: true })
     return response?.state ?? null
@@ -62,6 +70,26 @@ server.router.get("/timer/:matchID", async (ctx) => {
   }
   const timer = timerManager.getTimerSnapshot(matchID, state)
   ctx.body = { matchID, timer, serverTimeMs: Date.now() }
+})
+
+server.router.post("/idle/:matchID/ack", async (ctx) => {
+  const matchID = ctx.params.matchID
+  const { playerID, credentials } = ctx.request.body ?? {}
+
+  try {
+    const result = await acknowledgeIdle({
+      serverInstance,
+      idleManager,
+      matchID,
+      playerID,
+      credentials
+    })
+    ctx.status = 200
+    ctx.body = result
+  } catch (error) {
+    ctx.status = error?.status ?? 500
+    ctx.body = { error: error?.message ?? "idle acknowledge failed" }
+  }
 })
 
 const lobbyConfig = {

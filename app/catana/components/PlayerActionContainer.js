@@ -107,7 +107,8 @@ export const PlayerActionContainer = ({
     return counts;
   }, [player.resources]);
   const timerText = formatTimer(timerMs);
-  const isDisconnected = presence?.status === "disconnected";
+  const isSeatWarning =
+    presence?.status === "disconnected" || presence?.status === "idle";
   const pieceColor = player.color ?? "red";
 
   const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
@@ -260,7 +261,7 @@ export const PlayerActionContainer = ({
   const isOverLimit = totalResources > discardLimit;
 
   // Determine container styling based on limit status
-  const containerStyle = isDisconnected
+  const containerStyle = isSeatWarning
     ? "bg-rose-100/80 ring-white/60 seat-disconnected-panel seat-disconnected-pulse"
     : isOverLimit
     ? "bg-rose-500 bg-opacity-40 ring-rose-500"

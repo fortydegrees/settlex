@@ -28,6 +28,7 @@ describe("PlayerActionContainer", () => {
 
   it("uses the white-ring danger disconnect styling for the player hand dock", () => {
     const contents = fs.readFileSync(actionContainerPath, "utf8");
+    expect(contents).toContain('presence?.status === "idle"');
     expect(contents).toContain("ring-white/60");
     expect(contents).toContain("seat-disconnected-pulse");
     expect(contents).toContain("seat-disconnected-panel");

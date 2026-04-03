@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createEmptyState } from "@settlex/game-core";
 import { Client } from "boardgame.io/dist/cjs/client.js";
 import { Catan } from "../Game";
-import { resign, resolveDisconnectForfeit } from "../Moves";
+import { resign, resolveDisconnectForfeit, resolveIdleForfeit } from "../Moves";
 import { ServerCatan } from "../../../server/serverGame";
 
 const makeContext = ({ playerID = "0" } = {}) => {
@@ -120,11 +120,38 @@ describe("terminal match moves", () => {
     ]);
   });
 
+  it("resolveIdleForfeit awards the win to the connected opponent", () => {
+    const context = makeContext({ playerID: "1" });
+
+    resolveIdleForfeit.move(context);
+
+    expect(context.G.core.gameOver).toEqual({
+      winnerId: "0",
+      reason: "AFK Forfeit"
+    });
+    expect(context.events.endGame).toHaveBeenCalledWith({
+      winnerId: "0",
+      reason: "AFK Forfeit"
+    });
+    expect(context.G.gameLog).toEqual([
+      expect.objectContaining({
+        type: "game:over",
+        actorId: "0",
+        data: {
+          winnerId: "0",
+          reason: "AFK Forfeit"
+        }
+      })
+    ]);
+  });
+
   it("keeps disconnect forfeit server-only while exposing resign to both configs", () => {
     expect(Catan.moves?.resign).toBeDefined();
     expect(Catan.moves?.resolveDisconnectForfeit).toBeUndefined();
+    expect(Catan.moves?.resolveIdleForfeit).toBeUndefined();
     expect(ServerCatan.moves?.resign).toBeDefined();
     expect(ServerCatan.moves?.resolveDisconnectForfeit).toBeDefined();
+    expect(ServerCatan.moves?.resolveIdleForfeit).toBeDefined();
   });
 
   it("exposes resign in every live stage move map", () => {
@@ -139,6 +166,12 @@ describe("terminal match moves", () => {
   it("exposes disconnect forfeit in every server live stage move map", () => {
     for (const stageMoves of getStageMoveMaps(ServerCatan)) {
       expect(stageMoves?.resolveDisconnectForfeit).toBeDefined();
+    }
+  });
+
+  it("exposes idle forfeit in every server live stage move map", () => {
+    for (const stageMoves of getStageMoveMaps(ServerCatan)) {
+      expect(stageMoves?.resolveIdleForfeit).toBeDefined();
     }
   });
 

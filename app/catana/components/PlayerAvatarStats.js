@@ -44,16 +44,19 @@ export const PlayerAvatarStats = ({
   const publicPoints = core ? getPublicVictoryPoints(core, player.id) : 0;
   const vpDisplay = getVpDisplay({ publicPoints, totalPoints, isMe });
   const isDisconnected = presence?.status === "disconnected";
-  const disconnectTimerText =
-    isDisconnected && presence?.remainingMs != null
+  const isIdle = presence?.status === "idle";
+  const isSeatWarning = isDisconnected || isIdle;
+  const presenceLabel = presence?.status === "idle" ? "Idle" : "Disconnected";
+  const presenceTimerText =
+    isSeatWarning && presence?.remainingMs != null
       ? formatPresenceTimer(presence.remainingMs)
       : null;
 
   return (
     <div className="relative">
-      <div
-        className={`flex items-start ${
-          isDisconnected ? "seat-disconnected-pulse" : ""
+        <div
+          className={`flex items-start ${
+          isSeatWarning ? "seat-disconnected-pulse" : ""
         }`}
       >
         <div className="flex w-20 items-center justify-center">
@@ -65,7 +68,7 @@ export const PlayerAvatarStats = ({
           )}
           <div
             className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${
-              isDisconnected
+              isSeatWarning
                 ? "seat-disconnected-avatar"
                 : ""
             } ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
@@ -75,20 +78,20 @@ export const PlayerAvatarStats = ({
           <span className="absolute right-0 top-0 z-10 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
             {vpDisplay}
           </span>
-          {isDisconnected && (
+          {isSeatWarning && (
             <span className="absolute bottom-1 right-1 text-[1rem] leading-none">
               ⚠️
             </span>
           )}
           {/* Only show status bubble for opponents, not for self */}
-          {!isMe && !isDisconnected && (
+          {!isMe && !isSeatWarning && (
             <StatusBubble statusType={statusType} isVisible={isActive} />
           )}
           </span>
         </div>
         <span
           className={`rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
-            isDisconnected
+            isSeatWarning
               ? "bg-rose-100/80 ring-white/60 seat-disconnected-panel"
               : "bg-blue-200 bg-opacity-50 ring-white/60"
           }`}
@@ -133,12 +136,12 @@ export const PlayerAvatarStats = ({
           </div>
         </span>
       </div>
-      {isDisconnected ? (
+      {isSeatWarning ? (
         <span className="absolute left-1/2 top-full mt-2 inline-flex min-w-[7rem] -translate-x-1/2 items-center justify-center gap-0 rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.03em] text-rose-700 ring-1 ring-rose-200 shadow-sm whitespace-nowrap">
-          <span>Disconnected</span>
-          {disconnectTimerText ? (
+          <span>{presenceLabel}</span>
+          {presenceTimerText ? (
             <span className="inline-block min-w-[2rem] tabular-nums text-right">
-              {disconnectTimerText}
+              {presenceTimerText}
             </span>
           ) : null}
         </span>

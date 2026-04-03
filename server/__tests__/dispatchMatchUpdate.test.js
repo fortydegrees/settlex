@@ -197,4 +197,54 @@ describe("dispatchMatchUpdate", () => {
       "1"
     );
   });
+
+  it("dispatches idle forfeits as the active player while targeting the idle seat", async () => {
+    const serverInstance = createServerInstance();
+    const state = {
+      _stateID: 12,
+      ctx: {
+        currentPlayer: "0",
+        activePlayers: { "0": "postRoll" }
+      }
+    };
+    const metadata = {
+      players: {
+        "0": { credentials: "c0" },
+        "1": { credentials: "c1" }
+      }
+    };
+    serverInstance.db.fetch.mockResolvedValue({ state, metadata });
+
+    const onUpdate = vi.fn().mockResolvedValue(undefined);
+    const MasterClass = vi.fn().mockImplementation(() => ({ onUpdate }));
+
+    await dispatchMatchUpdate({
+      serverInstance,
+      botManager: {
+        syncMatchBots: vi.fn(),
+        isBotPlayerForMatch: () => false,
+        chooseMoves: vi.fn()
+      },
+      move: "resolveIdleForfeit",
+      playerID: "1",
+      matchID: "m5",
+      game: { name: "catan" },
+      MasterClass
+    });
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      {
+        type: "MAKE_MOVE",
+        payload: {
+          type: "resolveIdleForfeit",
+          args: ["1"],
+          playerID: "0",
+          credentials: "c0"
+        }
+      },
+      12,
+      "m5",
+      "0"
+    );
+  });
 });
