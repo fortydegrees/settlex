@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-03, idle / AFK grace implementation plan written)
+- Wrote the implementation plan in:
+- `docs/superpowers/plans/2026-04-03-idle-afk-grace-plan.md`
+- Planned execution shape for this slice:
+- add a dedicated `IdlePresenceManager` beside disconnect presence,
+- detect strikes from fully auto-resolved normal gameplay turns,
+- add a small authenticated `POST /idle/:matchID/ack` route for `I'm still here`,
+- reuse the current seat/log warning language with `Idle` copy and a local countdown modal,
+- keep disconnect precedence explicit rather than collapsing idle + disconnect into one manager.
+
 ## Status (2026-04-03, idle / AFK grace design written)
 - Wrote the 1v1 idle / AFK grace design spec in:
 - `docs/superpowers/specs/2026-04-03-idle-afk-grace-design.md`

@@ -1,5 +1,13 @@
 # NOTES
 
+- Idle / AFK grace plan note:
+- the implementation plan keeps three seams separate:
+- server-owned idle policy in `IdlePresenceManager`,
+- a tiny authenticated ack helper / route for `POST /idle/:matchID/ack`,
+- client-side seat/modal rendering in `GameScreen` with disconnect-over-idle precedence.
+- Planning assumption:
+- a real transport disconnect clears any active idle grace state / strikes for that seat, then the existing disconnect manager takes over.
+
 - Idle / AFK grace design note:
 - keep idle separate from disconnect.
 - `Disconnected` remains a transport/socket fact owned by `DisconnectPresenceManager`.
