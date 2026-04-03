@@ -12,14 +12,14 @@ describe("boardLayout", () => {
   it("computes size constrained by height when width is ample", () => {
     const width = 2000;
     const height = 600;
-    const expected = (4 * height) / (3 * 6 + 1) / 2;
+    const expected = (4 * height) / (3 * 7 + 1) / 2;
     expect(computeDefaultSize({ width, height })).toBeCloseTo(expected, 5);
   });
 
   it("computes size constrained by width when width is tight", () => {
     const width = 400;
     const height = 1000;
-    const expected = width / 6 / SQRT3;
+    const expected = width / 7 / SQRT3;
     expect(computeDefaultSize({ width, height })).toBeCloseTo(expected, 5);
   });
 

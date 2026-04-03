@@ -21,6 +21,10 @@ import {
   readPresenceSnapshot
 } from "./utils/disconnectPresence";
 import {
+  getActiveIdleStateByPlayerId,
+  readIdlePresenceSnapshot
+} from "./utils/idlePresence";
+import {
   canRenderDevPlayModal,
   shouldResetTradeModal
 } from "./utils/turnUiState";
@@ -33,6 +37,7 @@ import { GlassPillButton } from "./components/GlassPillButton";
 import { LeftMetaRail } from "./components/LeftMetaRail";
 import { StatusBanner } from "./components/StatusBanner";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
+import { IdlePromptModal } from "./components/IdlePromptModal";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
 import { PostgameOverlay } from "./components/PostgameOverlay";
@@ -81,6 +86,7 @@ const getGameOverReasonCopy = (reason) => {
   if (reason === "victoryPoints" || !reason) return "Victory Points";
   if (reason === "Resignation") return "Resignation";
   if (reason === "Disconnect Forfeit") return "Disconnect Forfeit";
+  if (reason === "AFK Forfeit") return "AFK Forfeit";
   return String(reason);
 };
 
@@ -95,6 +101,9 @@ export function GameScreen(bgioProps) {
   const [timerSnapshot, setTimerSnapshot] = useState(null);
   const [timerSeeded, setTimerSeeded] = useState(false);
   const [disconnectPresence, setDisconnectPresence] = useState(null);
+  const [idlePresence, setIdlePresence] = useState(null);
+  const [idleAckError, setIdleAckError] = useState(null);
+  const [isAcknowledgingIdle, setIsAcknowledgingIdle] = useState(false);
   const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
   const [isMuted, setIsMuted] = useState(readStoredMute);
@@ -243,15 +252,22 @@ export function GameScreen(bgioProps) {
     () =>
       mergeVisibleLogEntries(
         bgioProps.G?.gameLog ?? [],
-        disconnectPresence?.events ?? []
+        [
+          ...(disconnectPresence?.events ?? []),
+          ...(idlePresence?.events ?? [])
+        ]
       ),
-    [bgioProps.G?.gameLog, disconnectPresence]
+    [bgioProps.G?.gameLog, disconnectPresence, idlePresence]
   );
   const activeDisconnectPlayerId =
     disconnectPresence?.activeDisconnectPlayerId ?? null;
+  const activeIdlePlayerId = idlePresence?.activeIdlePlayerId ?? null;
   const disconnectStateByPlayerId = useMemo(() => {
     return getActiveDisconnectStateByPlayerId(disconnectPresence, nowMs);
   }, [disconnectPresence, nowMs]);
+  const idleStateByPlayerId = useMemo(() => {
+    return getActiveIdleStateByPlayerId(idlePresence, nowMs);
+  }, [idlePresence, nowMs]);
   const gameOverReasonText = getGameOverReasonCopy(gameOverState?.reason);
 
   const postgameSummary = useMemo(() => {
@@ -299,6 +315,9 @@ export function GameScreen(bgioProps) {
     setTimerSnapshot(null);
     setTimerSeeded(false);
     setDisconnectPresence(null);
+    setIdlePresence(null);
+    setIdleAckError(null);
+    setIsAcknowledgingIdle(false);
     setReadySent(false);
     setShowConnectionBanner(false);
     hasSeenTransportConnectionRef.current = false;
@@ -360,6 +379,22 @@ export function GameScreen(bgioProps) {
       )
     );
   }, [bgioProps.disconnectPresence, bgioProps.disconnectServerTimeMs]);
+
+  useEffect(() => {
+    if (
+      bgioProps.idlePresence === undefined &&
+      bgioProps.idleServerTimeMs === undefined
+    ) {
+      return;
+    }
+
+    setIdlePresence(
+      readIdlePresenceSnapshot(
+        bgioProps.idlePresence,
+        bgioProps.idleServerTimeMs
+      )
+    );
+  }, [bgioProps.idlePresence, bgioProps.idleServerTimeMs]);
 
   useEffect(() => {
     if (!matchID || typeof window === "undefined") return;
@@ -437,14 +472,22 @@ export function GameScreen(bgioProps) {
   const hideTimer = isGameOver || timerSnapshot?.stageKey?.startsWith("preGame:");
   const visibleTimerMs = hideTimer ? null : timerMs;
   const hasDisconnectCountdown = Boolean(activeDisconnectPlayerId);
+  const hasIdleCountdown = Boolean(activeIdlePlayerId);
 
   useEffect(() => {
     if (!timerSnapshot || hideTimer) {
-      if (!hasDisconnectCountdown) return;
+      if (!hasDisconnectCountdown && !hasIdleCountdown) return;
     }
     const interval = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(interval);
-  }, [timerSnapshot, hideTimer, hasDisconnectCountdown]);
+  }, [timerSnapshot, hideTimer, hasDisconnectCountdown, hasIdleCountdown]);
+
+  useEffect(() => {
+    if (isGameOver || activeIdlePlayerId == null) {
+      setIdleAckError(null);
+      setIsAcknowledgingIdle(false);
+    }
+  }, [activeIdlePlayerId, isGameOver]);
 
   useEffect(() => {
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
@@ -537,6 +580,43 @@ export function GameScreen(bgioProps) {
     moves.resign();
   };
 
+  const handleAcknowledgeIdle = async () => {
+    if (isAcknowledgingIdle) return;
+    if (!matchID || playerID == null) return;
+    if (typeof window === "undefined") return;
+    if (!bgioProps.credentials) {
+      setIdleAckError("Missing player credentials.");
+      return;
+    }
+
+    setIsAcknowledgingIdle(true);
+    setIdleAckError(null);
+    try {
+      const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
+      const response = await fetch(`${baseUrl}/idle/${matchID}/ack`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          playerID,
+          credentials: bgioProps.credentials
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? "Unable to clear idle warning.");
+      }
+
+      setIdleAckError(null);
+    } catch (error) {
+      setIdleAckError(error?.message ?? "Unable to clear idle warning.");
+    } finally {
+      setIsAcknowledgingIdle(false);
+    }
+  };
+
   const canRoll = Boolean(
     !isGameOver &&
       playerID &&
@@ -573,6 +653,15 @@ export function GameScreen(bgioProps) {
       name: nameMap[view.id],
       emoji: emojiMap[view.id]
     }));
+  const localIdlePresence =
+    playerID != null ? idleStateByPlayerId[playerID] ?? null : null;
+  const showIdlePrompt =
+    !isGameOver &&
+    playerID != null &&
+    activeIdlePlayerId != null &&
+    String(activeIdlePlayerId) === String(playerID) &&
+    disconnectStateByPlayerId[playerID] == null &&
+    localIdlePresence != null;
 
   //const otherPlayerCards = bgioProps.G.players[opponentID].resourceCards; //TODO: horrible, clean up. might need to check if playerID exists (e.g. what about spectator)
 
@@ -800,7 +889,7 @@ TODO: accurately colour it
           bgioProps={bgioProps}
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
-          presence={disconnectStateByPlayerId[player.id] ?? null}
+          presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}
@@ -852,6 +941,15 @@ TODO: accurately colour it
         />
       )}
 
+      {showIdlePrompt ? (
+        <IdlePromptModal
+          remainingMs={localIdlePresence?.remainingMs ?? null}
+          onAcknowledge={handleAcknowledgeIdle}
+          isSubmitting={isAcknowledgingIdle}
+          error={idleAckError}
+        />
+      ) : null}
+
       {(opponents.length > 0 || showConnectionBanner) && (
         <div className="pointer-events-none fixed inset-x-0 top-6 z-30 flex flex-col items-center gap-3 px-4">
           {opponents.length > 0 && (
@@ -860,7 +958,7 @@ TODO: accurately colour it
                 <OpponentPlayerBox
                   key={opponent.id}
                   player={opponent}
-                  presence={disconnectStateByPlayerId[opponent.id] ?? null}
+                  presence={disconnectStateByPlayerId[opponent.id] ?? idleStateByPlayerId[opponent.id] ?? null}
                   core={bgioProps.G.core}
                   coreTopology={bgioProps.G.coreTopology}
                   isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}

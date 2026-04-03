@@ -25,9 +25,10 @@ describe("OpponentPlayerBox", () => {
     expect(contents).toContain("motion-reduce:transition-none");
   });
 
-  it("passes presence state into the avatar and disconnected seat styling", () => {
+  it("passes presence state into the avatar and shared seat-warning styling", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("presence={presence}");
+    expect(contents).toContain('presence?.status === "idle"');
     expect(contents).toContain("seat-disconnected-panel");
     expect(contents).toContain("ring-white/60");
     expect(contents).toContain("seat-disconnected-pulse");
