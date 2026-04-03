@@ -1634,3 +1634,18 @@
     - `black`, `white`, `silver`, and `gold` intentionally use stronger special-case shading so they stay legible on the board.
   - `public/svgs/pieces/` is now intended to contain only canonical generated piece IDs.
     - old compatibility IDs like `blue`, `cyan`, `pink`, and `amber` should not come back as standalone files; runtime alias normalization should point them at `sky`, `teal`, `coral`, and `gold`.
+- Lobby picker / action dock note:
+  - keep `PLAYER_COLOR_OPTIONS` as the canonical palette registry and use a separate ordered export when a UI wants a curated presentation.
+  - `PLAYER_COLOR_PICKER_OPTIONS` is now the username-modal swatch order and intentionally leads with `red`, `sky`, `white`, and `orange`.
+  - `PlayerActionContainer.js` should continue sourcing its road/settlement/city build-button art from `player.color` so the dock matches the resolved in-game player color instead of the old hardcoded red preview.
+  - post-generation polish notes:
+    - `black` reads better in this system when it is really a dark charcoal/slate family, not a near-true black.
+    - `silver` and `white` need slightly stronger internal separation than the saturated colors or they disappear into Catana's pale glass/board layers.
+    - `olive` should stay bright/fresh enough to avoid looking muddy next to `green` and `gold`.
+    - `tan` benefits from a warmer caramel/beige ramp rather than a dusty gray-brown ramp.
+    - `magenta` looks more on-theme when nudged toward berry/rose instead of candy-neon fuchsia.
+    - a distinct brighter `yellow` could work as an extra optional color separate from `gold`; if added later, it should be a cheerful lemon/butter family and still keep enough shadow separation to stay readable on wheat/yellow-adjacent board areas.
+  - UI alignment note:
+    - `app/catana/theme/playerColors.js` is the canonical source for lobby swatches, avatar gradients, text-name hexes, and generated piece ramps.
+    - if piece shades are manually polished, mirror the same direction back into `playerColors.js` or the next `scripts/generate-player-piece-palette.mjs` run will drift the repo back out of sync.
+    - the intended balance is: UI colors can stay slightly punchier/cleaner than the board pieces, but they should clearly belong to the same family.

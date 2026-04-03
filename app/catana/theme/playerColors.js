@@ -49,9 +49,9 @@ const PLAYER_COLOR_OPTION_VALUES = [
   },
   {
     id: "magenta",
-    swatch: "bg-[#db47d3]",
-    gradient: "from-[#f07cea] to-[#91358b]",
-    nameHex: "#db47d3"
+    swatch: "bg-[#cf58b0]",
+    gradient: "from-[#e89bd3] to-[#973c79]",
+    nameHex: "#cf58b0"
   },
   {
     id: "purple",
@@ -67,9 +67,9 @@ const PLAYER_COLOR_OPTION_VALUES = [
   },
   {
     id: "olive",
-    swatch: "bg-[#b2ab3e]",
-    gradient: "from-[#d2cb6b] to-[#746c1f]",
-    nameHex: "#b2ab3e"
+    swatch: "bg-[#9fb342]",
+    gradient: "from-[#d7e28b] to-[#728628]",
+    nameHex: "#9fb342"
   },
   {
     id: "brown",
@@ -109,27 +109,27 @@ const PLAYER_COLOR_OPTION_VALUES = [
   },
   {
     id: "tan",
-    swatch: "bg-[#b99e77]",
-    gradient: "from-[#d1be9d] to-[#7a6448]",
-    nameHex: "#b99e77"
+    swatch: "bg-[#c1a07a]",
+    gradient: "from-[#e2c8aa] to-[#8e6849]",
+    nameHex: "#c1a07a"
   },
   {
     id: "black",
-    swatch: "bg-[#1d1d25] border border-black/20",
-    gradient: "from-[#4b4b59] to-[#111119]",
-    nameHex: "#1d1d25"
+    swatch: "bg-[#2f3742] border border-black/20",
+    gradient: "from-[#6f7885] to-[#27303a]",
+    nameHex: "#2f3742"
   },
   {
     id: "white",
-    swatch: "bg-[#edebe3] border border-slate-400",
-    gradient: "from-[#f7f4ed] to-[#c6bfb3]",
-    nameHex: "#edebe3"
+    swatch: "bg-[#efece3] border border-slate-400",
+    gradient: "from-[#fbfaf5] to-[#d5cec3]",
+    nameHex: "#efece3"
   },
   {
     id: "silver",
-    swatch: "bg-[#aaaeb6] border border-slate-500",
-    gradient: "from-[#d5dae2] to-[#6b7280]",
-    nameHex: "#aaaeb6"
+    swatch: "bg-[#b8bec7] border border-slate-500",
+    gradient: "from-[#e8edf2] to-[#8b94a0]",
+    nameHex: "#b8bec7"
   },
   {
     id: "gold",
@@ -146,6 +146,20 @@ export const PLAYER_COLOR_OPTIONS = Object.freeze(
 const PLAYER_COLOR_OPTIONS_BY_ID = new Map(
   PLAYER_COLOR_OPTIONS.map((option) => [option.id, option])
 );
+
+const PLAYER_COLOR_PICKER_ORDER = Object.freeze([
+  "red",
+  "sky",
+  "white",
+  "orange"
+]);
+
+export const PLAYER_COLOR_PICKER_OPTIONS = Object.freeze([
+  ...PLAYER_COLOR_PICKER_ORDER.map((id) => PLAYER_COLOR_OPTIONS_BY_ID.get(id)),
+  ...PLAYER_COLOR_OPTIONS.filter(
+    (option) => !PLAYER_COLOR_PICKER_ORDER.includes(option.id)
+  )
+]);
 
 export function normalizePlayerColorId(colorId) {
   const normalizedColor =

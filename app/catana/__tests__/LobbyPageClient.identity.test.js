@@ -11,4 +11,13 @@ describe("LobbyPageClient identity modal", () => {
 
     expect(source).toContain("flex flex-wrap justify-center gap-2");
   });
+
+  it("renders swatches from the picker-specific color order", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "app/catana/lobby/LobbyPageClient.js"),
+      "utf8"
+    );
+
+    expect(source).toContain("PLAYER_COLOR_PICKER_OPTIONS.map((c) => (");
+  });
 });

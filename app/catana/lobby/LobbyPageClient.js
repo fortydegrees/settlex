@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  PLAYER_COLOR_PICKER_OPTIONS,
   PLAYER_COLOR_OPTIONS,
   getPlayerColorOption,
   normalizePlayerColorId
@@ -260,7 +261,7 @@ function IdentityModal({ onSubmit, onClose, initialName, initialEmoji, initialCo
 
         {/* Color swatches */}
         <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {PLAYER_COLOR_OPTIONS.map((c) => (
+          {PLAYER_COLOR_PICKER_OPTIONS.map((c) => (
             <button
               key={c.id}
               type="button"

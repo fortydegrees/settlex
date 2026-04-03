@@ -2436,3 +2436,31 @@
   - `xmllint --noout public/svgs/pieces/*.svg`
   - `node -e "import('./app/catana/types.js')"`
   - `node -e "import('./app/board-editor/utils/types.js')"` (passes with the pre-existing `MODULE_TYPELESS_PACKAGE_JSON` warning)
+- Reordered the lobby username swatches so the classic Catan-like colors lead the picker while preserving the full palette:
+  - added `PLAYER_COLOR_PICKER_OPTIONS` in `app/catana/theme/playerColors.js` with `red`, `sky`, `white`, and `orange` first,
+  - updated `app/catana/lobby/LobbyPageClient.js` to render the circular chips from that picker-specific order instead of the raw canonical registry order.
+- Updated the player action dock build buttons to reflect the player’s effective in-game piece color:
+  - `app/catana/components/PlayerActionContainer.js` now derives the road/settlement/city icon assets from `player.color` instead of always using red,
+  - that keeps the dock preview aligned with the board pieces and avatar box after duplicate-color resolution.
+- Ran a conservative polish pass on the generated `public/svgs/pieces/` palette family after visual review:
+  - lifted `black` toward charcoal/slate so it feels less dead-heavy against Catana's light board language,
+  - increased separation for `silver` and `white` so the light pieces do not wash out as easily,
+  - shifted `olive` cleaner/fresher, `tan` warmer/richer, and `magenta` slightly away from neon toward berry,
+  - left the stronger on-theme colors (`red`, `sky`, `green`, `teal`, `orange`, `gold`, `royal`, `violet`, `brown`, `maroon`, etc.) untouched.
+- Re-rendered local review sheets for the full generated piece family in `tmp/pieces-palette-review/`:
+  - `settlements_sheet.png`
+  - `roads_sheet.png`
+  - `cities_sheet.png`
+  - `all_pieces_sheet.png`
+- Verification for the palette-polish pass:
+  - `xmllint --noout public/svgs/pieces/*.svg`
+  - `rsvg-convert -w 220 -h 220 public/svgs/pieces/*.svg` (batched locally into `tmp/pieces-palette-review/renders/`)
+- Aligned the live UI palette source in `app/catana/theme/playerColors.js` with the refined piece families:
+  - updated `black`, `silver`, `white`, `olive`, `tan`, and `magenta` swatch/gradient/nameHex values so the username picker and avatar boxes better match the softened Catana piece ramps,
+  - kept the stronger existing entries like `red`, `sky`, `green`, `teal`, `orange`, and `gold` unchanged,
+  - regenerated `public/svgs/pieces/` from the canonical palette source afterward so future reruns of `scripts/generate-player-piece-palette.mjs` preserve the same direction.
+- Created a quick local UI sanity preview at `tmp/palette-ui-preview.html` / `tmp/palette-ui-preview.png` to visually confirm the picker swatches and avatar-style gradients still feel Catana after the palette-source update.
+- Verification for the UI/piece palette alignment pass:
+  - `pnpm exec vitest run app/catana/__tests__/playerColors.test.js app/catana/__tests__/pieceAssets.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/themeAssets.test.js`
+  - `node scripts/generate-player-piece-palette.mjs`
+  - `xmllint --noout public/svgs/pieces/*.svg`
