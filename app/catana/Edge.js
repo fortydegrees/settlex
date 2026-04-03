@@ -6,6 +6,15 @@ import { ActionNode } from "./ActionNode";
 import { getBackgroundImageWithFallback } from "./theme/themes";
 import { getPieceSvgFile } from "./theme/pieceAssets.js";
 
+const EDGE_ROTATION_DEGREES = {
+  NORTHEAST: 30,
+  EAST: 90,
+  SOUTHEAST: 150,
+  SOUTHWEST: 210,
+  WEST: 270,
+  NORTHWEST: 330
+};
+
 function Road({ color, size, tileX, tileY, transform, themeId }) {
   const roadFile = getPieceSvgFile("road", color);
   return (
@@ -58,6 +67,7 @@ function PlaceableEdge({
   hoveredNode,
   setHoveredNode,
   onPlace,
+  registerBuildTarget,
   themeId,
 }) {
   const { width } = useWindowSize();
@@ -106,6 +116,10 @@ function PlaceableEdge({
         }}
         setHoveredNode={setHoveredNode}
         hoveredNode={hoveredNode}
+        registerBuildTarget={registerBuildTarget}
+        buildTargetMeta={{
+          rotationDegrees: EDGE_ROTATION_DEGREES[direction] ?? 90
+        }}
       />
     </>
   );
@@ -181,6 +195,7 @@ export function Edge({
   setHoveredNode,
   moves,
   setPlayerAction,
+  registerBuildTarget,
   onPlaceCommitted,
   themeId,
 }) {
@@ -201,6 +216,7 @@ export function Edge({
         initialPlacement={initialPlacement}
         hoveredNode={hoveredNode}
         setHoveredNode={setHoveredNode}
+        registerBuildTarget={registerBuildTarget}
         themeId={themeId}
         onPlace={(edgeId) => {
           onPlaceCommitted?.();

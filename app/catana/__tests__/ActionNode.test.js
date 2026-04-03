@@ -10,5 +10,6 @@ describe("ActionNode", () => {
     const source = fs.readFileSync(actionNodePath, "utf8");
 
     expect(source).toContain('data-action-circle="true"');
+    expect(source).toContain("registerBuildTarget");
   });
 });
