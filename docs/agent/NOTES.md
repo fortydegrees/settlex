@@ -1,5 +1,19 @@
 # NOTES
 
+- Action dock build pickup implementation note:
+- the explicit Catana build buttons no longer own any dock-level magnify math or looping bounce animation.
+- Current expected UX is:
+- a small hover raise on the dock button,
+- a short press response on click,
+- the real `road` / `settlement` / `city` piece launches from that button into `BuildPlacementPreview`,
+- the preview then behaves like the robber follower pattern with magnetic snapping to legal build targets.
+- Important reset rule:
+- explicit build pickup must clear not only on turn/stage/game-over changes, but also when the underlying build is no longer legal for the authoritative game state.
+- This legality reset lives in `app/catana/utils/playerAction.js`; do not regress it back to turn-only checks or the dock can get stuck showing stale `Place Road` / `Place City` state after live match updates.
+- Important board registration rule:
+- `app/catana/ActionNode.js` must register build-target metadata using stable primitive deps.
+- Do not depend directly on an inline `buildTargetMeta` object inside the registration effect; that caused a live `Maximum update depth exceeded` loop once pickup previews started rendering target circles.
+
 - Dock build pickup design note:
 - the approved interaction cleanup is intentionally narrow:
 - keep the current Catana dock styling/layout,

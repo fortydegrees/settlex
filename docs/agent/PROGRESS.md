@@ -1,5 +1,30 @@
 # PROGRESS
 
+## Status (2026-04-03, action dock build pickup implemented)
+- Reworked the explicit build buttons in the Catana action dock to remove the old magnify behavior and the looping bounce.
+- Current interaction:
+- `road`, `settlement`, and `city` now start a real build-pickup flow from the clicked dock button,
+- the piece launches from the button into a cursor-following `BuildPlacementPreview`,
+- the selected dock button stays subtly active while the piece is in hand,
+- `Escape`, click-cancel, end turn, game-over, and other reset paths now clear the pickup immediately with no fly-back.
+- Board wiring added in:
+- `app/catana/components/ActionsDock/Dock.js`
+- `app/catana/components/ActionsDock/DockCard.js`
+- `app/catana/components/PlayerActionContainer.js`
+- `app/catana/BuildPlacementPreview.js`
+- `app/catana/Board.js`
+- `app/catana/ActionNode.js`
+- `app/catana/utils/playerAction.js`
+- Runtime regressions fixed during browser verification:
+- `ActionNode` build-target registration no longer depends on unstable `buildTargetMeta` object identity, which had caused a `Maximum update depth exceeded` loop as soon as a road pickup rendered live board targets.
+- explicit build mode now also resets when the underlying action stops being legal, not just when the turn/stage changes, which prevents stale `Place Road` UI from surviving after resources/legality change.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/playerAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/Board.robberPlacementUx.test.js`
+- Browser checks on fresh scenario-backed matches verified:
+- road pickup appears from the dock, follows the cursor, snaps to legal edge targets, and cancels cleanly on `Escape`,
+- city pickup appears from the dock, follows the cursor, and snaps to legal upgrade nodes,
+- stale illegal build pickup clears on reload after legality/turn changes instead of leaving the dock stuck in `Place Road`.
+
 ## Status (2026-04-03, dock build pickup design written)
 - Wrote the dock interaction design spec in:
 - `docs/superpowers/specs/2026-04-03-action-dock-build-pickup-design.md`
