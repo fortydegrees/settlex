@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { shouldResetPlayerAction } from "../utils/playerAction";
+import {
+  getBuildPickupPieceType,
+  shouldResetPlayerAction
+} from "../utils/playerAction";
 
 const baseCtx = {
   phase: "main",
@@ -8,6 +11,14 @@ const baseCtx = {
 };
 
 describe("shouldResetPlayerAction", () => {
+  it("maps explicit build actions to dock pickup piece types", () => {
+    expect(getBuildPickupPieceType("placeRoad")).toBe("road");
+    expect(getBuildPickupPieceType("placeSettlement")).toBe("settlement");
+    expect(getBuildPickupPieceType("placeCity")).toBe("city");
+    expect(getBuildPickupPieceType("moveRobber")).toBe(null);
+    expect(getBuildPickupPieceType(null)).toBe(null);
+  });
+
   it("keeps placeRoad action while player can still build", () => {
     expect(
       shouldResetPlayerAction({
