@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-03, player color conflict-groups design written)
+- Wrote the conflict-policy design in:
+- `docs/superpowers/specs/2026-04-03-player-color-conflicts-design.md`
+- Approved product direction for this slice:
+- keep exact duplicate colour protection,
+- add explicit in-game conflict groups for:
+  - `lavender` / `violet` / `purple`
+  - `lavender` / `magenta` / `purple`
+  - `red` / `coral`
+- keep `violet` + `magenta` allowed,
+- retire `olive` from live use by removing it from selectable/assignable palettes and normalizing old `olive` values to `lime`.
+
 ## Status (2026-04-02, player effective colors implementation plan written)
 - Wrote the implementation plan in:
 - `docs/superpowers/plans/2026-04-02-player-effective-colors-plan.md`

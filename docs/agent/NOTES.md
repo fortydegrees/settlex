@@ -166,6 +166,17 @@
 - Feature spec is in:
 - `docs/superpowers/specs/2026-04-02-global-reconnect-banner-design.md`
 
+- Player color conflict-policy notes:
+- this slice is intentionally explicit, not heuristic.
+- Approved match-level conflicts are:
+  - `lavender` with `violet`, `purple`, `magenta`
+  - `purple` with `lavender`, `violet`, `magenta`
+  - `violet` with `lavender`, `purple`
+  - `magenta` with `lavender`, `purple`
+  - `red` with `coral`
+- `violet` and `magenta` remain allowed together.
+- `olive` is retired from live selection/assignment and should normalize to `lime` as a legacy alias.
+
 - Disconnect/reconnect regression follow-up:
 - boardgame.io rejects timeout moves if they are sent as an inactive player and also checks live stage move maps before executing them.
 - Current fix:
