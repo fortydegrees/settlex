@@ -59,6 +59,7 @@ import {
   clearLastActiveMatch,
   readLastActiveMatch
 } from "./utils/activeMatchStorage";
+import { shouldAutoReady } from "./utils/preGameReady";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 
@@ -264,8 +265,6 @@ export function GameScreen(bgioProps) {
       ),
     [bgioProps.G?.gameLog, disconnectPresence, idlePresence]
   );
-  const activeDisconnectPlayerId =
-    disconnectPresence?.activeDisconnectPlayerId ?? null;
   const activeIdlePlayerId = idlePresence?.activeIdlePlayerId ?? null;
   const disconnectStateByPlayerId = useMemo(() => {
     return getActiveDisconnectStateByPlayerId(disconnectPresence, nowMs);
@@ -440,12 +439,33 @@ export function GameScreen(bgioProps) {
   }, [matchID, timerSeeded, bgioProps.timerSnapshot]);
 
   useEffect(() => {
-    if (readySent) return;
-    if (!playerID || typeof moves?.readyUp !== "function") return;
-    if (bgioProps.ctx?.phase !== "preGame") return;
+    if (
+      !shouldAutoReady({
+        readySent,
+        playerID,
+        phase: bgioProps.ctx?.phase,
+        hasReadyMove: typeof moves?.readyUp === "function",
+        isMultiplayer: bgioProps.isMultiplayer,
+        isConnected: bgioProps.isConnected,
+        matchData: bgioProps.matchData,
+        readyByPlayerId: bgioProps.G?.preGame?.readyByPlayerId
+      })
+    ) {
+      return;
+    }
+
     moves.readyUp();
     setReadySent(true);
-  }, [readySent, playerID, moves, bgioProps.ctx?.phase]);
+  }, [
+    readySent,
+    playerID,
+    moves,
+    bgioProps.ctx?.phase,
+    bgioProps.isMultiplayer,
+    bgioProps.isConnected,
+    bgioProps.matchData,
+    bgioProps.G?.preGame?.readyByPlayerId
+  ]);
 
   useEffect(() => {
     Howler.mute(isMuted);
@@ -476,7 +496,8 @@ export function GameScreen(bgioProps) {
     : null;
   const hideTimer = isGameOver || timerSnapshot?.stageKey?.startsWith("preGame:");
   const visibleTimerMs = hideTimer ? null : timerMs;
-  const hasDisconnectCountdown = Boolean(activeDisconnectPlayerId);
+  const hasDisconnectCountdown =
+    Object.keys(disconnectStateByPlayerId).length > 0;
   const hasIdleCountdown = Boolean(activeIdlePlayerId);
 
   useEffect(() => {

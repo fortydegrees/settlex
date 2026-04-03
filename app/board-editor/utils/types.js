@@ -54,12 +54,12 @@ export const ResourceType = {
   }
 
   export const RESOURCE_SVGS = {
-    "Wood": "/svgs/tile_lumber.svg",
-    "Brick": "/svgs/tile_brick.svg",
-    "Sheep": "/svgs/tile_wool.svg",
-    "Wheat": "/svgs/tile_grain.svg",
-    "Ore": "/svgs/tile_ore.svg",
-    "Desert": "/svgs/tile_desert.svg",
+    "Wood": "/svgs/palette-themes/emoji/tile_lumber.svg",
+    "Brick": "/svgs/palette-themes/emoji/tile_brick.svg",
+    "Sheep": "/svgs/palette-themes/emoji/tile_wool.svg",
+    "Wheat": "/svgs/palette-themes/emoji/tile_grain.svg",
+    "Ore": "/svgs/palette-themes/emoji/tile_ore.svg",
+    "Desert": "/svgs/palette-themes/emoji/tile_desert.svg",
     //"Ore": "/ore.svg",
     "Empty": '/empty.svg'
 }

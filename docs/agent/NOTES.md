@@ -1,5 +1,28 @@
 # NOTES
 
+- Stale pregame readyUp note:
+- `readyUp` is intentionally configured as a stale-safe long-form move in `app/catana/Moves.js` via `ignoreStaleStateID: true`.
+- Reason:
+- in real human matchmaking, one player's `readyUp` can land between the other player's initial sync and that browser receiving the resulting patch/update,
+- boardgame.io still dispatches the second browser's move from its local stale `_stateID`,
+- but this specific move is commutative/idempotent enough to apply safely on the latest server state because it only marks that seat ready and may end `preGame` once everyone is ready.
+- Do not remove that flag unless pregame readiness semantics change materially.
+
+- Pregame ready-up / matchmaking handoff note:
+- `app/catana/GameScreen.js` must not auto-dispatch `readyUp` in multiplayer until the boardgame.io socket client has completed its initial sync.
+- Important boardgame.io behavior:
+- the React board mounts with a local initial game state before the `sync` payload arrives,
+- `bgioProps.isConnected` alone is not enough to prove the authoritative match state is present,
+- waiting for synced `matchData` avoids dispatching `readyUp` from stale `_stateID=0` during human matchmaking handoff.
+- Current guard lives in `app/catana/utils/preGameReady.js` and also checks the server-authored `G.preGame.readyByPlayerId` map so reconnects/remounts do not resend `readyUp` after the seat is already marked ready.
+
+- Matchmaking modal transition note:
+- keep the lobby `searchState` mounted until navigation actually leaves `app/catana/lobby/LobbyPageClient.js`.
+- Do not reintroduce `setSearchState(null); router.push(...)` in the "match found" path; that causes the home screen to flash during route transition.
+- Current shape:
+- `searchState.phase === "searching"` shows the queue copy,
+- `searchState.phase === "matchFound"` keeps the same modal mounted with loading copy and disables cancel while the match page loads.
+
 - Custom API route port note:
 - in this repo's current dev server shape, `server.run({ port: 8000, lobbyConfig: { apiPort: 8080 } })` splits responsibilities:
 - `:8000` serves the boardgame.io socket/game transport,
@@ -1743,3 +1766,24 @@
   - `app/catana/ActionNode.js` supports `showIdleCircle={false}` so passive settlement/city targets can keep their hit area without adding visual clutter before hover.
   - `app/catana/Edge.js` must also pass `showIdleCircle={false}` through `HoverableEdge`; otherwise passive road mode leaks visible/faded action circles for every eligible edge instead of staying quiet until direct hover.
   - passive city hover reuses the same settlement-hiding suppression path as explicit city upgrades via `passiveCityNodeSet`, so the base settlement does not double-render during hover or placement animation.
+- Disconnect presence note:
+  - overlapping socket disconnects are normal in local dev because a spectator/opponent refresh emits a real temporary disconnect before re-syncing.
+  - the reconnect-window manager cannot model disconnect state as one match-wide active seat plus one timer; that shape breaks as soon as a second player refreshes while the first player's window is still running.
+  - `DisconnectPresenceManager` now needs to be thought of as per-seat state:
+    - each disconnected player owns their own `reconnectDeadlineAtMs` and timeout handle,
+    - the legacy `activeDisconnectPlayerId` in snapshots is now just the earliest-expiring disconnected seat for backward compatibility, not the full source of truth.
+  - client rendering should derive visible disconnected badges/countdowns from `statusByPlayerId[*].reconnectDeadlineAtMs`, not from `activeDisconnectPlayerId` alone.
+- Postgame presence note:
+  - after `gameover`, connection changes are social presence only, not reconnect-window state.
+  - expected behavior:
+    - no avatar-box disconnect styling/countdown updates,
+    - no disconnect forfeit timers,
+    - log entries should use concise postgame copy like `left.` and `rejoined.` so chat participants can tell who is still around.
+  - `DisconnectPresenceManager` should therefore emit `server:leave` / `server:return` after resolution instead of `server:disconnect` / `server:reconnect`.
+- Theme asset retirement note:
+  - the old root-level classic resource/tile SVGs under `public/svgs/icon_*.svg` and `public/svgs/tile_*.svg` are no longer required on disk.
+  - compatibility now lives in `app/catana/theme/themes.js`:
+    - `classic` redirects retired tile/resource filenames to the emoji asset set,
+    - palette theme CSS fallbacks therefore degrade to emoji assets instead of broken `/svgs/tile_*.svg` URLs.
+  - if more base assets are retired later, update the redirect map and the `themeAssets` regression together rather than restoring dead files just to satisfy tests.
+  - `app/catana/types.js` and `app/board-editor/utils/types.js` had stale hardcoded references to removed root SVGs; keep those constants aligned with whatever asset family actually remains on disk.

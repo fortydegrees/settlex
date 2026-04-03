@@ -21,15 +21,48 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="6.875"
-     inkscape:cx="6.7636364"
-     inkscape:cy="29.018182"
+     inkscape:zoom="27.5"
+     inkscape:cx="15.345455"
+     inkscape:cy="16.854545"
      inkscape:window-width="2102"
      inkscape:window-height="1496"
-     inkscape:window-x="926"
-     inkscape:window-y="120"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg16" />
+  <g
+     filter="url(#filter0_iii_circled_plus_green)"
+     id="g1">
+    <path
+       d="M15.6023 30.1939C23.3343 30.1939 29.6023 23.9259 29.6023 16.1939C29.6023 8.46189 23.3343 2.19388 15.6023 2.19388C7.87031 2.19388 1.60229 8.46189 1.60229 16.1939C1.60229 23.9259 7.87031 30.1939 15.6023 30.1939Z"
+       fill="url(#paint0_linear_circled_plus_green)"
+       id="path1" />
+  </g>
+  <g
+     filter="url(#filter1_f_circled_plus_green)"
+     id="g3">
+    <g
+       transform="translate(8 8) scale(0.5)"
+       id="g2">
+      <path
+         d="M19.05 5.06C19.05 3.38 17.68 2 15.99 2C14.3 2 12.92 3.38 12.93 5.06V12.9301H5.06C3.38 12.9301 2 14.3001 2 15.9901C2 17.6701 3.38 19.0501 5.06 19.0501H12.93V26.91C12.93 28.59 14.3 29.97 15.99 29.97C17.67 29.97 19.05 28.6 19.05 26.91V19.0501H26.91C28.59 19.0501 29.97 17.6801 29.97 15.9901C29.97 14.3101 28.6 12.9301 26.91 12.9301H19.05V5.06Z"
+         fill="#53BB7D"
+         id="path2" />
+    </g>
+  </g>
+  <g
+     filter="url(#filter2_ii_circled_plus_green)"
+     id="g5"
+     transform="matrix(1.1608392,0,0,1.1608392,-2.5734272,-2.5734272)">
+    <g
+       transform="matrix(0.5,0,0,0.5,8,8)"
+       id="g4">
+      <path
+         d="M 19.05,5.06 C 19.05,3.38 17.68,2 15.99,2 14.3,2 12.92,3.38 12.93,5.06 v 7.8701 H 5.06 c -1.68,0 -3.06,1.37 -3.06,3.06 0,1.68 1.38,3.06 3.06,3.06 h 7.87 V 26.91 c 0,1.68 1.37,3.06 3.06,3.06 1.68,0 3.06,-1.37 3.06,-3.06 v -7.8599 h 7.86 c 1.68,0 3.06,-1.37 3.06,-3.06 0,-1.68 -1.37,-3.06 -3.06,-3.06 h -7.86 z"
+         fill="#fcf2ff"
+         id="path3" />
+    </g>
+  </g>
   <defs
      id="defs16">
     <filter
@@ -246,36 +279,5 @@
          stop-color="#51C685"
          id="stop16" />
     </linearGradient>
-    <linearGradient
-       id="t"
-       x1="15.602"
-       y1="2.194"
-       x2="15.602"
-       y2="30.194"
-       gradientUnits="userSpaceOnUse">
-      <stop
-         stop-color="#5ad98f"
-         id="stop16-0" />
-      <stop
-         offset="1"
-         stop-color="#51c685"
-         id="stop17" />
-    </linearGradient>
   </defs>
-  <g
-     id="g39"
-     transform="matrix(0.28749283,0,0,0.28749283,-44.22836,-60.113042)">
-    <path
-       d="m 15.602,30.194 c 7.732,0 14,-6.268 14,-14 0,-7.732 -6.268,-14 -14,-14 -7.732,0 -14,6.268 -14,14 0,7.732 6.268,14 14,14"
-       fill="url(#t)"
-       style="display:inline;fill:url(#t)"
-       transform="matrix(3.50751,0,0,3.50751,154.771,207.947)"
-       id="path38" />
-    <path
-       d="M 19.05,5.06 C 19.05,3.38 17.68,2 15.99,2 14.3,2 12.92,3.38 12.93,5.06 v 7.87 H 5.06 C 3.38,12.93 2,14.3 2,15.99 c 0,1.68 1.38,3.06 3.06,3.06 h 7.87 v 7.86 c 0,1.68 1.37,3.06 3.06,3.06 1.68,0 3.06,-1.37 3.06,-3.06 v -7.86 h 7.86 c 1.68,0 3.06,-1.37 3.06,-3.06 0,-1.68 -1.37,-3.06 -3.06,-3.06 h -7.86 z"
-       fill="#fcf2ff"
-       style="display:inline"
-       transform="matrix(2.03583,0,0,2.03583,178.318,231.494)"
-       id="path39" />
-  </g>
 </svg>

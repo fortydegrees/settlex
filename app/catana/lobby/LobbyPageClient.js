@@ -321,7 +321,7 @@ function IdentityModal({ onSubmit, onClose, initialName, initialEmoji, initialCo
 
 /* ─── Searching modal ─────────────────────────────────── */
 
-function SearchingModal({ onCancel, startedAt }) {
+function SearchingModal({ onCancel, startedAt, phase = "searching" }) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -336,6 +336,9 @@ function SearchingModal({ onCancel, startedAt }) {
   const timeStr = mins > 0
     ? `${mins}:${String(secs).padStart(2, "0")}`
     : `0:${String(secs).padStart(2, "0")}`;
+  const isMatchFound = phase === "matchFound";
+  const title = isMatchFound ? "Match found!" : "Finding opponent…";
+  const subtitle = isMatchFound ? "Loading board…" : `1v1 · ${timeStr}`;
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-blue-900/40 backdrop-blur-sm">
@@ -353,12 +356,8 @@ function SearchingModal({ onCancel, startedAt }) {
           ))}
         </div>
 
-        <h2 className="text-lg font-bold text-slate-800">
-          Finding opponent&hellip;
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          1v1 &middot; {timeStr}
-        </p>
+        <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+        <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
 
         {onCancel && (
           <button
@@ -596,7 +595,11 @@ export function LobbyPageClient() {
         const match = normalizeMatch(data);
         const allJoined = match.players.every((p) => p.name);
         if (allJoined) {
-          setSearchState(null);
+          setSearchState((current) =>
+            current && current.matchID === searchState.matchID
+              ? { ...current, phase: "matchFound" }
+              : current
+          );
           router.push(
             `/catana/lobby/${searchState.matchID}?playerID=${encodeURIComponent(searchState.playerID)}`
           );
@@ -673,6 +676,7 @@ export function LobbyPageClient() {
       matchID: null,
       playerID: null,
       startedAt,
+      phase: "searching",
     });
 
     try {
@@ -744,7 +748,12 @@ export function LobbyPageClient() {
         }
       }
 
-      setSearchState({ matchID, playerID: "0", startedAt });
+      setSearchState({
+        matchID,
+        playerID: "0",
+        startedAt,
+        phase: "searching",
+      });
     } catch (err) {
       setSearchState(null);
       setError(err?.message || "Matchmaking failed.");
@@ -1208,11 +1217,14 @@ export function LobbyPageClient() {
       {searchState && (
         <SearchingModal
           onCancel={
-            searchState.matchID && searchState.playerID != null
+            searchState.phase !== "matchFound" &&
+            searchState.matchID &&
+            searchState.playerID != null
               ? cancelSearch
               : null
           }
           startedAt={searchState.startedAt}
+          phase={searchState.phase}
         />
       )}
     </div>

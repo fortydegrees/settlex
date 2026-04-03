@@ -1,5 +1,36 @@
 # PROGRESS
 
+## Status (2026-04-03, stale pregame readyUp accepted on server)
+- Fixed the remaining human-matchmaking `waiting to start` bug where the board could load, one player would still sit in pregame for `~10-15s`, and the server logged:
+- `ERROR: invalid stateID, was=[0], expected=[1] - playerID=[1] - action[readyUp]`
+- Root cause:
+- even after the client-side sync guard, `readyUp` could still race with another human's earlier `readyUp` between initial sync and the local patch/update landing.
+- boardgame.io sends multiplayer moves optimistically from the client's current local store state, so the second player's pregame ready could be submitted against stale `_stateID=0` even though the move itself was still semantically safe to apply on server state `1`.
+- Current fix:
+- `app/catana/Moves.js` now marks `readyUp` with `ignoreStaleStateID: true`, allowing the master to apply a just-stale pregame ready on top of the latest authoritative state.
+- Added a server-level regression in `app/catana/__tests__/Game.readyUpStaleState.test.js` that reproduces the exact two-human race:
+- player `0` readies at state `0`,
+- player `1` then readies with stale state `0`,
+- the match still advances into `placement`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Game.readyUpStaleState.test.js app/catana/__tests__/preGameReady.test.js`
+- `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/GameScreen.connectionBanner.test.js`
+
+## Status (2026-04-03, human matchmaking ready-up race and lobby handoff flash fixed)
+- Fixed the intermittent human-vs-human `waiting to start` regression where one seat could miss auto-ready and the match sat in pregame until the `15s` timer advanced it.
+- Root cause:
+- `app/catana/GameScreen.js` was auto-sending `readyUp` as soon as the local boardgame.io client rendered `preGame`.
+- In multiplayer, the client mounts with a local initial state before socket sync completes, so the first browser arriving after another seat had already moved could dispatch `readyUp` with stale `_stateID=0`.
+- The server then rejected that move with `invalid stateID ... action[readyUp]`, leaving that player unready until `autoStartGame`.
+- UX issue addressed in the same slice:
+- `app/catana/lobby/LobbyPageClient.js` was clearing `searchState` before `router.push(...)`, which exposed the home screen for a short moment after a match was found.
+- Current fix:
+- added `app/catana/utils/preGameReady.js` and now gate `readyUp` behind authoritative multiplayer sync (`isConnected` plus synced `matchData`) and the server's own `readyByPlayerId` state,
+- kept the matchmaking modal mounted through navigation by introducing a small lobby-side `phase` field and switching the modal copy to `Match found!` / `Loading board…` during route handoff.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/preGameReady.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/GameScreen.connectionBanner.test.js`
+- `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/ReconnectBannerPersistence.source.test.js`
+
 ## Status (2026-04-03, idle ack route port mismatch fixed)
 - Fixed the `I'm still here` idle acknowledgement flow failing with a browser CORS/preflight error.
 - Root cause:
@@ -2575,7 +2606,6 @@
   - `server/__tests__/serverRoutes.source.test.js` now checks that `server/server.js` imports `koa-body` and wires `koaBody()` into the idle acknowledge route.
 - Verification for the idle acknowledge route-body fix:
   - `pnpm vitest run server/__tests__/serverRoutes.source.test.js server/__tests__/acknowledgeIdle.test.js app/catana/__tests__/GameScreen.idleGrace.test.js server/__tests__/timerPubSub.test.js server/__tests__/IdlePresenceManager.test.js`
-
 ## Status (2026-04-03)
 - Added desktop-only passive build hover for normal `postRoll` turns:
   - valid road edges, settlement nodes, and city-upgrade settlements now allow hover-to-preview and click-to-build when no explicit dock build mode is armed,
@@ -2589,3 +2619,36 @@
 - Reused the existing city-upgrade suppression path so passive city hover hides the underlying settlement and avoids double-ghosting during placement animation.
 - Verification for passive build hover:
   - `pnpm exec vitest run app/catana/__tests__/passiveBuildMode.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/ActionNode.passiveHover.test.js app/catana/__tests__/Board.buildActionSuppression.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/cancelBuildAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js`
+- Fixed the overlapping disconnect-window bug that let one player's refresh cancel another player's reconnect timer:
+  - root cause was `DisconnectPresenceManager` modeling disconnect state with a single match-wide `activeDisconnectPlayerId`, `deadlineAtMs`, and timeout handle,
+  - if player B disconnected and then player A briefly refreshed, player A's disconnect overwrote the active seat and cleared the only timer,
+  - when player A reconnected, the manager nulled the global active disconnect so player B no longer rendered as disconnected and never hit `resolveDisconnectForfeit`.
+- Current fix:
+  - `server/presence/DisconnectPresenceManager.js` now tracks timeout state per player and recomputes the legacy active disconnect from all still-live disconnected seats,
+  - `app/catana/utils/disconnectPresence.js` now derives visible disconnect badges/countdowns from each disconnected seat's own `reconnectDeadlineAtMs` instead of a single global active seat,
+  - `app/catana/GameScreen.js` now keeps the ticker alive whenever any disconnect countdown is visible, not only when one legacy active ID exists.
+- Added regressions for the overlap case:
+  - `server/__tests__/DisconnectPresenceManager.test.js` covers "player 1 disconnected, player 0 refreshes, player 1 still forfeits on time",
+  - `app/catana/__tests__/disconnectPresence.test.js` covers rendering multiple concurrent disconnect countdowns from one snapshot.
+- Verification for the overlapping disconnect fix:
+  - `pnpm vitest run server/__tests__/DisconnectPresenceManager.test.js server/__tests__/timerPubSub.test.js app/catana/__tests__/disconnectPresence.test.js app/catana/__tests__/GameScreen.idleGrace.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- Added postgame social presence log entries so players chatting after game end can see whether the other seat is still around:
+  - after `gameover`, disconnect transitions no longer produce reconnect-window semantics,
+  - instead the server now emits `server:leave` and `server:return` events for real socket presence changes,
+  - the log formatter renders these as concise `left.` / `rejoined.` copy and leaves avatar-box presence unchanged postgame.
+- Root cause of the old spammy behavior:
+  - `DisconnectPresenceManager` already suppressed postgame reconnect timers, but it still updated `lastConnectedByPlayerId`,
+  - that meant a refresh after game end produced `server:reconnect` on the way back without ever logging a matching leave/disconnect event.
+- Added regressions for the postgame presence split:
+  - `server/__tests__/DisconnectPresenceManager.test.js` covers leave/rejoin transitions after `gameover` with no timer or forfeit,
+  - `app/catana/__tests__/gameText.test.js` covers the new `server:leave` and `server:return` log copy.
+- Verification for the postgame presence log tweak:
+  - `pnpm vitest run server/__tests__/DisconnectPresenceManager.test.js server/__tests__/timerPubSub.test.js app/catana/__tests__/disconnectPresence.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- Removed the retired classic base tile/resource SVG files from `public/svgs` without leaving broken theme paths behind:
+  - `app/catana/theme/themes.js` now redirects classic tile/resource lookups to the emoji asset set for compatibility,
+  - `app/catana/types.js` and `app/board-editor/utils/types.js` no longer point at deleted `/svgs/tile_*.svg` or `/svgs/icon_*.svg` files.
+- Updated theme regression coverage to match the new asset contract:
+  - `app/catana/__tests__/themeAssets.test.js` now checks compatibility redirects and on-disk emoji assets instead of requiring the removed classic fallback SVGs.
+- Verification for the asset-retirement compatibility pass:
+  - `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/Port.render.test.js app/catana/__tests__/effects/resourceDistribution.test.js`
+  - `pnpm verify`

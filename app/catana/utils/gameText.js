@@ -77,6 +77,18 @@ const formatServerEntry = (entry, playerMap = {}) => {
       }
       tokens.push(textToken(" reconnected.", { variant: "server" }));
       return tokens;
+    case "server:leave":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(textToken(" left.", { variant: "server" }));
+      return tokens;
+    case "server:return":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(textToken(" rejoined.", { variant: "server" }));
+      return tokens;
     case "server:disconnectForfeit":
       if (affectedPlayerId != null) {
         tokens.push(playerToken(String(affectedPlayerId), playerMap));

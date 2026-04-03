@@ -76,6 +76,42 @@ describe("disconnectPresence helpers", () => {
     );
   });
 
+  it("surfaces overlapping reconnect windows for multiple disconnected seats", () => {
+    const snapshot = readPresenceSnapshot(
+      {
+        activeDisconnectPlayerId: "1",
+        deadlineAtMs: 66_000,
+        remainingMs: 60_000,
+        statusByPlayerId: {
+          "0": {
+            status: "disconnected",
+            disconnectedAtMs: 7_000,
+            reconnectDeadlineAtMs: 57_000
+          },
+          "1": {
+            status: "disconnected",
+            disconnectedAtMs: 6_000,
+            reconnectDeadlineAtMs: 66_000
+          }
+        },
+        events: []
+      },
+      6_000,
+      6_120
+    );
+
+    expect(getActiveDisconnectStateByPlayerId(snapshot, 16_120)).toEqual({
+      "0": {
+        status: "disconnected",
+        remainingMs: 40_880
+      },
+      "1": {
+        status: "disconnected",
+        remainingMs: 49_880
+      }
+    });
+  });
+
   it("merges server presence events after the referenced game log sequence", () => {
     const merged = mergeVisibleLogEntries(
       [

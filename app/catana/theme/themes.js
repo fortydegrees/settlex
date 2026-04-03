@@ -27,6 +27,22 @@ const PORT_ICON_FILE_NAMES = Object.freeze([
   "port_icon_any.svg",
 ]);
 
+const RETIRED_CLASSIC_ASSET_REDIRECTS = Object.freeze({
+  ...Object.fromEntries(
+    PALETTE_TILE_FILE_NAMES.map((fileName) => [
+      fileName,
+      `/svgs/palette-themes/emoji/${fileName}`,
+    ])
+  ),
+  "tile_desert.svg": "/svgs/palette-themes/emoji/tile_desert.svg",
+  ...Object.fromEntries(
+    PALETTE_RESOURCE_ICON_FILE_NAMES.map((fileName) => [
+      fileName,
+      `/svgs/palette-themes/emoji/${fileName}`,
+    ])
+  ),
+});
+
 const createPaletteAssetOverrides = (optionFolder, { includeResourceIcons = false } = {}) =>
   Object.freeze(
     Object.fromEntries(
@@ -75,6 +91,7 @@ export const CATANA_THEMES = Object.freeze({
     id: "classic",
     label: "Classic",
     assetBase: "/svgs",
+    assetOverrides: RETIRED_CLASSIC_ASSET_REDIRECTS,
   },
   "palette-b": {
     id: "palette-b",

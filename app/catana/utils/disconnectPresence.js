@@ -43,16 +43,42 @@ export function readPresenceSnapshot(
 export function getDisconnectRemainingMs(snapshot, nowMs = Date.now()) {
   if (!snapshot?.activeDisconnectPlayerId) return null;
 
+  return getDisconnectRemainingMsForPlayer(
+    snapshot,
+    snapshot.activeDisconnectPlayerId,
+    nowMs
+  );
+}
+
+const getDisconnectRemainingMsForPlayer = (
+  snapshot,
+  playerId,
+  nowMs = Date.now()
+) => {
+  const playerStatus =
+    playerId == null ? null : snapshot?.statusByPlayerId?.[String(playerId)];
+  const canUseLegacyActiveDeadline =
+    playerId != null &&
+    String(snapshot?.activeDisconnectPlayerId) === String(playerId);
   const receivedAtMs = asFiniteNumber(snapshot.receivedAtMs) ?? Date.now();
   const normalizedNowMs = asFiniteNumber(nowMs) ?? Date.now();
   const baselineRemainingMs =
-    asFiniteNumber(snapshot.remainingMs) ??
-    (() => {
-      const deadlineAtMs = asFiniteNumber(snapshot.deadlineAtMs);
-      const serverTimeMs = asFiniteNumber(snapshot.serverTimeMs);
-      if (deadlineAtMs == null || serverTimeMs == null) return null;
-      return Math.max(0, deadlineAtMs - serverTimeMs);
-    })();
+    asFiniteNumber(playerStatus?.reconnectDeadlineAtMs) != null &&
+    asFiniteNumber(snapshot.serverTimeMs) != null
+      ? Math.max(
+          0,
+          asFiniteNumber(playerStatus?.reconnectDeadlineAtMs) -
+            asFiniteNumber(snapshot.serverTimeMs)
+        )
+      : canUseLegacyActiveDeadline
+        ? asFiniteNumber(snapshot.remainingMs) ??
+          (() => {
+            const deadlineAtMs = asFiniteNumber(snapshot.deadlineAtMs);
+            const serverTimeMs = asFiniteNumber(snapshot.serverTimeMs);
+            if (deadlineAtMs == null || serverTimeMs == null) return null;
+            return Math.max(0, deadlineAtMs - serverTimeMs);
+          })()
+        : null;
 
   if (baselineRemainingMs == null) return null;
 
@@ -62,25 +88,34 @@ export function getDisconnectRemainingMs(snapshot, nowMs = Date.now()) {
       (normalizedNowMs - receivedAtMs) -
       (snapshot.serverDelayMs ?? 0)
   );
-}
+};
 
 export function getActiveDisconnectStateByPlayerId(
   snapshot,
   nowMs = Date.now()
 ) {
-  const activeDisconnectPlayerId = snapshot?.activeDisconnectPlayerId;
-  const remainingMs = getDisconnectRemainingMs(snapshot, nowMs);
+  const statusByPlayerId = snapshot?.statusByPlayerId ?? {};
 
-  if (!activeDisconnectPlayerId || remainingMs == null || remainingMs <= 0) {
-    return {};
-  }
+  return Object.entries(statusByPlayerId).reduce((acc, [playerId, status]) => {
+    if (status?.status !== "disconnected") {
+      return acc;
+    }
 
-  return {
-    [activeDisconnectPlayerId]: {
+    const remainingMs = getDisconnectRemainingMsForPlayer(
+      snapshot,
+      playerId,
+      nowMs
+    );
+    if (remainingMs == null || remainingMs <= 0) {
+      return acc;
+    }
+
+    acc[playerId] = {
       status: "disconnected",
       remainingMs
-    }
-  };
+    };
+    return acc;
+  }, {});
 }
 
 export function mergeVisibleLogEntries(gameLog = [], presenceEvents = []) {
