@@ -1741,4 +1741,5 @@
     - explicit dock mode via `playerAction` for the existing show-all-valid-target behavior,
     - passive hover mode via derived `passiveBuildableEdges`, `passiveSettlementNodes`, and `passiveCityNodes`.
   - `app/catana/ActionNode.js` supports `showIdleCircle={false}` so passive settlement/city targets can keep their hit area without adding visual clutter before hover.
+  - `app/catana/Edge.js` must also pass `showIdleCircle={false}` through `HoverableEdge`; otherwise passive road mode leaks visible/faded action circles for every eligible edge instead of staying quiet until direct hover.
   - passive city hover reuses the same settlement-hiding suppression path as explicit city upgrades via `passiveCityNodeSet`, so the base settlement does not double-render during hover or placement animation.

@@ -2580,6 +2580,9 @@
 - Added desktop-only passive build hover for normal `postRoll` turns:
   - valid road edges, settlement nodes, and city-upgrade settlements now allow hover-to-preview and click-to-build when no explicit dock build mode is armed,
   - the board stays visually quiet by default and only reveals the hovered valid target.
+- Tightened passive road hover after visual review:
+  - `HoverableEdge` now hides all passive road action circles until the cursor is directly over a valid road edge,
+  - hovering one passive road target no longer leaves the other eligible road circles faintly visible.
 - Preserved the existing dock-driven build flow:
   - explicit `Road`, `Settlement`, and `City` actions still show their full valid-target affordances and override passive hover mode,
   - passive mode is disabled during placement, non-`postRoll` stages, and road-building dev-card resolution.
