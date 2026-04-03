@@ -3,7 +3,8 @@ import {
   PLAYER_COLOR_PICKER_OPTIONS,
   PLAYER_COLOR_OPTIONS,
   getPlayerColorOption,
-  getPlayerNameHex
+  getPlayerNameHex,
+  normalizePlayerColorId
 } from "../theme/playerColors";
 
 describe("playerColors", () => {
@@ -17,7 +18,6 @@ describe("playerColors", () => {
       "magenta",
       "purple",
       "maroon",
-      "olive",
       "brown",
       "royal",
       "violet",
@@ -47,7 +47,6 @@ describe("playerColors", () => {
       "magenta",
       "purple",
       "maroon",
-      "olive",
       "brown",
       "royal",
       "violet",
@@ -66,6 +65,12 @@ describe("playerColors", () => {
     expect(getPlayerColorOption("cyan").id).toBe("teal");
     expect(getPlayerColorOption("pink").id).toBe("coral");
     expect(getPlayerColorOption("amber").id).toBe("gold");
+    expect(getPlayerColorOption("olive").id).toBe("lime");
+    expect(normalizePlayerColorId("olive")).toBe("lime");
+  });
+
+  it("retires olive from the live lobby palette", () => {
+    expect(PLAYER_COLOR_OPTIONS.map((entry) => entry.id)).not.toContain("olive");
   });
 
   it("returns text hex colors for supported ids", () => {
@@ -90,11 +95,6 @@ describe("playerColors", () => {
       swatch: "bg-[#efece3] border border-slate-400",
       gradient: "from-[#fbfaf5] to-[#d5cec3]",
       nameHex: "#efece3"
-    });
-    expect(getPlayerColorOption("olive")).toMatchObject({
-      swatch: "bg-[#9fb342]",
-      gradient: "from-[#d7e28b] to-[#728628]",
-      nameHex: "#9fb342"
     });
     expect(getPlayerColorOption("tan")).toMatchObject({
       swatch: "bg-[#c1a07a]",
