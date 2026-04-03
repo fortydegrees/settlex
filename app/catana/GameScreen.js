@@ -6,10 +6,11 @@ import {
 } from "../../react-zoom-pan-pinch";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
-import { buildPlayerViewMap, UI_PLAYER_COLORS } from "./utils/playerView";
+import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 import { getGameStatus } from "./utils/gameStatus";
 import { shouldResetPlayerAction } from "./utils/playerAction";
+import { resolveEffectivePlayerColors } from "./utils/playerColorsInGame";
 import {
   mergePlayerMetadata,
   sanitizeDisplayName,
@@ -181,28 +182,17 @@ export function GameScreen(bgioProps) {
     () => (seatOrderKey ? seatOrderKey.split("|") : []),
     [seatOrderKey]
   );
-  const seatColorMap = useMemo(() => {
-    const map = {};
-    seatPlayerIds.forEach((id, index) => {
-      map[id] = UI_PLAYER_COLORS[index % UI_PLAYER_COLORS.length] ?? UI_PLAYER_COLORS[0];
-    });
-    return map;
-  }, [seatPlayerIds]);
-  const boardColorMap = useMemo(() => {
-    const ids = new Set([
-      ...seatPlayerIds,
-      ...Object.keys(seatColorMap ?? {}),
-      ...Object.keys(colorMap ?? {})
-    ]);
-    const map = {};
-    ids.forEach((id) => {
-      map[id] = colorMap[id] ?? seatColorMap[id] ?? "red";
-    });
-    return map;
-  }, [seatPlayerIds, seatColorMap, colorMap]);
+  const effectiveColorByPlayerId = useMemo(
+    () =>
+      resolveEffectivePlayerColors({
+        playerIds: seatPlayerIds,
+        preferredColorByPlayerId: colorMap
+      }),
+    [seatPlayerIds, colorMap]
+  );
   const playerViewMap = useMemo(
-    () => buildPlayerViewMap(core, boardColorMap),
-    [core, boardColorMap]
+    () => buildPlayerViewMap(core, effectiveColorByPlayerId),
+    [core, effectiveColorByPlayerId]
   );
   const rawPlayer = playerViewMap[playerID];
   const player = rawPlayer
@@ -233,21 +223,22 @@ export function GameScreen(bgioProps) {
 
   const logPlayerMap = useMemo(() => {
     const ids = new Set([
-      ...Object.keys(seatColorMap ?? {}),
+      ...seatPlayerIds,
       ...Object.keys(nameMap ?? {}),
       ...Object.keys(emojiMap ?? {}),
-      ...Object.keys(colorMap ?? {})
+      ...Object.keys(colorMap ?? {}),
+      ...Object.keys(effectiveColorByPlayerId ?? {})
     ]);
     const map = {};
     ids.forEach((id) => {
       map[id] = {
         name: nameMap[id] ?? `Player ${id}`,
         emoji: emojiMap[id] ?? null,
-        color: boardColorMap[id] ?? "red"
+        color: effectiveColorByPlayerId[id] ?? "red"
       };
     });
     return map;
-  }, [seatColorMap, nameMap, emojiMap, colorMap, boardColorMap]);
+  }, [seatPlayerIds, nameMap, emojiMap, colorMap, effectiveColorByPlayerId]);
   const visibleLogEntries = useMemo(
     () =>
       mergeVisibleLogEntries(
@@ -673,7 +664,7 @@ export function GameScreen(bgioProps) {
           getBoardRect: () =>
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
           getTiles: () => bgioProps.G?.tiles ?? [],
-          getPlayerColor: (playerId) => boardColorMap[playerId] ?? "red",
+          getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId] ?? "red",
           emitCue,
           useBoardSpace: true,
           themeId
@@ -682,7 +673,7 @@ export function GameScreen(bgioProps) {
         return (event) => runner(event?.payload);
       }
     };
-  }, [width, height, bgioProps.G, boardColorMap, themeId]);
+  }, [width, height, bgioProps.G, effectiveColorByPlayerId, themeId]);
   // console.log('p', player)
   // console.log('opps', opponents)
   const handleToggleMute = () => {
@@ -726,14 +717,14 @@ export function GameScreen(bgioProps) {
           <CatanBoard
             boardRef={boardRef}
             placementLayerRef={placementLayerRef}
-            placementRoadLayerRef={placementRoadLayerRef}
-            boardViewportScale={boardViewportScale}
-            playerAction={playerAction}
-            setPlayerAction={setPlayerAction}
-            playerColorMap={boardColorMap}
-            robberPlacementMotionMode={robberPlacementMotionMode}
-            themeId={themeId}
-            {...bgioProps}
+          placementRoadLayerRef={placementRoadLayerRef}
+          boardViewportScale={boardViewportScale}
+          playerAction={playerAction}
+          setPlayerAction={setPlayerAction}
+          playerColorMap={effectiveColorByPlayerId}
+          robberPlacementMotionMode={robberPlacementMotionMode}
+          themeId={themeId}
+          {...bgioProps}
           />
         </TransformComponent>
       </TransformWrapper>

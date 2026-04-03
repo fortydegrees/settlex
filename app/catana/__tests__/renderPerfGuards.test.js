@@ -25,10 +25,12 @@ afterEach(() => {
 });
 
 describe("render performance guards", () => {
-  it("memoizes board color map in GameScreen and passes it into buildPlayerViewMap", () => {
+  it("memoizes effective player colors in GameScreen and passes them into buildPlayerViewMap", () => {
     const contents = readCatanaFile("GameScreen.js");
-    expect(contents).toMatch(/const boardColorMap = useMemo\(\(\) => \{/);
-    expect(contents).toMatch(/buildPlayerViewMap\(core, boardColorMap\)/);
+    expect(contents).toContain("const effectiveColorByPlayerId = useMemo(");
+    expect(contents).toMatch(
+      /buildPlayerViewMap\(core, effectiveColorByPlayerId\)/
+    );
   });
 
   it("only starts the ticker when a visible timer or disconnect countdown is active", () => {
