@@ -1734,3 +1734,11 @@
     - expose them via `server.router` on the API app,
     - add `koaBody()` for request parsing,
     - keep auth checks server-side by validating `playerID` / `credentials` against Boardgame.io metadata before mutating presence state.
+- Passive build hover note:
+  - `app/catana/utils/passiveBuildMode.js` is the source of truth for whether quiet hover-to-build is allowed; it should stay limited to local-player normal-turn gating and not absorb target-legality rules.
+  - passive build hover is intentionally desktop-only for now and only active when `playerAction == null`, `ctx.phase === "main"`, the local player owns `postRoll`, and road-building dev-card placement is not active.
+  - `app/catana/Board.js` now maintains two separate build affordance paths:
+    - explicit dock mode via `playerAction` for the existing show-all-valid-target behavior,
+    - passive hover mode via derived `passiveBuildableEdges`, `passiveSettlementNodes`, and `passiveCityNodes`.
+  - `app/catana/ActionNode.js` supports `showIdleCircle={false}` so passive settlement/city targets can keep their hit area without adding visual clutter before hover.
+  - passive city hover reuses the same settlement-hiding suppression path as explicit city upgrades via `passiveCityNodeSet`, so the base settlement does not double-render during hover or placement animation.

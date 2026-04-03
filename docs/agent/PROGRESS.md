@@ -2575,3 +2575,14 @@
   - `server/__tests__/serverRoutes.source.test.js` now checks that `server/server.js` imports `koa-body` and wires `koaBody()` into the idle acknowledge route.
 - Verification for the idle acknowledge route-body fix:
   - `pnpm vitest run server/__tests__/serverRoutes.source.test.js server/__tests__/acknowledgeIdle.test.js app/catana/__tests__/GameScreen.idleGrace.test.js server/__tests__/timerPubSub.test.js server/__tests__/IdlePresenceManager.test.js`
+
+## Status (2026-04-03)
+- Added desktop-only passive build hover for normal `postRoll` turns:
+  - valid road edges, settlement nodes, and city-upgrade settlements now allow hover-to-preview and click-to-build when no explicit dock build mode is armed,
+  - the board stays visually quiet by default and only reveals the hovered valid target.
+- Preserved the existing dock-driven build flow:
+  - explicit `Road`, `Settlement`, and `City` actions still show their full valid-target affordances and override passive hover mode,
+  - passive mode is disabled during placement, non-`postRoll` stages, and road-building dev-card resolution.
+- Reused the existing city-upgrade suppression path so passive city hover hides the underlying settlement and avoids double-ghosting during placement animation.
+- Verification for passive build hover:
+  - `pnpm exec vitest run app/catana/__tests__/passiveBuildMode.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/ActionNode.passiveHover.test.js app/catana/__tests__/Board.buildActionSuppression.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/cancelBuildAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js`
