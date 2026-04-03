@@ -176,6 +176,12 @@
   - `red` with `coral`
 - `violet` and `magenta` remain allowed together.
 - `olive` is retired from live selection/assignment and should normalize to `lime` as a legacy alias.
+- Player color conflicts implementation-plan note:
+- the plan for this slice lives at `docs/superpowers/plans/2026-04-03-player-color-conflicts-plan.md`.
+- it assumes TDD in three runtime chunks:
+  - retire `olive`,
+  - add the explicit conflict-aware resolver and wire `GameScreen`,
+  - remove the avatar-side `chosenColor` override.
 
 - Disconnect/reconnect regression follow-up:
 - boardgame.io rejects timeout moves if they are sent as an inactive player and also checks live stage move maps before executing them.

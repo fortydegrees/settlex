@@ -8,9 +8,18 @@
 - add explicit in-game conflict groups for:
   - `lavender` / `violet` / `purple`
   - `lavender` / `magenta` / `purple`
-  - `red` / `coral`
+- `red` / `coral`
 - keep `violet` + `magenta` allowed,
 - retire `olive` from live use by removing it from selectable/assignable palettes and normalizing old `olive` values to `lime`.
+
+## Status (2026-04-03, player color conflicts implementation plan written)
+- Wrote the implementation plan in:
+- `docs/superpowers/plans/2026-04-03-player-color-conflicts-plan.md`
+- Planned direction for this slice:
+- retire `olive` from the canonical player palette and normalize legacy `olive` values to `lime`,
+- add an explicit conflict-aware effective-color resolver instead of generalized similarity heuristics,
+- wire `GameScreen.js` to use that resolver as the in-game color source,
+- remove the remaining avatar-only `chosenColor` preference so avatar backgrounds match resolved piece colors.
 
 ## Status (2026-04-02, player effective colors implementation plan written)
 - Wrote the implementation plan in:
