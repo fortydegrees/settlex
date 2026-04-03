@@ -55,7 +55,7 @@ describe("Catana theme assets", () => {
     expect(resolveThemeId("unknown")).toBe("emoji");
   });
 
-  it("builds themed and classic svg paths", () => {
+  it("builds themed svg paths and keeps classic compatibility redirects for retired base assets", () => {
     expect(getThemeAssetBase("palette-b")).toBe("/svgs");
     expect(getThemedSvgPath("palette-b", "tile_ore.svg")).toBe(
       "/svgs/palette-themes/option-b/tile_ore.svg"
@@ -66,7 +66,13 @@ describe("Catana theme assets", () => {
     expect(getThemedSvgPath("palette-b", "icon_robber.svg")).toBe(
       "/svgs/icon_robber.svg"
     );
-    expect(getClassicSvgPath("tile_ore.svg")).toBe("/svgs/tile_ore.svg");
+    expect(getClassicSvgPath("tile_ore.svg")).toBe(
+      "/svgs/palette-themes/emoji/tile_ore.svg"
+    );
+    expect(getClassicSvgPath("icon_ore.svg")).toBe(
+      "/svgs/palette-themes/emoji/icon_ore.svg"
+    );
+    expect(getClassicSvgPath("icon_robber.svg")).toBe("/svgs/icon_robber.svg");
   });
 
   it("supports emoji theme tile and icon overrides without special-casing piece svg paths", () => {
@@ -111,37 +117,39 @@ describe("Catana theme assets", () => {
     expect(getPortIconPath("emoji", "Any")).toBe(
       "/svgs/palette-themes/emoji/port_icon_any.svg"
     );
-    expect(getPortIconPath("classic", "Ore")).toBe("/svgs/icon_ore.svg");
+    expect(getPortIconPath("classic", "Ore")).toBe(
+      "/svgs/palette-themes/emoji/icon_ore.svg"
+    );
   });
 
-  it("builds CSS background fallback with themed first and classic second", () => {
+  it("builds CSS background fallback with themed first and compatibility second", () => {
     expect(getBackgroundImageWithFallback("palette-b", "tile_ore.svg")).toBe(
-      "url('/svgs/palette-themes/option-b/tile_ore.svg'), url('/svgs/tile_ore.svg')"
+      "url('/svgs/palette-themes/option-b/tile_ore.svg'), url('/svgs/palette-themes/emoji/tile_ore.svg')"
     );
     expect(getBackgroundImageWithFallback("classic", "tile_ore.svg")).toBe(
-      "url('/svgs/tile_ore.svg')"
+      "url('/svgs/palette-themes/emoji/tile_ore.svg')"
     );
     expect(getBackgroundImageWithFallback("emoji", "tile_ore.svg")).toBe(
       "url('/svgs/palette-themes/emoji/tile_ore.svg')"
     );
   });
 
-  it("keeps the classic theme fallback assets on disk", () => {
+  it("keeps the compatibility asset targets on disk", () => {
     [
       "board_underlay_standard.svg",
       "tile_empty.svg",
-      "tile_desert.svg",
-      "tile_ore.svg",
-      "tile_grain.svg",
-      "tile_wool.svg",
-      "tile_lumber.svg",
-      "tile_brick.svg",
-      "icon_brick.svg",
-      "icon_wood.svg",
-      "icon_sheep.svg",
-      "icon_wheat.svg",
-      "icon_ore.svg",
       "port_icon_any.svg",
+      "palette-themes/emoji/tile_desert.svg",
+      "palette-themes/emoji/tile_ore.svg",
+      "palette-themes/emoji/tile_grain.svg",
+      "palette-themes/emoji/tile_wool.svg",
+      "palette-themes/emoji/tile_lumber.svg",
+      "palette-themes/emoji/tile_brick.svg",
+      "palette-themes/emoji/icon_brick.svg",
+      "palette-themes/emoji/icon_wood.svg",
+      "palette-themes/emoji/icon_sheep.svg",
+      "palette-themes/emoji/icon_wheat.svg",
+      "palette-themes/emoji/icon_ore.svg",
     ].forEach((fileName) => {
       expect(fs.existsSync(path.join(publicSvgDir, fileName)), fileName).toBe(true);
     });

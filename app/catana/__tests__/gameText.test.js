@@ -175,6 +175,65 @@ describe("formatLogEntry", () => {
     ).toBe(true);
   });
 
+  it("formats postgame leave entries with concise presence copy", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "server:leave",
+        data: { playerId: "1" }
+      },
+      { "1": "Bren" }
+    );
+
+    expect(tokens[0]).toMatchObject({
+      kind: "label",
+      text: "server",
+      variant: "server"
+    });
+    expect(tokens[1]).toMatchObject({
+      kind: "player",
+      id: "1",
+      name: "Bren"
+    });
+    expect(
+      tokens.some(
+        (token) => token.kind === "text" && token.text.includes(" left.")
+      )
+    ).toBe(true);
+  });
+
+  it("formats postgame rejoin entries without reconnect-window copy", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "server:return",
+        data: { playerId: "1" }
+      },
+      { "1": "Bren" }
+    );
+
+    expect(tokens[0]).toMatchObject({
+      kind: "label",
+      text: "server",
+      variant: "server"
+    });
+    expect(tokens[1]).toMatchObject({
+      kind: "player",
+      id: "1",
+      name: "Bren"
+    });
+    expect(
+      tokens.some(
+        (token) => token.kind === "text" && token.text.includes(" rejoined.")
+      )
+    ).toBe(true);
+    expect(
+      tokens.some(
+        (token) =>
+          token.kind === "text" &&
+          token.text.includes("Reconnect window started")
+      )
+    ).toBe(false);
+  });
+
   it("formats server resign entries with loser and winner names", () => {
     const tokens = formatLogEntry(
       {

@@ -14,7 +14,7 @@ const createEmptyRecord = () => ({
   deadlineAtMs: null,
   events: [],
   nextEventId: 1,
-  timeoutId: null,
+  timeoutIdByPlayerId: {},
   lastGameLogSeq: 0,
   resolved: false,
   seenMatchData: false,
@@ -36,11 +36,51 @@ export class DisconnectPresenceManager {
     return this.matches.get(key);
   }
 
-  clearTimeout(record) {
-    if (record.timeoutId) {
-      clearTimeout(record.timeoutId);
-      record.timeoutId = null;
+  clearTimeout(record, playerId = null) {
+    if (playerId == null) {
+      Object.values(record.timeoutIdByPlayerId).forEach((timeoutId) => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      });
+      record.timeoutIdByPlayerId = {};
+      return;
     }
+
+    const normalizedPlayerId = String(playerId);
+    const timeoutId = record.timeoutIdByPlayerId[normalizedPlayerId];
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      delete record.timeoutIdByPlayerId[normalizedPlayerId];
+    }
+  }
+
+  refreshActiveDisconnect(record) {
+    const now = Date.now();
+    const activeEntries = Object.entries(record.statusByPlayerId)
+      .filter(([, status]) => {
+        if (status?.status !== "disconnected") return false;
+        return Number.isFinite(status?.reconnectDeadlineAtMs) &&
+          status.reconnectDeadlineAtMs > now;
+      })
+      .sort((left, right) => {
+        const leftDeadline = left[1].reconnectDeadlineAtMs;
+        const rightDeadline = right[1].reconnectDeadlineAtMs;
+        if (leftDeadline !== rightDeadline) {
+          return leftDeadline - rightDeadline;
+        }
+        return String(left[0]).localeCompare(String(right[0]));
+      });
+
+    if (activeEntries.length === 0) {
+      record.activeDisconnectPlayerId = null;
+      record.deadlineAtMs = null;
+      return;
+    }
+
+    const [playerId, status] = activeEntries[0];
+    record.activeDisconnectPlayerId = playerId;
+    record.deadlineAtMs = status.reconnectDeadlineAtMs;
   }
 
   pushEvent(record, type, playerId) {
@@ -69,52 +109,54 @@ export class DisconnectPresenceManager {
 
     if (isResolvedState(state)) {
       record.resolved = true;
+      Object.keys(record.statusByPlayerId).forEach((playerId) => {
+        record.statusByPlayerId[playerId] = { status: "connected" };
+      });
       record.activeDisconnectPlayerId = null;
       record.deadlineAtMs = null;
       this.clearTimeout(record);
+      return;
     }
+
+    this.refreshActiveDisconnect(record);
   }
 
   startDisconnectTimer(matchID, playerId, record) {
-    this.clearTimeout(record);
-    record.timeoutId = setTimeout(() => {
-      record.timeoutId = null;
-      record.activeDisconnectPlayerId = null;
+    const normalizedPlayerId = String(playerId);
+    this.clearTimeout(record, normalizedPlayerId);
+    record.timeoutIdByPlayerId[normalizedPlayerId] = setTimeout(() => {
+      delete record.timeoutIdByPlayerId[normalizedPlayerId];
       record.resolved = true;
-      this.pushEvent(record, "server:disconnectForfeit", playerId);
+      this.refreshActiveDisconnect(record);
+      this.pushEvent(record, "server:disconnectForfeit", normalizedPlayerId);
       this.dispatch({
         matchID: String(matchID),
         move: "resolveDisconnectForfeit",
-        playerID: String(playerId)
+        playerID: normalizedPlayerId
       });
     }, this.disconnectTimeoutMs);
   }
 
   handleDisconnect(matchID, playerId, record) {
     if (record.resolved) return;
+    const normalizedPlayerId = String(playerId);
     const now = Date.now();
-    record.activeDisconnectPlayerId = playerId;
-    record.deadlineAtMs = now + this.disconnectTimeoutMs;
-    record.statusByPlayerId[playerId] = {
+    record.statusByPlayerId[normalizedPlayerId] = {
       status: "disconnected",
       disconnectedAtMs: now,
-      reconnectDeadlineAtMs: record.deadlineAtMs
+      reconnectDeadlineAtMs: now + this.disconnectTimeoutMs
     };
-    this.pushEvent(record, "server:disconnect", playerId);
-    this.startDisconnectTimer(matchID, playerId, record);
+    this.refreshActiveDisconnect(record);
+    this.pushEvent(record, "server:disconnect", normalizedPlayerId);
+    this.startDisconnectTimer(matchID, normalizedPlayerId, record);
   }
 
   handleReconnect(playerId, record) {
-    if (record.activeDisconnectPlayerId !== playerId) {
-      record.statusByPlayerId[playerId] = { status: "connected" };
-      return;
-    }
-
-    this.clearTimeout(record);
-    record.activeDisconnectPlayerId = null;
-    record.deadlineAtMs = null;
-    record.statusByPlayerId[playerId] = { status: "connected" };
-    this.pushEvent(record, "server:reconnect", playerId);
+    const normalizedPlayerId = String(playerId);
+    this.clearTimeout(record, normalizedPlayerId);
+    record.statusByPlayerId[normalizedPlayerId] = { status: "connected" };
+    this.refreshActiveDisconnect(record);
+    this.pushEvent(record, "server:reconnect", normalizedPlayerId);
   }
 
   onMatchData(matchID, matchData) {
@@ -144,7 +186,19 @@ export class DisconnectPresenceManager {
       record.lastConnectedByPlayerId[playerId] = isConnected;
 
       if (!hasSeenMatchData || !hadConnectedValue) {
-        record.statusByPlayerId[playerId] = { status: isConnected ? "connected" : "disconnected" };
+        record.statusByPlayerId[playerId] = record.resolved
+          ? { status: "connected" }
+          : { status: isConnected ? "connected" : "disconnected" };
+        continue;
+      }
+
+      if (record.resolved) {
+        record.statusByPlayerId[playerId] = { status: "connected" };
+        if (previous === true && isConnected === false) {
+          this.pushEvent(record, "server:leave", playerId);
+        } else if (previous === false && isConnected === true) {
+          this.pushEvent(record, "server:return", playerId);
+        }
         continue;
       }
 
@@ -161,6 +215,7 @@ export class DisconnectPresenceManager {
 
   getSnapshot(matchID) {
     const record = this.getRecord(matchID);
+    this.refreshActiveDisconnect(record);
     return {
       activeDisconnectPlayerId: record.activeDisconnectPlayerId,
       deadlineAtMs: record.deadlineAtMs,

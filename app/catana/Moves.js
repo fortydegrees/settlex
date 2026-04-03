@@ -381,6 +381,7 @@ export const getBuildableNodes = (playerID, G, ctx) => {
 }
 
 export const readyUp = {
+  ignoreStaleStateID: true,
   move: (context) => {
     const { G, ctx, playerID, events } = context;
     if (!playerID) return;
