@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   PLAYER_COLOR_OPTIONS,
   getPlayerColorOption,
-  getPlayerNameHex
+  getPlayerNameHex,
+  normalizePlayerColorId
 } from "../theme/playerColors";
 
 describe("playerColors", () => {
@@ -16,7 +17,6 @@ describe("playerColors", () => {
       "magenta",
       "purple",
       "maroon",
-      "olive",
       "brown",
       "royal",
       "violet",
@@ -40,6 +40,12 @@ describe("playerColors", () => {
     expect(getPlayerColorOption("cyan").id).toBe("teal");
     expect(getPlayerColorOption("pink").id).toBe("coral");
     expect(getPlayerColorOption("amber").id).toBe("gold");
+    expect(getPlayerColorOption("olive").id).toBe("lime");
+    expect(normalizePlayerColorId("olive")).toBe("lime");
+  });
+
+  it("retires olive from the live lobby palette", () => {
+    expect(PLAYER_COLOR_OPTIONS.map((entry) => entry.id)).not.toContain("olive");
   });
 
   it("returns text hex colors for supported ids", () => {

@@ -4,7 +4,8 @@ export const LEGACY_PLAYER_COLOR_ALIASES = Object.freeze({
   blue: "sky",
   cyan: "teal",
   pink: "coral",
-  amber: "gold"
+  amber: "gold",
+  olive: "lime"
 });
 
 export const SEAT_FALLBACK_COLOR_IDS = Object.freeze([
@@ -64,12 +65,6 @@ const PLAYER_COLOR_OPTION_VALUES = [
     swatch: "bg-[#911d1d]",
     gradient: "from-[#b04545] to-[#581414]",
     nameHex: "#911d1d"
-  },
-  {
-    id: "olive",
-    swatch: "bg-[#b2ab3e]",
-    gradient: "from-[#d2cb6b] to-[#746c1f]",
-    nameHex: "#b2ab3e"
   },
   {
     id: "brown",
