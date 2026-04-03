@@ -17,13 +17,18 @@ import {
   useEffectState
 } from "bgio-effects/react";
 import { TileTypes } from "./types";
-import { buildableNodes, canPlaceRobber } from "@settlex/game-core";
+import {
+  buildableNodes,
+  canBuildRoad as coreCanBuildRoad,
+  canPlaceRobber
+} from "@settlex/game-core";
 import { getBuildableEdges } from "./Moves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { resolveRobberPlacementMotionMode } from "./utils/robberPlacementMotion";
 import { isDocumentHidden } from "./utils/visibility";
 import { tilePixelVector } from "./utils/coordinates";
+import { isPassiveBuildEnabled } from "./utils/passiveBuildMode";
 
 const getValidRobberTiles = (G) => {
   // Use core function for validation
@@ -248,27 +253,25 @@ export function CatanBoard({
   //   }
   // }
 
-  // Check if player can build a road (has resources, is their turn, in postRoll)
-  const canBuildRoad = useMemo(() => {
-    if (!isInteractiveStageOwner || ctx.phase !== "main") return false;
-    if (playerStage !== "postRoll") return false;
-    
-    const playerState = playerID == null ? null : G.core?.playerStateById?.[playerID];
-    if (!playerState) return false;
-    if (playerState.roadsRemaining < 1) return false;
-    
-    const resources = playerState.resources ?? [];
-    const hasWood = resources.includes("Wood");
-    const hasBrick = resources.includes("Brick");
-    return hasWood && hasBrick;
-  }, [isInteractiveStageOwner, ctx.phase, playerStage, G.core, playerID]);
+  const passiveBuildEnabled = useMemo(
+    () =>
+      isPassiveBuildEnabled({
+        playerAction,
+        playerID,
+        ctx,
+        corePhase: G.core?.phase,
+        devCardPlay: G.devCardPlay
+      }),
+    [playerAction, playerID, ctx, G.core?.phase, G.devCardPlay]
+  );
 
   // Passive hoverable edges - shown when player CAN build but hasn't clicked the button
   const passiveBuildableEdges = useMemo(() => {
-    if (!canBuildRoad || playerAction === "placeRoad" || !playerID) return [];
+    if (!passiveBuildEnabled || !playerID) return [];
     if (!G.core || !G.coreTopology) return [];
+    if (!coreCanBuildRoad(G.core, playerID).ok) return [];
     return getBuildableEdges(playerID, G, ctx);
-  }, [canBuildRoad, playerAction, G, ctx, playerID]);
+  }, [passiveBuildEnabled, G, ctx, playerID]);
 
   useEffect(()=>{
     if (
@@ -675,6 +678,35 @@ export function CatanBoard({
             moves={moves}
             setHoveredNode={setHoveredNode}
             setPlayerAction={setPlayerAction}
+            hoveredNode={hoveredNode}
+            onPlaceCommitted={handleBuildCommit}
+            themeId={themeId}
+          />
+        );
+        return null;
+      });
+  }
+
+  {
+    !suppressBuildHighlights &&
+      passiveBuildEnabled &&
+      passiveBuildableEdges.map((edgeId) => {
+        const renderEdge = edgeRenderById[edgeId];
+        if (!renderEdge) {
+          return null;
+        }
+        actions.push(
+          <Edge
+            key={`passive-road-${edgeId}`}
+            id={edgeId}
+            center={center}
+            size={size}
+            coordinate={renderEdge.tile_coordinate}
+            direction={renderEdge.direction}
+            color={currentPlayerView?.color ?? "red"}
+            hoverable
+            moves={moves}
+            setHoveredNode={setHoveredNode}
             hoveredNode={hoveredNode}
             onPlaceCommitted={handleBuildCommit}
             themeId={themeId}
