@@ -9,7 +9,10 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 import { getGameStatus } from "./utils/gameStatus";
-import { shouldResetPlayerAction } from "./utils/playerAction";
+import {
+  getBuildPickupPieceType,
+  shouldResetPlayerAction
+} from "./utils/playerAction";
 import { resolveEffectivePlayerColors } from "./utils/playerColorsInGame";
 import {
   mergePlayerMetadata,
@@ -102,6 +105,7 @@ export function GameScreen(bgioProps) {
   //but i think we want this controlled by server/gameState
     //e.g. if disconnect after placing one road of RB, reconnect will want to prompt to place second road
   const [playerAction, setPlayerAction] = useState(null);
+  const [buildPickup, setBuildPickup] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradePresetResource, setTradePresetResource] = useState(null);
   const [timerSnapshot, setTimerSnapshot] = useState(null);
@@ -284,6 +288,9 @@ export function GameScreen(bgioProps) {
   }, [isGameOver, winnerName, gameOverReasonText, winnerVP]);
   const showResultsButton =
     isGameOver && !showGameOverModal && !showPostgame;
+  const clearBuildPickup = useCallback(() => {
+    setBuildPickup(null);
+  }, []);
 
   useEffect(() => {
     if (!isGameOver) {
@@ -298,10 +305,11 @@ export function GameScreen(bgioProps) {
       setShowGameOverModal(true);
       setShowPostgame(false);
       setPlayerAction(null);
+      clearBuildPickup();
       setShowTradeModal(false);
       setTradePresetResource(null);
     }
-  }, [isGameOver]);
+  }, [clearBuildPickup, isGameOver]);
 
   useEffect(() => {
     if (!isGameOver || !matchID || typeof window === "undefined") return;
@@ -538,14 +546,22 @@ export function GameScreen(bgioProps) {
       })
     ) {
       setPlayerAction(null);
+      clearBuildPickup();
     }
   }, [
+    clearBuildPickup,
     playerAction,
     playerID,
     bgioProps.ctx,
     core?.phase,
     isGameOver
   ]);
+
+  useEffect(() => {
+    if (buildPickup == null) return;
+    if (getBuildPickupPieceType(playerAction) != null) return;
+    clearBuildPickup();
+  }, [buildPickup, clearBuildPickup, playerAction]);
 
   useEffect(() => {
     if (!shouldCloseTradeModal) {
@@ -706,6 +722,7 @@ export function GameScreen(bgioProps) {
       })
     ) {
       setPlayerAction(null);
+      clearBuildPickup();
     }
   };
   const allowInteractionSelector = '[data-allow-interaction="true"]';
@@ -718,6 +735,13 @@ export function GameScreen(bgioProps) {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.defaultPrevented) return;
+      if (event.code === "Escape") {
+        if (getBuildPickupPieceType(playerAction) == null) return;
+        event.preventDefault();
+        setPlayerAction(null);
+        clearBuildPickup();
+        return;
+      }
       if (event.code !== "Space") return;
       if (event.repeat) return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -740,13 +764,22 @@ export function GameScreen(bgioProps) {
       }
       if (canEnd) {
         setPlayerAction(null);
+        clearBuildPickup();
         moves.endTurn();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [canRoll, canEnd, hasModalOpen, isGameOver, moves]);
+  }, [
+    canRoll,
+    canEnd,
+    clearBuildPickup,
+    hasModalOpen,
+    isGameOver,
+    moves,
+    playerAction
+  ]);
 
   const effects = useMemo(() => {
     return {
@@ -831,14 +864,16 @@ export function GameScreen(bgioProps) {
           <CatanBoard
             boardRef={boardRef}
             placementLayerRef={placementLayerRef}
-          placementRoadLayerRef={placementRoadLayerRef}
-          boardViewportScale={boardViewportScale}
-          playerAction={playerAction}
-          setPlayerAction={setPlayerAction}
-          playerColorMap={effectiveColorByPlayerId}
-          robberPlacementMotionMode={robberPlacementMotionMode}
-          themeId={themeId}
-          {...bgioProps}
+            placementRoadLayerRef={placementRoadLayerRef}
+            boardViewportScale={boardViewportScale}
+            playerAction={playerAction}
+            setPlayerAction={setPlayerAction}
+            buildPickup={buildPickup}
+            setBuildPickup={setBuildPickup}
+            playerColorMap={effectiveColorByPlayerId}
+            robberPlacementMotionMode={robberPlacementMotionMode}
+            themeId={themeId}
+            {...bgioProps}
           />
         </TransformComponent>
       </TransformWrapper>
@@ -912,6 +947,8 @@ TODO: accurately colour it
       {!!player && (
         <PlayerActionContainer
           setPlayerAction={setPlayerAction}
+          buildPickup={buildPickup}
+          setBuildPickup={setBuildPickup}
           bgioProps={bgioProps}
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
@@ -945,11 +982,12 @@ TODO: accurately colour it
         <TradeDiscardModal
           mode="trade"
           player={player}
-          onConfirm={handleTradeConfirm}
-          onCancel={() => {
-            setShowTradeModal(false);
-            setTradePresetResource(null);
-          }}
+                onConfirm={handleTradeConfirm}
+                onCancel={() => {
+                  setShowTradeModal(false);
+                  setTradePresetResource(null);
+                  clearBuildPickup();
+                }}
           G={bgioProps.G}
           tradePresetResource={tradePresetResource}
           themeId={themeId}

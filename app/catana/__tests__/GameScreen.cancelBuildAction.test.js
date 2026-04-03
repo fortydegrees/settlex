@@ -9,8 +9,11 @@ describe("GameScreen build-action cancel wiring", () => {
     );
     const source = fs.readFileSync(gameScreenPath, "utf8");
 
+    expect(source).toContain("const [buildPickup, setBuildPickup] = useState(null)");
+    expect(source).toContain("setBuildPickup(null)");
     expect(source).toContain("onClickCapture");
     expect(source).toContain("shouldCancelBuildAction");
+    expect(source).toContain('event.code === "Escape"');
     expect(source).toContain("data-action-circle");
   });
 });
