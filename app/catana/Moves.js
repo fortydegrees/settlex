@@ -97,7 +97,8 @@ export const maybeLogGameOver = (G, ctx) => {
 
 export const GAME_OVER_REASONS = {
   RESIGNATION: "Resignation",
-  DISCONNECT_FORFEIT: "Disconnect Forfeit"
+  DISCONNECT_FORFEIT: "Disconnect Forfeit",
+  AFK_FORFEIT: "AFK Forfeit"
 };
 
 const getOpponentWinnerId = (G, losingPlayerId) => {
@@ -157,6 +158,17 @@ export const resolveDisconnectForfeit = {
       context,
       losingPlayerIdArg ?? context.playerID,
       GAME_OVER_REASONS.DISCONNECT_FORFEIT
+    );
+  }
+};
+
+export const resolveIdleForfeit = {
+  client: false,
+  move: (context, losingPlayerIdArg) => {
+    resolveTerminalForfeit(
+      context,
+      losingPlayerIdArg ?? context.playerID,
+      GAME_OVER_REASONS.AFK_FORFEIT
     );
   }
 };

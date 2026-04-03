@@ -240,6 +240,67 @@ it("loads current state on matchData when no cached state exists", async () => {
   ).toBe(true);
 });
 
+it("forwards state and matchData to idle presence and attaches idle snapshots", () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-04-03T09:00:00Z"));
+
+  const timerManager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue(null)
+  };
+  const idleManager = {
+    onState: vi.fn(),
+    onMatchData: vi.fn(),
+    getSnapshot: vi.fn().mockReturnValue({
+      activeIdlePlayerId: "1",
+      statusByPlayerId: {
+        "1": { status: "idle", idleStrikeCount: 2 }
+      },
+      events: []
+    })
+  };
+  const pubSub = createTimerPubSub(timerManager, { idleManager });
+  const received = vi.fn();
+  pubSub.subscribe("MATCH-1", received);
+
+  const state = {
+    G: { gameLogSeq: 2 },
+    ctx: {
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "0": "postRoll" }
+    }
+  };
+  const matchData = [
+    { id: "0", name: "Alice", isConnected: true },
+    { id: "1", name: "Bren", isConnected: true }
+  ];
+
+  pubSub.publish("MATCH-1", {
+    type: "update",
+    args: ["1", state]
+  });
+  pubSub.publish("MATCH-1", {
+    type: "matchData",
+    args: ["1", matchData]
+  });
+
+  expect(idleManager.onState).toHaveBeenCalledWith("1", state, null);
+  expect(idleManager.onMatchData).toHaveBeenCalledWith("1", matchData);
+
+  const payloads = received.mock.calls.map(([payload]) => payload);
+  expect(
+    payloads.some(
+      (payload) =>
+        payload.type === "update" &&
+        payload.args?.[1]?.idlePresence?.activeIdlePlayerId === "1" &&
+        payload.args?.[1]?.idleServerTimeMs === Date.now()
+    )
+  ).toBe(true);
+
+  vi.useRealTimers();
+});
+
 it("seeds bot seats from matchData before a pregame update schedules bot ready-up", () => {
   vi.useFakeTimers();
 

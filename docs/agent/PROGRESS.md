@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-04-03, idle / AFK grace implemented)
+- Implemented the 1v1 idle / AFK grace flow across server presence, server dispatch, and the Catana match UI.
+- Server behavior now:
+- `server/presence/IdlePresenceManager.js` tracks consecutive idle strikes from fully auto-resolved normal gameplay turns,
+- `2` consecutive strikes start a `60s` `Idle` grace window,
+- `server/presence/acknowledgeIdle.js` plus `POST /idle/:matchID/ack` clear the idle window with authenticated credentials,
+- idle timeout dispatches the new server-only `resolveIdleForfeit` move, ending the match as `AFK Forfeit`.
+- Client behavior now:
+- `app/catana/utils/idlePresence.js` mirrors the disconnect snapshot math for live countdowns,
+- `app/catana/GameScreen.js` merges idle server events into the log, gives disconnect precedence over idle seat state, and shows a local `Are you still there?` modal with countdown + `I'm still here`,
+- `PlayerAvatarStats`, `OpponentPlayerBox`, and `PlayerActionContainer` reuse the existing warning-seat shell for both `Disconnected` and `Idle`.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/IdlePresenceManager.test.js server/__tests__/acknowledgeIdle.test.js server/__tests__/timerPubSub.test.js server/__tests__/dispatchMatchUpdate.test.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/idlePresence.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/IdlePromptModal.source.test.js app/catana/__tests__/GameScreen.idleGrace.test.js app/catana/__tests__/PlayerAvatarStatsPresence.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/PlayerActionBadges.test.js`
+
 ## Status (2026-04-03, idle / AFK grace implementation plan written)
 - Wrote the implementation plan in:
 - `docs/superpowers/plans/2026-04-03-idle-afk-grace-plan.md`

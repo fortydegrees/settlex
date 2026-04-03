@@ -1,5 +1,19 @@
 # NOTES
 
+- Idle / AFK grace implementation note:
+- `IdlePresenceManager` is intentionally parallel to `DisconnectPresenceManager`; do not collapse them into one generic status manager unless product rules around bot takeover / removal actually force a larger presence-state machine.
+- Current server rule:
+- count idle strikes only in `ctx.phase === "main"` normal gameplay turns,
+- increment a strike only when the turn ends with `auto*` timeout moves and no human move from that seat,
+- reset that seat's strike count on any genuine human move,
+- clear idle state/strikes if a real transport disconnect arrives for the same seat.
+- Current transport/auth seam:
+- `POST /idle/:matchID/ack` uses `bgioProps.credentials` from the live board client and validates through `serverInstance.auth.authenticateCredentials(...)` before clearing idle state and rebroadcasting the current match snapshot.
+- Current UI precedence rule:
+- `Disconnected` beats `Idle` when both snapshots exist,
+- seat warning visuals are shared, but only the affected local player sees the `Idle` acknowledgement modal,
+- `Idle` events flow through the same merged server-log path as disconnect events.
+
 - Idle / AFK grace plan note:
 - the implementation plan keeps three seams separate:
 - server-owned idle policy in `IdlePresenceManager`,

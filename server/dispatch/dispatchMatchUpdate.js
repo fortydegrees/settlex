@@ -2,7 +2,10 @@ import { Master } from "boardgame.io/dist/cjs/master.js";
 import { buildAutoMoveAction } from "../timers/dispatchUtils.js";
 
 const MATCH_PREFIX = "MATCH-";
-const TARGETED_SERVER_MOVES = new Set(["resolveDisconnectForfeit"]);
+const TARGETED_SERVER_MOVES = new Set([
+  "resolveDisconnectForfeit",
+  "resolveIdleForfeit"
+]);
 
 const buildTransportAPI = (serverInstance, matchID) => ({
   send: () => {},

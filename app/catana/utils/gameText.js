@@ -99,6 +99,38 @@ const formatServerEntry = (entry, playerMap = {}) => {
         tokens.push(textToken(" wins.", { variant: "server" }));
       }
       return tokens;
+    case "server:idle":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(
+        textToken(" was idle for 2 turns. Response window started.", {
+          variant: "server"
+        })
+      );
+      return tokens;
+    case "server:idleAck":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(
+        textToken(" responded and cleared the idle warning.", {
+          variant: "server"
+        })
+      );
+      return tokens;
+    case "server:idleForfeit":
+      if (affectedPlayerId != null) {
+        tokens.push(playerToken(String(affectedPlayerId), playerMap));
+      }
+      tokens.push(textToken(" did not respond. ", { variant: "server" }));
+      if (winnerId != null) {
+        tokens.push(playerToken(String(winnerId), playerMap));
+        tokens.push(textToken(" wins by forfeit.", { variant: "server" }));
+      } else {
+        tokens.push(textToken(" lost by forfeit.", { variant: "server" }));
+      }
+      return tokens;
     default:
       return [
         ...tokens,

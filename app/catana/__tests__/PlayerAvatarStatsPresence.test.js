@@ -20,10 +20,12 @@ const stylesPath = path.resolve(
 );
 
 describe("PlayerAvatarStats disconnect presence", () => {
-  it("renders a disconnect badge and danger countdown pill hooks", () => {
+  it("renders shared warning badge and countdown pill hooks for disconnect and idle", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("⚠️");
     expect(contents).toContain("Disconnected");
+    expect(contents).toContain("Idle");
+    expect(contents).toContain('presence?.status === "idle"');
     expect(contents).toContain("presence?.remainingMs");
     expect(contents).toContain("bg-rose-100");
     expect(contents).toContain("text-rose-700");
@@ -46,7 +48,7 @@ describe("PlayerAvatarStats disconnect presence", () => {
 
   it("suppresses the thought bubble while disconnected and insets the warning icon", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("!isMe && !isDisconnected");
+    expect(contents).toContain("!isMe && !isSeatWarning");
     expect(contents).toContain("bottom-1 right-1");
     expect(contents).not.toContain("drop-shadow-[0_1px_3px_rgba(255,255,255,0.95)]");
     expect(contents).not.toContain("translate-x-1/4 translate-y-1/4");

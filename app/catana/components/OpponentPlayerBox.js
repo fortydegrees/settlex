@@ -19,7 +19,8 @@ export const OpponentPlayerBox = ({
   const devCount = player.devCards?.length ?? 0;
   const stackMotionClass =
     "transition-[width] duration-200 ease-out motion-reduce:transition-none";
-  const isDisconnected = presence?.status === "disconnected";
+  const isSeatWarning =
+    presence?.status === "disconnected" || presence?.status === "idle";
   const discardLimit = core?.ruleset?.discardLimit ?? 7;
   const resourceBadgeTone = getOpponentResourceBadgeTone({
     resourceCount,
@@ -39,7 +40,7 @@ export const OpponentPlayerBox = ({
       />
       <div
         className={`ml-2 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
-          isDisconnected
+          isSeatWarning
             ? "bg-rose-100/80 ring-white/60 seat-disconnected-panel seat-disconnected-pulse"
             : "bg-blue-200 bg-opacity-50 ring-white/60"
         }`}

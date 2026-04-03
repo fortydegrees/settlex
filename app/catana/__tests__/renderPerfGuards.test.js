@@ -33,11 +33,12 @@ describe("render performance guards", () => {
     );
   });
 
-  it("only starts the ticker when a visible timer or disconnect countdown is active", () => {
+  it("only starts the ticker when a visible timer, disconnect countdown, or idle countdown is active", () => {
     const contents = readCatanaFile("GameScreen.js");
     expect(contents).toContain("hasDisconnectCountdown");
+    expect(contents).toContain("hasIdleCountdown");
     expect(contents).toMatch(
-      /if \(!timerSnapshot \|\| hideTimer\) \{\s+if \(!hasDisconnectCountdown\) return;\s+\}/
+      /if \(!timerSnapshot \|\| hideTimer\) \{\s+if \(!hasDisconnectCountdown && !hasIdleCountdown\) return;\s+\}/
     );
   });
 
