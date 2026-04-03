@@ -182,6 +182,16 @@
   - retire `olive`,
   - add the explicit conflict-aware resolver and wire `GameScreen`,
   - remove the avatar-side `chosenColor` override.
+- Player color conflicts implementation note:
+- keep the conflict policy in `app/catana/utils/playerColorsInGame.js` explicit and symmetric; do not replace it with fuzzy similarity logic unless product rules change.
+- Current allowed/disallowed nuance:
+  - `violet` + `magenta` is allowed,
+  - `lavender` + `magenta` is not,
+  - `lavender` + `violet` is not,
+  - `purple` + `magenta` is not,
+  - `red` + `coral` is not.
+- `olive` is now legacy-only and should continue normalizing to `lime` everywhere new player colors are read or assigned.
+- `PlayerAvatarStats.js` should continue treating `player.color` as the single in-game avatar/piece color source; do not reintroduce a separate `chosenColor` display override inside matches.
 
 - Disconnect/reconnect regression follow-up:
 - boardgame.io rejects timeout moves if they are sent as an inactive player and also checks live stage move maps before executing them.

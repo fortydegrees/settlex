@@ -21,6 +21,22 @@
 - wire `GameScreen.js` to use that resolver as the in-game color source,
 - remove the remaining avatar-only `chosenColor` preference so avatar backgrounds match resolved piece colors.
 
+## Status (2026-04-03, player color conflicts implemented)
+- Retired `olive` from the live Catana player palette:
+- `app/catana/theme/playerColors.js` now treats `olive` as a legacy alias to `lime`,
+- `PLAYER_COLOR_OPTIONS` no longer exposes `olive`,
+- piece asset resolution now maps old `olive` ids onto the `lime` SVG family through normal color normalization.
+- Added an explicit in-game player-color conflict policy in:
+- `app/catana/utils/playerColorsInGame.js`
+- Approved conflict groups now prevent these combinations from appearing together in one match:
+  - `lavender` with `violet`, `purple`, or `magenta`
+  - `purple` with `lavender`, `violet`, or `magenta`
+  - `red` with `coral`
+- `violet` and `magenta` remain allowed together by design.
+- Rewired `app/catana/GameScreen.js` so effective match colors now come from the conflict-aware resolver before building player views, board color props, log player colors, and placement-effect piece colors.
+- Removed the last avatar-only color split:
+- `app/catana/components/PlayerAvatarStats.js` now uses `player.color` only, so avatar gradients follow the resolved in-game piece color instead of a separate `chosenColor` override.
+
 ## Status (2026-04-02, player effective colors implementation plan written)
 - Wrote the implementation plan in:
 - `docs/superpowers/plans/2026-04-02-player-effective-colors-plan.md`
