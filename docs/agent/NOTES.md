@@ -1,5 +1,17 @@
 # NOTES
 
+- Custom API route port note:
+- in this repo's current dev server shape, `server.run({ port: 8000, lobbyConfig: { apiPort: 8080 } })` splits responsibilities:
+- `:8000` serves the boardgame.io socket/game transport,
+- `server.router` HTTP routes live on the separate API app at `:8080`.
+- If a client-side fetch targets a custom Koa route such as `/timer/:matchID` or `/idle/:matchID/ack`, it must use the API/lobby base URL, not the game/socket port.
+- A wrong-port fetch can present as a misleading browser CORS/preflight error because `OPTIONS` receives a plain `404` from the socket server.
+
+- AFK live-pubsub regression note:
+- `server/timers/timerPubSub.js` receives raw Boardgame.io master payloads, not the post-filter client transport shape.
+- For live `update` payloads, deltalog is carried on `state.deltalog` rather than `args[2]`.
+- If future presence/timer features need move-log-aware server behavior, read deltalog from the raw state object first and only fall back to positional transport args when they are actually present.
+
 - Plus asset note:
 - `public/svgs/plus/circled_plus_green.svg` intentionally keeps the circular silhouette and dimensional filter stack from `circled_m.svg`.
 - The circle palette is remapped to the green gradient family from `check_mark_button.svg`.
@@ -1714,3 +1726,11 @@
     - `app/catana/theme/playerColors.js` is the canonical source for lobby swatches, avatar gradients, text-name hexes, and generated piece ramps.
     - if piece shades are manually polished, mirror the same direction back into `playerColors.js` or the next `scripts/generate-player-piece-palette.mjs` run will drift the repo back out of sync.
     - the intended balance is: UI colors can stay slightly punchier/cleaner than the board pieces, but they should clearly belong to the same family.
+- Idle acknowledge route note:
+  - in this `server.run({ port: 8000, lobbyConfig: { apiPort: 8080 } })` setup, the custom `server.router` routes live on the API app at `:8080`, not on the gameplay/socket port at `:8000`.
+  - custom POST routes added with `server.router.post(...)` do not automatically get JSON body parsing unless `koaBody()` is attached to that route (or equivalent middleware is added earlier).
+  - symptom of missing body parsing here was misleading: the client posted to the correct URL, but `ctx.request.body` stayed empty and `acknowledgeIdle` returned `400 playerID and credentials are required`.
+  - current safe pattern for similar authenticated side routes is:
+    - expose them via `server.router` on the API app,
+    - add `koaBody()` for request parsing,
+    - keep auth checks server-side by validating `playerID` / `credentials` against Boardgame.io metadata before mutating presence state.

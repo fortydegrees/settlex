@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { PufferBotManager } from "../bots/pufferBotManager";
+import { IdlePresenceManager } from "../presence/IdlePresenceManager";
 import { TimerManager } from "../timers/TimerManager";
 import { createTimerPubSub } from "../timers/timerPubSub";
 
@@ -299,6 +300,96 @@ it("forwards state and matchData to idle presence and attaches idle snapshots", 
   ).toBe(true);
 
   vi.useRealTimers();
+});
+
+it("passes raw master update deltalogs through to idle tracking", () => {
+  const timerManager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue(null)
+  };
+  const idleManager = new IdlePresenceManager({
+    dispatch: vi.fn(),
+    idleStrikeThreshold: 2,
+    idleTimeoutMs: 60_000
+  });
+  const pubSub = createTimerPubSub(timerManager, { idleManager });
+
+  const createState = ({
+    currentPlayer = "0",
+    turn = 1,
+    activeStage = "postRoll",
+    gameLogSeq = 0,
+    deltalog = []
+  } = {}) => ({
+    G: {
+      core: {
+        players: ["0", "1"],
+        gameOver: null
+      },
+      gameLogSeq,
+      deltalog
+    },
+    ctx: {
+      phase: "main",
+      currentPlayer,
+      activePlayers: { [currentPlayer]: activeStage },
+      turn,
+      gameover: undefined
+    },
+    deltalog
+  });
+
+  const moveEntry = (type, playerID) => ({
+    action: {
+      type: "MAKE_MOVE",
+      payload: {
+        type,
+        playerID: String(playerID)
+      }
+    }
+  });
+
+  pubSub.publish("MATCH-raw", {
+    type: "update",
+    args: [
+      "raw",
+      createState({
+        currentPlayer: "1",
+        turn: 4,
+        activeStage: "preRoll"
+      })
+    ]
+  });
+  pubSub.publish("MATCH-raw", {
+    type: "update",
+    args: [
+      "raw",
+      createState({
+        currentPlayer: "1",
+        turn: 4,
+        activeStage: "postRoll",
+        deltalog: [moveEntry("autoRoll", "1")]
+      })
+    ]
+  });
+  pubSub.publish("MATCH-raw", {
+    type: "update",
+    args: [
+      "raw",
+      createState({
+        currentPlayer: "0",
+        turn: 5,
+        activeStage: "preRoll",
+        deltalog: [moveEntry("autoEndTurn", "1")]
+      })
+    ]
+  });
+
+  const snapshot = idleManager.getSnapshot("raw");
+  expect(snapshot.statusByPlayerId["1"]).toMatchObject({
+    status: "connected",
+    idleStrikeCount: 1
+  });
 });
 
 it("seeds bot seats from matchData before a pregame update schedules bot ready-up", () => {

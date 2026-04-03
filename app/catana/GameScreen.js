@@ -82,6 +82,11 @@ const readStoredThemeId = () => {
   }
 };
 
+const getApiBaseUrl = () => {
+  if (typeof window === "undefined") return "http://localhost:8080";
+  return `${window.location.protocol}//${window.location.hostname}:8080`;
+};
+
 const getGameOverReasonCopy = (reason) => {
   if (reason === "victoryPoints" || !reason) return "Victory Points";
   if (reason === "Resignation") return "Resignation";
@@ -403,7 +408,7 @@ export function GameScreen(bgioProps) {
 
     const fetchSeed = async () => {
       try {
-        const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
+        const baseUrl = getApiBaseUrl();
         const url = `${baseUrl}/timer/${matchID}`;
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) return;
@@ -592,7 +597,7 @@ export function GameScreen(bgioProps) {
     setIsAcknowledgingIdle(true);
     setIdleAckError(null);
     try {
-      const baseUrl = `${window.location.protocol}//${window.location.hostname}:8000`;
+      const baseUrl = getApiBaseUrl();
       const response = await fetch(`${baseUrl}/idle/${matchID}/ack`, {
         method: "POST",
         headers: {

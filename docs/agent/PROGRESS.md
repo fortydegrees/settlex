@@ -1,5 +1,28 @@
 # PROGRESS
 
+## Status (2026-04-03, idle ack route port mismatch fixed)
+- Fixed the `I'm still here` idle acknowledgement flow failing with a browser CORS/preflight error.
+- Root cause:
+- `app/catana/GameScreen.js` was calling custom Koa routes on `http://<host>:8000`, but with `server.run({ port: 8000, lobbyConfig: { apiPort: 8080 } })` the `server.router` routes are mounted on the separate API app at `:8080`, not on the socket/game server at `:8000`.
+- The browser symptom looked like CORS, but the real failure was a preflight `OPTIONS` request hitting the wrong port and getting a bare `404`.
+- Current fix:
+- `GameScreen.js` now uses the API/lobby base URL (`:8080`) for both `/timer/:matchID` seed fetches and `/idle/:matchID/ack`.
+- Focused verification:
+- `pnpm vitest run app/catana/__tests__/GameScreen.idleGrace.test.js`
+
+## Status (2026-04-03, AFK timer live-pubsub regression fixed)
+- Fixed the live server wiring bug that prevented the AFK idle modal and AFK forfeit from ever triggering in real matches.
+- Root cause:
+- `server/timers/timerPubSub.js` was treating Boardgame.io pubsub updates like client-facing transport payloads.
+- In production, raw master `update` payloads arrive as `[matchID, state]`, with the move log still living on `state.deltalog`.
+- Because the wrapper only looked for `args[2]`, `IdlePresenceManager` never saw `autoRoll` / `autoEndTurn`, so idle strikes stayed at `0`.
+- Current fix:
+- `createTimerPubSub(...)` now extracts deltalog from the raw state payload (`state.deltalog` / `state.G.deltalog`) when explicit deltalog args are absent.
+- Added a regression test in `server/__tests__/timerPubSub.test.js` that simulates raw master `update` payloads and verifies a real idle strike is recorded.
+- Focused verification:
+- `pnpm vitest run server/__tests__/timerPubSub.test.js`
+- `pnpm vitest run server/__tests__/IdlePresenceManager.test.js server/__tests__/acknowledgeIdle.test.js`
+
 ## Status (2026-04-03, green circled plus asset added)
 - Added a new plus icon asset in:
 - `public/svgs/plus/circled_plus_green.svg`
@@ -2545,3 +2568,10 @@
   - `pnpm exec vitest run app/catana/__tests__/playerColors.test.js app/catana/__tests__/pieceAssets.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/themeAssets.test.js`
   - `node scripts/generate-player-piece-palette.mjs`
   - `xmllint --noout public/svgs/pieces/*.svg`
+- Fixed the idle acknowledge `400 playerID and credentials are required` regression after the earlier port correction:
+  - root cause was the custom `server.router.post("/idle/:matchID/ack", ...)` route reading `ctx.request.body` without registering `koaBody()`,
+  - that meant the browser POST reached the right API app on `:8080`, but Koa never parsed the JSON payload, so the handler saw an empty body and rejected the request as missing auth fields.
+- Added a regression to lock the server route wiring:
+  - `server/__tests__/serverRoutes.source.test.js` now checks that `server/server.js` imports `koa-body` and wires `koaBody()` into the idle acknowledge route.
+- Verification for the idle acknowledge route-body fix:
+  - `pnpm vitest run server/__tests__/serverRoutes.source.test.js server/__tests__/acknowledgeIdle.test.js app/catana/__tests__/GameScreen.idleGrace.test.js server/__tests__/timerPubSub.test.js server/__tests__/IdlePresenceManager.test.js`
