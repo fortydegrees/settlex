@@ -108,6 +108,7 @@ export const PlayerActionContainer = ({
   }, [player.resources]);
   const timerText = formatTimer(timerMs);
   const isDisconnected = presence?.status === "disconnected";
+  const pieceColor = player.color ?? "red";
 
   const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
 
@@ -133,8 +134,8 @@ export const PlayerActionContainer = ({
     {
       name: "road",
       action: () => setPlayerAction("placeRoad"),
-      img: getThemedSvgPath(themeId, getPieceSvgFile("road", "red")),
-      fallbackImg: getClassicSvgPath(getPieceSvgFile("road", "red")),
+      img: getThemedSvgPath(themeId, getPieceSvgFile("road", pieceColor)),
+      fallbackImg: getClassicSvgPath(getPieceSvgFile("road", pieceColor)),
       count: player.roadsRemaining,
       enabled: false,
       style: { transform: "rotate(90deg) scale(0.9)" },
@@ -142,8 +143,8 @@ export const PlayerActionContainer = ({
     {
       name: "settlement",
       action: () => setPlayerAction("placeSettlement"),
-      img: getThemedSvgPath(themeId, getPieceSvgFile("settlement", "red")),
-      fallbackImg: getClassicSvgPath(getPieceSvgFile("settlement", "red")),
+      img: getThemedSvgPath(themeId, getPieceSvgFile("settlement", pieceColor)),
+      fallbackImg: getClassicSvgPath(getPieceSvgFile("settlement", pieceColor)),
       count: player.settlementsRemaining,
       enabled: false,
       style: null,
@@ -151,8 +152,8 @@ export const PlayerActionContainer = ({
     {
       name: "city",
       action: () => setPlayerAction("placeCity"),
-      img: getThemedSvgPath(themeId, getPieceSvgFile("city", "red")),
-      fallbackImg: getClassicSvgPath(getPieceSvgFile("city", "red")),
+      img: getThemedSvgPath(themeId, getPieceSvgFile("city", pieceColor)),
+      fallbackImg: getClassicSvgPath(getPieceSvgFile("city", pieceColor)),
       count: player.citiesRemaining,
       enabled: false,
       style: null,

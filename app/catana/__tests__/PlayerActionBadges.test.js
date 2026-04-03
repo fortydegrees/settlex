@@ -33,6 +33,17 @@ describe("PlayerActionContainer", () => {
     expect(contents).toContain("seat-disconnected-panel");
     expect(contents).not.toContain("animate-pulse");
   });
+
+  it("colors build-action piece icons from the player's in-game color", () => {
+    const contents = fs.readFileSync(actionContainerPath, "utf8");
+    expect(contents).toContain('const pieceColor = player.color ?? "red"');
+    expect(contents).toContain('getPieceSvgFile("road", pieceColor)');
+    expect(contents).toContain('getPieceSvgFile("settlement", pieceColor)');
+    expect(contents).toContain('getPieceSvgFile("city", pieceColor)');
+    expect(contents).not.toContain('getPieceSvgFile("road", "red")');
+    expect(contents).not.toContain('getPieceSvgFile("settlement", "red")');
+    expect(contents).not.toContain('getPieceSvgFile("city", "red")');
+  });
 });
 
 describe("DevCardDisplay", () => {
