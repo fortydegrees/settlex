@@ -541,6 +541,8 @@ export function GameScreen(bgioProps) {
         playerAction,
         playerID,
         ctx: bgioProps.ctx,
+        core,
+        coreTopology: bgioProps.G?.coreTopology,
         corePhase: core?.phase,
         isGameOver
       })
@@ -553,6 +555,8 @@ export function GameScreen(bgioProps) {
     playerAction,
     playerID,
     bgioProps.ctx,
+    bgioProps.G?.coreTopology,
+    core,
     core?.phase,
     isGameOver
   ]);

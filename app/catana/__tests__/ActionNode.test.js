@@ -11,5 +11,7 @@ describe("ActionNode", () => {
 
     expect(source).toContain('data-action-circle="true"');
     expect(source).toContain("registerBuildTarget");
+    expect(source).toContain("buildTargetRotationDegrees");
+    expect(source).not.toContain("[buildTargetMeta, nodeId, registerBuildTarget]");
   });
 });

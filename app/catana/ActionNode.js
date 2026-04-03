@@ -48,6 +48,7 @@ export function ActionNode({
       ? getPieceSvgFile(buildingType, buildingColor)
       : null;
   const showCircleVisual = showIdleCircle || isHovered;
+  const buildTargetRotationDegrees = buildTargetMeta?.rotationDegrees ?? 0;
 
   const gradientClass = isHovered && isNodeType
     ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
@@ -61,17 +62,17 @@ export function ActionNode({
     registerBuildTarget({
       targetId: nodeId,
       element: actionCircleRef.current,
-      ...buildTargetMeta
+      rotationDegrees: buildTargetRotationDegrees
     });
 
     return () => {
       registerBuildTarget({
         targetId: nodeId,
         element: null,
-        ...buildTargetMeta
+        rotationDegrees: buildTargetRotationDegrees
       });
     };
-  }, [buildTargetMeta, nodeId, registerBuildTarget]);
+  }, [buildTargetRotationDegrees, nodeId, registerBuildTarget]);
 
   return (
     <>
