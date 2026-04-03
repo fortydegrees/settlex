@@ -1,7 +1,7 @@
 const SQRT3 = Math.sqrt(3);
 
 export function computeDefaultSize({ width, height }) {
-  const numLevels = 6;
+  const numLevels = 7;
   const maxSizeThatRespectsHeight = (4 * height) / (3 * numLevels + 1) / 2;
   const correspondingWidth = SQRT3 * maxSizeThatRespectsHeight;
   if (numLevels * correspondingWidth < width) {
