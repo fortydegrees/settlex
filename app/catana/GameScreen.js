@@ -196,7 +196,7 @@ export function GameScreen(bgioProps) {
   );
   const rawPlayer = playerViewMap[playerID];
   const player = rawPlayer
-    ? { ...rawPlayer, name: nameMap[rawPlayer.id], emoji: emojiMap[rawPlayer.id], chosenColor: colorMap[rawPlayer.id] }
+    ? { ...rawPlayer, name: nameMap[rawPlayer.id], emoji: emojiMap[rawPlayer.id] }
     : null;
   const winnerId = gameOverState?.winnerId ?? gameOverState?.winner ?? null;
   const winnerName =
@@ -571,8 +571,7 @@ export function GameScreen(bgioProps) {
     .map((view) => ({
       ...view,
       name: nameMap[view.id],
-      emoji: emojiMap[view.id],
-      chosenColor: colorMap[view.id],
+      emoji: emojiMap[view.id]
     }));
 
   //const otherPlayerCards = bgioProps.G.players[opponentID].resourceCards; //TODO: horrible, clean up. might need to check if playerID exists (e.g. what about spectator)
