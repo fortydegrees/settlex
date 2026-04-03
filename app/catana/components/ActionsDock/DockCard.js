@@ -1,150 +1,93 @@
 import * as React from "react";
 import {
   animated,
-  useIsomorphicLayoutEffect,
   useSpringValue,
 } from "@react-spring/web";
-
-import { useMousePosition } from "./hooks/useMousePosition";
-import { useWindowResize } from "./hooks/useWindowResize";
-
-import { useDock } from "./DockContext";
 
 import "./dockStyles.css";
 import { handleThemeImageError } from "../../theme/themes";
 
 const INITIAL_WIDTH = 48;
+const HOVER_LIFT_PX = -4;
+const PRESS_LIFT_PX = -1;
+const SELECTED_LIFT_PX = -2;
 
 export const DockCard = ({ action }) => {
   const cardRef = React.useRef(null);
-  /**
-   * This doesn't need to be real time, think of it as a static
-   * value of where the card should go to at the end.
-   */
-  const [elCenterX, setElCenterX] = React.useState(0);
-
-  const size = useSpringValue(INITIAL_WIDTH, {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const y = useSpringValue(action.selected ? SELECTED_LIFT_PX : 0, {
     config: {
-      mass: 0.1,
+      friction: 24,
+      tension: 300,
+    },
+  });
+  const scale = useSpringValue(1, {
+    config: {
+      friction: 26,
       tension: 320,
     },
   });
 
-  const opacity = useSpringValue(0);
-  const y = useSpringValue(0, {
-    config: {
-      friction: 29,
-      tension: 238,
-    },
-  });
-
-  const dock = useDock();
-  /**
-   * This is just an abstraction around a `useSpring` hook, if you wanted you could do this
-   * in the hook above, but these abstractions are useful to demonstrate!
-   */
-  useMousePosition(
-    {
-      onChange: ({ value }) => {
-        if (!action.enabled) return;
-        const mouseX = value.x;
-
-        if (dock.width > 0) {
-          const transformedValue =
-            INITIAL_WIDTH +
-            18 *
-              Math.cos((((mouseX - elCenterX) / dock.width) * Math.PI) / 2) **
-                60;
-
-          if (dock.hovered) {
-            size.start(transformedValue);
-          }
-        }
-      },
-    },
-    [elCenterX, dock]
-  );
-
-  useIsomorphicLayoutEffect(() => {
-    if (!dock.hovered) {
-      size.start(INITIAL_WIDTH);
+  React.useEffect(() => {
+    const restingLift = action.selected ? SELECTED_LIFT_PX : 0;
+    if (!action.enabled) {
+      y.start(restingLift);
+      scale.start(1);
+      return;
     }
-  }, [dock.hovered]);
 
-  useWindowResize(() => {
-    const { x } = cardRef.current.getBoundingClientRect();
-
-    setElCenterX(x + INITIAL_WIDTH / 2);
-  });
-
-  const timesLooped = React.useRef(0);
-  const timeoutRef = React.useRef();
-  const isAnimating = React.useRef(false);
+    y.start(isHovered ? HOVER_LIFT_PX : restingLift);
+    scale.start(1);
+  }, [action.enabled, action.selected, isHovered, scale, y]);
 
   const handleClick = () => {
     if (!action.enabled) return;
-    if (!isAnimating.current) {
-      action.action()
-      isAnimating.current = true;
-      opacity.start(0.5);
+    const triggerRect = cardRef.current?.getBoundingClientRect?.() ?? null;
 
-      timesLooped.current = 0;
+    scale.start(0.96);
+    y.start(PRESS_LIFT_PX);
+    action.action?.({ triggerRect });
 
-      y.start(-INITIAL_WIDTH / 2, {
-        loop: () => {
-          if (3 === timesLooped.current++) {
-            timeoutRef.current = setTimeout(() => {
-              opacity.start(0);
-              y.set(0);
-              isAnimating.current = false;
-              timeoutRef.current = undefined;
-            }, 2000);
-            y.stop();
-          }
-          return { reverse: true };
-        },
-      });
-    } else {
-      /**
-       * Allow premature exit of animation
-       * on a second click if we're currently animating
-       */
-      clearTimeout(timeoutRef.current);
-      opacity.start(0);
-      y.start(0);
-      isAnimating.current = false;
-    }
+    requestAnimationFrame(() => {
+      const restingLift = action.selected || isHovered ? HOVER_LIFT_PX : 0;
+      scale.start(1);
+      y.start(restingLift);
+    });
   };
-
-  React.useEffect(() => () => clearTimeout(timeoutRef.current), []);
-
-  React.useEffect(() => {
-    if (!action.enabled) {
-      clearTimeout(timeoutRef.current);
-      opacity.set(0);
-      y.set(0);
-      size.set(INITIAL_WIDTH);
-      isAnimating.current = false;
-      return;
-    }
-    y.set(0);
-    size.set(INITIAL_WIDTH);
-  }, [action.enabled, opacity, size, y]);
 
   return (
     <div className="dock-card-container">
       <animated.button
         ref={cardRef}
-        //disabled
         className={`bg-blue-300 ring-2 ring-slate-200 dock-card ${
           action.enabled ? "enabled" : ""
-        }`}
+        } ${action.selected ? "selected" : ""}`}
         disabled={!action.enabled}
+        onMouseEnter={() => {
+          if (!action.enabled) return;
+          setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          setIsHovered(false);
+        }}
+        onMouseDown={() => {
+          if (!action.enabled) return;
+          scale.start(0.96);
+          y.start(PRESS_LIFT_PX);
+        }}
+        onMouseUp={() => {
+          if (!action.enabled) return;
+          scale.start(1);
+          y.start(
+            isHovered ? HOVER_LIFT_PX : action.selected ? SELECTED_LIFT_PX : 0
+          );
+        }}
         onClick={handleClick}
         style={{
-          width: size,
-          height: size,
+          width: INITIAL_WIDTH,
+          height: INITIAL_WIDTH,
           y,
+          scale,
         }}
       >
         <span className="card">
@@ -167,8 +110,6 @@ export const DockCard = ({ action }) => {
           )}
         </span>
       </animated.button>
-      
-      {/* <animated.div className="dock-dot" style={{ opacity }} /> */}
     </div>
   );
 };

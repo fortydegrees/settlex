@@ -11,6 +11,7 @@ import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
 import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, getPlayableDevCardCounts, buildableNodes, buildableEdges } from "@settlex/game-core";
 import { getMaritimeTradeRateIfTradable } from "../utils/trade";
+import { getBuildPickupPieceType } from "../utils/playerAction";
 import {
   RESOURCE_ICON_FILES_BY_RESOURCE,
   getClassicResourceIconPath,
@@ -69,6 +70,8 @@ export const CardIcon = ({
 
 export const PlayerActionContainer = ({
   setPlayerAction,
+  buildPickup,
+  setBuildPickup,
   bgioProps,
   player,
   presence,
@@ -81,10 +84,33 @@ export const PlayerActionContainer = ({
   timerMs,
   themeId,
 }) => {
-
-  
   const { G, ctx, moves } = bgioProps;
   const SHOW_PLAYER_HAND_BADGES = false;
+  const activePickupPieceType = buildPickup?.pieceType ?? null;
+
+  const copyTriggerRect = (triggerRect) => {
+    if (!triggerRect) return null;
+    return {
+      left: triggerRect.left,
+      top: triggerRect.top,
+      width: triggerRect.width,
+      height: triggerRect.height,
+      right: triggerRect.right,
+      bottom: triggerRect.bottom
+    };
+  };
+
+  const startBuildPickup = (playerAction, triggerRect) => {
+    const pieceType = getBuildPickupPieceType(playerAction);
+    if (!pieceType) return;
+
+    setPlayerAction(playerAction);
+    setBuildPickup({
+      pieceType,
+      originRect: copyTriggerRect(triggerRect),
+      startedAtMs: Date.now()
+    });
+  };
 
   const [Die, rollTo] = useDie(G.diceRoll[0]);
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);
@@ -134,30 +160,34 @@ export const PlayerActionContainer = ({
     },
     {
       name: "road",
-      action: () => setPlayerAction("placeRoad"),
+      action: ({ triggerRect }) => startBuildPickup("placeRoad", triggerRect),
       img: getThemedSvgPath(themeId, getPieceSvgFile("road", pieceColor)),
       fallbackImg: getClassicSvgPath(getPieceSvgFile("road", pieceColor)),
       count: player.roadsRemaining,
       enabled: false,
       style: { transform: "rotate(90deg) scale(0.9)" },
+      selected: buildPickup?.pieceType === "road",
     },
     {
       name: "settlement",
-      action: () => setPlayerAction("placeSettlement"),
+      action: ({ triggerRect }) =>
+        startBuildPickup("placeSettlement", triggerRect),
       img: getThemedSvgPath(themeId, getPieceSvgFile("settlement", pieceColor)),
       fallbackImg: getClassicSvgPath(getPieceSvgFile("settlement", pieceColor)),
       count: player.settlementsRemaining,
       enabled: false,
       style: null,
+      selected: buildPickup?.pieceType === "settlement",
     },
     {
       name: "city",
-      action: () => setPlayerAction("placeCity"),
+      action: ({ triggerRect }) => startBuildPickup("placeCity", triggerRect),
       img: getThemedSvgPath(themeId, getPieceSvgFile("city", pieceColor)),
       fallbackImg: getClassicSvgPath(getPieceSvgFile("city", pieceColor)),
       count: player.citiesRemaining,
       enabled: false,
       style: null,
+      selected: buildPickup?.pieceType === "city",
     },
     {
       name: "devCard",
@@ -218,9 +248,11 @@ export const PlayerActionContainer = ({
 
   const dynamicActions = ACTIONS.map((action) => {
     if (!action) return null;
+    const pieceType = getBuildPickupPieceType(`place${action.name[0]?.toUpperCase() ?? ""}${action.name.slice(1)}`);
     return {
       ...action,
       enabled: isActionEnabled(action.name),
+      selected: action.selected ?? pieceType === activePickupPieceType,
     };
   });
 
@@ -365,6 +397,7 @@ export const PlayerActionContainer = ({
                 onClick={() => {
                   if (!endTurnEnabled) return;
                   setPlayerAction(null);
+                  setBuildPickup(null);
                   moves.endTurn();
                 }}
               >
