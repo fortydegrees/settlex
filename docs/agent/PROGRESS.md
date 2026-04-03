@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-03, dock build pickup design written)
+- Wrote the dock interaction design spec in:
+- `docs/superpowers/specs/2026-04-03-action-dock-build-pickup-design.md`
+- Approved direction for this slice:
+- keep the current Catana dock styling/layout,
+- remove dock magnify and the old looping bounce,
+- scope the interaction cleanup to explicit `road` / `settlement` / `city` build actions only,
+- make the clicked build piece visually launch from the dock button into a live cursor-following placement preview that reuses the robber-placement motion model,
+- keep cancel immediate and quiet with no fly-back animation.
+
 ## Status (2026-04-03, stale pregame readyUp accepted on server)
 - Fixed the remaining human-matchmaking `waiting to start` bug where the board could load, one player would still sit in pregame for `~10-15s`, and the server logged:
 - `ERROR: invalid stateID, was=[0], expected=[1] - playerID=[1] - action[readyUp]`

@@ -1,5 +1,15 @@
 # NOTES
 
+- Dock build pickup design note:
+- the approved interaction cleanup is intentionally narrow:
+- keep the current Catana dock styling/layout,
+- remove dock magnify and the old looping click bounce,
+- only redesign explicit `road` / `settlement` / `city` pickup behavior for now,
+- the clicked piece should visually launch from its dock button and become the live cursor-following placement preview,
+- keep the originating dock button subtly active while the piece is in hand,
+- cancel should clear immediately with no fly-back,
+- defer `trade`, `dev card`, and any dedicated `roadBuilding` polish to later slices.
+
 - Stale pregame readyUp note:
 - `readyUp` is intentionally configured as a stale-safe long-form move in `app/catana/Moves.js` via `ignoreStaleStateID: true`.
 - Reason:
