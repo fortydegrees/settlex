@@ -110,17 +110,14 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       duration: durations.travelToCenter,
       ease: "power2.out",
     });
-    timeline.call(() => popHowlRef.current?.play(), null, "-=0.06");
-    timeline.to(
-      flipNode,
-      {
-        autoAlpha: 1,
-        scale: 1,
-        duration: durations.backReveal,
-        ease: "power2.out",
-      },
-      "-=0.08"
-    );
+    timeline.call(() => popHowlRef.current?.play());
+    timeline.to({}, { duration: durations.holdAfterTravel });
+    timeline.to(flipNode, {
+      autoAlpha: 1,
+      scale: 1,
+      duration: durations.backReveal,
+      ease: "power2.out",
+    });
     timeline.to(
       emblemNode,
       {
@@ -131,7 +128,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       },
       "<"
     );
-    timeline.to({}, { duration: durations.holdAtCenter });
+    timeline.to({}, { duration: durations.holdAfterBackReveal });
     timeline.to(flipNode, {
       rotationY: 180,
       duration: durations.flip,

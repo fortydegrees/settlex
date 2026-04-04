@@ -1052,6 +1052,7 @@ TODO: accurately colour it
           onDevCardPurchaseStart={setPendingDevCardReveal}
           devCardDisplayRef={devCardDisplayRef}
           displayDevCards={displayPlayer?.devCards ?? null}
+          keepDevCardShellMounted={Boolean(hiddenDevCardType)}
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}

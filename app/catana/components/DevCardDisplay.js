@@ -23,11 +23,13 @@ export const DevCardDisplay = ({
   showCountBadge = false,
   badgeMinCount = 3,
   containerRef = null,
+  forceMount = false,
 }) => {
+  const cardWidth = 52;
+  const paddingX = 12;
   const { nonPlayable, playableGroups, boxWidth, groupGap } =
     useMemo(() => {
       const vps = cards.filter((card) => card === "victoryPoint");
-      const cardWidth = 52;
       const vpStackOffsetValue = 16;
       const playableGroupGap = 10;
       const playableGroups = getPlayableDevCardGroups({
@@ -41,7 +43,6 @@ export const DevCardDisplay = ({
 
       const groupGap =
         vps.length > 0 && playableGroups.length > 0 ? 16 : 0;
-      const paddingX = 12;
       const vpLayout = vps.length
         ? getCardStackLayout({
             count: vps.length,
@@ -66,21 +67,22 @@ export const DevCardDisplay = ({
         boxWidth: Math.round(width),
         groupGap: playableGroupGap
       };
-    }, [cards, playableCountsByType, badgeMinCount]);
+    }, [badgeMinCount, cardWidth, cards, playableCountsByType, paddingX]);
 
-  if (cards.length === 0) {
+  if (cards.length === 0 && !forceMount) {
     return null;
   }
 
   const cardStyle =
     "h-[72px] w-[52px] shrink-0 object-contain drop-shadow-md";
   const hasBoth = nonPlayable.length > 0 && playableGroups.length > 0;
+  const shellWidth = boxWidth > 0 ? boxWidth : paddingX * 2 + cardWidth;
 
   return (
     <div
       ref={containerRef}
-      className="devcard-box devcard-pop inline-flex h-20 items-center rounded-md bg-blue-200/50 px-3 ring-2 ring-slate-300 shadow-sm origin-bottom-left relative"
-      style={{ width: `${boxWidth}px` }}
+      className="devcard-box inline-flex h-20 items-center rounded-md bg-blue-200/50 px-3 ring-2 ring-slate-300 shadow-sm origin-bottom-left relative"
+      style={{ width: `${shellWidth}px` }}
     >
       {/* Non-Playable (Victory Points) */}
       {nonPlayable.length > 0 && (

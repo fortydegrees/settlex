@@ -45,11 +45,12 @@ describe("devCardPurchaseReveal helpers", () => {
 
   it("uses the slower staged reveal timings for normal motion", () => {
     expect(getDevCardRevealDurations()).toEqual({
-      travelToCenter: 0.36,
-      backReveal: 0.16,
-      holdAtCenter: 0.14,
-      flip: 0.28,
-      holdOnFace: 0.42,
+      travelToCenter: 0.42,
+      holdAfterTravel: 0.16,
+      backReveal: 0.2,
+      holdAfterBackReveal: 0.16,
+      flip: 0.32,
+      holdOnFace: 0.46,
       travelToHand: 0.6,
     });
   });
