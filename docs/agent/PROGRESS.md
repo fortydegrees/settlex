@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-04, dock icon pre-squash added before build launch)
+- Added a short dock-icon pre-squash before `road` / `settlement` / `city` pickup launch:
+- the icon inside the dock button compresses briefly,
+- then the existing build pickup appears and follows the current cursor.
+- Implementation shape:
+- `app/catana/components/ActionsDock/DockCard.js` now animates the icon only (`scaleX` / `scaleY` / `y`) instead of the whole card,
+- `app/catana/components/PlayerActionContainer.js` tags explicit build actions with `preLaunchDelayMs`,
+- `app/catana/BuildPlacementPreview.js` respects `startedAtMs` + `launchDelayMs` so the preview stays hidden during that tiny preload window while still tracking pointer movement for the eventual handoff.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- `pnpm exec eslint app/catana/components/ActionsDock/DockCard.js app/catana/components/PlayerActionContainer.js app/catana/Board.js app/catana/BuildPlacementPreview.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
+
 ## Status (2026-04-04, build piece shadows now gate on board land)
 - Matched build-piece shadow behavior to the robber preview:
 - the `road` / `settlement` / `city` in-hand shadow now stays hidden while the piece is off-board,

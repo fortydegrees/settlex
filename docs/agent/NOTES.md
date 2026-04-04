@@ -1,5 +1,13 @@
 # NOTES
 
+- Dock icon preload note:
+- the Catana build-button preload should animate the icon inside the card, not the whole dock card.
+- Current approved shape:
+- a short icon-only squash/stretch preload,
+- then the build preview launches after a tiny hidden prelaunch delay while keeping pointer tracking alive.
+- Guardrail:
+- keep the build preview hidden during that preload delay; otherwise the icon squash and detached piece overlap and the interaction stops reading as one continuous object.
+
 - Build pickup shadow note:
 - build-piece shadows should follow the same "only when over board land" rule as the robber preview.
 - Current implementation reuses `isPointOverRobberBoardLand(...)` rather than inventing a second board-area heuristic for build pieces.

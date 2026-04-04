@@ -23,6 +23,7 @@ import {
 import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 const SHOW_STATUS_TEXT = true;
+const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 84;
 
 const formatTimer = (ms) => {
   if (ms == null) return null;
@@ -100,7 +101,11 @@ export const PlayerActionContainer = ({
     };
   };
 
-  const startBuildPickup = (playerAction, triggerRect) => {
+  const startBuildPickup = (
+    playerAction,
+    triggerRect,
+    preLaunchDelayMs = 0
+  ) => {
     const pieceType = getBuildPickupPieceType(playerAction);
     if (!pieceType) return;
 
@@ -108,7 +113,8 @@ export const PlayerActionContainer = ({
     setBuildPickup({
       pieceType,
       originRect: copyTriggerRect(triggerRect),
-      startedAtMs: Date.now()
+      startedAtMs: Date.now(),
+      launchDelayMs: preLaunchDelayMs
     });
   };
 
@@ -160,34 +166,39 @@ export const PlayerActionContainer = ({
     },
     {
       name: "road",
-      action: ({ triggerRect }) => startBuildPickup("placeRoad", triggerRect),
+      action: ({ triggerRect, preLaunchDelayMs }) =>
+        startBuildPickup("placeRoad", triggerRect, preLaunchDelayMs),
       img: getThemedSvgPath(themeId, getPieceSvgFile("road", pieceColor)),
       fallbackImg: getClassicSvgPath(getPieceSvgFile("road", pieceColor)),
       count: player.roadsRemaining,
       enabled: false,
       style: { transform: "rotate(90deg) scale(0.9)" },
       selected: buildPickup?.pieceType === "road",
+      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
     },
     {
       name: "settlement",
-      action: ({ triggerRect }) =>
-        startBuildPickup("placeSettlement", triggerRect),
+      action: ({ triggerRect, preLaunchDelayMs }) =>
+        startBuildPickup("placeSettlement", triggerRect, preLaunchDelayMs),
       img: getThemedSvgPath(themeId, getPieceSvgFile("settlement", pieceColor)),
       fallbackImg: getClassicSvgPath(getPieceSvgFile("settlement", pieceColor)),
       count: player.settlementsRemaining,
       enabled: false,
       style: null,
       selected: buildPickup?.pieceType === "settlement",
+      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
     },
     {
       name: "city",
-      action: ({ triggerRect }) => startBuildPickup("placeCity", triggerRect),
+      action: ({ triggerRect, preLaunchDelayMs }) =>
+        startBuildPickup("placeCity", triggerRect, preLaunchDelayMs),
       img: getThemedSvgPath(themeId, getPieceSvgFile("city", pieceColor)),
       fallbackImg: getClassicSvgPath(getPieceSvgFile("city", pieceColor)),
       count: player.citiesRemaining,
       enabled: false,
       style: null,
       selected: buildPickup?.pieceType === "city",
+      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
     },
     {
       name: "devCard",
