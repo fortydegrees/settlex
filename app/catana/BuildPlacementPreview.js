@@ -210,8 +210,19 @@ export function BuildPlacementPreview({
     const origin = getBuildPickupOrigin(originRect);
     if (!launchReady) {
       updatePresentationTarget(null);
-      if (origin) {
+      if (
+        Number.isFinite(pointerRef.current.x) &&
+        Number.isFinite(pointerRef.current.y)
+      ) {
+        desiredPositionRef.current = {
+          x: pointerRef.current.x,
+          y: pointerRef.current.y
+        };
+      } else if (origin) {
         desiredPositionRef.current = origin;
+      }
+
+      if (origin) {
         desiredRotationRef.current = pieceType === "road" ? 90 : 0;
         setHasPosition(true);
       }
@@ -462,6 +473,19 @@ export function BuildPlacementPreview({
         });
 
       const step = (tickMs) => {
+        if (!launchReadyRef.current) {
+          lastTickMsRef.current = tickMs;
+          if (origin) {
+            currentPositionRef.current = origin;
+            velocityRef.current = { x: 0, y: 0 };
+            currentRotationRef.current = pieceType === "road" ? 90 : 0;
+            gsap.set(previewNode, origin);
+          }
+
+          animationFrameRef.current = requestAnimationFrame(step);
+          return;
+        }
+
         if (launchReadyRef.current && launchStartMsRef.current == null) {
           launchStartMsRef.current = tickMs;
         }

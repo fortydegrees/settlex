@@ -19,6 +19,13 @@ const dockCardPath = path.resolve(
   "ActionsDock",
   "DockCard.js"
 );
+const dockStylesPath = path.resolve(
+  __dirname,
+  "..",
+  "components",
+  "ActionsDock",
+  "dockStyles.css"
+);
 const actionContainerPath = path.resolve(
   __dirname,
   "..",
@@ -30,6 +37,7 @@ describe("Dock build pickup UX", () => {
   it("removes dock magnify and looping bounce while wiring build pickup state", () => {
     const dockSource = fs.readFileSync(dockPath, "utf8");
     const cardSource = fs.readFileSync(dockCardPath, "utf8");
+    const dockStylesSource = fs.readFileSync(dockStylesPath, "utf8");
     const containerSource = fs.readFileSync(actionContainerPath, "utf8");
 
     expect(dockSource).not.toContain("DOCK_ZOOM_LIMIT");
@@ -40,6 +48,9 @@ describe("Dock build pickup UX", () => {
     expect(cardSource).toContain("iconScaleX");
     expect(cardSource).toContain("iconScaleY");
     expect(cardSource).toContain("iconY");
+    expect(dockStylesSource).toContain("&__img-shell");
+    expect(dockStylesSource).toContain("width: 80%");
+    expect(dockStylesSource).toContain("&__img {\n      width: 100%");
     expect(containerSource).toContain("setBuildPickup");
     expect(containerSource).toContain("getBuildPickupPieceType");
     expect(containerSource).toContain("buildPickup?.pieceType");
