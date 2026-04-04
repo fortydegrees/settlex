@@ -2938,3 +2938,14 @@
 - Verification for the dev-card launch gating + slower timing refinement:
   - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/components/PlayerActionContainer.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Fixed the dev-card face reveal and retuned the post-flip pacing:
+  - the reveal no longer relies on the card container’s `rotationY` alone to expose the bought card face,
+  - `DevCardPurchaseReveal` now animates explicit back/front face layers so the actual dev-card art comes in reliably after the turn,
+  - the revealed face now hangs for `0.5s`,
+  - the return-to-hand travel is back to `0.6s power2.out`, matching the resource-card travel speed/curve.
+- Current fix:
+  - `app/catana/DevCardPurchaseReveal.js` now owns separate `backFaceRef` / `frontFaceRef` layers and animates them in sequence during the flip,
+  - `app/catana/utils/devCardPurchaseReveal.js` now sets the normal-motion face hold to `0.5s` and the return-to-hand leg to `0.6s`.
+- Verification for the dev-card face-reveal + return-speed tweak:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`

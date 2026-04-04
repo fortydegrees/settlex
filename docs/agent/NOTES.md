@@ -1990,3 +1990,8 @@
     - dock preload around `320ms`,
     - explicit `releasePop`,
     - slower center travel and longer pauses between back reveal, flip, and hand return.
+  - front-face reliability:
+    - relying on the card container’s `rotationY` alone was not robust enough to guarantee that the bought card art actually appears after the flip.
+    - prefer explicit back/front face layers with their own refs and animate them in sequence (`back -> 90deg/out`, `front -> 0deg/in`) so the reveal reliably shows the actual dev card.
+  - return leg:
+    - the dev-card reveal can hang on the face for about `0.5s`, but the travel back to the hand should stay aligned to the resource-card flight feel (`0.6s`, `power2.out`) so the ending does not drag.
