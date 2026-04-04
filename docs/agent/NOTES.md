@@ -1,5 +1,15 @@
 # NOTES
 
+- Dock CSS selector note:
+- this repo's dock CSS can use nested descendant selectors like `& img`, but not Sass-style concatenation like `&__img` / `&__img-shell`.
+- Use flat class selectors for BEM-style element classes instead:
+- `.card__img { ... }`
+- `.card__img-shell { ... }`
+- Reason:
+- the concatenated nested form did not emit real runtime rules in the actual app, which left the preload wrapper unstyled and caused:
+- oversized settlement/city icons,
+- a blank road card because the road SVG asset only has a `viewBox` and collapsed to `0px` without explicit wrapper sizing.
+
 - Dock preload hidden-motion note:
 - keeping the detached piece visually hidden during the dock-icon preload does not mean freezing its internal motion state at the dock origin.
 - Current working rule:

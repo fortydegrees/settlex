@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-04-04, dock icon wrapper selectors fixed)
+- Fixed the remaining dock regressions where build icons rendered too large and the road icon disappeared entirely.
+- Root cause:
+- the preload wrapper styles in `app/catana/components/ActionsDock/dockStyles.css` were written as Sass-style nested selectors (`&__img`, `&__img-shell`),
+- in this repo's actual CSS pipeline those selectors did not compile into real `.card__img` / `.card__img-shell` class rules,
+- so the wrapper had no layout styles at runtime, settlement/city fell back to their raw intrinsic SVG size, and the road SVG collapsed to `0px` because that asset only has a `viewBox` and no explicit `width` / `height`.
+- Fix:
+- replaced the invalid nested selector form with flat class selectors for `.card__img` and `.card__img-shell`.
+- Verification:
+- `pnpm exec vitest run app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
+- live browser verification on a temporary dev-only dock harness confirmed:
+- the road icon renders again,
+- settlement/city return to the old card footprint,
+- the cursor-follow handoff still behaves correctly after the previous preload fix.
+
 ## Status (2026-04-04, dock icon sizing and hidden pointer follow restored)
 - Fixed the follow-up regressions from the preload handoff change:
 - the dock build icons are back to their original sizing footprint,
