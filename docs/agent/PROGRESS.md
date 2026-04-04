@@ -2976,3 +2976,11 @@
 - Verification for the canonical 3D flip rewrite:
   - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Reverted the heavier 3D flip rewrite and restored the previous midpoint-swap flip look for the dev-card reveal.
+- Current fix:
+  - `app/catana/DevCardPurchaseReveal.js` is back on the earlier single-card flip presentation,
+  - but the revealed card art is now owned by React state via `displayedCardSrc` instead of an imperative `setAttribute("src", ...)`,
+  - this prevents normal rerenders during the reveal from snapping the image back to `card_devcardback.svg` mid-animation.
+- Verification for the restored midpoint flip + state-owned face art:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`

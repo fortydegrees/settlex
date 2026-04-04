@@ -2008,3 +2008,9 @@
     - revealed-card face pre-rotated `-180deg`,
     - rotate the inner card from `0deg` to `180deg`.
   - for SVG-backed card art, it is safer to put the 3D face transforms on wrapper elements and keep the `<img>` inside each face wrapper, rather than relying on the raw SVG `<img>` element itself as the transformed face.
+  - update: that heavier 3D rewrite was not worth keeping here and did not fix the real bug.
+  - the actual ownership seam on the earlier midpoint-swap version was React:
+    - the reveal image was rendered with `src={DEV_CARD_BACK_SVG}`,
+    - the timeline was imperatively swapping `img.src` to the bought card art,
+    - but normal rerenders could re-apply the React prop and force the image back to the back asset.
+  - the robust fix is to keep the older midpoint-flip look, but move the visible face art into React state (`displayedCardSrc`) and switch that state at the flip midpoint.
