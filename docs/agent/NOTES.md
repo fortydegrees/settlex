@@ -1,5 +1,16 @@
 # NOTES
 
+- Road target handoff note:
+- the road follower-to-edge handoff cannot stay purely time-based.
+- Current working rule:
+- keep the floating road visible for at least the normal handoff delay,
+- then only hand off once the road follower is both close to the target angle and close to the target position,
+- with a max-delay fallback so the edge-local flashing preview still takes over if motion stalls.
+- Reason:
+- road lock-in uses spring-driven rotation, so a fixed timeout can expire before the turn into the edge is actually readable, especially after dock-preload timing changes.
+- Guardrail:
+- if you retune road lock feel again, do not regress back to "delay only" handoff unless you re-check the visible turn-in in the browser.
+
 - Build pickup motion tuning note:
 - road lock-in wants a slightly longer visible follower phase than settlement/city before the board-local preview takes over.
 - Current shape:

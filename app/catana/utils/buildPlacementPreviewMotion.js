@@ -19,6 +19,12 @@ const BUILD_TARGET_HANDOFF_DELAY_MS = {
   default: 96,
   road: 164
 };
+const BUILD_TARGET_HANDOFF_MAX_DELAY_MS = {
+  default: 96,
+  road: 272
+};
+const ROAD_TARGET_HANDOFF_ROTATION_THRESHOLD_DEGREES = 10;
+const ROAD_TARGET_HANDOFF_DISTANCE_THRESHOLD_PX = 10;
 
 export function getBuildPreviewViewportScale(boardViewportScale = 1) {
   return Number.isFinite(boardViewportScale) && boardViewportScale > 0
@@ -62,6 +68,48 @@ export function getBuildTargetHandoffDelayMs(pieceType) {
   }
 
   return BUILD_TARGET_HANDOFF_DELAY_MS.default;
+}
+
+export function isBuildTargetHandoffReady({
+  pieceType,
+  elapsedMs,
+  currentRotationDegrees,
+  desiredRotationDegrees,
+  currentX,
+  currentY,
+  desiredX,
+  desiredY
+} = {}) {
+  const minimumDelayMs = getBuildTargetHandoffDelayMs(pieceType);
+  if (!Number.isFinite(elapsedMs) || elapsedMs < minimumDelayMs) {
+    return false;
+  }
+
+  if (pieceType !== "road") {
+    return true;
+  }
+
+  const maximumDelayMs = BUILD_TARGET_HANDOFF_MAX_DELAY_MS.road;
+  if (elapsedMs >= maximumDelayMs) {
+    return true;
+  }
+
+  const remainingRotationDegrees = Math.abs(
+    getShortestRotationDelta(currentRotationDegrees, desiredRotationDegrees)
+  );
+  const positionIsFinite =
+    Number.isFinite(currentX) &&
+    Number.isFinite(currentY) &&
+    Number.isFinite(desiredX) &&
+    Number.isFinite(desiredY);
+  const remainingDistancePx = positionIsFinite
+    ? Math.hypot(desiredX - currentX, desiredY - currentY)
+    : Number.POSITIVE_INFINITY;
+
+  return (
+    remainingRotationDegrees <= ROAD_TARGET_HANDOFF_ROTATION_THRESHOLD_DEGREES &&
+    remainingDistancePx <= ROAD_TARGET_HANDOFF_DISTANCE_THRESHOLD_PX
+  );
 }
 
 export function getBuildPickupLaunchBias({

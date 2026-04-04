@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-04-04, road target handoff now waits for visible turn-in)
+- Fixed the remaining road-hover presentation bug where the floating road could hand off to the edge-local flashing preview before its own turn into the target edge was readable.
+- Root cause:
+- `BuildPlacementPreview` still treated target handoff as a pure timeout,
+- but road lock-in uses spring-driven rotation,
+- so after the dock preload and the stronger lock spring, the fixed timeout could still expire before the follower had visibly rotated close enough to the edge angle.
+- Implementation shape:
+- `app/catana/utils/buildPlacementPreviewMotion.js` now exports `isBuildTargetHandoffReady(...)`,
+- `road` handoff uses a minimum delay plus rotation/position thresholds, with a max-delay fallback so it cannot get stuck,
+- `settlement` / `city` keep the simpler time-only handoff,
+- `app/catana/BuildPlacementPreview.js` now tracks when each lock starts and only flips `showTargetPreview` for roads once that readiness check passes.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Dock.buildPickupUx.test.js`
+- `pnpm exec eslint app/catana/BuildPlacementPreview.js app/catana/utils/buildPlacementPreviewMotion.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+
 ## Status (2026-04-04, road handoff and dock preload retuned)
 - Retuned two parts of the build pickup motion:
 - `road` now keeps the floating follower visible longer on a valid edge target before handing off to the edge-local flashing preview, so the turn into the edge is readable again,
