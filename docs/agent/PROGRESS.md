@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-04-04, dock icon sizing and hidden pointer follow restored)
+- Fixed the follow-up regressions from the preload handoff change:
+- the dock build icons are back to their original sizing footprint,
+- the road icon renders again in the selected card instead of disappearing,
+- the hidden preload no longer pins the build preview to the dock origin, so the detached piece resumes following the live cursor as soon as it releases.
+- Root cause:
+- the icon wrapper had taken over the old sizing semantics (`80%` width moved from the `img` to the shell), which changed the art footprint and broke the rotated road icon rendering,
+- `BuildPlacementPreview` was also freezing `currentPositionRef` at the dock origin during the hidden preload window, so the follower could not continue tracking the pointer behind the scenes.
+- Implementation shape:
+- `app/catana/components/ActionsDock/dockStyles.css` now keeps the squash wrapper full-card sized and restores the old `img`-level `80%` sizing,
+- `app/catana/BuildPlacementPreview.js` no longer forces the preview motion state back to `origin` on every hidden-preload frame.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
+
 ## Status (2026-04-04, dock preload handoff regressions fixed)
 - Fixed the regressions introduced by the dock-icon pre-squash pass:
 - the detached `road` / `settlement` / `city` piece now stays fully hidden until the preload releases,

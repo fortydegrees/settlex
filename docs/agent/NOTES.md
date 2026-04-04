@@ -1,5 +1,19 @@
 # NOTES
 
+- Dock preload hidden-motion note:
+- keeping the detached piece visually hidden during the dock-icon preload does not mean freezing its internal motion state at the dock origin.
+- Current working rule:
+- keep the preview hidden until release,
+- keep `desiredPositionRef` and the spring loop live during that hidden window so the piece can appear already following the current cursor.
+- Guardrail:
+- do not reintroduce a per-frame `currentPositionRef.current = origin` reset during `launchReady === false`; that breaks the cursor-follow handoff.
+
+- Dock build icon wrapper note:
+- the squash wrapper exists only to carry the preload transform.
+- Preserve the original icon sizing on the `img` itself (`width: 80%`) and let the wrapper fill the card.
+- Reason:
+- moving the `80%` sizing to the wrapper changed the apparent size of settlement/city and could hide the rotated road art.
+
 - Dock preload handoff note:
 - if the build preview is hidden behind a prelaunch squash, do not keep resetting its desired target back to the dock origin for the whole delay.
 - Current working shape:
