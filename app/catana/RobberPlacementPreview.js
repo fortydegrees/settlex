@@ -62,7 +62,9 @@ const getViewportTargetCenters = (magneticTargets) =>
       return {
         tileId: target.tileId,
         centerX,
-        centerY
+        centerY,
+        width: rect.width,
+        height: rect.height
       };
     })
     .filter(Boolean);

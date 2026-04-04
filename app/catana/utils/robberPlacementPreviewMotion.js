@@ -26,6 +26,20 @@ export function getScaledRobberPreviewSize({
 const hasFiniteCenter = (target) =>
   Number.isFinite(target?.centerX) && Number.isFinite(target?.centerY);
 
+const hasExplicitTargetSize = (target) =>
+  Number.isFinite(target?.width) &&
+  target.width > 0 &&
+  Number.isFinite(target?.height) &&
+  target.height > 0;
+
+const getTargetRadiusPx = (target, fallbackRadiusPx) => {
+  if (hasExplicitTargetSize(target)) {
+    return Math.min(target.width, target.height) / 2;
+  }
+
+  return fallbackRadiusPx;
+};
+
 const getDistanceSquared = (pointerX, pointerY, target) => {
   const deltaX = target.centerX - pointerX;
   const deltaY = target.centerY - pointerY;
@@ -55,23 +69,35 @@ export function getMagneticRobberTarget({
       : normalizedTargets.find((target) => target.tileId === activeTargetTileId) ??
         null;
 
-  if (activeTarget) {
+  if (activeTarget && !hasExplicitTargetSize(activeTarget)) {
     const activeDistanceSquared = getDistanceSquared(
       pointerX,
       pointerY,
       activeTarget
     );
+    const activeReleaseRadiusPx = getTargetRadiusPx(
+      activeTarget,
+      releaseRadiusPx
+    );
 
-    if (activeDistanceSquared <= releaseRadiusPx * releaseRadiusPx) {
+    if (
+      activeDistanceSquared <= activeReleaseRadiusPx * activeReleaseRadiusPx
+    ) {
       return activeTarget;
     }
   }
 
   let closestTarget = null;
-  let closestDistanceSquared = magneticRadiusPx * magneticRadiusPx;
+  let closestDistanceSquared = Number.POSITIVE_INFINITY;
 
   normalizedTargets.forEach((target) => {
     const distanceSquared = getDistanceSquared(pointerX, pointerY, target);
+    const targetRadiusPx = getTargetRadiusPx(target, magneticRadiusPx);
+
+    if (distanceSquared > targetRadiusPx * targetRadiusPx) {
+      return;
+    }
+
     if (distanceSquared > closestDistanceSquared) {
       return;
     }
@@ -80,7 +106,29 @@ export function getMagneticRobberTarget({
     closestDistanceSquared = distanceSquared;
   });
 
-  return closestTarget;
+  if (closestTarget) {
+    return closestTarget;
+  }
+
+  if (activeTarget && hasExplicitTargetSize(activeTarget)) {
+    const activeDistanceSquared = getDistanceSquared(
+      pointerX,
+      pointerY,
+      activeTarget
+    );
+    const activeReleaseRadiusPx = getTargetRadiusPx(
+      activeTarget,
+      releaseRadiusPx
+    );
+
+    if (
+      activeDistanceSquared <= activeReleaseRadiusPx * activeReleaseRadiusPx
+    ) {
+      return activeTarget;
+    }
+  }
+
+  return null;
 }
 
 export function getRobberPreviewLeanAngle(

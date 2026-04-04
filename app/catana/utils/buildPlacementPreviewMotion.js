@@ -48,6 +48,22 @@ export function getBuildPreviewFrame(pieceType, baseSize) {
 const hasFiniteCenter = (target) =>
   Number.isFinite(target?.centerX) && Number.isFinite(target?.centerY);
 
+const getTargetRadiusPx = (target, fallbackRadiusPx) => {
+  const width = target?.width;
+  const height = target?.height;
+
+  if (
+    Number.isFinite(width) &&
+    width > 0 &&
+    Number.isFinite(height) &&
+    height > 0
+  ) {
+    return Math.min(width, height) / 2;
+  }
+
+  return fallbackRadiusPx;
+};
+
 const getDistanceSquared = (pointerX, pointerY, target) => {
   const deltaX = target.centerX - pointerX;
   const deltaY = target.centerY - pointerY;
@@ -77,10 +93,16 @@ export function getMagneticBuildTarget({
       : normalizedTargets.find((target) => target.id === activeTargetId) ?? null;
 
   let closestTarget = null;
-  let closestDistanceSquared = magneticRadiusPx * magneticRadiusPx;
+  let closestDistanceSquared = Number.POSITIVE_INFINITY;
 
   normalizedTargets.forEach((target) => {
     const distanceSquared = getDistanceSquared(pointerX, pointerY, target);
+    const targetRadiusPx = getTargetRadiusPx(target, magneticRadiusPx);
+
+    if (distanceSquared > targetRadiusPx * targetRadiusPx) {
+      return;
+    }
+
     if (distanceSquared > closestDistanceSquared) {
       return;
     }
@@ -89,7 +111,15 @@ export function getMagneticBuildTarget({
     closestDistanceSquared = distanceSquared;
   });
 
+  if (closestTarget) {
+    return closestTarget;
+  }
+
   if (activeTarget) {
+    const activeReleaseRadiusPx = getTargetRadiusPx(
+      activeTarget,
+      releaseRadiusPx
+    );
     const activeDistanceSquared = getDistanceSquared(
       pointerX,
       pointerY,
@@ -97,19 +127,13 @@ export function getMagneticBuildTarget({
     );
 
     if (
-      closestTarget &&
-      closestTarget.id !== activeTarget.id &&
-      closestDistanceSquared < activeDistanceSquared
+      activeDistanceSquared <= activeReleaseRadiusPx * activeReleaseRadiusPx
     ) {
-      return closestTarget;
-    }
-
-    if (activeDistanceSquared <= releaseRadiusPx * releaseRadiusPx) {
       return activeTarget;
     }
   }
 
-  return closestTarget;
+  return null;
 }
 
 export function getBuildPreviewLeanAngle(
