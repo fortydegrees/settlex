@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-04-04, launch orientation and cursor bias tuned)
+- Fixed the initial road pickup orientation bug:
+- the in-hand road now starts from the same vertical baseline as the rendered road graphic, so it no longer pops out sideways and rotates back to vertical on click.
+- Retuned the dock-click launch motion to read more clearly as a pickup:
+- higher lift / overshoot than the previous pass,
+- a small cursor-directed drift during the launch window so fast upward mouse movement feels more connected to the piece being picked up,
+- existing target lock / handoff behavior stays unchanged after the launch completes.
+- Implementation shape:
+- `app/catana/utils/buildPlacementPreviewMotion.js` now exposes `getBuildPickupLaunchBias(...)` alongside the launch envelope config,
+- `app/catana/BuildPlacementPreview.js` applies that bias only during the initial launch and keeps the underlying follower / target-lock state intact.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+
 ## Status (2026-04-04, dock pickup launch motion tightened)
 - Tweaked the initial `road` / `settlement` / `city` dock click animation so the picked-up piece now gets a short two-step launch envelope before the existing cursor-follow handoff:
 - small pressed hold,

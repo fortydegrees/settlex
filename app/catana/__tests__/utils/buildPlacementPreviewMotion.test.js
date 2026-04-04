@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   BUILD_PREVIEW_MAGNETIC_RADIUS_PX,
   BUILD_PREVIEW_RELEASE_RADIUS_PX,
+  getBuildPickupLaunchBias,
   getBuildPickupLaunchMotion,
   getMagneticBuildTarget,
   getShortestRotationDelta
@@ -82,9 +83,33 @@ describe("buildPlacementPreviewMotion", () => {
     expect(roadLaunch.liftDurationMs).toBeGreaterThan(roadLaunch.pressDurationMs);
     expect(roadLaunch.settleDurationMs).toBeGreaterThan(0);
     expect(roadLaunch.startOffsetY).toBeGreaterThanOrEqual(0);
-    expect(roadLaunch.peakOffsetY).toBeLessThan(0);
+    expect(roadLaunch.peakOffsetY).toBeLessThanOrEqual(-24);
     expect(roadLaunch.peakScale).toBeGreaterThan(1);
     expect(roadLaunch.settleScale).toBe(1);
+    expect(cityLaunch.peakOffsetY).toBeLessThan(-20);
     expect(cityLaunch.peakOffsetY).toBeLessThan(roadLaunch.startOffsetY);
+  });
+
+  it("adds a small cursor-directed drift during the dock launch", () => {
+    const bias = getBuildPickupLaunchBias({
+      originX: 100,
+      originY: 100,
+      pointerX: 140,
+      pointerY: 70,
+      progress: 0.5
+    });
+
+    expect(bias.x).toBeGreaterThan(0);
+    expect(bias.y).toBeLessThan(0);
+    expect(Math.hypot(bias.x, bias.y)).toBeLessThanOrEqual(18);
+    expect(
+      getBuildPickupLaunchBias({
+        originX: 100,
+        originY: 100,
+        pointerX: 140,
+        pointerY: 70,
+        progress: 1
+      })
+    ).toEqual({ x: 0, y: 0 });
   });
 });

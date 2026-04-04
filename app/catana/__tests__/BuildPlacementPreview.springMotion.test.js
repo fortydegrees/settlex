@@ -25,5 +25,7 @@ describe("BuildPlacementPreview spring motion", () => {
     expect(contents).toContain('pieceType === "road"');
     expect(contents).toContain('pieceType === "settlement"');
     expect(contents).toContain('pieceType === "city"');
+    expect(contents).toContain("getBuildPickupLaunchBias");
+    expect(contents).toContain('currentRotationRef.current = pieceType === "road" ? 90 : 0');
   });
 });

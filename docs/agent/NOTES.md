@@ -1,5 +1,12 @@
 # NOTES
 
+- Build pickup launch follow-up:
+- keep the road follower's internal rotation baseline aligned with the rendered road sprite (`90deg`) from the first launch frame.
+- If that ref state drifts back to `0`, the road will visibly pop out sideways and rotate back to vertical before the real edge-lock rotation begins.
+- The launch now also allows a small cursor-directed drift during the initial pickup window.
+- Guardrail:
+- keep that drift short-lived and capped; it should make fast mouse movement feel connected to the pickup, not turn the launch into a second cursor-follow system.
+
 - Dock pickup launch tuning note:
 - the initial build pickup click now uses a dedicated launch envelope from `app/catana/utils/buildPlacementPreviewMotion.js::getBuildPickupLaunchMotion(pieceType)`.
 - Current structure:
