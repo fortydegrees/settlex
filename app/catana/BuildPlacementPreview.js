@@ -90,6 +90,8 @@ export function BuildPlacementPreview({
   pieceType = null,
   pieceColor = "red",
   originRect = null,
+  startedAtMs = null,
+  launchDelayMs = 0,
   magneticTargets = [],
   landTileCenters = [],
   boardTileSize,
@@ -106,8 +108,10 @@ export function BuildPlacementPreview({
   const previewGraphicRef = useRef(null);
   const animationFrameRef = useRef(null);
   const handoffTimeoutRef = useRef(null);
+  const launchReadyTimeoutRef = useRef(null);
   const launchTimelineRef = useRef(null);
   const launchStartMsRef = useRef(null);
+  const launchReadyRef = useRef(launchDelayMs <= 0);
   const lastTickMsRef = useRef(null);
   const pointerRef = useRef({ x: null, y: null });
   const currentPositionRef = useRef({ x: null, y: null });
@@ -119,8 +123,11 @@ export function BuildPlacementPreview({
   const [presentationTargetId, setPresentationTargetId] = useState(null);
   const [showTargetPreview, setShowTargetPreview] = useState(false);
   const [hasPosition, setHasPosition] = useState(false);
+  const [launchReady, setLaunchReady] = useState(launchDelayMs <= 0);
 
   const reduceMotion = prefersReducedMotion || hasCoarsePointer;
+  const normalizedLaunchDelayMs =
+    Number.isFinite(launchDelayMs) && launchDelayMs > 0 ? launchDelayMs : 0;
   const previewSize = getScaledBuildPreviewSize({
     baseSize: size,
     boardViewportScale: getBuildPreviewViewportScale(boardViewportScale)
@@ -141,6 +148,13 @@ export function BuildPlacementPreview({
     if (handoffTimeoutRef.current != null) {
       clearTimeout(handoffTimeoutRef.current);
       handoffTimeoutRef.current = null;
+    }
+  }, []);
+
+  const clearLaunchReadyTimer = useCallback(() => {
+    if (launchReadyTimeoutRef.current != null) {
+      clearTimeout(launchReadyTimeoutRef.current);
+      launchReadyTimeoutRef.current = null;
     }
   }, []);
 
@@ -177,6 +191,10 @@ export function BuildPlacementPreview({
   );
 
   useEffect(() => {
+    launchReadyRef.current = launchReady;
+  }, [launchReady]);
+
+  useEffect(() => {
     onPresentationChange?.({
       targetId: presentationTargetId,
       showTargetPreview
@@ -186,6 +204,17 @@ export function BuildPlacementPreview({
   const syncDesiredPosition = useCallback(() => {
     const previewNode = previewRef.current;
     if (!active || !previewNode) {
+      return;
+    }
+
+    const origin = getBuildPickupOrigin(originRect);
+    if (!launchReady) {
+      updatePresentationTarget(null);
+      if (origin) {
+        desiredPositionRef.current = origin;
+        desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+        setHasPosition(true);
+      }
       return;
     }
 
@@ -224,25 +253,66 @@ export function BuildPlacementPreview({
       return;
     }
 
-    const origin = getBuildPickupOrigin(originRect);
     if (origin) {
       desiredPositionRef.current = origin;
       desiredRotationRef.current = pieceType === "road" ? 90 : 0;
       setHasPosition(true);
     }
-  }, [active, magneticTargets, originRect, pieceType, updatePresentationTarget]);
+  }, [
+    active,
+    launchReady,
+    magneticTargets,
+    originRect,
+    pieceType,
+    updatePresentationTarget
+  ]);
 
   useEffect(() => {
     if (active) {
       return undefined;
     }
 
+    clearLaunchReadyTimer();
     clearHandoffTimer();
     activeTargetIdRef.current = null;
     setPresentationTargetId(null);
     setShowTargetPreview(false);
+    setLaunchReady(normalizedLaunchDelayMs === 0);
     return undefined;
-  }, [active, clearHandoffTimer]);
+  }, [active, clearHandoffTimer, clearLaunchReadyTimer, normalizedLaunchDelayMs]);
+
+  useEffect(() => {
+    clearLaunchReadyTimer();
+
+    if (!active) {
+      setLaunchReady(normalizedLaunchDelayMs === 0);
+      return undefined;
+    }
+
+    const elapsedMs = Number.isFinite(startedAtMs)
+      ? Math.max(0, Date.now() - startedAtMs)
+      : 0;
+    const remainingDelayMs = Math.max(0, normalizedLaunchDelayMs - elapsedMs);
+    if (remainingDelayMs === 0) {
+      setLaunchReady(true);
+      return undefined;
+    }
+
+    setLaunchReady(false);
+    launchReadyTimeoutRef.current = setTimeout(() => {
+      setLaunchReady(true);
+      launchReadyTimeoutRef.current = null;
+    }, remainingDelayMs);
+
+    return () => {
+      clearLaunchReadyTimer();
+    };
+  }, [
+    active,
+    clearLaunchReadyTimer,
+    normalizedLaunchDelayMs,
+    startedAtMs
+  ]);
 
   useEffect(() => {
     const previewNode = previewRef.current;
@@ -305,6 +375,9 @@ export function BuildPlacementPreview({
       syncDesiredPosition();
 
       if (reduceMotion) {
+        if (!launchReadyRef.current) {
+          return;
+        }
         const nextPosition = desiredPositionRef.current;
         if (
           Number.isFinite(nextPosition.x) &&
@@ -343,7 +416,15 @@ export function BuildPlacementPreview({
     syncDesiredPosition();
 
     if (!reduceMotion) {
+      const elapsedLaunchDelayMs = Number.isFinite(startedAtMs)
+        ? Math.max(0, Date.now() - startedAtMs)
+        : 0;
+      const remainingLaunchDelayMs = Math.max(
+        0,
+        normalizedLaunchDelayMs - elapsedLaunchDelayMs
+      );
       const launchTimeline = gsap.timeline({
+        delay: remainingLaunchDelayMs / 1000,
         defaults: { overwrite: "auto" }
       });
       launchTimelineRef.current = launchTimeline;
@@ -381,7 +462,7 @@ export function BuildPlacementPreview({
         });
 
       const step = (tickMs) => {
-        if (launchStartMsRef.current == null) {
+        if (launchReadyRef.current && launchStartMsRef.current == null) {
           launchStartMsRef.current = tickMs;
         }
 
@@ -446,6 +527,9 @@ export function BuildPlacementPreview({
             0,
             Math.min(
               1,
+              launchStartMsRef.current == null
+                ? 0
+                :
               (tickMs - launchStartMsRef.current) /
                 launchMotion.totalDurationMs
             )
@@ -501,6 +585,7 @@ export function BuildPlacementPreview({
       gsap.killTweensOf(visualNode);
       gsap.killTweensOf(shadowNode);
       gsap.killTweensOf(graphicNode);
+      clearLaunchReadyTimer();
       launchTimelineRef.current?.kill();
       launchTimelineRef.current = null;
       clearHandoffTimer();
@@ -510,12 +595,15 @@ export function BuildPlacementPreview({
     assetFile,
     boardTileSize,
     clearHandoffTimer,
+    clearLaunchReadyTimer,
     landTileCenters,
     launchMotion,
+    normalizedLaunchDelayMs,
     originRect,
     pieceType,
     previewSize,
     reduceMotion,
+    startedAtMs,
     syncDesiredPosition
   ]);
 

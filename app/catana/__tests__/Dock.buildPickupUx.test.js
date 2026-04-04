@@ -36,8 +36,14 @@ describe("Dock build pickup UX", () => {
     expect(dockSource).not.toContain("clamp");
     expect(cardSource).not.toContain("loop:");
     expect(cardSource).not.toContain("Math.cos");
+    expect(cardSource).toContain("preLaunchDelayMs");
+    expect(cardSource).toContain("iconScaleX");
+    expect(cardSource).toContain("iconScaleY");
+    expect(cardSource).toContain("iconY");
     expect(containerSource).toContain("setBuildPickup");
     expect(containerSource).toContain("getBuildPickupPieceType");
     expect(containerSource).toContain("buildPickup?.pieceType");
+    expect(containerSource).toContain("launchDelayMs:");
+    expect(containerSource).toContain("preLaunchDelayMs:");
   });
 });

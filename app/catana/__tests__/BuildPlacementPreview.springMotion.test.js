@@ -24,6 +24,9 @@ describe("BuildPlacementPreview spring motion", () => {
     expect(contents).toContain("prefersReducedMotion");
     expect(contents).toContain("isPointOverRobberBoardLand");
     expect(contents).toContain("boardShadowVisible");
+    expect(contents).toContain("launchDelayMs");
+    expect(contents).toContain("startedAtMs");
+    expect(contents).toContain("launchReady");
     expect(contents).toContain('pieceType === "road"');
     expect(contents).toContain('pieceType === "settlement"');
     expect(contents).toContain('pieceType === "city"');
