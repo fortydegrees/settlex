@@ -48,7 +48,11 @@ import { DevCardPurchaseReveal } from "./DevCardPurchaseReveal";
 import { GameEffects } from "./effects/GameEffects";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
-import { findBoughtDevCardType } from "./utils/devCardPurchaseReveal";
+import {
+  findBoughtDevCardType,
+  getHiddenDevCardType,
+  removeDevCardFromHand,
+} from "./utils/devCardPurchaseReveal";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import {
@@ -611,6 +615,22 @@ export function GameScreen(bgioProps) {
 
   const playerDevCards = player?.devCards ?? null;
   const playerRevealId = player?.id ?? null;
+  const hiddenDevCardType = getHiddenDevCardType({
+    pendingReveal: pendingDevCardReveal,
+    activeReveal: activeDevCardReveal,
+    playerId: playerRevealId,
+    playerDevCards: playerDevCards ?? [],
+  });
+  const displayPlayer =
+    !player || !hiddenDevCardType
+      ? player
+      : {
+          ...player,
+          devCards: removeDevCardFromHand(
+            player.devCards ?? [],
+            hiddenDevCardType
+          ),
+        };
 
   useEffect(() => {
     if (!pendingDevCardReveal || activeDevCardReveal) return;
@@ -629,6 +649,7 @@ export function GameScreen(bgioProps) {
     if (!destinationRect) return;
 
     setActiveDevCardReveal({
+      playerId: playerRevealId,
       cardType,
       triggerRect: pendingDevCardReveal.triggerRect,
       destinationRect,
@@ -1026,10 +1047,11 @@ TODO: accurately colour it
           setBuildPickup={setBuildPickup}
           bgioProps={bgioProps}
           //playerID={bgioProps.playerID} //for multiplayer
-          player={player} //for testing/dev
+          player={displayPlayer} //for testing/dev
           presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
           onDevCardPurchaseStart={setPendingDevCardReveal}
           devCardDisplayRef={devCardDisplayRef}
+          displayDevCards={displayPlayer?.devCards ?? null}
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}

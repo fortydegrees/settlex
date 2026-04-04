@@ -1,6 +1,9 @@
 import {
   buildDevCardCounts,
   findBoughtDevCardType,
+  getDevCardRevealDurations,
+  getHiddenDevCardType,
+  removeDevCardFromHand,
 } from "../../utils/devCardPurchaseReveal";
 
 describe("devCardPurchaseReveal helpers", () => {
@@ -38,5 +41,48 @@ describe("devCardPurchaseReveal helpers", () => {
         afterCards: ["knight"],
       })
     ).toBeNull();
+  });
+
+  it("uses the slower staged reveal timings for normal motion", () => {
+    expect(getDevCardRevealDurations()).toEqual({
+      travelToCenter: 0.36,
+      backReveal: 0.16,
+      holdAtCenter: 0.14,
+      flip: 0.28,
+      holdOnFace: 0.42,
+      travelToHand: 0.6,
+    });
+  });
+
+  it("hides the bought dev card from the hand while a pending reveal resolves", () => {
+    expect(
+      getHiddenDevCardType({
+        pendingReveal: {
+          playerId: "0",
+          beforeCards: ["knight"],
+        },
+        playerId: "0",
+        playerDevCards: ["knight", "monopoly"],
+      })
+    ).toBe("monopoly");
+  });
+
+  it("keeps hiding the bought dev card while the active reveal is still running", () => {
+    expect(
+      getHiddenDevCardType({
+        activeReveal: {
+          playerId: "0",
+          cardType: "roadBuilding",
+        },
+        playerId: "0",
+        playerDevCards: ["roadBuilding", "knight"],
+      })
+    ).toBe("roadBuilding");
+  });
+
+  it("removes only one matching dev card from the visible hand", () => {
+    expect(
+      removeDevCardFromHand(["knight", "roadBuilding", "knight"], "knight")
+    ).toEqual(["roadBuilding", "knight"]);
   });
 });
