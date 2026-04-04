@@ -14,12 +14,15 @@ describe("DevCardPurchaseReveal source", () => {
     expect(source).toContain("timeline.set(actorNode, { autoAlpha: 1 })");
   });
 
-  it("swaps the visible card art at flip midpoint", () => {
+  it("uses the standard two-face 3D flip structure for the reveal", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
-    expect(source).toContain("const cardFaceRef = useRef(null)");
-    expect(source).toContain("const revealCardSrc =");
-    expect(source).toContain("timeline.to(flipNode");
-    expect(source).toContain('cardFaceNode.setAttribute("src", revealCardSrc)');
-    expect(source).toContain("src={DEV_CARD_BACK_SVG}");
+    expect(source).toContain("const card3dRef = useRef(null)");
+    expect(source).toContain("const cardBackRef = useRef(null)");
+    expect(source).toContain("const cardRevealRef = useRef(null)");
+    expect(source).toContain('transformStyle: "preserve-3d"');
+    expect(source).toContain("rotationY: -180");
+    expect(source).toContain('backfaceVisibility: "hidden"');
+    expect(source).toContain("timeline.to(card3dNode, {");
+    expect(source).toContain("rotationY: 180");
   });
 });
