@@ -99,7 +99,7 @@ function PlaceableEdge({
         direction={direction}
         type="edge"
         piece={
-          isHovered ? (
+          isHovered && !registerBuildTarget ? (
             <Road
               color={color}
               size={size}
