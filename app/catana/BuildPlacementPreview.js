@@ -17,6 +17,7 @@ import {
 } from "./utils/buildPlacementPreviewMotion";
 
 const PREVIEW_BASE_SIZE = 56;
+const LOCKED_TARGET_HANDOFF_DELAY_MS = 96;
 const FREE_FOLLOW_SPRING = {
   stiffness: 150,
   damping: 24,
@@ -89,12 +90,15 @@ export function BuildPlacementPreview({
   themeId,
   size = PREVIEW_BASE_SIZE,
   prefersReducedMotion = false,
-  hasCoarsePointer = false
+  hasCoarsePointer = false,
+  onPresentationChange = null
 }) {
   const previewRef = useRef(null);
+  const previewVisualRef = useRef(null);
   const previewShadowRef = useRef(null);
   const previewGraphicRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const handoffTimeoutRef = useRef(null);
   const lastTickMsRef = useRef(null);
   const pointerRef = useRef({ x: null, y: null });
   const currentPositionRef = useRef({ x: null, y: null });
@@ -103,13 +107,14 @@ export function BuildPlacementPreview({
   const currentRotationRef = useRef(0);
   const desiredRotationRef = useRef(0);
   const activeTargetIdRef = useRef(null);
+  const [presentationTargetId, setPresentationTargetId] = useState(null);
+  const [showTargetPreview, setShowTargetPreview] = useState(false);
   const [hasPosition, setHasPosition] = useState(false);
 
   const reduceMotion = prefersReducedMotion || hasCoarsePointer;
-  const previewViewportScale = getBuildPreviewViewportScale(boardViewportScale);
   const previewSize = getScaledBuildPreviewSize({
     baseSize: size,
-    boardViewportScale: previewViewportScale
+    boardViewportScale: getBuildPreviewViewportScale(boardViewportScale)
   });
   const previewFrame = useMemo(
     () => getBuildPreviewFrame(pieceType, previewSize),
@@ -118,6 +123,52 @@ export function BuildPlacementPreview({
   const assetFile = getPreviewAssetFile(pieceType, pieceColor);
   const previewSrc = assetFile ? getThemedSvgPath(themeId, assetFile) : null;
   const previewFallbackSrc = assetFile ? getClassicSvgPath(assetFile) : null;
+
+  const clearHandoffTimer = useCallback(() => {
+    if (handoffTimeoutRef.current != null) {
+      clearTimeout(handoffTimeoutRef.current);
+      handoffTimeoutRef.current = null;
+    }
+  }, []);
+
+  const updatePresentationTarget = useCallback(
+    (nextTargetId) => {
+      if (activeTargetIdRef.current === nextTargetId) {
+        return;
+      }
+
+      activeTargetIdRef.current = nextTargetId;
+      clearHandoffTimer();
+      setPresentationTargetId(nextTargetId);
+      setShowTargetPreview(false);
+
+      if (nextTargetId == null) {
+        return;
+      }
+
+      if (reduceMotion) {
+        setShowTargetPreview(true);
+        return;
+      }
+
+      handoffTimeoutRef.current = setTimeout(() => {
+        if (activeTargetIdRef.current !== nextTargetId) {
+          return;
+        }
+
+        setShowTargetPreview(true);
+        handoffTimeoutRef.current = null;
+      }, LOCKED_TARGET_HANDOFF_DELAY_MS);
+    },
+    [clearHandoffTimer, reduceMotion]
+  );
+
+  useEffect(() => {
+    onPresentationChange?.({
+      targetId: presentationTargetId,
+      showTargetPreview
+    });
+  }, [onPresentationChange, presentationTargetId, showTargetPreview]);
 
   const syncDesiredPosition = useCallback(() => {
     const previewNode = previewRef.current;
@@ -133,7 +184,7 @@ export function BuildPlacementPreview({
       activeTargetId: activeTargetIdRef.current
     });
 
-    activeTargetIdRef.current = selectedTarget?.id ?? null;
+    updatePresentationTarget(selectedTarget?.id ?? null);
     if (selectedTarget) {
       desiredPositionRef.current = {
         x: selectedTarget.centerX,
@@ -166,13 +217,33 @@ export function BuildPlacementPreview({
       desiredRotationRef.current = pieceType === "road" ? 90 : 0;
       setHasPosition(true);
     }
-  }, [active, magneticTargets, originRect, pieceType]);
+  }, [active, magneticTargets, originRect, pieceType, updatePresentationTarget]);
+
+  useEffect(() => {
+    if (active) {
+      return undefined;
+    }
+
+    clearHandoffTimer();
+    activeTargetIdRef.current = null;
+    setPresentationTargetId(null);
+    setShowTargetPreview(false);
+    return undefined;
+  }, [active, clearHandoffTimer]);
 
   useEffect(() => {
     const previewNode = previewRef.current;
+    const visualNode = previewVisualRef.current;
     const shadowNode = previewShadowRef.current;
     const graphicNode = previewGraphicRef.current;
-    if (!active || !previewNode || !shadowNode || !graphicNode || !assetFile) {
+    if (
+      !active ||
+      !previewNode ||
+      !visualNode ||
+      !shadowNode ||
+      !graphicNode ||
+      !assetFile
+    ) {
       setHasPosition(false);
       activeTargetIdRef.current = null;
       currentPositionRef.current = { x: null, y: null };
@@ -196,6 +267,7 @@ export function BuildPlacementPreview({
       opacity: 0,
       scale: reduceMotion ? 1 : 0.88
     });
+    gsap.set(visualNode, { opacity: 1 });
     gsap.set(shadowNode, {
       opacity: 0,
       scaleX: 0.85,
@@ -326,12 +398,15 @@ export function BuildPlacementPreview({
       animationFrameRef.current = null;
       lastTickMsRef.current = null;
       gsap.killTweensOf(previewNode);
+      gsap.killTweensOf(visualNode);
       gsap.killTweensOf(shadowNode);
       gsap.killTweensOf(graphicNode);
+      clearHandoffTimer();
     };
   }, [
     active,
     assetFile,
+    clearHandoffTimer,
     originRect,
     pieceType,
     reduceMotion,
@@ -345,6 +420,24 @@ export function BuildPlacementPreview({
 
     syncDesiredPosition();
   }, [active, magneticTargets, originRect, syncDesiredPosition]);
+
+  useEffect(() => {
+    const visualNode = previewVisualRef.current;
+    if (!visualNode) {
+      return;
+    }
+
+    gsap.to(visualNode, {
+      opacity: showTargetPreview ? 0 : 1,
+      duration: reduceMotion ? 0 : 0.08,
+      ease: "power2.out",
+      overwrite: "auto"
+    });
+
+    return () => {
+      gsap.killTweensOf(visualNode);
+    };
+  }, [reduceMotion, showTargetPreview]);
 
   if (!active || !assetFile || typeof document === "undefined") {
     return null;
@@ -366,41 +459,42 @@ export function BuildPlacementPreview({
         filter: "drop-shadow(0 8px 18px rgba(15, 23, 42, 0.2))"
       }}
     >
-      <div
-        ref={previewShadowRef}
-        style={{
-          position: "absolute",
-          left: "50%",
-          bottom: "-10%",
-          width: pieceType === "road" ? "74%" : "58%",
-          height: pieceType === "road" ? "32%" : "22%",
-          borderRadius: 999,
-          background:
-            "radial-gradient(ellipse at center, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.18) 56%, rgba(15, 23, 42, 0) 100%)",
-          transform: "translate(-50%, 0)",
-          filter: "blur(6px)"
-        }}
-      />
-      <div
-        ref={previewGraphicRef}
-        style={{
-          position: "absolute",
-          left: 0,
-          top: previewFrame.offsetY,
-          width: "100%",
-          height: "100%",
-          transform: `scale(${pieceType === "road" ? 1 : previewViewportScale})`,
-          transformOrigin: "50% 50%"
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={previewSrc}
-          alt="Build placement preview"
-          style={{ width: "100%", height: "100%" }}
-          draggable={false}
-          onError={(event) => handleThemeImageError(event, previewFallbackSrc)}
+      <div ref={previewVisualRef} style={{ position: "absolute", inset: 0 }}>
+        <div
+          ref={previewShadowRef}
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: "-10%",
+            width: pieceType === "road" ? "74%" : "58%",
+            height: pieceType === "road" ? "32%" : "22%",
+            borderRadius: 999,
+            background:
+              "radial-gradient(ellipse at center, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.18) 56%, rgba(15, 23, 42, 0) 100%)",
+            transform: "translate(-50%, 0)",
+            filter: "blur(6px)"
+          }}
         />
+        <div
+          ref={previewGraphicRef}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: previewFrame.offsetY,
+            width: "100%",
+            height: "100%",
+            transformOrigin: "50% 50%"
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={previewSrc}
+            alt="Build placement preview"
+            style={{ width: "100%", height: "100%" }}
+            draggable={false}
+            onError={(event) => handleThemeImageError(event, previewFallbackSrc)}
+          />
+        </div>
       </div>
     </div>,
     document.body

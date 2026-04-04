@@ -2710,3 +2710,18 @@
   - `pnpm exec vitest run app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/utils/robberPlacementPreviewMotion.test.js`
   - `pnpm exec vitest run app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/RobberPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Board.robberPlacementUx.test.js`
   - `pnpm exec eslint app/catana/utils/buildPlacementPreviewMotion.js app/catana/utils/robberPlacementPreviewMotion.js app/catana/BuildPlacementPreview.js app/catana/RobberPlacementPreview.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/utils/robberPlacementPreviewMotion.test.js`
+- Reworked explicit build pickup so locked targets reuse the board’s existing local animations instead of showing a second floating preview:
+  - off-target, the picked-up road / settlement / city follower remains the only visible object,
+  - once the follower settles onto a valid target, visibility hands off to the existing edge/node hover animation after a short delay,
+  - leaving the target resumes the same follower from the locked position so the piece still reads as one continuous object.
+- Also aligned build follower sizing with real board piece sizing:
+  - `BuildPlacementPreview` now derives its road and node piece frames from the same board tile size relationships as `Edge` / `Piece`,
+  - the old over-large preview heuristics are gone, so zoomed follower size is now based on board tile size plus `boardViewportScale`.
+- Current fix:
+  - `app/catana/Board.js` now tracks `buildPickupPresentation` and passes the handoff state into registered road/node targets,
+  - `app/catana/BuildPlacementPreview.js` now exposes `onPresentationChange`, delays the locked handoff slightly, and hides its own visible layer while the board-local preview owns the lock,
+  - `app/catana/ActionNode.js` and `app/catana/Edge.js` now allow explicit build previews only through that handoff path instead of suppressing them unconditionally.
+- Verification for the build-preview handoff:
+  - `pnpm exec vitest run app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/playerAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+  - `pnpm exec eslint app/catana/BuildPlacementPreview.js app/catana/ActionNode.js app/catana/Edge.js app/catana/Board.js app/catana/utils/buildPlacementPreviewMotion.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js`

@@ -1819,3 +1819,12 @@
   - the intended snap rule for both build pickup and robber placement is now “lock only while the pointer is actually inside the target hit area.”
   - for real UI targets, the motion helpers should prefer the registered DOM `width` / `height` and derive snap from that actual circle rather than relying on the old fixed 72px-ish proximity bubble.
   - the old fixed magnetic/release radii still exist only as a fallback for unsized helper targets in tests or other non-DOM callers; they are no longer the primary UX contract.
+- Build pickup handoff note:
+  - during explicit `road` / `settlement` / `city` pickup, there should never be two visible pieces at once.
+  - the follower owns the off-target state; the board-local hover animation owns the locked-on-target state.
+  - `BuildPlacementPreview` therefore needs a small presentation bridge back into `Board` so it can say “target X is now visually handed off.”
+  - `ActionNode` / `Edge` should not blindly suppress explicit-build ghosts anymore; they should render them only when that handoff state says the follower has settled and hidden itself.
+  - follower geometry should stay tied to real board piece sizing:
+    - roads use the same width/height ratio as `Edge`’s `Road`,
+    - settlements/cities use the same `Piece` size and vertical anchor as node placements,
+    - board zoom should be applied once via `boardViewportScale`, not multiplied again in the preview layer.

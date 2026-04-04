@@ -68,6 +68,7 @@ function PlaceableEdge({
   setHoveredNode,
   onPlace,
   registerBuildTarget,
+  showRegisteredHoverPreview = false,
   themeId,
 }) {
   const { width } = useWindowSize();
@@ -99,7 +100,16 @@ function PlaceableEdge({
         direction={direction}
         type="edge"
         piece={
-          isHovered && !registerBuildTarget ? (
+          showRegisteredHoverPreview ? (
+            <Road
+              color={color}
+              size={size}
+              tileX={tileX}
+              tileY={tileY}
+              transform={transform}
+              themeId={themeId}
+            />
+          ) : isHovered && !registerBuildTarget ? (
             <Road
               color={color}
               size={size}
@@ -117,6 +127,7 @@ function PlaceableEdge({
         setHoveredNode={setHoveredNode}
         hoveredNode={hoveredNode}
         registerBuildTarget={registerBuildTarget}
+        showRegisteredHoverPreview={showRegisteredHoverPreview}
         buildTargetMeta={{
           rotationDegrees: EDGE_ROTATION_DEGREES[direction] ?? 90
         }}
@@ -196,6 +207,7 @@ export function Edge({
   moves,
   setPlayerAction,
   registerBuildTarget,
+  showRegisteredHoverPreview = false,
   onPlaceCommitted,
   themeId,
 }) {
@@ -217,6 +229,7 @@ export function Edge({
         hoveredNode={hoveredNode}
         setHoveredNode={setHoveredNode}
         registerBuildTarget={registerBuildTarget}
+        showRegisteredHoverPreview={showRegisteredHoverPreview}
         themeId={themeId}
         onPlace={(edgeId) => {
           onPlaceCommitted?.();

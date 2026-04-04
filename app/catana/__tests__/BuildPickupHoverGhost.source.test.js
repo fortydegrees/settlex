@@ -9,17 +9,19 @@ const actionNodePath = path.resolve(__dirname, "..", "ActionNode.js");
 const edgePath = path.resolve(__dirname, "..", "Edge.js");
 
 describe("build pickup hover ghost suppression", () => {
-  it("suppresses node hover ghosts while explicit build pickup targets are registered", () => {
+  it("allows registered node hover ghosts only through the build-pickup handoff path", () => {
     const source = fs.readFileSync(actionNodePath, "utf8");
 
     expect(source).toContain("registerBuildTarget = null");
-    expect(source).toContain("!registerBuildTarget && isHovered");
+    expect(source).toContain("showRegisteredHoverPreview = false");
+    expect(source).toContain("showRegisteredHoverPreview || (!registerBuildTarget && isHovered)");
   });
 
-  it("suppresses road hover ghosts while explicit build pickup targets are registered", () => {
+  it("allows registered road hover ghosts only through the build-pickup handoff path", () => {
     const source = fs.readFileSync(edgePath, "utf8");
 
     expect(source).toContain("registerBuildTarget");
-    expect(source).toContain("isHovered && !registerBuildTarget");
+    expect(source).toContain("showRegisteredHoverPreview={showRegisteredHoverPreview}");
+    expect(source).toContain("showRegisteredHoverPreview ? (");
   });
 });

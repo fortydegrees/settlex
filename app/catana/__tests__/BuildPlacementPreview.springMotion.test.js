@@ -17,6 +17,8 @@ describe("BuildPlacementPreview spring motion", () => {
 
     expect(contents).toContain("originRect");
     expect(contents).toContain("magneticTargets");
+    expect(contents).toContain("onPresentationChange");
+    expect(contents).toContain("showTargetPreview");
     expect(contents).toContain("requestAnimationFrame");
     expect(contents).toContain("gsap");
     expect(contents).toContain("prefersReducedMotion");
