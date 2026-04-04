@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-04-04, build piece shadows now gate on board land)
+- Matched build-piece shadow behavior to the robber preview:
+- the `road` / `settlement` / `city` in-hand shadow now stays hidden while the piece is off-board,
+- it only appears once the preview is over board land.
+- Implementation shape:
+- `app/catana/Board.js` now passes the same `landRobberPreviewTiles` + `size` data into `BuildPlacementPreview`,
+- `app/catana/BuildPlacementPreview.js` reuses `isPointOverRobberBoardLand(...)` to gate the build shadow in both normal-motion and reduced-motion paths.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- `pnpm exec eslint app/catana/Board.js app/catana/BuildPlacementPreview.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
+
 ## Status (2026-04-04, launch orientation and cursor bias tuned)
 - Fixed the initial road pickup orientation bug:
 - the in-hand road now starts from the same vertical baseline as the rendered road graphic, so it no longer pops out sideways and rotates back to vertical on click.

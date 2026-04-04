@@ -1,5 +1,10 @@
 # NOTES
 
+- Build pickup shadow note:
+- build-piece shadows should follow the same "only when over board land" rule as the robber preview.
+- Current implementation reuses `isPointOverRobberBoardLand(...)` rather than inventing a second board-area heuristic for build pieces.
+- If this is retuned later, keep normal-motion and reduced-motion paths aligned; do not let one mode show a dock-origin shadow while the other hides it.
+
 - Build pickup launch follow-up:
 - keep the road follower's internal rotation baseline aligned with the rendered road sprite (`90deg`) from the first launch frame.
 - If that ref state drifts back to `0`, the road will visibly pop out sideways and rotate back to vertical before the real edge-lock rotation begins.

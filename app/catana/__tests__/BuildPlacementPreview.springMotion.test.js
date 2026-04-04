@@ -22,6 +22,8 @@ describe("BuildPlacementPreview spring motion", () => {
     expect(contents).toContain("requestAnimationFrame");
     expect(contents).toContain("gsap");
     expect(contents).toContain("prefersReducedMotion");
+    expect(contents).toContain("isPointOverRobberBoardLand");
+    expect(contents).toContain("boardShadowVisible");
     expect(contents).toContain('pieceType === "road"');
     expect(contents).toContain('pieceType === "settlement"');
     expect(contents).toContain('pieceType === "city"');

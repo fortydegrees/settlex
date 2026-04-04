@@ -6,6 +6,7 @@ import {
   getThemedSvgPath,
   handleThemeImageError
 } from "./theme/themes";
+import { isPointOverRobberBoardLand } from "./utils/robberPlacementPreviewMotion";
 import { getPieceSvgFile } from "./theme/pieceAssets.js";
 import {
   getBuildPickupOrigin,
@@ -21,6 +22,7 @@ import {
 
 const PREVIEW_BASE_SIZE = 56;
 const LOCKED_TARGET_HANDOFF_DELAY_MS = 96;
+const PREVIEW_SHADOW_GROUND_OFFSET_FACTOR = 0.42;
 const FREE_FOLLOW_SPRING = {
   stiffness: 150,
   damping: 24,
@@ -89,6 +91,8 @@ export function BuildPlacementPreview({
   pieceColor = "red",
   originRect = null,
   magneticTargets = [],
+  landTileCenters = [],
+  boardTileSize,
   boardViewportScale = 1,
   themeId,
   size = PREVIEW_BASE_SIZE,
@@ -307,11 +311,23 @@ export function BuildPlacementPreview({
           Number.isFinite(nextPosition.y)
         ) {
           currentPositionRef.current = nextPosition;
+          const boardShadowVisible = isPointOverRobberBoardLand({
+            pointX: nextPosition.x,
+            pointY:
+              nextPosition.y +
+              previewSize * PREVIEW_SHADOW_GROUND_OFFSET_FACTOR,
+            landTileCenters,
+            tileSize: boardTileSize
+          });
           gsap.set(previewNode, nextPosition);
           gsap.set(graphicNode, {
             rotation: desiredRotationRef.current
           });
-          gsap.set(shadowNode, { opacity: 0.44, scaleX: 1, scaleY: 0.92 });
+          gsap.set(shadowNode, {
+            opacity: boardShadowVisible ? 0.44 : 0,
+            scaleX: boardShadowVisible ? 1 : 0.85,
+            scaleY: boardShadowVisible ? 0.92 : 0.7
+          });
           gsap.to(previewNode, {
             opacity: 1,
             scale: 1,
@@ -418,6 +434,14 @@ export function BuildPlacementPreview({
           const nextPosition = shouldSnapToRest
             ? { x: desiredX, y: desiredY }
             : { x: nextX, y: nextY };
+          const boardShadowVisible = isPointOverRobberBoardLand({
+            pointX: nextPosition.x,
+            pointY:
+              nextPosition.y +
+              previewSize * PREVIEW_SHADOW_GROUND_OFFSET_FACTOR,
+            landTileCenters,
+            tileSize: boardTileSize
+          });
           const launchProgress = Math.max(
             0,
             Math.min(
@@ -451,9 +475,9 @@ export function BuildPlacementPreview({
             rotation: nextRotation + (pieceType === "road" ? leanAngle * 0.25 : leanAngle)
           });
           gsap.set(shadowNode, {
-            opacity: isLocked ? 0.52 : 0.36,
-            scaleX: isLocked ? 1.06 : 0.96,
-            scaleY: isLocked ? 0.92 : 0.84
+            opacity: boardShadowVisible ? (isLocked ? 0.52 : 0.36) : 0,
+            scaleX: boardShadowVisible ? (isLocked ? 1.06 : 0.96) : 0.85,
+            scaleY: boardShadowVisible ? (isLocked ? 0.92 : 0.84) : 0.7
           });
         } else {
           lastTickMsRef.current = tickMs;
@@ -484,10 +508,13 @@ export function BuildPlacementPreview({
   }, [
     active,
     assetFile,
+    boardTileSize,
     clearHandoffTimer,
+    landTileCenters,
     launchMotion,
     originRect,
     pieceType,
+    previewSize,
     reduceMotion,
     syncDesiredPosition
   ]);
