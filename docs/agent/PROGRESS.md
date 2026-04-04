@@ -1,5 +1,23 @@
 # PROGRESS
 
+## Status (2026-04-04, dock pickup launch motion tightened)
+- Tweaked the initial `road` / `settlement` / `city` dock click animation so the picked-up piece now gets a short two-step launch envelope before the existing cursor-follow handoff:
+- small pressed hold,
+- quick upward lift,
+- tiny overshoot settle back into the live follower.
+- Implementation shape:
+- launch tuning now lives in `app/catana/utils/buildPlacementPreviewMotion.js` via `getBuildPickupLaunchMotion(pieceType)`,
+- `app/catana/BuildPlacementPreview.js` applies that launch on the preview visual layer only, so the outer preview still owns true cursor-follow position and board-target handoff.
+- Tuning intent:
+- approved default is the tighter `option 1` motion (`~296ms` total) so it stays fast for repeated placement,
+- moving it toward the bouncier `option 2` later should only require changing launch offsets/scales/durations, not restructuring the handoff logic.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- `pnpm exec eslint app/catana/BuildPlacementPreview.js app/catana/utils/buildPlacementPreviewMotion.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- Browser verification note:
+- attempted a live check through the local lobby flow after starting `pnpm serve`,
+- the dev scenario room created successfully, but the match page stalled on `connecting...`, so the final motion feel was not validated from a trustworthy live board render in this pass.
+
 ## Status (2026-04-03, action dock build pickup implemented)
 - Reworked the explicit build buttons in the Catana action dock to remove the old magnify behavior and the looping bounce.
 - Current interaction:

@@ -9,6 +9,7 @@ import {
 import { getPieceSvgFile } from "./theme/pieceAssets.js";
 import {
   getBuildPickupOrigin,
+  getBuildPickupLaunchMotion,
   getBuildPreviewFrame,
   getBuildPreviewLeanAngle,
   getBuildPreviewViewportScale,
@@ -100,6 +101,7 @@ export function BuildPlacementPreview({
   const previewGraphicRef = useRef(null);
   const animationFrameRef = useRef(null);
   const handoffTimeoutRef = useRef(null);
+  const launchTimelineRef = useRef(null);
   const lastTickMsRef = useRef(null);
   const pointerRef = useRef({ x: null, y: null });
   const currentPositionRef = useRef({ x: null, y: null });
@@ -124,6 +126,10 @@ export function BuildPlacementPreview({
   const assetFile = getPreviewAssetFile(pieceType, pieceColor);
   const previewSrc = assetFile ? getThemedSvgPath(themeId, assetFile) : null;
   const previewFallbackSrc = assetFile ? getClassicSvgPath(assetFile) : null;
+  const launchMotion = useMemo(
+    () => getBuildPickupLaunchMotion(pieceType),
+    [pieceType]
+  );
 
   const clearHandoffTimer = useCallback(() => {
     if (handoffTimeoutRef.current != null) {
@@ -266,9 +272,14 @@ export function BuildPlacementPreview({
       xPercent: -50,
       yPercent: -50,
       opacity: 0,
-      scale: reduceMotion ? 1 : 0.88
+      scale: 1
     });
-    gsap.set(visualNode, { opacity: 1 });
+    gsap.set(visualNode, {
+      opacity: 1,
+      y: reduceMotion ? 0 : launchMotion.startOffsetY,
+      scale: reduceMotion ? 1 : launchMotion.startScale,
+      transformOrigin: "50% 50%"
+    });
     gsap.set(shadowNode, {
       opacity: 0,
       scaleX: 0.85,
@@ -310,13 +321,42 @@ export function BuildPlacementPreview({
     syncDesiredPosition();
 
     if (!reduceMotion) {
-      gsap.to(previewNode, {
-        opacity: 1,
-        scale: 1,
-        duration: 0.16,
-        ease: "power2.out",
-        overwrite: "auto"
+      const launchTimeline = gsap.timeline({
+        defaults: { overwrite: "auto" }
       });
+      launchTimelineRef.current = launchTimeline;
+      launchTimeline
+        .to(
+          previewNode,
+          {
+            opacity: 1,
+            duration: 0.08,
+            ease: "power2.out"
+          },
+          0
+        )
+        .to(
+          visualNode,
+          {
+            duration: launchMotion.pressDurationMs / 1000,
+            y: launchMotion.startOffsetY,
+            scale: launchMotion.startScale,
+            ease: "power1.out"
+          },
+          0
+        )
+        .to(visualNode, {
+          duration: launchMotion.liftDurationMs / 1000,
+          y: launchMotion.peakOffsetY,
+          scale: launchMotion.peakScale,
+          ease: launchMotion.liftEase
+        })
+        .to(visualNode, {
+          duration: launchMotion.settleDurationMs / 1000,
+          y: 0,
+          scale: launchMotion.settleScale,
+          ease: launchMotion.settleEase
+        });
 
       const step = (tickMs) => {
         const desiredX = desiredPositionRef.current.x;
@@ -405,12 +445,15 @@ export function BuildPlacementPreview({
       gsap.killTweensOf(visualNode);
       gsap.killTweensOf(shadowNode);
       gsap.killTweensOf(graphicNode);
+      launchTimelineRef.current?.kill();
+      launchTimelineRef.current = null;
       clearHandoffTimer();
     };
   }, [
     active,
     assetFile,
     clearHandoffTimer,
+    launchMotion,
     originRect,
     pieceType,
     reduceMotion,

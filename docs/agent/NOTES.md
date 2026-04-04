@@ -1,5 +1,18 @@
 # NOTES
 
+- Dock pickup launch tuning note:
+- the initial build pickup click now uses a dedicated launch envelope from `app/catana/utils/buildPlacementPreviewMotion.js::getBuildPickupLaunchMotion(pieceType)`.
+- Current structure:
+- hold the piece briefly in a compressed launch state,
+- lift upward quickly,
+- settle back to neutral while the outer preview continues cursor-follow.
+- Important implementation detail:
+- keep this bounce on the preview visual layer (`BuildPlacementPreview.js`), not on the outer preview position wrapper and not as a larger dock-card hop.
+- Reason:
+- the outer preview must remain the single source of truth for cursor-follow / target-lock geometry,
+- the dock should stay visually quiet except for its small press response.
+- If product wants a bouncier variant later, prefer tuning the launch config values rather than adding another animation path.
+
 - Action dock build pickup implementation note:
 - the explicit Catana build buttons no longer own any dock-level magnify math or looping bounce animation.
 - Current expected UX is:
