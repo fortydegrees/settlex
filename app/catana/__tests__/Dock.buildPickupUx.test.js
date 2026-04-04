@@ -49,8 +49,8 @@ describe("Dock build pickup UX", () => {
     expect(cardSource).toContain("iconScaleY");
     expect(cardSource).toContain("iconY");
     expect(dockStylesSource).toContain("&__img-shell");
-    expect(dockStylesSource).toContain("width: 80%");
-    expect(dockStylesSource).toContain("&__img {\n      width: 100%");
+    expect(dockStylesSource).toContain("&__img {\n      width: 80%");
+    expect(dockStylesSource).toContain("&__img-shell {\n      position: relative;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      width: 100%");
     expect(containerSource).toContain("setBuildPickup");
     expect(containerSource).toContain("getBuildPickupPieceType");
     expect(containerSource).toContain("buildPickup?.pieceType");

@@ -473,19 +473,6 @@ export function BuildPlacementPreview({
         });
 
       const step = (tickMs) => {
-        if (!launchReadyRef.current) {
-          lastTickMsRef.current = tickMs;
-          if (origin) {
-            currentPositionRef.current = origin;
-            velocityRef.current = { x: 0, y: 0 };
-            currentRotationRef.current = pieceType === "road" ? 90 : 0;
-            gsap.set(previewNode, origin);
-          }
-
-          animationFrameRef.current = requestAnimationFrame(step);
-          return;
-        }
-
         if (launchReadyRef.current && launchStartMsRef.current == null) {
           launchStartMsRef.current = tickMs;
         }
