@@ -1,5 +1,31 @@
 # NOTES
 
+- Dev-card purchase reveal ownership note:
+- keep the `buy dev` reveal local to `GameScreen`, not on the shared public effect bus.
+- Current working shape:
+- `PlayerActionContainer` captures `{ triggerRect, beforeCards, preLaunchDelayMs, playerId }` before calling `moves.buyDevCard()`,
+- `GameScreen` waits for the local `player.devCards` array to gain one card,
+- `findBoughtDevCardType(...)` resolves the newly added card type by count-diff,
+- then `DevCardPurchaseReveal` owns the temporary dock -> center -> hand animation.
+- Guardrail:
+- do not derive the reveal from public log entries or effect-bus events if the card face must stay private to the buyer.
+
+- Dev-card dock emblem note:
+- the dock still shows the full `icon_devcard.svg` at rest, but the preload squash should animate only `icon_devcard_emblem.svg`.
+- Reason:
+- the green plus badge reads as dock UI, not as part of the physical card being "picked up".
+- Guardrail:
+- if this dock icon changes again, keep the full icon and the prelaunch-only emblem as separate render layers in `DockCard.js`; do not go back to squashing the whole icon.
+
+- Dev-card reveal verification note:
+- the quickest reliable way to judge this motion was a temporary harness route that rendered `DevCardPurchaseReveal` with fake dock/hand rects, then browser screenshots at:
+- emblem flight,
+- center card back,
+- center face reveal,
+- hand arrival.
+- Guardrail:
+- if the live game flow is awkward to reach again, it is reasonable to recreate a tiny temporary harness for motion tuning, but remove it before committing.
+
 - Build pickup preload timer ownership note:
 - the `launchReady` timer belongs only to the dedicated preload-timer effect plus the explicit inactive/reset path.
 - Do not clear that timer from the main animation-effect cleanup in `BuildPlacementPreview.js`.

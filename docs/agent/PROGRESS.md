@@ -1,5 +1,26 @@
 # PROGRESS
 
+## Status (2026-04-04, private buy-dev reveal now runs from dock to hand)
+- Added the local-only dev-card purchase reveal for the `buy dev` dock action.
+- Interaction shape:
+- the dock now squashes only the dev-card emblem, not the green plus badge,
+- `PlayerActionContainer` captures the dock button rect plus the local player's pre-buy dev-card snapshot,
+- `GameScreen` watches the local `player.devCards` delta, identifies the newly bought dev card, and starts one transient reveal payload,
+- `DevCardPurchaseReveal` animates emblem -> card back build -> face flip -> travel to the real `DevCardDisplay` hand area.
+- Privacy rule:
+- the reveal is derived only from the local player's visible `player.devCards`,
+- so non-buyers do not get the card-face reveal through the shared effect system.
+- Audio/motion:
+- the reveal uses local Howler playback with the existing resource-card pop / woosh files,
+- and the send-to-hand leg uses the same general travel feel as resource distribution rather than inventing a new motion family.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- `pnpm exec eslint app/catana/components/ActionsDock/DockCard.js app/catana/components/PlayerActionContainer.js app/catana/components/DevCardDisplay.js app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js app/catana/utils/devCardPurchaseReveal.js`
+- Browser verification:
+- a temporary dev-only harness route was created, used to capture center/back/face/hand screenshots of the new reveal, then deleted before committing the feature.
+- Residual lint noise:
+- only the existing `@next/next/no-img-element` warnings remain, plus the same warning on the new reveal component because the animated temporary card still uses plain `img` tags.
+
 ## Status (2026-04-04, preload timer no longer cancels before road lock)
 - Fixed the real road-hover regression introduced by the dock preload work.
 - Root cause:
