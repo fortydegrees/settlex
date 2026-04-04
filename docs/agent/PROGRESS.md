@@ -2967,3 +2967,12 @@
 - Verification for the single-face midpoint swap:
   - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Reworked the dev-card turn itself to use the standard 3D two-face flip pattern instead of midpoint art-swapping.
+- Current fix:
+  - `app/catana/DevCardPurchaseReveal.js` now mounts both the card back and the bought-card face for the entire reveal,
+  - the reveal uses a dedicated `card3dRef` with `preserve-3d`,
+  - the bought-card face is pre-rotated `-180deg`,
+  - the flip now rotates that 3D card from `0 -> 180`, which matches the canonical GSAP/CSS card-flip structure more closely than the previous midpoint-swap hack.
+- Verification for the canonical 3D flip rewrite:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`

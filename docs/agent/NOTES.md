@@ -2000,3 +2000,11 @@
   - flip ownership:
     - the separate `backFace` / `frontFace` layering was still too brittle for this reveal and could leave the visible card showing the back after the turn.
     - a simpler and more reliable pattern is to keep one visible card image, rotate it out to `90deg`, swap its `src` to the bought card asset at the midpoint, then rotate it back in.
+  - after more debugging, the midpoint-swap approach was still too brittle in practice for this reveal.
+  - prefer the standard GSAP/CSS 3D card-flip structure instead:
+    - perspective on the outer wrapper,
+    - a dedicated inner 3D card node with `preserve-3d`,
+    - card-back face at `0deg`,
+    - revealed-card face pre-rotated `-180deg`,
+    - rotate the inner card from `0deg` to `180deg`.
+  - for SVG-backed card art, it is safer to put the 3D face transforms on wrapper elements and keep the `<img>` inside each face wrapper, rather than relying on the raw SVG `<img>` element itself as the transformed face.

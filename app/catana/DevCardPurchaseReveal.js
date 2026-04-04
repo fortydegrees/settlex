@@ -25,10 +25,13 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
   const actorRef = useRef(null);
   const emblemRef = useRef(null);
   const flipRef = useRef(null);
-  const cardFaceRef = useRef(null);
+  const card3dRef = useRef(null);
+  const cardBackRef = useRef(null);
+  const cardRevealRef = useRef(null);
   const popHowlRef = useRef(null);
   const travelHowlRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
+  const revealCardSrc = DEV_CARD_FACE_SVGS[reveal?.cardType] ?? DEV_CARD_BACK_SVG;
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -54,8 +57,18 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     const actorNode = actorRef.current;
     const emblemNode = emblemRef.current;
     const flipNode = flipRef.current;
-    const cardFaceNode = cardFaceRef.current;
-    if (!reveal || !actorNode || !emblemNode || !flipNode || !cardFaceNode) {
+    const card3dNode = card3dRef.current;
+    const cardBackNode = cardBackRef.current;
+    const cardRevealNode = cardRevealRef.current;
+    if (
+      !reveal ||
+      !actorNode ||
+      !emblemNode ||
+      !flipNode ||
+      !card3dNode ||
+      !cardBackNode ||
+      !cardRevealNode
+    ) {
       return undefined;
     }
     if (!reveal.triggerRect || !reveal.destinationRect) {
@@ -63,7 +76,6 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       return undefined;
     }
 
-    const revealCardSrc = DEV_CARD_FACE_SVGS[reveal.cardType] ?? DEV_CARD_BACK_SVG;
     const startX = reveal.triggerRect.left + reveal.triggerRect.width / 2;
     const startY = reveal.triggerRect.top + reveal.triggerRect.height / 2;
     const endX = reveal.destinationRect.left + reveal.destinationRect.width / 2;
@@ -101,11 +113,24 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       autoAlpha: 0,
       scale: 0.92,
       transformPerspective: 1000,
-      transformStyle: "preserve-3d",
     });
-    cardFaceNode.setAttribute("src", DEV_CARD_BACK_SVG);
-    gsap.set(cardFaceNode, {
+    gsap.set(card3dNode, {
+      rotationY: 0,
+      transformStyle: "preserve-3d",
+      transformOrigin: "50% 50%",
+    });
+    gsap.set([cardBackNode, cardRevealNode], {
       autoAlpha: 1,
+      transformStyle: "preserve-3d",
+      transformOrigin: "50% 50%",
+      backfaceVisibility: "hidden",
+      WebkitBackfaceVisibility: "hidden",
+    });
+    gsap.set(cardBackNode, {
+      rotationY: 0,
+    });
+    gsap.set(cardRevealNode, {
+      rotationY: -180,
     });
 
     const timeline = gsap.timeline({
@@ -146,19 +171,10 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       "<"
     );
     timeline.to({}, { duration: durations.holdAfterBackReveal });
-    timeline.to(flipNode, {
-      rotationY: 90,
-      duration: durations.flip / 2,
-      ease: "power1.in",
-    });
-    timeline.call(() => {
-      cardFaceNode.setAttribute("src", revealCardSrc);
-    });
-    timeline.set(flipNode, { rotationY: -90 });
-    timeline.to(flipNode, {
-      rotationY: 0,
-      duration: durations.flip / 2,
-      ease: "power1.out",
+    timeline.to(card3dNode, {
+      rotationY: 180,
+      duration: durations.flip,
+      ease: "power1.inOut",
     });
     timeline.to({}, { duration: durations.holdOnFace });
     timeline.call(() => travelHowlRef.current?.play());
@@ -192,17 +208,38 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
           className="absolute inset-[14%] h-[72%] w-[72%] object-contain drop-shadow-lg"
         />
         <div ref={flipRef} className="absolute inset-0">
-          <img
-            ref={cardFaceRef}
-            src={DEV_CARD_BACK_SVG}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
-            style={{
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-            }}
-          />
+          <div ref={card3dRef} className="absolute inset-0">
+            <div
+              ref={cardBackRef}
+              className="absolute inset-0"
+              style={{
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+              }}
+            >
+              <img
+                src={DEV_CARD_BACK_SVG}
+                alt=""
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+              />
+            </div>
+            <div
+              ref={cardRevealRef}
+              className="absolute inset-0"
+              style={{
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+              }}
+            >
+              <img
+                src={revealCardSrc}
+                alt=""
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
