@@ -676,6 +676,10 @@ export function GameScreen(bgioProps) {
     setShowTradeModal(true);
   };
 
+  const handleDevCardRevealComplete = useCallback(() => {
+    setActiveDevCardReveal(null);
+  }, []);
+
   const handleResign = () => {
     if (isGameOver) return;
     if (typeof moves.resign !== "function") return;
@@ -946,7 +950,7 @@ export function GameScreen(bgioProps) {
 
       <DevCardPurchaseReveal
         reveal={activeDevCardReveal}
-        onComplete={() => setActiveDevCardReveal(null)}
+        onComplete={handleDevCardRevealComplete}
       />
 
       <button
