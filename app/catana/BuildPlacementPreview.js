@@ -56,6 +56,8 @@ const getViewportTargetCenters = (magneticTargets = []) =>
         id: target.id,
         centerX,
         centerY,
+        width: rect.width,
+        height: rect.height,
         rotationDegrees: target.rotationDegrees ?? 0
       };
     })

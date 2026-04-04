@@ -1815,3 +1815,7 @@
   - during dock-driven `road` / `settlement` / `city` placement, `BuildPlacementPreview` is now the only piece preview that should be visible.
   - `ActionNode` and `Edge` still contain legacy hover-ghost rendering for passive/local hover affordances, but those ghosts must stay off whenever `registerBuildTarget` is present; otherwise nearby targets can double-render and look like stale magnetic previews.
   - the magnetic helper in `app/catana/utils/buildPlacementPreviewMotion.js` should keep some hysteresis, but not at the cost of ignoring a clearly closer legal target; adjacent Catan targets are close enough that “keep lock until release radius ends” is too sticky.
+- Hit-area magnetism note:
+  - the intended snap rule for both build pickup and robber placement is now “lock only while the pointer is actually inside the target hit area.”
+  - for real UI targets, the motion helpers should prefer the registered DOM `width` / `height` and derive snap from that actual circle rather than relying on the old fixed 72px-ish proximity bubble.
+  - the old fixed magnetic/release radii still exist only as a fallback for unsized helper targets in tests or other non-DOM callers; they are no longer the primary UX contract.

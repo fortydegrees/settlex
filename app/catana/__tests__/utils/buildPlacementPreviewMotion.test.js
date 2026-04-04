@@ -6,6 +6,16 @@ import {
 } from "../../utils/buildPlacementPreviewMotion";
 
 describe("buildPlacementPreviewMotion", () => {
+  it("does not snap a build preview until the pointer is inside the action-circle hit area", () => {
+    const target = getMagneticBuildTarget({
+      pointerX: 113,
+      pointerY: 100,
+      targets: [{ id: "node", centerX: 100, centerY: 100, width: 24, height: 24 }]
+    });
+
+    expect(target).toBeNull();
+  });
+
   it("keeps the current build target locked while no closer legal target is in range", () => {
     const pointerX = 100 + BUILD_PREVIEW_MAGNETIC_RADIUS_PX + 12;
 
@@ -43,5 +53,16 @@ describe("buildPlacementPreviewMotion", () => {
     });
 
     expect(target).toMatchObject({ id: "right" });
+  });
+
+  it("releases the active build target once the pointer leaves its hit area", () => {
+    const target = getMagneticBuildTarget({
+      pointerX: 113,
+      pointerY: 100,
+      activeTargetId: "node",
+      targets: [{ id: "node", centerX: 100, centerY: 100, width: 24, height: 24 }]
+    });
+
+    expect(target).toBeNull();
   });
 });

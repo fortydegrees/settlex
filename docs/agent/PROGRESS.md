@@ -2699,3 +2699,14 @@
 - Verification for the stale explicit-build preview fix:
   - `pnpm exec vitest run app/catana/__tests__/playerAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/Board.robberPlacementUx.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js`
   - `pnpm exec eslint app/catana/ActionNode.js app/catana/Edge.js app/catana/utils/buildPlacementPreviewMotion.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- Tightened robber/build preview magnetism to the actual target hit areas:
+  - build pickup and robber preview no longer lock when the pointer is merely near a legal target,
+  - they now lock only while the pointer is inside the real action-circle / robber target area, then immediately return to free-follow when the pointer leaves it.
+- Current fix:
+  - `app/catana/utils/buildPlacementPreviewMotion.js` now uses target `width` / `height` when present to derive the snap radius from the real DOM hit area instead of the old loose fallback bubble,
+  - `app/catana/utils/robberPlacementPreviewMotion.js` now does the same for real robber targets while preserving the old unsized fallback semantics for helper-only callers,
+  - `app/catana/BuildPlacementPreview.js` and `app/catana/RobberPlacementPreview.js` now pass the registered target dimensions into those motion helpers.
+- Verification for the tighter hit-area snap:
+  - `pnpm exec vitest run app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/utils/robberPlacementPreviewMotion.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/RobberPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Board.robberPlacementUx.test.js`
+  - `pnpm exec eslint app/catana/utils/buildPlacementPreviewMotion.js app/catana/utils/robberPlacementPreviewMotion.js app/catana/BuildPlacementPreview.js app/catana/RobberPlacementPreview.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/utils/robberPlacementPreviewMotion.test.js`

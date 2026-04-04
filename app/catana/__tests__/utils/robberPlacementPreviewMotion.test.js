@@ -12,6 +12,16 @@ import {
 } from "../../utils/robberPlacementPreviewMotion";
 
 describe("robberPlacementPreviewMotion", () => {
+  it("does not snap the robber until the pointer is inside the robber target hit area", () => {
+    const target = getMagneticRobberTarget({
+      pointerX: 121,
+      pointerY: 100,
+      targets: [{ tileId: 4, centerX: 100, centerY: 100, width: 40, height: 40 }]
+    });
+
+    expect(target).toBeNull();
+  });
+
   it("selects the closest legal robber target inside the magnetic radius", () => {
     const target = getMagneticRobberTarget({
       pointerX: 118,
@@ -54,6 +64,17 @@ describe("robberPlacementPreviewMotion", () => {
     expect(ROBBER_PREVIEW_RELEASE_RADIUS_PX).toBeGreaterThan(
       ROBBER_PREVIEW_MAGNETIC_RADIUS_PX
     );
+  });
+
+  it("releases the robber target as soon as the pointer leaves the hit area", () => {
+    const target = getMagneticRobberTarget({
+      pointerX: 121,
+      pointerY: 100,
+      activeTargetTileId: 4,
+      targets: [{ tileId: 4, centerX: 100, centerY: 100, width: 40, height: 40 }]
+    });
+
+    expect(target).toBeNull();
   });
 
   it("leans the robber opposite the horizontal movement direction and clamps the angle", () => {
