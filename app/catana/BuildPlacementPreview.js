@@ -13,6 +13,7 @@ import {
   getBuildPreviewLeanAngle,
   getBuildPreviewViewportScale,
   getMagneticBuildTarget,
+  getShortestRotationDelta,
   getScaledBuildPreviewSize
 } from "./utils/buildPlacementPreviewMotion";
 
@@ -352,9 +353,12 @@ export function BuildPlacementPreview({
             currentPositionRef.current.x + nextVelocityX * deltaSeconds;
           const nextY =
             currentPositionRef.current.y + nextVelocityY * deltaSeconds;
+          const rotationDelta = getShortestRotationDelta(
+            currentRotationRef.current,
+            desiredRotationRef.current
+          );
           const nextRotation =
-            currentRotationRef.current +
-            (desiredRotationRef.current - currentRotationRef.current) * 0.24;
+            currentRotationRef.current + rotationDelta * 0.24;
           const leanAngle = getBuildPreviewLeanAngle(nextVelocityX);
           const shouldSnapToRest =
             Math.abs(desiredX - nextX) < 0.5 &&

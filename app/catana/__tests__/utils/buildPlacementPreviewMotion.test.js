@@ -2,10 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   BUILD_PREVIEW_MAGNETIC_RADIUS_PX,
   BUILD_PREVIEW_RELEASE_RADIUS_PX,
-  getMagneticBuildTarget
+  getMagneticBuildTarget,
+  getShortestRotationDelta
 } from "../../utils/buildPlacementPreviewMotion";
 
 describe("buildPlacementPreviewMotion", () => {
+  it("computes the shortest signed road rotation delta", () => {
+    expect(getShortestRotationDelta(90, 330)).toBe(-120);
+    expect(getShortestRotationDelta(330, 30)).toBe(60);
+  });
+
   it("does not snap a build preview until the pointer is inside the action-circle hit area", () => {
     const target = getMagneticBuildTarget({
       pointerX: 113,

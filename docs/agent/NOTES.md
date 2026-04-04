@@ -1828,3 +1828,7 @@
     - roads use the same width/height ratio as `Edge`’s `Road`,
     - settlements/cities use the same `Piece` size and vertical anchor as node placements,
     - board zoom should be applied once via `boardViewportScale`, not multiplied again in the preview layer.
+- Road rotation note:
+  - the build follower should never interpolate road angles with raw `desired - current` degree subtraction.
+  - edge headings wrap around the 0/360 seam, so `90 -> 330` must rotate by `-120`, not `+240`.
+  - keep shortest-arc angle math in the motion helper layer so the preview spring can stay simple and any future road-like follower reuses the same behavior.
