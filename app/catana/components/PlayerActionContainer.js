@@ -24,7 +24,7 @@ import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 const SHOW_STATUS_TEXT = true;
 const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
-const DEV_CARD_PRELAUNCH_DELAY_MS = 240;
+const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
 
 const formatTimer = (ms) => {
   if (ms == null) return null;
