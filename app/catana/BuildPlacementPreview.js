@@ -9,6 +9,7 @@ import {
 import { getPieceSvgFile } from "./theme/pieceAssets.js";
 import {
   getBuildPickupOrigin,
+  getBuildPickupLaunchBias,
   getBuildPickupLaunchMotion,
   getBuildPreviewFrame,
   getBuildPreviewLeanAngle,
@@ -102,6 +103,7 @@ export function BuildPlacementPreview({
   const animationFrameRef = useRef(null);
   const handoffTimeoutRef = useRef(null);
   const launchTimelineRef = useRef(null);
+  const launchStartMsRef = useRef(null);
   const lastTickMsRef = useRef(null);
   const pointerRef = useRef({ x: null, y: null });
   const currentPositionRef = useRef({ x: null, y: null });
@@ -256,14 +258,18 @@ export function BuildPlacementPreview({
       currentPositionRef.current = { x: null, y: null };
       desiredPositionRef.current = { x: null, y: null };
       velocityRef.current = { x: 0, y: 0 };
-      currentRotationRef.current = 0;
-      desiredRotationRef.current = 0;
+      currentRotationRef.current = pieceType === "road" ? 90 : 0;
+      desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+      launchStartMsRef.current = null;
       return undefined;
     }
 
     const origin = getBuildPickupOrigin(originRect);
     currentPositionRef.current = origin ?? { x: null, y: null };
     desiredPositionRef.current = origin ?? { x: null, y: null };
+    currentRotationRef.current = pieceType === "road" ? 90 : 0;
+    desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+    launchStartMsRef.current = null;
     if (origin) {
       setHasPosition(true);
     }
@@ -359,6 +365,10 @@ export function BuildPlacementPreview({
         });
 
       const step = (tickMs) => {
+        if (launchStartMsRef.current == null) {
+          launchStartMsRef.current = tickMs;
+        }
+
         const desiredX = desiredPositionRef.current.x;
         const desiredY = desiredPositionRef.current.y;
         if (Number.isFinite(desiredX) && Number.isFinite(desiredY)) {
@@ -408,6 +418,24 @@ export function BuildPlacementPreview({
           const nextPosition = shouldSnapToRest
             ? { x: desiredX, y: desiredY }
             : { x: nextX, y: nextY };
+          const launchProgress = Math.max(
+            0,
+            Math.min(
+              1,
+              (tickMs - launchStartMsRef.current) /
+                launchMotion.totalDurationMs
+            )
+          );
+          const launchBias =
+            !isLocked && origin
+              ? getBuildPickupLaunchBias({
+                  originX: origin.x,
+                  originY: origin.y,
+                  pointerX: desiredX,
+                  pointerY: desiredY,
+                  progress: launchProgress
+                })
+              : { x: 0, y: 0 };
 
           velocityRef.current = shouldSnapToRest
             ? { x: 0, y: 0 }
@@ -415,7 +443,10 @@ export function BuildPlacementPreview({
           currentPositionRef.current = nextPosition;
           currentRotationRef.current = nextRotation;
 
-          gsap.set(previewNode, nextPosition);
+          gsap.set(previewNode, {
+            x: nextPosition.x + launchBias.x,
+            y: nextPosition.y + launchBias.y
+          });
           gsap.set(graphicNode, {
             rotation: nextRotation + (pieceType === "road" ? leanAngle * 0.25 : leanAngle)
           });
@@ -441,6 +472,7 @@ export function BuildPlacementPreview({
       }
       animationFrameRef.current = null;
       lastTickMsRef.current = null;
+      launchStartMsRef.current = null;
       gsap.killTweensOf(previewNode);
       gsap.killTweensOf(visualNode);
       gsap.killTweensOf(shadowNode);

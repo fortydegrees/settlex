@@ -4,16 +4,17 @@ export const BUILD_PREVIEW_MAX_LEAN_DEGREES = 20;
 
 const BUILD_PICKUP_LAUNCH_CONFIG = {
   pressDurationMs: 36,
-  liftDurationMs: 132,
-  settleDurationMs: 128,
-  startOffsetY: 8,
+  liftDurationMs: 146,
+  settleDurationMs: 132,
+  startOffsetY: 10,
   startScale: 0.92,
-  peakOffsetY: -20,
-  peakScale: 1.05,
+  peakOffsetY: -26,
+  peakScale: 1.08,
   settleScale: 1,
   liftEase: "power2.out",
   settleEase: "back.out(2.1)"
 };
+const BUILD_PICKUP_LAUNCH_CURSOR_BIAS_PX = 18;
 
 export function getBuildPreviewViewportScale(boardViewportScale = 1) {
   return Number.isFinite(boardViewportScale) && boardViewportScale > 0
@@ -48,6 +49,45 @@ export function getBuildPickupLaunchMotion(pieceType) {
     settleScale: BUILD_PICKUP_LAUNCH_CONFIG.settleScale,
     liftEase: BUILD_PICKUP_LAUNCH_CONFIG.liftEase,
     settleEase: BUILD_PICKUP_LAUNCH_CONFIG.settleEase
+  };
+}
+
+export function getBuildPickupLaunchBias({
+  originX,
+  originY,
+  pointerX,
+  pointerY,
+  progress,
+  maxDistancePx = BUILD_PICKUP_LAUNCH_CURSOR_BIAS_PX
+} = {}) {
+  if (
+    !Number.isFinite(originX) ||
+    !Number.isFinite(originY) ||
+    !Number.isFinite(pointerX) ||
+    !Number.isFinite(pointerY)
+  ) {
+    return { x: 0, y: 0 };
+  }
+
+  const clampedProgress = Math.max(0, Math.min(1, progress ?? 0));
+  if (clampedProgress <= 0 || clampedProgress >= 1) {
+    return { x: 0, y: 0 };
+  }
+
+  const deltaX = pointerX - originX;
+  const deltaY = pointerY - originY;
+  const distance = Math.hypot(deltaX, deltaY);
+  if (distance <= 0) {
+    return { x: 0, y: 0 };
+  }
+
+  const limitedDistance = Math.min(distance, maxDistancePx);
+  const influence = Math.sin(clampedProgress * Math.PI);
+  const scale = (limitedDistance / distance) * influence;
+
+  return {
+    x: deltaX * scale,
+    y: deltaY * scale
   };
 }
 
