@@ -4,6 +4,7 @@ import {
   BUILD_PREVIEW_RELEASE_RADIUS_PX,
   getBuildPickupLaunchBias,
   getBuildPickupLaunchMotion,
+  getBuildTargetHandoffDelayMs,
   getMagneticBuildTarget,
   getShortestRotationDelta
 } from "../../utils/buildPlacementPreviewMotion";
@@ -79,7 +80,7 @@ describe("buildPlacementPreviewMotion", () => {
     const cityLaunch = getBuildPickupLaunchMotion("city");
 
     expect(roadLaunch.totalDurationMs).toBeLessThanOrEqual(500);
-    expect(roadLaunch.pressDurationMs).toBeGreaterThan(0);
+    expect(roadLaunch.pressDurationMs).toBeGreaterThanOrEqual(56);
     expect(roadLaunch.liftDurationMs).toBeGreaterThan(roadLaunch.pressDurationMs);
     expect(roadLaunch.settleDurationMs).toBeGreaterThan(0);
     expect(roadLaunch.startOffsetY).toBeGreaterThanOrEqual(0);
@@ -88,6 +89,13 @@ describe("buildPlacementPreviewMotion", () => {
     expect(roadLaunch.settleScale).toBe(1);
     expect(cityLaunch.peakOffsetY).toBeLessThan(-20);
     expect(cityLaunch.peakOffsetY).toBeLessThan(roadLaunch.startOffsetY);
+  });
+
+  it("keeps the road follower visible a bit longer before handing off to the edge-local preview", () => {
+    expect(getBuildTargetHandoffDelayMs("road")).toBeGreaterThan(
+      getBuildTargetHandoffDelayMs("city")
+    );
+    expect(getBuildTargetHandoffDelayMs("road")).toBeGreaterThanOrEqual(140);
   });
 
   it("adds a small cursor-directed drift during the dock launch", () => {

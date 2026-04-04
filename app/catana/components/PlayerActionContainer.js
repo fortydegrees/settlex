@@ -23,7 +23,7 @@ import {
 import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 const SHOW_STATUS_TEXT = true;
-const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 84;
+const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
 
 const formatTimer = (ms) => {
   if (ms == null) return null;

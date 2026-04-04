@@ -14,6 +14,18 @@ const SELECTED_LIFT_PX = -2;
 const ICON_PRELAUNCH_SQUASH_SCALE_X = 1.1;
 const ICON_PRELAUNCH_SQUASH_SCALE_Y = 0.84;
 const ICON_PRELAUNCH_SQUASH_Y_PX = 2;
+const cubicOut = (t) => 1 - (1 - t) ** 3;
+const cubicIn = (t) => t ** 3;
+const ICON_PRELAUNCH_PRESS_IN_CONFIG = {
+  duration: 112,
+  easing: cubicOut,
+  clamp: true
+};
+const ICON_PRELAUNCH_RELEASE_CONFIG = {
+  duration: 92,
+  easing: cubicIn,
+  clamp: true
+};
 
 export const DockCard = ({ action }) => {
   const cardRef = React.useRef(null);
@@ -85,13 +97,25 @@ export const DockCard = ({ action }) => {
       squashResetTimeoutRef.current = null;
     }
     if (preLaunchDelayMs > 0) {
-      iconScaleX.start(ICON_PRELAUNCH_SQUASH_SCALE_X);
-      iconScaleY.start(ICON_PRELAUNCH_SQUASH_SCALE_Y);
-      iconY.start(ICON_PRELAUNCH_SQUASH_Y_PX);
+      iconScaleX.start(ICON_PRELAUNCH_SQUASH_SCALE_X, {
+        config: ICON_PRELAUNCH_PRESS_IN_CONFIG
+      });
+      iconScaleY.start(ICON_PRELAUNCH_SQUASH_SCALE_Y, {
+        config: ICON_PRELAUNCH_PRESS_IN_CONFIG
+      });
+      iconY.start(ICON_PRELAUNCH_SQUASH_Y_PX, {
+        config: ICON_PRELAUNCH_PRESS_IN_CONFIG
+      });
       squashResetTimeoutRef.current = window.setTimeout(() => {
-        iconScaleX.start(1);
-        iconScaleY.start(1);
-        iconY.start(0);
+        iconScaleX.start(1, {
+          config: ICON_PRELAUNCH_RELEASE_CONFIG
+        });
+        iconScaleY.start(1, {
+          config: ICON_PRELAUNCH_RELEASE_CONFIG
+        });
+        iconY.start(0, {
+          config: ICON_PRELAUNCH_RELEASE_CONFIG
+        });
         squashResetTimeoutRef.current = null;
       }, preLaunchDelayMs);
     }

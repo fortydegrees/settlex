@@ -12,6 +12,7 @@ import {
   getBuildPickupOrigin,
   getBuildPickupLaunchBias,
   getBuildPickupLaunchMotion,
+  getBuildTargetHandoffDelayMs,
   getBuildPreviewFrame,
   getBuildPreviewLeanAngle,
   getBuildPreviewViewportScale,
@@ -21,7 +22,6 @@ import {
 } from "./utils/buildPlacementPreviewMotion";
 
 const PREVIEW_BASE_SIZE = 56;
-const LOCKED_TARGET_HANDOFF_DELAY_MS = 96;
 const PREVIEW_SHADOW_GROUND_OFFSET_FACTOR = 0.42;
 const FREE_FOLLOW_SPRING = {
   stiffness: 150,
@@ -143,6 +143,10 @@ export function BuildPlacementPreview({
     () => getBuildPickupLaunchMotion(pieceType),
     [pieceType]
   );
+  const targetPreviewHandoffDelayMs = useMemo(
+    () => getBuildTargetHandoffDelayMs(pieceType),
+    [pieceType]
+  );
 
   const clearHandoffTimer = useCallback(() => {
     if (handoffTimeoutRef.current != null) {
@@ -185,9 +189,9 @@ export function BuildPlacementPreview({
 
         setShowTargetPreview(true);
         handoffTimeoutRef.current = null;
-      }, LOCKED_TARGET_HANDOFF_DELAY_MS);
+      }, targetPreviewHandoffDelayMs);
     },
-    [clearHandoffTimer, reduceMotion]
+    [clearHandoffTimer, reduceMotion, targetPreviewHandoffDelayMs]
   );
 
   useEffect(() => {
