@@ -17,3 +17,56 @@ export function findBoughtDevCardType({ beforeCards = [], afterCards = [] } = {}
 
   return null;
 }
+
+export function getDevCardRevealDurations(reducedMotion = false) {
+  if (reducedMotion) {
+    return {
+      travelToCenter: 0.18,
+      backReveal: 0.1,
+      holdAtCenter: 0.08,
+      flip: 0.18,
+      holdOnFace: 0.16,
+      travelToHand: 0.34,
+    };
+  }
+
+  return {
+    travelToCenter: 0.36,
+    backReveal: 0.16,
+    holdAtCenter: 0.14,
+    flip: 0.28,
+    holdOnFace: 0.42,
+    travelToHand: 0.6,
+  };
+}
+
+export function getHiddenDevCardType({
+  pendingReveal = null,
+  activeReveal = null,
+  playerId = null,
+  playerDevCards = [],
+} = {}) {
+  if (playerId == null) return null;
+
+  if (activeReveal?.cardType && String(activeReveal.playerId) === String(playerId)) {
+    return activeReveal.cardType;
+  }
+
+  if (pendingReveal && String(pendingReveal.playerId) === String(playerId)) {
+    return findBoughtDevCardType({
+      beforeCards: pendingReveal.beforeCards,
+      afterCards: playerDevCards,
+    });
+  }
+
+  return null;
+}
+
+export function removeDevCardFromHand(cards = [], cardType = null) {
+  if (!cardType) return [...cards];
+
+  const removeIndex = cards.findIndex((candidate) => candidate === cardType);
+  if (removeIndex === -1) return [...cards];
+
+  return cards.filter((_, index) => index !== removeIndex);
+}

@@ -2901,3 +2901,15 @@
   - `app/catana/DevCardPurchaseReveal.js` now stores `onComplete` in a ref and keys the main GSAP effect only on `reveal`, so parent rerenders no longer restart the animation.
 - Verification for the dev-card reveal jitter fix:
   - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js`
+- Refined the dev-card purchase reveal pacing and hand ownership:
+  - slowed the private reveal into clearer stages: longer dock preload, slower travel to center, a short hold before flip, a longer post-flip hold, and a return-to-hand travel aligned to the resource-card travel timing (`0.6s`, `power2.out`),
+  - moved the center reveal slightly higher on screen so it reads as a lift out of the dock instead of a short hop,
+  - the newly bought dev card is now hidden from the local `DevCardDisplay` while the reveal is pending or active, so it does not appear in the hand before the card physically lands there.
+- Current fix:
+  - `app/catana/utils/devCardPurchaseReveal.js` now owns the staged reveal timings plus helper logic for temporarily hiding the bought dev card from the visible hand,
+  - `app/catana/DevCardPurchaseReveal.js` now uses those staged timings and adds a center hold before the flip plus a longer face hold before the return flight,
+  - `app/catana/GameScreen.js` now computes a hidden purchased card type from pending/active local reveal state and removes exactly one matching card from the displayed hand until the reveal completes,
+  - `app/catana/components/PlayerActionContainer.js` gives `buy dev` a longer dock preload delay than the build-piece buttons.
+- Verification for the dev-card reveal pacing/hand-ownership refinement:
+  - `pnpm exec vitest run app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js app/catana/components/PlayerActionContainer.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`

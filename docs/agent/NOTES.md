@@ -1970,3 +1970,11 @@
   - `DevCardPurchaseReveal` owns a long-running GSAP timeline, so it must not depend on callback props whose identity changes every parent render.
   - `GameScreen` rerenders frequently during live play because of timer/presence updates; if the reveal effect depends on an inline `onComplete`, the card can visibly jump back to its start/midpoint as the effect is torn down and recreated.
   - keep the reveal effect keyed to `reveal` state only, and read completion handlers through a ref or another stable indirection.
+  - local hand rendering also needs to respect reveal ownership:
+    - when the bought dev card has already arrived in authoritative player state but its private reveal is still pending/playing, hide exactly one matching card from `DevCardDisplay`,
+    - unhide it only after the reveal finishes its flight into the hand, otherwise the card appears in the dock-side hand before the animation lands and breaks the illusion.
+  - the dev-card reveal reads better with a more staged rhythm than the build pickup:
+    - longer dock preload,
+    - visible pause at center before the flip,
+    - another pause on the revealed face,
+    - then a `0.6s` `power2.out` return to hand matching the resource-card travel feel.

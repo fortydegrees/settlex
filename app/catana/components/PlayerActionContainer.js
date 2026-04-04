@@ -24,6 +24,7 @@ import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 const SHOW_STATUS_TEXT = true;
 const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
+const DEV_CARD_PRELAUNCH_DELAY_MS = 240;
 
 const formatTimer = (ms) => {
   if (ms == null) return null;
@@ -79,6 +80,7 @@ export const PlayerActionContainer = ({
   onTradeClick,
   onDevCardPurchaseStart,
   devCardDisplayRef,
+  displayDevCards,
   isActive,
   statusType,
   gameStatus,
@@ -226,7 +228,7 @@ export const PlayerActionContainer = ({
       count: 0,
       enabled: false,
       style: null,
-      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
+      preLaunchDelayMs: DEV_CARD_PRELAUNCH_DELAY_MS,
     },
     null
   ];
@@ -383,7 +385,7 @@ export const PlayerActionContainer = ({
           {/* Dev Card Display */}
           <div className="absolute left-full ml-0 bottom-[-2px]">
             <DevCardDisplay
-              cards={player.devCards}
+              cards={displayDevCards ?? player.devCards}
               playableCountsByType={devPlayableCountsByType}
               onPlayCard={(card) => moves.playDevCardStart(card)}
               activeCardType={activeDevCardType}

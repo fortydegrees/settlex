@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { Howl } from "howler";
+import { getDevCardRevealDurations } from "./utils/devCardPurchaseReveal";
 
 const DEV_CARD_FACE_SVGS = Object.freeze({
   knight: "/svgs/cards/development/knight.svg",
@@ -18,29 +19,6 @@ const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const getCenterCardWidth = () => {
   if (typeof window === "undefined") return 140;
   return Math.max(120, Math.min(156, window.innerWidth * 0.12));
-};
-
-const getRevealDurations = () => {
-  if (
-    typeof window !== "undefined" &&
-    window.matchMedia?.(REDUCED_MOTION_QUERY)?.matches
-  ) {
-    return {
-      travelToCenter: 0.14,
-      backReveal: 0.08,
-      flip: 0.14,
-      hold: 0.18,
-      travelToHand: 0.34,
-    };
-  }
-
-  return {
-    travelToCenter: 0.22,
-    backReveal: 0.12,
-    flip: 0.24,
-    hold: 0.3,
-    travelToHand: 0.5,
-  };
 };
 
 export function DevCardPurchaseReveal({ reveal, onComplete }) {
@@ -88,14 +66,17 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     const centerX =
       typeof window === "undefined" ? startX : window.innerWidth / 2;
     const centerY =
-      typeof window === "undefined" ? startY : window.innerHeight / 2;
+      typeof window === "undefined" ? startY : window.innerHeight * 0.44;
     const centerCardWidth = getCenterCardWidth();
     const centerCardHeight = centerCardWidth * CARD_ASPECT_RATIO;
     const destinationScale = Math.max(
       0.42,
       Math.min(1, reveal.destinationRect.height / centerCardHeight)
     );
-    const durations = getRevealDurations();
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.(REDUCED_MOTION_QUERY)?.matches;
+    const durations = getDevCardRevealDurations(prefersReducedMotion);
 
     gsap.set(actorNode, {
       x: startX,
@@ -150,12 +131,13 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       },
       "<"
     );
+    timeline.to({}, { duration: durations.holdAtCenter });
     timeline.to(flipNode, {
       rotationY: 180,
       duration: durations.flip,
       ease: "power1.inOut",
     });
-    timeline.to({}, { duration: durations.hold });
+    timeline.to({}, { duration: durations.holdOnFace });
     timeline.call(() => travelHowlRef.current?.play());
     timeline.to(actorNode, {
       x: endX,
