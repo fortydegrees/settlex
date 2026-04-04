@@ -2913,3 +2913,17 @@
 - Verification for the dev-card reveal pacing/hand-ownership refinement:
   - `pnpm exec vitest run app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js app/catana/components/PlayerActionContainer.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Fixed the first-dev-card reveal drop and made the sequence read as distinct GSAP stages:
+  - root cause of the occasional first-click no-show was `DevCardDisplay` unmounting entirely when the bought card was temporarily hidden from the visible hand, leaving no destination rect for the reveal to fly into,
+  - `DevCardDisplay` can now stay mounted as an empty destination shell during the private reveal, so first-buy has a stable landing target,
+  - removed the old `devcard-pop` hand entry animation from `DevCardDisplay`; the private purchase reveal now owns the motion instead of fighting a second local pop in the hand,
+  - re-staged `DevCardPurchaseReveal` into clearer beats with pauses between travel, back reveal, flip, and return-to-hand.
+- Current fix:
+  - `app/catana/components/DevCardDisplay.js` now accepts `forceMount` and keeps a real shell mounted even when `cards` is temporarily empty,
+  - `app/catana/components/DevCardDisplay.css` no longer defines the legacy `devcard-pop` keyframes,
+  - `app/catana/components/PlayerActionContainer.js` and `app/catana/GameScreen.js` now keep that shell mounted only while a bought card is hidden during the active local reveal,
+  - `app/catana/utils/devCardPurchaseReveal.js` now exposes the more explicitly staged timing profile,
+  - `app/catana/DevCardPurchaseReveal.js` now runs those stages sequentially instead of overlapping them into one rushed motion.
+- Verification for the first-buy shell + staged-timeline refinement:
+  - `pnpm exec vitest run app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js app/catana/components/PlayerActionContainer.js app/catana/components/DevCardDisplay.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`

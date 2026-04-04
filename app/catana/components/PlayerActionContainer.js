@@ -81,6 +81,7 @@ export const PlayerActionContainer = ({
   onDevCardPurchaseStart,
   devCardDisplayRef,
   displayDevCards,
+  keepDevCardShellMounted,
   isActive,
   statusType,
   gameStatus,
@@ -391,6 +392,7 @@ export const PlayerActionContainer = ({
               activeCardType={activeDevCardType}
               showCountBadge={SHOW_PLAYER_HAND_BADGES}
               containerRef={devCardDisplayRef}
+              forceMount={Boolean(keepDevCardShellMounted)}
             />
           </div>
         </div>

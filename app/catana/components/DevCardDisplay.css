@@ -32,21 +32,6 @@
   box-shadow: 0 6px 12px rgba(15, 23, 42, 0.25);
 }
 
-.devcard-pop {
-  animation: devcard-pop 180ms ease-out;
-}
-
-@keyframes devcard-pop {
-  0% {
-    transform: scale(0.96);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .devcard-box {
     transition: none;
@@ -54,9 +39,5 @@
 
   .devcard-card {
     transition: none;
-  }
-
-  .devcard-pop {
-    animation: none;
   }
 }

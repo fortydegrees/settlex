@@ -58,4 +58,15 @@ describe("DevCardDisplay", () => {
     expect(contents).toMatch(/playableCountsByType/);
     expect(contents).toMatch(/getPlayableDevCardGroups/);
   });
+
+  it("can stay mounted as an empty destination shell during a reveal", () => {
+    const contents = fs.readFileSync(devCardDisplayPath, "utf8");
+    expect(contents).toMatch(/forceMount\s*=\s*false/);
+    expect(contents).toMatch(/if\s*\(cards\.length\s*===\s*0\s*&&\s*!forceMount\)/);
+  });
+
+  it("does not rely on the legacy devcard-pop entry animation class", () => {
+    const contents = fs.readFileSync(devCardDisplayPath, "utf8");
+    expect(contents).not.toContain("devcard-pop");
+  });
 });

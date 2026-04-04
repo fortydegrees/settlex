@@ -1975,6 +1975,11 @@
     - unhide it only after the reveal finishes its flight into the hand, otherwise the card appears in the dock-side hand before the animation lands and breaks the illusion.
   - the dev-card reveal reads better with a more staged rhythm than the build pickup:
     - longer dock preload,
-    - visible pause at center before the flip,
+    - visible pause after the center arrival before the card back appears,
+    - another pause after the back reveal before the flip,
     - another pause on the revealed face,
     - then a `0.6s` `power2.out` return to hand matching the resource-card travel feel.
+  - first-buy edge case:
+    - if the bought card is temporarily hidden from the visible hand during the private reveal, `DevCardDisplay` must still keep a mounted shell/ref alive; otherwise the reveal has no destination rect and can fail to appear at all.
+    - this is separate from the old hand pop animation and should stay even if the visible hand contents are empty for a moment.
+  - the old `devcard-pop` hand entry animation is now legacy and should not be part of the private purchase reveal path; the reveal itself owns that motion sequence.
