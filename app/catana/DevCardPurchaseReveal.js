@@ -25,8 +25,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
   const actorRef = useRef(null);
   const emblemRef = useRef(null);
   const flipRef = useRef(null);
-  const backFaceRef = useRef(null);
-  const frontFaceRef = useRef(null);
+  const cardFaceRef = useRef(null);
   const popHowlRef = useRef(null);
   const travelHowlRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
@@ -55,9 +54,8 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     const actorNode = actorRef.current;
     const emblemNode = emblemRef.current;
     const flipNode = flipRef.current;
-    const backFaceNode = backFaceRef.current;
-    const frontFaceNode = frontFaceRef.current;
-    if (!reveal || !actorNode || !emblemNode || !flipNode || !backFaceNode || !frontFaceNode) {
+    const cardFaceNode = cardFaceRef.current;
+    if (!reveal || !actorNode || !emblemNode || !flipNode || !cardFaceNode) {
       return undefined;
     }
     if (!reveal.triggerRect || !reveal.destinationRect) {
@@ -65,6 +63,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       return undefined;
     }
 
+    const revealCardSrc = DEV_CARD_FACE_SVGS[reveal.cardType] ?? DEV_CARD_BACK_SVG;
     const startX = reveal.triggerRect.left + reveal.triggerRect.width / 2;
     const startY = reveal.triggerRect.top + reveal.triggerRect.height / 2;
     const endX = reveal.destinationRect.left + reveal.destinationRect.width / 2;
@@ -104,17 +103,9 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       transformPerspective: 1000,
       transformStyle: "preserve-3d",
     });
-    gsap.set(backFaceNode, {
+    cardFaceNode.setAttribute("src", DEV_CARD_BACK_SVG);
+    gsap.set(cardFaceNode, {
       autoAlpha: 1,
-      rotationY: 0,
-      transformPerspective: 1000,
-      transformStyle: "preserve-3d",
-    });
-    gsap.set(frontFaceNode, {
-      autoAlpha: 0,
-      rotationY: 0,
-      transformPerspective: 1000,
-      transformStyle: "preserve-3d",
     });
 
     const timeline = gsap.timeline({
@@ -160,8 +151,9 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       duration: durations.flip / 2,
       ease: "power1.in",
     });
-    timeline.set(backFaceNode, { autoAlpha: 0 });
-    timeline.set(frontFaceNode, { autoAlpha: 1, rotationY: 0 });
+    timeline.call(() => {
+      cardFaceNode.setAttribute("src", revealCardSrc);
+    });
     timeline.set(flipNode, { rotationY: -90 });
     timeline.to(flipNode, {
       rotationY: 0,
@@ -201,19 +193,8 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
         />
         <div ref={flipRef} className="absolute inset-0">
           <img
-            ref={backFaceRef}
+            ref={cardFaceRef}
             src={DEV_CARD_BACK_SVG}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
-            style={{
-              backfaceVisibility: "hidden",
-              WebkitBackfaceVisibility: "hidden",
-            }}
-          />
-          <img
-            ref={frontFaceRef}
-            src={DEV_CARD_FACE_SVGS[reveal.cardType] ?? DEV_CARD_BACK_SVG}
             alt=""
             draggable={false}
             className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
