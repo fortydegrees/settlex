@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-04-04, preload timer no longer cancels before road lock)
+- Fixed the real road-hover regression introduced by the dock preload work.
+- Root cause:
+- `BuildPlacementPreview` owned the `launchReady` timer in one effect,
+- but the main animation effect cleanup was also clearing that timer,
+- so when build targets registered during the preload window and triggered a rerender, the timer could be canceled before it fired.
+- Result:
+- the picked-up road still followed the cursor, but it stayed in the prelaunch branch (`launchReady === false`), so it never locked onto action targets and never rotated off the default vertical angle.
+- Current fix:
+- `app/catana/BuildPlacementPreview.js` no longer clears the preload timer from the broad animation-effect cleanup,
+- timer cleanup now stays scoped to the dedicated preload-timer effect and the explicit inactive/reset path.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- `pnpm exec eslint app/catana/BuildPlacementPreview.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
+
 ## Status (2026-04-04, road target handoff now waits for visible turn-in)
 - Fixed the remaining road-hover presentation bug where the floating road could hand off to the edge-local flashing preview before its own turn into the target edge was readable.
 - Root cause:

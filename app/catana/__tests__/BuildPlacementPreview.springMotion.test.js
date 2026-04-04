@@ -40,5 +40,8 @@ describe("BuildPlacementPreview spring motion", () => {
     expect(contents).toContain("isBuildTargetHandoffReady");
     expect(contents).toContain("targetLockStartedAtMsRef");
     expect(contents).toContain('currentRotationRef.current = pieceType === "road" ? 90 : 0');
+    expect(contents).not.toContain(
+      "gsap.killTweensOf(graphicNode);\n      clearLaunchReadyTimer();"
+    );
   });
 });

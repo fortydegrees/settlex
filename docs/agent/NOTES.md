@@ -1,5 +1,15 @@
 # NOTES
 
+- Build pickup preload timer ownership note:
+- the `launchReady` timer belongs only to the dedicated preload-timer effect plus the explicit inactive/reset path.
+- Do not clear that timer from the main animation-effect cleanup in `BuildPlacementPreview.js`.
+- Reason:
+- build target registration can rerender the preview during the hidden preload window,
+- and broad cleanup there will cancel the timer before it fires,
+- leaving `launchReady === false` forever for that pickup.
+- Symptom:
+- the piece still follows the cursor, but roads never lock onto action targets and therefore never rotate off the default vertical angle.
+
 - Road target handoff note:
 - the road follower-to-edge handoff cannot stay purely time-based.
 - Current working rule:
