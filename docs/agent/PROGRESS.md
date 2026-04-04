@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-04-04, dock preload handoff regressions fixed)
+- Fixed the regressions introduced by the dock-icon pre-squash pass:
+- the detached `road` / `settlement` / `city` piece now stays fully hidden until the preload releases,
+- the hidden preload window keeps tracking the live pointer so the piece launches toward the current cursor again instead of sticking to the dock origin,
+- the dock icon shell is back to the old centered footprint so the build icons no longer sit misaligned in their cards.
+- Implementation shape:
+- `app/catana/BuildPlacementPreview.js` now keeps the visual preview frozen at the dock origin only while `launchReady` is false, but still updates `desiredPositionRef` from the latest pointer coordinates during that hidden preload,
+- the same file also keeps the road's hidden baseline rotation at `90deg` during the preload hold,
+- `app/catana/components/ActionsDock/dockStyles.css` restores the centered icon shell sizing (`80%` shell, `100%` image within it) instead of stretching the wrapper to the full card.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
+- `pnpm exec vitest run app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- `pnpm exec eslint app/catana/components/ActionsDock/DockCard.js app/catana/components/PlayerActionContainer.js app/catana/Board.js app/catana/BuildPlacementPreview.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
+
 ## Status (2026-04-04, dock icon pre-squash added before build launch)
 - Added a short dock-icon pre-squash before `road` / `settlement` / `city` pickup launch:
 - the icon inside the dock button compresses briefly,

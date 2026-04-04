@@ -27,6 +27,9 @@ describe("BuildPlacementPreview spring motion", () => {
     expect(contents).toContain("launchDelayMs");
     expect(contents).toContain("startedAtMs");
     expect(contents).toContain("launchReady");
+    expect(contents).toContain("launchReadyRef.current");
+    expect(contents).toContain("desiredPositionRef.current = {\n          x: pointerRef.current.x,");
+    expect(contents).toContain("currentPositionRef.current = origin");
     expect(contents).toContain('pieceType === "road"');
     expect(contents).toContain('pieceType === "settlement"');
     expect(contents).toContain('pieceType === "city"');

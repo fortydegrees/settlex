@@ -1,5 +1,19 @@
 # NOTES
 
+- Dock preload handoff note:
+- if the build preview is hidden behind a prelaunch squash, do not keep resetting its desired target back to the dock origin for the whole delay.
+- Current working shape:
+- freeze the rendered preview at the dock-origin pickup point while the icon preload runs,
+- but keep `desiredPositionRef` synced to the live pointer so the preview can appear on release already heading toward the current cursor.
+- Guardrail:
+- the build piece should not become visible until the preload releases, and the road's hidden baseline rotation should stay at the same vertical `90deg` orientation used by the rendered road sprite.
+
+- Dock build icon sizing note:
+- the Catana dock build icons should keep the older centered shell footprint:
+- `.card__img-shell` at `80%` width/height,
+- `.card__img` filling that shell at `100%`.
+- Do not stretch the shell itself to the whole card; that shifts the piece art off-center inside the button.
+
 - Dock icon preload note:
 - the Catana build-button preload should animate the icon inside the card, not the whole dock card.
 - Current approved shape:
