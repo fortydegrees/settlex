@@ -50,8 +50,7 @@ import { createResourceDistributionRunner } from "./effects/resourceDistribution
 import { createPiecePlacementRunner } from "./effects/placePiece";
 import {
   findBoughtDevCardType,
-  getHiddenDevCardType,
-  removeDevCardFromHand,
+  getVisibleDevCardsDuringReveal,
 } from "./utils/devCardPurchaseReveal";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
@@ -615,22 +614,23 @@ export function GameScreen(bgioProps) {
 
   const playerDevCards = player?.devCards ?? null;
   const playerRevealId = player?.id ?? null;
-  const hiddenDevCardType = getHiddenDevCardType({
+  const displayDevCards = getVisibleDevCardsDuringReveal({
     pendingReveal: pendingDevCardReveal,
     activeReveal: activeDevCardReveal,
     playerId: playerRevealId,
     playerDevCards: playerDevCards ?? [],
   });
-  const displayPlayer =
-    !player || !hiddenDevCardType
-      ? player
-      : {
-          ...player,
-          devCards: removeDevCardFromHand(
-            player.devCards ?? [],
-            hiddenDevCardType
-          ),
-        };
+  const revealInFlight =
+    (pendingDevCardReveal &&
+      String(pendingDevCardReveal.playerId) === String(playerRevealId)) ||
+    (activeDevCardReveal &&
+      String(activeDevCardReveal.playerId) === String(playerRevealId));
+  const displayPlayer = !player
+    ? player
+    : {
+        ...player,
+        devCards: displayDevCards,
+      };
 
   useEffect(() => {
     if (!pendingDevCardReveal || activeDevCardReveal) return;
@@ -651,6 +651,7 @@ export function GameScreen(bgioProps) {
     setActiveDevCardReveal({
       playerId: playerRevealId,
       cardType,
+      beforeCards: pendingDevCardReveal.beforeCards,
       triggerRect: pendingDevCardReveal.triggerRect,
       destinationRect,
       launchDelayMs: pendingDevCardReveal.preLaunchDelayMs ?? 0,
@@ -1052,7 +1053,7 @@ TODO: accurately colour it
           onDevCardPurchaseStart={setPendingDevCardReveal}
           devCardDisplayRef={devCardDisplayRef}
           displayDevCards={displayPlayer?.devCards ?? null}
-          keepDevCardShellMounted={Boolean(hiddenDevCardType)}
+          keepDevCardShellMounted={Boolean(revealInFlight)}
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}

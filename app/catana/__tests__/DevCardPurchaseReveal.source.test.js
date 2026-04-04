@@ -20,7 +20,8 @@ describe("DevCardPurchaseReveal source", () => {
     expect(source).toContain("const frontFaceRef = useRef(null)");
     expect(source).toContain("gsap.set(backFaceNode");
     expect(source).toContain("gsap.set(frontFaceNode");
-    expect(source).toContain("timeline.to(backFaceNode");
-    expect(source).toContain("timeline.to(frontFaceNode");
+    expect(source).toContain("timeline.to(flipNode");
+    expect(source).toContain("timeline.set(backFaceNode, { autoAlpha: 0 })");
+    expect(source).toContain("timeline.set(frontFaceNode, { autoAlpha: 1 })");
   });
 });
