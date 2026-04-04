@@ -24,6 +24,7 @@ export function ActionNode({
   buildingColor,
   showIdleCircle = true,
   registerBuildTarget = null,
+  showRegisteredHoverPreview = false,
   buildTargetMeta = null,
   themeId,
 }) {
@@ -43,14 +44,17 @@ export function ActionNode({
   const isHovered = hoveredNode === nodeId;
   const isNodeType = type === "node";
   const isCity = buildingType === "city";
+  const isActivePreviewTarget = isHovered || showRegisteredHoverPreview;
   const buildingFile =
     buildingType && buildingColor
       ? getPieceSvgFile(buildingType, buildingColor)
       : null;
-  const showCircleVisual = showIdleCircle || isHovered;
+  const showCircleVisual = showIdleCircle || isActivePreviewTarget;
   const buildTargetRotationDegrees = buildTargetMeta?.rotationDegrees ?? 0;
+  const showPiecePreview =
+    showRegisteredHoverPreview || (!registerBuildTarget && isHovered);
 
-  const gradientClass = isHovered && isNodeType
+  const gradientClass = isActivePreviewTarget && isNodeType
     ? "[background-image:radial-gradient(70%_70%_at_50%_50%,_rgba(0,0,0,0.7)_0%,_rgba(0,0,0,0)_100%)]"
     : "[background-image:radial-gradient(50%_50%_at_50%_50%,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_100%)]";
 
@@ -91,7 +95,11 @@ export function ActionNode({
           borderColor: "#FFFFFF",
           borderWidth: 1.2,
           opacity: showCircleVisual
-            ? hoveredNode ? (isHovered ? 1 : 0.4) : 0.8
+            ? hoveredNode != null || showRegisteredHoverPreview
+              ? isActivePreviewTarget
+                ? 1
+                : 0.4
+              : 0.8
             : 0,
           zIndex: 2,
         }}
@@ -99,7 +107,7 @@ export function ActionNode({
         onMouseEnter={() => setHoveredNode(nodeId)}
         onMouseLeave={() => setHoveredNode(null)}
       />
-      {!registerBuildTarget && isHovered && (
+      {showPiecePreview && (
         isNodeType ? (
           <Piece
             buildingSVG={getThemedSvgPath(themeId, buildingFile)}

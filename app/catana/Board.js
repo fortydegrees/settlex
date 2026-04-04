@@ -104,6 +104,10 @@ export function CatanBoard({
     {}
   );
   const [buildTargetElementsById, setBuildTargetElementsById] = useState({});
+  const [buildPickupPresentation, setBuildPickupPresentation] = useState({
+    targetId: null,
+    showTargetPreview: false
+  });
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
   const [localPendingCityNodeId, setLocalPendingCityNodeId] = useState(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -164,6 +168,9 @@ export function CatanBoard({
     activeBuildPickupPieceType === explicitBuildPieceType;
   const isRobberPlacementActive =
     isInteractiveStageOwner && playerStage === "moveRobber";
+  const activeBuildPresentationTargetId = buildPickupPresentation.showTargetPreview
+    ? buildPickupPresentation.targetId
+    : null;
   const resolvedRobberPlacementMotionMode = useMemo(
     () =>
       resolveRobberPlacementMotionMode({
@@ -190,6 +197,18 @@ export function CatanBoard({
       setLocalPendingCityNodeId(null);
     }
   }, [localPendingCityNodeId, activeCityPlacementId]);
+
+  useEffect(() => {
+    if (isBuildPickupActive) {
+      return;
+    }
+
+    setBuildPickupPresentation((currentPresentation) =>
+      currentPresentation.targetId == null && !currentPresentation.showTargetPreview
+        ? currentPresentation
+        : { targetId: null, showTargetPreview: false }
+    );
+  }, [isBuildPickupActive]);
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
@@ -781,6 +800,9 @@ export function CatanBoard({
               registerBuildTarget={
                 showMainNodes ? handleBuildTargetRegister : null
               }
+              showRegisteredHoverPreview={
+                activeBuildPresentationTargetId === nodeId
+              }
               themeId={themeId}
             />
           );
@@ -945,6 +967,9 @@ export function CatanBoard({
           registerBuildTarget={
             playerAction === "placeRoad" ? handleBuildTargetRegister : null
           }
+          showRegisteredHoverPreview={
+            activeBuildPresentationTargetId === edgeId
+          }
           onPlaceCommitted={handleBuildCommit}
           themeId={themeId}
         />
@@ -1012,9 +1037,10 @@ export function CatanBoard({
             magneticTargets={magneticBuildTargets}
             boardViewportScale={boardViewportScale}
             themeId={themeId}
-            size={size / 1.3}
+            size={size}
             prefersReducedMotion={prefersReducedMotion}
             hasCoarsePointer={hasCoarsePointer}
+            onPresentationChange={setBuildPickupPresentation}
           />
         ) : null}
 

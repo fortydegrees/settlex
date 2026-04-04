@@ -24,24 +24,18 @@ export function getBuildPreviewFrame(pieceType, baseSize) {
 
   if (pieceType === "road") {
     return {
-      width: safeSize * 1.16,
-      height: safeSize * 0.3,
-      offsetY: safeSize * 0.1
+      width: safeSize,
+      height: safeSize * 0.2,
+      offsetY: 0
     };
   }
 
-  if (pieceType === "city") {
-    return {
-      width: safeSize,
-      height: safeSize,
-      offsetY: safeSize * 0.2
-    };
-  }
+  const pieceSize = safeSize * 0.8;
 
   return {
-    width: safeSize * 0.86,
-    height: safeSize * 0.86,
-    offsetY: safeSize * 0.18
+    width: pieceSize,
+    height: pieceSize,
+    offsetY: -pieceSize * 0.13
   };
 }
 
