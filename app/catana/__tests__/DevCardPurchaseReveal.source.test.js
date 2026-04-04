@@ -13,4 +13,14 @@ describe("DevCardPurchaseReveal source", () => {
     expect(source).toContain("autoAlpha: 0");
     expect(source).toContain("timeline.set(actorNode, { autoAlpha: 1 })");
   });
+
+  it("animates from card back to the bought card face explicitly", () => {
+    const source = fs.readFileSync(sourcePath, "utf8");
+    expect(source).toContain("const backFaceRef = useRef(null)");
+    expect(source).toContain("const frontFaceRef = useRef(null)");
+    expect(source).toContain("gsap.set(backFaceNode");
+    expect(source).toContain("gsap.set(frontFaceNode");
+    expect(source).toContain("timeline.to(backFaceNode");
+    expect(source).toContain("timeline.to(frontFaceNode");
+  });
 });

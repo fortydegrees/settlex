@@ -25,6 +25,8 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
   const actorRef = useRef(null);
   const emblemRef = useRef(null);
   const flipRef = useRef(null);
+  const backFaceRef = useRef(null);
+  const frontFaceRef = useRef(null);
   const popHowlRef = useRef(null);
   const travelHowlRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
@@ -53,7 +55,11 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     const actorNode = actorRef.current;
     const emblemNode = emblemRef.current;
     const flipNode = flipRef.current;
-    if (!reveal || !actorNode || !emblemNode || !flipNode) return undefined;
+    const backFaceNode = backFaceRef.current;
+    const frontFaceNode = frontFaceRef.current;
+    if (!reveal || !actorNode || !emblemNode || !flipNode || !backFaceNode || !frontFaceNode) {
+      return undefined;
+    }
     if (!reveal.triggerRect || !reveal.destinationRect) {
       onCompleteRef.current?.();
       return undefined;
@@ -95,7 +101,18 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     gsap.set(flipNode, {
       autoAlpha: 0,
       scale: 0.92,
+      transformPerspective: 1000,
+      transformStyle: "preserve-3d",
+    });
+    gsap.set(backFaceNode, {
+      autoAlpha: 1,
       rotationY: 0,
+      transformPerspective: 1000,
+      transformStyle: "preserve-3d",
+    });
+    gsap.set(frontFaceNode, {
+      autoAlpha: 0,
+      rotationY: -90,
       transformPerspective: 1000,
       transformStyle: "preserve-3d",
     });
@@ -138,10 +155,17 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       "<"
     );
     timeline.to({}, { duration: durations.holdAfterBackReveal });
-    timeline.to(flipNode, {
-      rotationY: 180,
-      duration: durations.flip,
-      ease: "power1.inOut",
+    timeline.to(backFaceNode, {
+      rotationY: 90,
+      autoAlpha: 0,
+      duration: durations.flip / 2,
+      ease: "power1.in",
+    });
+    timeline.to(frontFaceNode, {
+      rotationY: 0,
+      autoAlpha: 1,
+      duration: durations.flip / 2,
+      ease: "power1.out",
     });
     timeline.to({}, { duration: durations.holdOnFace });
     timeline.call(() => travelHowlRef.current?.play());
@@ -176,17 +200,26 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
         />
         <div ref={flipRef} className="absolute inset-0">
           <img
+            ref={backFaceRef}
             src={DEV_CARD_BACK_SVG}
             alt=""
             draggable={false}
-            className="absolute inset-0 h-full w-full object-contain drop-shadow-lg [backface-visibility:hidden]"
+            className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
           />
           <img
+            ref={frontFaceRef}
             src={DEV_CARD_FACE_SVGS[reveal.cardType] ?? DEV_CARD_BACK_SVG}
             alt=""
             draggable={false}
-            className="absolute inset-0 h-full w-full object-contain drop-shadow-lg [backface-visibility:hidden]"
-            style={{ transform: "rotateY(180deg)" }}
+            className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
           />
         </div>
       </div>
