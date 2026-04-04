@@ -22,6 +22,7 @@ export const DevCardDisplay = ({
   activeCardType,
   showCountBadge = false,
   badgeMinCount = 3,
+  containerRef = null,
 }) => {
   const { nonPlayable, playableGroups, boxWidth, groupGap } =
     useMemo(() => {
@@ -77,6 +78,7 @@ export const DevCardDisplay = ({
 
   return (
     <div
+      ref={containerRef}
       className="devcard-box devcard-pop inline-flex h-20 items-center rounded-md bg-blue-200/50 px-3 ring-2 ring-slate-300 shadow-sm origin-bottom-left relative"
       style={{ width: `${boxWidth}px` }}
     >
