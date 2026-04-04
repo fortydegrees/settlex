@@ -22,6 +22,7 @@ describe("DevCardPurchaseReveal source", () => {
     expect(source).toContain("gsap.set(frontFaceNode");
     expect(source).toContain("timeline.to(flipNode");
     expect(source).toContain("timeline.set(backFaceNode, { autoAlpha: 0 })");
-    expect(source).toContain("timeline.set(frontFaceNode, { autoAlpha: 1 })");
+    expect(source).toContain("rotationY: 0");
+    expect(source).toContain("timeline.set(frontFaceNode, { autoAlpha: 1, rotationY: 0 })");
   });
 });

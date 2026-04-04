@@ -112,7 +112,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     });
     gsap.set(frontFaceNode, {
       autoAlpha: 0,
-      rotationY: -90,
+      rotationY: 0,
       transformPerspective: 1000,
       transformStyle: "preserve-3d",
     });
@@ -161,7 +161,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       ease: "power1.in",
     });
     timeline.set(backFaceNode, { autoAlpha: 0 });
-    timeline.set(frontFaceNode, { autoAlpha: 1 });
+    timeline.set(frontFaceNode, { autoAlpha: 1, rotationY: 0 });
     timeline.set(flipNode, { rotationY: -90 });
     timeline.to(flipNode, {
       rotationY: 0,
