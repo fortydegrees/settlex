@@ -14,15 +14,12 @@ describe("DevCardPurchaseReveal source", () => {
     expect(source).toContain("timeline.set(actorNode, { autoAlpha: 1 })");
   });
 
-  it("animates from card back to the bought card face explicitly", () => {
+  it("swaps the visible card art at flip midpoint", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
-    expect(source).toContain("const backFaceRef = useRef(null)");
-    expect(source).toContain("const frontFaceRef = useRef(null)");
-    expect(source).toContain("gsap.set(backFaceNode");
-    expect(source).toContain("gsap.set(frontFaceNode");
+    expect(source).toContain("const cardFaceRef = useRef(null)");
+    expect(source).toContain("const revealCardSrc =");
     expect(source).toContain("timeline.to(flipNode");
-    expect(source).toContain("timeline.set(backFaceNode, { autoAlpha: 0 })");
-    expect(source).toContain("rotationY: 0");
-    expect(source).toContain("timeline.set(frontFaceNode, { autoAlpha: 1, rotationY: 0 })");
+    expect(source).toContain('cardFaceNode.setAttribute("src", revealCardSrc)');
+    expect(source).toContain("src={DEV_CARD_BACK_SVG}");
   });
 });

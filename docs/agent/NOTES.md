@@ -1997,3 +1997,6 @@
     - rotate the card to `90deg`, swap `back -> hidden` / `front -> visible`, then rotate back to `0deg`.
   - return leg:
     - the dev-card reveal can hang on the face for about `0.5s`, but the travel back to the hand should stay aligned to the resource-card flight feel (`0.6s`, `power2.out`) so the ending does not drag.
+  - flip ownership:
+    - the separate `backFace` / `frontFace` layering was still too brittle for this reveal and could leave the visible card showing the back after the turn.
+    - a simpler and more reliable pattern is to keep one visible card image, rotate it out to `90deg`, swap its `src` to the bought card asset at the midpoint, then rotate it back in.

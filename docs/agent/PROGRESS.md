@@ -2960,3 +2960,10 @@
 - Verification for the dev-card snapshot-hand + midpoint-swap fix:
   - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Fixed the last dev-card flip seam where the card could still appear to turn into another back instead of the bought card art.
+- Current fix:
+  - `app/catana/DevCardPurchaseReveal.js` no longer depends on separate back/front face layers during the turn,
+  - the reveal now keeps a single visible card image and swaps its `src` from the dev-card back to the bought card asset exactly at the flip midpoint before rotating back in.
+- Verification for the single-face midpoint swap:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
