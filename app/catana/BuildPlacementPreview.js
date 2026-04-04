@@ -648,7 +648,6 @@ export function BuildPlacementPreview({
       gsap.killTweensOf(visualNode);
       gsap.killTweensOf(shadowNode);
       gsap.killTweensOf(graphicNode);
-      clearLaunchReadyTimer();
       launchTimelineRef.current?.kill();
       launchTimelineRef.current = null;
       clearHandoffTimer();
