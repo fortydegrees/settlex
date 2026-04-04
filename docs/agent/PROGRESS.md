@@ -2687,3 +2687,15 @@
 - Verification for the asset-retirement compatibility pass:
   - `pnpm exec vitest run app/catana/__tests__/themeAssets.test.js app/catana/__tests__/Port.render.test.js app/catana/__tests__/effects/resourceDistribution.test.js`
   - `pnpm verify`
+- Fixed the stale explicit-build preview regression introduced by the dock pickup work:
+  - moving between nearby legal road edges or settlement nodes could leave the previous ghosted piece visible,
+  - root cause was split between overly sticky magnetic target retention in `buildPlacementPreviewMotion` and the old board hover ghosts still rendering during explicit pickup mode.
+- Current fix:
+  - `app/catana/utils/buildPlacementPreviewMotion.js` now switches immediately to a closer legal target instead of staying locked to the previous one until it fully exits the release radius,
+  - `app/catana/ActionNode.js` and `app/catana/Edge.js` now suppress their legacy hover ghosts whenever explicit build-target registration is active, so only the live pickup follower can render.
+- Added targeted regression coverage for the stale-preview path:
+  - `app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js` covers the closer-target handoff while the old target is still inside release radius,
+  - `app/catana/__tests__/BuildPickupHoverGhost.source.test.js` guards that node/edge hover ghosts stay disabled during pickup mode.
+- Verification for the stale explicit-build preview fix:
+  - `pnpm exec vitest run app/catana/__tests__/playerAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/Board.robberPlacementUx.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js`
+  - `pnpm exec eslint app/catana/ActionNode.js app/catana/Edge.js app/catana/utils/buildPlacementPreviewMotion.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`

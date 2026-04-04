@@ -99,7 +99,7 @@ export function ActionNode({
         onMouseEnter={() => setHoveredNode(nodeId)}
         onMouseLeave={() => setHoveredNode(null)}
       />
-      {isHovered && (
+      {!registerBuildTarget && isHovered && (
         isNodeType ? (
           <Piece
             buildingSVG={getThemedSvgPath(themeId, buildingFile)}

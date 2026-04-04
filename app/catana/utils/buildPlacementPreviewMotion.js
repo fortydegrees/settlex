@@ -76,18 +76,6 @@ export function getMagneticBuildTarget({
       ? null
       : normalizedTargets.find((target) => target.id === activeTargetId) ?? null;
 
-  if (activeTarget) {
-    const activeDistanceSquared = getDistanceSquared(
-      pointerX,
-      pointerY,
-      activeTarget
-    );
-
-    if (activeDistanceSquared <= releaseRadiusPx * releaseRadiusPx) {
-      return activeTarget;
-    }
-  }
-
   let closestTarget = null;
   let closestDistanceSquared = magneticRadiusPx * magneticRadiusPx;
 
@@ -100,6 +88,26 @@ export function getMagneticBuildTarget({
     closestTarget = target;
     closestDistanceSquared = distanceSquared;
   });
+
+  if (activeTarget) {
+    const activeDistanceSquared = getDistanceSquared(
+      pointerX,
+      pointerY,
+      activeTarget
+    );
+
+    if (
+      closestTarget &&
+      closestTarget.id !== activeTarget.id &&
+      closestDistanceSquared < activeDistanceSquared
+    ) {
+      return closestTarget;
+    }
+
+    if (activeDistanceSquared <= releaseRadiusPx * releaseRadiusPx) {
+      return activeTarget;
+    }
+  }
 
   return closestTarget;
 }

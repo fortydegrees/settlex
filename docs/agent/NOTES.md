@@ -1811,3 +1811,7 @@
     - palette theme CSS fallbacks therefore degrade to emoji assets instead of broken `/svgs/tile_*.svg` URLs.
   - if more base assets are retired later, update the redirect map and the `themeAssets` regression together rather than restoring dead files just to satisfy tests.
   - `app/catana/types.js` and `app/board-editor/utils/types.js` had stale hardcoded references to removed root SVGs; keep those constants aligned with whatever asset family actually remains on disk.
+- Explicit build pickup regression note:
+  - during dock-driven `road` / `settlement` / `city` placement, `BuildPlacementPreview` is now the only piece preview that should be visible.
+  - `ActionNode` and `Edge` still contain legacy hover-ghost rendering for passive/local hover affordances, but those ghosts must stay off whenever `registerBuildTarget` is present; otherwise nearby targets can double-render and look like stale magnetic previews.
+  - the magnetic helper in `app/catana/utils/buildPlacementPreviewMotion.js` should keep some hysteresis, but not at the cost of ignoring a clearly closer legal target; adjacent Catan targets are close enough that “keep lock until release radius ends” is too sticky.
