@@ -17,6 +17,7 @@ import {
   getBuildPreviewLeanAngle,
   getBuildPreviewViewportScale,
   getMagneticBuildTarget,
+  isBuildTargetHandoffReady,
   getShortestRotationDelta,
   getScaledBuildPreviewSize
 } from "./utils/buildPlacementPreviewMotion";
@@ -120,6 +121,8 @@ export function BuildPlacementPreview({
   const currentRotationRef = useRef(0);
   const desiredRotationRef = useRef(0);
   const activeTargetIdRef = useRef(null);
+  const targetLockStartedAtMsRef = useRef(null);
+  const showTargetPreviewRef = useRef(false);
   const [presentationTargetId, setPresentationTargetId] = useState(null);
   const [showTargetPreview, setShowTargetPreview] = useState(false);
   const [hasPosition, setHasPosition] = useState(false);
@@ -169,9 +172,16 @@ export function BuildPlacementPreview({
       }
 
       activeTargetIdRef.current = nextTargetId;
+      targetLockStartedAtMsRef.current =
+        nextTargetId == null
+          ? null
+          : typeof performance !== "undefined"
+            ? performance.now()
+            : Date.now();
       clearHandoffTimer();
       setPresentationTargetId(nextTargetId);
       setShowTargetPreview(false);
+      showTargetPreviewRef.current = false;
 
       if (nextTargetId == null) {
         return;
@@ -179,6 +189,11 @@ export function BuildPlacementPreview({
 
       if (reduceMotion) {
         setShowTargetPreview(true);
+        showTargetPreviewRef.current = true;
+        return;
+      }
+
+      if (pieceType === "road") {
         return;
       }
 
@@ -188,15 +203,20 @@ export function BuildPlacementPreview({
         }
 
         setShowTargetPreview(true);
+        showTargetPreviewRef.current = true;
         handoffTimeoutRef.current = null;
       }, targetPreviewHandoffDelayMs);
     },
-    [clearHandoffTimer, reduceMotion, targetPreviewHandoffDelayMs]
+    [clearHandoffTimer, pieceType, reduceMotion, targetPreviewHandoffDelayMs]
   );
 
   useEffect(() => {
     launchReadyRef.current = launchReady;
   }, [launchReady]);
+
+  useEffect(() => {
+    showTargetPreviewRef.current = showTargetPreview;
+  }, [showTargetPreview]);
 
   useEffect(() => {
     onPresentationChange?.({
@@ -290,8 +310,10 @@ export function BuildPlacementPreview({
     clearLaunchReadyTimer();
     clearHandoffTimer();
     activeTargetIdRef.current = null;
+    targetLockStartedAtMsRef.current = null;
     setPresentationTargetId(null);
     setShowTargetPreview(false);
+    showTargetPreviewRef.current = false;
     setLaunchReady(normalizedLaunchDelayMs === 0);
     return undefined;
   }, [active, clearHandoffTimer, clearLaunchReadyTimer, normalizedLaunchDelayMs]);
@@ -344,6 +366,7 @@ export function BuildPlacementPreview({
     ) {
       setHasPosition(false);
       activeTargetIdRef.current = null;
+      targetLockStartedAtMsRef.current = null;
       currentPositionRef.current = { x: null, y: null };
       desiredPositionRef.current = { x: null, y: null };
       velocityRef.current = { x: 0, y: 0 };
@@ -565,6 +588,31 @@ export function BuildPlacementPreview({
             : { x: nextVelocityX, y: nextVelocityY };
           currentPositionRef.current = nextPosition;
           currentRotationRef.current = nextRotation;
+
+          if (
+            pieceType === "road" &&
+            !reduceMotion &&
+            activeTargetIdRef.current != null &&
+            !showTargetPreviewRef.current
+          ) {
+            const lockStartedAtMs = targetLockStartedAtMsRef.current ?? tickMs;
+            const elapsedLockedMs = Math.max(0, tickMs - lockStartedAtMs);
+            if (
+              isBuildTargetHandoffReady({
+                pieceType,
+                elapsedMs: elapsedLockedMs,
+                currentRotationDegrees: nextRotation,
+                desiredRotationDegrees: desiredRotationRef.current,
+                currentX: nextPosition.x,
+                currentY: nextPosition.y,
+                desiredX,
+                desiredY
+              })
+            ) {
+              showTargetPreviewRef.current = true;
+              setShowTargetPreview(true);
+            }
+          }
 
           gsap.set(previewNode, {
             x: nextPosition.x + launchBias.x,

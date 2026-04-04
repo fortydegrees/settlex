@@ -37,6 +37,8 @@ describe("BuildPlacementPreview spring motion", () => {
     expect(contents).toContain('pieceType === "city"');
     expect(contents).toContain("getBuildPickupLaunchBias");
     expect(contents).toContain("getBuildTargetHandoffDelayMs");
+    expect(contents).toContain("isBuildTargetHandoffReady");
+    expect(contents).toContain("targetLockStartedAtMsRef");
     expect(contents).toContain('currentRotationRef.current = pieceType === "road" ? 90 : 0');
   });
 });

@@ -6,7 +6,8 @@ import {
   getBuildPickupLaunchMotion,
   getBuildTargetHandoffDelayMs,
   getMagneticBuildTarget,
-  getShortestRotationDelta
+  getShortestRotationDelta,
+  isBuildTargetHandoffReady
 } from "../../utils/buildPlacementPreviewMotion";
 
 describe("buildPlacementPreviewMotion", () => {
@@ -96,6 +97,62 @@ describe("buildPlacementPreviewMotion", () => {
       getBuildTargetHandoffDelayMs("city")
     );
     expect(getBuildTargetHandoffDelayMs("road")).toBeGreaterThanOrEqual(140);
+  });
+
+  it("keeps the road follower visible until it is close to the edge angle", () => {
+    expect(
+      isBuildTargetHandoffReady({
+        pieceType: "road",
+        elapsedMs: getBuildTargetHandoffDelayMs("road"),
+        currentRotationDegrees: 78,
+        desiredRotationDegrees: 30,
+        currentX: 120,
+        currentY: 120,
+        desiredX: 120,
+        desiredY: 120
+      })
+    ).toBe(false);
+
+    expect(
+      isBuildTargetHandoffReady({
+        pieceType: "road",
+        elapsedMs: getBuildTargetHandoffDelayMs("road"),
+        currentRotationDegrees: 37,
+        desiredRotationDegrees: 30,
+        currentX: 120,
+        currentY: 120,
+        desiredX: 120,
+        desiredY: 120
+      })
+    ).toBe(true);
+  });
+
+  it("still falls back to a time-only handoff for non-road pieces", () => {
+    expect(
+      isBuildTargetHandoffReady({
+        pieceType: "settlement",
+        elapsedMs: getBuildTargetHandoffDelayMs("city") - 1,
+        currentRotationDegrees: 0,
+        desiredRotationDegrees: 0,
+        currentX: 100,
+        currentY: 100,
+        desiredX: 100,
+        desiredY: 100
+      })
+    ).toBe(false);
+
+    expect(
+      isBuildTargetHandoffReady({
+        pieceType: "settlement",
+        elapsedMs: getBuildTargetHandoffDelayMs("city"),
+        currentRotationDegrees: 0,
+        desiredRotationDegrees: 0,
+        currentX: 100,
+        currentY: 100,
+        desiredX: 100,
+        desiredY: 100
+      })
+    ).toBe(true);
   });
 
   it("adds a small cursor-directed drift during the dock launch", () => {
