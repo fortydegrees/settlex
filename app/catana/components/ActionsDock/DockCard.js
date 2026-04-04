@@ -31,6 +31,7 @@ export const DockCard = ({ action }) => {
   const cardRef = React.useRef(null);
   const squashResetTimeoutRef = React.useRef(null);
   const [isHovered, setIsHovered] = React.useState(false);
+  const [isPrelaunchVisible, setIsPrelaunchVisible] = React.useState(false);
   const y = useSpringValue(action.selected ? SELECTED_LIFT_PX : 0, {
     config: {
       friction: 24,
@@ -78,6 +79,7 @@ export const DockCard = ({ action }) => {
       iconScaleX.start(1);
       iconScaleY.start(1);
       iconY.start(0);
+      setIsPrelaunchVisible(false);
       return;
     }
 
@@ -97,6 +99,7 @@ export const DockCard = ({ action }) => {
       squashResetTimeoutRef.current = null;
     }
     if (preLaunchDelayMs > 0) {
+      setIsPrelaunchVisible(Boolean(action.preLaunchImg));
       iconScaleX.start(ICON_PRELAUNCH_SQUASH_SCALE_X, {
         config: ICON_PRELAUNCH_PRESS_IN_CONFIG
       });
@@ -116,6 +119,7 @@ export const DockCard = ({ action }) => {
         iconY.start(0, {
           config: ICON_PRELAUNCH_RELEASE_CONFIG
         });
+        setIsPrelaunchVisible(false);
         squashResetTimeoutRef.current = null;
       }, preLaunchDelayMs);
     }
@@ -164,25 +168,65 @@ export const DockCard = ({ action }) => {
         }}
       >
         <span className="card">
-          <animated.span
-            className="card__img-shell"
-            style={{
-              scaleX: iconScaleX,
-              scaleY: iconScaleY,
-              y: iconY,
-            }}
-          >
-            <img
-              className="card__img"
-              style={action.style}
-              src={action.img}
-              alt=""
-              draggable={false}
-              onError={(event) =>
-                handleThemeImageError(event, action.fallbackImg)
-              }
-            />
-          </animated.span>
+          {action.preLaunchImg ? (
+            <>
+              <img
+                className={`card__img card__img-base ${
+                  isPrelaunchVisible ? "card__img-hidden" : ""
+                }`}
+                style={action.style}
+                src={action.img}
+                alt=""
+                draggable={false}
+                onError={(event) =>
+                  handleThemeImageError(event, action.fallbackImg)
+                }
+              />
+              <animated.span
+                className={`card__img-shell card__img-shell-prelaunch ${
+                  isPrelaunchVisible ? "card__img-shell-prelaunch-visible" : ""
+                }`}
+                style={{
+                  scaleX: iconScaleX,
+                  scaleY: iconScaleY,
+                  y: iconY,
+                }}
+              >
+                <img
+                  className="card__img card__img-prelaunch"
+                  src={action.preLaunchImg}
+                  alt=""
+                  draggable={false}
+                  onError={(event) =>
+                    handleThemeImageError(
+                      event,
+                      action.preLaunchFallbackImg ?? action.fallbackImg
+                    )
+                  }
+                />
+              </animated.span>
+            </>
+          ) : (
+            <animated.span
+              className="card__img-shell"
+              style={{
+                scaleX: iconScaleX,
+                scaleY: iconScaleY,
+                y: iconY,
+              }}
+            >
+              <img
+                className="card__img"
+                style={action.style}
+                src={action.img}
+                alt=""
+                draggable={false}
+                onError={(event) =>
+                  handleThemeImageError(event, action.fallbackImg)
+                }
+              />
+            </animated.span>
+          )}
 
           {(action.count > 0) && (
             <span className="absolute right-0 top-0 w-6 h-6 block -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50"
