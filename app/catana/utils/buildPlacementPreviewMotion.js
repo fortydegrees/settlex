@@ -144,6 +144,20 @@ export function getBuildPreviewLeanAngle(
   );
 }
 
+export function getShortestRotationDelta(
+  currentDegrees,
+  desiredDegrees
+) {
+  if (!Number.isFinite(currentDegrees) || !Number.isFinite(desiredDegrees)) {
+    return 0;
+  }
+
+  const normalizedDelta =
+    ((((desiredDegrees - currentDegrees) % 360) + 540) % 360) - 180;
+
+  return normalizedDelta === -180 ? 180 : normalizedDelta;
+}
+
 export function getBuildPickupOrigin(originRect) {
   if (!originRect) {
     return null;
