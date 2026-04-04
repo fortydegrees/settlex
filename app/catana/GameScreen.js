@@ -44,6 +44,7 @@ import { IdlePromptModal } from "./components/IdlePromptModal";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
 import { PostgameOverlay } from "./components/PostgameOverlay";
+import { DevCardPurchaseReveal } from "./DevCardPurchaseReveal";
 import { GameEffects } from "./effects/GameEffects";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
@@ -322,6 +323,8 @@ export function GameScreen(bgioProps) {
       setShowPostgame(false);
       setPlayerAction(null);
       clearBuildPickup();
+      setPendingDevCardReveal(null);
+      setActiveDevCardReveal(null);
       setShowTradeModal(false);
       setTradePresetResource(null);
     }
@@ -348,6 +351,8 @@ export function GameScreen(bgioProps) {
     setIsAcknowledgingIdle(false);
     setReadySent(false);
     setShowConnectionBanner(false);
+    setPendingDevCardReveal(null);
+    setActiveDevCardReveal(null);
     hasSeenTransportConnectionRef.current = false;
   }, [matchID]);
 
@@ -938,6 +943,11 @@ export function GameScreen(bgioProps) {
           />
         </TransformComponent>
       </TransformWrapper>
+
+      <DevCardPurchaseReveal
+        reveal={activeDevCardReveal}
+        onComplete={() => setActiveDevCardReveal(null)}
+      />
 
       <button
         type="button"
