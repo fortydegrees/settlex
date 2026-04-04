@@ -155,15 +155,16 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       "<"
     );
     timeline.to({}, { duration: durations.holdAfterBackReveal });
-    timeline.to(backFaceNode, {
+    timeline.to(flipNode, {
       rotationY: 90,
-      autoAlpha: 0,
       duration: durations.flip / 2,
       ease: "power1.in",
     });
-    timeline.to(frontFaceNode, {
+    timeline.set(backFaceNode, { autoAlpha: 0 });
+    timeline.set(frontFaceNode, { autoAlpha: 1 });
+    timeline.set(flipNode, { rotationY: -90 });
+    timeline.to(flipNode, {
       rotationY: 0,
-      autoAlpha: 1,
       duration: durations.flip / 2,
       ease: "power1.out",
     });

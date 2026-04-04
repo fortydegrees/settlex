@@ -2,8 +2,7 @@ import {
   buildDevCardCounts,
   findBoughtDevCardType,
   getDevCardRevealDurations,
-  getHiddenDevCardType,
-  removeDevCardFromHand,
+  getVisibleDevCardsDuringReveal,
 } from "../../utils/devCardPurchaseReveal";
 
 describe("devCardPurchaseReveal helpers", () => {
@@ -56,9 +55,9 @@ describe("devCardPurchaseReveal helpers", () => {
     });
   });
 
-  it("hides the bought dev card from the hand while a pending reveal resolves", () => {
+  it("keeps the visible hand on the pre-purchase snapshot while a pending reveal resolves", () => {
     expect(
-      getHiddenDevCardType({
+      getVisibleDevCardsDuringReveal({
         pendingReveal: {
           playerId: "0",
           beforeCards: ["knight"],
@@ -66,25 +65,19 @@ describe("devCardPurchaseReveal helpers", () => {
         playerId: "0",
         playerDevCards: ["knight", "monopoly"],
       })
-    ).toBe("monopoly");
+    ).toEqual(["knight"]);
   });
 
-  it("keeps hiding the bought dev card while the active reveal is still running", () => {
+  it("keeps the visible hand on the pre-purchase snapshot while the active reveal is still running", () => {
     expect(
-      getHiddenDevCardType({
+      getVisibleDevCardsDuringReveal({
         activeReveal: {
           playerId: "0",
-          cardType: "roadBuilding",
+          beforeCards: ["roadBuilding"],
         },
         playerId: "0",
         playerDevCards: ["roadBuilding", "knight"],
       })
-    ).toBe("roadBuilding");
-  });
-
-  it("removes only one matching dev card from the visible hand", () => {
-    expect(
-      removeDevCardFromHand(["knight", "roadBuilding", "knight"], "knight")
-    ).toEqual(["roadBuilding", "knight"]);
+    ).toEqual(["roadBuilding"]);
   });
 });

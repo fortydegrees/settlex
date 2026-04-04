@@ -2949,3 +2949,14 @@
 - Verification for the dev-card face-reveal + return-speed tweak:
   - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Fixed the two remaining dev-card reveal ownership bugs:
+  - the visible dev-card hand no longer tries to “hide one matching type” from the live hand during the reveal,
+  - instead, `GameScreen` now keeps rendering the exact pre-purchase hand snapshot until the reveal completes, which avoids premature reappearance and removes the ambiguity when the bought card matches an existing dev-card type,
+  - the flip now swaps back/front content at the midpoint of the rotating card container, which is more reliable than the previous per-face rotation attempt and should ensure the bought card art actually appears after the turn.
+- Current fix:
+  - `app/catana/utils/devCardPurchaseReveal.js` now exposes `getVisibleDevCardsDuringReveal(...)` and no longer relies on card-type subtraction for hand visibility,
+  - `app/catana/GameScreen.js` now stores `beforeCards` on the active reveal and keeps the displayed dev-card hand pinned to that pre-purchase snapshot while the reveal is pending/active,
+  - `app/catana/DevCardPurchaseReveal.js` now rotates `flipNode` to 90 degrees, swaps the back/front visibility, then rotates back in with the front face visible.
+- Verification for the dev-card snapshot-hand + midpoint-swap fix:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`

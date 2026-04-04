@@ -44,33 +44,21 @@ export function getDevCardRevealDurations(reducedMotion = false) {
   };
 }
 
-export function getHiddenDevCardType({
+export function getVisibleDevCardsDuringReveal({
   pendingReveal = null,
   activeReveal = null,
   playerId = null,
   playerDevCards = [],
 } = {}) {
-  if (playerId == null) return null;
+  if (playerId == null) return [...playerDevCards];
 
-  if (activeReveal?.cardType && String(activeReveal.playerId) === String(playerId)) {
-    return activeReveal.cardType;
+  if (activeReveal?.beforeCards && String(activeReveal.playerId) === String(playerId)) {
+    return [...activeReveal.beforeCards];
   }
 
   if (pendingReveal && String(pendingReveal.playerId) === String(playerId)) {
-    return findBoughtDevCardType({
-      beforeCards: pendingReveal.beforeCards,
-      afterCards: playerDevCards,
-    });
+    return [...(pendingReveal.beforeCards ?? [])];
   }
 
-  return null;
-}
-
-export function removeDevCardFromHand(cards = [], cardType = null) {
-  if (!cardType) return [...cards];
-
-  const removeIndex = cards.findIndex((candidate) => candidate === cardType);
-  if (removeIndex === -1) return [...cards];
-
-  return cards.filter((_, index) => index !== removeIndex);
+  return [...playerDevCards];
 }
