@@ -1966,3 +1966,7 @@
   - the build follower should never interpolate road angles with raw `desired - current` degree subtraction.
   - edge headings wrap around the 0/360 seam, so `90 -> 330` must rotate by `-120`, not `+240`.
   - keep shortest-arc angle math in the motion helper layer so the preview spring can stay simple and any future road-like follower reuses the same behavior.
+- Dev-card reveal note:
+  - `DevCardPurchaseReveal` owns a long-running GSAP timeline, so it must not depend on callback props whose identity changes every parent render.
+  - `GameScreen` rerenders frequently during live play because of timer/presence updates; if the reveal effect depends on an inline `onComplete`, the card can visibly jump back to its start/midpoint as the effect is torn down and recreated.
+  - keep the reveal effect keyed to `reveal` state only, and read completion handlers through a ref or another stable indirection.

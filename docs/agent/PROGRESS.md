@@ -2893,3 +2893,11 @@
   - `pnpm exec vitest run app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js`
   - `pnpm exec vitest run app/catana/__tests__/playerAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
   - `pnpm exec eslint app/catana/utils/buildPlacementPreviewMotion.js app/catana/BuildPlacementPreview.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- Fixed the dev-card purchase reveal jitter loop:
+  - root cause was `GameScreen` passing a fresh inline `onComplete` callback into `DevCardPurchaseReveal` on every render,
+  - the reveal timeline effect depended on that callback identity, so normal `GameScreen` rerenders could kill and restart the GSAP timeline repeatedly while the card was mid-flight.
+- Current fix:
+  - `app/catana/GameScreen.js` now passes a stable `handleDevCardRevealComplete` callback,
+  - `app/catana/DevCardPurchaseReveal.js` now stores `onComplete` in a ref and keys the main GSAP effect only on `reveal`, so parent rerenders no longer restart the animation.
+- Verification for the dev-card reveal jitter fix:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js`

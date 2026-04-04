@@ -49,6 +49,11 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
   const flipRef = useRef(null);
   const popHowlRef = useRef(null);
   const travelHowlRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     popHowlRef.current = new Howl({
@@ -72,7 +77,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     const flipNode = flipRef.current;
     if (!reveal || !actorNode || !emblemNode || !flipNode) return undefined;
     if (!reveal.triggerRect || !reveal.destinationRect) {
-      onComplete?.();
+      onCompleteRef.current?.();
       return undefined;
     }
 
@@ -115,7 +120,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
 
     const timeline = gsap.timeline({
       delay: (reveal.launchDelayMs ?? 0) / 1000,
-      onComplete: () => onComplete?.(),
+      onComplete: () => onCompleteRef.current?.(),
     });
 
     timeline.to(actorNode, {
@@ -163,7 +168,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     return () => {
       timeline.kill();
     };
-  }, [onComplete, reveal]);
+  }, [reveal]);
 
   if (!reveal) return null;
 
