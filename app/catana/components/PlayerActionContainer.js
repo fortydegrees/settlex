@@ -205,9 +205,12 @@ export const PlayerActionContainer = ({
       action: () => moves.buyDevCard(),
       img: getThemedSvgPath(themeId, "icon_devcard.svg"),
       fallbackImg: getClassicSvgPath("icon_devcard.svg"),
+      preLaunchImg: getThemedSvgPath(themeId, "icon_devcard_emblem.svg"),
+      preLaunchFallbackImg: getClassicSvgPath("icon_devcard_emblem.svg"),
       count: 0,
       enabled: false,
       style: null,
+      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
     },
     null
   ];
