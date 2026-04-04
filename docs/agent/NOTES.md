@@ -1983,3 +1983,10 @@
     - if the bought card is temporarily hidden from the visible hand during the private reveal, `DevCardDisplay` must still keep a mounted shell/ref alive; otherwise the reveal has no destination rect and can fail to appear at all.
     - this is separate from the old hand pop animation and should stay even if the visible hand contents are empty for a moment.
   - the old `devcard-pop` hand entry animation is now legacy and should not be part of the private purchase reveal path; the reveal itself owns that motion sequence.
+  - launch visibility matters:
+    - if the detached reveal actor is visible at the dock from frame zero, it masks the dock-side squash and makes the motion read as “the emblem appears and moves” instead of “squish, then pop out.”
+    - keep the detached actor hidden until the preload delay elapses, then reveal it with a short release-pop before the main travel segment.
+  - the dev-card purchase reveal wants slower pacing than the build pickup:
+    - dock preload around `320ms`,
+    - explicit `releasePop`,
+    - slower center travel and longer pauses between back reveal, flip, and hand return.

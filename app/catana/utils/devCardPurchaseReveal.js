@@ -21,24 +21,26 @@ export function findBoughtDevCardType({ beforeCards = [], afterCards = [] } = {}
 export function getDevCardRevealDurations(reducedMotion = false) {
   if (reducedMotion) {
     return {
-      travelToCenter: 0.22,
-      holdAfterTravel: 0.1,
-      backReveal: 0.12,
+      releasePop: 0.08,
+      travelToCenter: 0.24,
+      holdAfterTravel: 0.12,
+      backReveal: 0.14,
       holdAfterBackReveal: 0.08,
-      flip: 0.18,
-      holdOnFace: 0.18,
-      travelToHand: 0.34,
+      flip: 0.2,
+      holdOnFace: 0.22,
+      travelToHand: 0.4,
     };
   }
 
   return {
-    travelToCenter: 0.42,
-    holdAfterTravel: 0.16,
-    backReveal: 0.2,
-    holdAfterBackReveal: 0.16,
-    flip: 0.32,
-    holdOnFace: 0.46,
-    travelToHand: 0.6,
+    releasePop: 0.14,
+    travelToCenter: 0.52,
+    holdAfterTravel: 0.22,
+    backReveal: 0.24,
+    holdAfterBackReveal: 0.2,
+    flip: 0.38,
+    holdOnFace: 0.56,
+    travelToHand: 0.72,
   };
 }
 

@@ -85,7 +85,8 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       yPercent: -50,
       width: centerCardWidth,
       height: centerCardHeight,
-      scale: 1,
+      scale: 0.84,
+      autoAlpha: 0,
     });
     gsap.set(emblemNode, {
       autoAlpha: 1,
@@ -104,13 +105,21 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       onComplete: () => onCompleteRef.current?.(),
     });
 
+    timeline.set(actorNode, { autoAlpha: 1 });
+    timeline.call(() => popHowlRef.current?.play());
+    timeline.to(actorNode, {
+      y: startY - centerCardHeight * 0.12,
+      scale: 1.04,
+      duration: durations.releasePop,
+      ease: "back.out(1.8)",
+    });
     timeline.to(actorNode, {
       x: centerX,
       y: centerY,
+      scale: 1,
       duration: durations.travelToCenter,
       ease: "power2.out",
     });
-    timeline.call(() => popHowlRef.current?.play());
     timeline.to({}, { duration: durations.holdAfterTravel });
     timeline.to(flipNode, {
       autoAlpha: 1,

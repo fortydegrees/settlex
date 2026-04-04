@@ -2927,3 +2927,14 @@
 - Verification for the first-buy shell + staged-timeline refinement:
   - `pnpm exec vitest run app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/GameScreen.js app/catana/DevCardPurchaseReveal.js app/catana/components/PlayerActionContainer.js app/catana/components/DevCardDisplay.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Refined the dev-card launch feel so the dock squash actually reads:
+  - `DevCardPurchaseReveal` now keeps the detached actor hidden until the dock preload finishes, instead of drawing it immediately at the dock origin and visually masking the squash,
+  - on release, the actor now does a short upward release-pop before the slower center flight, so the opening motion reads as `squish -> pop out -> travel` instead of `appear and drift`,
+  - slowed the full reveal profile again: longer center travel, longer pauses, slower back reveal, slower flip, longer face hold, and a slower return-to-hand.
+- Current fix:
+  - `app/catana/DevCardPurchaseReveal.js` now starts with `autoAlpha: 0`, reveals the actor only after the launch delay, and adds a short release-pop stage before the center travel,
+  - `app/catana/utils/devCardPurchaseReveal.js` now exposes the slower timing profile including the new `releasePop` segment,
+  - `app/catana/components/PlayerActionContainer.js` now holds the dock preload for longer (`320ms`) before the detached actor appears.
+- Verification for the dev-card launch gating + slower timing refinement:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/components/PlayerActionContainer.js app/catana/utils/devCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
