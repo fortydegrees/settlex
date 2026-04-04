@@ -1035,6 +1035,8 @@ export function CatanBoard({
             pieceColor={currentPlayerView?.color ?? "red"}
             originRect={buildPickup?.originRect ?? null}
             magneticTargets={magneticBuildTargets}
+            landTileCenters={landRobberPreviewTiles}
+            boardTileSize={size}
             boardViewportScale={boardViewportScale}
             themeId={themeId}
             size={size}

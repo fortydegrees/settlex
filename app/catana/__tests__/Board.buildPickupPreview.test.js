@@ -18,5 +18,7 @@ describe("Board build pickup preview", () => {
     expect(source).toContain("magneticBuildTargets");
     expect(source).toContain("setBuildTargetElementsById");
     expect(source).toContain("setBuildPickup(null)");
+    expect(source).toContain("landTileCenters={landRobberPreviewTiles}");
+    expect(source).toContain("boardTileSize={size}");
   });
 });
