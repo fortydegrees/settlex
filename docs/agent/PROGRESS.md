@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-04-04, road handoff and dock preload retuned)
+- Retuned two parts of the build pickup motion:
+- `road` now keeps the floating follower visible longer on a valid edge target before handing off to the edge-local flashing preview, so the turn into the edge is readable again,
+- the dock icon preload now holds the squash longer before release, with cubic easing into the compressed state and reverse cubic easing out of it when the piece launches.
+- Implementation shape:
+- `app/catana/utils/buildPlacementPreviewMotion.js` now exports `getBuildTargetHandoffDelayMs(pieceType)` and gives `road` a longer edge-lock handoff than `settlement` / `city`,
+- `app/catana/BuildPlacementPreview.js` uses that piece-type-specific handoff delay instead of a single shared constant,
+- `app/catana/components/PlayerActionContainer.js` increases the hidden preload delay to `132ms`,
+- `app/catana/components/ActionsDock/DockCard.js` drives the icon squash with explicit press-in / release configs instead of one generic spring response.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/playerAction.test.js app/catana/__tests__/GameScreen.cancelBuildAction.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/ActionNode.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+- `pnpm exec eslint app/catana/components/ActionsDock/DockCard.js app/catana/components/PlayerActionContainer.js app/catana/BuildPlacementPreview.js app/catana/utils/buildPlacementPreviewMotion.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/utils/buildPlacementPreviewMotion.test.js`
+
 ## Status (2026-04-04, dock icon wrapper selectors fixed)
 - Fixed the remaining dock regressions where build icons rendered too large and the road icon disappeared entirely.
 - Root cause:

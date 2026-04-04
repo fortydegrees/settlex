@@ -1,5 +1,21 @@
 # NOTES
 
+- Build pickup motion tuning note:
+- road lock-in wants a slightly longer visible follower phase than settlement/city before the board-local preview takes over.
+- Current shape:
+- `getBuildTargetHandoffDelayMs("road")` is intentionally longer than the default handoff delay so the floating road has time to visibly rotate into the target edge before the flashing edge preview becomes the visible owner.
+- Guardrail:
+- do not collapse road back onto the generic handoff delay unless you re-check that the road turn-in is still perceptible in the browser.
+
+- Dock preload easing note:
+- the dock icon squash is intentionally not a plain spring anymore.
+- Current approved shape:
+- longer hidden preload delay (`132ms`),
+- cubic ease into the compressed state so the icon slows as it reaches the bottom of the squash,
+- reverse cubic ease on release as the piece launches.
+- Guardrail:
+- if you retune this again, keep the icon squash and preview release synchronized through the same preload delay; otherwise the piece can reappear before the squash reads clearly.
+
 - Dock CSS selector note:
 - this repo's dock CSS can use nested descendant selectors like `& img`, but not Sass-style concatenation like `&__img` / `&__img-shell`.
 - Use flat class selectors for BEM-style element classes instead:
