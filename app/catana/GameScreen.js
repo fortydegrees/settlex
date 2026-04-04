@@ -47,6 +47,7 @@ import { PostgameOverlay } from "./components/PostgameOverlay";
 import { GameEffects } from "./effects/GameEffects";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
+import { findBoughtDevCardType } from "./utils/devCardPurchaseReveal";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import {
@@ -91,6 +92,18 @@ const getApiBaseUrl = () => {
   return `${window.location.protocol}//${window.location.hostname}:8080`;
 };
 
+const copyRect = (rect) => {
+  if (!rect) return null;
+  return {
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height,
+    right: rect.right,
+    bottom: rect.bottom,
+  };
+};
+
 const getGameOverReasonCopy = (reason) => {
   if (reason === "victoryPoints" || !reason) return "Victory Points";
   if (reason === "Resignation") return "Resignation";
@@ -106,6 +119,8 @@ export function GameScreen(bgioProps) {
     //e.g. if disconnect after placing one road of RB, reconnect will want to prompt to place second road
   const [playerAction, setPlayerAction] = useState(null);
   const [buildPickup, setBuildPickup] = useState(null);
+  const [pendingDevCardReveal, setPendingDevCardReveal] = useState(null);
+  const [activeDevCardReveal, setActiveDevCardReveal] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradePresetResource, setTradePresetResource] = useState(null);
   const [timerSnapshot, setTimerSnapshot] = useState(null);
@@ -129,6 +144,7 @@ export function GameScreen(bgioProps) {
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
+  const devCardDisplayRef = useRef(null);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
 
@@ -576,6 +592,47 @@ export function GameScreen(bgioProps) {
     setTradePresetResource(null);
   }, [shouldCloseTradeModal]);
 
+  useEffect(() => {
+    if (!pendingDevCardReveal) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setPendingDevCardReveal((current) =>
+        current === pendingDevCardReveal ? null : current
+      );
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [pendingDevCardReveal]);
+
+  const playerDevCards = player?.devCards ?? null;
+  const playerRevealId = player?.id ?? null;
+
+  useEffect(() => {
+    if (!pendingDevCardReveal || activeDevCardReveal) return;
+    if (!playerDevCards?.length) return;
+    if (String(pendingDevCardReveal.playerId) !== String(playerRevealId)) return;
+
+    const cardType = findBoughtDevCardType({
+      beforeCards: pendingDevCardReveal.beforeCards,
+      afterCards: playerDevCards,
+    });
+    if (!cardType) return;
+
+    const destinationRect = copyRect(
+      devCardDisplayRef.current?.getBoundingClientRect?.()
+    );
+    if (!destinationRect) return;
+
+    setActiveDevCardReveal({
+      cardType,
+      triggerRect: pendingDevCardReveal.triggerRect,
+      destinationRect,
+      launchDelayMs: pendingDevCardReveal.preLaunchDelayMs ?? 0,
+      startedAtMs: pendingDevCardReveal.startedAtMs ?? Date.now(),
+    });
+    setPendingDevCardReveal(null);
+  }, [activeDevCardReveal, pendingDevCardReveal, playerDevCards, playerRevealId]);
+
   // Discard Logic
   // Check if pendingDiscards list includes the current player
   // NOTE: We used to check bgioProps.ctx.phase === 'robberDiscard' but sometimes
@@ -957,6 +1014,8 @@ TODO: accurately colour it
           //playerID={bgioProps.playerID} //for multiplayer
           player={player} //for testing/dev
           presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
+          onDevCardPurchaseStart={setPendingDevCardReveal}
+          devCardDisplayRef={devCardDisplayRef}
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}

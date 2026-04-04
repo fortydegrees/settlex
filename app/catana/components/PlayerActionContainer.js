@@ -77,6 +77,8 @@ export const PlayerActionContainer = ({
   player,
   presence,
   onTradeClick,
+  onDevCardPurchaseStart,
+  devCardDisplayRef,
   isActive,
   statusType,
   gameStatus,
@@ -116,6 +118,20 @@ export const PlayerActionContainer = ({
       startedAtMs: Date.now(),
       launchDelayMs: preLaunchDelayMs
     });
+  };
+
+  const startDevCardPurchaseReveal = ({
+    triggerRect,
+    preLaunchDelayMs = 0,
+  } = {}) => {
+    onDevCardPurchaseStart?.({
+      playerId: player.id,
+      triggerRect: copyTriggerRect(triggerRect),
+      preLaunchDelayMs,
+      beforeCards: Array.isArray(player.devCards) ? [...player.devCards] : [],
+      startedAtMs: Date.now(),
+    });
+    moves.buyDevCard();
   };
 
   const [Die, rollTo] = useDie(G.diceRoll[0]);
@@ -202,7 +218,7 @@ export const PlayerActionContainer = ({
     },
     {
       name: "devCard",
-      action: () => moves.buyDevCard(),
+      action: startDevCardPurchaseReveal,
       img: getThemedSvgPath(themeId, "icon_devcard.svg"),
       fallbackImg: getClassicSvgPath("icon_devcard.svg"),
       preLaunchImg: getThemedSvgPath(themeId, "icon_devcard_emblem.svg"),
@@ -372,6 +388,7 @@ export const PlayerActionContainer = ({
               onPlayCard={(card) => moves.playDevCardStart(card)}
               activeCardType={activeDevCardType}
               showCountBadge={SHOW_PLAYER_HAND_BADGES}
+              containerRef={devCardDisplayRef}
             />
           </div>
         </div>
