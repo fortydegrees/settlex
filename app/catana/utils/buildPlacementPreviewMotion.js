@@ -2,10 +2,53 @@ export const BUILD_PREVIEW_MAGNETIC_RADIUS_PX = 72;
 export const BUILD_PREVIEW_RELEASE_RADIUS_PX = 112;
 export const BUILD_PREVIEW_MAX_LEAN_DEGREES = 20;
 
+const BUILD_PICKUP_LAUNCH_CONFIG = {
+  pressDurationMs: 36,
+  liftDurationMs: 132,
+  settleDurationMs: 128,
+  startOffsetY: 8,
+  startScale: 0.92,
+  peakOffsetY: -20,
+  peakScale: 1.05,
+  settleScale: 1,
+  liftEase: "power2.out",
+  settleEase: "back.out(2.1)"
+};
+
 export function getBuildPreviewViewportScale(boardViewportScale = 1) {
   return Number.isFinite(boardViewportScale) && boardViewportScale > 0
     ? boardViewportScale
     : 1;
+}
+
+export function getBuildPickupLaunchMotion(pieceType) {
+  const isRoad = pieceType === "road";
+  const startOffsetY = isRoad
+    ? BUILD_PICKUP_LAUNCH_CONFIG.startOffsetY - 2
+    : BUILD_PICKUP_LAUNCH_CONFIG.startOffsetY;
+  const peakOffsetY = isRoad
+    ? BUILD_PICKUP_LAUNCH_CONFIG.peakOffsetY + 2
+    : BUILD_PICKUP_LAUNCH_CONFIG.peakOffsetY;
+  const peakScale = isRoad
+    ? BUILD_PICKUP_LAUNCH_CONFIG.peakScale - 0.02
+    : BUILD_PICKUP_LAUNCH_CONFIG.peakScale;
+
+  return {
+    pressDurationMs: BUILD_PICKUP_LAUNCH_CONFIG.pressDurationMs,
+    liftDurationMs: BUILD_PICKUP_LAUNCH_CONFIG.liftDurationMs,
+    settleDurationMs: BUILD_PICKUP_LAUNCH_CONFIG.settleDurationMs,
+    totalDurationMs:
+      BUILD_PICKUP_LAUNCH_CONFIG.pressDurationMs +
+      BUILD_PICKUP_LAUNCH_CONFIG.liftDurationMs +
+      BUILD_PICKUP_LAUNCH_CONFIG.settleDurationMs,
+    startOffsetY,
+    startScale: BUILD_PICKUP_LAUNCH_CONFIG.startScale,
+    peakOffsetY,
+    peakScale,
+    settleScale: BUILD_PICKUP_LAUNCH_CONFIG.settleScale,
+    liftEase: BUILD_PICKUP_LAUNCH_CONFIG.liftEase,
+    settleEase: BUILD_PICKUP_LAUNCH_CONFIG.settleEase
+  };
 }
 
 export function getScaledBuildPreviewSize({
