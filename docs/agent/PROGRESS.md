@@ -2,7 +2,7 @@
 
 ## Status (2026-04-05, dev-card reveal design revised to effect-driven buyer-only flow)
 - Revised the dev-card purchase reveal design in:
-- `docs/superpowers/specs/2026-04-04-dev-card-purchase-reveal-design.md`
+- `docs/superpowers/specs/2026-04-05-dev-card-purchase-reveal-design.md`
 - Approved direction for this slice:
 - stop deriving the bought card face by diffing local `beforeCards` / `afterCards`,
 - emit an authoritative `buyDevCardReveal` effect carrying the bought `cardType`,
