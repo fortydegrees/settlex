@@ -238,6 +238,7 @@ export const DEBUG_takeDevCards = {
 };
 
 export const DEBUG_captureScenarioState = {
+  client: false,
   move: (context) => {
     const snapshot = JSON.parse(JSON.stringify(context.G ?? {}));
     delete snapshot.debugScenarioState;
@@ -246,6 +247,7 @@ export const DEBUG_captureScenarioState = {
 };
 
 export const DEBUG_clearCapturedScenarioState = {
+  client: false,
   move: (context) => {
     context.G.debugScenarioState = null;
   }

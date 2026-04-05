@@ -2014,3 +2014,8 @@
     - the timeline was imperatively swapping `img.src` to the bought card art,
     - but normal rerenders could re-apply the React prop and force the image back to the back asset.
   - the robust fix is to keep the older midpoint-flip look, but move the visible face art into React state (`displayedCardSrc`) and switch that state at the flip midpoint.
+  - deeper repro issue:
+    - if a saved scenario is captured from masked player-view state, its `core.devDeck` can be persisted as `"hidden"` placeholders.
+    - in that case `buyDevCard` literally grants `"hidden"`, and no flip/reveal implementation can show the real card because the real card type is already gone from the scenario data.
+    - the right fix is at scenario capture time, not in the reveal animation.
+  - debug scenario snapshot moves should be `client: false` so they run only on the authoritative server state and do not snapshot the optimistic masked client state.

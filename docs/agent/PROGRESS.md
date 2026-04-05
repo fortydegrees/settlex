@@ -2984,3 +2984,12 @@
 - Verification for the restored midpoint flip + state-owned face art:
   - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Found the deeper root cause behind the “reveal still shows the dev-card back” reports on the saved buy-dev repro:
+  - the local scenario file `app/catana/scenarios/buy_dev_new22.json` had a masked `core.devDeck` full of `"hidden"` placeholders,
+  - buying a dev card from that scenario literally gives the player `"hidden"`, so the reveal can only fall back to the back art.
+- Current fix:
+  - `app/catana/Moves.js` now marks `DEBUG_captureScenarioState` and `DEBUG_clearCapturedScenarioState` as `client: false` so scenario snapshots are captured server-side instead of from optimistic player-view state,
+  - `app/catana/__tests__/Moves.debugScenario.test.js` now locks that server-only behavior.
+- Verification for the scenario-capture authority fix:
+  - `pnpm exec vitest run app/catana/__tests__/Moves.debugScenario.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm exec eslint app/catana/Moves.js app/catana/DevCardPurchaseReveal.js app/catana/__tests__/Moves.debugScenario.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
