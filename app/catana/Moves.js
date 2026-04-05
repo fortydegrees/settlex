@@ -975,12 +975,16 @@ export const maritimeTrade = {
 
 export const buyDevCard = {
   move: (context) => {
-    const { G, playerID } = context;
+    const { G, playerID, effects } = context;
     const result = applyBuyDevCard(G.core, playerID);
     if (!result.ok) {
       console.log(`Invalid buy dev card: ${result.error}`);
       return;
     }
+    effects?.buyDevCardReveal?.({
+      playerId: playerID,
+      cardType: result.cardType
+    });
     appendGameLog(G, context.ctx, {
       type: "dev:buy",
       actorId: playerID,

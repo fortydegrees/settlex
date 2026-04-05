@@ -42,6 +42,21 @@ describe("dev cards - purchase", () => {
     expect(state.playerStateById["0"].devCards).toEqual(["knight"]);
   });
 
+  it("returns the bought dev card type on success", () => {
+    const state = createEmptyState(["0"]);
+    state.devDeck = ["knight"];
+    state.playerStateById["0"].resources = [
+      ResourceType.SHEEP,
+      ResourceType.WHEAT,
+      ResourceType.ORE
+    ];
+
+    expect(buyDevCard(state, "0")).toEqual({
+      ok: true,
+      cardType: "knight"
+    });
+  });
+
   it("rejects purchase when dev cards are disabled", () => {
     const state = createEmptyState(["0"]);
     state.ruleset.devCardsEnabled = false;
