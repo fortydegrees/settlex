@@ -25,7 +25,7 @@ export function createStandardDevDeck(): DevCardType[] {
 export function buyDevCard(
   state: GameState,
   playerId: string
-): { ok: true } | { ok: false; error: string } {
+): { ok: true; cardType: DevCardType } | { ok: false; error: string } {
   if (!state.ruleset.devCardsEnabled) {
     return { ok: false, error: "dev-cards-disabled" };
   }
@@ -54,7 +54,7 @@ export function buyDevCard(
   player.devCards.push(card);
   player.devCardsBoughtThisTurn.push(card);
   checkAndApplyWin(state, playerId);
-  return { ok: true };
+  return { ok: true, cardType: card };
 }
 
 export function canPlayDevCard(

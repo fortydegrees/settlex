@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createEmptyState, buildTopology, ResourceType, TileTypes } from "@settlex/game-core";
-import { DEBUG_takeDevCards, playDevCardStart, placeRoadFromDevCard } from "../Moves";
+import { DEBUG_takeDevCards, buyDevCard, playDevCardStart, placeRoadFromDevCard } from "../Moves";
 
 const tiles = [
   {
@@ -33,6 +33,30 @@ describe("dev card play moves", () => {
     ]);
     expect(state.devDeck).toEqual(["knight"]);
     expect(log.setMetadata).toHaveBeenCalled();
+  });
+
+  it("emits buyDevCardReveal with the authoritative card type", () => {
+    const state = createEmptyState(["0"]);
+    state.devDeck = ["monopoly"];
+    state.playerStateById["0"].resources = [
+      ResourceType.SHEEP,
+      ResourceType.WHEAT,
+      ResourceType.ORE
+    ];
+    const effects = { buyDevCardReveal: vi.fn() };
+    const context = {
+      G: { core: state, gameLog: [], gameLogSeq: 0 },
+      playerID: "0",
+      ctx: { currentPlayer: "0", turn: 1 },
+      effects
+    };
+
+    buyDevCard.move(context);
+
+    expect(effects.buyDevCardReveal).toHaveBeenCalledWith({
+      playerId: "0",
+      cardType: "monopoly"
+    });
   });
 
   it("playDevCardStart sets devCardPlay for year of plenty", () => {
