@@ -15,4 +15,13 @@ describe("GameEffects", () => {
     expect(source).toContain("dice:roll");
     expect(source).toContain("turn:start");
   });
+
+  it("wires buyDevCardReveal to buyer-only reveal events", () => {
+    const path = fileURLToPath(
+      new URL("../../effects/GameEffects.js", import.meta.url)
+    );
+    const source = fs.readFileSync(path, "utf8");
+    expect(source).toContain("buyDevCardReveal");
+    expect(source).toContain("devcard:reveal");
+  });
 });

@@ -79,6 +79,15 @@ export function GameEffects({
     [bus]
   );
 
+  useEffectListener(
+    "buyDevCardReveal",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({ type: "devcard:reveal", payload });
+    },
+    [bus]
+  );
+
   useEffect(() => {
     const decision = getTurnStartCueDecision({
       currentPlayerId,
