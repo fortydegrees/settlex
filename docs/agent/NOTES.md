@@ -1,14 +1,16 @@
 # NOTES
 
 - Dev-card purchase reveal ownership note:
-- keep the `buy dev` reveal local to `GameScreen`, not on the shared public effect bus.
-- Current working shape:
-- `PlayerActionContainer` captures `{ triggerRect, beforeCards, preLaunchDelayMs, playerId }` before calling `moves.buyDevCard()`,
-- `GameScreen` waits for the local `player.devCards` array to gain one card,
-- `findBoughtDevCardType(...)` resolves the newly added card type by count-diff,
-- then `DevCardPurchaseReveal` owns the temporary dock -> center -> hand animation.
+- keep the reveal buyer-only in the client, but drive it from an authoritative move/effect payload rather than from local card-array diffing.
+- Current approved shape:
+- `buyDevCard` emits a `buyDevCardReveal` effect with `{ playerId, cardType }`,
+- `PlayerActionContainer` still captures local geometry and pre-buy presentation snapshots before calling the move,
+- `GameScreen` starts the local reveal only when the authoritative effect arrives for the local buyer,
+- while that reveal is active, the buyer's dev-card dock and local VP badge stay visually frozen on the pre-buy snapshot,
+- both release to live state together when the reveal card lands.
 - Guardrail:
-- do not derive the reveal from public log entries or effect-bus events if the card face must stay private to the buyer.
+- do not derive the reveal card type from `beforeCards` / `afterCards` count diff again.
+- Also do not move DOM geometry into the move payload; the move owns facts, the client owns geometry.
 
 - Dev-card dock emblem note:
 - the dock still shows the full `icon_devcard.svg` at rest, but the preload squash should animate only `icon_devcard_emblem.svg`.

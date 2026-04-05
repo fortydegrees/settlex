@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-05, dev-card reveal design revised to effect-driven buyer-only flow)
+- Revised the dev-card purchase reveal design in:
+- `docs/superpowers/specs/2026-04-04-dev-card-purchase-reveal-design.md`
+- Approved direction for this slice:
+- stop deriving the bought card face by diffing local `beforeCards` / `afterCards`,
+- emit an authoritative `buyDevCardReveal` effect carrying the bought `cardType`,
+- keep the reveal buyer-only in the client,
+- freeze the local dev-card dock presentation and local VP badge presentation until the reveal lands,
+- leave engine state, scoring, and game-over authority immediate underneath the local UI freeze.
+
 ## Status (2026-04-04, private buy-dev reveal now runs from dock to hand)
 - Added the local-only dev-card purchase reveal for the `buy dev` dock action.
 - Interaction shape:
