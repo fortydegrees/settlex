@@ -1,154 +1,219 @@
 # Dev Card Purchase Reveal Design
 
-Date: 2026-04-04
-Scope: Catana local-only `buy dev` dock animation and private card reveal
+Date: 2026-04-05
+Scope: Catana buyer-only `buy dev` reveal driven by authoritative effect payloads and local presentation freeze
 Status: Approved for implementation
 
 ## Goal
 
-Make `buy dev` feel like a satisfying private reward moment without changing the dock layout or the underlying dev-card rules.
+Keep `buy dev` feeling like a private reward moment, but stop deriving the revealed card from fragile local hand diffs.
 
 For this slice:
 - keep the current Catana dock styling and existing `buy dev` button,
-- reuse the same dock-icon preload squash language introduced for build pickup,
-- animate a bought dev card from the dock to center, reveal it, then send it to the local player's dev-card hand area,
-- keep the whole reveal private to the player who bought the card.
+- keep the reveal buyer-only as a UI flourish,
+- drive the reveal from authoritative move/effect data instead of client-side card-count reconstruction,
+- freeze the local dev-card hand and local VP badge until the reveal card lands in the dock,
+- keep underlying game state immediate and authoritative.
 
 ## Non-goals
 
-- No dev-card rule changes, server-authority changes, or move contract changes.
-- No public/spectator dev-card reveal flow in this slice.
-- No redesign of the dev-card hand UI in `DevCardDisplay`.
-- No new sound set for dev-card purchase.
-- No test-heavy implementation requirement for this slice.
+- No public or spectator dev-card face reveal.
+- No redesign of the dock shell, dev-card hand layout, or avatar layout.
+- No gameplay-rule change to dev-card purchasing, scoring, or win detection.
+- No delay to engine state updates just to satisfy the animation.
+- No change to game-over authority in this slice.
+- No scenario-file cleanup or `.gitignore` work in this slice.
 
 ## UX Summary
 
-During a successful local `buy dev` action:
+During a successful `buy dev` action for the buyer:
 
 1. The player clicks the `buy dev` dock button.
 2. Only the dev-card emblem inside the dock icon squashes briefly.
-3. The client sends `moves.buyDevCard()`.
-4. When local player state gains the new dev card, a temporary animated card element is created from the dock button's source rect.
-5. That emblem-only element moves to the middle of the screen with a quick, clean travel and no overshoot.
-6. The rest of the dev-card back grows/fades in around the emblem.
-7. The full card flips to reveal the actual dev card face.
-8. The revealed card holds briefly so the buyer can register what they got.
-9. The card then flies down into the player's dev-card hand area using the same travel feel and sound family as the existing resource-card motion.
-10. The temporary animated element disappears once the travel completes.
+3. The move executes immediately and authoritative game state updates immediately.
+4. A buyer-only reveal effect arrives with the exact bought `cardType`.
+5. While the reveal is active, the local dev-card dock stays visually frozen on its pre-buy contents.
+6. The local VP badge also stays visually frozen on its pre-buy display, so a bought `victoryPoint` does not show early.
+7. A temporary reveal element launches from the dock button, reveals the bought face at center, then flies into the dev-card dock.
+8. When the reveal lands, the dock hand and local VP badge release to live state together.
 
-If the move is illegal or no bought card is observed locally, the button simply returns to idle after the squash and no floating card is shown.
+For other players:
+- no face reveal is shown,
+- no local hand freeze is applied,
+- their normal public-information UI stays unchanged.
 
 ## Product Rules
 
-- The reveal is local-only. Only the buyer sees the flipped face.
-- The dock button owns only the preload squash and launch origin, not the whole reveal sequence.
-- The emblem pop should use only the dev-card emblem art, not the green plus badge.
-- The center reveal should be quick and legible, not theatrical.
-- The buy result should still come from the server-authoritative game state.
-- Reduced-motion users should still get the same semantic sequence with shorter or simplified transitions.
+- The bought dev-card face is treated as buyer-only presentation, not as a transport secrecy requirement.
+- The move remains the single source of truth for what card was bought.
+- The reveal should follow the same overall architectural pattern as resource distribution:
+  - authoritative state/effect first,
+  - local UI delays only for presentation.
+- The dock button owns only the preload squash and launch origin.
+- The local dock hand and local VP badge must release on the same completion boundary.
+- If buying a VP card wins the game, win logic still resolves immediately; this slice only delays the buyer's local dock/VP presentation.
+
+## Recommended Approach
+
+Use a dedicated dev-card purchase effect, emitted by the move with the exact `cardType`, and use local UI state only for geometry capture and presentation freeze.
+
+Rejected approach from the prior version of this spec:
+- do not derive the bought card by diffing `beforeCards` vs `afterCards` in the client.
+- Reason:
+  - it is brittle,
+  - it breaks when local state is already polluted or masked,
+  - it throws away information the move already knows exactly.
 
 ## Architecture + Data Flow
 
-1. Keep the current `moves.buyDevCard()` call path in `app/catana/Moves.js`.
-2. Extend the `buy dev` action wiring in `app/catana/components/PlayerActionContainer.js` so the click can pass:
-   - the source dock-button rect,
-   - the local player's pre-buy dev-card snapshot needed to identify the newly added card after state updates.
-3. Add one transient local-only state in `app/catana/GameScreen.js` for an in-flight dev purchase reveal:
-   - `playerId`
+1. Update the core buy-dev path so the move layer can access the exact drawn `cardType` directly after purchase.
+   Preferred shape:
+   - `game-core/src/rules/devCards.ts` returns `{ ok: true, cardType }` on success.
+2. In `app/catana/Moves.js`, `buyDevCard` should:
+   - call the core buy function,
+   - append the normal `dev:buy` game-log entry,
+   - emit a new effect payload such as `effects?.buyDevCardReveal?.({ playerId, cardType })`.
+3. Register the new effect in `app/catana/Game.js` through the existing `EffectsPlugin(...)` configuration.
+4. In `app/catana/effects/GameEffects.js`, listen for `buyDevCardReveal` and forward it into the existing local effect/event bus.
+5. In `app/catana/effects/registry.js`, register a dedicated handler channel for the dev-card reveal runner.
+6. In `app/catana/components/PlayerActionContainer.js`, keep the click-time local snapshot:
    - `triggerRect`
-   - previous dev-card counts or equivalent snapshot
-   - status needed to know whether the client is waiting for the bought card or actively animating it
-4. When `player.devCards` grows for the same local player, derive the newly added card by diffing the old and new dev-card counts.
-5. Start one temporary animated reveal element using:
-   - the dock rect as origin,
-   - screen center as reveal point,
-   - the player's dev-card display rect as destination.
-6. After the reveal completes, clear the transient local state immediately.
+   - `startedAtMs`
+   - pre-buy visible dev-card hand snapshot
+   - pre-buy local VP display snapshot
+7. In `app/catana/GameScreen.js`:
+   - keep one local pending purchase snapshot created on click,
+   - wait for the authoritative `buyDevCardReveal` effect,
+   - if the effect is for the local player and a pending snapshot exists, start the active reveal with:
+     - `playerId`
+     - `cardType`
+     - `triggerRect`
+     - destination rect
+     - frozen hand snapshot
+     - frozen VP snapshot
+   - if the effect is for another player, ignore it for presentation.
+8. While an active reveal exists for the local player:
+   - `DevCardDisplay` renders the frozen pre-buy hand,
+   - `PlayerAvatarStats` renders frozen pre-buy VP display values for `isMe`.
+9. When the reveal completes:
+   - clear the active reveal,
+   - release both the hand and the local VP badge to live state immediately.
 
-This matches the existing build-pickup split:
-- dock/button handles press feedback and launch origin,
-- a temporary animated element owns the in-between motion.
+This matches the resource-distribution pattern conceptually:
+- engine state updates now,
+- the UI temporarily withholds visible presentation until the animation reaches its destination.
 
 ## Rendering Notes
 
-- Reuse `public/svgs/icon_devcard.svg`, but render only the emblem group for the preload/pop phase.
-- Reuse `public/svgs/cards/development/card_devcardback.svg` for the center card-back build-out.
-- Reuse the existing dev-card face SVGs already used by `app/catana/components/DevCardDisplay.js` for the flip result.
-- The reveal element should render above the game UI, independent of board zoom/pan, because the sequence travels between dock, screen center, and hand UI.
-- The destination should be the real `DevCardDisplay` box, not the `buy dev` dock button.
-- The green plus badge from the dock icon should never appear in the detached reveal element.
+- Keep `DevCardPurchaseReveal` as a detached overlay actor above board zoom/pan.
+- Reuse the existing dev-card face SVG mapping already used by `DevCardDisplay`.
+- Keep the dock destination as the real `DevCardDisplay` shell.
+- The green plus badge remains dock-only and must not appear in the detached reveal actor.
+- The buyer-only freeze should affect only:
+  - the local dev-card hand presentation,
+  - the local VP badge presentation.
+- Opponent UI should continue reading live public state with no reveal-specific overrides.
+
+## VP Synchronization Rule
+
+The local VP badge should not increment early for a bought `victoryPoint`.
+
+Approved rule:
+- snapshot the local buyer's pre-buy VP display inputs before calling `moves.buyDevCard()`,
+- while the reveal is active, `PlayerAvatarStats` for `isMe` must render that frozen snapshot instead of live totals,
+- release it at the same instant the dev-card reveal lands in the dock.
+
+This keeps the buyer's visible score change aligned with the reveal payoff without delaying actual scoring in the engine.
 
 ## Motion Notes
 
-- Dock squash: `~100-130ms`
-- Dock-to-center travel: `~220ms`, no overshoot
-- Card-back grow/fade: `~120ms`, overlapping the end of the travel
-- Flip to face: `~220-260ms`
-- Hold on face: `~300ms`
-- Travel to hand: `~450-550ms`
-
-The center reveal should feel slick and rewarding, but still fast enough that repeated experienced play does not feel blocked.
-
-If the bought card result arrives slightly later than the click, the reveal can briefly rest on the card back before the face flip, rather than stalling the whole motion.
+- Keep the already-approved reveal motion language:
+  - emblem-only preload squash,
+  - travel to center,
+  - card-back build/fade,
+  - face reveal,
+  - hold,
+  - travel to dock.
+- Reduced-motion mode should shorten or simplify the reveal but preserve the same semantic sequence.
+- A future "pro" mode can release the frozen hand/VP immediately by skipping or collapsing the reveal timing, without changing move or effect architecture.
 
 ## Failure Handling
 
-- Illegal click or rejected move: no floating card reveal, dock returns to idle.
-- No observed local card delta: clear the pending state and do not invent a reveal.
-- Repeated clicks: allow only one pending local dev reveal at a time.
-- If the player leaves the relevant state or screen before completion, the temporary reveal should clean itself up quietly.
+- Illegal click or rejected move:
+  - no reveal effect is emitted,
+  - local pending snapshot should clean up quietly.
+- Effect arrives for another player:
+  - ignore for local reveal presentation.
+- Effect arrives for the buyer but no local trigger snapshot exists:
+  - do not invent geometry; fail quietly and show live state.
+- Repeated clicks while a local reveal is pending or active:
+  - allow only one local dev-card purchase reveal at a time.
+- Unmount / route change during reveal:
+  - clean up the overlay actor and release frozen presentation state immediately.
 
 ## File-Level Changes
 
-- `app/catana/components/PlayerActionContainer.js`
-  - add `buy dev` source-rect capture and pending local reveal start
-  - limit preload squash to the emblem-only portion of the dock icon for this action
-- `app/catana/components/ActionsDock/DockCard.js`
-  - support emblem-only preload rendering for the dev-card icon
-- `app/catana/components/DevCardDisplay.js`
-  - expose or register the display rect needed as the reveal destination
+- `game-core/src/rules/devCards.ts`
+  - return the bought `cardType` from `buyDevCard(...)` on success
+- `app/catana/Moves.js`
+  - emit `buyDevCardReveal` effect with `{ playerId, cardType }`
+- `app/catana/Game.js`
+  - register the new effect in the `EffectsPlugin(...)` config
+- `app/catana/effects/GameEffects.js`
+  - listen for the new effect and forward it into the local effect bus
+- `app/catana/effects/registry.js`
+  - register a dev-card reveal handler channel
 - `app/catana/GameScreen.js`
-  - own the transient local reveal state
-  - detect the newly bought dev card from local state deltas
-  - render the temporary reveal component
-- new local reveal component near the Catana UI animation code
-  - handle dock-to-center travel, back grow/fade, flip, hold, and travel-to-hand cleanup
-- optionally shared motion helpers near existing Catana preview/effect utilities
-  - only if needed to keep the reveal component readable
+  - replace card-diff reveal derivation with effect-driven reveal start
+  - own frozen local hand + VP presentation state
+- `app/catana/components/PlayerActionContainer.js`
+  - capture local pre-buy hand snapshot and pre-buy VP snapshot
+  - continue owning launch geometry capture
+- `app/catana/components/PlayerAvatarStats.js`
+  - accept a local override/frozen VP display input for `isMe`
+- `app/catana/components/DevCardDisplay.js`
+  - no structural redesign; continue rendering whichever hand snapshot `GameScreen` passes down
+- `app/catana/utils/devCardPurchaseReveal.js`
+  - remove diff-based bought-card helpers that are no longer needed
+- focused tests under `app/catana/__tests__/`
+  - move/effect emission
+  - buyer-only reveal wiring
+  - frozen hand release
+  - frozen VP release
 
 ## Guardrails
 
-- Do not expose the bought dev card face to non-buyers in this slice.
-- Do not restyle the dock shell, hand area, or dev-card assets.
-- Do not add a new dependency.
-- Do not block input longer than the short reveal requires.
-- Reuse the existing resource-card travel sound family for the send-to-hand leg.
-- Keep the implementation local/private rather than routing through the shared public effect bus.
+- Do not reintroduce bought-card derivation by local hand diff.
+- Do not make opponents wait on the buyer's reveal.
+- Do not delay the actual `buyDevCard` state update just to satisfy animation timing.
+- Do not move DOM-geometry concerns into the move/effect payload.
+- Keep buyer-only presentation gating in the client, not in the engine rules.
 
 ## Verification
 
-- Manual verification is the primary gate for this slice.
-- Verify:
-  - `buy dev` squashes only the emblem in the dock
-  - the emblem cleanly detaches from the dock and reaches center
-  - the card back builds in around the emblem
-  - the card flips to the correct local bought card
-  - the hold is readable but short
-  - the card travels into the real dev-card hand area
-  - only the buying player sees the face reveal
-  - illegal or failed clicks do not leave stray UI
-- Add only narrow source-level sanity checks if they materially reduce regression risk during implementation.
+- Add focused automated coverage for:
+  - core/move path returning and emitting the correct `cardType`
+  - `buyDevCardReveal` effect emission on successful buys only
+  - local buyer reveal start from effect payload, not card diff
+  - frozen local dev-card hand during active reveal
+  - frozen local VP badge during active reveal
+  - release of both at reveal completion
+- Manual verification:
+  - buy non-VP dev card: face reveal is correct and dock updates only on landing
+  - buy VP dev card: local VP badge updates only on landing
+  - opponent view never sees the face reveal
+  - illegal buy leaves no stale pending state
+  - reduced-motion path still preserves correct hand/VP timing
 
 ## Acceptance Criteria
 
-- Clicking `buy dev` triggers a short emblem-only preload squash in the dock.
-- A successful local dev-card purchase creates one temporary reveal element that starts from the dock button.
-- The reveal reaches center, builds into the dev-card back, flips to the actual bought card, holds briefly, then travels into the player's dev-card hand area.
-- The reveal uses only local player information and is not shown publicly.
-- The green plus badge from the dock icon is excluded from the detached reveal.
-- Failed or unresolved buys do not leave ghost animations or stale local state.
+- A successful `buy dev` emits an authoritative reveal payload containing the exact bought `cardType`.
+- The buyer's reveal animation starts from that payload, not from local hand diffing.
+- The buyer's dev-card dock stays visually frozen until the reveal lands.
+- The buyer's VP badge also stays visually frozen until that same landing moment.
+- Opponents do not see the bought card face reveal.
+- Engine state and scoring still update immediately and authoritatively underneath the local UI freeze.
 
 ## Open Questions
 
-- None for this slice. Public/spectator treatment of dev-card purchase is intentionally deferred.
+- None for this slice. Future "pro mode" behavior can reuse this architecture by shortening or skipping the reveal timing rather than changing the data flow.
