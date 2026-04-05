@@ -238,6 +238,10 @@ const configuredEffectsPlugin = EffectsPlugin({
     placePiece: {
       create: (value) => value,
       duration: getPlacementEffectDuration(PLACE_PIECE_DEFAULT_TUNING)
+    },
+    buyDevCardReveal: {
+      create: (value) => value,
+      duration: 2
     }
   },
 });

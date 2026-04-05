@@ -10,6 +10,9 @@ export function registerEffects({ bus, effects } = {}) {
   if (effects.piecePlacement) {
     unsubscribes.push(bus.on("build:place", effects.piecePlacement));
   }
+  if (effects.devCardReveal) {
+    unsubscribes.push(bus.on("devcard:reveal", effects.devCardReveal));
+  }
 
   return () => {
     unsubscribes.forEach((unsubscribe) => unsubscribe());

@@ -31,4 +31,19 @@ describe("registerEffects", () => {
     cleanup();
     expect(unsubscribe).toHaveBeenCalled();
   });
+
+  it("registers dev card reveal handler and cleans up", () => {
+    const unsubscribe = vi.fn();
+    const bus = { on: vi.fn(() => unsubscribe) };
+    const handler = vi.fn();
+
+    const cleanup = registerEffects({
+      bus,
+      effects: { devCardReveal: handler }
+    });
+
+    expect(bus.on).toHaveBeenCalledWith("devcard:reveal", handler);
+    cleanup();
+    expect(unsubscribe).toHaveBeenCalled();
+  });
 });
