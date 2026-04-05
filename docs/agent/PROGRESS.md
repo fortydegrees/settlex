@@ -10,6 +10,16 @@
 - freeze the local dev-card dock presentation and local VP badge presentation until the reveal lands,
 - leave engine state, scoring, and game-over authority immediate underneath the local UI freeze.
 
+## Status (2026-04-05, effect-driven dev-card reveal implementation plan written)
+- Wrote the implementation plan in:
+- `docs/superpowers/plans/2026-04-05-dev-card-purchase-reveal-plan.md`
+- Planned execution shape for this slice:
+- return and emit the authoritative bought `cardType` from the core rule + move path,
+- wire that payload through `bgio-effects`,
+- start the buyer-only reveal from the effect payload instead of local hand diffing,
+- freeze the buyer's dock hand and VP badge presentation until reveal completion,
+- keep engine state and scoring immediate underneath the local UI delay.
+
 ## Status (2026-04-04, private buy-dev reveal now runs from dock to hand)
 - Added the local-only dev-card purchase reveal for the `buy dev` dock action.
 - Interaction shape:
