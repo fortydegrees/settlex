@@ -5,6 +5,11 @@ import {
 } from "../Moves";
 
 describe("debug scenario snapshot moves", () => {
+  it("captures and clears scenario snapshots on the server only", () => {
+    expect(DEBUG_captureScenarioState.client).toBe(false);
+    expect(DEBUG_clearCapturedScenarioState.client).toBe(false);
+  });
+
   it("captures an authoritative scenario snapshot on G", () => {
     const context = {
       G: {
