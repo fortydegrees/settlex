@@ -9,7 +9,18 @@ import {
 } from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
-import { canBuildRoad, canBuildSettlement, canBuildCity, canMaritimeTrade, canAfford, getPlayableDevCardCounts, buildableNodes, buildableEdges } from "@settlex/game-core";
+import {
+  canBuildRoad,
+  canBuildSettlement,
+  canBuildCity,
+  canMaritimeTrade,
+  canAfford,
+  getPlayableDevCardCounts,
+  buildableNodes,
+  buildableEdges,
+  getVictoryPoints,
+  getPublicVictoryPoints,
+} from "@settlex/game-core";
 import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 import { getBuildPickupPieceType } from "../utils/playerAction";
 import {
@@ -82,6 +93,7 @@ export const PlayerActionContainer = ({
   devCardDisplayRef,
   displayDevCards,
   keepDevCardShellMounted,
+  vpDisplayOverride,
   isActive,
   statusType,
   gameStatus,
@@ -127,11 +139,18 @@ export const PlayerActionContainer = ({
     triggerRect,
     preLaunchDelayMs = 0,
   } = {}) => {
+    const totalPoints = G.core ? getVictoryPoints(G.core, player.id) : 0;
+    const publicPoints = G.core ? getPublicVictoryPoints(G.core, player.id) : 0;
+
     onDevCardPurchaseStart?.({
       playerId: player.id,
       triggerRect: copyTriggerRect(triggerRect),
       preLaunchDelayMs,
       beforeCards: Array.isArray(player.devCards) ? [...player.devCards] : [],
+      vpSnapshot: {
+        publicPoints,
+        totalPoints,
+      },
       startedAtMs: Date.now(),
     });
     moves.buyDevCard();
@@ -348,6 +367,7 @@ export const PlayerActionContainer = ({
           isMe={isMe}
           isActive={isActive}
           statusType={statusType}
+          vpDisplayOverride={vpDisplayOverride}
         />
 
         <div className="relative">

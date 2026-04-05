@@ -49,7 +49,6 @@ import { GameEffects } from "./effects/GameEffects";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
 import {
-  findBoughtDevCardType,
   getVisibleDevCardsDuringReveal,
 } from "./utils/devCardPurchaseReveal";
 import useWindowSize from "./utils/useWindowSize";
@@ -149,6 +148,7 @@ export function GameScreen(bgioProps) {
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
   const devCardDisplayRef = useRef(null);
+  const pendingDevCardRevealRef = useRef(null);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
 
@@ -311,6 +311,43 @@ export function GameScreen(bgioProps) {
   const clearBuildPickup = useCallback(() => {
     setBuildPickup(null);
   }, []);
+  const handleDevCardPurchaseStart = useCallback((snapshot) => {
+    pendingDevCardRevealRef.current = snapshot;
+    setPendingDevCardReveal(snapshot);
+  }, []);
+  const startDevCardRevealFromEffect = useCallback((payload) => {
+    if (!payload?.cardType) {
+      pendingDevCardRevealRef.current = null;
+      setPendingDevCardReveal(null);
+      return;
+    }
+
+    const pendingReveal = pendingDevCardRevealRef.current;
+    if (!pendingReveal) return;
+    if (String(pendingReveal.playerId) !== String(payload.playerId)) return;
+
+    const destinationRect = copyRect(
+      devCardDisplayRef.current?.getBoundingClientRect?.()
+    );
+    if (!destinationRect) {
+      pendingDevCardRevealRef.current = null;
+      setPendingDevCardReveal(null);
+      return;
+    }
+
+    pendingDevCardRevealRef.current = null;
+    setActiveDevCardReveal({
+      playerId: payload.playerId,
+      cardType: payload.cardType,
+      beforeCards: pendingReveal.beforeCards,
+      vpSnapshot: pendingReveal.vpSnapshot ?? null,
+      triggerRect: pendingReveal.triggerRect,
+      destinationRect,
+      launchDelayMs: pendingReveal.preLaunchDelayMs ?? 0,
+      startedAtMs: pendingReveal.startedAtMs ?? Date.now(),
+    });
+    setPendingDevCardReveal(null);
+  }, []);
 
   useEffect(() => {
     if (!isGameOver) {
@@ -326,6 +363,7 @@ export function GameScreen(bgioProps) {
       setShowPostgame(false);
       setPlayerAction(null);
       clearBuildPickup();
+      pendingDevCardRevealRef.current = null;
       setPendingDevCardReveal(null);
       setActiveDevCardReveal(null);
       setShowTradeModal(false);
@@ -354,10 +392,15 @@ export function GameScreen(bgioProps) {
     setIsAcknowledgingIdle(false);
     setReadySent(false);
     setShowConnectionBanner(false);
+    pendingDevCardRevealRef.current = null;
     setPendingDevCardReveal(null);
     setActiveDevCardReveal(null);
     hasSeenTransportConnectionRef.current = false;
   }, [matchID]);
+
+  useEffect(() => {
+    pendingDevCardRevealRef.current = pendingDevCardReveal;
+  }, [pendingDevCardReveal]);
 
   useEffect(() => {
     if (bgioProps.isConnected) {
@@ -604,9 +647,11 @@ export function GameScreen(bgioProps) {
     if (!pendingDevCardReveal) return undefined;
 
     const timeoutId = window.setTimeout(() => {
-      setPendingDevCardReveal((current) =>
-        current === pendingDevCardReveal ? null : current
-      );
+      setPendingDevCardReveal((current) => {
+        if (current !== pendingDevCardReveal) return current;
+        pendingDevCardRevealRef.current = null;
+        return null;
+      });
     }, 2000);
 
     return () => window.clearTimeout(timeoutId);
@@ -620,6 +665,8 @@ export function GameScreen(bgioProps) {
     playerId: playerRevealId,
     playerDevCards: playerDevCards ?? [],
   });
+  const frozenVpSnapshot =
+    activeDevCardReveal?.vpSnapshot ?? pendingDevCardReveal?.vpSnapshot ?? null;
   const revealInFlight =
     (pendingDevCardReveal &&
       String(pendingDevCardReveal.playerId) === String(playerRevealId)) ||
@@ -631,34 +678,6 @@ export function GameScreen(bgioProps) {
         ...player,
         devCards: displayDevCards,
       };
-
-  useEffect(() => {
-    if (!pendingDevCardReveal || activeDevCardReveal) return;
-    if (!playerDevCards?.length) return;
-    if (String(pendingDevCardReveal.playerId) !== String(playerRevealId)) return;
-
-    const cardType = findBoughtDevCardType({
-      beforeCards: pendingDevCardReveal.beforeCards,
-      afterCards: playerDevCards,
-    });
-    if (!cardType) return;
-
-    const destinationRect = copyRect(
-      devCardDisplayRef.current?.getBoundingClientRect?.()
-    );
-    if (!destinationRect) return;
-
-    setActiveDevCardReveal({
-      playerId: playerRevealId,
-      cardType,
-      beforeCards: pendingDevCardReveal.beforeCards,
-      triggerRect: pendingDevCardReveal.triggerRect,
-      destinationRect,
-      launchDelayMs: pendingDevCardReveal.preLaunchDelayMs ?? 0,
-      startedAtMs: pendingDevCardReveal.startedAtMs ?? Date.now(),
-    });
-    setPendingDevCardReveal(null);
-  }, [activeDevCardReveal, pendingDevCardReveal, playerDevCards, playerRevealId]);
 
   // Discard Logic
   // Check if pendingDiscards list includes the current player
@@ -910,9 +929,25 @@ export function GameScreen(bgioProps) {
         });
 
         return (event) => runner(event?.payload);
+      },
+      devCardReveal: () => {
+        return (event) => {
+          const payload = event?.payload;
+          if (!payload) return;
+          if (String(payload.playerId) !== String(playerID)) return;
+          startDevCardRevealFromEffect(payload);
+        };
       }
     };
-  }, [width, height, bgioProps.G, effectiveColorByPlayerId, themeId]);
+  }, [
+    width,
+    height,
+    bgioProps.G,
+    effectiveColorByPlayerId,
+    playerID,
+    startDevCardRevealFromEffect,
+    themeId
+  ]);
   // console.log('p', player)
   // console.log('opps', opponents)
   const handleToggleMute = () => {
@@ -1050,10 +1085,11 @@ TODO: accurately colour it
           //playerID={bgioProps.playerID} //for multiplayer
           player={displayPlayer} //for testing/dev
           presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
-          onDevCardPurchaseStart={setPendingDevCardReveal}
+          onDevCardPurchaseStart={handleDevCardPurchaseStart}
           devCardDisplayRef={devCardDisplayRef}
           displayDevCards={displayPlayer?.devCards ?? null}
           keepDevCardShellMounted={Boolean(revealInFlight)}
+          vpDisplayOverride={frozenVpSnapshot}
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}

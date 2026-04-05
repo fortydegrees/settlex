@@ -1,5 +1,17 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import { getVpDisplay } from "../components/PlayerAvatarStatsUtils";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const playerAvatarStatsPath = path.resolve(
+  __dirname,
+  "..",
+  "components",
+  "PlayerAvatarStats.js"
+);
 
 describe("getVpDisplay", () => {
   it("shows public points only for opponents", () => {
@@ -10,5 +22,13 @@ describe("getVpDisplay", () => {
   it("shows hidden points for local player", () => {
     expect(getVpDisplay({ publicPoints: 3, totalPoints: 5, isMe: true }))
       .toBe("3 (+2)");
+  });
+
+  it("allows the local badge to render from a frozen vp snapshot override", () => {
+    const source = fs.readFileSync(playerAvatarStatsPath, "utf8");
+
+    expect(source).toContain("vpDisplayOverride");
+    expect(source).toContain("vpDisplayOverride?.publicPoints");
+    expect(source).toContain("vpDisplayOverride?.totalPoints");
   });
 });
