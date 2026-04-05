@@ -3013,3 +3013,13 @@
 - Verification for the scenario-capture authority fix:
   - `pnpm exec vitest run app/catana/__tests__/Moves.debugScenario.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm exec eslint app/catana/Moves.js app/catana/DevCardPurchaseReveal.js app/catana/__tests__/Moves.debugScenario.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+- Replaced the dev-card hand-diff startup with an authoritative effect-driven buyer-only reveal flow and froze the local VP badge alongside the dock until the card lands.
+- Current fix:
+  - `game-core/src/rules/devCards.ts` now returns the bought `cardType` from `buyDevCard(...)`, and `app/catana/Moves.js` emits `effects.buyDevCardReveal({ playerId, cardType })` from that authoritative result.
+  - `app/catana/Game.js`, `app/catana/effects/GameEffects.js`, and `app/catana/effects/registry.js` now carry `buyDevCardReveal` through the Catana effect bus as `devcard:reveal`.
+  - `app/catana/GameScreen.js` now starts the reveal from the effect payload, keeps the local hand frozen on `beforeCards`, and threads a frozen `vpSnapshot` to the local dock/avatar until the reveal completes.
+  - `app/catana/components/PlayerActionContainer.js` captures the pre-buy hand and VP snapshot before calling `moves.buyDevCard()`, and `app/catana/components/PlayerAvatarStats.js` can render from that frozen VP override.
+  - `app/catana/utils/devCardPurchaseReveal.js` no longer exposes the old bought-card diff helpers.
+- Verification for the authoritative buyer-only reveal + frozen VP release:
+  - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/effects/GameEffects.test.js app/catana/__tests__/effects/registry.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js app/catana/__tests__/PlayerActionContainer.devCardReveal.test.js app/catana/__tests__/playerAvatarStats.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
+  - `pnpm verify` (passes; lint still reports the repo’s existing Next.js `<img>` / hook warnings, including the longstanding warning in `app/catana/components/PlayerActionContainer.js`)

@@ -26,7 +26,8 @@ export const PlayerAvatarStats = ({
   isMe,
   isActive,
   statusType,
-  presence
+  presence,
+  vpDisplayOverride,
 }) => {
   if (!player) return null;
 
@@ -40,8 +41,12 @@ export const PlayerAvatarStats = ({
   const hasLongestRoad = core?.awards?.longestRoadOwnerId === player.id;
   const hasLargestArmy = core?.awards?.largestArmyOwnerId === player.id;
 
-  const totalPoints = core ? getVictoryPoints(core, player.id) : 0;
-  const publicPoints = core ? getPublicVictoryPoints(core, player.id) : 0;
+  const totalPoints =
+    vpDisplayOverride?.totalPoints ??
+    (core ? getVictoryPoints(core, player.id) : 0);
+  const publicPoints =
+    vpDisplayOverride?.publicPoints ??
+    (core ? getPublicVictoryPoints(core, player.id) : 0);
   const vpDisplay = getVpDisplay({ publicPoints, totalPoints, isMe });
   const isDisconnected = presence?.status === "disconnected";
   const isIdle = presence?.status === "idle";

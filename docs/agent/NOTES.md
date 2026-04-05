@@ -2021,3 +2021,13 @@
     - in that case `buyDevCard` literally grants `"hidden"`, and no flip/reveal implementation can show the real card because the real card type is already gone from the scenario data.
     - the right fix is at scenario capture time, not in the reveal animation.
   - debug scenario snapshot moves should be `client: false` so they run only on the authoritative server state and do not snapshot the optimistic masked client state.
+  - cleaner reveal ownership:
+    - the engine/move layer should publish the bought dev-card type once, directly, instead of forcing the client to rediscover it by diffing the hand.
+    - in this codebase that means `buyDevCard(...)` returns `cardType`, `Moves.buyDevCard` emits `buyDevCardReveal`, and the local Catana effect bus starts the overlay from that payload.
+  - buyer-only presentation freeze:
+    - treat the dev-card hand and the local VP badge like the resource-distribution count animation: game state updates immediately, but the local presentation stays on a pre-buy snapshot until the effect animation finishes.
+    - capture the snapshot at click time in `PlayerActionContainer`, not later from already-updated state.
+  - local state race:
+    - keep a ref for the pending reveal snapshot in `GameScreen`, not just React state, so the authoritative effect can safely consume the click snapshot even if the effect arrives before the next render commits.
+  - current implementation choice:
+    - `GameScreen` now freezes the local hand via `beforeCards` and the local VP badge via `vpSnapshot` during both the pending and active reveal phases, then releases both together in `handleDevCardRevealComplete`.

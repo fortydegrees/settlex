@@ -18,7 +18,9 @@ describe("DevCardPurchaseReveal source", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
     expect(source).toContain("const cardFaceRef = useRef(null)");
     expect(source).toContain("const [displayedCardSrc, setDisplayedCardSrc] = useState(DEV_CARD_BACK_SVG)");
-    expect(source).toContain("const revealCardSrc =");
+    expect(source).toContain(
+      "const revealCardSrc = DEV_CARD_FACE_SVGS[reveal.cardType] ?? DEV_CARD_BACK_SVG"
+    );
     expect(source).toContain("src={displayedCardSrc}");
     expect(source).toContain("setDisplayedCardSrc(revealCardSrc)");
   });
