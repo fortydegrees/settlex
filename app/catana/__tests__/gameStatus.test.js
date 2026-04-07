@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { getGameStatus, STATUS_TYPES } from "../utils/gameStatus";
+import {
+  getGameStatus,
+  shouldShowGameStatusTimer,
+  STATUS_TYPES
+} from "../utils/gameStatus";
 
 describe("getGameStatus", () => {
   const baseCoreState = {
@@ -24,6 +28,29 @@ describe("getGameStatus", () => {
       expect(status.statusType).toBe(STATUS_TYPES.ROLLING);
       expect(status.text).toBe("Roll Dice");
       expect(status.activePlayerId).toBe("0");
+    });
+
+    it("tells the active viewer to roll", () => {
+      const status = getGameStatus(baseCoreState, baseCtx, {
+        viewerPlayerId: "0",
+        playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+      });
+
+      expect(status).toMatchObject({
+        kind: "waiting_for_roll",
+        title: "Roll dice",
+        statusType: STATUS_TYPES.ROLLING,
+        activePlayerId: "0"
+      });
+    });
+
+    it("tells a non-acting viewer who is rolling", () => {
+      const status = getGameStatus(baseCoreState, baseCtx, {
+        viewerPlayerId: "1",
+        playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+      });
+
+      expect(status.title).toBe("Waiting for Ada to roll");
     });
   });
 
@@ -83,6 +110,21 @@ describe("getGameStatus", () => {
       expect(status.statusType).toBe(STATUS_TYPES.DISCARDING);
       expect(status.text).toBe("Discard Cards");
     });
+
+    it("personalizes robber discard copy", () => {
+      const core = {
+        ...baseCoreState,
+        turn: { ...baseCoreState.turn, phase: "robberDiscard", pendingDiscards: ["1"] }
+      };
+      const ctx = { ...baseCtx, currentPlayer: "0", activePlayers: { "1": "robberDiscard" } };
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "1",
+          playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+        }).title
+      ).toBe("Discard resources");
+    });
   });
 
   describe("placement phase statuses", () => {
@@ -126,6 +168,23 @@ describe("getGameStatus", () => {
       const status = getGameStatus(core, ctx, "roadBuilding");
       expect(status.statusType).toBe(STATUS_TYPES.PLACING_ROAD);
       expect(status.text).toBe("Place Road");
+    });
+  });
+
+  describe("timer alignment", () => {
+    it("hides a stale pre-roll timer once status has advanced to your turn", () => {
+      const status = {
+        kind: "your_turn",
+        statusType: STATUS_TYPES.THINKING
+      };
+
+      expect(
+        shouldShowGameStatusTimer(status, {
+          kind: "stage",
+          stageKey: "main:preRoll",
+          remainingMs: 4000
+        })
+      ).toBe(false);
     });
   });
 });
