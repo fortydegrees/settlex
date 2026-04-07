@@ -82,7 +82,7 @@ After bootstrap, the normal release path is:
 7. The VM runs `infra/scripts/deploy-prod.sh`, which:
    - pulls the pinned images
    - recreates the compose stack
-   - runs `pnpm db:migrate` in the `web` container
+   - runs `pnpm db:migrate` in the `web` container once that script exists in the repo
 
 ## Current limitation to remember
 

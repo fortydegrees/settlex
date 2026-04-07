@@ -2153,3 +2153,8 @@
   - reconnect rule:
     - on reconnect, never trust pending local reveal gates.
     - flush/clear deferred local entries and let backlog entries reveal immediately, because the effect that originally gated them may not replay.
+  - OCI deployment notes:
+    - the current production VM at `145.241.244.120` is `x86_64 Ubuntu 24.04`, so container builds must target `linux/amd64`.
+    - keep runtime secrets on the VM in `/srv/settlex/.env.prod`; do not commit them.
+    - use GitHub Actions for verify/build/deploy, but do not require the VM to have GitHub clone credentials for the private repo.
+    - until the accounts/database slice lands, the deploy script must tolerate the absence of `pnpm db:migrate`.

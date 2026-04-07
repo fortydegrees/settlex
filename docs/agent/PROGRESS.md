@@ -3180,3 +3180,14 @@
     - `pnpm exec eslint game-core/src/rules/devCards.ts game-core/src/rules/turnFlow.ts game-core/src/rules/devCards.test.ts game-core/src/rules/turnFlow.test.ts`
   - remaining lint note:
     - the longstanding Next.js `@next/next/no-img-element` warning in `app/catana/components/PlayerActionContainer.js` is still present and was not introduced by this rollout.
+- Implemented the first OCI deployment scaffolding slice in the `codex/accounts-infra` worktree.
+- Current deployment scaffolding status:
+  - repo now includes `Dockerfile.web`, `Dockerfile.game`, local/prod Compose files, `infra/Caddyfile`, `infra/scripts/deploy-prod.sh`, and `.github/workflows/deploy-prod.yml`.
+  - deployment source-contract coverage lives in `server/__tests__/deploymentFiles.source.test.js`.
+  - the deploy target is `linux/amd64`, because the real Oracle VM was verified as `x86_64 Ubuntu 24.04`, not ARM.
+  - `infra/scripts/deploy-prod.sh` now skips `pnpm db:migrate` until that script exists, so the current infra rollout remains compatible with the pre-database app.
+- OCI bootstrap status:
+  - installed Docker `28.2.2` and Docker Compose `2.37.1` on `145.241.244.120`.
+  - prepared `/srv/settlex`.
+  - wrote `/srv/settlex/.env.prod` with generated app/db secrets and `600` permissions.
+  - synced the current deployment scaffold onto the VM so GitHub Actions can target the expected directory layout.
