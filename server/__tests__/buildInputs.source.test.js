@@ -10,6 +10,12 @@ const readRepoFile = (...segments) =>
   fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
 
 describe("production build inputs", () => {
+  it("includes koa-body for the production game server", () => {
+    const packageJson = readRepoFile("package.json");
+
+    expect(packageJson).toContain('"koa-body"');
+  });
+
   it("does not ship a root-level resources symlink", () => {
     const resourcesPath = path.join(repoRoot, "resources");
 

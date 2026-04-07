@@ -37,6 +37,8 @@ Run these steps once on the server:
 2. Create an app directory such as `/srv/settlex`.
 3. Create `/srv/settlex/.env.prod` with:
    - `SITE_HOST`
+     - use `http://<public-ip>` during raw-IP bootstrap so Caddy serves plain HTTP
+     - switch to the bare domain name once DNS exists and you want automatic HTTPS
    - `PUBLIC_APP_URL`
    - `NEXT_PUBLIC_GAME_SERVER_ORIGIN`
    - `SESSION_SECRET`
