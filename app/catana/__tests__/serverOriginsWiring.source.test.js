@@ -19,12 +19,13 @@ describe("server origin wiring", () => {
     expect(contents).not.toContain('window.location.hostname}:8080');
   });
 
-  it("routes the match page through the shared lobby and game origin helpers", () => {
+  it("routes the match page through same-origin app APIs and the shared game origin helper", () => {
     const contents = readAppFile("lobby", "[matchID]", "MatchPageClient.js");
 
     expect(contents).toContain('from "../../utils/serverOrigins"');
-    expect(contents).toContain("getLobbyServerOrigin");
     expect(contents).toContain("getGameServerOrigin");
+    expect(contents).toContain('route: `/api/matches/${matchID}`');
+    expect(contents).toContain('route: "/api/matches/join"');
     expect(contents).not.toContain('window.location.hostname}:8080');
     expect(contents).not.toContain('window.location.hostname}:8000');
   });

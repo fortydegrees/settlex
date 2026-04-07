@@ -2195,4 +2195,18 @@
       - reject control characters
       - reject `[bot]` prefixes so human accounts do not impersonate bot labels already used in the UI
       - cap length at `28` to match the existing identity input max length
-    - this slice still does not wire the lobby/match UI to these routes yet; browser-local identity is still present in the client until the next task replaces raw bgio create/join flows with Settlex-owned match/account APIs.
+  - Match bootstrap/API notes:
+    - the app-owned match routes are now the intended mutation boundary:
+      - `POST /api/matches/create`
+      - `POST /api/matches/join`
+      - `POST /api/matches/leave`
+      - `GET /api/matches/[matchID]`
+    - these routes require a current Settlex session for mutations but still return the same `playerCredentials` shape that the existing Catana client stores in localStorage for live reconnect.
+    - the wrapper layer deliberately calls bgio through HTTP at `GAME_SERVER_INTERNAL_URL` instead of reaching into server internals. That keeps the product/API boundary explicit and testable, and matches the prod topology where the web service and game service are separate containers.
+    - `createMatchForAccount` now does the creator-seat bootstrap in one step:
+      - create bgio match
+      - join seat `0` with the current account snapshot
+      - fetch match metadata for the immediate response
+    - the lobby page now silently restores or creates the current guest account from stored local identity on mount. That means existing returning browsers keep their frictionless feel even though identity is now server-backed.
+    - the lobby page still reads the public match list from bgio directly for now. The important spec requirement was to stop exposing raw bgio **mutation** APIs to the browser; public match listing can stay as-is until a richer product-owned lobby read model exists.
+    - the match page no longer needs `getLobbyServerOrigin` because its metadata/account requests are same-origin app routes. It still needs `getGameServerOrigin` for the live Socket.IO/game transport.

@@ -3234,3 +3234,22 @@
   - `pnpm exec vitest run app/__tests__/api/accountGuestRoute.test.js`
   - `pnpm exec vitest run lib/server/__tests__/guestAccounts.test.js app/__tests__/api/accountGuestRoute.test.js`
   - `pnpm verify`
+- Added the app-owned match bootstrap/API slice.
+- Match bootstrap/API changes:
+  - created `lib/server/matches/createMatchForAccount.js`, `joinMatchForAccount.js`, and `leaveMatchForAccount.js` as thin wrappers over the internal bgio lobby HTTP API exposed at `GAME_SERVER_INTERNAL_URL`.
+  - the join wrapper now writes richer participant snapshots into bgio seat metadata:
+    - humans: `participantType`, `accountId`, `usernameSnapshot`, `avatarSnapshot`
+    - bots: `participantType`, `botKey`, `usernameSnapshot`, `avatarSnapshot`
+    - compatibility fields such as `emoji`, `color`, `bot`, and `isBot` still ship for the current UI/bot manager expectations.
+  - created `app/api/matches/create/route.js`, `join/route.js`, `leave/route.js`, and `[matchID]/route.js` so browser mutation flows now cross a Settlex-owned API boundary instead of calling bgio lobby mutation routes directly.
+  - rewired `app/catana/lobby/LobbyPageClient.js` so:
+    - it restores or silently creates a guest account from stored local identity through `/api/account/me` and `/api/account/guest`
+    - create/join/leave bot/human mutations go through `/api/matches/*`
+    - direct bgio reads remain only for the public match list while mutation traffic is app-owned
+  - rewired `app/catana/lobby/[matchID]/MatchPageClient.js` so match metadata reads use `/api/matches/[matchID]`, seat joins use `/api/matches/join`, and the live board still points at `getGameServerOrigin()` for realtime play.
+  - updated the existing Catana source-contract tests to reflect the new app-route payload shape and the reduced need for the lobby-origin helper on the match page.
+- Verification for the match bootstrap/API slice:
+  - `pnpm exec vitest run lib/server/__tests__/matchBootstrap.test.js`
+  - `pnpm exec vitest run app/__tests__/api/matchRoutes.test.js`
+  - `pnpm exec vitest run lib/server/__tests__/matchBootstrap.test.js app/__tests__/api/matchRoutes.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/MatchPageClient.botFill.test.js`
+  - `pnpm verify`

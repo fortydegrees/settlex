@@ -10,8 +10,10 @@ describe("LobbyPageClient play-vs-bot entrypoint", () => {
     );
 
     expect(source).toContain("Play Against Bot");
-    expect(source).toContain('bot: "puffer"');
-    expect(source).toContain('emoji: "🤖"');
+    expect(source).toContain('route: "/api/matches/join"');
+    expect(source).toContain('participantType: "bot"');
+    expect(source).toContain('botKey: "puffer"');
+    expect(source).toContain('avatarEmoji: "🤖"');
     expect(source).toContain("const playAgainstBot = async");
   });
 
@@ -22,6 +24,6 @@ describe("LobbyPageClient play-vs-bot entrypoint", () => {
     );
 
     expect(source).toContain("normalizePlayerColorId");
-    expect(source).toContain('color: "sky"');
+    expect(source).toContain('avatarColor: "sky"');
   });
 });
