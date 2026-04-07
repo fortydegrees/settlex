@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-07, status/log presentation plan written)
+- Wrote the implementation plan in:
+- `docs/superpowers/plans/2026-04-07-game-status-and-log-presentation-plan.md`
+- Planned execution shape for this slice:
+- viewer-aware status model first,
+- Catana status-box/timer wiring second,
+- richer Monopoly and finite-bank-shortage core payloads third,
+- richer canonical log entries fourth,
+- client-local log reveal timing and reconnect-safe flush behavior last.
+
 ## Status (2026-04-07, status/log presentation design written)
 - Wrote the approved spec in:
 - `docs/superpowers/specs/2026-04-07-game-status-and-log-presentation-design.md`

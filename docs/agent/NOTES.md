@@ -1,5 +1,15 @@
 # NOTES
 
+- Status/log implementation-order note:
+- implement this slice in this order:
+- shared status model,
+- UI consumption / timer gating,
+- core Monopoly + shortage payloads,
+- move/formatter log changes,
+- client-local log reveal timing and reconnect-safe flush.
+- Reason:
+- the delayed-log layer should consume stable canonical entry shapes, not be built before those payload contracts exist.
+
 - Status/log presentation baseline note:
 - the status box near the dice should remain a viewer-personalized current-prompt/orientation surface, not a second event feed.
 - the thought bubble should stay icon-only and read the same shared current-status model as the status box.
