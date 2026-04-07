@@ -141,10 +141,14 @@
   - `proxy`, `web`, `game`, `postgres` services.
 - Create: `infra/Caddyfile`
   - TLS, same-host routing, and websocket proxying to the game service.
+- Create: `infra/scripts/deploy-prod.sh`
+  - Idempotent remote deploy script that pulls pinned images, restarts services, and runs migrations.
+- Create: `.github/workflows/deploy-prod.yml`
+  - CI verify + build `linux/arm64` images + push to GHCR + SSH deploy to OCI.
 - Create: `.env.example`
   - Document required env vars.
 - Create: `docs/deploy/oci-mvp.md`
-  - Exact local-dev and push-live workflow for this stack.
+  - Exact local-dev workflow, one-time OCI bootstrap, and automatic push-to-prod workflow for this stack.
 
 ### Tests
 
@@ -195,24 +199,42 @@ pnpm dev
 7. The browser still talks to the local game server directly for live play because `NEXT_PUBLIC_GAME_SERVER_ORIGIN` points at the local game process.
 8. Magic-link requests in local dev should log the link URL to the terminal instead of requiring a real email provider.
 
+### One-time production bootstrap
+
+Expected initial OCI setup:
+
+1. Install Docker Engine and the Compose plugin on the VM.
+2. Clone the repo onto the VM in a stable path such as `/srv/settlex`.
+3. Create the prod env file on the VM with:
+   - `DATABASE_URL`
+   - `SESSION_SECRET`
+   - `GAME_SERVER_INTERNAL_URL`
+   - `NEXT_PUBLIC_GAME_SERVER_ORIGIN`
+   - `PUBLIC_APP_URL`
+   - SMTP vars
+4. Point DNS for the production host at the OCI VM public IP.
+5. Log Docker into `ghcr.io` on the VM so it can pull private images if needed.
+6. Add GitHub Actions secrets for:
+   - `OCI_HOST`
+   - `OCI_USER`
+   - `OCI_SSH_KEY`
+   - `OCI_APP_DIR`
+7. Run the initial compose bring-up once so the VM has the baseline stack.
+
 ### Pushing live after this feature
 
-Expected production routine on the OCI VM:
+Expected production routine after one-time bootstrap:
 
-1. Push code to the repo as usual.
-2. SSH into the VM and pull the new commit.
-3. Rebuild and restart the web + game containers:
-```bash
-docker compose -f infra/docker-compose.prod.yml up -d --build web game
-```
-4. Run DB migrations against the prod Postgres container:
-```bash
-docker compose -f infra/docker-compose.prod.yml exec web pnpm db:migrate
-```
-5. The same app and game code now talk to prod Postgres because the prod env file points `DATABASE_URL` at the VM-local Postgres service.
-6. Finished archived matches and accounts survive because they live in Postgres.
-7. In prod, Caddy fronts both the web app and game transport on one public host, so `NEXT_PUBLIC_GAME_SERVER_ORIGIN` can be the same site origin.
-8. Live in-progress matches may die on restart; that is accepted MVP behavior.
+1. Push to `main` as usual.
+2. GitHub Actions runs `pnpm verify`.
+3. If CI passes, GitHub Actions builds `linux/arm64` images for `web` and `game`.
+4. GitHub Actions pushes versioned images to `ghcr.io`.
+5. GitHub Actions SSHes into the OCI VM and runs `infra/scripts/deploy-prod.sh`.
+6. The deploy script pulls the pinned image tags, restarts the stack, and runs `pnpm db:migrate` in the web container.
+7. The same app and game code now talk to prod Postgres because the prod env file points `DATABASE_URL` at the VM-local Postgres service.
+8. Finished archived matches and accounts survive because they live in Postgres.
+9. In prod, Caddy fronts both the web app and game transport on one public host, so `NEXT_PUBLIC_GAME_SERVER_ORIGIN` can be the same site origin.
+10. Live in-progress matches may die on restart; that is accepted MVP behavior.
 
 ## Assumptions To Keep During Implementation
 
@@ -921,7 +943,7 @@ git add lib/server/accounts/requestMagicLink.js lib/server/accounts/consumeMagic
 git commit -m "feat: add magic link account claiming"
 ```
 
-### Task 8: Add OCI/Compose deployment files and document local-dev and push-live workflow
+### Task 8: Add OCI/Compose deployment files, GitHub Actions auto-deploy, and delivery docs
 
 **Files:**
 - Create: `Dockerfile.web`
@@ -929,6 +951,8 @@ git commit -m "feat: add magic link account claiming"
 - Create: `infra/docker-compose.local.yml`
 - Create: `infra/docker-compose.prod.yml`
 - Create: `infra/Caddyfile`
+- Create: `infra/scripts/deploy-prod.sh`
+- Create: `.github/workflows/deploy-prod.yml`
 - Create: `docs/deploy/oci-mvp.md`
 - Modify: `package.json`
 
@@ -938,6 +962,8 @@ Create a lightweight source-contract test such as `app/__tests__/deploymentDocs.
 - local compose file includes Postgres only
 - prod compose file includes `proxy`, `web`, `game`, `postgres`
 - Caddy config proxies websocket traffic to the game service
+- deploy script runs pull -> up -> migrate in that order
+- GitHub Actions workflow verifies before building/pushing/deploying
 
 - [ ] **Step 51: Run the deployment source test to verify RED**
 
@@ -963,10 +989,20 @@ Implement:
 - `infra/Caddyfile`
   - route normal web traffic to `web`
   - route websocket/game traffic to `game`
+- `infra/scripts/deploy-prod.sh`
+  - pull exact `WEB_IMAGE` / `GAME_IMAGE` tags from env
+  - restart the compose stack
+  - run migrations
+  - fail fast if any step fails
+- `.github/workflows/deploy-prod.yml`
+  - run `pnpm verify`
+  - build/push `linux/arm64` images to GHCR with immutable tags
+  - SSH to the VM and invoke `infra/scripts/deploy-prod.sh`
 - `docs/deploy/oci-mvp.md`
   - exact local-dev commands
-  - exact production deploy commands
-  - required env vars and file locations
+  - one-time OCI bootstrap commands
+  - exact automatic production deploy flow
+  - required env vars, GitHub secrets, and file locations
 
 - [ ] **Step 53: Run the deployment source test to verify GREEN**
 
@@ -993,11 +1029,11 @@ Expected:
 - bgio server starts
 - local browser can create a guest account and create/join a match without touching prod data
 
-- [ ] **Step 55: Commit deployment and workflow docs**
+- [ ] **Step 55: Commit deployment and auto-deploy workflow**
 
 ```bash
-git add Dockerfile.web Dockerfile.game infra/docker-compose.local.yml infra/docker-compose.prod.yml infra/Caddyfile docs/deploy/oci-mvp.md package.json server/__tests__/deploymentFiles.source.test.js
-git commit -m "chore: add oci compose deployment workflow"
+git add Dockerfile.web Dockerfile.game infra/docker-compose.local.yml infra/docker-compose.prod.yml infra/Caddyfile infra/scripts/deploy-prod.sh .github/workflows/deploy-prod.yml docs/deploy/oci-mvp.md package.json server/__tests__/deploymentFiles.source.test.js
+git commit -m "chore: add oci auto deploy workflow"
 ```
 
 ### Task 9: Update agent docs and run final verification
@@ -1070,4 +1106,5 @@ Before execution, confirm:
 - bots archive cleanly
 - local dev uses local Postgres only
 - local dev uses an explicit local game-server origin while prod collapses to one public host via Caddy
+- prod deploys use CI-verified immutable images rather than blindly pulling `latest`
 - prod deploy instructions do not require exposing Postgres publicly
