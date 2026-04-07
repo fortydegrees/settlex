@@ -157,6 +157,7 @@ export function GameScreen(bgioProps) {
   const deferredLogEntriesRef = useRef([]);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
+  const isReplay = bgioProps.isReplay === true;
 
   //get the active playerID of who's watching
   //can be null for spectator?
@@ -573,6 +574,7 @@ export function GameScreen(bgioProps) {
   }, [bgioProps.idlePresence, bgioProps.idleServerTimeMs]);
 
   useEffect(() => {
+    if (isReplay) return;
     if (!matchID || typeof window === "undefined") return;
     if (bgioProps.timerSnapshot !== undefined || timerSeeded) return;
     let cancelled = false;
@@ -608,9 +610,10 @@ export function GameScreen(bgioProps) {
     return () => {
       cancelled = true;
     };
-  }, [matchID, timerSeeded, bgioProps.timerSnapshot]);
+  }, [isReplay, matchID, timerSeeded, bgioProps.timerSnapshot]);
 
   useEffect(() => {
+    if (isReplay) return;
     if (
       !shouldAutoReady({
         readySent,
@@ -629,6 +632,7 @@ export function GameScreen(bgioProps) {
     moves.readyUp();
     setReadySent(true);
   }, [
+    isReplay,
     readySent,
     playerID,
     moves,
@@ -956,6 +960,7 @@ export function GameScreen(bgioProps) {
   };
 
   useEffect(() => {
+    if (isReplay) return;
     const handleKeyDown = (event) => {
       if (event.defaultPrevented) return;
       if (event.code === "Escape") {
@@ -999,6 +1004,7 @@ export function GameScreen(bgioProps) {
     canEnd,
     clearBuildPickup,
     hasModalOpen,
+    isReplay,
     isGameOver,
     moves,
     playerAction
@@ -1146,7 +1152,7 @@ export function GameScreen(bgioProps) {
         </svg>
       </button>
 
-      {!isGameOver && !!player && (
+      {!isReplay && !isGameOver && !!player && (
         <GlassPillButton
           className="fixed right-4 top-4 z-40"
           onClick={handleResign}
@@ -1177,15 +1183,17 @@ export function GameScreen(bgioProps) {
         bgioProps={bgioProps}
       />
 
-      <GameEffects
-        boardRef={boardRef}
-        effects={effects}
-        currentPlayerId={bgioProps.ctx?.currentPlayer}
-        playerID={playerID}
-        phase={bgioProps.ctx?.phase}
-        gameOverState={gameOverState}
-        isWinner={isWinner}
-      />
+      {!isReplay && (
+        <GameEffects
+          boardRef={boardRef}
+          effects={effects}
+          currentPlayerId={bgioProps.ctx?.currentPlayer}
+          playerID={playerID}
+          phase={bgioProps.ctx?.phase}
+          gameOverState={gameOverState}
+          isWinner={isWinner}
+        />
+      )}
 
       {/* our cards and action dock 
 TODO: accurately colour it

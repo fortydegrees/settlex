@@ -33,4 +33,13 @@ describe("GameScreen game over", () => {
     expect(contents).toContain("moves.resign");
     expect(contents).toContain("Resign this match?");
   });
+
+  it("guards live-only flows when rendering archived replay state", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+
+    expect(contents).toContain("const isReplay = bgioProps.isReplay === true");
+    expect(contents).toContain("if (isReplay) return;");
+    expect(contents).toContain("!isReplay && !isGameOver && !!player");
+    expect(contents).toContain("{!isReplay && (");
+  });
 });
