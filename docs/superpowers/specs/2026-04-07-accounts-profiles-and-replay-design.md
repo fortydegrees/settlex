@@ -108,6 +108,24 @@ Instead:
   - live match state,
   - live log / initial state while the process is running.
 
+### Public API boundary
+
+Raw bgio lobby REST endpoints are not part of the public product API in this MVP.
+
+That means browsers must not call these bgio routes directly:
+- `/games/:name/create`
+- `/games/:name/:id/join`
+- `/games/:name/:id/leave`
+- `/games/:name/:id/update`
+- other equivalent raw bgio lobby mutation routes
+
+Approved rule:
+- product flows such as create, join, leave, and identity-aware match bootstrap must go through Settlex-owned app APIs first,
+- the app/API layer may then call the bgio lobby/server internally,
+- reverse-proxy and service routing should be configured so raw bgio lobby mutation routes are not exposed as public browser product endpoints.
+
+The browser may still connect to the live game transport it needs for gameplay, but identity and seat bootstrap guarantees must not be bypassable by direct public calls to bgio lobby mutations.
+
 ### Why not a bgio Postgres adapter for MVP
 
 For this MVP, a Postgres adapter for bgio live state is not necessary.
@@ -229,7 +247,15 @@ That means each archived match stores a username snapshot per player.
 Live match state can remain in bgio memory, but when a player joins a seat, the seat metadata must include enough product identity for later archival.
 
 Approved seat metadata shape:
+- `participantType`
+  - `human`
+  - `bot`
 - `accountId`
+  - present for human participants
+  - absent for bots
+- `botKey`
+  - present for bots
+  - absent for humans
 - `usernameSnapshot`
 - `avatarSnapshot`
 - existing cosmetic seat data like emoji/color can continue to live there as needed
@@ -256,7 +282,11 @@ This data can be carried in bgio player metadata / `matchData[].data` while the 
 
 - `archived_match_id`
 - `seat_id`
+- `participant_type`
 - `account_id`
+  - nullable for bots
+- `bot_key`
+  - nullable for humans
 - `username_snapshot`
 - `avatar_emoji_snapshot`
 - `avatar_color_snapshot`
@@ -283,6 +313,35 @@ When a live match reaches game over:
 3. Public profile pages and replay pages read only from Postgres.
 
 For MVP, this archive write is the durability boundary. Live in-memory match state is disposable until this write succeeds.
+
+### Archive transaction + idempotency rule
+
+Archive writes must be transactional and idempotent.
+
+Approved rule:
+- `archived_matches.bgio_match_id` must be unique,
+- the archive write for one finished match must happen in one database transaction across:
+  - `archived_matches`
+  - `archived_match_players`
+  - `archived_match_replays`
+- if archive is retried for the same `bgio_match_id`, the operation must no-op or update safely instead of creating duplicates or partial archives.
+
+This is required because end-of-game hooks, retries, or process restarts during archival should not create duplicate replay records.
+
+### Post-archive live-memory cleanup
+
+Finished matches must not remain in bgio memory forever after archival.
+
+Approved rule:
+- once a finished match has been archived successfully, it should be removed from bgio live storage after a short postgame grace period,
+- that grace period exists only to avoid immediately disrupting users who are still on the live postgame screen,
+- replay and profile history are already served from Postgres and must not depend on the bgio copy continuing to exist.
+
+The exact cleanup mechanism can be implementation-driven:
+- immediate wipe after a short timeout,
+- or a finished-match reaper/TTL job.
+
+The important constraint is that finished-match memory usage must scale with active postgame grace windows, not with total historical matches.
 
 ### Replay source of truth
 
@@ -344,6 +403,11 @@ Important rule:
 - bgio credentials = proof you may act as this seat in this live match.
 
 Do not collapse those into one token.
+
+Additional MVP clarification:
+- recovering the same account on another device through magic link does not guarantee reclaiming an already-live seat in an in-progress match,
+- live-seat reclaim remains a separate bgio/live-match concern in this MVP,
+- the guarantee here is account recovery and future finished-match ownership continuity, not cross-device takeover of a currently running live match.
 
 ## Environment Strategy
 
@@ -458,9 +522,13 @@ Explicitly deferred from this MVP design:
 - Confirm usernames are globally unique and stored server-side.
 - Confirm the same browser returns to the same account via guest-session cookie.
 - Confirm a claimed account can be recovered on a second device through magic link.
+- Confirm raw bgio lobby mutation routes are not relied on as public browser product APIs.
 - Confirm a finished match writes one durable archive row set to Postgres.
+- Confirm duplicate archive attempts for the same `bgio_match_id` do not create duplicate or partial archive rows.
+- Confirm bot matches archive cleanly with bot participants represented without fake human accounts.
 - Confirm public `/u/:username` profile pages show summary + recent matches.
 - Confirm public replay pages work even if the original live match no longer exists.
+- Confirm archived finished matches are removed from bgio live memory after the chosen grace period.
 - Confirm live matches are still allowed to die on restart without corrupting archived finished matches.
 
 ## Acceptance Criteria
@@ -468,10 +536,14 @@ Explicitly deferred from this MVP design:
 - First-time play creates a real guest account without adding an upfront registration wall.
 - The server, not localStorage alone, is the source of truth for account identity.
 - Usernames are globally unique and stored on real account rows.
+- Raw bgio lobby mutation routes are not the public browser product API for match bootstrap.
 - Public profile pages exist at `/u/:username`.
 - Finished matches are archived into Postgres forever.
+- Archive writes are transactional and idempotent by `bgio_match_id`.
+- Bot participants can be archived without requiring profile-backed accounts.
 - Public replay pages read from archived replay data, not live bgio state.
 - Live bgio matches remain in memory for MVP and may be lost on restart.
+- Archived finished matches are cleaned out of bgio live memory after a short grace period.
 - Local development uses a separate local Postgres database from production.
 - Production runs on one OCI ARM VM with one Postgres instance and no staging environment.
 
