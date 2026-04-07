@@ -177,6 +177,7 @@ export const PlayerActionContainer = ({
     return counts;
   }, [player.resources]);
   const timerText = formatTimer(timerMs);
+  const showStatusTimer = gameStatus?.showTimer !== false && Boolean(timerText);
   const isSeatWarning =
     presence?.status === "disconnected" || presence?.status === "idle";
   const pieceColor = player.color ?? "red";
@@ -437,8 +438,8 @@ export const PlayerActionContainer = ({
               {SHOW_STATUS_TEXT && gameStatus && (
                 <div className="mt-2 mb-4 w-36 px-3 py-1.5 rounded-lg bg-white/25 backdrop-blur-sm">
                   <div className="flex items-center justify-center gap-2 text-sm font-medium text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-                    <span>{gameStatus.text}</span>
-                    {timerText && (
+                    <span>{gameStatus.title}</span>
+                    {showStatusTimer && (
                       <span className="tabular-nums">{timerText}</span>
                     )}
                   </div>
@@ -465,8 +466,8 @@ export const PlayerActionContainer = ({
           {SHOW_STATUS_TEXT && gameStatus && ctx.phase !== "main" && (
             <div className="w-36 px-3 py-1.5 rounded-lg bg-white/25 backdrop-blur-sm">
               <div className="flex items-center justify-center gap-2 text-sm font-medium text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-                <span>{gameStatus.text}</span>
-                {timerText && (
+                <span>{gameStatus.title}</span>
+                {showStatusTimer && (
                   <span className="tabular-nums">{timerText}</span>
                 )}
               </div>

@@ -84,6 +84,34 @@ describe("getGameStatus", () => {
       expect(status.statusType).toBe(STATUS_TYPES.THINKING);
       expect(status.text).toBe("Your Turn");
     });
+
+    it("tells the active viewer it is their turn", () => {
+      const core = { ...baseCoreState, turn: { ...baseCoreState.turn, phase: "postRoll" } };
+      const ctx = { ...baseCtx, activePlayers: { "0": "postRoll" } };
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "0",
+          playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+        })
+      ).toMatchObject({
+        kind: "your_turn",
+        title: "Your turn",
+        activePlayerId: "0"
+      });
+    });
+
+    it("tells other viewers whose turn it is", () => {
+      const core = { ...baseCoreState, turn: { ...baseCoreState.turn, phase: "postRoll" } };
+      const ctx = { ...baseCtx, activePlayers: { "0": "postRoll" } };
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "1",
+          playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+        }).title
+      ).toBe("Ada's turn");
+    });
   });
 
   describe("robber statuses", () => {
@@ -95,12 +123,43 @@ describe("getGameStatus", () => {
       expect(status.text).toBe("Move Robber");
     });
 
+    it("personalizes robber movement copy", () => {
+      const core = { ...baseCoreState, turn: { ...baseCoreState.turn, phase: "robberMove" } };
+      const ctx = { ...baseCtx, activePlayers: { "0": "moveRobber" } };
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "1",
+          playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+        }).title
+      ).toBe("Ada is moving the robber");
+    });
+
     it("returns stealing status when in robberSteal phase", () => {
       const core = { ...baseCoreState, turn: { ...baseCoreState.turn, phase: "robberSteal" } };
       const ctx = { ...baseCtx, activePlayers: { "0": "stealResource" } };
       const status = getGameStatus(core, ctx);
       expect(status.statusType).toBe(STATUS_TYPES.STEALING);
       expect(status.text).toBe("Choose Player");
+    });
+
+    it("personalizes robber steal copy", () => {
+      const core = { ...baseCoreState, turn: { ...baseCoreState.turn, phase: "robberSteal" } };
+      const ctx = { ...baseCtx, activePlayers: { "0": "stealResource" } };
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "0",
+          playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+        }).title
+      ).toBe("Choose a player to steal from");
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "1",
+          playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+        }).title
+      ).toBe("Ada is choosing who to steal from");
     });
 
     it("returns discarding status when in robberDiscard phase", () => {
@@ -124,6 +183,37 @@ describe("getGameStatus", () => {
           playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
         }).title
       ).toBe("Discard resources");
+    });
+
+    it("uses a plural discard status when multiple players are discarding", () => {
+      const core = {
+        ...baseCoreState,
+        turn: {
+          ...baseCoreState.turn,
+          phase: "robberDiscard",
+          pendingDiscards: ["1", "2"]
+        }
+      };
+      const ctx = {
+        ...baseCtx,
+        currentPlayer: "0",
+        activePlayers: { "1": "robberDiscard", "2": "robberDiscard" }
+      };
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "0",
+          playerMap: {
+            "0": { name: "Ada" },
+            "1": { name: "Bren" },
+            "2": { name: "Cy" }
+          }
+        })
+      ).toMatchObject({
+        kind: "discard_other",
+        title: "2 players are discarding",
+        activePlayerId: null
+      });
     });
   });
 

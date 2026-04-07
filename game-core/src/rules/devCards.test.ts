@@ -236,6 +236,18 @@ it("monopoly is a no-op when no opponents have the chosen resource", () => {
   expect(state.playerStateById["2"].resources).toEqual([ResourceType.BRICK]);
 });
 
+it("returns monopoly summary data", () => {
+  const state = createEmptyState(["0", "1", "2"]);
+  state.playerStateById["1"].resources = [ResourceType.WOOD, ResourceType.WOOD];
+  state.playerStateById["2"].resources = [ResourceType.WOOD];
+
+  expect(applyMonopoly(state, "0", ResourceType.WOOD)).toEqual({
+    ok: true,
+    resource: ResourceType.WOOD,
+    amountStolen: 3
+  });
+});
+
 it("knight increments knightsPlayed", () => {
   const state = createEmptyState(["0"]);
   const result = applyKnight(state, "0");

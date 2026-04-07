@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
-import { getGameStatus } from "./utils/gameStatus";
+import { getGameStatus, shouldShowGameStatusTimer } from "./utils/gameStatus";
 import {
   getBuildPickupPieceType,
   shouldResetPlayerAction
@@ -23,6 +23,10 @@ import {
   mergeVisibleLogEntries,
   readPresenceSnapshot
 } from "./utils/disconnectPresence";
+import {
+  classifyIncomingGameLogEntries,
+  flushDeferredGameLogEntries
+} from "./utils/gameLogPresentation";
 import {
   getActiveIdleStateByPlayerId,
   readIdlePresenceSnapshot
@@ -139,16 +143,22 @@ export function GameScreen(bgioProps) {
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
   const [showConnectionBanner, setShowConnectionBanner] = useState(false);
+  const [presentedGameLogEntries, setPresentedGameLogEntries] = useState([]);
+  const [deferredLogEntries, setDeferredLogEntries] = useState([]);
+  const [lastSeenGameLogId, setLastSeenGameLogId] = useState(0);
   const [boardViewportScale, setBoardViewportScale] = useState(1);
   const robberPlacementMotionMode = DEFAULT_ROBBER_PLACEMENT_MOTION_MODE;
   const gameOverSeenRef = useRef(false);
   const winnerConfettiSeenRef = useRef(false);
   const hasSeenTransportConnectionRef = useRef(false);
+  const previousIsConnectedRef = useRef(bgioProps.isConnected);
+  const bypassNextGameLogDelayRef = useRef(false);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
   const devCardDisplayRef = useRef(null);
   const pendingDevCardRevealRef = useRef(null);
+  const deferredLogEntriesRef = useRef([]);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
 
@@ -162,10 +172,6 @@ export function GameScreen(bgioProps) {
   const coreTurn = core?.turn;
   const gameOverState = bgioProps.ctx?.gameover ?? core?.gameOver;
   const isGameOver = Boolean(gameOverState);
-  const rawGameStatus = getGameStatus(core, bgioProps.ctx, playerAction);
-  const gameStatus = isGameOver
-    ? { text: "Game Over", statusType: rawGameStatus.statusType, activePlayerId: null }
-    : rawGameStatus;
   const devPlay = bgioProps.G.devCardPlay;
   const devPlayMode =
     devPlay?.type === "yearOfPlenty"
@@ -213,6 +219,11 @@ export function GameScreen(bgioProps) {
     }
     return { nameMap: names, emojiMap: emojis, colorMap: colors };
   }, [mergedMatchData]);
+  const rawGameStatus = getGameStatus(core, bgioProps.ctx, {
+    playerAction,
+    viewerPlayerId: playerID,
+    playerMap: nameMap
+  });
   const seatOrderKey = useMemo(
     () => (Array.isArray(core?.players) ? core.players.map(String).join("|") : ""),
     [core?.players]
@@ -278,16 +289,24 @@ export function GameScreen(bgioProps) {
     });
     return map;
   }, [seatPlayerIds, nameMap, emojiMap, colorMap, effectiveColorByPlayerId]);
+  const canonicalGameLogEntries = useMemo(
+    () => (Array.isArray(bgioProps.G?.gameLog) ? bgioProps.G.gameLog : []),
+    [bgioProps.G?.gameLog]
+  );
+  const canDelayGameLogPresentation =
+    typeof window === "undefined" || typeof window.matchMedia !== "function"
+      ? true
+      : !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const visibleLogEntries = useMemo(
     () =>
       mergeVisibleLogEntries(
-        bgioProps.G?.gameLog ?? [],
+        presentedGameLogEntries,
         [
           ...(disconnectPresence?.events ?? []),
           ...(idlePresence?.events ?? [])
         ]
       ),
-    [bgioProps.G?.gameLog, disconnectPresence, idlePresence]
+    [presentedGameLogEntries, disconnectPresence, idlePresence]
   );
   const activeIdlePlayerId = idlePresence?.activeIdlePlayerId ?? null;
   const disconnectStateByPlayerId = useMemo(() => {
@@ -348,6 +367,15 @@ export function GameScreen(bgioProps) {
     });
     setPendingDevCardReveal(null);
   }, []);
+  const handleResourceDistributionComplete = useCallback(() => {
+    const readyToReveal = flushDeferredGameLogEntries(deferredLogEntriesRef.current);
+    if (readyToReveal.length === 0) return;
+    setPresentedGameLogEntries((currentEntries) => [
+      ...currentEntries,
+      ...readyToReveal
+    ]);
+    setDeferredLogEntries([]);
+  }, []);
 
   useEffect(() => {
     if (!isGameOver) {
@@ -392,15 +420,24 @@ export function GameScreen(bgioProps) {
     setIsAcknowledgingIdle(false);
     setReadySent(false);
     setShowConnectionBanner(false);
+    setPresentedGameLogEntries([]);
+    setDeferredLogEntries([]);
+    setLastSeenGameLogId(0);
     pendingDevCardRevealRef.current = null;
+    deferredLogEntriesRef.current = [];
     setPendingDevCardReveal(null);
     setActiveDevCardReveal(null);
     hasSeenTransportConnectionRef.current = false;
+    bypassNextGameLogDelayRef.current = false;
   }, [matchID]);
 
   useEffect(() => {
     pendingDevCardRevealRef.current = pendingDevCardReveal;
   }, [pendingDevCardReveal]);
+
+  useEffect(() => {
+    deferredLogEntriesRef.current = deferredLogEntries;
+  }, [deferredLogEntries]);
 
   useEffect(() => {
     if (bgioProps.isConnected) {
@@ -420,6 +457,70 @@ export function GameScreen(bgioProps) {
 
     return () => clearTimeout(timeoutId);
   }, [bgioProps.isConnected, isGameOver]);
+
+  useEffect(() => {
+    const justReconnected =
+      bgioProps.isConnected && previousIsConnectedRef.current === false;
+
+    if (justReconnected) {
+      const readyToReveal = flushDeferredGameLogEntries(deferredLogEntriesRef.current);
+      bypassNextGameLogDelayRef.current = true;
+      if (readyToReveal.length > 0) {
+        setPresentedGameLogEntries((currentEntries) => [
+          ...currentEntries,
+          ...readyToReveal
+        ]);
+      }
+      setDeferredLogEntries([]);
+    }
+
+    previousIsConnectedRef.current = bgioProps.isConnected;
+  }, [bgioProps.isConnected]);
+
+  useEffect(() => {
+    const isInitialBackfill =
+      lastSeenGameLogId === 0 &&
+      presentedGameLogEntries.length === 0 &&
+      deferredLogEntries.length === 0 &&
+      canonicalGameLogEntries.length > 0;
+    const isBackfill =
+      bypassNextGameLogDelayRef.current || isInitialBackfill;
+    const classification = classifyIncomingGameLogEntries({
+      entries: canonicalGameLogEntries,
+      lastSeenId: lastSeenGameLogId,
+      canDelay: canDelayGameLogPresentation,
+      isBackfill,
+      hasPendingDeferred: deferredLogEntriesRef.current.length > 0
+    });
+
+    if (classification.visibleNow.length > 0) {
+      setPresentedGameLogEntries((currentEntries) => [
+        ...currentEntries,
+        ...classification.visibleNow
+      ]);
+    }
+
+    if (classification.deferred.length > 0) {
+      setDeferredLogEntries((currentEntries) => [
+        ...currentEntries,
+        ...classification.deferred
+      ]);
+    }
+
+    if (classification.nextLastSeenId !== lastSeenGameLogId) {
+      setLastSeenGameLogId(classification.nextLastSeenId);
+    }
+
+    if (isBackfill) {
+      bypassNextGameLogDelayRef.current = false;
+    }
+  }, [
+    canonicalGameLogEntries,
+    lastSeenGameLogId,
+    canDelayGameLogPresentation,
+    presentedGameLogEntries.length,
+    deferredLogEntries.length
+  ]);
 
   useEffect(() => {
     if (
@@ -569,8 +670,23 @@ export function GameScreen(bgioProps) {
           (timerSnapshot.serverDelayMs ?? 0)
       )
     : null;
-  const hideTimer = isGameOver || timerSnapshot?.stageKey?.startsWith("preGame:");
+  const hideTimer =
+    isGameOver ||
+    !shouldShowGameStatusTimer(rawGameStatus, timerSnapshot);
   const visibleTimerMs = hideTimer ? null : timerMs;
+  const gameStatus = isGameOver
+    ? {
+        ...rawGameStatus,
+        kind: "game_over",
+        title: "Game Over",
+        text: "Game Over",
+        activePlayerId: null,
+        showTimer: false
+      }
+    : {
+        ...rawGameStatus,
+        showTimer: !hideTimer
+      };
   const hasDisconnectCountdown =
     Object.keys(disconnectStateByPlayerId).length > 0;
   const hasIdleCountdown = Boolean(activeIdlePlayerId);
@@ -904,6 +1020,7 @@ export function GameScreen(bgioProps) {
           getBoardRect: () =>
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
           emitCue,
+          onComplete: handleResourceDistributionComplete,
           themeId
         });
 
@@ -944,6 +1061,7 @@ export function GameScreen(bgioProps) {
     height,
     bgioProps.G,
     effectiveColorByPlayerId,
+    handleResourceDistributionComplete,
     playerID,
     startDevCardRevealFromEffect,
     themeId

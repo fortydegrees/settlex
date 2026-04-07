@@ -192,29 +192,57 @@ export function createResourceDistributionRunner({
   getLayout,
   getBoardRect,
   emitCue,
+  onComplete,
   random = Math.random,
   themeId
 } = {}) {
   return function run(payload) {
-    if (typeof document === "undefined") return;
-    if (isDocumentHidden()) return;
+    let completed = false;
+    const notifyComplete = () => {
+      if (completed) return;
+      completed = true;
+      onComplete?.();
+    };
+
+    if (typeof document === "undefined") {
+      notifyComplete();
+      return;
+    }
+    if (isDocumentHidden()) {
+      notifyComplete();
+      return;
+    }
 
     const resolvedLayer = getLayerEl ? getLayerEl() : layerEl;
-    if (!resolvedLayer || !getLayout || !getBoardRect) return;
+    if (!resolvedLayer || !getLayout || !getBoardRect) {
+      notifyComplete();
+      return;
+    }
 
     const cards = Array.isArray(payload) ? payload : payload?.cards ?? [];
-    if (!cards.length) return;
+    if (!cards.length) {
+      notifyComplete();
+      return;
+    }
 
     const popDuration = POP_DURATIONS.pop + POP_DURATIONS.settle;
     const layout = getLayout();
-    if (!layout?.size || !layout?.center) return;
+    if (!layout?.size || !layout?.center) {
+      notifyComplete();
+      return;
+    }
     const { size, center } = layout;
     const boardRect = getBoardRect();
-    if (!boardRect) return;
+    if (!boardRect) {
+      notifyComplete();
+      return;
+    }
     const scale = getBoardViewportScale({
       boardRect,
       layoutContainerWidth: layout.containerWidth
     });
+
+    let activeAnimations = 0;
 
     cards.forEach((card, index) => {
       const [centerX, centerY] = center;
@@ -251,6 +279,7 @@ export function createResourceDistributionRunner({
       el.style.width = `${cardWidth}px`;
       el.style.height = `${cardHeight}px`;
       resolvedLayer.appendChild(el);
+      activeAnimations += 1;
 
       const { jitterX, jitterY, rotate } = getRandomizedOffsets(random);
       const anim = getCardAnimationConfig({
@@ -292,6 +321,17 @@ export function createResourceDistributionRunner({
       if (emitCue && index === 0) {
         tl.call(() => emitCue("resource:travel:start"), null, timings.travelCueAt);
       }
+
+      tl.call(() => {
+        activeAnimations -= 1;
+        if (activeAnimations <= 0) {
+          notifyComplete();
+        }
+      }, null, timings.travelStartForCard + TRAVEL_DURATION);
     });
+
+    if (activeAnimations === 0) {
+      notifyComplete();
+    }
   };
 }

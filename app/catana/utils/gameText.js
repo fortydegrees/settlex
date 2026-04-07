@@ -48,6 +48,8 @@ const resourceTokensFromMap = (resourceMap) => {
   return tokens;
 };
 
+const formatResourceName = (resource) => String(resource ?? "").toLowerCase();
+
 const getServerEventPlayerId = (entry) =>
   entry?.data?.playerId ?? entry?.playerId ?? null;
 
@@ -230,8 +232,22 @@ export function formatLogEntry(entry, playerMap = {}) {
       }
       break;
     }
+    case "dev:monopolyResult": {
+      const amountStolen = Number(data.amountStolen ?? 0);
+      const resourceName = formatResourceName(data.resource);
+      tokens.push(textToken(` claimed ${amountStolen} ${resourceName}`));
+      break;
+    }
     case "robber:move": {
-      tokens.push(textToken(" moved the robber"));
+      if (data.tileResource && data.tileNumber != null) {
+        tokens.push(
+          textToken(
+            ` moved the robber to ${formatResourceName(data.tileResource)} ${data.tileNumber}`
+          )
+        );
+      } else {
+        tokens.push(textToken(" moved the robber"));
+      }
       break;
     }
     case "robber:skip": {
@@ -239,10 +255,36 @@ export function formatLogEntry(entry, playerMap = {}) {
       break;
     }
     case "robber:steal": {
-      tokens.push(textToken(" stole a resource"));
+      tokens.push(textToken(" stole a card"));
       if (data.victimId != null) {
         tokens.push(textToken(" from "));
         tokens.push(playerToken(data.victimId, playerMap));
+      }
+      break;
+    }
+    case "resource:shortage": {
+      const resourceName = formatResourceName(data.resource);
+      const required = Number(data.required ?? 0);
+      const available = Number(data.available ?? 0);
+      const allocatedByPlayerId = data.allocatedByPlayerId ?? {};
+      const allocatedPlayerIds = Object.keys(allocatedByPlayerId);
+
+      if (allocatedPlayerIds.length === 1) {
+        const playerId = allocatedPlayerIds[0];
+        const allocated = Number(allocatedByPlayerId[playerId] ?? 0);
+        tokens.push(
+          textToken(
+            `Bank only had ${available} of ${required} ${resourceName}, so `
+          )
+        );
+        tokens.push(playerToken(playerId, playerMap));
+        tokens.push(textToken(` only received ${allocated}.`));
+      } else {
+        tokens.push(
+          textToken(
+            `Bank only had ${available} of ${required} ${resourceName}, so none were distributed.`
+          )
+        );
       }
       break;
     }

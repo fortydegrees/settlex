@@ -31,6 +31,15 @@ const countResources = (resources = []) =>
     return acc;
   }, {});
 
+const getTileLogData = (G, tileId) => {
+  const tile = G?.tiles?.find((entry) => String(entry?.tile?.id) === String(tileId));
+  return {
+    tileId,
+    tileResource: tile?.tile?.resource ?? null,
+    tileNumber: tile?.tile?.number ?? null
+  };
+};
+
 const logResourceDistributions = (G, ctx, distributions, options) => {
   if (!Array.isArray(distributions) || distributions.length === 0) return;
   const byPlayer = new Map();
@@ -46,6 +55,18 @@ const logResourceDistributions = (G, ctx, distributions, options) => {
       type: "resource:gain",
       actorId: playerId,
       data: { resources: byPlayer.get(playerId) },
+      forced: options?.forced
+    });
+  });
+};
+
+const logResourceShortages = (G, ctx, shortages, options) => {
+  if (!Array.isArray(shortages) || shortages.length === 0) return;
+  shortages.forEach((shortage) => {
+    if (!shortage?.resource) return;
+    appendGameLog(G, ctx, {
+      type: "resource:shortage",
+      data: shortage,
       forced: options?.forced
     });
   });
@@ -595,7 +616,7 @@ export const moveRobber = {
     appendGameLog(G, ctx, {
       type: "robber:move",
       actorId: ctx.currentPlayer,
-      data: { tileId: tileID },
+      data: getTileLogData(G, tileID),
       forced: options?.forced
     });
     if (potentialVictims.length === 1) {
@@ -632,6 +653,7 @@ export const rollDice = {
       forced: options?.forced
     });
     logResourceDistributions(G, context.ctx, result.distributions, options);
+    logResourceShortages(G, context.ctx, result.shortages, options);
 
     // Trigger resource distribution and blocked tile animations together
     const hasDistributions = result.distributions?.length > 0;
@@ -906,7 +928,7 @@ export const autoMoveRobber = {
     appendGameLog(G, ctx, {
       type: "robber:move",
       actorId: ctx.currentPlayer,
-      data: { tileId },
+      data: getTileLogData(G, tileId),
       forced: true
     });
     if (selectedVictimId) {
@@ -1084,6 +1106,17 @@ export const confirmDevCardPlay = {
       data: { cardType: devPlay.type },
       forced: options?.forced
     });
+    if (devPlay.type === "monopoly") {
+      appendGameLog(G, ctx, {
+        type: "dev:monopolyResult",
+        actorId: playerID,
+        data: {
+          resource: applied.resource,
+          amountStolen: applied.amountStolen ?? 0
+        },
+        forced: options?.forced
+      });
+    }
 
     G.devCardPlay = null;
   }

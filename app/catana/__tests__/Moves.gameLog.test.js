@@ -1,11 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
-import { createEmptyState, ResourceType } from "@settlex/game-core";
+import {
+  buildTopology,
+  createEmptyState,
+  ResourceType,
+  TileTypes
+} from "@settlex/game-core";
 import {
   autoDiscard,
   buyDevCard,
+  confirmDevCardPlay,
   maybeLogGameOver,
   placeRoad,
-  playDevCardStart
+  playDevCardStart,
+  rollDice,
+  moveRobber
 } from "../Moves";
 
 vi.mock("@settlex/game-core", async () => {
@@ -49,6 +57,22 @@ const makeContext = (overrides = {}) => {
     ...overrides
   };
 };
+
+const testTiles = [
+  {
+    coordinate: [0, 0, 0],
+    type: TileTypes.LAND,
+    tile: {
+      id: 2,
+      resource: ResourceType.WOOD,
+      number: 8,
+      nodes: { NORTH: 1, SOUTH: 2 },
+      edges: {}
+    }
+  }
+];
+
+const testBoard = buildTopology(testTiles);
 
 describe("game log moves", () => {
   it("redacts dev card buy", () => {
@@ -138,6 +162,79 @@ describe("game log moves", () => {
       type: "award:largestArmy",
       actorId: "0",
       data: { previousOwnerId: "1" }
+    });
+  });
+
+  it("logs a monopoly result entry with the claimed total", () => {
+    const context = makeContext();
+    context.G.devCardPlay = { type: "monopoly", playerId: "0" };
+    context.G.core.playerStateById["0"].devCards = ["monopoly"];
+    context.G.core.playerStateById["1"].resources = [
+      ResourceType.WOOD,
+      ResourceType.WOOD
+    ];
+
+    confirmDevCardPlay.move(context, ResourceType.WOOD);
+
+    expect(context.G.gameLog.map((entry) => entry.type)).toEqual([
+      "dev:play",
+      "dev:monopolyResult"
+    ]);
+    expect(context.G.gameLog[1]).toMatchObject({
+      type: "dev:monopolyResult",
+      actorId: "0",
+      data: { resource: ResourceType.WOOD, amountStolen: 2 }
+    });
+  });
+
+  it("logs shortage entries after rolling an understocked resource", () => {
+    const context = makeContext({
+      G: {
+        core: createEmptyState(["0", "1"]),
+        coreTopology: testBoard,
+        tiles: testTiles,
+        gameLog: [],
+        gameLogSeq: 0
+      },
+      random: {
+        Number: () => 0.4,
+        Shuffle: (arr) => arr,
+        D6: () => [4, 4]
+      }
+    });
+    context.G.core.bank.resources = [ResourceType.WOOD];
+    context.G.core.robberTileId = null;
+    context.G.core.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+    context.G.core.buildingsByNodeId[2] = { ownerId: "1", type: "settlement" };
+
+    rollDice.move(context);
+
+    expect(context.G.gameLog.some((entry) => entry.type === "resource:shortage")).toBe(
+      true
+    );
+  });
+
+  it("logs robber destination metadata", () => {
+    const context = makeContext({
+      G: {
+        core: createEmptyState(["0", "1"]),
+        coreTopology: testBoard,
+        tiles: testTiles,
+        gameLog: [],
+        gameLogSeq: 0
+      }
+    });
+
+    moveRobber.move(context, 2);
+
+    expect(
+      context.G.gameLog.find((entry) => entry.type === "robber:move")
+    ).toMatchObject({
+      data: expect.objectContaining({
+        tileId: 2,
+        tileResource: "Wood",
+        tileNumber: 8
+      })
     });
   });
 });
