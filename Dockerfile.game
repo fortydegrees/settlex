@@ -1,0 +1,21 @@
+FROM node:20-bookworm-slim AS base
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+
+RUN corepack enable
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY game-core/package.json game-core/package.json
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm -C game-core build
+
+ENV NODE_ENV=production
+
+EXPOSE 8000 8080
+
+CMD ["node", "server/server.js"]
+
