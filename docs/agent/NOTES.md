@@ -2171,3 +2171,11 @@
       - local dev keeps `8000/8080` split ports
       - `NEXT_PUBLIC_GAME_SERVER_ORIGIN` can override both when needed
     - source tests should keep guarding against raw `localhost:8000` / `localhost:8080` strings leaking back into Catana page wiring, because even commented examples can regress the production bundle assumptions.
+  - Accounts/database foundation notes:
+    - the first local Postgres workflow should use `infra/docker-compose.local.yml` plus `pnpm db:migrate`; this branch made that real.
+    - `localhost:5432` was already occupied on this machine by another Postgres listener, so Settlex local Postgres now binds to `localhost:55432` to avoid accidental connections to the wrong database.
+    - the initial migration runner is intentionally SQL-first and lightweight:
+      - `lib/server/db/runMigrations.js` creates/reads `settlex_migrations`
+      - applies `.sql` files in lexical order
+      - wraps each file in its own transaction
+    - running `pnpm db:migrate` currently emits Node's `MODULE_TYPELESS_PACKAGE_JSON` warning because the repo itself is not `type: module` while the new DB helpers use ESM syntax; it does not block execution, but it is worth cleaning up later if the warning becomes annoying.

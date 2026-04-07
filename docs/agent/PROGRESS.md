@@ -3209,3 +3209,16 @@
 - Verification for the prod-origin slice:
   - `pnpm exec vitest run app/catana/__tests__/serverOrigins.test.js app/catana/__tests__/serverOriginsWiring.source.test.js app/catana/__tests__/GameScreen.idleGrace.test.js app/catana/__tests__/reconnectBanner.test.js`
   - `pnpm build`
+- Added the first accounts/database foundation slice.
+- DB foundation changes:
+  - added `pg` and a new local migration workflow via `pnpm db:migrate` and `pnpm db:migrate:test`.
+  - created `lib/server/db/getPool.js` and `lib/server/db/runMigrations.js` for a shared Postgres pool and ordered SQL migration execution.
+  - added `lib/server/db/sql/0001_accounts_archive.sql` and `lib/server/db/sql/0002_magic_links.sql` with the initial account/archive/magic-link schema.
+  - added `scripts/db/migrate.mjs` and `.env.example` so local and future prod DB setup has a documented entry point.
+  - updated `infra/docker-compose.local.yml` to publish Postgres on `55432` instead of `5432`, because this machine already had another Postgres listener on `localhost:5432` and that made the default local workflow ambiguous.
+- Verification for the DB foundation slice:
+  - `pnpm exec vitest run lib/server/__tests__/dbMigrations.test.js`
+  - `docker compose -f infra/docker-compose.local.yml up -d postgres`
+  - `pnpm db:migrate`
+  - verified tables inside local Postgres: `accounts`, `account_emails`, `auth_identities`, `guest_sessions`, `username_history`, `archived_matches`, `archived_match_players`, `archived_match_replays`, `magic_link_tokens`, `settlex_migrations`
+  - `pnpm verify`
