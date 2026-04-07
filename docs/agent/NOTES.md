@@ -1,5 +1,48 @@
 # NOTES
 
+- Maritime trade batching note:
+- The current bank-trade contract is no longer "one homogeneous give array for one receive resource".
+- `game-core/src/rules/trading.ts` now supports:
+- `getMaritimeTradeReceiveCount(state, board, playerId, give[])` to calculate how many receive slots a mixed offer unlocks using each resource's own best rate,
+- `applyMaritimeTradeBatch(state, board, playerId, { give: Resource[], receive: Resource[] })` to validate and resolve the full offer atomically.
+- Important rule:
+- each give resource is chunked by its own current rate (`2:1` / `3:1` / `4:1`),
+- incomplete leftovers are invalid,
+- receive count must exactly match the total unlocked trade count.
+- UI contract in `app/catana/components/TradeDiscardModal.js`:
+- trade-mode give clicks add/remove whole chunks at that resource's rate, not single cards,
+- trade-mode receive uses +/- steppers with a total cap equal to `getMaritimeTradeReceiveCount(...)`,
+- `Monopoly` uses single-click icon buttons (`Claim <resource>`) instead of numeric steppers.
+
+- Robber discard handoff note:
+- the robber flow belongs to `ctx.currentPlayer`, not to whichever seat happened to trigger the last transition move.
+- Important boardgame.io behavior:
+- `events.setStage(...)` retargets the move caller's stage,
+- so it is unsafe for cross-seat handoffs like `robberDiscard -> moveRobber` or `robberDiscard -> postRoll` when a non-current player finishes the last discard.
+- Current rule in `app/catana/Moves.js`:
+- use `events.setActivePlayers({ currentPlayer: stage, others: null })` for robber-stage entry/exit so control always returns to the roller / acting turn owner.
+
+- Gameplay engine test audit note:
+- our biggest blind spot was not low-level rule helpers, but reducer-level boardgame.io flow coverage where `ctx.currentPlayer`, `ctx.activePlayers`, and `core.turn.phase` can drift.
+- that is exactly how the discard-to-robber hang escaped: the core phase advanced correctly, but the active stage was previously handed to the wrong seat.
+- discard resolution should be modeled as a pending-set, not a turn order:
+- any player in `pendingDiscards` can discard first,
+- the robber move should unlock only after that set becomes empty.
+- external Catan suites were most useful as a checklist for high-risk gameplay sequences:
+- `7 -> multi-player discard -> move robber -> steal -> resume turn`,
+- dev-card action chains and return stages,
+- successful player-trade execution, not only rejection paths,
+- longest-road topology edge cases,
+- deterministic replay / "play for a bit" smoke tests.
+- PyCatan also explicitly tests that the robber cannot stay on its current tile; Settlex was missing that rule and now rejects same-tile robber placement in core.
+- official FAQ bank-shortage rule to preserve:
+- if multiple players are entitled to a resource type and the bank cannot satisfy all of them, nobody gets that resource type that turn,
+- if only one player is entitled to that resource type, that player gets all remaining cards of that type even if it is fewer than their full entitlement.
+- `roadBuilding` should be constrained by legal placements, not only piece supply:
+- if the player has zero legal free-road placements, the card should not start,
+- if the player can legally place only one road, the card should still be playable and should resolve/consume itself after that one free road,
+- this applies both when limited by `roadsRemaining` and when limited by board connectivity / occupied edges.
+
 - Dev-card purchase reveal ownership note:
 - keep the reveal buyer-only in the client, but drive it from an authoritative move/effect payload rather than from local card-array diffing.
 - Current approved shape:

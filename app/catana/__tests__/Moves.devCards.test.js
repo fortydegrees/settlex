@@ -74,6 +74,49 @@ describe("dev card play moves", () => {
     expect(context.G.devCardPlay).toEqual({ type: "yearOfPlenty", playerId: "0" });
   });
 
+  it("playDevCardStart allows road building when exactly one road remains", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["roadBuilding"];
+    state.playerStateById["0"].roadsRemaining = 1;
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+    const ctx = { currentPlayer: "0", activePlayers: { "0": "postRoll" } };
+    const context = { G: { core: state, coreTopology }, playerID: "0", ctx };
+
+    playDevCardStart.move(context, "roadBuilding");
+
+    expect(context.G.devCardPlay).toEqual({
+      type: "roadBuilding",
+      playerId: "0",
+      pendingRoads: 1
+    });
+  });
+
+  it("playDevCardStart does not start road building when no road pieces remain", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["roadBuilding"];
+    state.playerStateById["0"].roadsRemaining = 0;
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+    const ctx = { currentPlayer: "0", activePlayers: { "0": "postRoll" } };
+    const context = { G: { core: state, coreTopology }, playerID: "0", ctx };
+
+    playDevCardStart.move(context, "roadBuilding");
+
+    expect(context.G.devCardPlay).toBeUndefined();
+    expect(state.playerStateById["0"].devCards).toEqual(["roadBuilding"]);
+  });
+
+  it("playDevCardStart does not start road building when no legal road placement exists", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["roadBuilding"];
+    const ctx = { currentPlayer: "0", activePlayers: { "0": "postRoll" } };
+    const context = { G: { core: state, coreTopology }, playerID: "0", ctx };
+
+    playDevCardStart.move(context, "roadBuilding");
+
+    expect(context.G.devCardPlay).toBeUndefined();
+    expect(state.playerStateById["0"].devCards).toEqual(["roadBuilding"]);
+  });
+
   it("playDevCardStart sends knight to moveRobber and stores return stage", () => {
     const state = createEmptyState(["0"]);
     state.playerStateById["0"].devCards = ["knight"];
@@ -149,6 +192,50 @@ describe("dev card play moves", () => {
 
     placeRoadFromDevCard.move(context, "1,2");
 
+    expect(context.G.devCardPlay).toBe(null);
+    expect(state.playerStateById["0"].devCards).toEqual([]);
+  });
+
+  it("placeRoadFromDevCard consumes a single remaining road-building placement", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["roadBuilding"];
+    state.playerStateById["0"].roadsRemaining = 1;
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+    const context = {
+      G: {
+        core: state,
+        coreTopology,
+        devCardPlay: { type: "roadBuilding", playerId: "0", pendingRoads: 1 }
+      },
+      playerID: "0",
+      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" } }
+    };
+
+    placeRoadFromDevCard.move(context, "1,2");
+
+    expect(state.roadsByEdgeId["1,2"]).toBe("0");
+    expect(state.playerStateById["0"].roadsRemaining).toBe(0);
+    expect(context.G.devCardPlay).toBe(null);
+    expect(state.playerStateById["0"].devCards).toEqual([]);
+  });
+
+  it("placeRoadFromDevCard finishes the card when no second legal road remains", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["roadBuilding"];
+    state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+    const context = {
+      G: {
+        core: state,
+        coreTopology,
+        devCardPlay: { type: "roadBuilding", playerId: "0", pendingRoads: 2 }
+      },
+      playerID: "0",
+      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" } }
+    };
+
+    placeRoadFromDevCard.move(context, "1,2");
+
+    expect(state.roadsByEdgeId["1,2"]).toBe("0");
     expect(context.G.devCardPlay).toBe(null);
     expect(state.playerStateById["0"].devCards).toEqual([]);
   });

@@ -30,6 +30,7 @@ tmp/
 public/svgs/working/
 public/svgs/colonist/
 public/svgs/* copy.svg
+misc/
 
 # debug
 npm-debug.log*

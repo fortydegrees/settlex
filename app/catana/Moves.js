@@ -15,7 +15,7 @@ import {
   applyRollDice,
   applyYearOfPlenty,
   applyDiscard,
-  applyMaritimeTrade,
+  applyMaritimeTradeBatch,
   buildableEdges,
   buildableNodes,
   buyDevCard as applyBuyDevCard,
@@ -438,14 +438,23 @@ const getRobberReturnStage = (context) =>
   context.ctx.activePlayers?.[context.ctx.currentPlayer]?.returnTo ||
   "postRoll";
 
+const setCurrentPlayerStage = (context, stage) => {
+  const { events } = context;
+  if (typeof events?.setActivePlayers === "function") {
+    events.setActivePlayers({ currentPlayer: stage, others: null });
+    return;
+  }
+  events.setStage(stage);
+};
+
 const finishRobberResolution = (context) => {
-  const { G, events } = context;
+  const { G } = context;
   const returnTo = getRobberReturnStage(context);
   if (G.core) {
     G.core.turn.phase = returnTo === "preRoll" ? "preRoll" : "postRoll";
   }
   G.robberReturnToStage = null;
-  events.setStage(returnTo);
+  setCurrentPlayerStage(context, returnTo);
   return returnTo;
 };
 
@@ -461,12 +470,12 @@ const skipRobberMoveNoValidTile = (context, options) => {
 };
 
 const beginRobberMoveStage = (context, options) => {
-  const { G, events } = context;
+  const { G } = context;
   if (getRobberCandidateTileIds(G).length === 0) {
     skipRobberMoveNoValidTile(context, options);
     return false;
   }
-  events.setStage("moveRobber");
+  setCurrentPlayerStage(context, "moveRobber");
   return true;
 };
 
@@ -744,15 +753,14 @@ export const discardResources = {
       forced: options?.forced
     });
 
+    if (G.core.turn.phase === "robberMove") {
+      beginRobberMoveStage(context, options);
+      return;
+    }
+
     // After a successful discard, this player is done with this stage.
     // We remove them from the active players.
     events.endStage();
-
-    // Check if we need to advance phase/stage for the *game*
-    // applyDiscard updates pendingDiscards and potentially state.turn.phase to 'robberMove'
-    if (G.core.turn.phase === "robberMove") {
-       beginRobberMoveStage(context, options);
-    }
   }
 };
 
@@ -930,44 +938,34 @@ export const autoChooseSteal = {
 
 export const maritimeTrade = {
   move: (context, trade) => {
-    // trade = { give: [Resource], receive: Resource }
-    // The UI sends an array for give, but core expects single resource for 'give' if using applyMaritimeTrade
-    // Wait, the core applyMaritimeTrade function takes: 
-    //   trade: { give: Resource; receive: Resource }
-    // This implies it only handles ONE trade at a time, e.g. give 4 wood for 1 brick.
-    // If the UI sends { give: ['Wood','Wood','Wood','Wood'], receive: 'Brick' }, we need to parse it.
-    
     const { G, playerID } = context;
-    
-    // Validate input format
-    if (!trade || !trade.give || !Array.isArray(trade.give) || !trade.receive) {
-        console.log("Invalid trade format");
-        return;
+
+    const receive = Array.isArray(trade?.receive)
+      ? trade.receive
+      : trade?.receive
+        ? [trade.receive]
+        : [];
+
+    if (!trade || !Array.isArray(trade.give) || receive.length === 0) {
+      console.log("Invalid trade format");
+      return;
     }
-    
-    // Ensure all given resources are the same type (maritime trade rule)
-    const resourceType = trade.give[0];
-    if (trade.give.some(r => r !== resourceType)) {
-        console.log("Maritime trade requires giving homogenous resources");
-        return;
-    }
-    
-    // Call core function
-    const result = applyMaritimeTrade(G.core, G.coreTopology, playerID, {
-        give: resourceType,
-        receive: trade.receive
+
+    const result = applyMaritimeTradeBatch(G.core, G.coreTopology, playerID, {
+      give: trade.give,
+      receive
     });
-    
+
     if (!result.ok) {
-        console.log(`Invalid maritime trade: ${result.error}`);
-        return;
+      console.log(`Invalid maritime trade: ${result.error}`);
+      return;
     }
     appendGameLog(G, context.ctx, {
       type: "trade:maritime",
       actorId: playerID,
       data: {
-        give: { [resourceType]: trade.give.length },
-        receive: { [trade.receive]: 1 }
+        give: countResources(trade.give),
+        receive: countResources(receive)
       }
     });
   }
@@ -1038,7 +1036,11 @@ export const playDevCardStart = {
     if (cardType === "roadBuilding") {
       const player = G.core?.playerStateById?.[playerID];
       if (!player || player.roadsRemaining <= 0) return;
-      const pendingRoads = player.roadsRemaining >= 2 ? 2 : 1;
+      const legalEdges = buildableEdges(G.core, G.coreTopology, playerID, {
+        initialPlacement: false
+      });
+      const pendingRoads = Math.min(2, player.roadsRemaining, legalEdges.length);
+      if (pendingRoads <= 0) return;
       G.devCardPlay = { type: "roadBuilding", playerId: playerID, pendingRoads };
       return;
     }
@@ -1158,7 +1160,10 @@ export const placeRoadFromDevCard = {
     maybeLogGameOver(G, ctx);
 
     devPlay.pendingRoads -= 1;
-    if (devPlay.pendingRoads <= 0) {
+    const remainingLegalEdges = buildableEdges(G.core, G.coreTopology, playerID, {
+      initialPlacement: false
+    });
+    if (devPlay.pendingRoads <= 0 || remainingLegalEdges.length === 0) {
       const played = playDevCard(G.core, playerID, "roadBuilding");
       if (!played.ok) {
         console.log(`Invalid play dev card: ${played.error}`);

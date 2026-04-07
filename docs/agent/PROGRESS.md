@@ -1,5 +1,68 @@
 # PROGRESS
 
+## Status (2026-04-07, batched maritime trades and monopoly picker cleanup)
+- Fixed the awkward bank-trade UX where maritime trades had to be submitted one at a time even when the offer already contained multiple valid port/bank chunks.
+- Current behavior:
+- `TradeDiscardModal` now lets the player build one maritime submission with multiple give chunks and multiple receive picks in the same dialog.
+- In trade mode, clicking a give resource adds one full tradable chunk at that resource's current best rate (`2:1`, `3:1`, or `4:1`), so one click on `wheat` can add `4`, and two clicks on `ore` can add `8`.
+- The receive row now uses the same +/- count-box pattern as the give row, capped by the total number of trade chunks unlocked by the selected offer.
+- `Monopoly` no longer uses +/- steppers; it now reuses the icon-button picker pattern so exactly one resource is highlighted and then claimed.
+- Rule / move changes:
+- `game-core/src/rules/trading.ts` now exposes `getMaritimeTradeReceiveCount(...)` plus `applyMaritimeTradeBatch(...)` so mixed-rate maritime offers can be validated and applied atomically.
+- `app/catana/Moves.js` now accepts maritime payloads with multiple receive resources and logs aggregated give/receive counts in one `trade:maritime` entry.
+- Added regression coverage in:
+- `game-core/src/rules/trading.test.ts`
+- `app/catana/__tests__/Moves.trade.test.js`
+- `app/catana/__tests__/TradeDiscardModal.test.js`
+- Focused verification:
+- `pnpm exec vitest run game-core/src/rules/trading.test.ts app/catana/__tests__/Moves.trade.test.js app/catana/__tests__/TradeDiscardModal.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/tradeQuickOpen.test.js`
+- `pnpm -C game-core build`
+
+## Status (2026-04-07, gameplay coverage audit pass)
+- Tightened gameplay test coverage around robber and trade flow after auditing PyCatan, JSettlers2, and catanatron:
+- fixed a core rules gap where `applyMoveRobber` allowed the robber to be moved onto its current tile,
+- added a core regression in `game-core/src/rules/turnFlow.test.ts` for illegal same-tile robber placement,
+- added a positive player-trade execution regression in `game-core/src/rules/trading.test.ts`,
+- added a 3-player boardgame.io reducer test in `app/catana/__tests__/Moves.robber.test.js` covering multi-player discard sequencing and handoff back to the roller for `moveRobber`.
+- Matched the official FAQ rule for finite-bank resource shortages:
+- `game-core/src/rules/turnFlow.ts` now gives all remaining cards of a resource to the lone entitled player when the bank cannot fully satisfy that single player's claim,
+- if multiple players are entitled to that resource and the bank cannot satisfy all of them, none of that resource is distributed that turn.
+- Added regressions for the FAQ shortage rule and unordered discards:
+- `game-core/src/rules/turnFlow.test.ts` now covers a lone city receiving the last matching bank card instead of zero cards,
+- `game-core/src/rules/turnFlow.test.ts` also covers pending discarders resolving in arbitrary order,
+- `app/catana/__tests__/Moves.robber.test.js` now proves pending discarders can discard out of order before robber control returns to the roller.
+- Tightened dev-card edge coverage around `roadBuilding`, `yearOfPlenty`, and `monopoly`:
+- `app/catana/Moves.js` now refuses to start `roadBuilding` if the player has no legal free-road placements, even if they still have road pieces,
+- `app/catana/Moves.js` now auto-finishes `roadBuilding` after the first free road if no second legal placement remains,
+- `app/catana/__tests__/Moves.devCards.test.js` now covers:
+- `roadBuilding` with exactly one road piece left,
+- `roadBuilding` with zero road pieces left,
+- `roadBuilding` with zero legal placements,
+- `roadBuilding` auto-finishing when only one legal placement exists,
+- `game-core/src/rules/devCards.test.ts` now covers:
+- `yearOfPlenty` taking two copies of the same resource when both are available,
+- `monopoly` as a no-op when opponents hold none of the chosen resource.
+- Verification for the gameplay coverage pass:
+- `pnpm exec vitest run game-core/src/rules/turnFlow.test.ts game-core/src/rules/trading.test.ts game-core/src/rules/devCards.test.ts game-core/src/rules/victory.test.ts app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.endTurn.test.js`
+
+## Status (2026-04-04, robber handoff stall after out-of-turn discard fixed)
+- Fixed the hang where a `7` roll could get stuck on `Move Robber` after the last discard was made by a non-current player.
+- Root cause:
+- `app/catana/Moves.js` was advancing from `robberDiscard` with `events.setStage("moveRobber")`.
+- In boardgame.io, `setStage` targets the move caller, not necessarily `ctx.currentPlayer`.
+- So when player `0` finished the last discard on player `1`'s turn, the state became:
+- `G.core.turn.phase === "robberMove"`
+- `ctx.currentPlayer === "1"`
+- `ctx.activePlayers["0"] === "moveRobber"`
+- which stranded robber control on the wrong seat and left bot/timer progression unable to resolve the turn.
+- Current fix:
+- robber stage entry/exit now explicitly retarget the current player via `events.setActivePlayers({ currentPlayer: ..., others: null })`,
+- `discardResources` now hands control straight to that current-player robber stage once discards are complete instead of ending only the discarding player's stage first.
+- Added regression coverage in:
+- `app/catana/__tests__/Moves.robber.test.js`
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.devCards.test.js server/__tests__/TimerManager.test.js server/__tests__/pufferBotManager.test.js server/__tests__/pufferStateAdapter.test.js`
+
 ## Status (2026-04-05, dev-card reveal design revised to effect-driven buyer-only flow)
 - Revised the dev-card purchase reveal design in:
 - `docs/superpowers/specs/2026-04-05-dev-card-purchase-reveal-design.md`

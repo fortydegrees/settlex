@@ -200,6 +200,20 @@ it("year of plenty takes two resources if bank has them", () => {
   expect(state.playerStateById["0"].resources).toEqual([ResourceType.WOOD, ResourceType.BRICK]);
 });
 
+it("year of plenty allows taking two of the same resource when both are available", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD, ResourceType.WOOD];
+
+  const result = applyYearOfPlenty(state, "0", [ResourceType.WOOD, ResourceType.WOOD]);
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([
+    ResourceType.WOOD,
+    ResourceType.WOOD
+  ]);
+  expect(state.bank.resources).toEqual([]);
+});
+
 it("monopoly transfers resources from other players", () => {
   const state = createEmptyState(["0", "1"]);
   state.playerStateById["1"].resources = [ResourceType.WOOD, ResourceType.WOOD];
@@ -207,6 +221,19 @@ it("monopoly transfers resources from other players", () => {
   expect(result.ok).toBe(true);
   expect(state.playerStateById["0"].resources).toEqual([ResourceType.WOOD, ResourceType.WOOD]);
   expect(state.playerStateById["1"].resources).toEqual([]);
+});
+
+it("monopoly is a no-op when no opponents have the chosen resource", () => {
+  const state = createEmptyState(["0", "1", "2"]);
+  state.playerStateById["1"].resources = [ResourceType.WHEAT];
+  state.playerStateById["2"].resources = [ResourceType.BRICK];
+
+  const result = applyMonopoly(state, "0", ResourceType.WOOD);
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([]);
+  expect(state.playerStateById["1"].resources).toEqual([ResourceType.WHEAT]);
+  expect(state.playerStateById["2"].resources).toEqual([ResourceType.BRICK]);
 });
 
 it("knight increments knightsPlayed", () => {

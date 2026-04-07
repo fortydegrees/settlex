@@ -4,10 +4,12 @@ import { buildTopology } from "../core/topology";
 import { ResourceType, TileTypes } from "../types";
 import {
   applyMaritimeTrade,
+  applyMaritimeTradeBatch,
   applyPlayerTrade,
   bestTradeRate,
   canMaritimeTrade,
-  canUsePort
+  canUsePort,
+  getMaritimeTradeReceiveCount
 } from "./trading";
 
 const tiles = [
@@ -95,6 +97,163 @@ describe("trading", () => {
     expect(result).toEqual({ ok: false, error: "bank-empty" });
   });
 
+  it("counts mixed maritime give selections using each resource's own rate", () => {
+    const state = createEmptyState(["0"]);
+    state.ruleset.tradeRates.bank = 4;
+    state.playerStateById["0"].resources = [
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT
+    ];
+
+    expect(
+      getMaritimeTradeReceiveCount(state, board, "0", [
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT
+      ])
+    ).toEqual({ ok: true, count: 3 });
+  });
+
+  it("rejects mixed maritime give selections that leave an incomplete trade chunk", () => {
+    const state = createEmptyState(["0"]);
+    state.ruleset.tradeRates.bank = 4;
+    state.playerStateById["0"].resources = [
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE
+    ];
+
+    expect(
+      getMaritimeTradeReceiveCount(state, board, "0", [
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE
+      ])
+    ).toEqual({ ok: false, error: "invalid-trade-ratio" });
+  });
+
+  it("applies mixed maritime trades atomically", () => {
+    const state = createEmptyState(["0"]);
+    state.ruleset.tradeRates.bank = 4;
+    state.ruleset.bank.finite = true;
+    state.playerStateById["0"].resources = [
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT
+    ];
+    state.bank.resources = [
+      ResourceType.BRICK,
+      ResourceType.WOOD,
+      ResourceType.SHEEP
+    ];
+
+    const result = applyMaritimeTradeBatch(state, board, "0", {
+      give: [
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT
+      ],
+      receive: [
+        ResourceType.BRICK,
+        ResourceType.WOOD,
+        ResourceType.SHEEP
+      ]
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(state.playerStateById["0"].resources).toEqual([
+      ResourceType.BRICK,
+      ResourceType.WOOD,
+      ResourceType.SHEEP
+    ]);
+    expect(state.bank.resources).toEqual([
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT
+    ]);
+  });
+
+  it("rejects mixed maritime trades when receive count does not match trade count", () => {
+    const state = createEmptyState(["0"]);
+    state.ruleset.tradeRates.bank = 4;
+    state.playerStateById["0"].resources = [
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.ORE,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT,
+      ResourceType.WHEAT
+    ];
+
+    const result = applyMaritimeTradeBatch(state, board, "0", {
+      give: [
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.ORE,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT,
+        ResourceType.WHEAT
+      ],
+      receive: [ResourceType.BRICK]
+    });
+
+    expect(result).toEqual({ ok: false, error: "invalid-receive-count" });
+  });
+
   it("rejects player trade when ruleset disallows it", () => {
     const state = createEmptyState(["0", "1"]);
     state.ruleset.allowPlayerTrades = false;
@@ -142,5 +301,36 @@ describe("trading", () => {
     });
 
     expect(result).toEqual({ ok: false, error: "insufficient-resources" });
+  });
+
+  it("applies player trades by swapping the offered resources", () => {
+    const state = createEmptyState(["0", "1"]);
+    state.playerStateById["0"].resources = [
+      ResourceType.WOOD,
+      ResourceType.WOOD,
+      ResourceType.SHEEP
+    ];
+    state.playerStateById["1"].resources = [
+      ResourceType.BRICK,
+      ResourceType.WHEAT,
+      ResourceType.ORE
+    ];
+
+    const result = applyPlayerTrade(state, "0", "1", {
+      give: [ResourceType.WOOD, ResourceType.SHEEP],
+      receive: [ResourceType.BRICK, ResourceType.ORE]
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(state.playerStateById["0"].resources).toEqual([
+      ResourceType.WOOD,
+      ResourceType.BRICK,
+      ResourceType.ORE
+    ]);
+    expect(state.playerStateById["1"].resources).toEqual([
+      ResourceType.WHEAT,
+      ResourceType.WOOD,
+      ResourceType.SHEEP
+    ]);
   });
 });
