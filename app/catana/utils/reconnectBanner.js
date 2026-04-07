@@ -3,11 +3,7 @@ import {
   getCredentialsStorageKey,
   readLastActiveMatch
 } from "./activeMatchStorage";
-
-const getDefaultLobbyBaseUrl = () => {
-  if (typeof window === "undefined") return "http://localhost:8080";
-  return `${window.location.protocol}//${window.location.hostname}:8080`;
-};
+import { getLobbyServerOrigin } from "./serverOrigins";
 
 const readPlayers = (match) => {
   if (Array.isArray(match?.players)) return match.players;
@@ -24,7 +20,7 @@ export async function resolveReconnectBannerCandidate({
   pathname,
   storage,
   fetchImpl = fetch,
-  lobbyBaseUrl = getDefaultLobbyBaseUrl()
+  lobbyBaseUrl = getLobbyServerOrigin()
 }) {
   const activeMatch = readLastActiveMatch(storage);
   if (!activeMatch) return null;

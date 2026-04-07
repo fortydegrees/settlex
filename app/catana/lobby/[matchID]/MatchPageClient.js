@@ -13,22 +13,16 @@ import {
   writeLastActiveMatch
 } from "../../utils/activeMatchStorage";
 import { sanitizeDisplayName } from "../../utils/playerIdentity";
+import {
+  getGameServerOrigin,
+  getLobbyServerOrigin
+} from "../../utils/serverOrigins";
 
 const GAME_NAME = "catan";
 const BOT_NAME_PREFIX = "Puffer";
 const PLAYER_NAME_STORAGE_KEY = "catana:lobby:playerName";
 const PLAYER_EMOJI_STORAGE_KEY = "catana:lobby:playerEmoji";
 const PLAYER_COLOR_STORAGE_KEY = "catana:lobby:playerColor";
-
-const getLobbyBaseUrl = () => {
-  if (typeof window === "undefined") return "http://localhost:8080";
-  return `${window.location.protocol}//${window.location.hostname}:8080`;
-};
-
-const getGameServerAddress = () => {
-  if (typeof window === "undefined") return "localhost:8000";
-  return `${window.location.hostname}:8000`;
-};
 
 const safeJson = async (res) => {
   try {
@@ -106,7 +100,7 @@ function normalizeMatch(raw) {
 
 export function MatchPageClient({ matchID, initialPlayerID }) {
   const router = useRouter();
-  const lobbyBaseUrl = useMemo(() => getLobbyBaseUrl(), []);
+  const lobbyBaseUrl = useMemo(() => getLobbyServerOrigin(), []);
 
   const [playerName, setPlayerName] = useState("Visitor");
   const [match, setMatch] = useState(null);
@@ -118,7 +112,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
   const [joinPending, setJoinPending] = useState(false);
   const [botFillPending, setBotFillPending] = useState(false);
 
-  const gameServer = useMemo(() => getGameServerAddress(), []);
+  const gameServer = useMemo(() => getGameServerOrigin(), []);
   const CatanClient = useMemo(() => {
     return Client({
       game: Catan,

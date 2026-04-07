@@ -71,6 +71,7 @@ import {
   readLastActiveMatch
 } from "./utils/activeMatchStorage";
 import { shouldAutoReady } from "./utils/preGameReady";
+import { getLobbyServerOrigin } from "./utils/serverOrigins";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 
@@ -92,11 +93,6 @@ const readStoredThemeId = () => {
   } catch (err) {
     return resolveThemeId(null);
   }
-};
-
-const getApiBaseUrl = () => {
-  if (typeof window === "undefined") return "http://localhost:8080";
-  return `${window.location.protocol}//${window.location.hostname}:8080`;
 };
 
 const copyRect = (rect) => {
@@ -583,7 +579,7 @@ export function GameScreen(bgioProps) {
 
     const fetchSeed = async () => {
       try {
-        const baseUrl = getApiBaseUrl();
+        const baseUrl = getLobbyServerOrigin();
         const url = `${baseUrl}/timer/${matchID}`;
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) return;
@@ -861,7 +857,7 @@ export function GameScreen(bgioProps) {
     setIsAcknowledgingIdle(true);
     setIdleAckError(null);
     try {
-      const baseUrl = getApiBaseUrl();
+      const baseUrl = getLobbyServerOrigin();
       const response = await fetch(`${baseUrl}/idle/${matchID}/ack`, {
         method: "POST",
         headers: {

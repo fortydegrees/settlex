@@ -2164,3 +2164,10 @@
       - `use-transform-effect.tsx` / `use-transform-init.tsx` needed explicit `typeof ... === "function"` cleanup guards for Next's TypeScript check.
       - `react-zoom-pan-pinch/stories` should stay excluded from app TS checking, and `react-zoom-pan-pinch/utils/styles.utils.ts` must import `../models`, not bare `models`.
     - the `bufferutil` / `utf-8-validate` messages from `ws` appear as warnings during `next build` here and did not block the final successful build.
+  - Production matchmaking/origin notes:
+    - OCI now fronts the app through Caddy on `80/443`; browser code must not keep constructing direct `http://<host>:8080` lobby URLs or `<host>:8000` Socket.IO URLs in production.
+    - `app/catana/utils/serverOrigins.js` is the single source of truth:
+      - production defaults to `window.location.origin`
+      - local dev keeps `8000/8080` split ports
+      - `NEXT_PUBLIC_GAME_SERVER_ORIGIN` can override both when needed
+    - source tests should keep guarding against raw `localhost:8000` / `localhost:8080` strings leaking back into Catana page wiring, because even commented examples can regress the production bundle assumptions.

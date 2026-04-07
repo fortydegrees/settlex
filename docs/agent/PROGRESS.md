@@ -3201,3 +3201,11 @@
   - `pnpm exec vitest run server/__tests__/buildInputs.source.test.js server/__tests__/deploymentFiles.source.test.js`
   - `pnpm build`
   - `pnpm verify`
+- Unblocked production Catana matchmaking after the site came up on OCI:
+  - root cause was browser-side Catana code still constructing direct `:8080` lobby URLs and `:8000` Socket.IO URLs, which times out in prod because only ports `80/443` are public behind Caddy.
+  - added `app/catana/utils/serverOrigins.js` so production uses same-origin by default while local development still keeps split `8000/8080` ports unless `NEXT_PUBLIC_GAME_SERVER_ORIGIN` is set.
+  - rewired `app/catana/page.js`, `app/catana/lobby/LobbyPageClient.js`, `app/catana/lobby/[matchID]/MatchPageClient.js`, `app/catana/GameScreen.js`, and `app/catana/utils/reconnectBanner.js` to use the shared helper instead of hardcoded port math.
+  - added source/behavior coverage in `app/catana/__tests__/serverOrigins.test.js`, `app/catana/__tests__/serverOriginsWiring.source.test.js`, and updated `app/catana/__tests__/GameScreen.idleGrace.test.js`.
+- Verification for the prod-origin slice:
+  - `pnpm exec vitest run app/catana/__tests__/serverOrigins.test.js app/catana/__tests__/serverOriginsWiring.source.test.js app/catana/__tests__/GameScreen.idleGrace.test.js app/catana/__tests__/reconnectBanner.test.js`
+  - `pnpm build`

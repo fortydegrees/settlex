@@ -15,6 +15,7 @@ import {
   writeLastActiveMatch
 } from "../utils/activeMatchStorage";
 import { sanitizeDisplayName } from "../utils/playerIdentity";
+import { getLobbyServerOrigin } from "../utils/serverOrigins";
 
 const GAME_NAME = "catan";
 const BOT_NAME_PREFIX = "Puffer";
@@ -39,11 +40,6 @@ const EMOJI_OPTIONS = [
   "😏", "🤠", "🤓", "😈",
   "🥸", "😇", "🤑", "🤪",
 ];
-
-const getLobbyBaseUrl = () => {
-  if (typeof window === "undefined") return "http://localhost:8080";
-  return `${window.location.protocol}//${window.location.hostname}:8080`;
-};
 
 const safeJson = async (res) => {
   try {
@@ -451,7 +447,7 @@ function RoomRow({ match, onJoin, isPending }) {
 
 export function LobbyPageClient() {
   const router = useRouter();
-  const lobbyBaseUrl = useMemo(() => getLobbyBaseUrl(), []);
+  const lobbyBaseUrl = useMemo(() => getLobbyServerOrigin(), []);
 
   const [playerName, setPlayerName] = useState("");
   const [playerEmoji, setPlayerEmoji] = useState("");

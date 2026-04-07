@@ -28,11 +28,11 @@ describe("GameScreen idle grace", () => {
     expect(contents).toContain("/ack");
   });
 
-  it("uses the API server port for timer seed and idle acknowledge routes", () => {
+  it("uses the shared lobby origin helper for timer seed and idle acknowledge routes", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
 
-    expect(contents).toContain(":8080");
-    expect(contents).not.toContain(":8000");
+    expect(contents).toContain("getLobbyServerOrigin");
+    expect(contents).not.toContain('window.location.hostname}:8080');
   });
 
   it("keeps disconnect precedence over idle seat state", () => {
