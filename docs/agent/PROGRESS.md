@@ -1,5 +1,27 @@
 # PROGRESS
 
+## Status (2026-04-07, status/log presentation design written)
+- Wrote the approved spec in:
+- `docs/superpowers/specs/2026-04-07-game-status-and-log-presentation-design.md`
+- Approved direction for this slice:
+- keep the status box as a viewer-personalized current-prompt/orientation surface,
+- keep the thought bubble as the icon-only companion to the same shared status model,
+- keep the game log as canonical history, but improve its payloads for Monopoly / robber / finite-bank-shortage cases,
+- make distribution-related log visibility client-local so animations can delay reveal without delaying canonical state,
+- treat reconnect as a hard reset for local reveal gating so backfilled log entries appear immediately.
+- No implementation yet; this entry records the design baseline only.
+
+## Status (2026-04-07, dev cards use sleeping disabled styling)
+- Replaced the old disabled dev-card grayscale/brown treatment with a softer "sleeping card" treatment.
+- Current behavior:
+- unplayable dev cards keep their base card color instead of desaturating into brown,
+- a cool translucent veil now sits over the card to communicate "not usable right now" without adding text or badges,
+- playable dev cards and their hover/active behavior remain unchanged.
+- Implementation shape:
+- `app/catana/components/DevCardDisplay.css` now uses a subtle blue-white overlay on `.devcard-disabled` instead of the old grayscale filter.
+- Focused verification:
+- inspected the updated disabled-state CSS and compared it against the approved side-by-side mockup used during visual review.
+
 ## Status (2026-04-07, batched maritime trades and monopoly picker cleanup)
 - Fixed the awkward bank-trade UX where maritime trades had to be submitted one at a time even when the offer already contained multiple valid port/bank chunks.
 - Current behavior:

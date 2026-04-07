@@ -1,5 +1,20 @@
 # NOTES
 
+- Status/log presentation baseline note:
+- the status box near the dice should remain a viewer-personalized current-prompt/orientation surface, not a second event feed.
+- the thought bubble should stay icon-only and read the same shared current-status model as the status box.
+- canonical game-log entries should still be appended immediately in state,
+- but distribution-related log visibility may be delayed client-locally until the matching local effect completes.
+- important reconnect rule:
+- if log entries arrive as backlog after reconnect, reveal them immediately and clear any pending local effect-gating state.
+- important secrecy rule:
+- public robber-steal logs stay generic in this slice (`stole a card from X`); exact stolen-resource copy is deferred.
+
+- Dev-card disabled styling note:
+- the approved inactive treatment for unplayable dev cards is "sleeping", not grayscale/disabled-control brown.
+- Keep the underlying card art largely intact and communicate temporary inactivity with a cool translucent veil.
+- Do not add explanatory badges or text like `Next Turn` for this state unless product direction changes later.
+
 - Maritime trade batching note:
 - The current bank-trade contract is no longer "one homogeneous give array for one receive resource".
 - `game-core/src/rules/trading.ts` now supports:
