@@ -15,10 +15,8 @@ import {
 import { sanitizeDisplayName } from "../../utils/playerIdentity";
 import {
   getGameServerOrigin,
-  getLobbyServerOrigin
 } from "../../utils/serverOrigins";
 
-const GAME_NAME = "catan";
 const BOT_NAME_PREFIX = "Puffer";
 const PLAYER_NAME_STORAGE_KEY = "catana:lobby:playerName";
 const PLAYER_EMOJI_STORAGE_KEY = "catana:lobby:playerEmoji";
@@ -41,6 +39,8 @@ const apiRequest = async ({ baseUrl, route, init }) => {
     details?.error || details?.message || `HTTP ${res.status} ${res.statusText}`;
   throw new Error(message);
 };
+
+const appRequest = ({ route, init }) => apiRequest({ baseUrl: "", route, init });
 
 function GlassPanel({ title, right, children }) {
   return (
@@ -100,7 +100,6 @@ function normalizeMatch(raw) {
 
 export function MatchPageClient({ matchID, initialPlayerID }) {
   const router = useRouter();
-  const lobbyBaseUrl = useMemo(() => getLobbyServerOrigin(), []);
 
   const [playerName, setPlayerName] = useState("Visitor");
   const [match, setMatch] = useState(null);
@@ -126,9 +125,8 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
     setIsLoadingMatch(true);
     setError("");
     try {
-      const data = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/${matchID}`,
+      const data = await appRequest({
+        route: `/api/matches/${matchID}`,
       });
       setMatch(normalizeMatch(data));
     } catch (err) {
@@ -137,7 +135,39 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
     } finally {
       setIsLoadingMatch(false);
     }
-  }, [lobbyBaseUrl, matchID]);
+  }, [matchID]);
+
+  const upsertGuestIdentity = useCallback(async () => {
+    const nextName = playerName.trim();
+    if (!nextName) {
+      throw new Error("Pick a player name first.");
+    }
+
+    return appRequest({
+      route: "/api/account/guest",
+      init: {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: nextName,
+          avatarEmoji: (() => {
+            try {
+              return window.localStorage.getItem(PLAYER_EMOJI_STORAGE_KEY) || "😀";
+            } catch (err) {
+              return "😀";
+            }
+          })(),
+          avatarColor: (() => {
+            try {
+              return window.localStorage.getItem(PLAYER_COLOR_STORAGE_KEY) || "sky";
+            } catch (err) {
+              return "sky";
+            }
+          })(),
+        }),
+      },
+    });
+  }, [playerName]);
 
   useEffect(() => {
     try {
@@ -146,6 +176,15 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
     } catch (err) {
       // ignore
     }
+    appRequest({ route: "/api/account/me" })
+      .then((response) => {
+        if (response?.account?.currentUsername) {
+          setPlayerName(response.account.currentUsername);
+        }
+      })
+      .catch(() => {
+        /* ignore */
+      });
     refreshMatch();
   }, [refreshMatch]);
 
@@ -216,25 +255,15 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
     setJoinPending(true);
     setError("");
     try {
-      const joined = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/${matchID}/join`,
+      const account = await upsertGuestIdentity();
+      const joined = await appRequest({
+        route: "/api/matches/join",
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            matchID,
             playerID: String(playerID),
-            playerName,
-            data: {
-              emoji: (() => {
-                try { return window.localStorage.getItem(PLAYER_EMOJI_STORAGE_KEY) || ""; }
-                catch (err) { return ""; }
-              })(),
-              color: (() => {
-                try { return window.localStorage.getItem(PLAYER_COLOR_STORAGE_KEY) || ""; }
-                catch (err) { return ""; }
-              })(),
-            },
           }),
         },
       });
@@ -252,6 +281,9 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
       }
 
       setCredentials(nextCreds);
+      if (account?.account?.currentUsername) {
+        setPlayerName(account.account.currentUsername);
+      }
       router.replace(`/catana/lobby/${matchID}?playerID=${encodeURIComponent(playerID)}`);
       await refreshMatch();
     } catch (err) {
@@ -268,21 +300,21 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
     setError("");
 
     try {
+      await upsertGuestIdentity();
       for (const seat of openSeats) {
-        await apiRequest({
-          baseUrl: lobbyBaseUrl,
-          route: `/games/${GAME_NAME}/${matchID}/join`,
+        await appRequest({
+          route: "/api/matches/join",
           init: {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+              matchID,
               playerID: String(seat.id),
-              playerName: `${BOT_NAME_PREFIX} ${Number(seat.id) + 1}`,
-              data: {
-                bot: "puffer",
-                isBot: true,
-                emoji: "🤖",
-              },
+              participantType: "bot",
+              botKey: "puffer",
+              botName: `${BOT_NAME_PREFIX} ${Number(seat.id) + 1}`,
+              avatarEmoji: "🤖",
+              avatarColor: "sky",
             }),
           },
         });

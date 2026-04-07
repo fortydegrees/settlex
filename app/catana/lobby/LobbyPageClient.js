@@ -59,6 +59,8 @@ const apiRequest = async ({ baseUrl, route, init }) => {
   throw new Error(message);
 };
 
+const appRequest = ({ route, init }) => apiRequest({ baseUrl: "", route, init });
+
 function normalizeMatch(raw) {
   const playersObj = raw?.players || {};
   const players = Object.values(playersObj).sort(
@@ -452,6 +454,7 @@ export function LobbyPageClient() {
   const [playerName, setPlayerName] = useState("");
   const [playerEmoji, setPlayerEmoji] = useState("");
   const [playerColor, setPlayerColor] = useState("");
+  const [currentAccount, setCurrentAccount] = useState(null);
   const [matches, setMatches] = useState([]);
   const [error, setError] = useState("");
 
@@ -462,7 +465,7 @@ export function LobbyPageClient() {
   const playerNameRef = useRef(playerName);
   playerNameRef.current = playerName;
 
-  const hasIdentity = Boolean(playerName.trim());
+  const hasIdentity = Boolean(currentAccount?.currentUsername?.trim());
 
   // Matchmaking
   const [searchState, setSearchState] = useState(null);
@@ -482,6 +485,83 @@ export function LobbyPageClient() {
 
   /* ── Identity gate ── */
 
+  const applyAccountIdentity = useCallback((account) => {
+    if (!account) {
+      setCurrentAccount(null);
+      return;
+    }
+
+    const nextName = account.currentUsername ?? "";
+    const nextEmoji = account.avatarEmoji ?? "";
+    const nextColor = normalizePlayerColorId(account.avatarColor ?? "");
+
+    setCurrentAccount(account);
+    setPlayerName(nextName);
+    setPlayerEmoji(nextEmoji);
+    setPlayerColor(nextColor);
+    playerNameRef.current = nextName;
+
+    try {
+      if (nextName) window.localStorage.setItem(STORAGE_KEY_NAME, nextName);
+      if (nextEmoji) window.localStorage.setItem(STORAGE_KEY_EMOJI, nextEmoji);
+      if (nextColor) window.localStorage.setItem(STORAGE_KEY_COLOR, nextColor);
+    } catch (err) {
+      /* ignore */
+    }
+  }, []);
+
+  const upsertGuestIdentity = useCallback(
+    async ({ name, emoji, color }) => {
+      const normalizedColor = normalizePlayerColorId(color);
+      const response = await appRequest({
+        route: "/api/account/guest",
+        init: {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: name,
+            avatarEmoji: emoji,
+            avatarColor: normalizedColor,
+          }),
+        },
+      });
+
+      if (response?.account) {
+        applyAccountIdentity(response.account);
+      }
+
+      return response?.account ?? null;
+    },
+    [applyAccountIdentity]
+  );
+
+  const restoreOrCreateAccount = useCallback(async () => {
+    try {
+      const current = await appRequest({ route: "/api/account/me" });
+      if (current?.account) {
+        applyAccountIdentity(current.account);
+        return current.account;
+      }
+    } catch (err) {
+      /* ignore */
+    }
+
+    const storedName = getStored(STORAGE_KEY_NAME).trim();
+    if (!storedName) {
+      return null;
+    }
+
+    try {
+      return await upsertGuestIdentity({
+        name: storedName,
+        emoji: getStored(STORAGE_KEY_EMOJI) || EMOJI_OPTIONS[0],
+        color: getStoredPlayerColor() || PLAYER_COLOR_OPTIONS[0]?.id || "sky",
+      });
+    } catch (err) {
+      return null;
+    }
+  }, [applyAccountIdentity, upsertGuestIdentity]);
+
   const requireIdentity = (action) => {
     if (hasIdentity) {
       action();
@@ -491,25 +571,17 @@ export function LobbyPageClient() {
     setShowIdentity(true);
   };
 
-  const handleIdentitySubmit = ({ name, emoji, color }) => {
-    const normalizedColor = normalizePlayerColorId(color);
-    setPlayerName(name);
-    setPlayerEmoji(emoji);
-    setPlayerColor(normalizedColor);
-    playerNameRef.current = name;
+  const handleIdentitySubmit = async ({ name, emoji, color }) => {
     try {
-      window.localStorage.setItem(STORAGE_KEY_NAME, name);
-      window.localStorage.setItem(STORAGE_KEY_EMOJI, emoji);
-      window.localStorage.setItem(STORAGE_KEY_COLOR, normalizedColor);
+      await upsertGuestIdentity({ name, emoji, color });
+      setShowIdentity(false);
+      if (pendingActionRef.current) {
+        const action = pendingActionRef.current;
+        pendingActionRef.current = null;
+        setTimeout(action, 0);
+      }
     } catch (err) {
-      /* ignore */
-    }
-    setShowIdentity(false);
-    if (pendingActionRef.current) {
-      const action = pendingActionRef.current;
-      pendingActionRef.current = null;
-      // Run on next tick so state is settled
-      setTimeout(action, 0);
+      setError(err?.message || "Failed to save account.");
     }
   };
 
@@ -561,9 +633,10 @@ export function LobbyPageClient() {
     } catch (err) {
       /* ignore */
     }
+    restoreOrCreateAccount();
     refreshMatches();
     fetchSavedScenarios();
-  }, [fetchSavedScenarios, refreshMatches]);
+  }, [fetchSavedScenarios, refreshMatches, restoreOrCreateAccount]);
 
   // Auto-refresh when custom section is open
   useEffect(() => {
@@ -584,9 +657,8 @@ export function LobbyPageClient() {
 
     const poll = async () => {
       try {
-        const data = await apiRequest({
-          baseUrl: lobbyBaseUrl,
-          route: `/games/${GAME_NAME}/${searchState.matchID}`,
+        const data = await appRequest({
+          route: `/api/matches/${searchState.matchID}`,
         });
         const match = normalizeMatch(data);
         const allJoined = match.players.every((p) => p.name);
@@ -607,36 +679,13 @@ export function LobbyPageClient() {
 
     const id = setInterval(poll, 1500);
     return () => clearInterval(id);
-  }, [searchState, lobbyBaseUrl, router]);
+  }, [router, searchState]);
 
   /* ── Actions (all read from playerNameRef for fresh value) ── */
 
-  const joinRoom = async ({ matchID, playerID, onError }) => {
-    if (!matchID) return;
-    const name = playerNameRef.current;
-    const emoji = getStored(STORAGE_KEY_EMOJI);
-    const color = getStoredPlayerColor();
-
-    setJoinPendingMatchID(matchID);
-    setError("");
-    try {
-      const joined = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/${matchID}/join`,
-        init: {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            playerID: String(playerID),
-            playerName: name,
-            data: { emoji, color },
-          }),
-        },
-      });
-
-      const credentials = joined?.playerCredentials;
-      if (!credentials)
-        throw new Error("Join succeeded but returned no credentials.");
+  const persistJoinedSeat = useCallback(
+    ({ matchID, playerID, credentials, playerName: nextPlayerName }) => {
+      if (!credentials) return;
 
       try {
         window.localStorage.setItem(
@@ -646,11 +695,59 @@ export function LobbyPageClient() {
         writeLastActiveMatch(window.localStorage, {
           matchID,
           playerID: String(playerID),
-          playerName: name
+          playerName:
+            nextPlayerName ??
+            currentAccount?.currentUsername ??
+            playerNameRef.current,
         });
       } catch (err) {
         /* ignore */
       }
+    },
+    [currentAccount]
+  );
+
+  const ensureAccountSession = useCallback(async () => {
+    if (currentAccount?.id) {
+      return currentAccount;
+    }
+
+    return restoreOrCreateAccount();
+  }, [currentAccount, restoreOrCreateAccount]);
+
+  const joinRoom = async ({ matchID, playerID, onError }) => {
+    if (!matchID) return;
+
+    setJoinPendingMatchID(matchID);
+    setError("");
+    try {
+      const account = await ensureAccountSession();
+      if (!account?.id) {
+        throw new Error("Pick a username first.");
+      }
+
+      const joined = await appRequest({
+        route: "/api/matches/join",
+        init: {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            matchID,
+            playerID: String(playerID),
+          }),
+        },
+      });
+
+      const credentials = joined?.playerCredentials;
+      if (!credentials)
+        throw new Error("Join succeeded but returned no credentials.");
+
+      persistJoinedSeat({
+        matchID,
+        playerID: String(playerID),
+        credentials,
+        playerName: account.currentUsername,
+      });
 
       router.push(
         `/catana/lobby/${matchID}?playerID=${encodeURIComponent(playerID)}`
@@ -665,7 +762,6 @@ export function LobbyPageClient() {
   };
 
   const play = async () => {
-    const name = playerNameRef.current;
     const startedAt = Date.now();
     setError("");
     setSearchState({
@@ -698,9 +794,13 @@ export function LobbyPageClient() {
         return;
       }
 
-      const created = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/create`,
+      const account = await ensureAccountSession();
+      if (!account?.id) {
+        throw new Error("Pick a username first.");
+      }
+
+      const created = await appRequest({
+        route: "/api/matches/create",
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -711,38 +811,12 @@ export function LobbyPageClient() {
       const matchID = created?.matchID;
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
 
-      const emoji = getStored(STORAGE_KEY_EMOJI);
-      const color = getStoredPlayerColor();
-      const joined = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/${matchID}/join`,
-        init: {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            playerID: "0",
-            playerName: name,
-            data: { emoji, color },
-          }),
-        },
+      persistJoinedSeat({
+        matchID,
+        playerID: "0",
+        credentials: created?.playerCredentials,
+        playerName: account.currentUsername,
       });
-
-      const credentials = joined?.playerCredentials;
-      if (credentials) {
-        try {
-          window.localStorage.setItem(
-            getCredentialsStorageKey({ matchID, playerID: "0" }),
-            credentials
-          );
-          writeLastActiveMatch(window.localStorage, {
-            matchID,
-            playerID: "0",
-            playerName: name
-          });
-        } catch (err) {
-          /* ignore */
-        }
-      }
 
       setSearchState({
         matchID,
@@ -757,13 +831,16 @@ export function LobbyPageClient() {
   };
 
   const playAgainstBot = async () => {
-    const name = playerNameRef.current;
     setError("");
 
     try {
-      const created = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/create`,
+      const account = await ensureAccountSession();
+      if (!account?.id) {
+        throw new Error("Pick a username first.");
+      }
+
+      const created = await appRequest({
+        route: "/api/matches/create",
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -774,54 +851,26 @@ export function LobbyPageClient() {
       const matchID = created?.matchID;
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
 
-      const emoji = getStored(STORAGE_KEY_EMOJI);
-      const color = getStoredPlayerColor();
-      const joined = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/${matchID}/join`,
-        init: {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            playerID: "0",
-            playerName: name,
-            data: { emoji, color },
-          }),
-        },
+      persistJoinedSeat({
+        matchID,
+        playerID: "0",
+        credentials: created?.playerCredentials,
+        playerName: account.currentUsername,
       });
 
-      const credentials = joined?.playerCredentials;
-      if (credentials) {
-        try {
-          window.localStorage.setItem(
-            getCredentialsStorageKey({ matchID, playerID: "0" }),
-            credentials
-          );
-          writeLastActiveMatch(window.localStorage, {
-            matchID,
-            playerID: "0",
-            playerName: name
-          });
-        } catch (err) {
-          /* ignore */
-        }
-      }
-
-      await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/${matchID}/join`,
+      await appRequest({
+        route: "/api/matches/join",
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            matchID,
             playerID: "1",
-            playerName: `${BOT_NAME_PREFIX} 2`,
-            data: {
-              bot: "puffer",
-              isBot: true,
-              emoji: "🤖",
-              color: "sky",
-            },
+            participantType: "bot",
+            botKey: "puffer",
+            botName: `${BOT_NAME_PREFIX} 2`,
+            avatarEmoji: "🤖",
+            avatarColor: "sky",
           }),
         },
       });
@@ -847,13 +896,13 @@ export function LobbyPageClient() {
         })
       );
       if (credentials) {
-        await apiRequest({
-          baseUrl: lobbyBaseUrl,
-          route: `/games/${GAME_NAME}/${searchState.matchID}/leave`,
+        await appRequest({
+          route: "/api/matches/leave",
           init: {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+              matchID: searchState.matchID,
               playerID: searchState.playerID,
               credentials,
             }),
@@ -885,9 +934,13 @@ export function LobbyPageClient() {
     setCreatePending(true);
     setError("");
     try {
-      const created = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/create`,
+      const account = await ensureAccountSession();
+      if (!account?.id) {
+        throw new Error("Pick a username first.");
+      }
+
+      const created = await appRequest({
+        route: "/api/matches/create",
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -896,8 +949,14 @@ export function LobbyPageClient() {
       });
       const matchID = created?.matchID;
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
+      persistJoinedSeat({
+        matchID,
+        playerID: created?.playerID ?? "0",
+        credentials: created?.playerCredentials,
+        playerName: account.currentUsername,
+      });
       await refreshMatches();
-      await joinRoom({ matchID, playerID: "0" });
+      router.push(`/catana/lobby/${matchID}?playerID=0`);
     } catch (err) {
       setError(err?.message || "Failed to create room.");
     } finally {
@@ -925,9 +984,13 @@ export function LobbyPageClient() {
     setScenarioStartPending(true);
     setError("");
     try {
-      const created = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}/create`,
+      const account = await ensureAccountSession();
+      if (!account?.id) {
+        throw new Error("Pick a username first.");
+      }
+
+      const created = await appRequest({
+        route: "/api/matches/create",
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -942,8 +1005,14 @@ export function LobbyPageClient() {
 
       const matchID = created?.matchID;
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
+      persistJoinedSeat({
+        matchID,
+        playerID: created?.playerID ?? "0",
+        credentials: created?.playerCredentials,
+        playerName: account.currentUsername,
+      });
       await refreshMatches();
-      await joinRoom({ matchID, playerID: "0" });
+      router.push(`/catana/lobby/${matchID}?playerID=0`);
     } catch (err) {
       setError(err?.message || "Failed to start scenario room.");
     } finally {
