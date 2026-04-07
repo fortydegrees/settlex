@@ -2239,3 +2239,16 @@
       - summary stat cards
       - recent finished matches with replay links
     - the profile page was written without JSX because Vitest imports these app-route modules as plain `.js` files, and Vite import analysis rejects JSX in that path. If we want JSX here later, either the file extension or the test/import strategy will need to change.
+  - Archived replay notes:
+    - replay frames are rebuilt from archived actions, not stored as per-step snapshots:
+      - `buildReplayFrames` starts from the archived `initialState`
+      - replays each logged bgio action through `CreateGameReducer`
+      - captures a cloned state after every action
+    - this means replay fidelity depends on archiving the real bgio action log and keeping the reducer-compatible game config available. It avoids storing a large state snapshot for every turn while still giving step-through playback.
+    - `app/replays/[replayId]/page.js` also avoids eagerly importing the heavy client tree. It lazily loads the default replay client when one is not injected, which keeps the Vitest page contract lightweight.
+    - `ReplayPageClient` currently renders the archived game through `GameScreen` in replay/spectator mode:
+      - `playerID` is `null`
+      - moves/events are empty
+      - `isReplay` disables live-only effects and controls
+      - the current implementation favors safe read-only board playback over exposing every hidden hand detail from the finished match
+    - the same `.js` / JSX import-analysis constraint showed up again for replay route files, so both `app/replays/[replayId]/page.js` and the replay controls/client were written with `createElement` instead of JSX to stay importable in Vitest.

@@ -3277,3 +3277,16 @@
   - `pnpm exec vitest run app/__tests__/profilePage.test.js`
   - `pnpm exec vitest run lib/server/__tests__/publicProfile.test.js app/__tests__/profilePage.test.js`
   - `pnpm verify`
+- Added the archived replay slice.
+- Archived replay changes:
+  - created `lib/server/replays/getArchivedReplay.js` to load archived match metadata, participant snapshots, and replay payload by public replay id.
+  - created `lib/server/replays/buildReplayFrames.js` to rebuild sequential replay frames from archived `initialState` plus the stored bgio action log.
+  - created `app/replays/[replayId]/page.js`, `ReplayPageClient.js`, and `app/replays/components/ReplayControls.js` so archived replays now have a real public page with prev/next/scrubber controls.
+  - updated `app/catana/GameScreen.js` so replay rendering skips live-only behavior like timer seeding, auto-ready, resign, and live effects.
+  - updated `app/catana/__tests__/GameScreen.gameOver.test.js` and added `lib/server/__tests__/replayFrames.test.js` plus `app/__tests__/replayPage.test.js` to lock the replay contract in place.
+- Verification for the archived replay slice:
+  - `pnpm exec vitest run lib/server/__tests__/replayFrames.test.js`
+  - `pnpm exec vitest run app/__tests__/replayPage.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/GameScreen.gameOver.test.js`
+  - `pnpm exec vitest run lib/server/__tests__/replayFrames.test.js app/__tests__/replayPage.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
+  - `pnpm verify`
