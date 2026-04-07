@@ -3222,3 +3222,15 @@
   - `pnpm db:migrate`
   - verified tables inside local Postgres: `accounts`, `account_emails`, `auth_identities`, `guest_sessions`, `username_history`, `archived_matches`, `archived_match_players`, `archived_match_replays`, `magic_link_tokens`, `settlex_migrations`
   - `pnpm verify`
+- Added the guest-account and server-backed session foundation slice.
+- Guest account/session changes:
+  - created `lib/server/accounts/normalizeUsername.js` with trim + whitespace collapse, `[bot]` rejection, and a hard `28`-character cap aligned with the current lobby/match identity UI.
+  - created `lib/server/accounts/createGuestAccount.js`, `getSessionAccount.js`, and `updateGuestIdentity.js` for transactional guest creation, opaque session lookup, and guest identity refresh against the new Postgres schema.
+  - created `lib/server/session/cookieNames.js` and `writeSessionCookie.js` so the app now has a single `settlex_session` cookie contract instead of browser-local identity being the only source of truth.
+  - added thin Next route factories in `app/api/account/guest/route.js` and `app/api/account/me/route.js`; the factories accept an injected pool in tests, while production can resolve the shared pool lazily.
+  - added a fake in-memory account pool harness in `lib/server/__tests__/helpers/fakeAccountsPool.js` to keep the new service and route tests focused on account/session behavior without requiring a real Postgres instance.
+- Verification for the guest account/session slice:
+  - `pnpm exec vitest run lib/server/__tests__/guestAccounts.test.js`
+  - `pnpm exec vitest run app/__tests__/api/accountGuestRoute.test.js`
+  - `pnpm exec vitest run lib/server/__tests__/guestAccounts.test.js app/__tests__/api/accountGuestRoute.test.js`
+  - `pnpm verify`

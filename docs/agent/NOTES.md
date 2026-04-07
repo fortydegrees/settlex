@@ -2179,3 +2179,20 @@
       - applies `.sql` files in lexical order
       - wraps each file in its own transaction
     - running `pnpm db:migrate` currently emits Node's `MODULE_TYPELESS_PACKAGE_JSON` warning because the repo itself is not `type: module` while the new DB helpers use ESM syntax; it does not block execution, but it is worth cleaning up later if the warning becomes annoying.
+  - Guest account/session notes:
+    - this slice intentionally keeps account/session logic server-owned but very small:
+      - `POST /api/account/guest` either creates the first guest account or refreshes the current guest identity
+      - `GET /api/account/me` resolves the current server-backed session and returns the current account or `null`
+    - route modules export factory functions (`createAccountGuestRoute`, `createAccountMeRoute`) and resolve `getPool()` lazily inside the handler, not at import time. That keeps Vitest route tests injectable and avoids hard-failing route imports when `DATABASE_URL` is unset.
+    - the session cookie contract is now:
+      - name: `settlex_session`
+      - value: `selector.token`
+      - storage: DB stores only the hashed token, keyed by selector
+      - flags: `Path=/`, `HttpOnly`, `SameSite=Lax`, `Max-Age=31536000`, and `Secure` only when `PUBLIC_APP_URL` is HTTPS
+    - username normalization is currently conservative and MVP-friendly:
+      - trim leading/trailing whitespace
+      - collapse internal whitespace runs to a single space
+      - reject control characters
+      - reject `[bot]` prefixes so human accounts do not impersonate bot labels already used in the UI
+      - cap length at `28` to match the existing identity input max length
+    - this slice still does not wire the lobby/match UI to these routes yet; browser-local identity is still present in the client until the next task replaces raw bgio create/join flows with Settlex-owned match/account APIs.
