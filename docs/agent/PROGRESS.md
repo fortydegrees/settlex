@@ -3290,3 +3290,16 @@
   - `pnpm exec vitest run app/catana/__tests__/GameScreen.gameOver.test.js`
   - `pnpm exec vitest run lib/server/__tests__/replayFrames.test.js app/__tests__/replayPage.test.js app/catana/__tests__/GameScreen.gameOver.test.js`
   - `pnpm verify`
+- Added the account-claim magic-link slice.
+- Claim flow changes:
+  - created `lib/server/accounts/requestMagicLink.js` and `consumeMagicLink.js` for one-time token issuance, token verification, account upgrade, verified email persistence, and `magic_link` identity attachment.
+  - created `lib/server/email/createEmailTransport.js` with a dev-friendly preview transport that logs and returns the magic-link URL instead of requiring a provider during local work.
+  - created `app/api/account/claim/request/route.js` and `consume/route.js` so the browser can request a link while the clicked email URL upgrades the same account via a redirect-based consume flow.
+  - created `app/account/page.js` as the minimal current-account UI for entering an email and opening the local/dev preview link.
+  - updated `app/catana/lobby/LobbyPageClient.js` and `app/catana/lobby/[matchID]/MatchPageClient.js` to surface an `Account` entry point from the existing Catana flows.
+  - extended `lib/server/__tests__/helpers/fakeAccountsPool.js` and added `lib/server/__tests__/magicLinks.test.js` plus `app/__tests__/api/accountClaimRoute.test.js` to keep the claim flow covered without requiring a real database or SMTP provider.
+- Verification for the claim flow slice:
+  - `pnpm exec vitest run lib/server/__tests__/magicLinks.test.js`
+  - `pnpm exec vitest run app/__tests__/api/accountClaimRoute.test.js`
+  - `pnpm exec vitest run lib/server/__tests__/magicLinks.test.js app/__tests__/api/accountClaimRoute.test.js`
+  - `pnpm verify`

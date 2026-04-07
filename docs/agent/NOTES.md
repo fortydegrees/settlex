@@ -2252,3 +2252,19 @@
       - `isReplay` disables live-only effects and controls
       - the current implementation favors safe read-only board playback over exposing every hidden hand detail from the finished match
     - the same `.js` / JSX import-analysis constraint showed up again for replay route files, so both `app/replays/[replayId]/page.js` and the replay controls/client were written with `createElement` instead of JSX to stay importable in Vitest.
+  - Claim-flow notes:
+    - magic-link claiming is now a real server-side flow, but delivery is intentionally dev-first:
+      - `requestMagicLink` stores a hashed one-time token in `magic_link_tokens`
+      - `consumeMagicLink` verifies token, expiry, and unused state
+      - successful consume upgrades the same `accountId` from `guest` to `claimed`
+      - local/dev transport logs and returns a preview URL instead of depending on SMTP
+    - route handlers deliberately do **not** resolve `getPool()` eagerly. They pass `pool` through to the injected/default services so Vitest can mock them cleanly and so handler evaluation does not explode when `DATABASE_URL` is absent.
+    - `consumeMagicLink` currently persists both:
+      - `account_emails` with `verified_at`
+      - `auth_identities` with `provider = "magic_link"`
+      This keeps the account model aligned with the original “multiple login methods per account” design even though only magic links are implemented right now.
+    - `app/account/page.js` is intentionally minimal and client-side:
+      - fetches the current account from `/api/account/me`
+      - posts email input to `/api/account/claim/request`
+      - shows the local/dev preview link when available
+      It is enough to exercise the whole claim flow without committing to a final polished auth UI yet.

@@ -364,6 +364,12 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
                 >
                   /catana
                 </Link>
+                <Link
+                  href="/account"
+                  className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
+                >
+                  Account
+                </Link>
               </div>
             </div>
 
