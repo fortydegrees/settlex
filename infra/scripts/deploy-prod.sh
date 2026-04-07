@@ -15,5 +15,9 @@ export GAME_IMAGE
 
 docker compose -f infra/docker-compose.prod.yml pull
 docker compose -f infra/docker-compose.prod.yml up -d --remove-orphans
-docker compose -f infra/docker-compose.prod.yml exec -T web pnpm db:migrate
 
+if docker compose -f infra/docker-compose.prod.yml exec -T web node -e "const pkg=require('./package.json'); process.exit(pkg.scripts && pkg.scripts['db:migrate'] ? 0 : 1)"; then
+  docker compose -f infra/docker-compose.prod.yml exec -T web pnpm db:migrate
+else
+  echo "Skipping db:migrate because the script is not defined yet."
+fi
