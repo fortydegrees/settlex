@@ -16,7 +16,9 @@ export const useTransformEffect = (
     });
     return () => {
       unmount();
-      unmountCallback?.();
+      if (typeof unmountCallback === "function") {
+        unmountCallback();
+      }
     };
   }, [callback, libraryContext]);
 };

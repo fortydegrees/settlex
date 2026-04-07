@@ -1,4 +1,4 @@
-import { StateType } from "models";
+import { StateType } from "../models";
 
 export const getTransformStyles = (
   x: number,
