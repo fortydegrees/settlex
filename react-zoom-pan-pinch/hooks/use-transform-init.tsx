@@ -20,8 +20,12 @@ export const useTransformInit = (
       });
     }
     return () => {
-      unmount?.();
-      unmountCallback?.();
+      if (typeof unmount === "function") {
+        unmount();
+      }
+      if (typeof unmountCallback === "function") {
+        unmountCallback();
+      }
     };
   }, []);
 };

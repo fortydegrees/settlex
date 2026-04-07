@@ -3191,3 +3191,13 @@
   - prepared `/srv/settlex`.
   - wrote `/srv/settlex/.env.prod` with generated app/db secrets and `600` permissions.
   - synced the current deployment scaffold onto the VM so GitHub Actions can target the expected directory layout.
+- Unblocked the failing `Dockerfile.web` GitHub Actions build in the `codex/fix-web-build-resources` worktree.
+- Build-fix changes:
+  - removed the tracked root-level `resources` symlink that caused `next build` / Docker web builds to fail with `ENOENT` in CI.
+  - patched the vendored `react-zoom-pan-pinch` hooks to use explicit function guards for cleanup callbacks so Next type-checking no longer fails on `void | (() => void)` optional calls.
+  - excluded `react-zoom-pan-pinch/stories` from app TypeScript checking and fixed `react-zoom-pan-pinch/utils/styles.utils.ts` to import `../models` instead of the unresolved bare `models` path.
+  - added source regression coverage in `server/__tests__/buildInputs.source.test.js` for the broken-symlink case and the vendored zoom-pan-pinch build-input expectations.
+- Verification for the build-fix slice:
+  - `pnpm exec vitest run server/__tests__/buildInputs.source.test.js server/__tests__/deploymentFiles.source.test.js`
+  - `pnpm build`
+  - `pnpm verify`

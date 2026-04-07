@@ -2158,3 +2158,9 @@
     - keep runtime secrets on the VM in `/srv/settlex/.env.prod`; do not commit them.
     - use GitHub Actions for verify/build/deploy, but do not require the VM to have GitHub clone credentials for the private repo.
     - until the accounts/database slice lands, the deploy script must tolerate the absence of `pnpm db:migrate`.
+  - GitHub Actions web-build notes:
+    - the first failing `Dockerfile.web` run was blocked by a tracked repo-root `resources` symlink pointing at a local `/tmp/.../pufferlib/resources` path; Next's production build scans the repo root and crashes on that broken symlink in CI.
+    - after removing that symlink, two older vendored `react-zoom-pan-pinch` build issues surfaced:
+      - `use-transform-effect.tsx` / `use-transform-init.tsx` needed explicit `typeof ... === "function"` cleanup guards for Next's TypeScript check.
+      - `react-zoom-pan-pinch/stories` should stay excluded from app TS checking, and `react-zoom-pan-pinch/utils/styles.utils.ts` must import `../models`, not bare `models`.
+    - the `bufferutil` / `utf-8-validate` messages from `ws` appear as warnings during `next build` here and did not block the final successful build.
