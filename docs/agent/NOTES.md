@@ -2227,3 +2227,15 @@
       - bots archive with `participantType = "bot"` and nullable `account_id`
       - legacy compatibility fields such as `emoji`, `color`, `bot`, and `isBot` may still be the source of truth for some seats until the UI is fully cleaned up
     - cleanup currently calls `serverDb.wipe(matchID)` after a short grace window. That is acceptable for MVP because live unfinished-match durability is explicitly out of scope, and finished replay/history now lives in Postgres instead of bgio memory.
+  - Public profile notes:
+    - `getPublicProfile(username)` is intentionally a small read-model query, not a generic account loader. It returns only the public shape needed for `/u/:username`:
+      - current public identity
+      - aggregated win/loss/total counts from `archived_match_players`
+      - recent archived matches with replay ids
+    - the query currently treats username lookup as case-insensitive via `LOWER(current_username) = LOWER($1)`. That is compatible with the reserved-username model already established for guest accounts.
+    - the first profile page is server-rendered and deliberately light:
+      - current avatar/username
+      - joined date
+      - summary stat cards
+      - recent finished matches with replay links
+    - the profile page was written without JSX because Vitest imports these app-route modules as plain `.js` files, and Vite import analysis rejects JSX in that path. If we want JSX here later, either the file extension or the test/import strategy will need to change.

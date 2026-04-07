@@ -3266,3 +3266,14 @@
   - `pnpm exec vitest run server/__tests__/timerPubSub.test.js`
   - `pnpm exec vitest run server/__tests__/ArchiveManager.test.js server/__tests__/timerPubSub.test.js`
   - `pnpm verify`
+- Added the public profile slice.
+- Public profile changes:
+  - created `lib/server/profiles/getPublicProfile.js` to resolve a current account by username, aggregate archived wins/losses/game counts, and return recent archived matches with replay ids.
+  - created `lib/server/__tests__/publicProfile.test.js` to lock the query contract against the current accounts/archive schema.
+  - created `app/u/[username]/page.js` as the first public profile route, rendering joined date, summary stats, and replay links from the server-side profile query.
+  - created `app/__tests__/profilePage.test.js` to assert the page loads its data through `getPublicProfile` and keeps replay links on `/replays/:id`.
+- Verification for the public profile slice:
+  - `pnpm exec vitest run lib/server/__tests__/publicProfile.test.js`
+  - `pnpm exec vitest run app/__tests__/profilePage.test.js`
+  - `pnpm exec vitest run lib/server/__tests__/publicProfile.test.js app/__tests__/profilePage.test.js`
+  - `pnpm verify`
