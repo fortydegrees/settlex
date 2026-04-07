@@ -8,10 +8,13 @@ const __dirname = path.dirname(__filename);
 const sourcePath = path.resolve(__dirname, "..", "DevCardPurchaseReveal.js");
 
 describe("DevCardPurchaseReveal source", () => {
-  it("keeps the detached reveal actor hidden until the dock preload releases", () => {
+  it("starts the detached reveal actor slightly before the dock preload fully releases", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
     expect(source).toContain("autoAlpha: 0");
-    expect(source).toContain("timeline.set(actorNode, { autoAlpha: 1 })");
+    expect(source).toContain("ACTOR_HANDOFF_LEAD_MS");
+    expect(source).toContain("const timelineDelayMs = Math.max(");
+    expect(source).toContain("(reveal.launchDelayMs ?? 0) - ACTOR_HANDOFF_LEAD_MS");
+    expect(source).toContain('const travelHandoffOffset = "<+0.02"');
   });
 
   it("swaps the visible card art at flip midpoint without fighting React rerenders", () => {
@@ -23,5 +26,11 @@ describe("DevCardPurchaseReveal source", () => {
     );
     expect(source).toContain("src={displayedCardSrc}");
     expect(source).toContain("setDisplayedCardSrc(revealCardSrc)");
+  });
+
+  it("spawns the detached actor closer to dock-emblem size before it grows into center travel", () => {
+    const source = fs.readFileSync(sourcePath, "utf8");
+    expect(source).toContain("scale: 0.46");
+    expect(source).toContain("scale: 0.92");
   });
 });

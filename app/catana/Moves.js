@@ -974,6 +974,7 @@ export const maritimeTrade = {
 };
 
 export const buyDevCard = {
+  client: false,
   move: (context) => {
     const { G, playerID, effects } = context;
     const result = applyBuyDevCard(G.core, playerID);

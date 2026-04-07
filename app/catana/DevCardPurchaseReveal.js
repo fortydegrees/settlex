@@ -15,6 +15,7 @@ const DEV_CARD_BACK_SVG = "/svgs/cards/development/card_devcardback.svg";
 const DEV_CARD_EMBLEM_SVG = "/svgs/icon_devcard_emblem.svg";
 const CARD_ASPECT_RATIO = 72 / 52;
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const ACTOR_HANDOFF_LEAD_MS = 128;
 
 const getCenterCardWidth = () => {
   if (typeof window === "undefined") return 140;
@@ -87,6 +88,11 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       typeof window !== "undefined" &&
       window.matchMedia?.(REDUCED_MOTION_QUERY)?.matches;
     const durations = getDevCardRevealDurations(prefersReducedMotion);
+    const timelineDelayMs = Math.max(
+      0,
+      (reveal.launchDelayMs ?? 0) - ACTOR_HANDOFF_LEAD_MS
+    );
+    const travelHandoffOffset = "<+0.02";
 
     gsap.set(actorNode, {
       x: startX,
@@ -95,7 +101,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
       yPercent: -50,
       width: centerCardWidth,
       height: centerCardHeight,
-      scale: 0.84,
+      scale: 0.46,
       autoAlpha: 0,
     });
     gsap.set(emblemNode, {
@@ -115,7 +121,7 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     });
 
     const timeline = gsap.timeline({
-      delay: (reveal.launchDelayMs ?? 0) / 1000,
+      delay: timelineDelayMs / 1000,
       onComplete: () => onCompleteRef.current?.(),
     });
 
@@ -123,17 +129,17 @@ export function DevCardPurchaseReveal({ reveal, onComplete }) {
     timeline.call(() => popHowlRef.current?.play());
     timeline.to(actorNode, {
       y: startY - centerCardHeight * 0.12,
-      scale: 1.04,
+      scale: 0.92,
       duration: durations.releasePop,
-      ease: "back.out(1.8)",
+      ease: "back.out(1.9)",
     });
     timeline.to(actorNode, {
       x: centerX,
       y: centerY,
       scale: 1,
       duration: durations.travelToCenter,
-      ease: "power2.out",
-    });
+      ease: "power3.out",
+    }, travelHandoffOffset);
     timeline.to({}, { duration: durations.holdAfterTravel });
     timeline.to(flipNode, {
       autoAlpha: 1,
