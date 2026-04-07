@@ -2210,3 +2210,20 @@
     - the lobby page now silently restores or creates the current guest account from stored local identity on mount. That means existing returning browsers keep their frictionless feel even though identity is now server-backed.
     - the lobby page still reads the public match list from bgio directly for now. The important spec requirement was to stop exposing raw bgio **mutation** APIs to the browser; public match listing can stay as-is until a richer product-owned lobby read model exists.
     - the match page no longer needs `getLobbyServerOrigin` because its metadata/account requests are same-origin app routes. It still needs `getGameServerOrigin` for the live Socket.IO/game transport.
+  - Finished-match archive notes:
+    - archival is intentionally triggered from the timer/pubsub event stream rather than by patching bgio internals. That keeps the MVP hook small and colocated with the existing presence/timer side effects.
+    - `ArchiveManager` is the in-process guardrail for duplicate end-of-game events:
+      - ignores non-`gameover` states
+      - de-dupes concurrent archive attempts with `archivingMatchIDs`
+      - remembers already-archived matches with `archivedMatchIDs`
+      - only schedules cleanup after the archive call resolves
+    - `archiveFinishedMatch` is the durable boundary:
+      - re-fetches `metadata`, `initialState`, `state`, and `log` from the live bgio DB
+      - opens a SQL transaction
+      - checks `archived_matches.bgio_match_id` first for idempotency
+      - writes archived match, participant snapshots, and replay payload together
+    - participant snapshots need to stay tolerant of the current mixed seat metadata:
+      - humans still carry `accountId`
+      - bots archive with `participantType = "bot"` and nullable `account_id`
+      - legacy compatibility fields such as `emoji`, `color`, `bot`, and `isBot` may still be the source of truth for some seats until the UI is fully cleaned up
+    - cleanup currently calls `serverDb.wipe(matchID)` after a short grace window. That is acceptable for MVP because live unfinished-match durability is explicitly out of scope, and finished replay/history now lives in Postgres instead of bgio memory.

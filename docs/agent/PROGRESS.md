@@ -3253,3 +3253,16 @@
   - `pnpm exec vitest run app/__tests__/api/matchRoutes.test.js`
   - `pnpm exec vitest run lib/server/__tests__/matchBootstrap.test.js app/__tests__/api/matchRoutes.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/MatchPageClient.botFill.test.js`
   - `pnpm verify`
+- Added the finished-match archive slice.
+- Archive slice changes:
+  - created `server/archive/archiveFinishedMatch.js` as the transactional archive writer from live bgio state into Postgres-owned `archived_matches`, `archived_match_players`, and `archived_match_replays`.
+  - created `server/archive/cleanupArchivedMatch.js` so archived finished matches can be wiped from the live bgio store after a short grace period instead of accumulating in memory forever.
+  - created `server/archive/ArchiveManager.js` to de-duplicate archive attempts per `matchID`, remember the latest `matchData`, and schedule cleanup only after a successful archive handoff.
+  - updated `server/timers/timerPubSub.js` to forward both final `state` and `matchData` payloads into the archive manager, keeping the finished-match hook inside the same event stream the timer/presence logic already listens to.
+  - updated `server/server.js` to instantiate the archive manager with the live bgio DB plus the shared Postgres pool, so game completion now archives durably before the in-memory match record is cleaned up.
+  - added `server/__tests__/ArchiveManager.test.js` and extended `server/__tests__/timerPubSub.test.js` to lock the archive-once, cleanup-after-success, and pubsub-forwarding behavior in place.
+- Verification for the archive slice:
+  - `pnpm exec vitest run server/__tests__/ArchiveManager.test.js`
+  - `pnpm exec vitest run server/__tests__/timerPubSub.test.js`
+  - `pnpm exec vitest run server/__tests__/ArchiveManager.test.js server/__tests__/timerPubSub.test.js`
+  - `pnpm verify`

@@ -460,3 +460,41 @@ it("seeds bot seats from matchData before a pregame update schedules bot ready-u
 
   vi.useRealTimers();
 });
+
+it("forwards state and matchData to the archive manager", () => {
+  const timerManager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue(null)
+  };
+  const archiveManager = {
+    onState: vi.fn(),
+    onMatchData: vi.fn()
+  };
+  const pubSub = createTimerPubSub(timerManager, { archiveManager });
+
+  const state = {
+    G: { gameLogSeq: 3 },
+    ctx: {
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "0": "postRoll" },
+      gameover: undefined
+    }
+  };
+  const matchData = [
+    { id: "0", name: "Ada", data: { accountId: "acct_1" } },
+    { id: "1", name: "[BOT] Puffer 2", data: { bot: "puffer", isBot: true } }
+  ];
+
+  pubSub.publish("MATCH-archive", {
+    type: "update",
+    args: ["archive", state]
+  });
+  pubSub.publish("MATCH-archive", {
+    type: "matchData",
+    args: ["archive", matchData]
+  });
+
+  expect(archiveManager.onState).toHaveBeenCalledWith("archive", state);
+  expect(archiveManager.onMatchData).toHaveBeenCalledWith("archive", matchData);
+});
