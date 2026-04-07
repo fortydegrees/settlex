@@ -63,8 +63,21 @@ export type Distribution = {
   resource: Resource;
 };
 
+export type DistributionShortage = {
+  resource: Resource;
+  required: number;
+  available: number;
+  entitledByPlayerId: Record<string, number>;
+  allocatedByPlayerId: Record<string, number>;
+};
+
 export type DistributionResult =
-  | { ok: true; distributions: Distribution[]; blockedTiles: number[] }
+  | {
+      ok: true;
+      distributions: Distribution[];
+      blockedTiles: number[];
+      shortages: DistributionShortage[];
+    }
   | { ok: false; error: string };
 
 export function applyResourceDistribution(
@@ -73,14 +86,16 @@ export function applyResourceDistribution(
   rollTotal: number
 ): DistributionResult {
   if (rollTotal === 7) {
-    return { ok: true, distributions: [], blockedTiles: [] };
+    return { ok: true, distributions: [], blockedTiles: [], shortages: [] };
   }
 
   const requiredByResource: Record<string, number> = {};
   const claimantsByResource: Record<string, Set<string>> = {};
+  const entitledByPlayerIdByResource: Record<string, Record<string, number>> = {};
   const allocations: Record<string, Resource[]> = {};
   const distributions: Distribution[] = [];
   const blockedTiles: number[] = [];
+  const shortages: DistributionShortage[] = [];
 
   for (const playerId of state.players) {
     allocations[playerId] = [];
@@ -119,6 +134,9 @@ export function applyResourceDistribution(
       const amount = building.type === "city" ? 2 : 1;
       claimantsByResource[resource] ??= new Set<string>();
       claimantsByResource[resource].add(owner);
+      entitledByPlayerIdByResource[resource] ??= {};
+      entitledByPlayerIdByResource[resource][owner] =
+        (entitledByPlayerIdByResource[resource][owner] ?? 0) + amount;
       for (let i = 0; i < amount; i += 1) {
         allocations[owner].push(resource);
         distributions.push({
@@ -148,9 +166,19 @@ export function applyResourceDistribution(
       if (required > available) {
         const resTyped = resource as Resource;
         const claimants = Array.from(claimantsByResource[resource] ?? []);
+        const entitledByPlayerId = {
+          ...(entitledByPlayerIdByResource[resource] ?? {})
+        };
 
         if (claimants.length !== 1 || available === 0) {
           stripResource(resTyped);
+          shortages.push({
+            resource: resTyped,
+            required,
+            available,
+            entitledByPlayerId,
+            allocatedByPlayerId: {}
+          });
           continue;
         }
 
@@ -191,6 +219,14 @@ export function applyResourceDistribution(
           }
           distributions.splice(i, 1);
         }
+
+        shortages.push({
+          resource: resTyped,
+          required,
+          available,
+          entitledByPlayerId,
+          allocatedByPlayerId: available > 0 ? { [claimantId]: available } : {}
+        });
       }
     }
   }
@@ -208,7 +244,7 @@ export function applyResourceDistribution(
     }
   }
 
-  return { ok: true, distributions, blockedTiles };
+  return { ok: true, distributions, blockedTiles, shortages };
 }
 
 export function canPlaceRobber(
@@ -343,7 +379,12 @@ export function applyMoveRobber(
 }
 
 export type RollResult =
-  | { ok: true; distributions: Distribution[]; blockedTiles: number[] }
+  | {
+      ok: true;
+      distributions: Distribution[];
+      blockedTiles: number[];
+      shortages: DistributionShortage[];
+    }
   | { ok: false; error: string };
 
 export function applyRollDice(
@@ -358,7 +399,7 @@ export function applyRollDice(
     const pending = playersNeedingDiscard(state);
     state.turn.pendingDiscards = pending;
     state.turn.phase = pending.length > 0 ? "robberDiscard" : "robberMove";
-    return { ok: true, distributions: [], blockedTiles: [] };
+    return { ok: true, distributions: [], blockedTiles: [], shortages: [] };
   }
 
   const distResult = applyResourceDistribution(state, board, rollTotal);
@@ -367,7 +408,12 @@ export function applyRollDice(
   }
 
   state.turn.phase = "postRoll";
-  return { ok: true, distributions: distResult.distributions, blockedTiles: distResult.blockedTiles };
+  return {
+    ok: true,
+    distributions: distResult.distributions,
+    blockedTiles: distResult.blockedTiles,
+    shortages: distResult.shortages
+  };
 }
 
 export function applyEndTurn(

@@ -148,6 +148,68 @@ describe("formatLogEntry", () => {
     ).toBe(true);
   });
 
+  it("formats monopoly result entries", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "dev:monopolyResult",
+        actorId: "1",
+        data: { resource: "Sheep", amountStolen: 8 }
+      },
+      { "1": "Bren" }
+    );
+
+    expect(
+      tokens.some((token) => token.kind === "text" && token.text.includes("claimed 8 sheep"))
+    ).toBe(true);
+  });
+
+  it("formats robber moves with destination details", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "robber:move",
+        actorId: "1",
+        data: { tileResource: "Wood", tileNumber: 8 }
+      },
+      { "1": "Bren" }
+    );
+
+    expect(
+      tokens.some((token) => token.kind === "text" && token.text.includes("to wood 8"))
+    ).toBe(true);
+  });
+
+  it("formats public steal copy without leaking the resource", () => {
+    const tokens = formatLogEntry(
+      {
+        type: "robber:steal",
+        actorId: "1",
+        data: { victimId: "0" }
+      },
+      { "0": "Ada", "1": "Bren" }
+    );
+
+    expect(
+      tokens.some((token) => token.kind === "text" && token.text.includes("stole a card"))
+    ).toBe(true);
+  });
+
+  it("formats shortage entries", () => {
+    const tokens = formatLogEntry({
+      type: "resource:shortage",
+      data: {
+        resource: "Wheat",
+        required: 2,
+        available: 1,
+        entitledByPlayerId: { "0": 2 },
+        allocatedByPlayerId: { "0": 1 }
+      }
+    }, { "0": "Ada" });
+
+    expect(
+      tokens.some((token) => token.kind === "text" && token.text.includes("only had 1 of 2 wheat"))
+    ).toBe(true);
+  });
+
   it("formats server disconnect entries with a server label", () => {
     const tokens = formatLogEntry(
       {

@@ -2127,3 +2127,29 @@
       - initial actor scale `0.46`,
       - `releasePop` target scale `0.92`,
       - center travel still finishes at `1`.
+  - status box role:
+    - for Catana, the status box should stay a current-prompt/orientation surface, not a mini-log.
+    - good copy is viewer-personalized and quick to parse:
+      - self: `Roll dice`, `Your turn`, `Discard resources`, `Move the robber`
+      - others/spectators: `Waiting for Ada to roll`, `Ada's turn`, `Ada is discarding`, `Ada is moving the robber`
+    - if multiple opponents are discarding at once, a plural summary such as `2 players are discarding` is better than pretending there is one single active discarder.
+  - thought bubble relationship:
+    - the bubble should stay tied to the same underlying current-status model as the box, but remain icon-only and continue consuming only `statusType`.
+    - do not split bubble logic away into its own second status resolver.
+  - timer/status relationship:
+    - the right timer fix is semantic, not cosmetic.
+    - compute whether the current timer snapshot still matches the current status kind; if not, hide the timer instead of letting it tick beside the wrong prompt.
+  - public log data:
+    - monopoly and finite-bank shortage messaging are fundamentally data-contract problems, not formatter-only problems.
+    - returning `amountStolen` from `applyMonopoly(...)` and `shortages` from `applyResourceDistribution(...)` is much cleaner than diffing mutated hands/banks in the UI.
+  - public secrecy boundary:
+    - robber-steal logs must stay public-only for now:
+      - `Player 1 stole a card from Player 2`
+    - do not leak the exact stolen resource in shared logs until a separate viewer-private presentation path exists.
+  - local delayed log reveal:
+    - delay only presentation, not canonical log creation.
+    - `resource:gain` and `resource:shortage` are good delayable candidates because they conceptually resolve with the local distribution effect.
+    - keep the delay client-local so one player can have immediate reveal while another waits for their own local animation completion.
+  - reconnect rule:
+    - on reconnect, never trust pending local reveal gates.
+    - flush/clear deferred local entries and let backlog entries reveal immediately, because the effect that originally gated them may not replay.

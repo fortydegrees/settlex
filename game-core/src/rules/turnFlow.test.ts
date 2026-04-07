@@ -196,6 +196,15 @@ it("gives none if bank lacks enough of a resource", () => {
   expect(state.playerStateById["0"].resources).toEqual([]);
   expect(state.playerStateById["1"].resources).toEqual([]);
   expect(state.bank.resources).toHaveLength(1);
+  if (result.ok) {
+    expect(result.shortages).toContainEqual({
+      resource: ResourceType.WOOD,
+      required: 2,
+      available: 1,
+      entitledByPlayerId: { "0": 1, "1": 1 },
+      allocatedByPlayerId: {}
+    });
+  }
 });
 
 it("gives all available cards when only one player is entitled to a short resource", () => {
@@ -228,6 +237,13 @@ it("gives all available cards when only one player is entitled to a short resour
     expect(result.distributions).toEqual([
       { tileId: 20, playerId: "0", resource: ResourceType.WHEAT }
     ]);
+    expect(result.shortages).toContainEqual({
+      resource: ResourceType.WHEAT,
+      required: 2,
+      available: 1,
+      entitledByPlayerId: { "0": 2 },
+      allocatedByPlayerId: { "0": 1 }
+    });
   }
 });
 

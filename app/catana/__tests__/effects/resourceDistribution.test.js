@@ -4,7 +4,10 @@ vi.mock("gsap", () => {
   const makeTimeline = () => {
     const timeline = {
       addLabel: vi.fn(() => timeline),
-      call: vi.fn(() => timeline),
+      call: vi.fn((fn) => {
+        fn?.();
+        return timeline;
+      }),
       to: vi.fn(() => timeline)
     };
     return timeline;
@@ -226,6 +229,72 @@ describe("resourceDistribution cues", () => {
       expect(layerEl.children[0].children[0].src).toBe("/svgs/cards/resource/card_wood.svg");
       expect(layerEl.children[0].children[0].draggable).toBe(false);
       expect(layerEl.children[0].children[0].style.objectFit).toBe("contain");
+    } finally {
+      if (previousDocument === undefined) {
+        delete global.document;
+      } else {
+        global.document = previousDocument;
+      }
+    }
+  });
+
+  it("invokes onComplete after the local distribution run finishes", () => {
+    const makeElement = (tagName) => ({
+      tagName: tagName.toUpperCase(),
+      className: "",
+      style: {},
+      children: [],
+      appendChild(child) {
+        this.children.push(child);
+        return child;
+      },
+      remove() {}
+    });
+    const layerEl = makeElement("div");
+    const targetEl = {
+      getBoundingClientRect: () => ({ left: 320, top: 180, height: 40 })
+    };
+    const fakeDocument = {
+      hidden: false,
+      createElement(tagName) {
+        return makeElement(tagName);
+      },
+      getElementById(id) {
+        return id === "p0-Wood" ? targetEl : null;
+      }
+    };
+    const onComplete = vi.fn();
+    const previousDocument = global.document;
+
+    global.document = fakeDocument;
+
+    try {
+      const run = createResourceDistributionRunner({
+        layerEl,
+        getLayout: () => ({
+          size: 100,
+          center: [0, 0],
+          containerWidth: 1000
+        }),
+        getBoardRect: () => ({
+          left: 10,
+          top: 20,
+          width: 1000
+        }),
+        random: () => 0.5,
+        themeId: "classic",
+        onComplete
+      });
+
+      run([
+        {
+          coordinate: [0, 0, 0],
+          playerID: 0,
+          resource: "Wood"
+        }
+      ]);
+
+      expect(onComplete).toHaveBeenCalledTimes(1);
     } finally {
       if (previousDocument === undefined) {
         delete global.document;

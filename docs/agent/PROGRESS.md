@@ -3141,3 +3141,42 @@
 - Verification for the detached-actor spawn-scale tweak:
   - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js`
   - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js`
+- Implemented the status/log presentation rollout from the April 7 design + plan in the `codex/status-log-presentation` worktree.
+- Current status-box / thought-bubble contract:
+  - `app/catana/utils/gameStatus.js` now returns a viewer-aware status object with stable `text` plus richer `kind` and `title` fields.
+  - the local status box now renders `gameStatus.title`, while the thought bubble still only follows `statusType`.
+  - copy is now viewer-personalized for roll, turn ownership, discard, robber-move, robber-steal, and placement prompts, including plural discard copy when multiple players are discarding.
+  - `shouldShowGameStatusTimer(...)` now hides semantically stale timer snapshots so the box no longer shows an old pre-roll timer beside the wrong prompt.
+- Current public log contract:
+  - `game-core/src/rules/devCards.ts::applyMonopoly(...)` now returns `{ ok: true, resource, amountStolen }`.
+  - `game-core/src/rules/turnFlow.ts::applyResourceDistribution(...)` / `applyRollDice(...)` now return `shortages` metadata describing both full-denial and lone-claimant partial-allocation bank shortages.
+  - `app/catana/Moves.js` now appends:
+    - `dev:monopolyResult`
+    - `resource:shortage`
+    - richer `robber:move` payloads with `tileResource` + `tileNumber`
+  - `app/catana/utils/gameText.js` now formats:
+    - monopoly claimed totals,
+    - robber destinations,
+    - public steal copy as `stole a card`,
+    - bank-shortage explanations.
+- Current local log-reveal contract:
+  - canonical `G.gameLog` entries are still appended immediately and in authoritative order.
+  - `app/catana/utils/gameLogPresentation.js` classifies locally delayable entries (`resource:gain`, `resource:shortage`) for the local client only.
+  - `GameScreen` now keeps local `presentedGameLogEntries`, `deferredLogEntries`, and `lastSeenGameLogId`, and flushes deferred entries when the local resource-distribution effect reports completion.
+  - reconnect rule:
+    - the status box recomputes directly from authoritative state,
+    - any locally deferred log entries are flushed/cleared,
+    - the next backlog batch bypasses local delay so no entries stay stuck behind dead animation gates.
+- Verification for the status/log rollout:
+  - focused app batch:
+    - `pnpm exec vitest run app/catana/__tests__/gameStatus.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/gameLogPresentation.test.js app/catana/__tests__/effects/resourceDistribution.test.js app/catana/__tests__/GameScreen.logPresentation.test.js`
+  - focused core batch:
+    - `pnpm -C game-core test -- --run src/rules/devCards.test.ts src/rules/turnFlow.test.ts`
+    - `pnpm -C game-core build`
+  - broader smoke batch:
+    - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/disconnectPresence.test.js app/catana/__tests__/GameLogPanel.test.js`
+  - targeted lint:
+    - `pnpm exec eslint app/catana/GameScreen.js app/catana/components/PlayerActionContainer.js app/catana/utils/gameStatus.js app/catana/utils/gameText.js app/catana/utils/gameLogPresentation.js app/catana/effects/resourceDistribution.js app/catana/__tests__/gameStatus.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/gameText.test.js app/catana/__tests__/gameLogPresentation.test.js app/catana/__tests__/effects/resourceDistribution.test.js app/catana/__tests__/GameScreen.logPresentation.test.js`
+    - `pnpm exec eslint game-core/src/rules/devCards.ts game-core/src/rules/turnFlow.ts game-core/src/rules/devCards.test.ts game-core/src/rules/turnFlow.test.ts`
+  - remaining lint note:
+    - the longstanding Next.js `@next/next/no-img-element` warning in `app/catana/components/PlayerActionContainer.js` is still present and was not introduced by this rollout.

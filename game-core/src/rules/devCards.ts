@@ -165,23 +165,25 @@ export function applyMonopoly(
   state: GameState,
   playerId: string,
   resource: Resource
-): { ok: true } | { ok: false; error: string } {
+): { ok: true; resource: Resource; amountStolen: number } | { ok: false; error: string } {
   const player = state.playerStateById[playerId];
   if (!player) {
     return { ok: false, error: "unknown-player" };
   }
 
+  let amountStolen = 0;
   for (const [otherId, other] of Object.entries(state.playerStateById)) {
     if (otherId === playerId) {
       continue;
     }
     const taken = other.resources.filter((r) => r === resource);
     if (taken.length > 0) {
+      amountStolen += taken.length;
       player.resources.push(...taken);
       other.resources = other.resources.filter((r) => r !== resource);
     }
   }
-  return { ok: true };
+  return { ok: true, resource, amountStolen };
 }
 
 export function applyKnight(
