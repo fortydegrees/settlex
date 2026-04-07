@@ -77,6 +77,7 @@ export function applyResourceDistribution(
   }
 
   const requiredByResource: Record<string, number> = {};
+  const claimantsByResource: Record<string, Set<string>> = {};
   const allocations: Record<string, Resource[]> = {};
   const distributions: Distribution[] = [];
   const blockedTiles: number[] = [];
@@ -116,6 +117,8 @@ export function applyResourceDistribution(
       }
       const owner = building.ownerId;
       const amount = building.type === "city" ? 2 : 1;
+      claimantsByResource[resource] ??= new Set<string>();
+      claimantsByResource[resource].add(owner);
       for (let i = 0; i < amount; i += 1) {
         allocations[owner].push(resource);
         distributions.push({
@@ -129,21 +132,64 @@ export function applyResourceDistribution(
   }
 
   if (state.ruleset.bank.finite) {
+    const stripResource = (resource: Resource) => {
+      for (const playerId of Object.keys(allocations)) {
+        allocations[playerId] = allocations[playerId].filter((r) => r !== resource);
+      }
+      for (let i = distributions.length - 1; i >= 0; i -= 1) {
+        if (distributions[i].resource === resource) {
+          distributions.splice(i, 1);
+        }
+      }
+    };
+
     for (const [resource, required] of Object.entries(requiredByResource)) {
       const available = state.bank.resources.filter((r) => r === resource).length;
       if (required > available) {
-        // Remove from allocations
+        const resTyped = resource as Resource;
+        const claimants = Array.from(claimantsByResource[resource] ?? []);
+
+        if (claimants.length !== 1 || available === 0) {
+          stripResource(resTyped);
+          continue;
+        }
+
+        const claimantId = claimants[0];
+        let keptAllocations = 0;
+        allocations[claimantId] = allocations[claimantId].filter((r) => {
+          if (r !== resTyped) {
+            return true;
+          }
+          if (keptAllocations < available) {
+            keptAllocations += 1;
+            return true;
+          }
+          return false;
+        });
+
         for (const playerId of Object.keys(allocations)) {
+          if (playerId === claimantId) {
+            continue;
+          }
           allocations[playerId] = allocations[playerId].filter(
-            (r) => r !== resource
+            (r) => r !== resTyped
           );
         }
-        // Remove from distributions
-        const resTyped = resource as Resource;
-        const toRemove = distributions.filter((d) => d.resource === resTyped);
-        for (const d of toRemove) {
-          const idx = distributions.indexOf(d);
-          if (idx !== -1) distributions.splice(idx, 1);
+
+        let keptDistributions = 0;
+        for (let i = distributions.length - 1; i >= 0; i -= 1) {
+          const distribution = distributions[i];
+          if (distribution.resource !== resTyped) {
+            continue;
+          }
+          if (
+            distribution.playerId === claimantId &&
+            keptDistributions < available
+          ) {
+            keptDistributions += 1;
+            continue;
+          }
+          distributions.splice(i, 1);
         }
       }
     }
@@ -175,6 +221,9 @@ export function canPlaceRobber(
     return false;
   }
   if (tile.type !== TileTypes.LAND) {
+    return false;
+  }
+  if (state.robberTileId !== null && tile.tile.id === state.robberTileId) {
     return false;
   }
 

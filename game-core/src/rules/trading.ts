@@ -135,6 +135,106 @@ export function applyMaritimeTrade(
   return { ok: true };
 }
 
+export function getMaritimeTradeReceiveCount(
+  state: GameState,
+  board: BoardTopology,
+  playerId: string,
+  give: Resource[]
+): { ok: true; count: number } | { ok: false; error: string } {
+  const player = state.playerStateById[playerId];
+  if (!player) {
+    return { ok: false, error: "unknown-player" };
+  }
+
+  if (!Array.isArray(give) || give.length === 0) {
+    return { ok: true, count: 0 };
+  }
+
+  const selectedCounts = countResources(give);
+  const playerCounts = countResources(player.resources);
+  let count = 0;
+
+  for (const [resource, selectedCount] of Object.entries(selectedCounts) as [
+    Resource,
+    number
+  ][]) {
+    if ((playerCounts[resource] ?? 0) < selectedCount) {
+      return { ok: false, error: "insufficient-resources" };
+    }
+
+    const rate = bestTradeRate(state, board, playerId, resource);
+    if (selectedCount < rate || selectedCount % rate !== 0) {
+      return { ok: false, error: "invalid-trade-ratio" };
+    }
+
+    count += selectedCount / rate;
+  }
+
+  return { ok: true, count };
+}
+
+export function applyMaritimeTradeBatch(
+  state: GameState,
+  board: BoardTopology,
+  playerId: string,
+  trade: { give: Resource[]; receive: Resource[] }
+): { ok: true } | { ok: false; error: string } {
+  const receiveCount = getMaritimeTradeReceiveCount(
+    state,
+    board,
+    playerId,
+    trade.give
+  );
+  if (!receiveCount.ok) {
+    return receiveCount;
+  }
+
+  if (receiveCount.count === 0) {
+    return { ok: false, error: "invalid-trade-ratio" };
+  }
+
+  if (trade.receive.length !== receiveCount.count) {
+    return { ok: false, error: "invalid-receive-count" };
+  }
+
+  if (state.ruleset.bank.finite) {
+    const requestedCounts = countResources(trade.receive);
+    const availableCounts = countResources(state.bank.resources);
+    for (const [resource, requestedCount] of Object.entries(requestedCounts) as [
+      Resource,
+      number
+    ][]) {
+      if ((availableCounts[resource] ?? 0) < requestedCount) {
+        return { ok: false, error: "bank-empty" };
+      }
+    }
+  }
+
+  const giveCounts = countResources(trade.give);
+  let receiveIndex = 0;
+
+  for (const [resource, selectedCount] of Object.entries(giveCounts) as [
+    Resource,
+    number
+  ][]) {
+    const rate = bestTradeRate(state, board, playerId, resource);
+    const tradesForResource = selectedCount / rate;
+
+    for (let i = 0; i < tradesForResource; i += 1) {
+      const result = applyMaritimeTrade(state, board, playerId, {
+        give: resource,
+        receive: trade.receive[receiveIndex]
+      });
+      if (!result.ok) {
+        return result;
+      }
+      receiveIndex += 1;
+    }
+  }
+
+  return { ok: true };
+}
+
 export function applyPlayerTrade(
   state: GameState,
   fromPlayerId: string,

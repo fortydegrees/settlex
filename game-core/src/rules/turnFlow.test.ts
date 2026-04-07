@@ -97,6 +97,26 @@ describe("turnFlow - discard", () => {
     const result = applyDiscard(state, "2", []);
     expect(result).toEqual({ ok: false, error: "unknown-player" });
   });
+
+  it("allows pending players to discard in any order", () => {
+    const state = createEmptyState(["0", "1", "2"]);
+    state.turn.phase = "robberDiscard";
+    state.turn.pendingDiscards = ["0", "2"];
+    state.playerStateById["0"].resources = Array(8).fill(ResourceType.WOOD);
+    state.playerStateById["2"].resources = Array(8).fill(ResourceType.BRICK);
+
+    const first = applyDiscard(state, "2", Array(4).fill(ResourceType.BRICK));
+
+    expect(first).toEqual({ ok: true });
+    expect(state.turn.pendingDiscards).toEqual(["0"]);
+    expect(state.turn.phase).toBe("robberDiscard");
+
+    const second = applyDiscard(state, "0", Array(4).fill(ResourceType.WOOD));
+
+    expect(second).toEqual({ ok: true });
+    expect(state.turn.pendingDiscards).toEqual([]);
+    expect(state.turn.phase).toBe("robberMove");
+  });
 });
 
 import { applyResourceDistribution } from "./turnFlow";
@@ -178,6 +198,39 @@ it("gives none if bank lacks enough of a resource", () => {
   expect(state.bank.resources).toHaveLength(1);
 });
 
+it("gives all available cards when only one player is entitled to a short resource", () => {
+  const wheatTiles = [
+    {
+      coordinate: [0, 0, 0] as [number, number, number],
+      type: TileTypes.LAND,
+      tile: {
+        id: 20,
+        resource: ResourceType.WHEAT,
+        number: 8,
+        nodes: { NORTH: 1 },
+        edges: {}
+      }
+    }
+  ];
+  const wheatBoard = buildTopology(wheatTiles);
+  const state = createEmptyState(["0"]);
+  state.ruleset.bank.finite = true;
+  state.bank.resources = [ResourceType.WHEAT];
+  state.robberTileId = null;
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "city" };
+
+  const result = applyResourceDistribution(state, wheatBoard, 8);
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([ResourceType.WHEAT]);
+  expect(state.bank.resources).toEqual([]);
+  if (result.ok) {
+    expect(result.distributions).toEqual([
+      { tileId: 20, playerId: "0", resource: ResourceType.WHEAT }
+    ]);
+  }
+});
+
 it("still distributes other resources when one resource type is short in bank", () => {
   const mixedTiles = [
     {
@@ -246,6 +299,18 @@ it("rejects robber placement on non-land tiles", () => {
   const state = createEmptyState(["0"]);
 
   expect(canPlaceRobber(state, portBoard, 2)).toBe(false);
+});
+
+it("rejects robber placement on the current tile", () => {
+  const state = createEmptyState(["0"]);
+  state.robberTileId = 1;
+
+  expect(canPlaceRobber(state, board, 1)).toBe(false);
+
+  const result = applyMoveRobber(state, board, 1, "0");
+
+  expect(result).toEqual({ ok: false, error: "illegal-robber" });
+  expect(state.robberTileId).toBe(1);
 });
 
 it("returns eligible victims on robber tile", () => {

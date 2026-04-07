@@ -21,4 +21,19 @@ describe("TradeDiscardModal year of plenty bank counts", () => {
       /\{isDevYop && bankFinite && showYearOfPlentyBankCounts && \(/,
     );
   });
+
+  it("renders increment and decrement controls for trade receive selections", () => {
+    const contents = fs.readFileSync(modalPath, "utf8");
+
+    expect(contents).toContain("selectedReceive");
+    expect(contents).toContain("Increase receive");
+    expect(contents).toContain("Decrease receive");
+  });
+
+  it("renders monopoly as single-click claim buttons instead of steppers", () => {
+    const contents = fs.readFileSync(modalPath, "utf8");
+
+    expect(contents).toContain("aria-label={`Claim ${res}`}");
+    expect(contents).toContain("isDevMonopoly");
+  });
 });
