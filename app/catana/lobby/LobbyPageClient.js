@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   PLAYER_COLOR_PICKER_OPTIONS,
@@ -1048,18 +1049,26 @@ export function LobbyPageClient() {
 
         {/* ── Identity pill (shown when logged in) ── */}
         {hasIdentity && (
-          <button
-            onClick={() => setShowIdentity(true)}
-            className="mb-5 flex items-center gap-1.5 rounded-full bg-white/70 px-4 py-1.5 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/60 backdrop-blur-sm transition hover:bg-white/85 hover:scale-[1.02]"
-          >
-            {playerColor && (
-              <span
-                className={`h-4 w-4 rounded-full ${getPlayerColorOption(playerColor).swatch}`}
-              />
-            )}
-            <span>{playerEmoji || EMOJI_OPTIONS[0]}</span>
-            <span>{playerName}</span>
-          </button>
+          <div className="mb-5 flex items-center gap-2">
+            <button
+              onClick={() => setShowIdentity(true)}
+              className="flex items-center gap-1.5 rounded-full bg-white/70 px-4 py-1.5 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/60 backdrop-blur-sm transition hover:bg-white/85 hover:scale-[1.02]"
+            >
+              {playerColor && (
+                <span
+                  className={`h-4 w-4 rounded-full ${getPlayerColorOption(playerColor).swatch}`}
+                />
+              )}
+              <span>{playerEmoji || EMOJI_OPTIONS[0]}</span>
+              <span>{playerName}</span>
+            </button>
+            <Link
+              href="/account"
+              className="rounded-full bg-white/60 px-4 py-1.5 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/60 backdrop-blur-sm transition hover:bg-white/85"
+            >
+              Account
+            </Link>
+          </div>
         )}
 
         {/* ── Error ── */}
