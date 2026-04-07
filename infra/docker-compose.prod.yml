@@ -1,0 +1,65 @@
+services:
+  proxy:
+    image: caddy:2.10-alpine
+    depends_on:
+      web:
+        condition: service_started
+      game:
+        condition: service_started
+    env_file:
+      - ../.env.prod
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+  web:
+    image: ${WEB_IMAGE:?set WEB_IMAGE in the deploy environment}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../.env.prod
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  game:
+    image: ${GAME_IMAGE:?set GAME_IMAGE in the deploy environment}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../.env.prod
+    environment:
+      NODE_ENV: production
+      SETTLEX_BOT_MOVE_DELAY_MS: ${SETTLEX_BOT_MOVE_DELAY_MS:-450}
+    expose:
+      - "8000"
+      - "8080"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-bookworm
+    env_file:
+      - ../.env.prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    volumes:
+      - settlex-postgres-prod:/var/lib/postgresql/data
+
+volumes:
+  caddy-config:
+  caddy-data:
+  settlex-postgres-prod:
