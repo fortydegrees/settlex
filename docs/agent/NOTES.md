@@ -2031,3 +2031,31 @@
     - keep a ref for the pending reveal snapshot in `GameScreen`, not just React state, so the authoritative effect can safely consume the click snapshot even if the effect arrives before the next render commits.
   - current implementation choice:
     - `GameScreen` now freezes the local hand via `beforeCards` and the local VP badge via `vpSnapshot` during both the pending and active reveal phases, then releases both together in `handleDevCardRevealComplete`.
+  - additional secret-state gotcha:
+    - even after switching the reveal startup to an authoritative `cardType`, a boardgame.io move can still run optimistically on masked client state unless it is explicitly marked `client: false`.
+    - for dev-card purchases that means the client can still draw `"hidden"` from `playerView.core.devDeck` and emit a poisoned reveal payload unless `buyDevCard` is server-only.
+  - broader animation/state architecture:
+    - this repo currently wraps the board with `EffectsBoardWrapper(..., { updateStateAfterEffects: true })`, so board props intentionally stay on the old `G` / `ctx` until the queued effect timeline finishes.
+    - that is separate from the dev-card secret-state bug, and it explains why some UI surfaces feel delayed by animations.
+  - dev-card motion tuning loop:
+    - for subjective polish on the dev-card purchase sequence, the live match loop is too noisy because timers and scenario state obscure whether motion changes helped.
+    - keep a dedicated preview in `app/catana/dev/effects/DevCardRevealLab.jsx` that uses the real `DockCard`, `DevCardPurchaseReveal`, and `DevCardDisplay` destination shell.
+    - that lab is the right place to judge:
+      - dock squash timing,
+      - detached-actor handoff lead,
+      - center holds before back reveal / flip.
+  - current dev-card timing findings:
+    - the earlier motion pass improved the data path but still left two presentation issues:
+      - the dock emblem hit peak squash too early to feel playful,
+      - the center actor parked too long before the reveal progressed, which read as a judder.
+    - the current tuning direction is:
+      - slower springier prelaunch anticipation/rebound in `DockCard`,
+      - earlier detached-actor handoff in `DevCardPurchaseReveal`,
+      - much shorter center/back holds in `utils/devCardPurchaseReveal`.
+  - detached-actor spawn size:
+    - once the timing felt right, the next visual seam was the actor appearing too large on its first visible frame.
+    - shrinking the actor’s initial scale and letting it grow during the existing `releasePop` reads better than delaying the spawn or changing the handoff timing again.
+    - current values in `DevCardPurchaseReveal`:
+      - initial actor scale `0.46`,
+      - `releasePop` target scale `0.92`,
+      - center travel still finishes at `1`.

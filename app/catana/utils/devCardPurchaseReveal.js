@@ -15,9 +15,9 @@ export function getDevCardRevealDurations(reducedMotion = false) {
   return {
     releasePop: 0.16,
     travelToCenter: 0.58,
-    holdAfterTravel: 0.26,
+    holdAfterTravel: 0.08,
     backReveal: 0.28,
-    holdAfterBackReveal: 0.22,
+    holdAfterBackReveal: 0.1,
     flip: 0.42,
     holdOnFace: 0.5,
     travelToHand: 0.6,

@@ -48,8 +48,12 @@ describe("Dock build pickup UX", () => {
     expect(cardSource).toContain("iconScaleX");
     expect(cardSource).toContain("iconScaleY");
     expect(cardSource).toContain("iconY");
-    expect(cardSource).toContain("ICON_PRELAUNCH_PRESS_IN_CONFIG");
-    expect(cardSource).toContain("ICON_PRELAUNCH_RELEASE_CONFIG");
+    expect(cardSource).toContain("PRELAUNCH_REBOUND_DELAY_MS");
+    expect(cardSource).toContain("ICON_PRELAUNCH_ANTICIPATION_CONFIG");
+    expect(cardSource).toContain("ICON_PRELAUNCH_REBOUND_CONFIG");
+    expect(cardSource).toContain("ICON_PRELAUNCH_SETTLE_CONFIG");
+    expect(cardSource).not.toContain("ICON_PRELAUNCH_PRESS_IN_CONFIG");
+    expect(cardSource).not.toContain("ICON_PRELAUNCH_RELEASE_CONFIG");
     expect(containerSource).toContain("BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132");
     expect(dockStylesSource).toContain(".card__img-shell");
     expect(dockStylesSource).toContain(".card__img {\n    width: 80%");

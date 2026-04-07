@@ -59,6 +59,10 @@ describe("dev card play moves", () => {
     });
   });
 
+  it("runs buyDevCard on the server only so secret draws do not use masked client state", () => {
+    expect(buyDevCard.client).toBe(false);
+  });
+
   it("playDevCardStart sets devCardPlay for year of plenty", () => {
     const state = createEmptyState(["0"]);
     state.playerStateById["0"].devCards = ["yearOfPlenty"];

@@ -11,24 +11,35 @@ const INITIAL_WIDTH = 48;
 const HOVER_LIFT_PX = -4;
 const PRESS_LIFT_PX = -1;
 const SELECTED_LIFT_PX = -2;
-const ICON_PRELAUNCH_SQUASH_SCALE_X = 1.1;
-const ICON_PRELAUNCH_SQUASH_SCALE_Y = 0.84;
-const ICON_PRELAUNCH_SQUASH_Y_PX = 2;
-const cubicOut = (t) => 1 - (1 - t) ** 3;
-const cubicIn = (t) => t ** 3;
-const ICON_PRELAUNCH_PRESS_IN_CONFIG = {
-  duration: 112,
-  easing: cubicOut,
-  clamp: true
+const ICON_PRELAUNCH_SQUASH_SCALE_X = 1.12;
+const ICON_PRELAUNCH_SQUASH_SCALE_Y = 0.78;
+const ICON_PRELAUNCH_SQUASH_Y_PX = 3;
+const ICON_PRELAUNCH_REBOUND_SCALE_X = 1.03;
+const ICON_PRELAUNCH_REBOUND_SCALE_Y = 0.94;
+const ICON_PRELAUNCH_REBOUND_Y_PX = 1;
+const PRELAUNCH_REBOUND_DELAY_MS = 108;
+const ICON_PRELAUNCH_ANTICIPATION_CONFIG = {
+  mass: 0.86,
+  tension: 300,
+  friction: 16,
+  clamp: false
 };
-const ICON_PRELAUNCH_RELEASE_CONFIG = {
-  duration: 92,
-  easing: cubicIn,
-  clamp: true
+const ICON_PRELAUNCH_REBOUND_CONFIG = {
+  mass: 0.92,
+  tension: 230,
+  friction: 15,
+  clamp: false
+};
+const ICON_PRELAUNCH_SETTLE_CONFIG = {
+  mass: 0.94,
+  tension: 210,
+  friction: 18,
+  clamp: false
 };
 
 export const DockCard = ({ action }) => {
   const cardRef = React.useRef(null);
+  const squashReboundTimeoutRef = React.useRef(null);
   const squashResetTimeoutRef = React.useRef(null);
   const [isHovered, setIsHovered] = React.useState(false);
   const [isPrelaunchVisible, setIsPrelaunchVisible] = React.useState(false);
@@ -65,6 +76,9 @@ export const DockCard = ({ action }) => {
 
   React.useEffect(() => {
     return () => {
+      if (squashReboundTimeoutRef.current != null) {
+        clearTimeout(squashReboundTimeoutRef.current);
+      }
       if (squashResetTimeoutRef.current != null) {
         clearTimeout(squashResetTimeoutRef.current);
       }
@@ -94,6 +108,10 @@ export const DockCard = ({ action }) => {
 
     scale.start(0.96);
     y.start(PRESS_LIFT_PX);
+    if (squashReboundTimeoutRef.current != null) {
+      clearTimeout(squashReboundTimeoutRef.current);
+      squashReboundTimeoutRef.current = null;
+    }
     if (squashResetTimeoutRef.current != null) {
       clearTimeout(squashResetTimeoutRef.current);
       squashResetTimeoutRef.current = null;
@@ -101,23 +119,39 @@ export const DockCard = ({ action }) => {
     if (preLaunchDelayMs > 0) {
       setIsPrelaunchVisible(Boolean(action.preLaunchImg));
       iconScaleX.start(ICON_PRELAUNCH_SQUASH_SCALE_X, {
-        config: ICON_PRELAUNCH_PRESS_IN_CONFIG
+        config: ICON_PRELAUNCH_ANTICIPATION_CONFIG
       });
       iconScaleY.start(ICON_PRELAUNCH_SQUASH_SCALE_Y, {
-        config: ICON_PRELAUNCH_PRESS_IN_CONFIG
+        config: ICON_PRELAUNCH_ANTICIPATION_CONFIG
       });
       iconY.start(ICON_PRELAUNCH_SQUASH_Y_PX, {
-        config: ICON_PRELAUNCH_PRESS_IN_CONFIG
+        config: ICON_PRELAUNCH_ANTICIPATION_CONFIG
       });
+      const reboundDelayMs = Math.min(
+        PRELAUNCH_REBOUND_DELAY_MS,
+        Math.max(48, preLaunchDelayMs - 96)
+      );
+      squashReboundTimeoutRef.current = window.setTimeout(() => {
+        iconScaleX.start(ICON_PRELAUNCH_REBOUND_SCALE_X, {
+          config: ICON_PRELAUNCH_REBOUND_CONFIG
+        });
+        iconScaleY.start(ICON_PRELAUNCH_REBOUND_SCALE_Y, {
+          config: ICON_PRELAUNCH_REBOUND_CONFIG
+        });
+        iconY.start(ICON_PRELAUNCH_REBOUND_Y_PX, {
+          config: ICON_PRELAUNCH_REBOUND_CONFIG
+        });
+        squashReboundTimeoutRef.current = null;
+      }, reboundDelayMs);
       squashResetTimeoutRef.current = window.setTimeout(() => {
         iconScaleX.start(1, {
-          config: ICON_PRELAUNCH_RELEASE_CONFIG
+          config: ICON_PRELAUNCH_SETTLE_CONFIG
         });
         iconScaleY.start(1, {
-          config: ICON_PRELAUNCH_RELEASE_CONFIG
+          config: ICON_PRELAUNCH_SETTLE_CONFIG
         });
         iconY.start(0, {
-          config: ICON_PRELAUNCH_RELEASE_CONFIG
+          config: ICON_PRELAUNCH_SETTLE_CONFIG
         });
         setIsPrelaunchVisible(false);
         squashResetTimeoutRef.current = null;

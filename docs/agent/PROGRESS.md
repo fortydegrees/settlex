@@ -3023,3 +3023,26 @@
 - Verification for the authoritative buyer-only reveal + frozen VP release:
   - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/effects/GameEffects.test.js app/catana/__tests__/effects/registry.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js app/catana/__tests__/PlayerActionContainer.devCardReveal.test.js app/catana/__tests__/playerAvatarStats.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js`
   - `pnpm verify` (passes; lint still reports the repo’s existing Next.js `<img>` / hook warnings, including the longstanding warning in `app/catana/components/PlayerActionContainer.js`)
+- Fixed the remaining secret-state bug where `buyDevCardReveal` could still carry `"hidden"` from optimistic client state instead of the real dev-card type.
+- Current fix:
+  - `app/catana/Moves.js` now marks `buyDevCard` as `client: false`, so the draw and reveal effect run only on authoritative server state rather than against masked `playerView` state.
+  - `app/catana/__tests__/Moves.devCards.test.js` now locks that server-only move contract.
+- Verification for the server-only buy-dev draw:
+  - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.gameLog.test.js`
+  - `pnpm verify` (passes; lint warnings remain the repo’s existing Next.js `<img>` / hook warnings)
+- Added a dedicated dev-card reveal harness to the effects lab so launch timing can be tuned without recreating a live match.
+- Current fix:
+  - `app/catana/dev/effects/DevCardRevealLab.jsx` now mounts the real `DockCard`, `DevCardPurchaseReveal`, and `DevCardDisplay` shell in a deterministic preview scene.
+  - `app/catana/dev/effects/registry.js` now exposes that preview as `Dev Card Reveal` in `/catana/dev/effects`.
+  - `app/catana/components/ActionsDock/DockCard.js` now uses a slower, springier dev-card prelaunch anticipation/rebound.
+  - `app/catana/DevCardPurchaseReveal.js` now begins the detached actor earlier and overlaps center travel slightly more aggressively.
+  - `app/catana/utils/devCardPurchaseReveal.js` now shortens the parked holds around center arrival and back reveal so the emblem-to-card transition reads less like a stop-start.
+- Verification for the dev-card lab + motion timing pass:
+  - `pnpm exec vitest run app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/effects/effectsLabRegistry.test.js app/catana/__tests__/effects/DevCardRevealLab.source.test.js`
+  - `pnpm exec eslint app/catana/components/ActionsDock/DockCard.js app/catana/DevCardPurchaseReveal.js app/catana/utils/devCardPurchaseReveal.js app/catana/dev/effects/DevCardRevealLab.jsx app/catana/dev/effects/registry.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/effects/effectsLabRegistry.test.js app/catana/__tests__/effects/DevCardRevealLab.source.test.js`
+- Follow-up polish for the detached dev-card actor spawn:
+  - `app/catana/DevCardPurchaseReveal.js` now spawns the detached actor substantially smaller (`0.46` instead of `0.84`) and lets it grow to `0.92` during `releasePop` before the existing center travel reaches full size.
+  - This keeps the first visible emblem much closer to the dock emblem scale while preserving the current timing and motion structure.
+- Verification for the detached-actor spawn-scale tweak:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js`
+  - `pnpm exec eslint app/catana/DevCardPurchaseReveal.js app/catana/__tests__/DevCardPurchaseReveal.source.test.js`
