@@ -58,12 +58,12 @@ describe("deployment file wiring", () => {
     expect(dockerfile).toContain("COPY --from=build /app/lib/server/db ./lib/server/db");
   });
 
-  it("verifies before building and deploying multi-arch production images", () => {
+  it("verifies before building and deploying arm64 production images", () => {
     const workflow = readRepoFile(".github", "workflows", "deploy-prod.yml");
 
     expect(workflow).toContain("pnpm verify");
     expect(workflow).toContain("docker/setup-qemu-action");
-    expect(workflow).toContain("platforms: linux/amd64,linux/arm64");
+    expect(workflow).toContain("platforms: linux/arm64");
     expect(workflow).toContain("ghcr.io");
     expect(workflow).toContain("rsync -az");
     expect(workflow).toContain("docker login ghcr.io");
