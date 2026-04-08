@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = "force-dynamic";
+
 const SCENARIOS_DIR = path.join(process.cwd(), 'app', 'catana', 'scenarios');
 
 const isScenarioState = (value) =>

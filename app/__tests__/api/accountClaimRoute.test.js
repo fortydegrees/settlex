@@ -23,7 +23,7 @@ afterEach(() => {
 
 describe("account claim routes", () => {
   it("requires a current session for claim requests and returns a preview link in dev", async () => {
-    const { createAccountClaimRequestRoute } = await loadRoute("request", "route.js");
+    const { createAccountClaimRequestRoute } = await loadRoute("request", "handler.js");
     const getSessionAccount = vi.fn();
     const requestMagicLink = vi.fn();
     const POST = createAccountClaimRequestRoute({
@@ -74,7 +74,7 @@ describe("account claim routes", () => {
   });
 
   it("consumes the token and redirects back to account state", async () => {
-    const { createAccountClaimConsumeRoute } = await loadRoute("consume", "route.js");
+    const { createAccountClaimConsumeRoute } = await loadRoute("consume", "handler.js");
     const consumeMagicLink = vi.fn().mockResolvedValue({
       account: {
         id: "acct_1",

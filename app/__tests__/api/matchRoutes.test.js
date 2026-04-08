@@ -33,7 +33,7 @@ afterEach(() => {
 
 describe("match API routes", () => {
   it("requires a current session for create and returns seat credentials from the wrapper layer", async () => {
-    const { createMatchCreateRoute } = await loadRoute("create", "route.js");
+    const { createMatchCreateRoute } = await loadRoute("create", "handler.js");
     const getSessionAccount = vi.fn();
     const createMatchForAccount = vi.fn();
     const POST = createMatchCreateRoute({
@@ -85,9 +85,9 @@ describe("match API routes", () => {
   });
 
   it("requires a current session for join and leave, and proxies match metadata reads", async () => {
-    const { createMatchJoinRoute } = await loadRoute("join", "route.js");
-    const { createMatchLeaveRoute } = await loadRoute("leave", "route.js");
-    const { createMatchDetailsRoute } = await loadRoute("[matchID]", "route.js");
+    const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
+    const { createMatchLeaveRoute } = await loadRoute("leave", "handler.js");
+    const { createMatchDetailsRoute } = await loadRoute("[matchID]", "handler.js");
 
     const getSessionAccount = vi.fn();
     const joinMatchForAccount = vi.fn();

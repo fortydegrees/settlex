@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
-const modulePath = path.join(repoRoot, "app", "u", "[username]", "page.js");
+const modulePath = path.join(repoRoot, "app", "u", "[username]", "page-content.js");
 
 const loadPageModule = async () => {
   expect(fs.existsSync(modulePath)).toBe(true);
