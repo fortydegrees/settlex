@@ -11,7 +11,7 @@ This document covers the MVP deployment shape for Settlex on one OCI Ubuntu VM.
   - `web` for Next.js
   - `game` for the `boardgame.io` server
   - `postgres` for the product database
-- Delivery path: GitHub Actions builds multi-arch images (`linux/amd64,linux/arm64`), pushes them to `ghcr.io`, and deploys them over SSH
+- Delivery path: GitHub Actions builds `linux/arm64` images, pushes them to `ghcr.io`, and deploys them over SSH
 
 ## Cutover notes
 
@@ -91,7 +91,6 @@ After bootstrap, the normal release path is:
 3. If verification passes, Actions builds:
    - `ghcr.io/<owner>/settlex-web:<sha>`
    - `ghcr.io/<owner>/settlex-game:<sha>`
-   - each tag is published as a multi-arch manifest so either x86 or ARM OCI VMs can pull it
 4. Actions syncs the checked-out repo files to `/srv/settlex` over SSH.
 5. Actions SSHes into the OCI VM.
 6. The VM logs into `ghcr.io` using the provided read token.

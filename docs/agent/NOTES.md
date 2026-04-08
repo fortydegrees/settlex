@@ -2289,3 +2289,4 @@
       - `postgres`
       with a fresh Postgres volume and raw-IP bootstrap env values.
     - GitHub Actions secret `OCI_HOST` needs to point at the new ARM VM before the next push-to-deploy cutover; otherwise Actions will keep targeting the old box even though the new one is already live-capable.
+    - once the x86 rollback VM is no longer needed, the workflow can and should build `linux/arm64` only. That shortens image build time and avoids publishing unused x86 manifests to GHCR.

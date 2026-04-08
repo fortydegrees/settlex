@@ -3318,3 +3318,6 @@
   - `pnpm build`
   - `curl -I http://145.241.254.241`
   - `curl http://145.241.254.241/games/catan`
+- Finalized the OCI workflow to ARM-only image builds now that the old x86 rollback box is being retired.
+- Verification for the ARM-only follow-up:
+  - `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js`
