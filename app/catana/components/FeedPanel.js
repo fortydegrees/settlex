@@ -63,7 +63,11 @@ const FeedPanelComponent = ({
     React.createElement(
       "div",
       { className: panelClassName },
-      React.createElement("div", { className: headerClassName }, title),
+      React.createElement(
+        "div",
+        { className: joinClassNames(headerClassName, "select-none") },
+        title
+      ),
       React.createElement(
         "div",
         { className: contentWrapClassName },

@@ -7,7 +7,7 @@ const GameLogPanelComponent = ({
   entries = [],
   playerMap = {},
   themeId,
-  rootClassName = "fixed left-4 bottom-4 w-72 md:w-80 z-30 pointer-events-auto",
+  rootClassName = "fixed left-4 bottom-4 w-72 md:w-80 xl:w-96 z-30 pointer-events-auto",
 }) => {
   const formattedEntries = useMemo(
     () =>
@@ -32,7 +32,7 @@ const GameLogPanelComponent = ({
       title="Game Log"
       rows={formattedEntries}
       rootClassName={rootClassName}
-      panelClassName="flex h-[20vh] flex-col rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text overflow-hidden"
+      panelClassName="flex h-[20vh] xl:h-[24vh] flex-col rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text overflow-hidden"
       headerClassName="bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700"
       contentWrapClassName="min-h-0 flex-1 pb-4"
       scrollClassName="feed-panel-scroll game-log-scroll"

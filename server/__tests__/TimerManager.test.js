@@ -416,6 +416,44 @@ describe("TimerManager", () => {
     expect(snapshot?.remainingMs).toBeGreaterThan(0);
   });
 
+  it("clears armed stage timers once the match is over even if stage and turn are unchanged", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    const liveState = baseState({
+      G: {
+        core: {
+          gameOver: null
+        }
+      },
+      ctx: {
+        phase: "placement",
+        currentPlayer: "0",
+        activePlayers: { "0": "road" },
+        turn: 1
+      }
+    });
+
+    manager.onState("match-1", liveState);
+    manager.onState("match-1", {
+      ...liveState,
+      G: {
+        core: {
+          gameOver: { winnerId: "1", reason: "victoryPoints" }
+        }
+      },
+      ctx: {
+        ...liveState.ctx,
+        gameover: { winner: "1" }
+      }
+    });
+
+    vi.advanceTimersByTime(10000);
+
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(manager.getTimerSnapshot("match-1")).toBe(null);
+  });
+
   it("schedules a fast autoBot action for bot-controlled turns", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({
@@ -495,6 +533,48 @@ describe("TimerManager", () => {
         payload?.playerID === "1"
     );
     expect(botCalls).toHaveLength(2);
+  });
+
+  it("cancels pending autoBot dispatches once the match is over", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({
+      dispatch,
+      botMoveDelayMs: 250,
+      isBotPlayer: ({ playerID }) => playerID === "1"
+    });
+
+    const liveState = baseState({
+      _stateID: 7,
+      G: {
+        core: {
+          gameOver: null
+        }
+      },
+      ctx: {
+        phase: "main",
+        currentPlayer: "1",
+        activePlayers: { "1": "postRoll" },
+        turn: 3
+      }
+    });
+
+    manager.onState("match-bot", liveState);
+    manager.onState("match-bot", {
+      ...liveState,
+      G: {
+        core: {
+          gameOver: { winnerId: "1", reason: "victoryPoints" }
+        }
+      },
+      ctx: {
+        ...liveState.ctx,
+        gameover: { winner: "1" }
+      }
+    });
+
+    vi.advanceTimersByTime(250);
+
+    expect(dispatch).not.toHaveBeenCalled();
   });
 
   it("auto-dispatches pregame autoBot for bot seats even when current player is human", () => {

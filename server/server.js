@@ -12,7 +12,6 @@ import { dispatchMatchUpdate } from "./dispatch/dispatchMatchUpdate.js"
 import { getPool } from "../lib/server/db/getPool.js"
 import { ArchiveManager } from "./archive/ArchiveManager.js"
 import { archiveFinishedMatch } from "./archive/archiveFinishedMatch.js"
-import { cleanupArchivedMatch } from "./archive/cleanupArchivedMatch.js"
 const DEFAULT_BOT_MOVE_DELAY_MS = 450
 
 let serverInstance
@@ -50,11 +49,6 @@ const archiveManager = new ArchiveManager({
   archiveFinishedMatch: ({ matchID }) =>
     archiveFinishedMatch({
       pool: getPool(),
-      serverDb: serverInstance?.db,
-      matchID
-    }),
-  cleanupArchivedMatch: ({ matchID }) =>
-    cleanupArchivedMatch({
       serverDb: serverInstance?.db,
       matchID
     })

@@ -29,7 +29,7 @@ const lobbyMatchClientPath = path.resolve(
 );
 
 describe("debug UI visibility", () => {
-  it("keeps the in-game debug panel in the extracted rail", () => {
+  it("does not render the in-game debug panel in Catana clients", () => {
     const gameScreen = fs.readFileSync(gameScreenPath, "utf8");
     expect(gameScreen).toContain("LeftMetaRail");
     expect(gameScreen).not.toContain("<DebugPanel");
@@ -37,8 +37,8 @@ describe("debug UI visibility", () => {
     const leftMetaRail = fs.existsSync(leftMetaRailPath)
       ? fs.readFileSync(leftMetaRailPath, "utf8")
       : "";
-    expect(leftMetaRail).toContain("DebugPanel");
-    expect(leftMetaRail).toMatch(/NODE_ENV\s*!==\s*["']production["']/);
+    expect(leftMetaRail).not.toContain("DebugPanel");
+    expect(leftMetaRail).not.toMatch(/NODE_ENV\s*!==\s*["']production["']/);
   });
 
   it("disables boardgame.io debug overlay in catana clients", () => {
