@@ -3303,3 +3303,18 @@
   - `pnpm exec vitest run app/__tests__/api/accountClaimRoute.test.js`
   - `pnpm exec vitest run lib/server/__tests__/magicLinks.test.js app/__tests__/api/accountClaimRoute.test.js`
   - `pnpm verify`
+- Added the OCI ARM cutover and production-build hardening slice.
+- OCI ARM cutover changes:
+  - updated `.github/workflows/deploy-prod.yml` to publish multi-arch `linux/amd64,linux/arm64` images so the new ARM OCI VM can be the primary host without losing x86 rollback flexibility.
+  - updated `docs/deploy/oci-mvp.md` and added `docs/superpowers/plans/2026-04-08-oci-arm-cutover-plan.md` to record the fresh-DB ARM migration shape and the one-host bootstrap steps.
+  - extracted test-only route factories out of `app/api/**/route.js` files into adjacent `handler.js` modules, then marked all app API route wrappers as `dynamic = "force-dynamic"` so `next build` stops pre-executing runtime-only handlers.
+  - extracted the public profile and replay page factories into adjacent `page-content.js` modules so `page.js` only exposes valid Next page exports during production builds.
+  - updated `Dockerfile.web` so the runtime image includes `scripts/db` plus `lib/server/db`, allowing `pnpm db:migrate` to run inside the deployed web container as intended by `infra/scripts/deploy-prod.sh`.
+  - manually bootstrapped the new OCI ARM VM at `145.241.254.241` with Docker, Compose, `rsync`, `/srv/settlex`, a fresh `.env.prod`, fresh Postgres volume, and a working compose stack (`web`, `game`, `proxy`, `postgres`).
+  - browser-smoked the new host on `http://145.241.254.241` by creating two isolated players, matching them into the same live game, and confirming both landed on `/catana/lobby/<match>?playerID=...`.
+- Verification for the OCI ARM cutover slice:
+  - `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js`
+  - `pnpm exec vitest run app/__tests__/api/routeModuleExports.source.test.js app/__tests__/profilePage.test.js app/__tests__/replayPage.test.js app/__tests__/api/accountClaimRoute.test.js app/__tests__/api/accountGuestRoute.test.js app/__tests__/api/matchRoutes.test.js`
+  - `pnpm build`
+  - `curl -I http://145.241.254.241`
+  - `curl http://145.241.254.241/games/catan`

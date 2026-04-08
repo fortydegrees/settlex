@@ -27,10 +27,11 @@ COPY next.config.js ./
 COPY game-core/package.json game-core/package.json
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/game-core ./game-core
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/lib/server/db ./lib/server/db
 COPY --from=build /app/public ./public
 COPY --from=build /app/.next ./.next
 
 EXPOSE 3000
 
 CMD ["pnpm", "exec", "next", "start", "-H", "0.0.0.0", "-p", "3000"]
-

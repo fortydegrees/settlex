@@ -2268,3 +2268,24 @@
       - posts email input to `/api/account/claim/request`
       - shows the local/dev preview link when available
       It is enough to exercise the whole claim flow without committing to a final polished auth UI yet.
+  - OCI ARM cutover notes:
+    - the previous “it deploys fine” path had two hidden production-build problems that local gameplay never exercised:
+      - Next route/page modules were exporting custom test factories directly from `route.js` / `page.js`
+      - the web runtime image did not contain the migration script tree needed by `pnpm db:migrate`
+    - the fix pattern is now:
+      - `route.js` stays a thin Next wrapper and may export only valid route fields (`GET`, `POST`, `dynamic`, etc.)
+      - injectable test factories live beside it in `handler.js`
+      - `page.js` stays a thin Next page entry point
+      - injectable page factories live beside it in `page-content.js`
+    - all `app/api/*/route.js` files are now explicitly `force-dynamic`. Without that, `next build` may try to pre-execute seemingly static GET handlers such as `/api/account/me`, which is wrong for routes that need runtime env or DB access.
+    - `Dockerfile.web` intentionally copies only the minimum extra runtime material needed for migrations:
+      - `scripts/db`
+      - `lib/server/db`
+      This keeps the image relatively lean while making the deploy script’s `pnpm db:migrate` contract actually true.
+    - the OCI ARM VM at `145.241.254.241` is running the same one-host topology as before:
+      - `proxy` (Caddy) on `80/443`
+      - `web`
+      - `game`
+      - `postgres`
+      with a fresh Postgres volume and raw-IP bootstrap env values.
+    - GitHub Actions secret `OCI_HOST` needs to point at the new ARM VM before the next push-to-deploy cutover; otherwise Actions will keep targeting the old box even though the new one is already live-capable.

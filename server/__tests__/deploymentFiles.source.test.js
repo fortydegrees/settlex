@@ -51,11 +51,19 @@ describe("deployment file wiring", () => {
     );
   });
 
-  it("verifies before building and deploying amd64 production images", () => {
+  it("packages migration files into the web runtime image", () => {
+    const dockerfile = readRepoFile("Dockerfile.web");
+
+    expect(dockerfile).toContain("COPY --from=build /app/scripts ./scripts");
+    expect(dockerfile).toContain("COPY --from=build /app/lib/server/db ./lib/server/db");
+  });
+
+  it("verifies before building and deploying multi-arch production images", () => {
     const workflow = readRepoFile(".github", "workflows", "deploy-prod.yml");
 
     expect(workflow).toContain("pnpm verify");
-    expect(workflow).toContain("platforms: linux/amd64");
+    expect(workflow).toContain("docker/setup-qemu-action");
+    expect(workflow).toContain("platforms: linux/amd64,linux/arm64");
     expect(workflow).toContain("ghcr.io");
     expect(workflow).toContain("rsync -az");
     expect(workflow).toContain("docker login ghcr.io");
