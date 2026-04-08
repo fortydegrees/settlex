@@ -50,6 +50,9 @@ const BOT_ACTION_STAGE_KEYS = new Set([
   "main:roadBuilding"
 ]);
 
+const isResolvedState = (state) =>
+  Boolean(state?.ctx?.gameover || state?.G?.core?.gameOver);
+
 export class TimerManager {
   constructor({ dispatch, isBotPlayer, botMoveDelayMs = 400 }) {
     this.dispatch = dispatch;
@@ -62,6 +65,27 @@ export class TimerManager {
     const stageKey = this.getStageKey(state);
     const prev = this.matches.get(matchID) ?? {};
     const turnNumber = state.ctx.turn;
+
+    if (isResolvedState(state)) {
+      if (prev.stageTimeoutId) {
+        clearTimeout(prev.stageTimeoutId);
+        prev.stageTimeoutId = undefined;
+      }
+      if (prev.turnTimeoutId) {
+        clearTimeout(prev.turnTimeoutId);
+        prev.turnTimeoutId = undefined;
+      }
+      this.clearAllBotDispatches(prev);
+      prev.stageStartedAtMs = undefined;
+      prev.stageDurationMs = undefined;
+      prev.turnStartedAtMs = undefined;
+      prev.turnRemainingMs = null;
+      prev.turnBonusMs = 0;
+      prev.stageKey = stageKey;
+      prev.turnNumber = turnNumber;
+      this.matches.set(matchID, prev);
+      return;
+    }
 
     this.scheduleBotAction(matchID, state, prev, stageKey);
 

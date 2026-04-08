@@ -14,7 +14,7 @@ const readPlayers = (match) => {
 };
 
 export const isSameMatchPath = (pathname, matchID) =>
-  pathname === `/catana/lobby/${matchID}`;
+  pathname === `/g/${matchID}`;
 
 export async function resolveReconnectBannerCandidate({
   pathname,
@@ -74,7 +74,7 @@ export async function resolveReconnectBannerCandidate({
     matchID: activeMatch.matchID,
     playerID: activeMatch.playerID,
     playerName: activeMatch.playerName,
-    href: `/catana/lobby/${activeMatch.matchID}?playerID=${encodeURIComponent(
+    href: `/g/${activeMatch.matchID}?playerID=${encodeURIComponent(
       activeMatch.playerID
     )}`
   };
