@@ -21,6 +21,7 @@ const createArchivePool = () => {
     archivedMatches: [],
     archivedMatchPlayers: [],
     archivedMatchReplays: [],
+    archivedMatchChatMessages: [],
   };
 
   let transactionSnapshot = null;
@@ -31,6 +32,7 @@ const createArchivePool = () => {
     state.archivedMatches = transactionSnapshot.archivedMatches;
     state.archivedMatchPlayers = transactionSnapshot.archivedMatchPlayers;
     state.archivedMatchReplays = transactionSnapshot.archivedMatchReplays;
+    state.archivedMatchChatMessages = transactionSnapshot.archivedMatchChatMessages;
     transactionSnapshot = null;
   };
 
@@ -103,6 +105,17 @@ const createArchivePool = () => {
         return { rows: [] };
       }
 
+      if (normalized.startsWith("insert into archived_match_chat_messages")) {
+        state.archivedMatchChatMessages.push({
+          archivedMatchId: params[0],
+          messageSeq: params[1],
+          actorId: params[2],
+          messageText: params[3],
+          createdAt: params[4],
+        });
+        return { rows: [] };
+      }
+
       throw new Error(`Unhandled archive query: ${sql}`);
     }),
     release: vi.fn(),
@@ -144,7 +157,7 @@ describe("archive manager", () => {
     );
   });
 
-  it("cleans up the finished bgio match after archive succeeds", async () => {
+  it("does not clean up the finished bgio match by default after archive succeeds", async () => {
     vi.useFakeTimers();
 
     const { ArchiveManager } = await loadModule("ArchiveManager.js");
@@ -153,6 +166,26 @@ describe("archive manager", () => {
     const manager = new ArchiveManager({
       archiveFinishedMatch,
       cleanupArchivedMatch,
+      graceMs: 10,
+    });
+
+    await manager.onState("m1", { ctx: { gameover: { winner: "0" } } });
+    vi.advanceTimersByTime(10);
+    await Promise.resolve();
+
+    expect(cleanupArchivedMatch).not.toHaveBeenCalled();
+  });
+
+  it("can explicitly clean up the finished bgio match after archive succeeds", async () => {
+    vi.useFakeTimers();
+
+    const { ArchiveManager } = await loadModule("ArchiveManager.js");
+    const archiveFinishedMatch = vi.fn().mockResolvedValue({ archived: true });
+    const cleanupArchivedMatch = vi.fn().mockResolvedValue(undefined);
+    const manager = new ArchiveManager({
+      archiveFinishedMatch,
+      cleanupArchivedMatch,
+      cleanupEnabled: true,
       graceMs: 10,
     });
 
@@ -226,11 +259,29 @@ describe("archiveFinishedMatch", () => {
       pool,
       serverDb,
       matchID: "m1",
+      chatMessages: [
+        {
+          id: "chat_1",
+          seq: 1,
+          actorId: "0",
+          messageText: "gg",
+          createdAt: "2026-04-08T13:10:00.000Z",
+        },
+      ],
     });
     const second = await archiveFinishedMatch({
       pool,
       serverDb,
       matchID: "m1",
+      chatMessages: [
+        {
+          id: "chat_1",
+          seq: 1,
+          actorId: "0",
+          messageText: "gg",
+          createdAt: "2026-04-08T13:10:00.000Z",
+        },
+      ],
     });
 
     expect(first.archived).toBe(true);
@@ -238,6 +289,15 @@ describe("archiveFinishedMatch", () => {
     expect(state.archivedMatches).toHaveLength(1);
     expect(state.archivedMatchPlayers).toHaveLength(2);
     expect(state.archivedMatchReplays).toHaveLength(1);
+    expect(state.archivedMatchChatMessages).toEqual([
+      {
+        archivedMatchId: state.archivedMatches[0].id,
+        messageSeq: 1,
+        actorId: "0",
+        messageText: "gg",
+        createdAt: "2026-04-08T13:10:00.000Z",
+      },
+    ]);
     expect(state.archivedMatchPlayers).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

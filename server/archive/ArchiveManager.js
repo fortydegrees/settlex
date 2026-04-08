@@ -2,10 +2,12 @@ export class ArchiveManager {
   constructor({
     archiveFinishedMatch,
     cleanupArchivedMatch,
+    cleanupEnabled = false,
     graceMs = 5_000,
   } = {}) {
     this.archiveFinishedMatch = archiveFinishedMatch;
     this.cleanupArchivedMatch = cleanupArchivedMatch;
+    this.cleanupEnabled = cleanupEnabled;
     this.graceMs = graceMs;
     this.archivingMatchIDs = new Set();
     this.archivedMatchIDs = new Set();
@@ -36,7 +38,9 @@ export class ArchiveManager {
       });
 
       this.archivedMatchIDs.add(matchID);
-      this.scheduleCleanup(matchID);
+      if (this.cleanupEnabled) {
+        this.scheduleCleanup(matchID);
+      }
     } finally {
       this.archivingMatchIDs.delete(matchID);
     }

@@ -72,7 +72,7 @@ describe("resolveReconnectBannerCandidate", () => {
   it("returns null on the active match page", async () => {
     const fetchImpl = vi.fn();
     const result = await resolveReconnectBannerCandidate({
-      pathname: "/catana/lobby/m1",
+      pathname: "/g/m1",
       storage: seededStorageForMatch("m1", "0"),
       fetchImpl
     });
@@ -101,7 +101,7 @@ describe("resolveReconnectBannerCandidate", () => {
       matchID: "m1",
       playerID: "0",
       playerName: "Alice",
-      href: "/catana/lobby/m1?playerID=0"
+      href: "/g/m1?playerID=0"
     });
     expect(fetchImpl).toHaveBeenCalledWith(
       "http://localhost:8080/games/catan/m1",

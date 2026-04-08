@@ -498,3 +498,71 @@ it("forwards state and matchData to the archive manager", () => {
   expect(archiveManager.onState).toHaveBeenCalledWith("archive", state);
   expect(archiveManager.onMatchData).toHaveBeenCalledWith("archive", matchData);
 });
+
+it("captures live chat payloads for archival retention", () => {
+  const timerManager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue(null)
+  };
+  const chatStore = {
+    onChatMessage: vi.fn()
+  };
+  const pubSub = createTimerPubSub(timerManager, { chatStore });
+
+  const chatMessage = {
+    id: "chat_1",
+    sender: "0",
+    payload: { message: "gg" }
+  };
+
+  pubSub.publish("MATCH-chat", {
+    type: "chat",
+    args: ["chat", chatMessage]
+  });
+
+  expect(chatStore.onChatMessage).toHaveBeenCalledWith("chat", chatMessage);
+});
+
+it("forwards finished-match state and matchData to the retention manager", () => {
+  const timerManager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue(null)
+  };
+  const finishedMatchRetentionManager = {
+    onState: vi.fn(),
+    onMatchData: vi.fn()
+  };
+  const pubSub = createTimerPubSub(timerManager, {
+    finishedMatchRetentionManager
+  });
+
+  const state = {
+    G: { gameLogSeq: 7 },
+    ctx: {
+      phase: "gameOver",
+      gameover: { winner: "0" }
+    }
+  };
+  const matchData = [
+    { id: "0", isConnected: false },
+    { id: "1", isConnected: false }
+  ];
+
+  pubSub.publish("MATCH-retain", {
+    type: "update",
+    args: ["retain", state]
+  });
+  pubSub.publish("MATCH-retain", {
+    type: "matchData",
+    args: ["retain", matchData]
+  });
+
+  expect(finishedMatchRetentionManager.onState).toHaveBeenCalledWith(
+    "retain",
+    state
+  );
+  expect(finishedMatchRetentionManager.onMatchData).toHaveBeenCalledWith(
+    "retain",
+    matchData
+  );
+});
