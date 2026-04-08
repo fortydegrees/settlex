@@ -72,7 +72,7 @@ const ChatPanelComponent = ({
         : "chat-empty",
     rootClassName: "w-full",
     panelClassName:
-      "flex h-[20vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
+      "flex h-[20vh] xl:h-[24vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
     headerClassName:
       "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
     contentWrapClassName: "min-h-0 flex-1",

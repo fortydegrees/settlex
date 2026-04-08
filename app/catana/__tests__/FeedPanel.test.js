@@ -43,6 +43,18 @@ describe("FeedPanel", () => {
     expect(markup).toContain('placeholder="Message…"');
   });
 
+  it("marks the title bar as non-selectable", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(FeedPanel, {
+        title: "Inbox",
+        rows: [{ key: "row-1", label: "Hello" }],
+        renderRow: (row) => React.createElement("span", null, row.label),
+      })
+    );
+
+    expect(markup).toContain("select-none");
+  });
+
   it("ignores unsupported raw children content", () => {
     const markup = renderToStaticMarkup(
       React.createElement(

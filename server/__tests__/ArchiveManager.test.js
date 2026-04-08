@@ -144,7 +144,7 @@ describe("archive manager", () => {
     );
   });
 
-  it("cleans up the finished bgio match after archive succeeds", async () => {
+  it("does not clean up the finished bgio match by default after archive succeeds", async () => {
     vi.useFakeTimers();
 
     const { ArchiveManager } = await loadModule("ArchiveManager.js");
@@ -153,6 +153,26 @@ describe("archive manager", () => {
     const manager = new ArchiveManager({
       archiveFinishedMatch,
       cleanupArchivedMatch,
+      graceMs: 10,
+    });
+
+    await manager.onState("m1", { ctx: { gameover: { winner: "0" } } });
+    vi.advanceTimersByTime(10);
+    await Promise.resolve();
+
+    expect(cleanupArchivedMatch).not.toHaveBeenCalled();
+  });
+
+  it("can explicitly clean up the finished bgio match after archive succeeds", async () => {
+    vi.useFakeTimers();
+
+    const { ArchiveManager } = await loadModule("ArchiveManager.js");
+    const archiveFinishedMatch = vi.fn().mockResolvedValue({ archived: true });
+    const cleanupArchivedMatch = vi.fn().mockResolvedValue(undefined);
+    const manager = new ArchiveManager({
+      archiveFinishedMatch,
+      cleanupArchivedMatch,
+      cleanupEnabled: true,
       graceMs: 10,
     });
 
