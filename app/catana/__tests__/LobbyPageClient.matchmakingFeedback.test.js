@@ -10,7 +10,7 @@ describe("LobbyPageClient matchmaking feedback", () => {
     );
 
     expect(source).toMatch(
-      /const startedAt = Date\.now\(\);[\s\S]*?setSearchState\(\{\s+matchID: null,\s+playerID: null,\s+startedAt,\s+phase: "searching",\s+\}\);[\s\S]*?const data = await apiRequest/
+      /const startedAt = Date\.now\(\);[\s\S]*?setSearchState\(\{\s+matchID: null,\s+playerID: null,\s+startedAt,\s+phase: "searching",\s+\}\);[\s\S]*?route: "\/api\/matches\/open"/
     );
   });
 

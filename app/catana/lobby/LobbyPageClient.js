@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,7 +14,7 @@ import {
   writeLastActiveMatch
 } from "../utils/activeMatchStorage";
 import { sanitizeDisplayName } from "../utils/playerIdentity";
-import { getLobbyServerOrigin } from "../utils/serverOrigins";
+import { FriendChallengeModal } from "./FriendChallengeModal";
 import { IdentityModal } from "./IdentityModal";
 import {
   EMOJI_OPTIONS,
@@ -23,7 +23,6 @@ import {
   writeStoredPlayerIdentity
 } from "./playerIdentityStorage";
 
-const GAME_NAME = "catan";
 const BOT_NAME_PREFIX = "Puffer";
 const isDevEnvironment = process.env.NODE_ENV !== "production";
 
@@ -191,7 +190,6 @@ function RoomRow({ match, onJoin, isPending }) {
 
 export function LobbyPageClient() {
   const router = useRouter();
-  const lobbyBaseUrl = useMemo(() => getLobbyServerOrigin(), []);
 
   const [playerName, setPlayerName] = useState("");
   const [playerEmoji, setPlayerEmoji] = useState("");
@@ -211,6 +209,7 @@ export function LobbyPageClient() {
 
   // Matchmaking
   const [searchState, setSearchState] = useState(null);
+  const [challengeState, setChallengeState] = useState(null);
 
   // Custom game
   const [showCustom, setShowCustom] = useState(false);
@@ -331,9 +330,8 @@ export function LobbyPageClient() {
   const refreshMatches = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const data = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}`,
+      const data = await appRequest({
+        route: "/api/matches/open",
       });
       const list = (data?.matches || []).map(normalizeMatch);
       setMatches(list.filter((m) => m.matchID));
@@ -342,7 +340,7 @@ export function LobbyPageClient() {
     } finally {
       setIsRefreshing(false);
     }
-  }, [lobbyBaseUrl]);
+  }, []);
 
   const fetchSavedScenarios = useCallback(async () => {
     if (!isDevEnvironment) return;
@@ -415,6 +413,55 @@ export function LobbyPageClient() {
     const id = setInterval(poll, 1500);
     return () => clearInterval(id);
   }, [router, searchState]);
+
+  useEffect(() => {
+    if (!challengeState?.matchID || challengeState.phase !== "waiting") return;
+
+    const poll = async () => {
+      try {
+        const challenge = await appRequest({
+          route: `/api/challenges/${challengeState.matchID}`,
+        });
+
+        if (challenge?.status === "accepted") {
+          router.push(
+            `/g/${challengeState.matchID}?playerID=${encodeURIComponent(challengeState.playerID)}`
+          );
+          return;
+        }
+
+        if (challenge?.status === "expired") {
+          try {
+            if (challengeState.playerCredentials) {
+              await appRequest({
+                route: `/api/challenges/${challengeState.matchID}/cancel`,
+                init: {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    credentials: challengeState.playerCredentials,
+                  }),
+                },
+              });
+            }
+          } catch (err) {
+            /* ignore cleanup errors */
+          }
+
+          setChallengeState((current) =>
+            current && current.matchID === challengeState.matchID
+              ? { ...current, phase: "expired" }
+              : current
+          );
+        }
+      } catch (err) {
+        /* keep polling */
+      }
+    };
+
+    const id = setInterval(poll, 1500);
+    return () => clearInterval(id);
+  }, [challengeState, router]);
 
   /* ── Actions (all read from playerNameRef for fresh value) ── */
 
@@ -507,9 +554,8 @@ export function LobbyPageClient() {
     });
 
     try {
-      const data = await apiRequest({
-        baseUrl: lobbyBaseUrl,
-        route: `/games/${GAME_NAME}`,
+      const data = await appRequest({
+        route: "/api/matches/open",
       });
       const allMatches = (data?.matches || []).map(normalizeMatch);
       const openMatch = allMatches.find(
@@ -565,6 +611,46 @@ export function LobbyPageClient() {
     }
   };
 
+  const createFriendChallenge = async () => {
+    setError("");
+
+    try {
+      const account = await ensureAccountSession();
+      if (!account?.id) {
+        throw new Error("Pick a username first.");
+      }
+
+      const created = await appRequest({
+        route: "/api/challenges/create",
+        init: {
+          method: "POST",
+        },
+      });
+
+      if (!created?.matchID) {
+        throw new Error("Create succeeded but returned no matchID.");
+      }
+
+      if (!created?.playerCredentials) {
+        throw new Error("Create succeeded but returned no credentials.");
+      }
+
+      persistJoinedSeat({
+        matchID: created.matchID,
+        playerID: created.playerID,
+        credentials: created.playerCredentials,
+        playerName: account.currentUsername,
+      });
+
+      setChallengeState({
+        ...created,
+        phase: "waiting",
+      });
+    } catch (err) {
+      setError(err?.message || "Failed to create challenge.");
+    }
+  };
+
   const playAgainstBot = async () => {
     setError("");
 
@@ -615,6 +701,39 @@ export function LobbyPageClient() {
       setError(err?.message || "Failed to start bot match.");
     }
   };
+
+  const cancelChallengeInvite = useCallback(async () => {
+    if (!challengeState) {
+      return;
+    }
+
+    try {
+      if (challengeState.playerCredentials) {
+        await appRequest({
+          route: `/api/challenges/${challengeState.matchID}/cancel`,
+          init: {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              credentials: challengeState.playerCredentials,
+            }),
+          },
+        });
+      }
+    } catch (err) {
+      /* ignore cleanup errors */
+    }
+
+    const activeMatch = readLastActiveMatch(window.localStorage);
+    if (
+      activeMatch?.matchID === challengeState.matchID &&
+      activeMatch?.playerID === String(challengeState.playerID)
+    ) {
+      clearLastActiveMatch(window.localStorage);
+    }
+
+    setChallengeState(null);
+  }, [challengeState]);
 
   const cancelSearch = async () => {
     if (!searchState) return;
@@ -812,25 +931,35 @@ export function LobbyPageClient() {
           </div>
         )}
 
-        {/* ── Main card ── */}
-        <div className="w-full rounded-xl bg-white/25 p-6 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
-          {/* Play button */}
-          <button
-            onClick={() => requireIdentity(play)}
-            disabled={!!searchState}
-            className="w-full rounded-lg bg-lime-500 px-6 py-3.5 text-lg font-bold text-white shadow-md transition-all hover:bg-lime-600 hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
-          >
-            Play
-          </button>
-          <p className="mt-1.5 text-center text-xs text-slate-600">
-            1v1 &middot; instant matchmaking
-          </p>
-          <button
-            onClick={() => requireIdentity(playAgainstBot)}
-            disabled={!!searchState}
-            className="mt-2 w-full rounded-lg bg-amber-400 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-amber-300 transition-all hover:bg-amber-300 hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
-          >
-            Play Against Bot
+	         {/* ── Main card ── */}
+	        <div className="w-full rounded-xl bg-white/25 p-6 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
+	          {/* Play button */}
+	          <button
+	            onClick={() => requireIdentity(play)}
+	            disabled={!!searchState || !!challengeState}
+	            className="w-full rounded-lg bg-lime-500 px-6 py-3.5 text-lg font-bold text-white shadow-md transition-all hover:bg-lime-600 hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
+	          >
+	            Play
+	          </button>
+	          <p className="mt-1.5 text-center text-xs text-slate-600">
+	            1v1 &middot; instant matchmaking
+	          </p>
+	          <button
+	            onClick={() => requireIdentity(createFriendChallenge)}
+	            disabled={!!searchState || !!challengeState}
+	            className="mt-2 w-full rounded-lg bg-white/80 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-white/70 transition-all hover:bg-white hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
+	          >
+	            Play a Friend
+	          </button>
+	          <p className="mt-1 text-center text-xs text-slate-600">
+	            Private link &middot; share to challenge a friend
+	          </p>
+	          <button
+	            onClick={() => requireIdentity(playAgainstBot)}
+	            disabled={!!searchState || !!challengeState}
+	            className="mt-2 w-full rounded-lg bg-amber-400 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-amber-300 transition-all hover:bg-amber-300 hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
+	          >
+	            Play Against Bot
           </button>
           <p className="mt-1 text-center text-xs text-slate-600">
             Solo match &middot; fills seat 2 with Puffer bot
@@ -1018,6 +1147,16 @@ export function LobbyPageClient() {
           initialName={playerName}
           initialEmoji={playerEmoji}
           initialColor={playerColor}
+        />
+      )}
+
+      {/* ── Friend challenge modal ── */}
+      {challengeState && (
+        <FriendChallengeModal
+          phase={challengeState.phase}
+          challengeUrl={challengeState.challengeUrl}
+          expiresAt={challengeState.expiresAt}
+          onClose={cancelChallengeInvite}
         />
       )}
 
