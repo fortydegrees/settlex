@@ -16,6 +16,15 @@ const loadModule = async (filename) => {
   return import(`${pathToFileURL(targetPath).href}?t=${Date.now()}`);
 };
 
+const parseJsonbParam = (value) => {
+  if (value == null) {
+    return value;
+  }
+
+  expect(typeof value).toBe("string");
+  return JSON.parse(value);
+};
+
 const createArchivePool = () => {
   const state = {
     archivedMatches: [],
@@ -73,7 +82,7 @@ const createArchivePool = () => {
           winnerAccountId: params[8],
           winnerSeatId: params[9],
           playerCount: params[10],
-          summaryJson: params[11],
+          summaryJson: parseJsonbParam(params[11]),
         };
         state.archivedMatches.push(row);
         return { rows: [row] };
@@ -97,10 +106,10 @@ const createArchivePool = () => {
       if (normalized.startsWith("insert into archived_match_replays")) {
         state.archivedMatchReplays.push({
           archivedMatchId: params[0],
-          initialStateJson: params[1],
-          logJson: params[2],
-          finalStateJson: params[3],
-          summaryJson: params[4],
+          initialStateJson: parseJsonbParam(params[1]),
+          logJson: parseJsonbParam(params[2]),
+          finalStateJson: parseJsonbParam(params[3]),
+          summaryJson: parseJsonbParam(params[4]),
         });
         return { rows: [] };
       }

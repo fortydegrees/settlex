@@ -29,7 +29,7 @@ describe("GameScreen theme wiring", () => {
 
   it("passes themeId into board and hud components", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
-    expect(contents).toMatch(/<CatanBoard[\s\S]*themeId=\{themeId\}/);
+    expect(contents).toMatch(/<MemoizedCatanBoard[\s\S]*themeId=\{themeId\}/);
     expect(contents).toMatch(/<PlayerActionContainer[\s\S]*themeId=\{themeId\}/);
     expect(contents).toMatch(/<TradeDiscardModal[\s\S]*themeId=\{themeId\}/);
   });

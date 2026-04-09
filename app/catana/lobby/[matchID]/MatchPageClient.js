@@ -8,6 +8,7 @@ import { SocketIO } from "boardgame.io/multiplayer";
 import { Catan } from "../../Game";
 import { GameScreenWithEffects } from "../../GameScreen";
 import { GlassPillButton } from "../../components/GlassPillButton";
+import { LiveMatchLoadingShell } from "./LiveMatchLoadingShell";
 import {
   getCredentialsStorageKey,
   writeLastActiveMatch
@@ -89,6 +90,7 @@ function seatLabel(seat) {
 }
 
 function normalizeMatch(raw) {
+  if (!raw) return null;
   const playersObj = raw?.players || {};
   const players = Object.values(playersObj).sort((a, b) => (a?.id ?? 0) - (b?.id ?? 0));
   return {
@@ -98,16 +100,21 @@ function normalizeMatch(raw) {
   };
 }
 
-export function MatchPageClient({ matchID, initialPlayerID }) {
+export function MatchPageClient({
+  matchID,
+  initialPlayerID,
+  initialCredentials,
+  initialLiveMatch,
+}) {
   const router = useRouter();
 
   const [playerName, setPlayerName] = useState("Visitor");
-  const [match, setMatch] = useState(null);
+  const [match, setMatch] = useState(() => normalizeMatch(initialLiveMatch));
   const [isLoadingMatch, setIsLoadingMatch] = useState(false);
   const [error, setError] = useState("");
 
   const [playerID, setPlayerID] = useState(initialPlayerID ?? "");
-  const [credentials, setCredentials] = useState(null);
+  const [credentials, setCredentials] = useState(initialCredentials ?? null);
   const [joinPending, setJoinPending] = useState(false);
   const [botFillPending, setBotFillPending] = useState(false);
 
@@ -117,6 +124,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
       game: Catan,
       board: GameScreenWithEffects,
       multiplayer: SocketIO({ server: gameServer }),
+      loading: LiveMatchLoadingShell,
       debug: false,
     });
   }, [gameServer]);
@@ -190,6 +198,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
 
   useEffect(() => {
     if (!playerID) return;
+    if (credentials) return;
     try {
       const storedCreds = window.localStorage.getItem(
         getCredentialsStorageKey({ matchID, playerID })
@@ -198,7 +207,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
     } catch (err) {
       // ignore
     }
-  }, [matchID, playerID]);
+  }, [credentials, matchID, playerID]);
 
   useEffect(() => {
     try {

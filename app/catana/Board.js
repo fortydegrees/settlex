@@ -5,8 +5,6 @@ import { Node } from "./Node";
 import { ActionNode } from "./ActionNode";
 import { Edge } from "./Edge";
 import { Port } from "./Port";
-import { RobberPlacementPreview } from "./RobberPlacementPreview";
-import { BuildPlacementPreview } from "./BuildPlacementPreview";
 import { BoardUnderlay } from "./BoardUnderlay";
 import { BoardPortChannels } from "./BoardPortChannels";
 import "./Board.css";
@@ -33,6 +31,42 @@ import { isDocumentHidden } from "./utils/visibility";
 import { tilePixelVector } from "./utils/coordinates";
 import { isPassiveBuildEnabled } from "./utils/passiveBuildMode";
 import { getBuildPickupPieceType } from "./utils/playerAction";
+
+let robberPlacementPreviewModulePromise = null;
+const loadRobberPlacementPreviewModule = () => {
+  if (!robberPlacementPreviewModulePromise) {
+    robberPlacementPreviewModulePromise = import("./RobberPlacementPreview");
+  }
+
+  return robberPlacementPreviewModulePromise;
+};
+
+let buildPlacementPreviewModulePromise = null;
+const loadBuildPlacementPreviewModule = () => {
+  if (!buildPlacementPreviewModulePromise) {
+    buildPlacementPreviewModulePromise = import("./BuildPlacementPreview");
+  }
+
+  return buildPlacementPreviewModulePromise;
+};
+
+const loadBoardPreviewModules = () =>
+  Promise.all([
+    loadRobberPlacementPreviewModule(),
+    loadBuildPlacementPreviewModule()
+  ]);
+
+const RobberPlacementPreview = React.lazy(() =>
+  loadRobberPlacementPreviewModule().then((module) => ({
+    default: module.RobberPlacementPreview,
+  }))
+);
+
+const BuildPlacementPreview = React.lazy(() =>
+  loadBuildPlacementPreviewModule().then((module) => ({
+    default: module.BuildPlacementPreview,
+  }))
+);
 
 const getValidRobberTiles = (G) => {
   // Use core function for validation
@@ -246,6 +280,42 @@ export function CatanBoard({
     return () => {
       unsubscribeReducedMotion();
       unsubscribeCoarsePointer();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const preloadBoardPreviewModules = () => {
+      if (cancelled) {
+        return;
+      }
+
+      void loadBoardPreviewModules().catch(() => {});
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleCallbackId = window.requestIdleCallback(
+        preloadBoardPreviewModules,
+        { timeout: 1500 }
+      );
+
+      return () => {
+        cancelled = true;
+        if (typeof window.cancelIdleCallback === "function") {
+          window.cancelIdleCallback(idleCallbackId);
+        }
+      };
+    }
+
+    const timeoutId = window.setTimeout(preloadBoardPreviewModules, 1200);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
     };
   }, []);
 
@@ -983,7 +1053,6 @@ export function CatanBoard({
   //but we don't do this as we don't generate water tiles.. yet..
   //const buildable_subgraph = STATIC_GRAPH.subgraph(landNodes)
 
-  console.log("board render ");
   const setBoardRefs = (node) => {
     divRef.current = node;
     if (!boardRef) return;
@@ -1015,37 +1084,41 @@ export function CatanBoard({
           ref={placementLayerRef}
           className="absolute inset-0 pointer-events-none z-30"
         />
-        {resolvedRobberPlacementMotionMode === "playful" &&
-        isRobberPlacementActive ? (
-          <RobberPlacementPreview
-            active
-            hoveredTarget={hoveredRobberTarget}
-            magneticTargets={magneticRobberTargets}
-            landTileCenters={landRobberPreviewTiles}
-            boardTileSize={size}
-            boardViewportScale={boardViewportScale}
-            themeId={themeId}
-            size={size / 1.5}
-          />
-        ) : null}
-        {isBuildPickupActive ? (
-          <BuildPlacementPreview
-            active
-            pieceType={activeBuildPickupPieceType}
-            pieceColor={currentPlayerView?.color ?? "red"}
-            originRect={buildPickup?.originRect ?? null}
-            startedAtMs={buildPickup?.startedAtMs ?? null}
-            launchDelayMs={buildPickup?.launchDelayMs ?? 0}
-            magneticTargets={magneticBuildTargets}
-            landTileCenters={landRobberPreviewTiles}
-            boardTileSize={size}
-            boardViewportScale={boardViewportScale}
-            themeId={themeId}
-            size={size}
-            prefersReducedMotion={prefersReducedMotion}
-            hasCoarsePointer={hasCoarsePointer}
-            onPresentationChange={setBuildPickupPresentation}
-          />
+        {isRobberPlacementActive || isBuildPickupActive ? (
+          <React.Suspense fallback={null}>
+            {resolvedRobberPlacementMotionMode === "playful" &&
+            isRobberPlacementActive ? (
+              <RobberPlacementPreview
+                active
+                hoveredTarget={hoveredRobberTarget}
+                magneticTargets={magneticRobberTargets}
+                landTileCenters={landRobberPreviewTiles}
+                boardTileSize={size}
+                boardViewportScale={boardViewportScale}
+                themeId={themeId}
+                size={size / 1.5}
+              />
+            ) : null}
+            {isBuildPickupActive ? (
+              <BuildPlacementPreview
+                active
+                pieceType={activeBuildPickupPieceType}
+                pieceColor={currentPlayerView?.color ?? "red"}
+                originRect={buildPickup?.originRect ?? null}
+                startedAtMs={buildPickup?.startedAtMs ?? null}
+                launchDelayMs={buildPickup?.launchDelayMs ?? 0}
+                magneticTargets={magneticBuildTargets}
+                landTileCenters={landRobberPreviewTiles}
+                boardTileSize={size}
+                boardViewportScale={boardViewportScale}
+                themeId={themeId}
+                size={size}
+                prefersReducedMotion={prefersReducedMotion}
+                hasCoarsePointer={hasCoarsePointer}
+                onPresentationChange={setBuildPickupPresentation}
+              />
+            ) : null}
+          </React.Suspense>
         ) : null}
 
         {buildings}
@@ -1060,6 +1133,9 @@ export function CatanBoard({
     </div>
   );
 }
+
+export const MemoizedCatanBoard = React.memo(CatanBoard);
+MemoizedCatanBoard.displayName = "MemoizedCatanBoard";
 
 // export const CatanBoardWithEffects = EffectsBoardWrapper(CatanBoard, {
 //   // Wait until all effects have finished before updating state.

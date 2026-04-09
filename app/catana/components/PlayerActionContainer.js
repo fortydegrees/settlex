@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";

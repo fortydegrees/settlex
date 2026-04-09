@@ -2,10 +2,12 @@ import { createElement as h } from "react";
 import { notFound } from "next/navigation";
 import { getMatchPageData } from "../../../lib/server/matches/getMatchPageData.js";
 import { buildReplayFrames } from "../../../lib/server/replays/buildReplayFrames.js";
+import { readMatchCredentialCookie } from "../../../lib/server/session/matchCredentialCookie.js";
 
 export const createGMatchPage = ({
   getMatchPageData: getMatchPageDataImpl = getMatchPageData,
   buildReplayFrames: buildReplayFramesImpl = buildReplayFrames,
+  readSeatCredential: readSeatCredentialImpl = readMatchCredentialCookie,
   MatchPageClient: MatchPageClientImpl = null,
   ReplayPageClient: ReplayPageClientImpl = null,
   notFoundImpl = notFound,
@@ -14,6 +16,11 @@ export const createGMatchPage = ({
     const pageData = await getMatchPageDataImpl(params?.matchID);
 
     if (pageData?.kind === "live") {
+      const initialPlayerID = searchParams?.playerID ?? null;
+      const initialCredentials = await readSeatCredentialImpl({
+        matchID: params?.matchID,
+        playerID: initialPlayerID,
+      });
       const MatchPageClientResolved =
         MatchPageClientImpl ??
         (await import("../../catana/lobby/[matchID]/MatchPageClient.js"))
@@ -21,7 +28,9 @@ export const createGMatchPage = ({
 
       return h(MatchPageClientResolved, {
         matchID: params?.matchID,
-        initialPlayerID: searchParams?.playerID ?? null,
+        initialPlayerID,
+        initialCredentials,
+        initialLiveMatch: pageData.liveMatch ?? null,
       });
     }
 

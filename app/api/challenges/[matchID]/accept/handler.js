@@ -6,6 +6,7 @@ import {
 } from "../../../../../lib/server/matches/friendChallenge.js";
 import { getLiveMatch } from "../../../../../lib/server/matches/getLiveMatch.js";
 import { joinMatchForAccount } from "../../../../../lib/server/matches/joinMatchForAccount.js";
+import { writeMatchCredentialCookie } from "../../../../../lib/server/session/matchCredentialCookie.js";
 
 const unauthorizedResponse = () =>
   NextResponse.json({ error: "You must create or restore an account first." }, { status: 401 });
@@ -60,11 +61,17 @@ export const createChallengeAcceptRoute =
         playerID: challengeState.inviteeSeatId,
       });
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         matchID,
         playerID: challengeState.inviteeSeatId,
         playerCredentials: joined?.playerCredentials,
       });
+      writeMatchCredentialCookie(response, {
+        matchID,
+        playerID: challengeState.inviteeSeatId,
+        credentials: joined?.playerCredentials,
+      });
+      return response;
     } catch (error) {
       return errorResponse(error);
     }

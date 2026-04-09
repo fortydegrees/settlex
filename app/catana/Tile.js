@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
 import { SQRT3, tilePixelVector } from "./utils/coordinates";
 import { useDrag } from "react-dnd";

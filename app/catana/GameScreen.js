@@ -1,5 +1,5 @@
 "use client";
-import { CatanBoard } from "./Board";
+import { MemoizedCatanBoard } from "./Board";
 import {
   TransformWrapper,
   TransformComponent,
@@ -58,6 +58,9 @@ import {
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import {
+  getLobbyServerOrigin,
+} from "./utils/serverOrigins";
+import {
   DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
 } from "./utils/robberPlacementMotion";
 import { Howler } from "howler";
@@ -71,7 +74,6 @@ import {
   readLastActiveMatch
 } from "./utils/activeMatchStorage";
 import { shouldAutoReady } from "./utils/preGameReady";
-import { getLobbyServerOrigin } from "./utils/serverOrigins";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 
@@ -1108,7 +1110,7 @@ export function GameScreen(bgioProps) {
         onTransformed={handleBoardTransformed}
       >
         <TransformComponent>
-          <CatanBoard
+          <MemoizedCatanBoard
             boardRef={boardRef}
             placementLayerRef={placementLayerRef}
             placementRoadLayerRef={placementRoadLayerRef}

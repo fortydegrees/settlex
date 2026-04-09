@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAccount.js";
 import { createMatchForAccount } from "../../../../lib/server/matches/createMatchForAccount.js";
+import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
 
 const unauthorizedResponse = () =>
   NextResponse.json({ error: "You must create or restore an account first." }, { status: 401 });
@@ -33,7 +34,13 @@ export const createMatchCreateRoute =
         setupData: payload?.setupData,
       });
 
-      return NextResponse.json(result);
+      const response = NextResponse.json(result);
+      writeMatchCredentialCookie(response, {
+        matchID: result?.matchID,
+        playerID: result?.playerID,
+        credentials: result?.playerCredentials,
+      });
+      return response;
     } catch (error) {
       return errorResponse(error);
     }

@@ -24,13 +24,24 @@ describe("/g match page", () => {
     const getMatchPageData = vi.fn().mockResolvedValue({
       kind: "live",
       matchID: "m1",
-      liveMatch: { matchID: "m1" },
+      liveMatch: { matchID: "m1", players: [{ id: 0, name: "Ada" }] },
     });
-    const MatchPageClient = ({ matchID, initialPlayerID }) =>
-      h("div", null, `Live ${matchID} seat ${initialPlayerID}`);
+    const readSeatCredential = vi.fn().mockResolvedValue("secret_0");
+    const MatchPageClient = ({
+      matchID,
+      initialPlayerID,
+      initialCredentials,
+      initialLiveMatch,
+    }) =>
+      h(
+        "div",
+        null,
+        `Live ${matchID} seat ${initialPlayerID} credentials ${initialCredentials} players ${initialLiveMatch.players.length}`
+      );
 
     const Page = createGMatchPage({
       getMatchPageData,
+      readSeatCredential,
       MatchPageClient,
       notFoundImpl: () => {
         throw new Error("not found");
@@ -43,7 +54,11 @@ describe("/g match page", () => {
     });
     const html = renderToStaticMarkup(element);
 
-    expect(html).toContain("Live m1 seat 0");
+    expect(readSeatCredential).toHaveBeenCalledWith({
+      matchID: "m1",
+      playerID: "0",
+    });
+    expect(html).toContain("Live m1 seat 0 credentials secret_0 players 1");
   });
 
   it("renders archived replay mode on the same URL after live cleanup", async () => {

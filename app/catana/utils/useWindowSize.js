@@ -3,35 +3,44 @@
 
 import { useEffect, useState } from "react";
 
+export const DEFAULT_WINDOW_SIZE = Object.freeze({
+  width: 1280,
+  height: 720,
+});
+
+export function getInitialWindowSize() {
+  if (typeof window === "undefined") {
+    return DEFAULT_WINDOW_SIZE;
+  }
+
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+}
+
 // Hook
 export default function useWindowSize() {
-
-  // Initialize state with undefined width/height so server and client renders match
-  // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
-  const [windowSize, setWindowSize] = useState({
-    width: undefined,
-    height: undefined,
-  });
+  // Keep the initial render deterministic so the board is present in SSR HTML
+  // without introducing a server/client hydration mismatch.
+  const [windowSize, setWindowSize] = useState(DEFAULT_WINDOW_SIZE);
 
   useEffect(() => {
-    // Handler to call on window resize
     function handleResize() {
-      // Set window width/height to state
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
+      const nextWindowSize = getInitialWindowSize();
+      setWindowSize((currentWindowSize) =>
+        currentWindowSize.width === nextWindowSize.width &&
+        currentWindowSize.height === nextWindowSize.height
+          ? currentWindowSize
+          : nextWindowSize
+      );
     }
 
-    // Add event listener
     window.addEventListener("resize", handleResize);
-
-    // Call handler right away so state gets updated with initial window size
     handleResize();
 
-    // Remove event listener on cleanup
     return () => window.removeEventListener("resize", handleResize);
-  }, []); // Empty array ensures that effect is only run on mount
+  }, []);
 
   return windowSize;
 }

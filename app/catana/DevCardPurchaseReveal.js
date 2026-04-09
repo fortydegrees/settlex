@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { Howl } from "howler";

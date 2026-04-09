@@ -54,8 +54,9 @@ export function EffectsLabClient() {
     [selectedId]
   );
 
-  const selectedCues = selected?.cues ?? [];
+  const selectedCues = useMemo(() => selected?.cues ?? [], [selected]);
   const audioSupported = Boolean(selected?.supportsAudio && selectedCues.length);
+  const customSoundFormat = customSound.format;
 
   const themeOverride = useMemo(() => {
     if (!customSound.url || !audioSupported) return DEFAULT_THEME;
@@ -63,11 +64,11 @@ export function EffectsLabClient() {
     selectedCues.forEach((cue) => {
       const base = DEFAULT_THEME[cue];
       overrides[cue] = base
-        ? { ...base, src: customSound.url, format: customSound.format }
-        : { src: customSound.url, volume: 1, format: customSound.format };
+        ? { ...base, src: customSound.url, format: customSoundFormat }
+        : { src: customSound.url, volume: 1, format: customSoundFormat };
     });
     return { ...DEFAULT_THEME, ...overrides };
-  }, [customSound.url, audioSupported, selectedCues]);
+  }, [customSound.url, customSoundFormat, audioSupported, selectedCues]);
 
   useEffect(() => {
     const audio = createAudioManager({ bus, theme: themeOverride });

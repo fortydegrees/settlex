@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useState, useMemo, useEffect } from "react";
 import { STANDARD_RESOURCES, ResourceType } from "../types";
 import {
