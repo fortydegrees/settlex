@@ -82,6 +82,8 @@ describe("match API routes", () => {
       })
     );
     expect(json.playerCredentials).toBe("secret_123");
+    expect(authorized.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(authorized.headers.get("set-cookie")).toContain("secret_123");
   });
 
   it("requires a current session for join and leave, and proxies match metadata reads", async () => {
@@ -225,6 +227,9 @@ describe("match API routes", () => {
         credentials: "secret_join",
       })
     );
+    expect(joinResponse.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(joinResponse.headers.get("set-cookie")).toContain("secret_join");
+    expect(leaveResponse.headers.get("set-cookie")).toContain("Max-Age=0");
 
     const detailsJson = await detailsResponse.json();
     expect(detailsJson.matchID).toBe("match_1");

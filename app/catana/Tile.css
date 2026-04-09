@@ -9,9 +9,10 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    .pips {
-        font-size: calc(var(--base-font-size) * 60%);
-    }
+}
+
+.number-token .pips {
+    font-size: calc(var(--base-font-size) * 60%);
 }
 
 .tile {

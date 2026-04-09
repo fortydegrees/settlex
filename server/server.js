@@ -21,6 +21,12 @@ const DEFAULT_FINISHED_MATCH_CLEANUP_GRACE_MS = 300_000
 let serverInstance
 const botManager = createPufferBotManagerFromEnv()
 
+const applyCors = (ctx) => {
+  ctx.set("Access-Control-Allow-Origin", "*")
+  ctx.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+  ctx.set("Access-Control-Allow-Headers", "Content-Type")
+}
+
 const dispatch = async ({ matchID, move, playerID }) => {
   await dispatchMatchUpdate({
     serverInstance,
@@ -103,7 +109,13 @@ const server = Server({
 
 serverInstance = server
 
+server.router.options("/timer/:matchID", (ctx) => {
+  applyCors(ctx)
+  ctx.status = 204
+})
+
 server.router.get("/timer/:matchID", async (ctx) => {
+  applyCors(ctx)
   const matchID = ctx.params.matchID
   const { state } = await serverInstance.db.fetch(matchID, { state: true })
   if (!state) {
@@ -115,7 +127,13 @@ server.router.get("/timer/:matchID", async (ctx) => {
   ctx.body = { matchID, timer, serverTimeMs: Date.now() }
 })
 
+server.router.options("/idle/:matchID/ack", (ctx) => {
+  applyCors(ctx)
+  ctx.status = 204
+})
+
 server.router.post("/idle/:matchID/ack", koaBody(), async (ctx) => {
+  applyCors(ctx)
   const matchID = ctx.params.matchID
   const { playerID, credentials } = ctx.request.body ?? {}
 

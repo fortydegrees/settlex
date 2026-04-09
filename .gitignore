@@ -27,6 +27,8 @@ node_modules/
 .playwright-cli/
 output/
 tmp/
+artifacts/
+traces/
 public/svgs/working/
 public/svgs/colonist/
 public/svgs/* copy.svg

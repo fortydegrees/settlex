@@ -90,6 +90,8 @@ describe("challenge API routes", () => {
         },
       })
     );
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(response.headers.get("set-cookie")).toContain("secret_inviter");
   });
 
   it("resolves pending vs expired challenge state", async () => {
@@ -236,6 +238,8 @@ describe("challenge API routes", () => {
       playerID: "0",
       playerCredentials: "secret_friend",
     });
+    expect(acceptResponse.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(acceptResponse.headers.get("set-cookie")).toContain("secret_friend");
     expect(joinMatchForAccount).toHaveBeenCalledWith(
       expect.objectContaining({
         matchID: "match_1",

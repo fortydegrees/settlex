@@ -13,12 +13,18 @@ const readAppFile = (...segments) =>
 describe("public branding and legacy route wiring", () => {
   it("uses Settlehex for the visible app shell and account copy", () => {
     const layoutSource = readAppFile("app", "layout.js");
-    const accountSource = readAppFile("app", "account", "page.js");
+    const accountPageSource = readAppFile("app", "account", "page.js");
+    const accountClientSource = readAppFile(
+      "app",
+      "account",
+      "AccountPageClient.js"
+    );
     const lobbySource = readAppFile("app", "catana", "lobby", "LobbyPageClient.js");
 
     expect(layoutSource).toContain("title: 'Settlehex'");
-    expect(accountSource).toContain("Settlehex account");
-    expect(accountSource).not.toContain("Settlex account");
+    expect(accountPageSource).not.toContain("Settlex account");
+    expect(accountClientSource).toContain("Settlehex account");
+    expect(accountClientSource).not.toContain("Settlex account");
     expect(lobbySource).toContain("Settlehex");
     expect(lobbySource).not.toContain("\n            Catana\n");
   });

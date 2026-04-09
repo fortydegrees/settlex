@@ -16,4 +16,15 @@ describe("server route wiring", () => {
       'server.router.post("/idle/:matchID/ack", koaBody(), async (ctx) => {'
     );
   });
+
+  it("adds CORS headers for split-port timer and idle routes", () => {
+    const contents = fs.readFileSync(serverPath, "utf8");
+
+    expect(contents).toContain("const applyCors = (ctx) => {");
+    expect(contents).toContain('ctx.set("Access-Control-Allow-Origin", "*")');
+    expect(contents).toContain('server.router.options("/timer/:matchID", (ctx) => {');
+    expect(contents).toContain('server.router.options("/idle/:matchID/ack", (ctx) => {');
+    expect(contents).toContain('server.router.get("/timer/:matchID", async (ctx) => {');
+    expect(contents).toContain('server.router.post("/idle/:matchID/ack", koaBody(), async (ctx) => {');
+  });
 });

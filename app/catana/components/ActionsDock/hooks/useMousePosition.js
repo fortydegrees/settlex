@@ -1,4 +1,4 @@
-import { useSpring, UseSpringProps } from '@react-spring/web'
+import { useSpring } from '@react-spring/web'
 import { useEffect, useMemo } from 'react'
 
 export const useMousePosition = (springProps, springDeps) => {
@@ -14,7 +14,7 @@ export const useMousePosition = (springProps, springDeps) => {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
     }
-  }, [])
+  }, [api])
   return useMemo(
     () => ({
       x,

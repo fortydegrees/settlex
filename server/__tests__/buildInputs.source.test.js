@@ -56,6 +56,12 @@ describe("production build inputs", () => {
     expect(tsconfig).toContain('"react-zoom-pan-pinch/stories"');
   });
 
+  it("excludes misc experiments from app typechecking", () => {
+    const tsconfig = readRepoFile("tsconfig.json");
+
+    expect(tsconfig).toContain('"misc"');
+  });
+
   it("uses relative model imports inside vendored zoom-pan-pinch build files", () => {
     const stylesUtils = readRepoFile(
       "react-zoom-pan-pinch",
@@ -65,5 +71,12 @@ describe("production build inputs", () => {
 
     expect(stylesUtils).toContain('from "../models"');
     expect(stylesUtils).not.toContain('from "models"');
+  });
+
+  it("disables optional ws native addons in the Next webpack config", () => {
+    const nextConfig = readRepoFile("next.config.js");
+
+    expect(nextConfig).toContain('bufferutil: false');
+    expect(nextConfig).toContain('"utf-8-validate": false');
   });
 });

@@ -1,4 +1,4 @@
-import { ResourceType } from "./types";
+/* eslint-disable @next/next/no-img-element */
 import {
   getClassicResourceIconPath,
   getResourceIconPath,
@@ -41,6 +41,7 @@ export function Card({ resource, style, themeId }) {
     >
       <img
         src={getResourceIconPath(themeId, resource)}
+        alt={`${resource} resource`}
         className={margin}
         draggable={false}
         onError={(event) =>

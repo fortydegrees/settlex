@@ -1,5 +1,77 @@
 # PROGRESS
 
+## Status (2026-04-09, repo tree cleaned and push blockers verified away)
+- Cleaned repo noise from the perf follow-up and re-verified that the current working tree is pushable.
+- Current behavior:
+- generated profiling output under `artifacts/` and `traces/` is now ignored and removed from the working tree,
+- the stale source-contract tests now point at the real post-refactor targets (`AccountPageClient` for account branding copy and `MemoizedCatanBoard` for theme wiring),
+- `pnpm verify` passes again,
+- a clean `rm -rf .next && pnpm build` passes again; the earlier missing chunk error was from sharing `.next` with an active `pnpm dev` session, not from a real production build break.
+- Focused verification:
+- `pnpm exec vitest run app/__tests__/publicBranding.source.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js`
+- `pnpm verify`
+- `rm -rf .next && pnpm build`
+- `git diff --check`
+
+## Status (2026-04-09, split-port timer and idle routes work again in local dev)
+- Fixed the local invite/game-page follow-up bug where `/timer` and `/idle` requests were blocked or missing during split-port dev runs.
+- Current behavior:
+- the custom `server.router` routes in `server/server.js` now emit permissive CORS headers and respond to `OPTIONS`, so the Next app on `3000` can call the bgio API app on `8080` for timer seeding and idle acknowledgement,
+- `GameScreen` continues to use the lobby/API origin helper for `/timer` and `/idle`, which is correct because `boardgame.io` mounts the shared router on the separate API app when `lobbyConfig.apiPort` is configured.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.idleGrace.test.js server/__tests__/serverRoutes.source.test.js`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/__tests__/GameScreen.idleGrace.test.js server/server.js server/__tests__/serverRoutes.source.test.js`
+- `git diff --check`
+
+## Status (2026-04-09, local match bootstrap no longer hard-requires internal URL env)
+- Removed the local-dev bootstrap footgun where app-owned match routes threw `GAME_SERVER_INTERNAL_URL is required` unless that env var was manually set, and corrected the fallback target to the actual bgio lobby API port.
+- Current behavior:
+- the server-side bgio wrapper in `lib/server/matches/joinMatchForAccount.js` now falls back to `http://localhost:8080` outside production, which is the bgio lobby API port used for create/join/metadata HTTP calls,
+- the browser-facing live game connection origin remains `http://localhost:8000`; local dev still uses split ports on purpose,
+- production still relies on explicit `GAME_SERVER_INTERNAL_URL` wiring; the fallback is dev/test only.
+- Focused verification:
+- `pnpm exec vitest run lib/server/__tests__/matchBootstrap.test.js`
+- `pnpm exec eslint lib/server/matches/joinMatchForAccount.js lib/server/__tests__/matchBootstrap.test.js`
+- `git diff --check`
+
+## Status (2026-04-09, live `/g` boot path now starts from server-known seat state)
+- Tightened the direct live-game route boot path so `/g/:matchID` no longer depends on `localStorage` before it can render a game-shaped shell.
+- Current behavior:
+- app-owned seat-claiming routes now mirror returned bgio seat credentials into match/player-scoped `HttpOnly` cookies, and `/api/matches/leave` clears that cookie when the seat is released,
+- `app/g/[matchID]/page-content.js` now reads the server-fetched live match payload plus the seat credential cookie and passes both into `MatchPageClient`,
+- `MatchPageClient` now seeds its initial `match` and `credentials` state from those server props and only falls back to `localStorage` when the cookie-backed path is unavailable,
+- the bgio client now uses `LiveMatchLoadingShell`, which renders the board underlay eagerly/high-priority during live-match sync so direct `/g` loads show a board-shaped shell instead of the default text-only `connecting...` placeholder.
+- Focused verification:
+- `pnpm exec vitest run app/__tests__/gMatchPage.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js app/catana/__tests__/MatchPageClient.boot.source.test.js app/catana/__tests__/LiveMatchLoadingShell.render.test.js`
+- `pnpm exec eslint app/api/matches/create/handler.js app/api/matches/join/handler.js app/api/matches/leave/handler.js app/api/challenges/create/handler.js 'app/api/challenges/[matchID]/accept/handler.js' 'app/g/[matchID]/page-content.js' 'app/catana/lobby/[matchID]/MatchPageClient.js' 'app/catana/lobby/[matchID]/LiveMatchLoadingShell.js' lib/server/session/matchCredentialCookie.js app/__tests__/gMatchPage.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js app/catana/__tests__/MatchPageClient.boot.source.test.js app/catana/__tests__/LiveMatchLoadingShell.render.test.js`
+- `pnpm build`
+- `git diff --check`
+
+## Status (2026-04-09, prod build blocker, archive crash, and warnings cleaned up)
+- Fixed the current production-build blocker, the live archive insert crash, and the remaining build/lint warnings surfaced during the perf audit follow-up.
+- Current behavior:
+- `pnpm build` no longer type-checks the legacy `misc/` Colonist adapter code, so missing `@colonist/*` packages in that dead slice no longer block the real app build,
+- archive writes now serialize replay/state payloads as JSON strings before they are inserted into `JSONB` columns, which stops the `22P02 invalid input syntax for type json` crash during finished-match archival,
+- the `/account` route now keeps query-param decoding in a server page wrapper and moves the interactive claim UI into `AccountPageClient`, so the previous full-page client-render deopt warning is gone,
+- the Catana warning cleanup pass removed the CSS nesting warning, fixed the hook-dependency warnings, stabilized the effects-lab memo deps, and explicitly disabled the raw-`img` lint rule only in the UI files that intentionally use plain `<img>` tags,
+- `next.config.js` now aliases `bufferutil` and `utf-8-validate` to `false`, which removes the noisy optional native-addon resolution warnings from the `ws` dependency chain.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/ArchiveManager.test.js server/__tests__/buildInputs.source.test.js app/__tests__/accountPage.source.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/useWindowSize.test.js app/catana/__tests__/BoardUnderlay.render.test.js`
+- `pnpm exec eslint server/archive/archiveFinishedMatch.js next.config.js app/account/page.js app/account/AccountPageClient.js app/__tests__/accountPage.source.test.js app/catana/Card.js app/catana/DevCardPurchaseReveal.js app/catana/Tile.css app/catana/Tile.js app/catana/components/ActionsDock/DockCard.js app/catana/components/ActionsDock/hooks/useMousePosition.js app/catana/components/PlayerActionContainer.js app/catana/components/TradeDiscardModal.js app/catana/dev/effects/EffectsLabClient.js server/__tests__/ArchiveManager.test.js server/__tests__/buildInputs.source.test.js`
+- clean temp-copy build: `pnpm build` in `/tmp/settlex-buildcheck`
+
+## Status (2026-04-09, board first paint and timer rerender guards tightened)
+- Tightened two client-side Catana perf guards that showed up in browser profiling on the live game route.
+- Current behavior:
+- `useWindowSize` now starts from a shared fallback viewport instead of `undefined`, so the board mounts on the first render and the board underlay image is discoverable in initial HTML,
+- `BoardUnderlay` now explicitly marks the underlay image eager/high-priority for the initial board paint,
+- `GameScreen` now mounts `MemoizedCatanBoard`, so the 250ms countdown/disconnect/idle ticker no longer re-renders the whole board subtree when board props are unchanged,
+- `Board` now lazy-loads the robber/build placement preview components and prewarms those chunks during browser idle time, so GSAP-heavy preview code stays off the initial critical path without adding a first-preview hitch,
+- the old debug `board render` console spam is gone.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/useWindowSize.test.js app/catana/__tests__/BoardUnderlay.render.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `pnpm exec eslint app/catana/utils/useWindowSize.js app/catana/BoardUnderlay.js app/catana/Board.js app/catana/GameScreen.js app/catana/__tests__/useWindowSize.test.js app/catana/__tests__/BoardUnderlay.render.test.js app/catana/__tests__/renderPerfGuards.test.js`
+
 ## Status (2026-04-09, friend challenge invites added)
 - Added the front-page `Play a Friend` flow with private invite creation, a dedicated `/challenge/:matchID` accept route, and a home-page waiting modal.
 - Current behavior:

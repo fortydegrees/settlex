@@ -20,6 +20,8 @@ export function BoardUnderlay({ center, size, themeId }) {
     "aria-hidden": true,
     "data-testid": "board-underlay",
     draggable: false,
+    loading: "eager",
+    fetchpriority: "high",
     style: {
       position: "absolute",
       left: frame.left,

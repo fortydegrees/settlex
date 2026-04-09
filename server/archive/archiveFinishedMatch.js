@@ -1,6 +1,23 @@
 import { randomUUID } from "node:crypto";
 import { getPool } from "../../lib/server/db/getPool.js";
 
+const toJsonbParam = (value) => {
+  if (value == null) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    try {
+      JSON.parse(value);
+      return value;
+    } catch (error) {
+      return JSON.stringify(value);
+    }
+  }
+
+  return JSON.stringify(value);
+};
+
 const toParticipantRows = (metadataPlayers, winnerSeatId) => {
   const players = Array.isArray(metadataPlayers)
     ? metadataPlayers
@@ -132,7 +149,7 @@ export const archiveFinishedMatch = async ({
         winnerParticipant?.accountId ?? null,
         winnerSeatId == null ? null : String(winnerSeatId),
         participantRows.length,
-        summaryJson,
+        toJsonbParam(summaryJson),
       ]
     );
 
@@ -179,10 +196,10 @@ export const archiveFinishedMatch = async ({
       `,
       [
         archivedMatchId,
-        liveRecord.initialState ?? null,
-        liveRecord.log ?? [],
-        liveRecord.state,
-        summaryJson,
+        toJsonbParam(liveRecord.initialState ?? null),
+        toJsonbParam(liveRecord.log ?? []),
+        toJsonbParam(liveRecord.state),
+        toJsonbParam(summaryJson),
       ]
     );
 

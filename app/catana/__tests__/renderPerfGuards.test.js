@@ -108,6 +108,33 @@ describe("render performance guards", () => {
     expect(contents).toMatch(/buildPlayerViewMap\(G\.core,\s*playerColorMap\)/);
   });
 
+  it("memo-wraps the board subtree so timer ticks do not re-render it", () => {
+    const boardContents = readCatanaFile("Board.js");
+    const screenContents = readCatanaFile("GameScreen.js");
+
+    expect(boardContents).toContain(
+      "export const MemoizedCatanBoard = React.memo(CatanBoard);"
+    );
+    expect(screenContents).toContain("MemoizedCatanBoard");
+    expect(boardContents).not.toContain('console.log("board render ');
+  });
+
+  it("lazy-loads preview components so GSAP is not part of the initial board bundle", () => {
+    const contents = readCatanaFile("Board.js");
+
+    expect(contents).not.toContain(
+      'import { RobberPlacementPreview } from "./RobberPlacementPreview";'
+    );
+    expect(contents).not.toContain(
+      'import { BuildPlacementPreview } from "./BuildPlacementPreview";'
+    );
+    expect(contents).toContain('const RobberPlacementPreview = React.lazy(');
+    expect(contents).toContain('const BuildPlacementPreview = React.lazy(');
+    expect(contents).toContain("const loadBoardPreviewModules = () =>");
+    expect(contents).toContain("requestIdleCallback");
+    expect(contents).toContain("<React.Suspense fallback={null}>");
+  });
+
   it("routes ActionNode building previews through the shared piece asset helper", () => {
     const contents = readCatanaFile("ActionNode.js");
     expect(contents).toContain("getPieceSvgFile");

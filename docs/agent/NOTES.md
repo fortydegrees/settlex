@@ -1,5 +1,50 @@
 # NOTES
 
+- Source-guard maintenance note:
+- Some tests in this repo intentionally assert against source text rather than runtime behavior.
+- When a refactor moves visible UI copy into a client child component or wraps a component in a memoized export, update the source guard to follow the real rendered target instead of changing production code just to satisfy an outdated string match.
+- Current examples:
+- account branding copy now lives in `app/account/AccountPageClient.js`, not the server wrapper `app/account/page.js`,
+- theme wiring in `app/catana/GameScreen.js` now flows through `MemoizedCatanBoard`, not the pre-perf-fix raw board component name.
+
+- Split-port timer/idle note:
+- With `server.run({ port: 8000, lobbyConfig: { apiPort: 8080 } })`, `boardgame.io` mounts the shared custom router on the API app (`8080`), not on the game transport app (`8000`).
+- That means `GameScreen` should keep using `getLobbyServerOrigin()` for `/timer/:matchID` and `/idle/:matchID/ack`.
+- Because those requests are cross-origin in local dev (`3000 -> 8080`), `server/server.js` must keep explicit CORS headers plus `OPTIONS` handlers on those custom routes.
+
+- Local game-server env note:
+- `lib/server/matches/joinMatchForAccount.js` should keep the non-production fallback to `http://localhost:8080`.
+- Reason: app-owned create/join/match-metadata routes talk to the bgio lobby HTTP API on `8080`, while the browser's live game/timer transport still talks to `8000`.
+- Keep that distinction explicit in `.env.example`: `NEXT_PUBLIC_GAME_SERVER_ORIGIN=http://localhost:8000`, `GAME_SERVER_INTERNAL_URL=http://localhost:8080`.
+
+- Live match boot-path note:
+- Treat Settlex account sessions and bgio seat credentials as separate layers, but do not make the live `/g/:matchID` route wait on `localStorage` before it can render the game shell.
+- App-owned routes that create or claim a seat should keep mirroring `playerCredentials` into the match/player-scoped `HttpOnly` cookie helper in `lib/server/session/matchCredentialCookie.js`, and seat-release routes should clear that cookie.
+- `app/g/[matchID]/page-content.js` should keep passing both `initialLiveMatch` and `initialCredentials` into `app/catana/lobby/[matchID]/MatchPageClient.js`; that is the current bridge that lets direct game loads start from server-known state.
+- `localStorage` credential reads in `MatchPageClient` are fallback-only now. Do not move them back into the primary boot gate unless you are intentionally accepting a slower, more client-heavy direct-route boot path again.
+- `LiveMatchLoadingShell` is intentionally a lightweight loading component, not a second board implementation. Its job is only to expose the board underlay and keep the route visually board-shaped while bgio sync finishes.
+
+- Build/blocker follow-up note:
+- `misc/UIGameCurrentStatus/CurrentStateMessageUtils.ts` still depends on missing `@colonist/*` packages, but that slice is legacy/unwired and should stay excluded from the real app TypeScript build instead of dragging those dependencies back in.
+- Keep `misc` in `tsconfig.json` `exclude` unless you intentionally revive that adapter code and also restore its package inputs.
+- For clean local bundle audits, prefer syncing the repo to a temp directory and building there instead of running `next build` in the same workspace as an active `pnpm dev` session; sharing `.next` made earlier browser checks noisy.
+
+- Archive JSONB note:
+- Postgres `JSONB` inserts in `server/archive/archiveFinishedMatch.js` must receive JSON text, not raw JS arrays/objects handed directly through `pg` parameter binding.
+- In particular, `log`, `initialState`, `state`, and match summaries should continue flowing through a serializer helper before archival writes.
+- The failure mode is `22P02 invalid input syntax for type json` during `archived_match_replays` insert, which can take down the live archive path after a match finishes.
+
+- Build-warning cleanup note:
+- `app/account/page.js` should stay server-rendered and only pass decoded query-param state into `app/account/AccountPageClient.js`; do not move `useSearchParams` back into the page entry unless you accept the `/account` client-render deopt again.
+- The `ws` optional native addons `bufferutil` and `utf-8-validate` are intentionally aliased to `false` in `next.config.js` to suppress bundler noise; do not add them as real runtime dependencies unless you have an explicit reason.
+- The Catana UI still uses plain `<img>` in a few spots for asset simplicity and SVG handling, so the targeted `@next/next/no-img-element` disables are intentional rather than accidental lint drift.
+
+- Board render perf note:
+- keep `app/catana/utils/useWindowSize.js` deterministic on the first render; returning `undefined` viewport dimensions hides the whole board subtree from SSR HTML and delays discovery of the board underlay image.
+- `app/catana/GameScreen.js` should keep mounting `MemoizedCatanBoard` rather than the raw board component so the local `nowMs` ticker for timers/disconnect/idle state does not force a full board rerender every `250ms`.
+- keep `app/catana/Board.js` preview animations behind `React.lazy` boundaries; eagerly importing `RobberPlacementPreview` / `BuildPlacementPreview` pulls `gsap` into initial game-route startup even when no preview is active.
+- prewarm those preview chunks during browser idle time after mount so the first robber/build preview does not pay the lazy-load cost at interaction time.
+
 - Friend challenge MVP note:
 - keep `/challenge/:matchID` distinct from the canonical live `/g/:matchID` route even though both point at the same underlying bgio match id.
 - private invites are implemented as normal 2-player matches with app-owned `setupData.matchKind = "friend_challenge"` metadata; the Catana engine itself should stay unaware of this flow.
