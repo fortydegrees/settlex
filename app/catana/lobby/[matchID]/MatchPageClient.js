@@ -346,7 +346,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-xs uppercase tracking-[0.3em] text-slate-700">
-                Catana Room
+                Settlehex Room
               </div>
               <h1 className="mt-2 text-2xl font-bold text-slate-900 drop-shadow-sm">
                 {matchID}
@@ -357,12 +357,6 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
                   className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
                 >
                   Back to lobby
-                </Link>
-                <Link
-                  href="/catana"
-                  className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
-                >
-                  /catana
                 </Link>
                 <Link
                   href="/account"

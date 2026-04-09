@@ -1324,7 +1324,7 @@ TODO: accurately colour it
             }}
             onRematch={() => {}}
             onLobby={() => {
-              window.location.href = "/catana";
+              window.location.href = "/";
             }}
             onClose={() => setShowGameOverModal(false)}
           />

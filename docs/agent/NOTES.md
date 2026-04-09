@@ -2323,3 +2323,13 @@
       with a fresh Postgres volume and raw-IP bootstrap env values.
     - GitHub Actions secret `OCI_HOST` needs to point at the new ARM VM before the next push-to-deploy cutover; otherwise Actions will keep targeting the old box even though the new one is already live-capable.
     - once the x86 rollback VM is no longer needed, the workflow can and should build `linux/arm64` only. That shortens image build time and avoids publishing unused x86 manifests to GHCR.
+  - Domain / brand cutover notes:
+    - the launch-critical change is smaller than a full internal rename:
+      - update the public domain, HTTPS, and browser-facing copy now
+      - leave internal `settlex` / `catana` folder names, storage keys, env prefixes, package names, and old design docs alone for now
+      This keeps the rollout safe while still making the live product read correctly as `Settlehex`.
+    - Caddy on the OCI box is now handling TLS directly for `settlehex.com` with Cloudflare set to `DNS only`.
+      Once the DNS record resolves, Caddy can complete the `http-01` challenge and auto-renew the certificate without any extra repo changes.
+    - if Cloudflare proxying is enabled later, set SSL mode to `Full (strict)` so Cloudflare continues validating the origin certificate that Caddy manages.
+    - `/catana` is best treated as a compatibility redirect for now, not a second live entry point. That preserves old bookmarks and stale client links while keeping the real public app rooted at `/` and `/g/...`.
+    - local shell DNS may lag behind public resolvers right after the record is created. `dig @1.1.1.1 settlehex.com +short` is the quickest ground truth when the browser or host resolver still says the name is missing.

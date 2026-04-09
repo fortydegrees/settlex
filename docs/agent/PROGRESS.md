@@ -3364,3 +3364,14 @@
 - Finalized the OCI workflow to ARM-only image builds now that the old x86 rollback box is being retired.
 - Verification for the ARM-only follow-up:
   - `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js`
+- Switched production over to the `settlehex.com` domain and tightened the public branding surface.
+- Domain/branding cutover changes:
+  - updated the Oracle VM prod env from the raw IP bootstrap values to `SITE_HOST=settlehex.com`, `PUBLIC_APP_URL=https://settlehex.com`, and `NEXT_PUBLIC_GAME_SERVER_ORIGIN=https://settlehex.com`, then redeployed the stack so Caddy could obtain and serve the live TLS certificate.
+  - changed the visible shell copy from `Catana` / `Settlex account` to `Settlehex` / `Settlehex account` in the app metadata, lobby hero, match room header, and account page.
+  - removed the visible `/catana` match-room link, changed the in-game postgame lobby button to return to `/`, and converted `app/catana/page.js` into a server redirect back to the root lobby instead of exposing a second public entry route.
+  - added `app/__tests__/publicBranding.source.test.js` and updated `app/catana/__tests__/serverOriginsWiring.source.test.js` to lock the public branding and legacy-route behavior.
+- Verification for the domain/branding cutover:
+  - `pnpm exec vitest run app/__tests__/publicBranding.source.test.js app/catana/__tests__/serverOriginsWiring.source.test.js`
+  - `dig @1.1.1.1 settlehex.com +short`
+  - `curl -I --resolve settlehex.com:80:145.241.254.241 http://settlehex.com`
+  - `curl -I --resolve settlehex.com:443:145.241.254.241 https://settlehex.com`
