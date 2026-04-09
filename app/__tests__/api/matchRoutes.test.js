@@ -87,11 +87,16 @@ describe("match API routes", () => {
   it("requires a current session for join and leave, and proxies match metadata reads", async () => {
     const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
     const { createMatchLeaveRoute } = await loadRoute("leave", "handler.js");
+    const { createOpenMatchesRoute } = await loadRoute("open", "handler.js");
     const { createMatchDetailsRoute } = await loadRoute("[matchID]", "handler.js");
 
     const getSessionAccount = vi.fn();
+    const getLiveMatch = vi.fn();
     const joinMatchForAccount = vi.fn();
     const leaveMatchForAccount = vi.fn();
+    const listPublicOpenMatches = vi.fn().mockResolvedValue([
+      { matchID: "public_1" },
+    ]);
     const fetchImpl = vi.fn().mockResolvedValue(
       jsonResponse({
         matchID: "match_1",
@@ -101,11 +106,15 @@ describe("match API routes", () => {
 
     const JOIN = createMatchJoinRoute({
       getSessionAccount,
+      getLiveMatch,
       joinMatchForAccount,
     });
     const LEAVE = createMatchLeaveRoute({
       getSessionAccount,
       leaveMatchForAccount,
+    });
+    const OPEN = createOpenMatchesRoute({
+      listPublicOpenMatches,
     });
     const GET = createMatchDetailsRoute({
       fetchImpl,
@@ -121,12 +130,30 @@ describe("match API routes", () => {
     );
     expect(unauthorizedJoin.status).toBe(401);
 
+    const openResponse = await OPEN(new Request("http://localhost/api/matches/open"));
+    expect(openResponse.status).toBe(200);
+    expect(await openResponse.json()).toEqual({
+      matches: [{ matchID: "public_1" }],
+    });
+
     getSessionAccount.mockResolvedValue({
       account: {
         id: "acct_1",
         currentUsername: "Ada",
         avatarEmoji: "🤠",
         avatarColor: "sky",
+      },
+    });
+    getLiveMatch.mockResolvedValueOnce({
+      matchID: "match_private_1",
+      metadata: {
+        setupData: {
+          matchKind: "friend_challenge",
+        },
+      },
+      players: {
+        0: { id: 0, name: "Ada" },
+        1: { id: 1, name: "" },
       },
     });
     joinMatchForAccount.mockResolvedValue({
@@ -137,6 +164,27 @@ describe("match API routes", () => {
       matchID: "match_1",
       playerID: "1",
       left: true,
+    });
+
+    const privateJoinResponse = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "settlex_session=a.b" },
+        body: JSON.stringify({ matchID: "match_private_1", playerID: "1" }),
+      })
+    );
+    expect(privateJoinResponse.status).toBe(403);
+    expect(await privateJoinResponse.json()).toEqual({
+      error: "Private friend challenges must be joined through their challenge link.",
+    });
+    expect(joinMatchForAccount).not.toHaveBeenCalled();
+
+    getLiveMatch.mockResolvedValueOnce({
+      matchID: "match_1",
+      players: {
+        0: { id: 0, name: "Ada" },
+        1: { id: 1, name: "" },
+      },
     });
 
     const joinResponse = await JOIN(
