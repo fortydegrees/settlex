@@ -30,9 +30,10 @@ describe("LeftMetaRail", () => {
     const contents = fs.readFileSync(leftMetaRailPath, "utf8");
 
     expect(contents).toContain("fixed left-4 bottom-4");
-    expect(contents).toContain("w-72 md:w-80");
+    expect(contents).toContain("w-72 md:w-80 xl:w-96");
     expect(contents).toContain("GameLogPanel");
     expect(contents).toContain("ChatPanel");
+    expect(contents).not.toContain("DebugPanel");
     expect(contents).toMatch(/gap-\d+/);
   });
 
@@ -50,7 +51,7 @@ describe("LeftMetaRail", () => {
     const gameLogContents = fs.readFileSync(gameLogPanelPath, "utf8");
     const chatContents = fs.readFileSync(chatPanelPath, "utf8");
 
-    expect(gameLogContents).toContain("h-[20vh]");
-    expect(chatContents).toContain("h-[20vh]");
+    expect(gameLogContents).toContain("h-[20vh] xl:h-[24vh]");
+    expect(chatContents).toContain("h-[20vh] xl:h-[24vh]");
   });
 });
