@@ -43,6 +43,7 @@ export const archiveFinishedMatch = async ({
   pool = getPool(),
   serverDb,
   matchID,
+  chatMessages = [],
 } = {}) => {
   if (!serverDb?.fetch) {
     throw new Error("A live boardgame.io DB is required to archive finished matches");
@@ -184,6 +185,28 @@ export const archiveFinishedMatch = async ({
         summaryJson,
       ]
     );
+
+    for (const chatMessage of chatMessages) {
+      await client.query(
+        `
+          INSERT INTO archived_match_chat_messages (
+            archived_match_id,
+            message_seq,
+            actor_id,
+            message_text,
+            created_at
+          )
+          VALUES ($1, $2, $3, $4, $5)
+        `,
+        [
+          archivedMatchId,
+          chatMessage.seq,
+          chatMessage.actorId,
+          chatMessage.messageText,
+          chatMessage.createdAt,
+        ]
+      );
+    }
 
     await client.query("COMMIT");
 

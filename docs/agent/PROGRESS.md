@@ -1,5 +1,48 @@
 # PROGRESS
 
+## Status (2026-04-09, deploy sync now respects `.gitignore`)
+- Tightened the OCI deploy sync step so rsync respects repository ignore rules instead of relying only on a short manual exclude list.
+- Current behavior:
+- the deploy workflow still uses rsync over SSH,
+- but it now applies `.gitignore` as an rsync filter,
+- and it keeps explicit excludes for `.git/`, `node_modules/`, `.next/`, and `.env.prod`.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js`
+
+## Status (2026-04-09, deploy flow switched to server-native OCI rebuilds)
+- Replaced the GHCR/image-build deployment path with a simpler server-native rebuild flow for the ARM OCI host.
+- Current behavior:
+- GitHub Actions still runs `pnpm verify`,
+- then syncs the checked-out repo to the VM over SSH,
+- then triggers `infra/scripts/deploy-prod.sh` on the VM,
+- the VM keeps `postgres` and `caddy` running and rebuilds only `web` and `game` locally with Docker Compose.
+- Implementation highlights:
+- `infra/docker-compose.prod.yml` now builds `Dockerfile.web` and `Dockerfile.game` from source on the server instead of requiring pinned image tags,
+- `.github/workflows/deploy-prod.yml` no longer uses QEMU, Buildx, or GHCR login/push steps,
+- `docs/deploy/oci-mvp.md` now documents the reduced secret surface and the server-native rebuild flow.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js`
+- `bash -n infra/scripts/deploy-prod.sh`
+
+## Status (2026-04-08, unified `/g/:matchID` live-or-archive lifecycle)
+- Fixed the finished-match restart path and replaced the old lobby URL model with a single canonical match route.
+- Current behavior:
+- finished matches are archived immediately with replay data plus durable chat rows,
+- live finished matches stay available for postgame chat while any tracked seat remains connected,
+- live cleanup now waits for `finished + archived + all disconnected + grace timer`,
+- later visits to the same `/g/:matchID` URL fall back to archive-backed replay/postgame mode instead of recreating a fresh bgio match.
+- Implementation highlights:
+- added `lib/server/db/sql/0003_archived_match_chat.sql` and archived-by-match lookup helpers,
+- added `server/chat/MatchChatStore.js` and `server/lifecycle/FinishedMatchRetentionManager.js`,
+- wired `server/timers/timerPubSub.js`, `server/archive/archiveFinishedMatch.js`, and `server/server.js` to retain chat, archive it, and clean finished live matches only after disconnect-based retention expires,
+- added `lib/server/matches/getMatchPageData.js` plus the new `app/g/[matchID]/` route,
+- removed the old route entry files `app/catana/lobby/page.js` and `app/catana/lobby/[matchID]/page.js`,
+- updated reconnect and navigation flows to target `/g/:matchID`.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/MatchChatStore.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/timerPubSub.test.js server/__tests__/ArchiveManager.test.js server/__tests__/TimerManager.test.js server/__tests__/serverGameConfig.test.js lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/getArchivedMatchByMatchId.test.js lib/server/__tests__/getMatchPageData.test.js lib/server/__tests__/matchBootstrap.test.js app/__tests__/gMatchPage.test.js app/__tests__/replayPage.test.js app/__tests__/replayPageClient.test.js app/__tests__/api/matchRoutes.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/ReconnectBannerPersistence.source.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js app/catana/__tests__/MatchPageClient.botFill.test.js`
+- `pnpm exec eslint server/chat/MatchChatStore.js server/lifecycle/FinishedMatchRetentionManager.js server/timers/timerPubSub.js server/archive/archiveFinishedMatch.js server/server.js server/__tests__/MatchChatStore.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/timerPubSub.test.js server/__tests__/ArchiveManager.test.js lib/server/matches/getArchivedMatchByMatchId.js lib/server/matches/getMatchPageData.js lib/server/replays/getArchivedReplay.js lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/getArchivedMatchByMatchId.test.js lib/server/__tests__/getMatchPageData.test.js 'app/g/[matchID]/page.js' 'app/g/[matchID]/page-content.js' 'app/replays/[replayId]/ReplayPageClient.js' app/replays/replayClientState.js app/__tests__/gMatchPage.test.js app/__tests__/replayPageClient.test.js app/catana/utils/reconnectBanner.js app/catana/lobby/LobbyPageClient.js 'app/catana/lobby/[matchID]/MatchPageClient.js' app/catana/__tests__/reconnectBanner.test.js`
+- `git diff --check`
+
 ## Status (2026-04-08, finished matches stay terminal)
 - Fixed the deployed postgame restart bug by closing two separate server-side holes.
 - `server/timers/TimerManager.js` now treats `ctx.gameover` / `G.core.gameOver` as terminal and immediately clears armed stage timers, turn timers, and pending bot dispatches before any same-stage same-turn early return.

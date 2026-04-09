@@ -1,5 +1,38 @@
 # NOTES
 
+- OCI rsync note:
+- the deploy workflow should use `.gitignore` as an rsync filter so ignored caches and local-only junk do not get copied to the VM.
+- Keep the explicit excludes for `.git/`, `node_modules/`, `.next/`, and `.env.prod` even with the filter in place.
+
+- OCI deploy flow note:
+- the current production deploy model is "verify in GitHub Actions, rebuild on the ARM VM".
+- Keep `caddy` and `postgres` as long-running infrastructure services on the box.
+- `infra/scripts/deploy-prod.sh` should only ensure infra is up, rebuild `web` and `game`, and then run migrations.
+- Do not reintroduce GHCR / Buildx / QEMU unless you intentionally want to go back to prebuilt-image deploys.
+
+- Match lifecycle / canonical match URL note:
+- `/g/:matchID` is now the only canonical match URL.
+- Resolution order for that URL:
+- try the live bgio match first,
+- if the live match no longer exists, load the archived match by `bgio_match_id`,
+- if neither exists, treat it as missing.
+- Finished live-match retention rule:
+- archive immediately on game end,
+- keep the live finished match while any tracked seat remains connected,
+- once all tracked seats are disconnected and the archive exists, start the cleanup grace timer,
+- cancel cleanup if any seat reconnects before expiry,
+- after cleanup, the same `/g/:matchID` URL must render archived replay/postgame mode instead of reconnecting to bgio.
+- Archived chat durability rule:
+- bgio chat transport is not itself a durable match record,
+- live chat must be retained separately (`server/chat/MatchChatStore.js`) and persisted into `archived_match_chat_messages`,
+- archived read-only chat is converted back into the live `chatMessages` payload shape for `GameScreen` / `ChatPanel` reuse.
+- Server cleanup control:
+- `server/lifecycle/FinishedMatchRetentionManager.js` owns disconnect-based live cleanup timing,
+- `SETTLEX_FINISHED_MATCH_CLEANUP_GRACE_MS` overrides the default post-disconnect cleanup grace window (`300000` ms).
+- Route structure note:
+- the old route entry files under `app/catana/lobby/` were removed,
+- but `app/catana/lobby/LobbyPageClient.js` and `app/catana/lobby/[matchID]/MatchPageClient.js` still exist as reusable components for the root lobby UI and the live match client shell.
+
 - Finished-match restart note:
 - there were two independent postgame bugs behind the observed "game restarts / replays" behavior:
 - `server/timers/TimerManager.js` previously left armed stage timers, turn timers, and bot dispatches alive after `ctx.gameover` when the stage/turn key did not change, so forced moves could still fire after the match had already ended.

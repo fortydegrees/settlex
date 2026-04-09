@@ -670,7 +670,7 @@ export function LobbyPageClient() {
               : current
           );
           router.push(
-            `/catana/lobby/${searchState.matchID}?playerID=${encodeURIComponent(searchState.playerID)}`
+            `/g/${searchState.matchID}?playerID=${encodeURIComponent(searchState.playerID)}`
           );
         }
       } catch (err) {
@@ -751,7 +751,7 @@ export function LobbyPageClient() {
       });
 
       router.push(
-        `/catana/lobby/${matchID}?playerID=${encodeURIComponent(playerID)}`
+        `/g/${matchID}?playerID=${encodeURIComponent(playerID)}`
       );
     } catch (err) {
       setError(err?.message || "Failed to join room.");
@@ -876,7 +876,7 @@ export function LobbyPageClient() {
         },
       });
 
-      router.push(`/catana/lobby/${matchID}?playerID=0`);
+      router.push(`/g/${matchID}?playerID=0`);
     } catch (err) {
       setError(err?.message || "Failed to start bot match.");
     }
@@ -957,7 +957,7 @@ export function LobbyPageClient() {
         playerName: account.currentUsername,
       });
       await refreshMatches();
-      router.push(`/catana/lobby/${matchID}?playerID=0`);
+      router.push(`/g/${matchID}?playerID=0`);
     } catch (err) {
       setError(err?.message || "Failed to create room.");
     } finally {
@@ -1013,7 +1013,7 @@ export function LobbyPageClient() {
         playerName: account.currentUsername,
       });
       await refreshMatches();
-      router.push(`/catana/lobby/${matchID}?playerID=0`);
+      router.push(`/g/${matchID}?playerID=0`);
     } catch (err) {
       setError(err?.message || "Failed to start scenario room.");
     } finally {

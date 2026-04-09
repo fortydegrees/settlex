@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   verify:
@@ -29,40 +28,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
 
-  build-and-deploy:
+  deploy:
     needs: verify
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: docker/setup-qemu-action@v3
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push web image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile.web
-          push: true
-          platforms: linux/arm64
-          tags: ghcr.io/${{ github.repository_owner }}/settlex-web:${{ github.sha }}
-
-      - name: Build and push game image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile.game
-          push: true
-          platforms: linux/arm64
-          tags: ghcr.io/${{ github.repository_owner }}/settlex-game:${{ github.sha }}
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -81,6 +52,7 @@ jobs:
         run: |
           ssh "$OCI_USER@$OCI_HOST" "mkdir -p '$OCI_APP_DIR'"
           rsync -az --delete \
+            --filter=':- .gitignore' \
             --exclude '.git/' \
             --exclude 'node_modules/' \
             --exclude '.next/' \
@@ -89,16 +61,11 @@ jobs:
 
       - name: Deploy to OCI
         env:
-          GAME_IMAGE: ghcr.io/${{ github.repository_owner }}/settlex-game:${{ github.sha }}
-          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
-          GHCR_READ_USER: ${{ secrets.GHCR_READ_USER }}
           OCI_APP_DIR: ${{ secrets.OCI_APP_DIR }}
           OCI_HOST: ${{ secrets.OCI_HOST }}
           OCI_USER: ${{ secrets.OCI_USER }}
-          WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/settlex-web:${{ github.sha }}
         run: |
           ssh "$OCI_USER@$OCI_HOST" "
             cd '$OCI_APP_DIR' &&
-            printf '%s' '$GHCR_READ_TOKEN' | docker login ghcr.io -u '$GHCR_READ_USER' --password-stdin &&
-            WEB_IMAGE='$WEB_IMAGE' GAME_IMAGE='$GAME_IMAGE' infra/scripts/deploy-prod.sh
+            infra/scripts/deploy-prod.sh
           "

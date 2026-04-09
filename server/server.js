@@ -12,7 +12,11 @@ import { dispatchMatchUpdate } from "./dispatch/dispatchMatchUpdate.js"
 import { getPool } from "../lib/server/db/getPool.js"
 import { ArchiveManager } from "./archive/ArchiveManager.js"
 import { archiveFinishedMatch } from "./archive/archiveFinishedMatch.js"
+import { cleanupArchivedMatch } from "./archive/cleanupArchivedMatch.js"
+import { MatchChatStore } from "./chat/MatchChatStore.js"
+import { FinishedMatchRetentionManager } from "./lifecycle/FinishedMatchRetentionManager.js"
 const DEFAULT_BOT_MOVE_DELAY_MS = 450
+const DEFAULT_FINISHED_MATCH_CLEANUP_GRACE_MS = 300_000
 
 let serverInstance
 const botManager = createPufferBotManagerFromEnv()
@@ -45,19 +49,45 @@ const idleManager = new IdlePresenceManager({
   isBotPlayer: ({ matchID, playerID }) =>
     botManager.isBotPlayerForMatch(matchID, playerID)
 })
+const matchChatStore = new MatchChatStore()
+const parsedFinishedMatchCleanupGraceMs = Number(
+  process.env.SETTLEX_FINISHED_MATCH_CLEANUP_GRACE_MS
+)
+const finishedMatchCleanupGraceMs = Number.isFinite(
+  parsedFinishedMatchCleanupGraceMs
+)
+  ? parsedFinishedMatchCleanupGraceMs
+  : DEFAULT_FINISHED_MATCH_CLEANUP_GRACE_MS
+const finishedMatchRetentionManager = new FinishedMatchRetentionManager({
+  cleanupArchivedMatch: ({ matchID }) =>
+    cleanupArchivedMatch({
+      matchID,
+      serverDb: serverInstance?.db
+    }),
+  matchChatStore,
+  graceMs: finishedMatchCleanupGraceMs
+})
 const archiveManager = new ArchiveManager({
-  archiveFinishedMatch: ({ matchID }) =>
-    archiveFinishedMatch({
+  archiveFinishedMatch: async ({ matchID }) => {
+    const result = await archiveFinishedMatch({
       pool: getPool(),
       serverDb: serverInstance?.db,
-      matchID
+      matchID,
+      chatMessages: matchChatStore.getMessages(matchID)
     })
+    if (result?.archivedMatchId) {
+      finishedMatchRetentionManager.onArchived(matchID)
+    }
+    return result
+  }
 })
 const pubSub = createTimerPubSub(timerManager, {
   botManager,
   disconnectManager,
   idleManager,
   archiveManager,
+  chatStore: matchChatStore,
+  finishedMatchRetentionManager,
   stateLoader: async (matchID) => {
     const response = await serverInstance?.db?.fetch(matchID, { state: true })
     return response?.state ?? null
