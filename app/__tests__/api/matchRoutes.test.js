@@ -68,7 +68,7 @@ describe("match API routes", () => {
     const authorized = await POST(
       new Request("http://localhost/api/matches/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json", cookie: "settlex_session=a.b" },
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
         body: JSON.stringify({ numPlayers: 2 }),
       })
     );
@@ -169,7 +169,7 @@ describe("match API routes", () => {
     const privateJoinResponse = await JOIN(
       new Request("http://localhost/api/matches/join", {
         method: "POST",
-        headers: { "Content-Type": "application/json", cookie: "settlex_session=a.b" },
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
         body: JSON.stringify({ matchID: "match_private_1", playerID: "1" }),
       })
     );
@@ -190,14 +190,14 @@ describe("match API routes", () => {
     const joinResponse = await JOIN(
       new Request("http://localhost/api/matches/join", {
         method: "POST",
-        headers: { "Content-Type": "application/json", cookie: "settlex_session=a.b" },
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
         body: JSON.stringify({ matchID: "match_1", playerID: "1" }),
       })
     );
     const leaveResponse = await LEAVE(
       new Request("http://localhost/api/matches/leave", {
         method: "POST",
-        headers: { "Content-Type": "application/json", cookie: "settlex_session=a.b" },
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
         body: JSON.stringify({
           matchID: "match_1",
           playerID: "1",

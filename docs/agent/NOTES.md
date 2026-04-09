@@ -2383,3 +2383,15 @@
     - if Cloudflare proxying is enabled later, set SSL mode to `Full (strict)` so Cloudflare continues validating the origin certificate that Caddy manages.
     - `/catana` is best treated as a compatibility redirect for now, not a second live entry point. That preserves old bookmarks and stale client links while keeping the real public app rooted at `/` and `/g/...`.
     - local shell DNS may lag behind public resolvers right after the record is created. `dig @1.1.1.1 settlehex.com +short` is the quickest ground truth when the browser or host resolver still says the name is missing.
+  - Runtime infra rename notes:
+    - the safe rename boundary is the runtime identity, not the whole codebase:
+      - do rename DB defaults, migration bookkeeping, session cookie names, Docker volume names, and dev log strings
+      - do not rename internal package names like `@settlex/game-core`, the `app/catana` tree, or the puffer/python modules as part of this slice
+    - `lib/server/db/getPool.js` now falls back to the local `settlehex` database URL outside production. That keeps the intended local workflow frictionless even when `DATABASE_URL` is unset, while production still fails closed if env wiring is missing.
+    - `pnpm db:migrate` can race a just-started Postgres container if it is run immediately after `docker compose up -d postgres`. In practice the healthy flow is:
+      - start the container
+      - wait for the compose healthcheck to report healthy
+      - then run `pnpm db:migrate`
+      The rename itself did not introduce this, but it showed up while verifying the new local DB path end to end.
+    - changing `settlex_session` to `settlehex_session` intentionally invalidates old browser sessions. That is acceptable here because there is no valuable production data and no launch users to preserve yet.
+    - switching the prod compose volume name from `settlex-postgres-prod` to `settlehex-postgres-prod` is effectively a fresh Postgres cutover. That matches the current development-stage decision to discard old prod data rather than migrate it forward.

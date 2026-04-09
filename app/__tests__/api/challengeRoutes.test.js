@@ -61,7 +61,7 @@ describe("challenge API routes", () => {
     const response = await POST(
       new Request("http://localhost/api/challenges/create", {
         method: "POST",
-        headers: { cookie: "settlex_session=a.b" },
+        headers: { cookie: "settlehex_session=a.b" },
       })
     );
     const json = await response.json();
@@ -226,7 +226,7 @@ describe("challenge API routes", () => {
     const acceptResponse = await ACCEPT(
       new Request("http://localhost/api/challenges/match_1/accept", {
         method: "POST",
-        headers: { cookie: "settlex_session=a.b" },
+        headers: { cookie: "settlehex_session=a.b" },
       }),
       { params: { matchID: "match_1" } }
     );
@@ -264,7 +264,7 @@ describe("challenge API routes", () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          cookie: "settlex_session=a.b",
+          cookie: "settlehex_session=a.b",
         },
         body: JSON.stringify({ credentials: "secret_inviter" }),
       }),

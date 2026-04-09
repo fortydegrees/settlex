@@ -42,7 +42,7 @@ describe("account guest API route", () => {
 
     expect(response.status).toBe(200);
     expect(json.account.currentUsername).toBe("Ada");
-    expect(response.headers.get("set-cookie")).toContain("settlex_session=");
+    expect(response.headers.get("set-cookie")).toContain("settlehex_session=");
     expect(response.headers.get("set-cookie")).toContain("HttpOnly");
   });
 

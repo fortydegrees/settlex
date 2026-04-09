@@ -56,7 +56,7 @@ describe("account claim routes", () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          cookie: "settlex_session=a.b",
+          cookie: "settlehex_session=a.b",
         },
         body: JSON.stringify({ email: "ada@example.com" }),
       })

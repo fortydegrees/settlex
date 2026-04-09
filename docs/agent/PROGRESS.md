@@ -3431,3 +3431,17 @@
   - `dig @1.1.1.1 settlehex.com +short`
   - `curl -I --resolve settlehex.com:80:145.241.254.241 http://settlehex.com`
   - `curl -I --resolve settlehex.com:443:145.241.254.241 https://settlehex.com`
+- Renamed the runtime database/session infrastructure from `settlex` to `settlehex`.
+- Runtime infra rename changes:
+  - updated local and test Postgres defaults in `package.json`, `.env.example`, and `lib/server/db/getPool.js` to use `postgres://settlehex:settlehex@localhost:55432/settlehex`.
+  - renamed the migration bookkeeping table from `settlex_migrations` to `settlehex_migrations` in `lib/server/db/runMigrations.js` and `lib/server/db/sql/0001_accounts_archive.sql`.
+  - renamed the guest session cookie from `settlex_session` to `settlehex_session` in `lib/server/session/cookieNames.js` and the API/account tests that exercise authenticated route access.
+  - renamed the local and prod Postgres Docker volumes to `settlehex-postgres-local` and `settlehex-postgres-prod`, and updated the local compose database/user/password defaults to `settlehex`.
+  - updated the dev magic-link preview log prefix to `[settlehex magic link]`.
+- Verification for the runtime infra rename:
+  - `pnpm exec vitest run lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/getPool.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/accountGuestRoute.test.js app/__tests__/api/accountClaimRoute.test.js app/__tests__/api/challengeRoutes.test.js app/__tests__/api/matchRoutes.test.js server/__tests__/deploymentFiles.source.test.js`
+  - `docker compose -f infra/docker-compose.local.yml up -d postgres`
+  - `pnpm db:migrate`
+  - `docker exec infra-postgres-1 psql -U settlehex -d settlehex -c "\\dt" -c "select * from settlehex_migrations order by filename;"`
+  - `pnpm build`
+  - `pnpm verify`
