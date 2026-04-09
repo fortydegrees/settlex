@@ -66,6 +66,7 @@ describe("deployment file wiring", () => {
 
     expect(workflow).toContain("pnpm verify");
     expect(workflow).toContain("rsync -az");
+    expect(workflow).toContain("--filter=':- .gitignore'");
     expect(workflow).not.toContain("docker/setup-qemu-action");
     expect(workflow).not.toContain("docker/setup-buildx-action");
     expect(workflow).not.toContain("ghcr.io");
