@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-04-09, friend challenge invites added)
+- Added the front-page `Play a Friend` flow with private invite creation, a dedicated `/challenge/:matchID` accept route, and a home-page waiting modal.
+- Current behavior:
+- friend challenges are still normal 2-player bgio matches, but they are tagged with app-owned `friend_challenge` metadata and use a distinct `/challenge/:matchID` share URL instead of the live `/g/:matchID` route,
+- the inviter seat is randomized at challenge creation time so the creator does not always go first,
+- existing-account invitees auto-accept immediately, while first-time invitees use the shared identity modal with generated guest defaults,
+- invite links expire after 5 minutes if unclaimed and are canceled immediately when the inviter closes the modal,
+- private challenge matches are filtered out of `/api/matches/open` and rejected by the normal public `/api/matches/join` path.
+- Focused verification:
+- `pnpm exec vitest run lib/server/__tests__/matchBootstrap.test.js lib/server/__tests__/friendChallenge.test.js lib/server/__tests__/listPublicOpenMatches.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js app/__tests__/challengePage.test.js app/__tests__/challengePageClient.source.test.js app/__tests__/api/routeModuleExports.source.test.js app/catana/__tests__/playerIdentityStorage.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js`
+
 ## Status (2026-04-09, deploy sync now respects `.gitignore`)
 - Tightened the OCI deploy sync step so rsync respects repository ignore rules instead of relying only on a short manual exclude list.
 - Current behavior:

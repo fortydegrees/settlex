@@ -1,5 +1,13 @@
 # NOTES
 
+- Friend challenge MVP note:
+- keep `/challenge/:matchID` distinct from the canonical live `/g/:matchID` route even though both point at the same underlying bgio match id.
+- private invites are implemented as normal 2-player matches with app-owned `setupData.matchKind = "friend_challenge"` metadata; the Catana engine itself should stay unaware of this flow.
+- fairness comes from randomizing the inviter seat at creation time, not from special-casing turn order or placement rules in the game engine.
+- any public lobby surface that should hide private invites must read through `/api/matches/open`, not the raw bgio `/games/catan` list.
+- cancel/timeout invalidation works by leaving the inviter seat; once that seat is empty, the invite should collapse to the same expired state as timed-out, already-claimed, or malformed links.
+- challenge cancel still needs inviter seat credentials from the client because bgio seat credentials are separate from the Settlex account session cookie.
+
 - OCI rsync note:
 - the deploy workflow should use `.gitignore` as an rsync filter so ignored caches and local-only junk do not get copied to the VM.
 - Keep the explicit excludes for `.git/`, `node_modules/`, `.next/`, and `.env.prod` even with the filter in place.
