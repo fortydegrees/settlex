@@ -284,7 +284,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
       if (account?.account?.currentUsername) {
         setPlayerName(account.account.currentUsername);
       }
-      router.replace(`/catana/lobby/${matchID}?playerID=${encodeURIComponent(playerID)}`);
+      router.replace(`/g/${matchID}?playerID=${encodeURIComponent(playerID)}`);
       await refreshMatch();
     } catch (err) {
       setError(err?.message || "Failed to join.");
@@ -353,7 +353,7 @@ export function MatchPageClient({ matchID, initialPlayerID }) {
               </h1>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link
-                  href="/catana/lobby"
+                  href="/"
                   className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
                 >
                   Back to lobby

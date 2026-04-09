@@ -3,6 +3,10 @@
 import { createElement as h, useMemo, useState } from "react";
 import { GameScreen } from "../../catana/GameScreen";
 import { ReplayControls } from "../components/ReplayControls";
+import {
+  buildReplayChatMessages,
+  clampReplayFrameIndex,
+} from "../replayClientState";
 
 const formatDate = (value) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -34,17 +38,28 @@ const getFrameLabel = (frame) => {
   return String(moveType);
 };
 
-export function ReplayPageClient({ replay, frames }) {
-  const [frameIndex, setFrameIndex] = useState(0);
-  const safeFrameIndex = Math.min(
-    Math.max(frameIndex, 0),
-    Math.max(frames.length - 1, 0)
-  );
+export const createReplayPageClient = ({
+  GameScreen: GameScreenImpl = GameScreen,
+  ReplayControls: ReplayControlsImpl = ReplayControls,
+} = {}) =>
+  function ReplayPageClient({
+    replay,
+    frames,
+    initialFrameIndex = 0,
+  }) {
+    const [frameIndex, setFrameIndex] = useState(() =>
+      clampReplayFrameIndex(initialFrameIndex, frames.length)
+    );
+  const safeFrameIndex = clampReplayFrameIndex(frameIndex, frames.length);
   const currentFrame = frames[safeFrameIndex] ?? null;
   const currentState = currentFrame?.state ?? replay.initialState;
   const matchData = useMemo(
     () => buildReplayMatchData(replay.participants ?? []),
     [replay.participants]
+  );
+  const chatMessages = useMemo(
+    () => buildReplayChatMessages(replay.chatMessages ?? []),
+    [replay.chatMessages]
   );
 
   const replayProps = {
@@ -60,6 +75,7 @@ export function ReplayPageClient({ replay, frames }) {
     isConnected: true,
     isMultiplayer: false,
     isReplay: true,
+    chatMessages,
   };
 
   return h(
@@ -125,7 +141,7 @@ export function ReplayPageClient({ replay, frames }) {
             )
           )
         ),
-        h(ReplayControls, {
+        h(ReplayControlsImpl, {
           frameIndex: safeFrameIndex,
           frameCount: frames.length,
           onFrameChange: setFrameIndex,
@@ -135,6 +151,8 @@ export function ReplayPageClient({ replay, frames }) {
         })
       )
     ),
-    h(GameScreen, replayProps)
+    h(GameScreenImpl, replayProps)
   );
-}
+  };
+
+export const ReplayPageClient = createReplayPageClient();

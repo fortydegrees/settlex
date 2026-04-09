@@ -11,7 +11,7 @@ This document covers the MVP deployment shape for Settlex on one OCI Ubuntu VM.
   - `web` for Next.js
   - `game` for the `boardgame.io` server
   - `postgres` for the product database
-- Delivery path: GitHub Actions builds `linux/arm64` images, pushes them to `ghcr.io`, and deploys them over SSH
+- Delivery path: GitHub Actions verifies the repo, syncs source to the VM over SSH, and asks the VM to rebuild `web` and `game` locally with Docker Compose
 
 ## Cutover notes
 
@@ -32,6 +32,7 @@ Local development stays simple:
 
 ```bash
 docker compose -f infra/docker-compose.local.yml up -d postgres
+pnpm db:migrate
 pnpm serve
 pnpm dev
 ```
@@ -68,6 +69,8 @@ Run these steps once on the server:
 5. Point DNS for `SITE_HOST` at the VM public IP once the domain exists.
 
 The workflow syncs the checked-out repo contents to `/srv/settlex` over SSH on each deploy, so the VM does not need its own GitHub clone credentials.
+Because the app images are built on the VM itself, repeated deploys benefit from Docker layer cache on the ARM host instead of rebuilding under emulation on GitHub.
+The sync step uses `.gitignore` as an rsync filter, plus a few explicit excludes (`.git/`, `node_modules/`, `.next/`, `.env.prod`) so ignored caches and local-only junk do not get copied to the server.
 
 ## GitHub Actions secrets
 
@@ -77,10 +80,6 @@ Add these repository secrets before enabling automatic deploys:
 - `OCI_USER`
 - `OCI_SSH_KEY`
 - `OCI_APP_DIR`
-- `GHCR_READ_USER`
-- `GHCR_READ_TOKEN`
-
-The workflow uses `GITHUB_TOKEN` for image pushes from Actions, and `GHCR_READ_USER` / `GHCR_READ_TOKEN` so the VM can pull private images during deploy.
 
 ## Automatic production deploy flow
 
@@ -88,15 +87,12 @@ After bootstrap, the normal release path is:
 
 1. Push to `main`.
 2. GitHub Actions runs `pnpm verify`.
-3. If verification passes, Actions builds:
-   - `ghcr.io/<owner>/settlex-web:<sha>`
-   - `ghcr.io/<owner>/settlex-game:<sha>`
-4. Actions syncs the checked-out repo files to `/srv/settlex` over SSH.
-5. Actions SSHes into the OCI VM.
-6. The VM logs into `ghcr.io` using the provided read token.
-7. The VM runs `infra/scripts/deploy-prod.sh`, which:
-   - pulls the pinned images
-   - recreates the compose stack
+3. If verification passes, Actions syncs the checked-out repo files to `/srv/settlex` over SSH.
+4. Actions SSHes into the OCI VM.
+5. The VM runs `infra/scripts/deploy-prod.sh`, which:
+   - ensures `postgres` is running
+   - rebuilds `web` and `game` locally with Docker Compose
+   - keeps `caddy` running as the stable front door
    - runs `pnpm db:migrate` in the `web` container once that script exists in the repo
 
 ## Current limitation to remember
