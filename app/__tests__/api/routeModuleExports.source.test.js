@@ -16,6 +16,7 @@ const routePaths = [
   ["app", "api", "matches", "create", "route.js"],
   ["app", "api", "matches", "join", "route.js"],
   ["app", "api", "matches", "leave", "route.js"],
+  ["app", "api", "matches", "open", "route.js"],
   ["app", "api", "scenarios", "route.js"],
 ];
 
