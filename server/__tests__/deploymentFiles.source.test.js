@@ -16,6 +16,10 @@ describe("deployment file wiring", () => {
 
     expect(compose).toContain("services:");
     expect(compose).toContain("postgres:");
+    expect(compose).toContain("POSTGRES_DB: settlehex");
+    expect(compose).toContain("POSTGRES_USER: settlehex");
+    expect(compose).toContain("POSTGRES_PASSWORD: settlehex");
+    expect(compose).toContain("settlehex-postgres-local");
     expect(compose).not.toContain("web:");
     expect(compose).not.toContain("game:");
     expect(compose).not.toContain("proxy:");
@@ -34,6 +38,7 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("dockerfile: Dockerfile.game");
     expect(compose).toContain("../.env.prod");
     expect(compose).toContain("./Caddyfile:/etc/caddy/Caddyfile:ro");
+    expect(compose).toContain("settlehex-postgres-prod");
   });
 
   it("routes websocket traffic to the game service through caddy", () => {
