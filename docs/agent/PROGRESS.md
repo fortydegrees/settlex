@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-04-09, deploy flow switched to server-native OCI rebuilds)
+- Replaced the GHCR/image-build deployment path with a simpler server-native rebuild flow for the ARM OCI host.
+- Current behavior:
+- GitHub Actions still runs `pnpm verify`,
+- then syncs the checked-out repo to the VM over SSH,
+- then triggers `infra/scripts/deploy-prod.sh` on the VM,
+- the VM keeps `postgres` and `caddy` running and rebuilds only `web` and `game` locally with Docker Compose.
+- Implementation highlights:
+- `infra/docker-compose.prod.yml` now builds `Dockerfile.web` and `Dockerfile.game` from source on the server instead of requiring pinned image tags,
+- `.github/workflows/deploy-prod.yml` no longer uses QEMU, Buildx, or GHCR login/push steps,
+- `docs/deploy/oci-mvp.md` now documents the reduced secret surface and the server-native rebuild flow.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js`
+- `bash -n infra/scripts/deploy-prod.sh`
+
 ## Status (2026-04-08, unified `/g/:matchID` live-or-archive lifecycle)
 - Fixed the finished-match restart path and replaced the old lobby URL model with a single canonical match route.
 - Current behavior:

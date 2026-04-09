@@ -1,5 +1,11 @@
 # NOTES
 
+- OCI deploy flow note:
+- the current production deploy model is "verify in GitHub Actions, rebuild on the ARM VM".
+- Keep `caddy` and `postgres` as long-running infrastructure services on the box.
+- `infra/scripts/deploy-prod.sh` should only ensure infra is up, rebuild `web` and `game`, and then run migrations.
+- Do not reintroduce GHCR / Buildx / QEMU unless you intentionally want to go back to prebuilt-image deploys.
+
 - Match lifecycle / canonical match URL note:
 - `/g/:matchID` is now the only canonical match URL.
 - Resolution order for that URL:
