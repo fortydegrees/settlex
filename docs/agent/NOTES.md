@@ -1,5 +1,9 @@
 # NOTES
 
+- OCI rsync note:
+- the deploy workflow should use `.gitignore` as an rsync filter so ignored caches and local-only junk do not get copied to the VM.
+- Keep the explicit excludes for `.git/`, `node_modules/`, `.next/`, and `.env.prod` even with the filter in place.
+
 - OCI deploy flow note:
 - the current production deploy model is "verify in GitHub Actions, rebuild on the ARM VM".
 - Keep `caddy` and `postgres` as long-running infrastructure services on the box.

@@ -70,6 +70,7 @@ Run these steps once on the server:
 
 The workflow syncs the checked-out repo contents to `/srv/settlex` over SSH on each deploy, so the VM does not need its own GitHub clone credentials.
 Because the app images are built on the VM itself, repeated deploys benefit from Docker layer cache on the ARM host instead of rebuilding under emulation on GitHub.
+The sync step uses `.gitignore` as an rsync filter, plus a few explicit excludes (`.git/`, `node_modules/`, `.next/`, `.env.prod`) so ignored caches and local-only junk do not get copied to the server.
 
 ## GitHub Actions secrets
 

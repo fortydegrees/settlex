@@ -1,5 +1,14 @@
 # PROGRESS
 
+## Status (2026-04-09, deploy sync now respects `.gitignore`)
+- Tightened the OCI deploy sync step so rsync respects repository ignore rules instead of relying only on a short manual exclude list.
+- Current behavior:
+- the deploy workflow still uses rsync over SSH,
+- but it now applies `.gitignore` as an rsync filter,
+- and it keeps explicit excludes for `.git/`, `node_modules/`, `.next/`, and `.env.prod`.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js`
+
 ## Status (2026-04-09, deploy flow switched to server-native OCI rebuilds)
 - Replaced the GHCR/image-build deployment path with a simpler server-native rebuild flow for the ARM OCI host.
 - Current behavior:
