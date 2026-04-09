@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../../lib/server/accounts/getSessionAccount.js";
 import {
+  getFriendChallengeData,
   isFriendChallengeMatch,
   resolveFriendChallengeState,
 } from "../../../../../lib/server/matches/friendChallenge.js";
@@ -23,6 +24,16 @@ const safeJson = async (request) => {
     return {};
   }
 };
+
+const findPlayerBySeatId = (match, seatId) => {
+  const players = Array.isArray(match?.players)
+    ? match.players
+    : Object.values(match?.players ?? {});
+  return players.find((player) => String(player?.id) === String(seatId)) ?? null;
+};
+
+const isSeatOccupied = (player = {}) =>
+  Boolean(player?.name || player?.data?.usernameSnapshot);
 
 export const createChallengeCancelRoute =
   ({
@@ -49,33 +60,41 @@ export const createChallengeCancelRoute =
         return NextResponse.json({ matchID, canceled: true, status: "expired" });
       }
 
+      const friendChallenge = getFriendChallengeData(liveMatch);
       const challengeState = resolveFriendChallengeState(liveMatch, { now: now() });
+      const inviterAccountId = friendChallenge?.inviterAccountId ?? null;
+      const inviterSeatId = String(friendChallenge?.inviterSeatId ?? "");
 
-      if (challengeState.inviterAccountId !== sessionAccount.account.id) {
+      if (inviterAccountId !== sessionAccount.account.id) {
         return NextResponse.json(
           { error: "Only the inviter can cancel this challenge." },
           { status: 403 }
         );
       }
 
-      if (challengeState.status !== "pending") {
+      if (!payload?.credentials) {
+        return NextResponse.json({ error: "credentials are required" }, { status: 400 });
+      }
+
+      if (challengeState.status === "accepted") {
         return NextResponse.json({ matchID, canceled: true, status: "expired" });
       }
 
-      if (!payload?.credentials) {
-        return NextResponse.json({ error: "credentials are required" }, { status: 400 });
+      const inviterPlayer = findPlayerBySeatId(liveMatch, inviterSeatId);
+      if (!isSeatOccupied(inviterPlayer)) {
+        return NextResponse.json({ matchID, canceled: true, status: "expired" });
       }
 
       await leaveMatchForAccountImpl({
         account: sessionAccount.account,
         matchID,
-        playerID: challengeState.inviterSeatId,
+        playerID: inviterSeatId,
         credentials: payload.credentials,
       });
 
       return NextResponse.json({
         matchID,
-        playerID: challengeState.inviterSeatId,
+        playerID: inviterSeatId,
         canceled: true,
       });
     } catch (error) {
