@@ -1,5 +1,13 @@
 # NOTES
 
+- Friend challenge MVP note:
+- keep `/challenge/:matchID` distinct from the canonical live `/g/:matchID` route even though both point at the same underlying bgio match id.
+- private invites are implemented as normal 2-player matches with app-owned `setupData.matchKind = "friend_challenge"` metadata; the Catana engine itself should stay unaware of this flow.
+- fairness comes from randomizing the inviter seat at creation time, not from special-casing turn order or placement rules in the game engine.
+- any public lobby surface that should hide private invites must read through `/api/matches/open`, not the raw bgio `/games/catan` list.
+- cancel/timeout invalidation works by leaving the inviter seat; once that seat is empty, the invite should collapse to the same expired state as timed-out, already-claimed, or malformed links.
+- challenge cancel still needs inviter seat credentials from the client because bgio seat credentials are separate from the Settlex account session cookie.
+
 - OCI rsync note:
 - the deploy workflow should use `.gitignore` as an rsync filter so ignored caches and local-only junk do not get copied to the VM.
 - Keep the explicit excludes for `.git/`, `node_modules/`, `.next/`, and `.env.prod` even with the filter in place.
@@ -32,6 +40,41 @@
 - Route structure note:
 - the old route entry files under `app/catana/lobby/` were removed,
 - but `app/catana/lobby/LobbyPageClient.js` and `app/catana/lobby/[matchID]/MatchPageClient.js` still exist as reusable components for the root lobby UI and the live match client shell.
+
+- Finished-match restart note:
+- there were two independent postgame bugs behind the observed "game restarts / replays" behavior:
+- `server/timers/TimerManager.js` previously left armed stage timers, turn timers, and bot dispatches alive after `ctx.gameover` when the stage/turn key did not change, so forced moves could still fire after the match had already ended.
+- wiping an archived finished match from the live bgio store is unsafe with stock `boardgame.io` server sync behavior:
+- `Master.onSync(...)` auto-creates a missing match on demand,
+- so an open live page can reconnect into a brand-new match with the same id and a fresh board after the old finished match is wiped.
+- current rule:
+- archive the finished match immediately for durable replay/history,
+- but do not wipe the live finished bgio copy by default unless on-sync auto-creation is also disabled or postgame routing is redesigned around archived matches.
+
+- Accounts/profiles/replay MVP note:
+- treat Settlex account sessions and bgio seat credentials as separate tokens:
+- the account session answers "who is this user?",
+- the bgio seat credential answers "may this user act as this seat in this live match?"
+- first-play identity should still feel frictionless, but it must create a real `guest` account plus a long-lived `httpOnly` session cookie; localStorage stays convenience-only for cosmetics and live reconnect helpers.
+- do not build the product on direct browser calls to raw bgio lobby endpoints:
+- the web/app API should own guest-account creation, claim-account flow, profile reads, replay reads, and match bootstrap.
+- for this MVP, live bgio matches can remain in memory:
+- the current initial Catana match state serializes to roughly `42 KB`,
+- so the single OCI A1 VM has ample RAM headroom for MVP-scale concurrency,
+- the real reason to add live persistence later is restart durability or multi-instance scaling, not 100 concurrent matches.
+- when a match finishes, archive it immediately by reading bgio `state`, `initialState`, `metadata`, and `log` from the live server DB and writing one durable replay record to Postgres.
+- keep public identity stable via `accountId`, but store username/avatar snapshots per archived match so future username changes do not rewrite history.
+- deployment assumption for this slice:
+- local Postgres via OrbStack-compatible containers,
+- one OCI ARM VM in production with Docker Compose,
+- no staging in MVP.
+
+- Left meta rail cleanup note:
+- keep this slice CSS-only:
+- remove the dead in-match `DebugPanel`,
+- allow a modest fixed large-screen width/height bump for log + chat,
+- keep feed-panel headers `select-none` so users do not accidentally highlight panel titles while interacting with the rail,
+- do not add drag resizing, panel collapse, or whole-rail collapse until responsive/mobile behavior is designed.
 
 - Status/log implementation-order note:
 - implement this slice in this order:
@@ -2186,6 +2229,13 @@
   - reconnect rule:
     - on reconnect, never trust pending local reveal gates.
     - flush/clear deferred local entries and let backlog entries reveal immediately, because the effect that originally gated them may not replay.
+  - accounts / profiles / replay MVP direction:
+    - keep `boardgame.io` as the live engine, but stop treating raw bgio lobby mutation routes as public browser product API.
+    - first play creates a real guest account immediately and binds it to a server-backed cookie session; localStorage remains convenience-only.
+    - live matches stay in memory for MVP; on `ctx.gameover`, archive the finished match transactionally to Postgres keyed by unique `bgio_match_id`, then clean the finished bgio copy after a short grace period.
+    - the browser still needs a direct game transport origin in local dev; in prod, Caddy can collapse that to the same public host.
+    - preferred prod delivery path is CI/CD, not manual box management:
+      - GitHub Actions verifies, builds immutable `amd64` images, pushes to GHCR, then SSHes into OCI to run a pinned-image deploy script.
   - OCI deployment notes:
     - the current production VM at `145.241.244.120` is `x86_64 Ubuntu 24.04`, so container builds must target `linux/amd64`.
     - keep runtime secrets on the VM in `/srv/settlex/.env.prod`; do not commit them.

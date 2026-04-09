@@ -1,9 +1,6 @@
 import React from "react";
 import { GameLogPanel } from "./GameLogPanel";
 import { ChatPanel } from "./ChatPanel";
-import { DebugPanel } from "./DebugPanel";
-
-const isDevEnvironment = process.env.NODE_ENV !== "production";
 
 const LeftMetaRailComponent = ({
   entries = [],
@@ -16,15 +13,12 @@ const LeftMetaRailComponent = ({
     "div",
     {
       className:
-        "fixed left-4 bottom-4 z-30 w-72 md:w-80 pointer-events-auto",
+        "fixed left-4 bottom-4 z-30 w-72 md:w-80 xl:w-96 pointer-events-auto",
       "data-allow-interaction": "true",
     },
     React.createElement(
       "div",
       { className: "flex w-full flex-col gap-3" },
-      isDevEnvironment
-        ? React.createElement(DebugPanel, { bgioProps })
-        : null,
       React.createElement(GameLogPanel, {
         entries,
         playerMap: logPlayerMap,

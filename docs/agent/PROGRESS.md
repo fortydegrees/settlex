@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-04-09, friend challenge invites added)
+- Added the front-page `Play a Friend` flow with private invite creation, a dedicated `/challenge/:matchID` accept route, and a home-page waiting modal.
+- Current behavior:
+- friend challenges are still normal 2-player bgio matches, but they are tagged with app-owned `friend_challenge` metadata and use a distinct `/challenge/:matchID` share URL instead of the live `/g/:matchID` route,
+- the inviter seat is randomized at challenge creation time so the creator does not always go first,
+- existing-account invitees auto-accept immediately, while first-time invitees use the shared identity modal with generated guest defaults,
+- invite links expire after 5 minutes if unclaimed and are canceled immediately when the inviter closes the modal,
+- private challenge matches are filtered out of `/api/matches/open` and rejected by the normal public `/api/matches/join` path.
+- Focused verification:
+- `pnpm exec vitest run lib/server/__tests__/matchBootstrap.test.js lib/server/__tests__/friendChallenge.test.js lib/server/__tests__/listPublicOpenMatches.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js app/__tests__/challengePage.test.js app/__tests__/challengePageClient.source.test.js app/__tests__/api/routeModuleExports.source.test.js app/catana/__tests__/playerIdentityStorage.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js`
+
 ## Status (2026-04-09, deploy sync now respects `.gitignore`)
 - Tightened the OCI deploy sync step so rsync respects repository ignore rules instead of relying only on a short manual exclude list.
 - Current behavior:
@@ -42,6 +53,41 @@
 - `pnpm exec vitest run server/__tests__/MatchChatStore.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/timerPubSub.test.js server/__tests__/ArchiveManager.test.js server/__tests__/TimerManager.test.js server/__tests__/serverGameConfig.test.js lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/getArchivedMatchByMatchId.test.js lib/server/__tests__/getMatchPageData.test.js lib/server/__tests__/matchBootstrap.test.js app/__tests__/gMatchPage.test.js app/__tests__/replayPage.test.js app/__tests__/replayPageClient.test.js app/__tests__/api/matchRoutes.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/ReconnectBannerPersistence.source.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js app/catana/__tests__/MatchPageClient.botFill.test.js`
 - `pnpm exec eslint server/chat/MatchChatStore.js server/lifecycle/FinishedMatchRetentionManager.js server/timers/timerPubSub.js server/archive/archiveFinishedMatch.js server/server.js server/__tests__/MatchChatStore.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/timerPubSub.test.js server/__tests__/ArchiveManager.test.js lib/server/matches/getArchivedMatchByMatchId.js lib/server/matches/getMatchPageData.js lib/server/replays/getArchivedReplay.js lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/getArchivedMatchByMatchId.test.js lib/server/__tests__/getMatchPageData.test.js 'app/g/[matchID]/page.js' 'app/g/[matchID]/page-content.js' 'app/replays/[replayId]/ReplayPageClient.js' app/replays/replayClientState.js app/__tests__/gMatchPage.test.js app/__tests__/replayPageClient.test.js app/catana/utils/reconnectBanner.js app/catana/lobby/LobbyPageClient.js 'app/catana/lobby/[matchID]/MatchPageClient.js' app/catana/__tests__/reconnectBanner.test.js`
 - `git diff --check`
+
+## Status (2026-04-08, finished matches stay terminal)
+- Fixed the deployed postgame restart bug by closing two separate server-side holes.
+- `server/timers/TimerManager.js` now treats `ctx.gameover` / `G.core.gameOver` as terminal and immediately clears armed stage timers, turn timers, and pending bot dispatches before any same-stage same-turn early return.
+- `server/archive/ArchiveManager.js` now makes live finished-match cleanup opt-in instead of the default archive path, and `server/server.js` no longer wires the live bgio wipe after archiving.
+- Why that second change was needed:
+- stock `boardgame.io` auto-creates a missing match on sync, so wiping a finished live match let an open page reconnect into a brand-new `waiting to start` match with a fresh board under the same match id.
+- Added regressions in:
+- `server/__tests__/TimerManager.test.js`
+- `server/__tests__/ArchiveManager.test.js`
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/TimerManager.test.js server/__tests__/ArchiveManager.test.js`
+- `pnpm exec vitest run server/__tests__/timerPubSub.test.js server/__tests__/serverGameConfig.test.js`
+
+## Status (2026-04-07, accounts/profiles/replay design written)
+- Wrote the approved spec in:
+- `docs/superpowers/specs/2026-04-07-accounts-profiles-and-replay-design.md`
+- Approved direction for this slice:
+- first-play identity remains low-friction, but now creates a real server-backed `guest` account with a long-lived session cookie,
+- usernames are globally unique, profiles are public at `/u/:username`, and finished-match replay pages are public,
+- `boardgame.io` stays the live in-memory game engine for MVP, while Settlex-owned Postgres tables store accounts, username history, and archived finished-match replay data forever,
+- local development uses local Postgres plus `pnpm dev` / `pnpm serve`, while production runs on one OCI ARM VM with Docker Compose and one Postgres instance,
+- no staging and no restart-safe live-match persistence in this MVP.
+- No implementation yet; this entry records the design baseline only.
+
+## Status (2026-04-07, Catana left rail cleanup)
+- Removed the in-match Dev Tools card from the left meta rail so the sidebar only carries the player-facing Game Log and Chat panels.
+- Gave the rail a modest large-screen width bump and increased both feed panels slightly on `xl` screens so long log/chat rows feel less cramped without introducing user-resize behavior.
+- Made the shared feed-panel title bar non-selectable so dragging across the panel no longer highlights `Game Log` / `Chat` header text.
+- Updated the Catana source-contract tests to lock the new rail shape:
+- no `DebugPanel` in `LeftMetaRail`,
+- `w-72 md:w-80 xl:w-96` rail sizing,
+- matching `h-[20vh] xl:h-[24vh]` log/chat panel heights.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/FeedPanel.test.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/DebugUiVisibility.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js`
 
 ## Status (2026-04-07, status/log presentation plan written)
 - Wrote the implementation plan in:
@@ -3223,6 +3269,16 @@
     - `pnpm exec eslint game-core/src/rules/devCards.ts game-core/src/rules/turnFlow.ts game-core/src/rules/devCards.test.ts game-core/src/rules/turnFlow.test.ts`
   - remaining lint note:
     - the longstanding Next.js `@next/next/no-img-element` warning in `app/catana/components/PlayerActionContainer.js` is still present and was not introduced by this rollout.
+- Added approved design + execution docs for MVP accounts/profiles/replay:
+  - spec: `docs/superpowers/specs/2026-04-07-accounts-profiles-and-replay-design.md`
+  - plan: `docs/superpowers/plans/2026-04-07-accounts-profiles-and-replay-plan.md`
+  - current implementation direction:
+    - guest-first real accounts with server-backed session cookies,
+    - app-owned match bootstrap APIs instead of raw public bgio lobby mutations,
+    - in-memory live bgio matches with transactional finished-match archival to Postgres,
+    - local dev using local Postgres plus direct local game transport,
+    - prod using one OCI VM with Caddy fronting web + game services on one host,
+    - GitHub Actions as the default push-to-prod path: verify -> build `linux/amd64` images -> push to GHCR -> SSH deploy to OCI.
 - Implemented the first OCI deployment scaffolding slice in the `codex/accounts-infra` worktree.
 - Current deployment scaffolding status:
   - repo now includes `Dockerfile.web`, `Dockerfile.game`, local/prod Compose files, `infra/Caddyfile`, `infra/scripts/deploy-prod.sh`, and `.github/workflows/deploy-prod.yml`.
