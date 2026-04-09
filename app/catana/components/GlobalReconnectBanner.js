@@ -35,8 +35,8 @@ export function GlobalReconnectBanner() {
   if (dismissed || !candidate) return null;
 
   const bodyText = candidate.playerName
-    ? `Return to your latest Catana match as ${candidate.playerName}.`
-    : "Return to your latest Catana match.";
+    ? `Return to your latest match as ${candidate.playerName}.`
+    : "Return to your latest match.";
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-[100] flex justify-center px-4">

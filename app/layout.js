@@ -5,7 +5,7 @@ import { GlobalReconnectBanner } from './catana/components/GlobalReconnectBanner
 const outfit = Outfit({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Catana',
+  title: 'Settlehex',
   description: 'Settle. Trade. Conquer.',
 }
 

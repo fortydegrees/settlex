@@ -30,13 +30,10 @@ describe("server origin wiring", () => {
     expect(contents).not.toContain('window.location.hostname}:8000');
   });
 
-  it("routes the legacy catana page through the shared origin helpers", () => {
+  it("redirects the legacy catana page back to the root lobby", () => {
     const contents = readAppFile("page.js");
 
-    expect(contents).toContain('from "./utils/serverOrigins"');
-    expect(contents).toContain("getLobbyServerOrigin()");
-    expect(contents).toContain("getGameServerOrigin()");
-    expect(contents).not.toContain("localhost:8000");
-    expect(contents).not.toContain("localhost:8080");
+    expect(contents).toContain('from "next/navigation"');
+    expect(contents).toContain('redirect("/")');
   });
 });

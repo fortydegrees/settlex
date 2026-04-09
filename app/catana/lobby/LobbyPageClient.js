@@ -1040,7 +1040,7 @@ export function LobbyPageClient() {
         {/* ── Hero ── */}
         <div className="mb-8 text-center">
           <h1 className="text-5xl font-bold tracking-tight text-white drop-shadow-md">
-            Catana
+            Settlehex
           </h1>
           <p className="mt-2 text-sm font-medium tracking-widest text-white/70">
             settle &middot; trade &middot; conquer

@@ -45,7 +45,7 @@ describe("debug UI visibility", () => {
     const page = fs.readFileSync(pagePath, "utf8");
     const lobbyMatchClient = fs.readFileSync(lobbyMatchClientPath, "utf8");
 
-    expect(page).toMatch(/debug:\s*false/);
+    expect(page).toContain('redirect("/")');
     expect(lobbyMatchClient).toMatch(/debug:\s*false/);
   });
 

@@ -69,7 +69,7 @@ export default function AccountPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
-              Settlex account
+              Settlehex account
             </p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900">
               {account?.currentUsername ?? "Guest"}
