@@ -11,11 +11,12 @@ const readAppFile = (...segments) =>
   fs.readFileSync(path.join(appRoot, ...segments), "utf8");
 
 describe("server origin wiring", () => {
-  it("routes the lobby page through the shared lobby origin helper", () => {
+  it("routes the lobby page through app-owned match APIs", () => {
     const contents = readAppFile("lobby", "LobbyPageClient.js");
 
-    expect(contents).toContain('from "../utils/serverOrigins"');
-    expect(contents).toContain("getLobbyServerOrigin");
+    expect(contents).toContain('route: "/api/matches/open"');
+    expect(contents).not.toContain('from "../utils/serverOrigins"');
+    expect(contents).not.toContain("getLobbyServerOrigin");
     expect(contents).not.toContain('window.location.hostname}:8080');
   });
 
