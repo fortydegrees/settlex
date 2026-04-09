@@ -12,6 +12,10 @@ const routePaths = [
   ["app", "api", "account", "claim", "request", "route.js"],
   ["app", "api", "account", "guest", "route.js"],
   ["app", "api", "account", "me", "route.js"],
+  ["app", "api", "challenges", "[matchID]", "accept", "route.js"],
+  ["app", "api", "challenges", "[matchID]", "cancel", "route.js"],
+  ["app", "api", "challenges", "[matchID]", "route.js"],
+  ["app", "api", "challenges", "create", "route.js"],
   ["app", "api", "matches", "[matchID]", "route.js"],
   ["app", "api", "matches", "create", "route.js"],
   ["app", "api", "matches", "join", "route.js"],
@@ -21,6 +25,7 @@ const routePaths = [
 ];
 
 const pagePaths = [
+  ["app", "challenge", "[matchID]", "page.js"],
   ["app", "replays", "[replayId]", "page.js"],
   ["app", "u", "[username]", "page.js"],
 ];
