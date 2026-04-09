@@ -28,6 +28,10 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("web:");
     expect(compose).toContain("game:");
     expect(compose).toContain("postgres:");
+    expect(compose).toContain("build:");
+    expect(compose).toContain("context: ..");
+    expect(compose).toContain("dockerfile: Dockerfile.web");
+    expect(compose).toContain("dockerfile: Dockerfile.game");
     expect(compose).toContain("../.env.prod");
     expect(compose).toContain("./Caddyfile:/etc/caddy/Caddyfile:ro");
   });
@@ -41,14 +45,13 @@ describe("deployment file wiring", () => {
     expect(caddyfile).toContain("/socket.io");
   });
 
-  it("deploys pinned images in pull -> up -> migrate order", () => {
+  it("rebuilds app services on the server and migrates after boot", () => {
     const script = readRepoFile("infra", "scripts", "deploy-prod.sh");
 
-    expect(script).toContain("docker compose -f infra/docker-compose.prod.yml pull");
-    expect(script).toContain("docker compose -f infra/docker-compose.prod.yml up -d");
-    expect(script).toContain(
-      "docker compose -f infra/docker-compose.prod.yml exec -T web pnpm db:migrate"
-    );
+    expect(script).not.toContain("docker compose -f infra/docker-compose.prod.yml pull");
+    expect(script).toContain('COMPOSE_FILE="infra/docker-compose.prod.yml"');
+    expect(script).toContain('docker compose -f "$COMPOSE_FILE" up -d --build web game');
+    expect(script).toContain('docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate');
   });
 
   it("packages migration files into the web runtime image", () => {
@@ -58,15 +61,16 @@ describe("deployment file wiring", () => {
     expect(dockerfile).toContain("COPY --from=build /app/lib/server/db ./lib/server/db");
   });
 
-  it("verifies before building and deploying arm64 production images", () => {
+  it("verifies before syncing source and triggering a server-side rebuild", () => {
     const workflow = readRepoFile(".github", "workflows", "deploy-prod.yml");
 
     expect(workflow).toContain("pnpm verify");
-    expect(workflow).toContain("docker/setup-qemu-action");
-    expect(workflow).toContain("platforms: linux/arm64");
-    expect(workflow).toContain("ghcr.io");
     expect(workflow).toContain("rsync -az");
-    expect(workflow).toContain("docker login ghcr.io");
+    expect(workflow).not.toContain("docker/setup-qemu-action");
+    expect(workflow).not.toContain("docker/setup-buildx-action");
+    expect(workflow).not.toContain("ghcr.io");
+    expect(workflow).not.toContain("platforms: linux/arm64");
+    expect(workflow).not.toContain("docker login ghcr.io");
     expect(workflow).toContain("infra/scripts/deploy-prod.sh");
   });
 });
