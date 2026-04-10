@@ -5,6 +5,8 @@
 - `boardgame.io/react` local clients still lock `numPlayers` at client factory creation time, so sandbox preset changes/reset should keep rebuilding/remounting the client from `app/catana/dev/sandbox/SandboxClient.js` instead of trying to mutate player count or setup payloads in place.
 - sandbox preset booting should stay in `app/catana/dev/sandbox/createSandboxGame.js` and `app/catana/dev/sandbox/presets.js` via sandbox-only `devScenarioState` wrappers. Do not push those preset shortcuts into `app/catana/Game.js` or live match route code unless product direction changes.
 - the sandbox client should keep its mount gate before rendering the local bgio client. Without it, the sandbox route can SSR a board tree that does not hydrate cleanly.
+- the sandbox route also needs a local active-player sync layer. The sandbox preset may carry `G.core.turn.phase = "postRoll"` or `robberDiscard`, but the local bgio client still starts from the phase default stage on first mount. Keep `app/catana/dev/sandbox/activePlayers.js` and the `setActivePlayers` sync in `SandboxBoardShell.js` so sandbox actions and legal moves line up with the preset state.
+- for the local hand tray, keep the non-VP dev-card buttons absolutely stacked. `app/catana/components/DevCardDisplay.css` should not override `.devcard-card` back to `position: relative`, or grouped dev cards will drop below the tray.
 
 - Source-guard maintenance note:
 - Some tests in this repo intentionally assert against source text rather than runtime behavior.

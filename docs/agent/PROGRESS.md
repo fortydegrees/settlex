@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-04-10, Catana sandbox follow-up fixes)
+- Fixed two post-implementation sandbox regressions that showed up during manual use of the new dev route.
+- Current behavior:
+- `app/catana/dev/sandbox/SandboxBoardShell.js` now syncs local `ctx.activePlayers` from the sandbox core turn state on mount/reset, so post-roll presets really enter `postRoll` instead of looking post-roll in `G.core` while staying stuck in `preRoll` at the local bgio stage layer,
+- dev-card purchases now work from sandbox presets such as `General sandbox`, `Post-roll`, and `Dev-card ready` because the dock action stage and the underlying move legality are aligned again,
+- `app/catana/components/DevCardDisplay.css` no longer overrides the stacked dev-card buttons back to `position: relative`, so multiple non-VP dev cards stay in one horizontal tray instead of dropping below it.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/DevSandboxBoardShell.test.js app/catana/__tests__/DevSandboxBoardShell.source.test.js app/catana/__tests__/DevSandboxClient.source.test.js app/catana/__tests__/DevSandboxPresets.test.js app/catana/__tests__/DevSandboxPanel.source.test.js app/catana/__tests__/DevCardDisplayLayout.source.test.js app/catana/__tests__/DevCardDisplayGroups.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/Moves.devCards.test.js`
+- manual smoke-check via `pnpm dev` at `/catana/dev/sandbox` confirmed the buy-dev dock action is enabled in post-roll sandbox states and extra dev cards remain on one row.
+
 ## Status (2026-04-10, Catana dev sandbox route added)
 - Added a dev-only Catana sandbox route at `/catana/dev/sandbox` that boots the real game screen locally without `pnpm serve` or live match wiring.
 - Current behavior:
