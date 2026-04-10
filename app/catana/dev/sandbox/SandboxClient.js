@@ -11,15 +11,17 @@ import {
 } from "./presets";
 
 export function SandboxClient() {
-  const [selectedPresetId] = useState(SANDBOX_PRESETS[0].id);
+  const [selectedPresetId, setSelectedPresetId] = useState(SANDBOX_PRESETS[0].id);
   const [viewerSeat, setViewerSeat] = useState(
     SANDBOX_PRESETS[0].defaultViewerSeat
   );
-  const [resetVersion] = useState(0);
+  const [resetVersion, setResetVersion] = useState(0);
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const preset = useMemo(
     () => cloneSandboxPreset(selectedPresetId),
     [selectedPresetId]
   );
+  const resolvedViewerSeat = coerceViewerSeat(preset, viewerSeat);
 
   useEffect(() => {
     setViewerSeat((currentSeat) => coerceViewerSeat(preset, currentSeat));
@@ -39,7 +41,17 @@ export function SandboxClient() {
   return (
     <SandboxMatch
       key={`${preset.id}:${resetVersion}`}
-      playerID={coerceViewerSeat(preset, viewerSeat)}
+      playerID={resolvedViewerSeat}
+      preset={preset}
+      presets={SANDBOX_PRESETS}
+      viewerSeat={resolvedViewerSeat}
+      isPanelCollapsed={isPanelCollapsed}
+      onPresetChange={setSelectedPresetId}
+      onViewerSeatChange={setViewerSeat}
+      onReset={() => setResetVersion((currentVersion) => currentVersion + 1)}
+      onTogglePanelCollapsed={() =>
+        setIsPanelCollapsed((currentCollapsed) => !currentCollapsed)
+      }
     />
   );
 }
