@@ -11,6 +11,7 @@ import {
 } from "./presets";
 
 export function SandboxClient() {
+  const [isMounted, setIsMounted] = useState(false);
   const [selectedPresetId, setSelectedPresetId] = useState(SANDBOX_PRESETS[0].id);
   const [viewerSeat, setViewerSeat] = useState(
     SANDBOX_PRESETS[0].defaultViewerSeat
@@ -22,6 +23,10 @@ export function SandboxClient() {
     [selectedPresetId]
   );
   const resolvedViewerSeat = coerceViewerSeat(preset, viewerSeat);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setViewerSeat((currentSeat) => coerceViewerSeat(preset, currentSeat));
@@ -37,6 +42,10 @@ export function SandboxClient() {
       }),
     [preset]
   );
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <SandboxMatch

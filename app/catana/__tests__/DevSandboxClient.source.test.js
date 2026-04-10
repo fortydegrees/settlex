@@ -15,6 +15,9 @@ describe("Dev sandbox client source", () => {
     expect(source).toContain("Client({");
     expect(source).toContain("createSandboxGame");
     expect(source).toContain("SandboxBoardShell");
+    expect(source).toContain("isMounted");
+    expect(source).toContain("setIsMounted(true)");
+    expect(source).toContain("if (!isMounted)");
     expect(source).toContain("resetVersion");
     expect(source).toContain("numPlayers: preset.numPlayers");
     expect(source).toContain("key={`${preset.id}:${resetVersion}`}");
