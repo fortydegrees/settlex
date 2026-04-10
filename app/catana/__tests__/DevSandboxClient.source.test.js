@@ -15,6 +15,9 @@ describe("Dev sandbox client source", () => {
     expect(source).toContain("Client({");
     expect(source).toContain("createSandboxGame");
     expect(source).toContain("SandboxBoardShell");
+    expect(source).toContain("resetVersion");
+    expect(source).toContain("numPlayers: preset.numPlayers");
+    expect(source).toContain("key={`${preset.id}:${resetVersion}`}");
     expect(source).toContain("debug: false");
     expect(source).not.toContain("SocketIO");
   });

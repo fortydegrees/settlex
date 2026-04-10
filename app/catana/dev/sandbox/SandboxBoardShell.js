@@ -1,7 +1,26 @@
-export function SandboxBoardShell() {
+import { useMemo } from "react";
+import { GameScreenWithEffects } from "../../GameScreen";
+import { buildSandboxMatchMetadata } from "./presets";
+
+export function SandboxBoardShell(bgioProps) {
+  const playerIds = bgioProps.G?.core?.players?.map(String) ?? [];
+  const playerIdsKey = playerIds.join("|");
+  const matchMetadata = useMemo(
+    () => buildSandboxMatchMetadata({ playerIds }),
+    [playerIdsKey]
+  );
+
   return (
-    <div className="p-4 text-sm text-slate-700">
-      Dev sandbox loading.
-    </div>
+    <GameScreenWithEffects
+      {...bgioProps}
+      matchID="dev-sandbox"
+      isConnected={true}
+      isMultiplayer={false}
+      timerSnapshot={null}
+      disconnectPresence={null}
+      idlePresence={null}
+      matchData={matchMetadata}
+      matchMetadata={matchMetadata}
+    />
   );
 }
