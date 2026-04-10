@@ -1,5 +1,11 @@
 # NOTES
 
+- Catana dev sandbox note:
+- keep `/catana/dev/sandbox` fully local and dev-only; it is meant to open the real Catana screen without the live server, not to add a second gameplay path or special-case live route behavior.
+- `boardgame.io/react` local clients still lock `numPlayers` at client factory creation time, so sandbox preset changes/reset should keep rebuilding/remounting the client from `app/catana/dev/sandbox/SandboxClient.js` instead of trying to mutate player count or setup payloads in place.
+- sandbox preset booting should stay in `app/catana/dev/sandbox/createSandboxGame.js` and `app/catana/dev/sandbox/presets.js` via sandbox-only `devScenarioState` wrappers. Do not push those preset shortcuts into `app/catana/Game.js` or live match route code unless product direction changes.
+- the sandbox client should keep its mount gate before rendering the local bgio client. Without it, the sandbox route can SSR a board tree that does not hydrate cleanly.
+
 - Source-guard maintenance note:
 - Some tests in this repo intentionally assert against source text rather than runtime behavior.
 - When a refactor moves visible UI copy into a client child component or wraps a component in a memoized export, update the source guard to follow the real rendered target instead of changing production code just to satisfy an outdated string match.

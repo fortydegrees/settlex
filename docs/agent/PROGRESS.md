@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-04-10, Catana dev sandbox route added)
+- Added a dev-only Catana sandbox route at `/catana/dev/sandbox` that boots the real game screen locally without `pnpm serve` or live match wiring.
+- Current behavior:
+- `app/catana/dev/sandbox/SandboxClient.js` builds a preset-specific local `boardgame.io/react` client, remounts it on preset change/reset, and now waits until client mount before rendering to avoid the hydration mismatch that showed up during manual smoke-check,
+- `app/catana/dev/sandbox/presets.js` defines the fixed v1 sandbox presets and viewer-seat coercion helpers, while `createSandboxGame.js` injects sandbox-only `devScenarioState` boot data instead of changing live route setup,
+- `SandboxBoardShell` reuses `GameScreenWithEffects` with local match metadata plus a collapsible overlay panel for preset switching, viewer-seat switching, reset, quick resources, and quick dev-card nudges.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/DevSandboxRoute.source.test.js app/catana/__tests__/DevSandboxClient.source.test.js app/catana/__tests__/DevSandboxPresets.test.js app/catana/__tests__/DevSandboxBoardShell.source.test.js app/catana/__tests__/DevSandboxPanel.source.test.js`
+- `pnpm exec vitest run app/catana/__tests__/DebugUiVisibility.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js`
+- manual smoke-check via `pnpm dev` at `/catana/dev/sandbox`
+
 ## Status (2026-04-09, repo tree cleaned and push blockers verified away)
 - Cleaned repo noise from the perf follow-up and re-verified that the current working tree is pushable.
 - Current behavior:
