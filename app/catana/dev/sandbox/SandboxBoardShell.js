@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { GameScreenWithEffects } from "../../GameScreen";
 import { buildSandboxMatchMetadata } from "./presets";
 import { SandboxPanel } from "./SandboxPanel";
@@ -15,11 +14,7 @@ export function SandboxBoardShell({
   ...bgioProps
 }) {
   const playerIds = bgioProps.G?.core?.players?.map(String) ?? [];
-  const playerIdsKey = playerIds.join("|");
-  const matchMetadata = useMemo(
-    () => buildSandboxMatchMetadata({ playerIds }),
-    [playerIdsKey]
-  );
+  const matchMetadata = buildSandboxMatchMetadata({ playerIds });
   const moves = bgioProps.moves;
 
   const handleGiveResource = (resource) => {
