@@ -13,6 +13,8 @@ describe("Dev sandbox board shell source", () => {
     const source = read("../dev/sandbox/SandboxBoardShell.js");
 
     expect(source).toContain("GameScreenWithEffects");
+    expect(source).toContain("buildSandboxActivePlayers");
+    expect(source).toContain("setActivePlayers");
     expect(source).toContain('matchID="dev-sandbox"');
     expect(source).toContain("isConnected={true}");
     expect(source).toContain("isMultiplayer={false}");
