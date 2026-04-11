@@ -34,7 +34,8 @@ describe("PlayerActionContainer hitbox", () => {
     expect(containerSource).not.toContain(
       "pointer-events-auto flex w-36 flex-col items-center"
     );
-    expect(clusterSource).toContain("pointer-events-auto flex items-end gap-3");
+    expect(clusterSource).toContain("pointer-events-auto flex gap-4");
+    expect(clusterSource).toContain('showTimerChip ? "items-end" : "items-center"');
     expect(clusterSource).toContain('"data-allow-interaction": "true"');
   });
 });
