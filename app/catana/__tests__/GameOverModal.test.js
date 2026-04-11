@@ -14,6 +14,13 @@ const componentPath = path.resolve(
 );
 
 describe("GameOverModal", () => {
+  it("derives the highlighted player from the explicit winner flag instead of score rank", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+
+    expect(contents).toContain("scoreboard.find((row) => row.isWinner)");
+    expect(contents).not.toContain("const winner = scoreboard[0];");
+  });
+
   it("includes core CTA labels", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("View Postgame");

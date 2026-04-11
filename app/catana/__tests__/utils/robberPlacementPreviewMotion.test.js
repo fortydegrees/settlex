@@ -205,4 +205,17 @@ describe("robberPlacementPreviewMotion", () => {
       })
     ).toBeNull();
   });
+
+  it("keeps the locked robber preview aligned to a hovered viewport target under zoom", () => {
+    expect(
+      getLockedRobberPreviewPosition({
+        tileId: 4,
+        landTileCenters: [{ tileId: 4, centerX: 100, centerY: 100 }],
+        boardTileSize: 50,
+        boardViewportScale: 2,
+        targetCenterX: 300,
+        targetCenterY: 200
+      })
+    ).toEqual({ x: 266, y: 212 });
+  });
 });

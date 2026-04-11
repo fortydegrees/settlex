@@ -1,5 +1,29 @@
 # PROGRESS
 
+## Status (2026-04-10, dev-card sleeping veil no longer draws an inner frame)
+- Fixed the visual glitch where disabled dev cards rendered a second inset box over the card art.
+- Current behavior:
+- unplayable dev cards still use the cool translucent "sleeping" veil,
+- the veil now spans and clips to the actual card bounds instead of drawing an inset framed overlay,
+- the disabled knight/other dev-card edges now stay clean in the dock.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/DevCardDisplay.disabledStyle.test.js`
+- visually checked `/catana/dev/effects` with the disabled knight card after hot reload.
+
+## Status (2026-04-10, robber hover preview stays aligned under board zoom)
+- Fixed the Catana robber placement preview drift that showed up when hovering a robber action target after zooming the board.
+- Added a grounded board shadow under the placed robber so the resting piece reads as sitting on the tile instead of floating above it.
+- Current behavior:
+- the playful robber preview now locks from the hovered action target's viewport center instead of jumping back to unscaled board-space tile coordinates,
+- the intended "slightly left of the number token" landing offset now scales with the live board zoom, so the locked preview stays visually aligned at both zoomed-in and zoomed-out levels,
+- the placed robber in `app/catana/Tile.js` now uses the same shadow footprint/gradient language as the moving preview, just positioned closer to the piece base, and it still dims during the origin-preview state,
+- added regression/source guards for zoomed hover locking in `app/catana/__tests__/utils/robberPlacementPreviewMotion.test.js` and for the grounded placed-robber render in `app/catana/__tests__/Tile.robberPlacementUx.test.js`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/utils/robberPlacementPreviewMotion.test.js app/catana/__tests__/RobberPlacementPreview.test.js app/catana/__tests__/RobberPlacementPreview.springMotion.test.js app/catana/__tests__/Board.robberPlacementUx.test.js`
+- `pnpm exec eslint app/catana/RobberPlacementPreview.js app/catana/utils/robberPlacementPreviewMotion.js app/catana/__tests__/utils/robberPlacementPreviewMotion.test.js`
+- `pnpm exec vitest run app/catana/__tests__/Tile.robberPlacementUx.test.js`
+- `pnpm exec eslint app/catana/Tile.js app/catana/__tests__/Tile.robberPlacementUx.test.js`
+
 ## Status (2026-04-10, Catana sandbox follow-up fixes)
 - Fixed two post-implementation sandbox regressions that showed up during manual use of the new dev route.
 - Current behavior:
@@ -3538,3 +3562,9 @@
   - `docker exec infra-postgres-1 psql -U settlehex -d settlehex -c "\\dt" -c "select * from settlehex_migrations order by filename;"`
   - `pnpm build`
   - `pnpm verify`
+- Fixed the game-over modal so the gold winner card follows the actual `isWinner` row instead of blindly promoting the highest-VP scoreboard entry.
+- Endgame winner-modal notes:
+  - `GameScreen` still sorts the scoreboard by VP for standings, but `GameOverModal` now promotes the explicit winner row and renders every other player in the secondary chips.
+  - this closes the AFK-forfeit case where the timed-out player could have more VP than the real winner and previously looked like the winner in the gold card.
+- Verification for the winner-card fix:
+  - `pnpm exec vitest run app/catana/__tests__/GameOverModal.test.js`

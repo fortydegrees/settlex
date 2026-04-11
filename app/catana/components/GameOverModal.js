@@ -16,7 +16,11 @@ export function GameOverModal({
   onLobby,
   onClose
 }) {
-  const winner = scoreboard[0];
+  const winner = scoreboard.find((row) => row.isWinner) ?? scoreboard[0] ?? null;
+  const secondaryRows =
+    winner == null
+      ? scoreboard.slice(1)
+      : scoreboard.filter((row) => String(row.id) !== String(winner.id));
 
   useEffect(() => {
     if (!isWinner || !shouldFireConfetti) return;
@@ -71,9 +75,9 @@ export function GameOverModal({
         )}
       </div>
 
-      {scoreboard.length > 1 && (
+      {secondaryRows.length > 0 && (
         <div className="mt-4 flex flex-wrap justify-center gap-3">
-          {scoreboard.slice(1).map((row) => (
+          {secondaryRows.map((row) => (
             <div
               key={row.id}
               className="bg-white/60 rounded-lg px-4 py-2 shadow-sm flex items-center gap-2"

@@ -1,5 +1,20 @@
 # NOTES
 
+- Dev-card sleeping veil note:
+- Keep the disabled dev-card treatment as a full-bleed tint clipped to the card bounds.
+- Do not reintroduce the old inset pseudo-element frame or an inner outline/shadow; it creates a fake second border on compact cards.
+
+- Robber preview coordinate-space note:
+- `app/catana/RobberPlacementPreview.js` renders through a fixed portal, so locked robber preview positions must stay in viewport space.
+- Do not anchor the lock position from raw `landTileCenters` alone once zoom/pan is in play; use the hovered/magnetic target's viewport center as the base and only scale the decorative tile-relative offset by `boardViewportScale`.
+- If this preview drifts only while a robber action target is hovered, suspect a viewport-space vs board-space mixup before changing the magnetic radius or spring tuning.
+
+- Placed robber styling note:
+- The resting robber in `app/catana/Tile.js` should keep a subtle board-contact shadow under the piece, not just the sprite itself.
+- Prefer a soft elliptical ground shadow in the tile render path over a generic image `drop-shadow(...)`; it reads more like the piece is sitting on the board.
+- Keep that resting shadow matched to the moving-preview shadow footprint/gradient where possible, and only move it closer to the base for the static piece instead of inventing a second shadow style.
+- Keep that ground shadow dimmed alongside `showOriginRobber` so the move-origin state still de-emphasizes the old position cleanly.
+
 - Catana dev sandbox note:
 - keep `/catana/dev/sandbox` fully local and dev-only; it is meant to open the real Catana screen without the live server, not to add a second gameplay path or special-case live route behavior.
 - `boardgame.io/react` local clients still lock `numPlayers` at client factory creation time, so sandbox preset changes/reset should keep rebuilding/remounting the client from `app/catana/dev/sandbox/SandboxClient.js` instead of trying to mutate player count or setup payloads in place.
@@ -2448,3 +2463,7 @@
       The rename itself did not introduce this, but it showed up while verifying the new local DB path end to end.
     - changing `settlex_session` to `settlehex_session` intentionally invalidates old browser sessions. That is acceptable here because there is no valuable production data and no launch users to preserve yet.
     - switching the prod compose volume name from `settlex-postgres-prod` to `settlehex-postgres-prod` is effectively a fresh Postgres cutover. That matches the current development-stage decision to discard old prod data rather than migrate it forward.
+  - Winner-modal ranking note:
+    - treat `scoreboard` ordering and winner highlighting as separate concerns.
+      `GameScreen` sorts rows by VP for standings, but the gold card in `GameOverModal` must come from the explicit `row.isWinner` flag, with everyone else rendered as secondary rows.
+    - this matters for AFK forfeits, resignations, or any future non-VP finish condition where the winner may not have the highest VP total at the moment the game ends.
