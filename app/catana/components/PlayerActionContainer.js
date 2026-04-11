@@ -3,11 +3,9 @@ import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
+import { TurnControlCluster } from "./TurnControlCluster";
 import { getBadgeClasses } from "./CardStackStyles";
 import React, { useMemo } from "react";
-import {
-  ForwardIcon,
-} from "@heroicons/react/24/outline";
 import { useDie } from "./Die";
 import { useEffectListener } from "bgio-effects/react";
 import {
@@ -24,6 +22,7 @@ import {
 } from "@settlex/game-core";
 import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 import { getBuildPickupPieceType } from "../utils/playerAction";
+import { getTurnControlMode } from "../utils/turnControlMode";
 import {
   RESOURCE_ICON_FILES_BY_RESOURCE,
   getClassicResourceIconPath,
@@ -34,7 +33,6 @@ import {
 } from "../theme/themes";
 import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
-const SHOW_STATUS_TEXT = true;
 const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
 const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
 
@@ -102,6 +100,7 @@ export const PlayerActionContainer = ({
   canEnd,
   timerMs,
   themeId,
+  showTurnControls = true,
 }) => {
   const { G, ctx, moves } = bgioProps;
   const SHOW_PLAYER_HAND_BADGES = false;
@@ -313,6 +312,10 @@ export const PlayerActionContainer = ({
   const canTradeNow = isActionEnabled("trade");
   const rollEnabled = Boolean(canRoll);
   const endTurnEnabled = Boolean(canEnd);
+  const turnControlMode = getTurnControlMode({
+    canRoll: rollEnabled,
+    canEnd: endTurnEnabled,
+  });
 
   const canQuickTradeResource = (resource) => {
     if (!onTradeClick || !canTradeNow) return false;
@@ -352,6 +355,12 @@ export const PlayerActionContainer = ({
     : isOverLimit
     ? "bg-rose-500 bg-opacity-40 ring-rose-500"
     : "bg-blue-200 bg-opacity-50 ring-white/60";
+  const rollContent = (
+    <>
+      <Die dieSize="1.9rem" />
+      <Die2 dieSize="1.9rem" />
+    </>
+  );
 
   return (
     <div className="fixed bottom-4 left-0 right-0 pointer-events-none px-4">
@@ -421,60 +430,25 @@ export const PlayerActionContainer = ({
       </div>
 
       <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
-        <div
-          className="pointer-events-auto flex w-36 flex-col items-center"
-          data-allow-interaction="true"
-        >
-          {ctx.phase === "main" && (
-            <>
-              {/* Dice */}
-              <div className={`flex ${rollEnabled ? "opacity-100" : "opacity-50"}`}
-                onClick={rollEnabled ? () => moves.rollDice() : () => {}}>
-                <Die dieSize="3.5rem" />
-                <div className="px-4" />
-                <Die2 dieSize="3.5rem" />
-              </div>
-
-              {/* Status box - between dice and end turn */}
-              {SHOW_STATUS_TEXT && gameStatus && (
-                <div className="mt-2 mb-4 w-36 px-3 py-1.5 rounded-lg bg-white/25 backdrop-blur-sm">
-                  <div className="flex items-center justify-center gap-2 text-sm font-medium text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-                    <span>{gameStatus.title}</span>
-                    {showStatusTimer && (
-                      <span className="tabular-nums">{timerText}</span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* End turn button */}
-              <button
-                className={`bg-opacity-50 bg-blue-200 hover:bg-blue-300 mx-auto rounded-md flex h-20 w-20 ring-2 ring-slate-300 hover:fill-blue-200 hover:stroke-black ${endTurnEnabled ? "opacity-100" : "opacity-50"}`}
-                disabled={!endTurnEnabled}
-                onClick={() => {
-                  if (!endTurnEnabled) return;
-                  setPlayerAction(null);
-                  setBuildPickup(null);
-                  moves.endTurn();
-                }}
-              >
-                <ForwardIcon className="w-16 h-16 mx-auto stroke-[0.6px] stroke-blue-200 my-auto" />
-              </button>
-            </>
-          )}
-
-          {/* Status text - shown outside main phase */}
-          {SHOW_STATUS_TEXT && gameStatus && ctx.phase !== "main" && (
-            <div className="w-36 px-3 py-1.5 rounded-lg bg-white/25 backdrop-blur-sm">
-              <div className="flex items-center justify-center gap-2 text-sm font-medium text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-                <span>{gameStatus.title}</span>
-                {showStatusTimer && (
-                  <span className="tabular-nums">{timerText}</span>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        {showTurnControls ? (
+          <TurnControlCluster
+            mode={turnControlMode}
+            statusText={gameStatus ? gameStatus.title : null}
+            timerText={timerText}
+            showTimer={showStatusTimer}
+            rollContent={rollContent}
+            onRoll={rollEnabled ? () => moves.rollDice() : undefined}
+            onEndTurn={
+              endTurnEnabled
+                ? () => {
+                    setPlayerAction(null);
+                    setBuildPickup(null);
+                    moves.endTurn();
+                  }
+                : undefined
+            }
+          />
+        ) : null}
       </div>
       </div>
     </div>

@@ -18,6 +18,7 @@ describe("PlayerActionContainer status presentation source", () => {
     const source = fs.readFileSync(containerPath, "utf8");
 
     expect(source).toContain("gameStatus.title");
+    expect(source).toContain("TurnControlCluster");
     expect(source).not.toContain("gameStatus.text");
   });
 
@@ -27,6 +28,9 @@ describe("PlayerActionContainer status presentation source", () => {
     expect(source).toContain(
       "const showStatusTimer = gameStatus?.showTimer !== false && Boolean(timerText);"
     );
-    expect(source).toMatch(/showStatusTimer && \(/);
+    expect(source).toContain("getTurnControlMode");
+    expect(source).toContain("showTurnControls");
+    expect(source).toContain("rollContent={");
+    expect(source).not.toContain("Status box - between dice and end turn");
   });
 });
