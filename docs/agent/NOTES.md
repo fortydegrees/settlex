@@ -1,5 +1,14 @@
 # NOTES
 
+- Bottom-right turn controls note:
+- the bottom-right corner now uses `app/catana/components/TurnControlCluster.js` as a distinct turn-control module rather than inline dice/status/end-turn markup inside `PlayerActionContainer`.
+- keep the module presentation-driven:
+- button mode comes from `app/catana/utils/turnControlMode.js`,
+- status copy still comes from `gameStatus.title`,
+- timer visibility still comes from the existing `showStatusTimer` / `gameStatus.showTimer` path.
+- `GameScreen` owns the replay/game-over hide gate via `showTurnControls={!isReplay && !isGameOver}`; do not push that visibility rule into a second state model unless product direction changes.
+- when the timer is hidden, the status chip intentionally shifts up instead of preserving an empty timer slot.
+
 - Dev-card sleeping veil note:
 - Keep the disabled dev-card treatment as a full-bleed tint clipped to the card bounds.
 - Do not reintroduce the old inset pseudo-element frame or an inner outline/shadow; it creates a fake second border on compact cards.

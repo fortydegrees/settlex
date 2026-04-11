@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-11, bottom-right turn controls redesigned)
+- Replaced the old bottom-right dice/status/end-turn stack with a dedicated turn-control module.
+- Current behavior:
+- `app/catana/components/TurnControlCluster.js` now renders a right-side primary CTA plus left-side status/timer chips,
+- the CTA morphs from roll to end-turn using existing `canRoll` / `canEnd` inputs through `app/catana/utils/turnControlMode.js`,
+- forced-action states keep the control footprint with a muted disabled button instead of dropping the whole corner UI,
+- `GameScreen` now hides the turn-control module in replay/game-over views while leaving the rest of the player-hand surface intact,
+- status/timer content still reuses the existing `gameStatus.title` and timer-visibility pipeline instead of introducing a second copy/state layer.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- manual browser check at `/catana/dev/sandbox` for pre-roll, road-placement, and game-over presets on the worktree dev server.
+
 ## Status (2026-04-10, dev-card sleeping veil no longer draws an inner frame)
 - Fixed the visual glitch where disabled dev cards rendered a second inset box over the card art.
 - Current behavior:
