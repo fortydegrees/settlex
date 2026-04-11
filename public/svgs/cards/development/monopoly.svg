@@ -23,12 +23,12 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="2.483998"
-     inkscape:cx="145.9341"
-     inkscape:cy="203.10001"
+     inkscape:cx="145.93409"
+     inkscape:cy="203.1"
      inkscape:window-width="2403"
      inkscape:window-height="1482"
-     inkscape:window-x="97"
-     inkscape:window-y="52"
+     inkscape:window-x="92"
+     inkscape:window-y="25"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg111" />
   <defs
@@ -988,10 +988,10 @@
      id="rect63" />
   <g
      id="g116"
-     transform="translate(0,-65.404385)"
+     transform="matrix(1.2954435,0,0,1.2954435,-309.11278,-362.22993)"
      inkscape:label="g116">
     <g
-       transform="matrix(14.762,0,0,14.762,208.04114,368.93231)"
+       transform="matrix(14.762,0,0,14.762,398.82409,368.93231)"
        id="g81">
       <path
          fill="url(#J)"
@@ -1224,7 +1224,7 @@
      stroke-width="0.7"
      paint-order="stroke fill"
      id="g111"
-     transform="translate(0.0011228,-57.650371)">
+     transform="matrix(1.3823647,0,0,1.3823647,-240.12348,-451.18)">
     <path
        fill="url(#aO)"
        d="m 13.87,3 a 0.65,0.65 0 0 0 -0.65,0.65 v 7.3 h -1.25 a 0.75,0.75 0 0 0 -0.56,1.24 l 4.04,4.55 a 0.75,0.75 0 0 0 1.12,0 l 4.02,-4.55 A 0.75,0.75 0 0 0 20.03,10.94 H 18.75 V 3.65 A 0.65,0.65 0 0 0 18.1,3 Z"
@@ -1246,7 +1246,7 @@
   </g>
   <g
      id="g115"
-     transform="translate(-2.9319811e-4,278.62918)">
+     transform="matrix(1.2684326,0,0,1.2684326,-168.57604,74.854811)">
     <g
        id="g114">
       <g
