@@ -202,20 +202,28 @@ export function isPointOverRobberBoardLand({
 export function getLockedRobberPreviewPosition({
   tileId,
   landTileCenters = [],
-  boardTileSize
+  boardTileSize,
+  boardViewportScale = 1,
+  targetCenterX,
+  targetCenterY
 } = {}) {
-  if (!Number.isFinite(tileId) || !Number.isFinite(boardTileSize)) {
+  if (!Number.isFinite(boardTileSize)) {
     return null;
   }
 
   const tileCenter =
-    landTileCenters.find((tile) => tile?.tileId === tileId) ?? null;
+    Number.isFinite(targetCenterX) && Number.isFinite(targetCenterY)
+      ? { centerX: targetCenterX, centerY: targetCenterY }
+      : landTileCenters.find((tile) => tile?.tileId === tileId) ?? null;
   if (!tileCenter) {
     return null;
   }
 
+  const lockedOffsetScale =
+    boardTileSize * getRobberPreviewViewportScale(boardViewportScale);
+
   return {
-    x: tileCenter.centerX + boardTileSize * ROBBER_PREVIEW_LOCKED_OFFSET_X_FACTOR,
-    y: tileCenter.centerY + boardTileSize * ROBBER_PREVIEW_LOCKED_OFFSET_Y_FACTOR
+    x: tileCenter.centerX + lockedOffsetScale * ROBBER_PREVIEW_LOCKED_OFFSET_X_FACTOR,
+    y: tileCenter.centerY + lockedOffsetScale * ROBBER_PREVIEW_LOCKED_OFFSET_Y_FACTOR
   };
 }

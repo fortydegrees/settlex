@@ -19,6 +19,12 @@ const TILE_ICON_TOP_FACTOR = 0.204;
 const TILE_ICON_SCALE = 0.68;
 const EMOJI_TILE_ICON_SCALE_MULTIPLIER = 0.85;
 const EMOJI_TILE_ICON_TOP_MULTIPLIER = 1.16;
+const ROBBER_SHADOW_LEFT_PERCENT = 55;
+const ROBBER_SHADOW_TOP_PERCENT = 54;
+const ROBBER_SHADOW_WIDTH_PERCENT = 72;
+const ROBBER_SHADOW_HEIGHT_PERCENT = 54;
+const ROBBER_SHADOW_BLUR_PX = 3;
+const ROBBER_SHADOW_OPACITY = 0.9;
 
 const numberToPips = (number) => {
   switch (number) {
@@ -234,24 +240,53 @@ export function Tile({
         )}
         {number && <NumberToken size={size} number={number} />}
         {hasRobber && (
-          <img
-            src={robberSrc}
-            alt="Robber"
+          <div
             style={{
               position: "absolute",
-              opacity: showOriginRobber ? 0.4 : 1,
-              transform: "translateX(-60%)",
-              animation: isBlockedFlashing
-                ? "robberPulse 0.5s ease-in-out 2"
-                : "none",
               width: size / 1.5,
               height: size / 1.5,
+              transform: "translateX(-60%)",
+              pointerEvents: "none",
+              zIndex: 1
             }}
-            draggable={false}
-            onError={(event) =>
-              handleThemeImageError(event, robberFallbackSrc)
-            }
-          />
+          >
+            <div
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: `${ROBBER_SHADOW_LEFT_PERCENT}%`,
+                top: `${ROBBER_SHADOW_TOP_PERCENT}%`,
+                width: `${ROBBER_SHADOW_WIDTH_PERCENT}%`,
+                height: `${ROBBER_SHADOW_HEIGHT_PERCENT}%`,
+                borderRadius: 999,
+                transform: "translate(-50%, 0)",
+                background:
+                  "radial-gradient(ellipse at center, rgba(15, 23, 42, 0.58) 0%, rgba(15, 23, 42, 0.28) 48%, rgba(15, 23, 42, 0.12) 72%, rgba(15, 23, 42, 0) 100%)",
+                filter: `blur(${ROBBER_SHADOW_BLUR_PX}px)`,
+                opacity: showOriginRobber
+                  ? ROBBER_SHADOW_OPACITY * 0.45
+                  : ROBBER_SHADOW_OPACITY
+              }}
+            />
+            <img
+              src={robberSrc}
+              alt="Robber"
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: showOriginRobber ? 0.4 : 1,
+                animation: isBlockedFlashing
+                  ? "robberPulse 0.5s ease-in-out 2"
+                  : "none",
+                width: "100%",
+                height: "100%"
+              }}
+              draggable={false}
+              onError={(event) =>
+                handleThemeImageError(event, robberFallbackSrc)
+              }
+            />
+          </div>
         )}
         {canPlaceRobber && showRobberHoverGhost && isHovered && (
            <div

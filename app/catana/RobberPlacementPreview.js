@@ -133,7 +133,10 @@ export function RobberPlacementPreview({
         getLockedRobberPreviewPosition({
           tileId: selectedTarget.tileId,
           landTileCenters,
-          boardTileSize
+          boardTileSize,
+          boardViewportScale: previewViewportScale,
+          targetCenterX: selectedTarget.centerX,
+          targetCenterY: selectedTarget.centerY
         }) ?? {
           x: selectedTarget.centerX,
           y: selectedTarget.centerY
@@ -173,7 +176,14 @@ export function RobberPlacementPreview({
       setHasPosition(true);
       gsap.to(node, { opacity: 1, duration: 0.12, overwrite: "auto" });
     }
-  }, [active, boardTileSize, hoveredTarget, landTileCenters, magneticTargets]);
+  }, [
+    active,
+    boardTileSize,
+    hoveredTarget,
+    landTileCenters,
+    magneticTargets,
+    previewViewportScale
+  ]);
 
   useEffect(() => {
     const node = previewRef.current;
