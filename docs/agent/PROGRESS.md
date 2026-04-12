@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-11, bottom-right turn controls visual follow-up)
+- Fixed the follow-up styling issue where the new turn-control status chip and roll button rendered too faint or transparent.
+- Current behavior:
+- `TurnControlCluster` now uses Tailwind-supported opacity tokens for the glass chips and primary CTA,
+- the roll/end-turn CTA uses the same lime action treatment instead of a nearly invisible white button,
+- inactive forced-action states keep the same footprint with readable muted glass.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `pnpm exec eslint app/catana/components/TurnControlCluster.js app/catana/components/PlayerActionContainer.js app/catana/GameScreen.js app/catana/utils/turnControlMode.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js`
+- `git diff --check`
+- manual browser check at `/catana/dev/sandbox` for pre-roll, post-roll, waiting, and road-placement presets on the worktree dev server.
+
 ## Status (2026-04-11, bottom-right turn controls redesigned)
 - Replaced the old bottom-right dice/status/end-turn stack with a dedicated turn-control module.
 - Current behavior:
