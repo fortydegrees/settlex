@@ -34,7 +34,9 @@ describe("PlayerActionContainer hitbox", () => {
     expect(containerSource).not.toContain(
       "pointer-events-auto flex w-36 flex-col items-center"
     );
-    expect(clusterSource).toContain("pointer-events-auto flex items-center gap-3");
+    expect(clusterSource).toContain(
+      "pointer-events-auto flex translate-y-2.5 items-center gap-3"
+    );
     expect(clusterSource).toContain("turn-control-strip");
     expect(clusterSource).toContain("turn-control-cluster__dice");
     expect(clusterSource).toContain("turn-control-cluster__button-rail");
