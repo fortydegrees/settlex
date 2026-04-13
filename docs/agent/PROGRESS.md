@@ -1,5 +1,26 @@
 # PROGRESS
 
+## Status (2026-04-11, bottom-right turn-controls design written)
+- Wrote the approved design spec for redesigning Catana's bottom-right timer / status / roll / end-turn area.
+- Approved direction for this slice:
+- the corner becomes one persistent turn-control module instead of separate dice/status/end-turn widgets,
+- the main action is a stable rounded-square CTA that morphs between Roll and End Turn,
+- a numeric timer chip sits above a short status chip to the left of that button,
+- forced-action states keep the same corner footprint with a muted disabled main button instead of removing the control surface,
+- status/timer content reuses the existing `gameStatus.title` and timer-visibility model instead of inventing a new copy/state layer.
+- Spec path:
+- `docs/superpowers/specs/2026-04-11-bottom-right-turn-controls-design.md`
+- No implementation yet; this entry records the approved design baseline only.
+
+## Status (2026-04-11, agent docs now call out Catana dev tooling)
+- Updated the agent-facing docs so future agents can discover the two Catana dev testing surfaces without codebase spelunking.
+- Current behavior:
+- `AGENTS.md` now points directly to `app/catana/dev/sandbox/` as the real-board local sandbox and `app/catana/dev/effects/` as the isolated effects lab,
+- `docs/agent/NOTES.md` now tells agents when to use `/catana/dev/sandbox` versus `/catana/dev/effects`.
+- Focused verification:
+- `git diff --check`
+- inspected `AGENTS.md`, `docs/agent/NOTES.md`, and `docs/agent/PROGRESS.md`
+
 ## Status (2026-04-10, dev-card sleeping veil no longer draws an inner frame)
 - Fixed the visual glitch where disabled dev cards rendered a second inset box over the card art.
 - Current behavior:

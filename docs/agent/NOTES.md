@@ -1,5 +1,14 @@
 # NOTES
 
+- Bottom-right turn controls note:
+- treat the bottom-right corner as a dedicated turn-control module, separate from the build/action dock.
+- preferred structure:
+- main rounded-square CTA on the right,
+- numeric timer chip above a short status chip on the left,
+- the large standalone status box in that corner should not return.
+- keep status/timer content driven by existing `gameStatus.title` and timer visibility logic instead of creating a second status model.
+- when there is no local button action, prefer a muted disabled main button over removing the button footprint; the corner should stay spatially stable through robber/discard/placement states.
+
 - Dev-card sleeping veil note:
 - Keep the disabled dev-card treatment as a full-bleed tint clipped to the card bounds.
 - Do not reintroduce the old inset pseudo-element frame or an inner outline/shadow; it creates a fake second border on compact cards.
@@ -16,6 +25,8 @@
 - Keep that ground shadow dimmed alongside `showOriginRobber` so the move-origin state still de-emphasizes the old position cleanly.
 
 - Catana dev sandbox note:
+- use `/catana/dev/sandbox` when you need the real Catana board screen locally for UI, interaction, animation, or audio iteration without `pnpm serve` or live match setup.
+- use `/catana/dev/effects` when you want deterministic single-effect or cue replay/tuning without booting the full board.
 - keep `/catana/dev/sandbox` fully local and dev-only; it is meant to open the real Catana screen without the live server, not to add a second gameplay path or special-case live route behavior.
 - `boardgame.io/react` local clients still lock `numPlayers` at client factory creation time, so sandbox preset changes/reset should keep rebuilding/remounting the client from `app/catana/dev/sandbox/SandboxClient.js` instead of trying to mutate player count or setup payloads in place.
 - sandbox preset booting should stay in `app/catana/dev/sandbox/createSandboxGame.js` and `app/catana/dev/sandbox/presets.js` via sandbox-only `devScenarioState` wrappers. Do not push those preset shortcuts into `app/catana/Game.js` or live match route code unless product direction changes.
