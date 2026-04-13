@@ -41,6 +41,8 @@ Ship small, correct changes with a stable, testable game engine.
 - Engine (shared): `game-core/`
 - Legacy/experimental: `spec/`, `strategy/`, `utils/`
 - Agent docs: `docs/agent/`
+- Catana dev sandbox: `app/catana/dev/sandbox/` — dev-only local board sandbox for real board UI, animation, and audio iteration without the live server
+- Catana effects lab: `app/catana/dev/effects/` — dev-only isolated effect/audio replay and tuning surface
 - **Design system**: `docs/agent/skills/catana-brand/SKILL.md` — Read this before building any UI
 
 ## Effects + audio (GSAP + cue bus)
@@ -50,7 +52,8 @@ Ship small, correct changes with a stable, testable game engine.
 - Sound mapping: `app/catana/effects/soundThemes.js` (cue -> `/sounds/*.mp3`)
 - Audio playback: `app/catana/effects/AudioManager.js` (Howler + hidden-tab policy)
 - Assets: `public/sounds/` (served under `/sounds/*`)
-- Dev lab: `/catana/dev/effects` (deterministic replays)
+- Dev board sandbox: `/catana/dev/sandbox` (real game screen locally for board UI, animation, and audio testing)
+- Dev lab: `/catana/dev/effects` (deterministic isolated effect replays)
 
 ## Guardrails
 - Use pnpm; do not modify `package-lock.json`.
