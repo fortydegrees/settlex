@@ -36,6 +36,8 @@ import { getPieceSvgFile } from "../theme/pieceAssets.js";
 const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
 const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
 const LOW_TIMER_THRESHOLD_SECONDS = 5;
+const LOW_TIMER_ALERT_SUPPRESSED_STATUS_KINDS = new Set(["waiting_for_roll", "waiting_for_roll_other"]);
+const LOW_TIMER_ALERT_SUPPRESSED_STATUS_TYPES = new Set(["rolling"]);
 
 const getTimerSeconds = (ms) => {
   if (ms == null) return Number.POSITIVE_INFINITY;
@@ -184,7 +186,10 @@ export const PlayerActionContainer = ({
   }, [player.resources]);
   const timerText = formatTimer(timerMs);
   const showStatusTimer = gameStatus?.showTimer !== false && Boolean(timerText);
-  const isStatusTimerLow = showStatusTimer && getTimerSeconds(timerMs) <= LOW_TIMER_THRESHOLD_SECONDS;
+  const isLowTimerAlertSuppressed =
+    LOW_TIMER_ALERT_SUPPRESSED_STATUS_TYPES.has(statusType) ||
+    LOW_TIMER_ALERT_SUPPRESSED_STATUS_KINDS.has(gameStatus?.kind);
+  const isLowTimerAlertActive = showStatusTimer && !isLowTimerAlertSuppressed && getTimerSeconds(timerMs) <= LOW_TIMER_THRESHOLD_SECONDS;
   const isSeatWarning =
     presence?.status === "disconnected" || presence?.status === "idle";
   const pieceColor = player.color ?? "red";
@@ -436,14 +441,14 @@ export const PlayerActionContainer = ({
         </div>
       </div>
 
-      <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-2 sm:pr-3 md:pr-4 lg:pr-4">
+      <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-0">
         {showTurnControls ? (
           <TurnControlCluster
             mode={turnControlMode}
             statusText={gameStatus ? gameStatus.title : null}
             timerText={timerText}
             showTimer={showStatusTimer}
-            isTimerLow={isStatusTimerLow}
+            isTimerLow={isLowTimerAlertActive}
             rollContent={rollContent}
             onRoll={rollEnabled ? () => moves.rollDice() : undefined}
             onEndTurn={
