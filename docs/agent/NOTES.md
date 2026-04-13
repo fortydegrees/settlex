@@ -11,6 +11,7 @@
 - when the timer is hidden, collapse the strip to a shorter centered pill instead of leaving an empty timer segment or preserving the older two-row footprint.
 - keep roll mode visually quieter than `End turn`: the animated dice should still read like the current dice treatment, while `End turn` is the only strong lime CTA in the cluster.
 - avoid reintroducing a loud always-on border, heavy amber shell, or chunky inset "button lip" around the CTA. The approved direction is softer glass shell + lighter lime action core.
+- keep unavailable end-turn states ghosted through the button's own `currentColor`, not through black/default SVG color or a global opacity drop. The disabled icon should read faint blue-white inside the same rail footprint.
 - keep the cluster's small downward offset in place while the button rail is taller than the strip. It restores the status strip baseline and lets the button move down, rather than lifting the strip to meet the button.
 - use inline style objects or Tailwind-supported opacity syntax for this module's glass/CTA surfaces. Do not rely on unsupported slash-opacity tokens such as `bg-white/74`, `bg-white/78`, or `bg-white/88`.
 

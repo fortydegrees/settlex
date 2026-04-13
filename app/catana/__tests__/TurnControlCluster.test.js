@@ -31,8 +31,10 @@ describe("TurnControlCluster", () => {
     expect(html).toContain("turn-control-cluster__button-core--standby");
     expect(html).toContain("translate-y-2.5");
     expect(html).toContain("rgba(255,255,255,0.96)");
+    expect(html).toContain("rgba(219,234,254,0.32)");
     expect(html).toContain("tabular-nums");
     expect(html).toContain('aria-label="Roll dice"');
+    expect(html).toContain('aria-label="End turn unavailable"');
     expect(html).not.toContain("turn-control-chip");
   });
 
@@ -59,6 +61,10 @@ describe("TurnControlCluster", () => {
     expect(html).toContain('aria-label="End turn"');
     expect(html).toContain("turn-control-cluster__button-icon");
     expect(html).toContain("turn-control-cluster__button-core--end-turn");
+    expect(html).toContain("rgba(185,235,54,0.92)");
+    expect(html).toContain("rgba(255,255,255,0.9)");
+    expect(html).toContain("h-10 w-10 stroke-[1.45]");
+    expect(html).not.toContain("rgba(157,230,36,0.98)");
     expect(html).not.toContain("turn-control-cluster__dice");
   });
 
@@ -74,5 +80,7 @@ describe("TurnControlCluster", () => {
     expect(html).toContain("turn-control-strip--inactive");
     expect(html).toContain("turn-control-cluster__button-core--standby");
     expect(html).toContain("rgba(255,255,255,0.72)");
+    expect(html).toContain("rgba(219,234,254,0.32)");
+    expect(html).toContain("disabled:opacity-100");
   });
 });

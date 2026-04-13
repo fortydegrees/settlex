@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-13, end-turn button softened)
+- Refined the bottom-right end-turn button treatment after visual review.
+- Current behavior:
+- `app/catana/components/TurnControlCluster.js` keeps the enabled `End turn` control as the only lime CTA, but softens the lime gradient and icon color so it no longer reads as a hard green/white block,
+- unavailable end-turn states now keep the same footprint while using a faint blue-white `currentColor` icon and no text-white utility override, so the button reads disabled instead of stark black,
+- the icon is slightly smaller/slimmer inside both states while the status strip alignment and other HUD/resource boxes are unchanged.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `pnpm exec eslint app/catana/components/TurnControlCluster.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js`
+- `git diff --check`
+- manual browser check at `/catana/dev/sandbox` for `General sandbox` and `Settlement placement`.
+
 ## Status (2026-04-13, turn-control baseline lowered)
 - Lowered the bottom-right turn-control cluster so the integrated status/action strip returns to its previous baseline while the taller end-turn rail sits lower.
 - Current behavior:
