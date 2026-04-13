@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-04-13, turn-control glass refinement)
+- Refined the bottom-right turn controls so the status/timer now reads as a single translucent glass strip instead of stacked chips.
+- Current behavior:
+- `app/catana/components/TurnControlCluster.js` now renders one integrated strip with an optional embedded timer segment,
+- strip copy/timer now use white-on-glass text treatment instead of the darker slate text from the first refinement pass,
+- roll state no longer overloads the bottom CTA: it restores the old standalone dice above the rail, while the lower button stays as a neutral end-turn placeholder until post-roll,
+- the `End turn` CTA keeps the same footprint but is vertically centered against the strip and drops the heavy amber shell / hard border treatment in favor of a softer glass shell and lighter lime action core,
+- no timer state now collapses to a shorter centered status pill instead of preserving extra empty width.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `pnpm exec eslint app/catana/components/TurnControlCluster.js app/catana/components/PlayerActionContainer.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionContainer.status.test.js`
+- `git diff --check`
+- manual browser check at `/catana/dev/sandbox` on the feature-branch dev server for `General sandbox` and `Pre-roll`.
+
 ## Status (2026-04-11, bottom-right turn controls visual follow-up)
 - Fixed the follow-up styling issue where the new turn-control status chip and roll button rendered too faint or transparent.
 - Current behavior:

@@ -3,6 +3,75 @@ import { ForwardIcon } from "@heroicons/react/24/outline";
 
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
+const STRIP_ACTIVE_STYLE = {
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)), linear-gradient(90deg, rgba(255,255,255,0.26), rgba(191,219,254,0.16), rgba(147,197,253,0.12))",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.2), 0 14px 26px rgba(37,99,235,0.1)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+};
+
+const STRIP_INACTIVE_STYLE = {
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)), linear-gradient(90deg, rgba(255,255,255,0.18), rgba(191,219,254,0.1), rgba(147,197,253,0.08))",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.14), 0 12px 24px rgba(37,99,235,0.07)",
+  backdropFilter: "blur(18px)",
+  WebkitBackdropFilter: "blur(18px)",
+};
+
+const TIMER_SEGMENT_STYLE = {
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02)), linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.08))",
+  boxShadow: "inset 1px 0 0 rgba(255,255,255,0.16)",
+};
+
+const ACTIVE_TEXT_STYLE = {
+  color: "rgba(255,255,255,0.96)",
+  textShadow: "0 1px 1px rgba(15,23,42,0.28)",
+};
+
+const INACTIVE_TEXT_STYLE = {
+  color: "rgba(255,255,255,0.72)",
+  textShadow: "0 1px 1px rgba(15,23,42,0.2)",
+};
+
+const BUTTON_SHELL_ACTIVE_STYLE = {
+  background: "rgba(147, 197, 253, 0.14)",
+  boxShadow: "0 12px 24px rgba(37,99,235,0.08)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+};
+
+const BUTTON_SHELL_IDLE_STYLE = {
+  background: "rgba(147, 197, 253, 0.12)",
+  boxShadow: "0 10px 20px rgba(37,99,235,0.06)",
+  backdropFilter: "blur(10px)",
+  WebkitBackdropFilter: "blur(10px)",
+};
+
+const BUTTON_CORE_END_TURN_STYLE = {
+  background:
+    "linear-gradient(180deg, rgba(157,230,36,0.98), rgba(132,204,22,0.96))",
+  boxShadow:
+    "0 10px 18px rgba(132,204,22,0.16), inset 0 1px 0 rgba(255,255,255,0.22)",
+};
+
+const BUTTON_CORE_STANDBY_STYLE = {
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(191,219,254,0.08))",
+  boxShadow:
+    "0 6px 14px rgba(37,99,235,0.04), inset 0 1px 0 rgba(255,255,255,0.16)",
+};
+
+const DICE_BUTTON_STYLE = {
+  background: "transparent",
+  border: 0,
+  padding: 0,
+  boxShadow: "none",
+};
+
 export function TurnControlCluster({
   mode = "inactive",
   statusText = null,
@@ -16,100 +85,117 @@ export function TurnControlCluster({
   const isRoll = mode === "roll";
   const isEndTurn = mode === "endTurn";
   const isInactive = mode === "inactive";
-  const isActive = isRoll || isEndTurn;
-  const rootClassName = joinClassNames(
-    "pointer-events-auto flex gap-3",
-    showTimerChip ? "items-end" : "items-center"
-  );
-  const leftColumnClassName = joinClassNames(
-    "flex min-w-[18.5rem] max-w-[22rem] flex-col gap-2.5",
-    showTimerChip ? "items-end" : "justify-center"
+  const showDice = isRoll && Boolean(rollContent);
+
+  const stripClassName = joinClassNames(
+    "turn-control-strip flex min-h-[5.25rem] max-w-[22rem] items-stretch overflow-hidden rounded-[1.75rem]",
+    showTimerChip ? "min-w-[18.25rem]" : "min-w-[12.25rem]",
+    !showTimerChip && "turn-control-strip--no-timer",
+    isInactive && "turn-control-strip--inactive"
   );
 
-  const buttonLabel = isRoll
-    ? "Roll dice"
-    : isEndTurn
-      ? "End turn"
-      : "Turn action unavailable";
+  const stripStyle = isInactive ? STRIP_INACTIVE_STYLE : STRIP_ACTIVE_STYLE;
+  const stripTextStyle = isInactive ? INACTIVE_TEXT_STYLE : ACTIVE_TEXT_STYLE;
 
-  const handleClick = isRoll ? onRoll : isEndTurn ? onEndTurn : undefined;
-  const buttonShellClassName = joinClassNames(
-    "turn-control-cluster__button-shell rounded-[2.15rem] p-2 backdrop-blur-sm transition-all",
-    isActive
-      ? "bg-amber-400/95 shadow-[0_18px_45px_rgba(251,191,36,0.34)] ring-1 ring-amber-200/70"
-      : "bg-white/10 shadow-[0_18px_40px_rgba(37,99,235,0.16)] ring-1 ring-white/[0.14]"
-  );
+  const buttonShellStyle = isEndTurn
+    ? BUTTON_SHELL_ACTIVE_STYLE
+    : BUTTON_SHELL_IDLE_STYLE;
+  const buttonStyle = isEndTurn
+    ? BUTTON_CORE_END_TURN_STYLE
+    : BUTTON_CORE_STANDBY_STYLE;
+
   const buttonClassName = joinClassNames(
-    "turn-control-cluster__button flex h-28 w-28 items-center justify-center rounded-[1.7rem] border-0 backdrop-blur-sm transition-all",
-    isActive
-      ? "bg-lime-500 text-white shadow-[inset_0_-10px_0_rgba(77,124,15,0.28),0_16px_34px_rgba(77,124,15,0.22)] ring-1 ring-lime-200/80 hover:bg-lime-400 hover:scale-[1.02]"
-      : "cursor-not-allowed bg-white/[0.08] text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.09)] ring-1 ring-white/[0.12]"
+    "turn-control-cluster__button turn-control-cluster__button-core flex h-full w-full items-center justify-center rounded-[1.5rem] border-0 transition-all",
+    isEndTurn
+      ? "turn-control-cluster__button-core--end-turn text-white hover:scale-[1.02]"
+      : "turn-control-cluster__button-core--standby cursor-not-allowed text-white/65"
   );
-  const statusChipClassName = joinClassNames(
-    "turn-control-chip turn-control-chip--status flex min-h-[4.25rem] w-full items-center justify-center rounded-[1.75rem] px-6 py-3 text-center text-[1rem] font-semibold leading-tight shadow-[0_14px_30px_rgba(15,23,42,0.14)] ring-1 backdrop-blur-sm",
-    isInactive
-      ? "bg-white/[0.18] text-slate-600 ring-white/[0.18]"
-      : "bg-white/[0.84] text-slate-700 ring-white/[0.72]",
-    !showTimerChip && "turn-control-chip--status-top"
-  );
-  const timerChipClassName = joinClassNames(
-    "turn-control-chip turn-control-chip--timer min-w-[6.5rem] self-end rounded-[1.35rem] bg-white/[0.9] px-4 py-2 text-right text-[1.08rem] font-semibold tracking-[0.01em] text-slate-700 shadow-[0_12px_24px_rgba(15,23,42,0.12)] ring-1 ring-white/75 backdrop-blur-sm tabular-nums"
-  );
-
-  const buttonChildren = isRoll
-    ? React.createElement(
-        "span",
-        {
-          className:
-            "turn-control-cluster__button-roll flex items-center justify-center gap-1.5 scale-[1.08]",
-        },
-        rollContent
-      )
-    : React.createElement(ForwardIcon, {
-        className:
-          "turn-control-cluster__button-icon h-12 w-12 stroke-[1.55]",
-      });
 
   return React.createElement(
     "div",
     {
-      className: rootClassName,
+      className: "pointer-events-auto flex items-center gap-3",
       "data-turn-control-mode": mode,
       "data-allow-interaction": "true",
     },
+    statusText || showTimerChip
+      ? React.createElement(
+          "div",
+          {
+            className: stripClassName,
+            style: stripStyle,
+          },
+          statusText
+            ? React.createElement(
+                "div",
+                {
+                  className: joinClassNames(
+                    "turn-control-strip__status flex min-w-0 flex-1 items-center px-6 py-3 text-[1rem] font-semibold leading-tight",
+                    showTimerChip ? "text-left" : "justify-center text-center"
+                  ),
+                  style: stripTextStyle,
+                },
+                statusText
+              )
+            : null,
+          showTimerChip
+            ? React.createElement(
+                "div",
+                {
+                  className:
+                    "turn-control-strip__timer flex min-w-[5.9rem] items-center justify-center px-4 text-[1.05rem] font-semibold tracking-[0.01em] tabular-nums",
+                  style: {
+                    ...TIMER_SEGMENT_STYLE,
+                    ...stripTextStyle,
+                  },
+                },
+                timerText
+              )
+            : null
+        )
+      : null,
     React.createElement(
       "div",
-      { className: leftColumnClassName },
-      showTimerChip
+      {
+        className:
+          "turn-control-cluster__button-rail relative flex h-[6.5rem] w-[6.5rem] items-center justify-center",
+      },
+      showDice
         ? React.createElement(
-            "div",
+            "button",
             {
-              className: timerChipClassName,
+              type: "button",
+              "aria-label": "Roll dice",
+              onClick: onRoll,
+              className:
+                "turn-control-cluster__dice absolute bottom-[calc(100%+0.65rem)] left-1/2 flex -translate-x-1/2 items-center gap-4 border-0 p-0 transition-transform hover:scale-[1.02]",
+              style: DICE_BUTTON_STYLE,
             },
-            timerText
+            rollContent
           )
         : null,
-      statusText
-        ? React.createElement(
-            "div",
-            { className: statusChipClassName },
-            statusText
-          )
-        : null
-    ),
-    React.createElement(
-      "div",
-      { className: buttonShellClassName },
       React.createElement(
-        "button",
+        "div",
         {
-          type: "button",
-          "aria-label": buttonLabel,
-          disabled: isInactive,
-          onClick: handleClick,
-          className: buttonClassName,
+          className:
+            "turn-control-cluster__button-shell flex h-[6.5rem] w-[6.5rem] items-center justify-center rounded-[1.9rem] p-[0.55rem]",
+          style: buttonShellStyle,
         },
-        buttonChildren
+        React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": isEndTurn ? "End turn" : "End turn unavailable",
+            disabled: !isEndTurn,
+            onClick: isEndTurn ? onEndTurn : undefined,
+            className: buttonClassName,
+            style: buttonStyle,
+          },
+          React.createElement(ForwardIcon, {
+            className:
+              "turn-control-cluster__button-icon h-12 w-12 stroke-[1.55]",
+          })
+        )
       )
     )
   );

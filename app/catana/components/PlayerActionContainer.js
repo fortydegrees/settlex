@@ -357,8 +357,8 @@ export const PlayerActionContainer = ({
     : "bg-blue-200 bg-opacity-50 ring-white/60";
   const rollContent = (
     <>
-      <Die dieSize="1.9rem" />
-      <Die2 dieSize="1.9rem" />
+      <Die dieSize="3.5rem" />
+      <Die2 dieSize="3.5rem" />
     </>
   );
 
