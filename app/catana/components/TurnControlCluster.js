@@ -53,16 +53,18 @@ const BUTTON_SHELL_IDLE_STYLE = {
 
 const BUTTON_CORE_END_TURN_STYLE = {
   background:
-    "linear-gradient(180deg, rgba(157,230,36,0.98), rgba(132,204,22,0.96))",
+    "linear-gradient(180deg, rgba(185,235,54,0.92), rgba(132,204,22,0.84))",
   boxShadow:
-    "0 10px 18px rgba(132,204,22,0.16), inset 0 1px 0 rgba(255,255,255,0.22)",
+    "0 10px 18px rgba(132,204,22,0.12), inset 0 1px 0 rgba(255,255,255,0.28)",
+  color: "rgba(255,255,255,0.9)",
 };
 
 const BUTTON_CORE_STANDBY_STYLE = {
   background:
-    "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(191,219,254,0.08))",
+    "linear-gradient(180deg, rgba(255,255,255,0.12), rgba(191,219,254,0.045))",
   boxShadow:
-    "0 6px 14px rgba(37,99,235,0.04), inset 0 1px 0 rgba(255,255,255,0.16)",
+    "0 6px 14px rgba(37,99,235,0.025), inset 0 1px 0 rgba(255,255,255,0.1)",
+  color: "rgba(219,234,254,0.32)",
 };
 
 const DICE_BUTTON_STYLE = {
@@ -107,8 +109,8 @@ export function TurnControlCluster({
   const buttonClassName = joinClassNames(
     "turn-control-cluster__button turn-control-cluster__button-core flex h-full w-full items-center justify-center rounded-[1.5rem] border-0 transition-all",
     isEndTurn
-      ? "turn-control-cluster__button-core--end-turn text-white hover:scale-[1.02]"
-      : "turn-control-cluster__button-core--standby cursor-not-allowed text-white/65"
+      ? "turn-control-cluster__button-core--end-turn hover:scale-[1.02]"
+      : "turn-control-cluster__button-core--standby cursor-not-allowed disabled:opacity-100"
   );
 
   return React.createElement(
@@ -193,7 +195,7 @@ export function TurnControlCluster({
           },
           React.createElement(ForwardIcon, {
             className:
-              "turn-control-cluster__button-icon h-12 w-12 stroke-[1.55]",
+              "turn-control-cluster__button-icon h-10 w-10 stroke-[1.45]",
           })
         )
       )
