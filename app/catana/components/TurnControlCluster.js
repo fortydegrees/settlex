@@ -1,5 +1,6 @@
 import React from "react";
 import { ForwardIcon } from "@heroicons/react/24/outline";
+import "./TurnControlCluster.css";
 
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
@@ -27,9 +28,22 @@ const TIMER_SEGMENT_STYLE = {
   boxShadow: "inset 1px 0 0 rgba(255,255,255,0.16)",
 };
 
+const TIMER_SEGMENT_LOW_STYLE = {
+  background:
+    "linear-gradient(180deg, rgba(244,63,94,0.46), rgba(225,29,72,0.26)), linear-gradient(90deg, rgba(255,255,255,0.08), rgba(244,63,94,0.24))",
+  boxShadow:
+    "inset 1px 0 0 rgba(255,255,255,0.28), 0 0 22px rgba(244,63,94,0.28)",
+};
+
 const ACTIVE_TEXT_STYLE = {
   color: "rgba(255,255,255,0.96)",
   textShadow: "0 1px 1px rgba(15,23,42,0.28)",
+};
+
+const LOW_TIMER_TEXT_STYLE = {
+  color: "rgba(255,241,242,0.98)",
+  textShadow:
+    "0 1px 1px rgba(15,23,42,0.26), 0 0 10px rgba(244,63,94,0.54)",
 };
 
 const INACTIVE_TEXT_STYLE = {
@@ -79,11 +93,13 @@ export function TurnControlCluster({
   statusText = null,
   timerText = null,
   showTimer = false,
+  isTimerLow = false,
   rollContent = null,
   onRoll,
   onEndTurn,
 }) {
   const showTimerChip = showTimer && Boolean(timerText);
+  const showLowTimer = showTimerChip && isTimerLow;
   const isRoll = mode === "roll";
   const isEndTurn = mode === "endTurn";
   const isInactive = mode === "inactive";
@@ -144,11 +160,17 @@ export function TurnControlCluster({
             ? React.createElement(
                 "div",
                 {
-                  className:
+                  className: joinClassNames(
                     "turn-control-strip__timer flex min-w-[5.9rem] items-center justify-center px-4 text-[1.05rem] font-semibold tracking-[0.01em] tabular-nums",
+                    showLowTimer &&
+                      "turn-control-strip__timer--low turn-control-timer-low-pulse"
+                  ),
                   style: {
-                    ...TIMER_SEGMENT_STYLE,
+                    ...(showLowTimer
+                      ? TIMER_SEGMENT_LOW_STYLE
+                      : TIMER_SEGMENT_STYLE),
                     ...stripTextStyle,
+                    ...(showLowTimer ? LOW_TIMER_TEXT_STYLE : null),
                   },
                 },
                 timerText

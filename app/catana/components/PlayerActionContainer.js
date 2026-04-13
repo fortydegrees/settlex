@@ -35,10 +35,16 @@ import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
 const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
+const LOW_TIMER_THRESHOLD_SECONDS = 5;
+
+const getTimerSeconds = (ms) => {
+  if (ms == null) return Number.POSITIVE_INFINITY;
+  return Math.max(0, Math.floor(ms / 1000));
+};
 
 const formatTimer = (ms) => {
   if (ms == null) return null;
-  const total = Math.max(0, Math.floor(ms / 1000));
+  const total = getTimerSeconds(ms);
   const minutes = Math.floor(total / 60);
   const seconds = String(total % 60).padStart(2, "0");
   return `${minutes}:${seconds}`;
@@ -178,6 +184,7 @@ export const PlayerActionContainer = ({
   }, [player.resources]);
   const timerText = formatTimer(timerMs);
   const showStatusTimer = gameStatus?.showTimer !== false && Boolean(timerText);
+  const isStatusTimerLow = showStatusTimer && getTimerSeconds(timerMs) <= LOW_TIMER_THRESHOLD_SECONDS;
   const isSeatWarning =
     presence?.status === "disconnected" || presence?.status === "idle";
   const pieceColor = player.color ?? "red";
@@ -429,13 +436,14 @@ export const PlayerActionContainer = ({
         </div>
       </div>
 
-      <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-6 sm:pr-8 md:pr-10 lg:pr-[4.5rem]">
+      <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-2 sm:pr-3 md:pr-4 lg:pr-4">
         {showTurnControls ? (
           <TurnControlCluster
             mode={turnControlMode}
             statusText={gameStatus ? gameStatus.title : null}
             timerText={timerText}
             showTimer={showStatusTimer}
+            isTimerLow={isStatusTimerLow}
             rollContent={rollContent}
             onRoll={rollEnabled ? () => moves.rollDice() : undefined}
             onEndTurn={

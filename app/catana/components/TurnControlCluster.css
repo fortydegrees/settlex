@@ -1,0 +1,19 @@
+.turn-control-timer-low-pulse {
+  animation: turn-control-timer-low-pulse 1s ease-in-out infinite;
+}
+
+@keyframes turn-control-timer-low-pulse {
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+  }
+
+  50% {
+    filter: brightness(1.08) saturate(1.18);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-control-timer-low-pulse {
+    animation: none;
+  }
+}

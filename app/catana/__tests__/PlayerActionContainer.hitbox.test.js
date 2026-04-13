@@ -28,8 +28,10 @@ describe("PlayerActionContainer hitbox", () => {
       /fixed bottom-4 left-0 right-0 pointer-events-none px-4/
     );
     expect(containerSource).toMatch(
-      /pointer-events-none flex-1 flex items-end justify-end self-end pr-6/
+      /pointer-events-none flex-1 flex items-end justify-end self-end pr-2/
     );
+    expect(containerSource).toContain("pr-2 sm:pr-3 md:pr-4 lg:pr-4");
+    expect(containerSource).not.toContain("lg:pr-[4.5rem]");
     expect(containerSource).toContain("showTurnControls");
     expect(containerSource).not.toContain(
       "pointer-events-auto flex w-36 flex-col items-center"
