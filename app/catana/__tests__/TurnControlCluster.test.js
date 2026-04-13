@@ -29,6 +29,7 @@ describe("TurnControlCluster", () => {
     expect(html).toContain("turn-control-strip__status");
     expect(html).toContain("turn-control-strip__timer");
     expect(html).toContain("turn-control-cluster__button-core--standby");
+    expect(html).toContain("translate-y-2.5");
     expect(html).toContain("rgba(255,255,255,0.96)");
     expect(html).toContain("tabular-nums");
     expect(html).toContain('aria-label="Roll dice"');

@@ -114,7 +114,7 @@ export function TurnControlCluster({
   return React.createElement(
     "div",
     {
-      className: "pointer-events-auto flex items-center gap-3",
+      className: "pointer-events-auto flex translate-y-2.5 items-center gap-3",
       "data-turn-control-mode": mode,
       "data-allow-interaction": "true",
     },

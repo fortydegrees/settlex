@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-04-13, turn-control baseline lowered)
+- Lowered the bottom-right turn-control cluster so the integrated status/action strip returns to its previous baseline while the taller end-turn rail sits lower.
+- Current behavior:
+- `app/catana/components/TurnControlCluster.js` keeps the strip/button center alignment but offsets the cluster down by `translate-y-2.5`,
+- source/render guards now lock that offset so future alignment tweaks do not accidentally lift the strip again.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `pnpm exec eslint app/catana/components/TurnControlCluster.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js`
+- `git diff --check`
+- manual browser check at `/catana/dev/sandbox` for `General sandbox` and `Pre-roll`.
+
 ## Status (2026-04-13, turn-control glass refinement)
 - Refined the bottom-right turn controls so the status/timer now reads as a single translucent glass strip instead of stacked chips.
 - Current behavior:
