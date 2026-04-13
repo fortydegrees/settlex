@@ -23,4 +23,10 @@ describe("GameScreen status presentation source", () => {
     expect(source).toContain("shouldShowGameStatusTimer");
     expect(source).toContain("showTimer:");
   });
+
+  it("passes replay and game-over visibility into the turn controls", () => {
+    const source = fs.readFileSync(screenPath, "utf8");
+
+    expect(source).toContain("showTurnControls={!isReplay && !isGameOver}");
+  });
 });

@@ -1,13 +1,17 @@
 # NOTES
 
 - Bottom-right turn controls note:
-- treat the bottom-right corner as a dedicated turn-control module, separate from the build/action dock.
-- preferred structure:
-- main rounded-square CTA on the right,
-- numeric timer chip above a short status chip on the left,
-- the large standalone status box in that corner should not return.
-- keep status/timer content driven by existing `gameStatus.title` and timer visibility logic instead of creating a second status model.
-- when there is no local button action, prefer a muted disabled main button over removing the button footprint; the corner should stay spatially stable through robber/discard/placement states.
+- the bottom-right corner now uses `app/catana/components/TurnControlCluster.js` as a distinct turn-control module rather than inline dice/status/end-turn markup inside `PlayerActionContainer`.
+- keep the module presentation-driven:
+- button mode comes from `app/catana/utils/turnControlMode.js`,
+- status copy still comes from `gameStatus.title`,
+- timer visibility still comes from the existing `showStatusTimer` / `gameStatus.showTimer` path.
+- `GameScreen` owns the replay/game-over hide gate via `showTurnControls={!isReplay && !isGameOver}`; do not push that visibility rule into a second state model unless product direction changes.
+- the refined version uses one integrated status strip with an optional embedded timer segment. Do not reintroduce the older stacked timer chip above the status copy unless product direction changes.
+- when the timer is hidden, collapse the strip to a shorter centered pill instead of leaving an empty timer segment or preserving the older two-row footprint.
+- keep roll mode visually quieter than `End turn`: the animated dice should still read like the current dice treatment, while `End turn` is the only strong lime CTA in the cluster.
+- avoid reintroducing a loud always-on border, heavy amber shell, or chunky inset "button lip" around the CTA. The approved direction is softer glass shell + lighter lime action core.
+- use inline style objects or Tailwind-supported opacity syntax for this module's glass/CTA surfaces. Do not rely on unsupported slash-opacity tokens such as `bg-white/74`, `bg-white/78`, or `bg-white/88`.
 
 - Dev-card sleeping veil note:
 - Keep the disabled dev-card treatment as a full-bleed tint clipped to the card bounds.

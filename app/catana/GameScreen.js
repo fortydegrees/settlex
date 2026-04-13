@@ -1222,6 +1222,7 @@ TODO: accurately colour it
           canEnd={canEnd}
           timerMs={visibleTimerMs}
           themeId={themeId}
+          showTurnControls={!isReplay && !isGameOver}
         />
       )}
 
