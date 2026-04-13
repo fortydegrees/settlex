@@ -17,22 +17,25 @@ function renderCluster(props) {
 }
 
 describe("TurnControlCluster", () => {
-  it("renders the timer chip, status chip, and roll content in roll mode", () => {
+  it("renders an integrated strip with standalone dice in roll mode", () => {
     const html = renderCluster();
 
     expect(html).toContain("Roll dice");
     expect(html).toContain("0:38");
     expect(html).toContain("data-roll");
-    expect(html).toContain("turn-control-chip--timer");
+    expect(html).toContain("turn-control-cluster__dice");
+    expect(html).toContain("turn-control-cluster__button-rail");
+    expect(html).toContain("turn-control-strip");
+    expect(html).toContain("turn-control-strip__status");
+    expect(html).toContain("turn-control-strip__timer");
+    expect(html).toContain("turn-control-cluster__button-core--standby");
+    expect(html).toContain("rgba(255,255,255,0.96)");
     expect(html).toContain("tabular-nums");
     expect(html).toContain('aria-label="Roll dice"');
-    expect(html).toContain("bg-lime-500");
-    expect(html).toContain("bg-white/[0.84]");
-    expect(html).toContain("bg-white/[0.9]");
-    expect(html).not.toMatch(/bg-white\/(?:14|16|82|88)/);
+    expect(html).not.toContain("turn-control-chip");
   });
 
-  it("moves the status chip into the top position when the timer is hidden", () => {
+  it("removes the timer segment when the timer is hidden", () => {
     const html = renderCluster({
       showTimer: false,
       timerText: null,
@@ -40,8 +43,8 @@ describe("TurnControlCluster", () => {
     });
 
     expect(html).toContain("Move robber");
-    expect(html).toContain("turn-control-chip--status-top");
-    expect(html).not.toContain("turn-control-chip--timer");
+    expect(html).toContain("turn-control-strip--no-timer");
+    expect(html).not.toContain("turn-control-strip__timer");
     expect(html).not.toContain("0:38");
   });
 
@@ -54,6 +57,8 @@ describe("TurnControlCluster", () => {
     expect(html).toContain('data-turn-control-mode="endTurn"');
     expect(html).toContain('aria-label="End turn"');
     expect(html).toContain("turn-control-cluster__button-icon");
+    expect(html).toContain("turn-control-cluster__button-core--end-turn");
+    expect(html).not.toContain("turn-control-cluster__dice");
   });
 
   it("keeps the button footprint disabled in inactive mode", () => {
@@ -65,7 +70,8 @@ describe("TurnControlCluster", () => {
     expect(html).toContain('data-turn-control-mode="inactive"');
     expect(html).toContain("disabled");
     expect(html).toContain("Place road");
-    expect(html).toContain("bg-white/[0.18]");
-    expect(html).toContain("bg-white/[0.08]");
+    expect(html).toContain("turn-control-strip--inactive");
+    expect(html).toContain("turn-control-cluster__button-core--standby");
+    expect(html).toContain("rgba(255,255,255,0.72)");
   });
 });
