@@ -35,6 +35,7 @@ describe("TurnControlCluster", () => {
     expect(html).toContain("tabular-nums");
     expect(html).toContain('aria-label="Roll dice"');
     expect(html).toContain('aria-label="End turn unavailable"');
+    expect(html).not.toContain("turn-control-strip__timer--low");
     expect(html).not.toContain("turn-control-chip");
   });
 
@@ -49,6 +50,18 @@ describe("TurnControlCluster", () => {
     expect(html).toContain("turn-control-strip--no-timer");
     expect(html).not.toContain("turn-control-strip__timer");
     expect(html).not.toContain("0:38");
+  });
+
+  it("highlights the timer segment when time is nearly gone", () => {
+    const html = renderCluster({
+      timerText: "0:05",
+      isTimerLow: true,
+    });
+
+    expect(html).toContain("turn-control-strip__timer--low");
+    expect(html).toContain("rgba(244,63,94,0.46)");
+    expect(html).toContain("rgba(255,241,242,0.98)");
+    expect(html).toContain("turn-control-timer-low-pulse");
   });
 
   it("renders the end-turn button shell in end-turn mode", () => {

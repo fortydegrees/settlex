@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-13, low-timer turn control polish)
+- Added the approved low-time and right-edge tweaks for the bottom-right turn controls.
+- Current behavior:
+- `app/catana/components/PlayerActionContainer.js` now flags visible timers at `0:05` or lower and passes that presentation state into `TurnControlCluster`,
+- `app/catana/components/TurnControlCluster.js` keeps the alert local to the timer segment with rose/danger glass, danger text glow, and a one-second reduced-motion-safe pulse from `TurnControlCluster.css`,
+- the bottom-right cluster now sits closer to the desktop right edge by replacing the previous large `lg:pr-[4.5rem]` inset with normal right padding.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.themeSwitcher.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `pnpm exec eslint app/catana/components/TurnControlCluster.js app/catana/components/PlayerActionContainer.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js`
+- `git diff --check`
+- manual browser check at `/catana/dev/sandbox`, including a simulated `0:05` timer segment because the sandbox route does not seed live timer snapshots.
+
 ## Status (2026-04-13, end-turn button softened)
 - Refined the bottom-right end-turn button treatment after visual review.
 - Current behavior:

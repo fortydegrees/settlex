@@ -28,6 +28,11 @@ describe("PlayerActionContainer status presentation source", () => {
     expect(source).toContain(
       "const showStatusTimer = gameStatus?.showTimer !== false && Boolean(timerText);"
     );
+    expect(source).toContain("LOW_TIMER_THRESHOLD_SECONDS = 5");
+    expect(source).toContain(
+      "const isStatusTimerLow = showStatusTimer && getTimerSeconds(timerMs) <= LOW_TIMER_THRESHOLD_SECONDS;"
+    );
+    expect(source).toContain("isTimerLow={isStatusTimerLow}");
     expect(source).toContain("getTurnControlMode");
     expect(source).toContain("showTurnControls");
     expect(source).toContain("rollContent={");
