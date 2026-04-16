@@ -1,5 +1,84 @@
 # NOTES
 
+- Feed-panel autoscroll note:
+- only the live `ChatPanel` should force-scroll back to the bottom on successful local send; the `Game Log` should not gain any analogous "resume on send" behavior.
+- the shared `FeedPanel` shell now owns the reusable interaction-idle behavior for both `ChatPanel` and `GameLogPanel`.
+- for idle recovery, treat the whole panel as the interaction scope and prefer a longer idle delay around 10-15 seconds before re-enabling autoscroll and snapping back to the bottom.
+
+- Sidebar side-tab bottom-corner clipping note:
+- the hard-edge cleanup target is the `Side-Tab Ribbon` study only, not the production `ChatPanel` composer treatment.
+- keep the chat composer in the side-tab mockup visually consistent with its prior full-width footer/input styling.
+- the square artifacts at the bottom-left and bottom-right come from the rectangular content layer crossing the rounded SVG shell. Clip the side-tab panel content wrapper with the same `SIDE_TAB_PANEL_RADIUS` used by the shell.
+
+- Sidebar connection GSAP motion note:
+- the `/catana/dev/sidebar-connection` mockup should use GSAP for dock/panel motion, not React Spring.
+- keep routine panel disclosure calmer than reward/gameplay effects: `power3.out` over roughly `0.22s` gives a quick eased transition without spring overshoot.
+- preserve reduced-motion handling in `useGsapDockMotion`; `prefers-reduced-motion: reduce` should make the tween duration zero.
+- reserve bouncy eases such as `back.out(...)` for reward moments like resource distribution, placement, or dev-card reveal, not sidebar panel toggles.
+
+- Sidebar side-tab compact-stack note:
+- the side-tab mockup should keep dock buttons visually stacked like closed rail buttons unless adjacent panels are both open.
+- use `getSideTabRowHeight` with neighbor state for this rule:
+- if only the current row is open, reserve the open button's shifted top plus its 72px button height and the compact gap,
+- if only the next row is open, subtract that next row's open-top shift so the next button still lands at the compact stack position,
+- only when `isOpen && nextIsOpen` should the row reserve the full open panel height plus `SIDE_TAB_OPEN_PANEL_GAP`.
+- keep the side-tab button/shell outline close to the thin-header taper treatment. The selected SVG shell and the closed/transitioning button shell both need a visible white stroke/ring so the buttons read as the same family.
+
+- Sidebar side-tab panel-lift note:
+- the side-tab mockup intentionally lifts the open panel by `SIDE_TAB_PANEL_OPEN_LIFT = 8`.
+- keep the lift as a named constant instead of folding it into the panel top value.
+- the expanded button should not move up with that lift. `SIDE_TAB_BUTTON_OPEN_TOP` stays tied to the header height, while `SIDE_TAB_HEADER_SEAM_Y` tracks the lifted title/body boundary.
+- the top connector curve should end at `SIDE_TAB_HEADER_SEAM_Y`; do not curve it into the title bar.
+- keep `SIDE_TAB_PANEL_GAP = 12` unless the tab starts reading too cramped. This is the small horizontal gap between the 72px button and the panel edge; the earlier 20px gap made the selected button feel stretched.
+
+- Sidebar side-tab rendered-alignment note:
+- the side-tab ribbon button has two separate layers: the SVG path that draws the selected tab, and the real DOM button/icon layer.
+- keep those layers pinned to the same open top. The previous bug used `SIDE_TAB_BUTTON_OPEN_TOP` in the SVG path but translated the DOM button from an implicit `top: 0` by only `openTop - closedTop`, leaving the icon layer visibly out of phase with the tab shell.
+- for the current mockup, the panel title bar sits above the expanded button: `SIDE_TAB_BUTTON_OPEN_TOP` is independent from the lifted panel top, and the DOM button wrappers explicitly set `top` from `SIDE_TAB_BUTTON_CLOSED_TOP`.
+
+- Sidebar side-tab ribbon note:
+- the current `New Variant` in `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` is a side-tab/ribbon study, not the earlier shoulder/blob study.
+- keep the active dock item and panel outer shape owned by one SVG shell, with the active button acting as a conventional selected side tab that plugs into the panel surface through simple horizontal joins.
+- avoid reintroducing S-curves, separate connector pieces, or a second card chrome over the shell; those make the connection read as layered decoration instead of one selected tab.
+- the tab should sit high enough to relate to the panel header/body boundary. If it drifts too low, it starts reading like a blob entering the body instead of a ribbon/tab expansion.
+- keep the side-tab button footprint aligned with the thin-header taper button: same 72px square, no independent open-state scale, and the icon centered in that square.
+
+- Sidebar connection mockup note:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` is the scratch surface for connected dock/panel geometry experiments; keep it dev-only and use it to settle the visual direction before pushing the shape into production sidebar code.
+- For the `Dock-To-Body Shoulder` study, the approved direction is a raised panel whose header sits above the button midpoint.
+- The current best direction for that study is not a stack of rounded connector pieces. Use one owning SVG shell for the whole open silhouette so the active button and panel body share one material and one outer contour.
+- The panel internals should then be treated as inset content inside that shell: keep the readable header/body/footer treatment, but do not reintroduce a second fully-fledged frosted card on top of the shell or the connector will start looking layered again.
+- If the shoulder starts reading as separate blocks again, inspect the outer contour first. At this point the remaining risk is geometry/tangent quality at the shoulder, not per-piece opacity seams.
+
+- Left meta desktop dock note:
+- the desktop version of `app/catana/components/LeftMetaRail.js` is now a row-following dock, not a single overlay drawer.
+- each dock entry owns its own row: the button sits on the left rail, opening a row expands that entry's panel to the right, and rows below should move down naturally.
+- keep desktop dock entries independently openable/closable and do not dismiss them from board click or focus loss.
+- if resize handles are added later, attach them at the row level so each open dock entry owns its own height instead of rebuilding this into one monolithic sidebar.
+- keep the dock spine lighter than the panels themselves. The desktop `Game Log` / `Chat` panels should read as blue-tinted floating sheets, not pale transparent washes that blend into the board.
+
+- Port exchange-rate label sizing note:
+- the `2:1` / `3:1` text in `app/catana/Port.js` should scale from the board `size` prop, matching the board-relative sizing behavior used by tile numbers.
+- do not reintroduce a fixed `rem`/root-font size for `portBadge` text in `app/catana/Port.css`; responsive mode and viewport changes can make the label look oversized relative to the badge geometry.
+
+- Left meta sidebar note:
+- the old `LeftMetaRail` two-panel stack has been replaced by a shared rail-plus-drawer pattern intended to carry desktop, mobile landscape, and mobile portrait with the same interaction model.
+- keep sidebar scope limited to meta surfaces such as `Game Log`, `Chat`, `Help`, or `Settings`; do not fold core turn/build/resource controls into this drawer.
+- preserve the mobile one-panel-at-a-time behavior unless product direction changes; desktop now intentionally allows multiple rows open at once.
+- when reusing existing feed-style panels inside the drawer, prefer passing size/styling overrides into `GameLogPanel` / `ChatPanel` rather than forking duplicate panel implementations.
+
+- Placement status ownership note:
+- the viewer-personalized placement prompt in `app/catana/utils/gameStatus.js` must resolve the active setup player from `ctx.currentPlayer`, not only from `G.core.turn.currentPlayerId`.
+- During snake-draft setup, boardgame.io advances the live turn owner through `ctx.currentPlayer` even when core turn state has not been synchronized yet, so relying on core-only state makes the bottom-right status/action box and active-player highlight stick to the wrong seat.
+
+- Timer authority vs animation note:
+- `server/timers/TimerManager.js` should measure actionable server time only. Do not add server-side padding for roll or flourish animations.
+- If transition UI needs to feel softer, handle that in the client presentation/effects layer by hiding or de-emphasizing specific UI temporarily rather than delaying the authoritative timer.
+
+- Turn-bonus timer note:
+- `server/timers/TimerManager.js` must not treat same-stage / same-turn updates as a no-op before checking `deltalog` for bonus-time moves.
+- Post-roll bonus actions such as `maritimeTrade`, `placeRoad`, `placeSettlement`, `placeCity`, `buyDevCard`, and `playDevCardStart` can legitimately leave `stageKey` and `turnNumber` unchanged while still needing to add time and restart the active turn timeout.
+
 - Bottom-right turn controls note:
 - the bottom-right corner now uses `app/catana/components/TurnControlCluster.js` as a distinct turn-control module rather than inline dice/status/end-turn markup inside `PlayerActionContainer`.
 - keep the module presentation-driven:
@@ -2486,3 +2565,155 @@
     - treat `scoreboard` ordering and winner highlighting as separate concerns.
       `GameScreen` sorts rows by VP for standings, but the gold card in `GameOverModal` must come from the explicit `row.isWinner` flag, with everyone else rendered as secondary rows.
     - this matters for AFK forfeits, resignations, or any future non-VP finish condition where the winner may not have the highest VP total at the moment the game ends.
+  - Desktop meta-dock experiment note:
+    - the strongest part of the new desktop sidebar direction is not transparency or blur by itself; it is whether the open control feels structurally attached to the panel header.
+      An icon-only dock button plus a short header-colored bridge gets closer to the mockup than the earlier detached floating-card treatment.
+    - GSAP `Flip` is a good fit here because panel toggles are mostly layout reflow, not bespoke choreography. It keeps the dock motion subtle and cheap without locking us into a larger animation architecture.
+    - this experiment still keeps the underlying panel shells slightly more “glass” than the original left-side layout. If the target is to feel even closer to the old composition, the next likely adjustments are header/body opacity and header padding around the bridge, not a different interaction model.
+  - Desktop meta-dock reset note:
+    - in practice, the previous experiment proved that “attached” is not enough by itself:
+      - if the connector becomes a decorative glyph, it looks worse
+      - if the dock rows animate their reflow, the motion can feel cheap or sluggish
+    - the better baseline is simpler:
+      - keep the icon-only dock behavior
+      - restore the older panel shell/header/footer styling
+      - make the active-state connection a flat header-colored strip, not a stylized bridge
+    - this gives a cleaner foundation for later polish. If animation comes back, it should be minimal opacity/press feedback on the button or panel itself, not row-level layout animation.
+  - Desktop connector-shape note:
+    - after the flat-strip reset, the next useful refinement is silhouette, not color or motion.
+      A small custom-shaped connector behind the active button reads better than either:
+      - the earlier decorative bridge/glyph
+      - a plain rectangular strip
+    - an inline SVG is a pragmatic fit here because the shape is fixed-size and purely presentational. It avoids fighting border-radius hacks and keeps the rest of the dock/layout code unchanged.
+  - Unified active-shell note:
+    - the shaped connector alone was still insufficient because the active button kept its own visible surface. That made the shell read as “something behind the button” instead of shared chrome.
+    - the better model is:
+      - make the active button visually transparent
+      - let the shared shell own the active fill and stroke
+      - make the desktop panel header background transparent so the shell visually becomes the header bar
+    - this is still lightweight structurally, but it changes the visual ownership in the right direction. If there is another pass, it should be about shell silhouette tuning, not reintroducing separate active button chrome.
+  - Sidebar connection study route note:
+    - it is useful to separate “does this connection idea read at all?” from “can we retrofit it cleanly into `LeftMetaRail`?”
+      A dev-only mockup route is the faster place to answer the first question.
+    - the two most promising fresh directions are:
+      - `Ribbon Shell`: a more explicit bridge that bulges out of the dock button before becoming the header
+      - `Header Cap`: a calmer treatment where the button effectively becomes the left cap of the header bar
+    - both directions should keep the body panel visually simpler than the connector experiment in the live UI. If the header/body/panel chrome is too busy, it becomes hard to judge whether the connection itself is working.
+    - `@react-spring/web` is already in the repo and is a reasonable fit for this kind of mockup work:
+      - animate width/opacity/translation of the shell and body
+      - avoid full SVG morphing until the shape language is clearly worth keeping
+  - Headerless rail mockup note:
+    - the main failure mode of the earlier cap-based mockup was not the cap itself; it was the stacked-header illusion.
+      Once the body also looked like it had its own header, the eye stopped reading the rail as structural.
+    - a better variant is:
+      - active cap + title rail are the only header
+      - content body starts below the rail
+      - no extra top divider/header band inside the body
+    - this still is not final visual language, but it is a cleaner test of the actual idea the user is asking for.
+  - Unified shell mockup note:
+    - the next refinement after the headerless rail is ownership of the closed state.
+      If the rail appears from beside a separately styled button, the motion still feels fake.
+    - the better model is:
+      - a single glass shell renders the closed button
+      - that same shell expands horizontally into the open title rail
+      - the icon button itself stays transparent and simply provides interaction/focus semantics on top
+    - this gets much closer to the user’s “the whole button turns into the correct colour and the header comes out of it proportionally” request without needing SVG morphing.
+  - Original-box styling note:
+    - once the interaction model felt right, the remaining mismatch was visual language:
+      the mockup chrome had drifted away from the real Catana chat/log boxes.
+    - the important reset was not reintroducing a literal body header, but reusing the original surface treatment:
+      - clean `bg-white/50` rail chrome
+      - `bg-white/25` body
+      - `rounded-lg` panel corners
+      - original chat footer/input classes
+    - letting the body span directly below the rail also helps it read more like the old full-width panel family, just with the new dock-driven header interaction.
+  - Seam + inset note:
+    - after restoring the original panel vocabulary, the next problem was the handoff itself:
+      a tiny overlap between the rail and body made the seam look blurry rather than intentional.
+    - the cleaner treatment is:
+      - no overlap
+      - a single crisp divider line
+      - body inset under the rail instead of filling the full rail width
+    - visually, this gets closer to the old “header stops here, body begins here” read while preserving the new dock-owned header interaction.
+  - Dock chrome flattening note:
+    - once the seam and inset were corrected, the next source of visual noise was the dock chrome itself:
+      - focus ring after click
+      - shell shadow
+      - fully rounded open rail cornering
+    - removing those makes the mockup read cleaner and less "component-demo-ish". The dock still has shape, but it no longer advertises itself with extra effects.
+  - Thin header via tapered shell note:
+    - if the header bar needs to be thinner than the button, a plain rounded rectangle is the wrong primitive.
+      The shell has to become a shaped path.
+    - the clean model is:
+      - closed state: rounded button
+      - open state: same shell stretched to the shared right edge
+      - rail height tapers down while the left cap stays button-sized
+    - an SVG path driven directly from spring progress is a practical way to do this without introducing a morphing library. It also makes the right-edge alignment deterministic because the path width can be tied to the same body-right constant.
+  - Dock-to-body shoulder comparison note:
+    - the alternative visual story is not “button becomes header” but “dock item opens a connected panel body.”
+    - that requires different ownership:
+      - a visible dock surface behind the buttons
+      - the active dock item sharing the body material
+      - the connection landing in the panel shoulder/body region while the header becomes a normal internal strip again
+    - as a comparison mockup this is useful even if the first pass is rough, because it lets the team judge which visual story is more convincing before polishing either one further.
+  - Side-tab ribbon motion note:
+    - the side-tab ribbon is the direction to carry forward for board integration.
+    - the clicked dock button should remain in the fixed button stack position through the whole transition.
+    - moving the icon/button with an explicit `translateY(headerHeight)` reads as an avoidable bounce.
+    - pinning the button without raising the panel makes the panel feel dropped down and less connected, so the panel/header geometry should move up instead of moving the button down.
+    - the corrected model is:
+      - the side-tab button stays at `SIDE_TAB_BUTTON_CLOSED_TOP`
+      - `SIDE_TAB_PANEL_TOP` accounts for the title/header height plus the small lift
+      - single-open states keep the buttons next to each other without animating row compression
+      - both-open remains the only state that expands the vertical spacing between buttons
+      - GSAP continues to animate the connected shell/panel reveal, not a button bounce
+    - this matches the calmer thin-header behavior while preserving the side-tab ribbon silhouette.
+  - Dev-card reveal 3D flip note:
+    - the earlier failed two-face attempt appears to have been entangled with the old imperative image swap / React ownership issue, not with CSS 3D itself.
+    - the cleaner 3D version should keep the face art fully React-owned:
+      - mount the dev-card back and bought-card face for the entire reveal
+      - put `perspective` on the outer reveal wrapper
+      - rotate one inner `preserve-3d` card node from `0` to `180`
+      - put `backfaceVisibility: hidden` on face wrappers, not only on raw SVG image elements
+    - the rest of the reveal rhythm should remain unchanged unless a visual pass explicitly retunes it.
+  - Dev-card reveal comparison/perf note:
+    - keep the production default on the new 3D flip, but preserve `flipVariant="midpoint"` as a dev-lab comparison path while the team is judging feel.
+    - the side-by-side lab should use lane-local `centerPoint` values; otherwise both fixed-position reveal actors converge on viewport center and cannot be compared clearly.
+    - a quick desktop dev-browser sample found no practical frame-budget difference between the old midpoint and new 3D variants for a single reveal:
+      - both held roughly one frame per 16.6ms refresh interval
+      - no long tasks were observed
+      - no frames crossed 20ms or 33ms in the sample
+    - stronger evidence would come from Chrome Performance recordings or a scripted trace on slower hardware / CPU throttle, comparing main-thread scripting, paint/composite time, dropped frames, and long tasks per variant.
+  - Sidebar side-tab overlap/lift note:
+    - the remaining both-open overlap in `/catana/dev/sidebar-connection` should be treated as row-spacing math, not as a reason to lower the shell back down.
+    - keep the selected side-tab button fixed in the dock stack.
+    - raise the open shell/header slightly more so the title bar reads clearly above the button.
+    - decouple that visual lift from open-row reservation; the both-open row height should reserve the full occupied panel footprint instead of subtracting space via negative `SIDE_TAB_PANEL_TOP`.
+    - if the shell is lifted further, recheck the study's top padding so the first open row does not clip.
+  - Sidebar side-tab overlap/lift resolved note:
+    - the final dev-route adjustment uses `SIDE_TAB_PANEL_OPEN_LIFT = 12` so the open header sits a little higher above the fixed side-tab button without changing the button stack position.
+    - `getSideTabRowHeight()` must reserve `panel.height + SIDE_TAB_OPEN_PANEL_GAP` for consecutive open rows; using `SIDE_TAB_PANEL_TOP + panel.height + gap` under-reserves by the raised-panel offset and causes the lower panel to creep into the upper one.
+    - the current top study padding still leaves enough room for the slightly higher first panel, so no extra stage padding was needed for this pass.
+  - LeftMetaRail production side-tab ribbon note:
+    - desktop `app/catana/components/LeftMetaRail.js` now uses the same side-tab ribbon geometry model as the approved dev study:
+      - fixed 72px button stack
+      - lifted unified SVG shell
+      - consecutive-open row reservation via `getSideTabRowHeight`
+      - GSAP-driven shell/body reveal
+    - keep `GameLogPanel` and `ChatPanel` as content payloads inside that shell instead of teaching those components about ribbon layout.
+    - the production-only layout got one extra constraint that the dev study did not need: the fixed desktop wrapper must have enough explicit width and `overflow-x-visible`, otherwise the ribbon DOM measures correctly but gets horizontally clipped in the real board viewport.
+    - the desktop production wrapper is now bottom-anchored again (`left-4 bottom-6`) rather than stretched from the top of the viewport. This restores the earlier Catana read where `Chat` sits bottom-left and `Game Log` stacks above it, while keeping the newer ribbon shell.
+    - mobile `MobileMetaRail` remains on the older drawer treatment for now; this integration pass is desktop-only.
+  - LeftMetaRail anchor-mode note:
+    - bottom-left desktop anchoring needs row-local anchor geometry, not just a bottom-fixed wrapper. If every row keeps the old top-anchored shell math, the last open panel can still run off the viewport bottom.
+    - `app/catana/components/LeftMetaRail.js` now supports `top`, `middle`, and `bottom` desktop side-tab anchors through `getSideTabLayoutMetrics({ panelHeight, anchor })`.
+    - current desktop defaults are:
+      - `Game Log -> middle`
+      - `Chat -> bottom`
+    - `getSideTabRowHeight()` must reserve vertical space from the current row's actual downward footprint and the next row's actual upward footprint. This keeps the two-open 20px gap while allowing bottom-anchored rows to grow upward instead of below the button.
+    - render-level `data-meta-side-tab-anchor` attributes are useful as a stable test seam for these layout choices without snapshotting large inline-style blobs.
+    - `middle` and `bottom` should still reuse the original lifted shell's rounded upper elbow; if `topJoinY` collapses to the button top, the connector turns into a hard corner even when the lower join remains curved.
+    - the fix is to keep the upper join seam lifted by the same small inset used by the original top shell and to give the `bottom` anchor a matching small bottom lift, so it reads "near the bottom" rather than fully flush to the button edge.
+    - the lower connector itself must also move with the `bottom` anchor. Lifting only `panelBottom` while keeping the shell path hardcoded to rejoin at `buttonBottom = 72` creates a longer downward tail and makes the bottom connection look lower, not higher.
+    - `getSideTabLayoutMetrics()` now returns `lowerJoinY`, and the shell path uses that metric instead of a fixed lower rejoin point. For `bottom`, `lowerJoinY` follows the lifted `panelBottom`.
+    - follow-up correction: the desired `bottom` behavior is not "lift the whole chat panel." The chat panel body should stay on the old desktop baseline, and only the lower connector seam should sit above the message/composer band, analogous to how the top anchor joins below the title bar instead of at the panel edge.

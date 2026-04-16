@@ -1,5 +1,161 @@
 # PROGRESS
 
+## Status (2026-04-16, feed-panel autoscroll idle resume)
+- Corrected the live chat/send case and broadened the shared idle-resume behavior to the `Game Log` panel without adding log send-specific behavior.
+- Current behavior:
+- `app/catana/components/ChatPanel.js` now bumps a chat-only `resumeAutoScrollKey` whenever the local player successfully submits a message, so the chat feed immediately scrolls back to the bottom and re-enables autoscroll for the subsequent echoed message,
+- `app/catana/components/FeedPanel.js` now supports an optional forced auto-scroll trigger plus panel-wide hover/focus tracking and idle-delay configuration, and uses the shared idle callback to scroll back to the bottom when that timer expires,
+- `app/catana/components/FeedPanelScrollState.js` now supports forced scroll, focus-aware idle resume, configurable idle timing, and an idle-resume callback; both chat and log now use a 12s idle window that re-enables autoscroll and snaps back to the latest entry after inactivity.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `pnpm exec eslint app/catana/components/ChatPanel.js app/catana/components/FeedPanel.js app/catana/components/FeedPanelScrollState.js app/catana/components/GameLogPanel.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/renderPerfGuards.test.js`
+
+## Status (2026-04-16, side-tab ribbon bottom-corner cleanup)
+- Corrected the side-tab-only interpretation of the chat/footer hard-edge feedback.
+- Current behavior:
+- `app/catana/components/ChatPanel.js` has its composer visual treatment restored to the prior full-width footer/input styling; the production chat panel was not the target for this pass,
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` also restores the mock chat composer to that prior treatment,
+- the actual side-tab ribbon panel content wrapper now clips to the same `SIDE_TAB_PANEL_RADIUS` as the SVG shell, preventing the rectangular content layer from peeking through at the bottom-left and bottom-right rounded corners,
+- `app/catana/__tests__/SidebarConnectionStudy.source.test.js` now guards the explicit side-tab content clipping rather than composer styling.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- browser check at `/catana/dev/sidebar-connection` in `Chat only`
+
+## Status (2026-04-15, sidebar connection GSAP motion pass)
+- Replaced the dev-only `/catana/dev/sidebar-connection` mockup motion driver with calmer GSAP easing.
+- Current behavior:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` no longer imports `@react-spring/web`; both comparison variants now animate from a small `useGsapDockMotion` helper,
+- panel progress and row height tween over `0.22s` with `power3.out`, matching the repo's GSAP UI-following patterns instead of using spring physics,
+- the motion hook respects `prefers-reduced-motion: reduce` by reducing the tween duration to zero,
+- `app/catana/__tests__/SidebarConnectionStudy.source.test.js` now guards the GSAP import, easing, reduced-motion handling, and removal of React Spring usage.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- browser check at `/catana/dev/sidebar-connection`; sampled `Dock only` and `Both open` toggles showed monotonic button movement with no overshoot.
+
+## Status (2026-04-15, side-tab ribbon compact button stack)
+- Tightened the dev-only `/catana/dev/sidebar-connection` side-tab ribbon button treatment after the latest visual review.
+- Current behavior:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` now gives the side-tab button shell the same visible white stroke treatment as the thin-header taper baseline,
+- side-tab row spacing is now neighbor-aware through `getSideTabRowHeight`, so dock buttons keep their compact closed spacing unless two adjacent panels are both open,
+- when only `Chat` is open, the `Log` and `Chat` buttons remain next to each other in the same compact dock stack,
+- when only `Game Log` is open, the `Chat` button sits directly below the shifted open log tab instead of being pushed under the full log panel,
+- only the `Both open` state reserves the expanded panel height between rows.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- browser coordinate checks and screenshots at `/catana/dev/sidebar-connection` in `Both open`, `Chat only`, `Log only`, and `Dock only`
+
+## Status (2026-04-15, side-tab ribbon title-over-button lift)
+- Corrected the dev-only `/catana/dev/sidebar-connection` side-tab ribbon lift so the panel moves up relative to the expanded dock button.
+- Current behavior:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` now uses `SIDE_TAB_PANEL_OPEN_LIFT = 8` to raise the panel/title bar while keeping the expanded button in its dock slot,
+- the side-tab panel now uses `SIDE_TAB_PANEL_GAP = 12`, moving the panel 8px left so the selected button reads closer to a square tab instead of a stretched horizontal bridge,
+- `SIDE_TAB_BUTTON_OPEN_TOP` is no longer derived from the lifted panel top; the header/body seam is tracked separately as `SIDE_TAB_HEADER_SEAM_Y`,
+- the side-tab connector's top curve now ends at that seam so the transition does not bleed up into the title bar,
+- `app/catana/__tests__/SidebarConnectionStudy.source.test.js` now guards the named lift, 12px panel gap, decoupled button open top, and seam-based connector join.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- browser coordinate check and screenshot at `/catana/dev/sidebar-connection` in `Both open`
+
+## Status (2026-04-15, side-tab ribbon rendered alignment fix)
+- Corrected the dev-only `/catana/dev/sidebar-connection` side-tab ribbon after the previous tweak proved too subtle in the browser.
+- Current behavior:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` now aligns the actual icon button layer with the SVG side-tab path instead of translating it from an implicit `top: 0`,
+- the side-tab panel is raised to the row top and the active tab top is derived from the panel header height, so the tab lands on the title/body seam in the rendered layout,
+- `app/catana/__tests__/SidebarConnectionStudy.source.test.js` now guards the panel/button constants and the explicit button top style so this offset does not come back.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- browser coordinate check and screenshots at `/catana/dev/sidebar-connection` in `Both open` and `Log only`
+
+## Status (2026-04-15, side-tab ribbon button alignment)
+- Tightened the dev-only `/catana/dev/sidebar-connection` side-tab ribbon after visual review.
+- Current behavior:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` now keeps the side-tab button at the same 72px footprint without the extra open-state scale, so the icon alignment matches the thin-header taper button more closely,
+- the side-tab panel top is raised slightly so the tab connection lands at the header/body boundary instead of overlapping awkwardly into the title bar area,
+- `app/catana/__tests__/SidebarConnectionStudy.source.test.js` now guards both the side-tab direction and these alignment constants.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- manual browser check at `/catana/dev/sidebar-connection` in `Both open` and `Log only`
+
+## Status (2026-04-15, sidebar connection side-tab ribbon pass)
+- Reworked the dev-only `/catana/dev/sidebar-connection` `New Variant` from the raised shoulder/blob experiment into a cleaner `Side-Tab Ribbon` study.
+- Current behavior:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` now draws the new variant as one side-tab SVG shell where the active dock button plugs directly into the panel surface with short horizontal joins,
+- the active tab sits higher against the panel header/body boundary so it reads more like a conventional selected tab and less like a soft connector entering the middle of the panel body,
+- the older `Thin Header Taper` study remains visible beside it for comparison, while the new side-tab direction is guarded by `app/catana/__tests__/SidebarConnectionStudy.source.test.js`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+- manual browser check at `/catana/dev/sidebar-connection` in `Both open` and `Log only`
+
+## Status (2026-04-15, sidebar connection shoulder mockup raised)
+- Refined the dev-only `/catana/dev/sidebar-connection` mockup so the `Dock-To-Body Shoulder` study now reads as a panel emerging above the button instead of connecting into the middle of the body.
+- Current behavior:
+- `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` now treats the shoulder study as one owning shell instead of a connector sitting behind a separate card: the open state is rendered as one custom SVG silhouette that includes the active button and the whole outer panel body,
+- the visible `Game Log` / `Chat` card chrome inside that shell is now lightweight inset content rather than a second frosted card, which makes the shoulder read much more like a single ribboned disclosure surface,
+- the active button still springs down into its open position, and the mockup keeps both the shoulder study and the thin-header taper study side by side for direct visual comparison.
+- the comparison route still shows both the thin-header taper and the raised shoulder study side by side, so further visual decisions can be made against a stable baseline.
+- Focused verification:
+- `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+- manual browser check at `/catana/dev/sidebar-connection` in `Both open` and `Log only`
+
+## Status (2026-04-14, desktop left meta dock)
+- Reworked the left meta UI into a desktop-first dock while keeping the mobile rail path.
+- Current behavior:
+- `app/catana/components/LeftMetaRail.js` now renders two layouts: a desktop row-following dock with one button per row and independently open `Game Log` / `Chat` panels, plus a mobile rail that still uses a single active panel,
+- desktop now defaults both `Log` and `Chat` open, keeps lower dock buttons flowing underneath expanded rows, and no longer collapses panels on board click or unfocus,
+- the desktop dock panels now use a stronger blue-glass body with firmer header/footer opacity, while `app/catana/components/ChatPanel.js` restores the flatter footer/input treatment by using a transparent composer input instead of the inset glass field.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+- `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/ChatPanel.js app/catana/components/GameLogPanel.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js`
+- `git diff --check`
+- manual browser check at `/catana/dev/sandbox` on desktop, including both-panels-open default, closing `Chat` while keeping `Log` open, and confirming a board click leaves the open dock untouched.
+
+## Status (2026-04-14, port exchange-rate labels now scale with board size)
+- Fixed the intermittent oversized port-rate text so the `2:1` / `3:1` labels now scale from board tile size instead of a fixed root-font `rem`.
+- Current behavior:
+- `app/catana/Port.js` now derives the badge text `fontSize` from the board `size` prop before rendering the rate label,
+- `app/catana/Port.css` no longer hard-codes the badge text to `0.85rem`,
+- `app/catana/__tests__/Port.render.test.js` now locks in the regression by asserting that large and small board sizes render different inline font sizes for the badge text.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Port.render.test.js`
+
+## Status (2026-04-14, collapsible left meta sidebar)
+- Replaced the old stacked bottom-left log/chat column with the first production pass of the shared collapsible sidebar pattern.
+- Current behavior:
+- `app/catana/components/LeftMetaRail.js` now renders a slim icon rail with `Log` and `Chat` buttons, keeps one active panel at a time, opens that panel in a responsive glass drawer, and closes via the same button, backdrop tap, or `Escape`,
+- `app/catana/components/GameLogPanel.js` and `app/catana/components/ChatPanel.js` now accept `panelClassName` overrides so the sidebar can reuse the existing feed panels without forking their contents,
+- the narrow-screen sidebar stack now sits higher (`bottom-32`) so the drawer clears the bottom action dock better in portrait while preserving the same rail behavior on desktop and landscape.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+- manual browser check at `/catana/dev/sandbox` in phone landscape and phone portrait, including open/close checks for both `Game Log` and `Chat`.
+
+## Status (2026-04-13, placement status uses live turn owner)
+- Fixed the placement-phase status/action copy so it follows the live boardgame.io turn owner instead of stale core turn state.
+- Current behavior:
+- `app/catana/utils/gameStatus.js` now resolves the acting player from `ctx.currentPlayer` first, with a fallback to `G.core.turn.currentPlayerId` for seeded/scenario paths,
+- placement-phase viewer-aware copy and active-player highlighting now stay aligned with the actual setup turn owner after each snake-draft handoff,
+- `app/catana/__tests__/gameStatus.test.js` now includes a regression where placement `ctx.currentPlayer` has advanced while `core.turn.currentPlayerId` is still stale.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/gameStatus.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/PlayerActionContainer.status.test.js`
+- `pnpm exec eslint app/catana/utils/gameStatus.js app/catana/__tests__/gameStatus.test.js`
+
+## Status (2026-04-13, removed server roll timer padding)
+- Removed the server-side roll animation buffer so authoritative timers now measure actionable time instead of cinematic delay.
+- Current behavior:
+- `server/timers/TimerManager.js` now starts post-roll, robber-discard, and move-robber timers immediately when the match enters those timed states, even if the triggering move was a roll,
+- `server/__tests__/TimerManager.test.js` now asserts that post-roll and move-robber timers start immediately after a roll instead of waiting an extra `3.5s`,
+- client effects remain the place to hide or soften transition visuals; the server no longer pads turn or stage time for flourish.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/TimerManager.test.js -t "starts postRoll turn timer immediately after a roll|starts moveRobber stage timer immediately after a roll"`
+
+## Status (2026-04-13, same-stage turn bonus timer fix)
+- Fixed the live server turn timer so bonus-time moves still add time when the match stays in the same `main:postRoll` stage and turn.
+- Current behavior:
+- `server/timers/TimerManager.js` now applies turn bonus time before taking the same-stage/same-turn early return, so bonus moves like `maritimeTrade` no longer get ignored just because they do not advance stage or turn,
+- `server/__tests__/TimerManager.test.js` now includes a regression test covering a running post-roll timer, elapsed time, and a same-stage bonus move.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/TimerManager.test.js -t "adds bonus time during same-stage postRoll updates"`
+
 ## Status (2026-04-13, low-timer turn control polish)
 - Added the approved low-time and right-edge tweaks for the bottom-right turn controls.
 - Current behavior:
@@ -3662,3 +3818,276 @@
   - this closes the AFK-forfeit case where the timed-out player could have more VP than the real winner and previously looked like the winner in the gold card.
 - Verification for the winner-card fix:
   - `pnpm exec vitest run app/catana/__tests__/GameOverModal.test.js`
+- Added a desktop dock experiment for the left meta rail so log/chat can feel attached to the dock instead of reading like detached floating cards.
+- Desktop meta-dock experiment notes:
+  - desktop dock buttons are now icon-first, stay open independently, and use a shared light header tone when active so the control reads as part of the open panel rather than a separate chip.
+  - open desktop rows now render a small bridge strip between the dock button and the panel header, which gets closer to the mockup where the panel appears to extend out of the dock.
+  - desktop open/close reflow now uses GSAP `Flip` so rows shift smoothly when panels are toggled without changing the existing mobile drawer behavior.
+- Verification for the desktop dock experiment:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/ChatPanel.js app/catana/components/GameLogPanel.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js`
+  - `git diff --check`
+- Reset the desktop meta-dock styling after the first connected-panel experiment felt worse in motion and added a stray decorative bridge shape.
+- Desktop meta-dock reset notes:
+  - removed the GSAP `Flip` reflow from the dock rows so open/close state changes are immediate again instead of feeling sluggish.
+  - restored the older chat/log shell treatment:
+    - `bg-white/50` header bars
+    - `bg-white/35` chat footer
+    - `bg-white/50` inset chat composer field with the earlier inner-ring look
+  - replaced the previous bridge ornament with a flat header-colored connector strip so the active button and panel header read as one continuous bar.
+- Verification for the desktop meta-dock reset:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/ChatPanel.js app/catana/components/GameLogPanel.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js`
+  - `git diff --check`
+- Refined the desktop active-state connector from a flat strip into a shaped tab that bulges out of the active dock button before running into the panel header.
+- Desktop meta-dock connector-shape notes:
+  - replaced the plain rectangular connector with an SVG-backed shape so the active icon button feels more like it is feeding into the header bar instead of sitting next to a separate strip.
+  - kept the reset styling baseline intact:
+    - no GSAP row animation
+    - restored panel shell/header/footer styling
+    - only the connector silhouette changed
+- Verification for the connector-shape refinement:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/ChatPanel.js app/catana/components/GameLogPanel.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js`
+  - `git diff --check`
+- Refined the active desktop dock chrome again so the button and header are driven by one shared shell instead of a visible button surface sitting on top of a connector.
+- Unified active-shell notes:
+  - active desktop buttons now become visually transparent when open; the shared SVG shell owns the fill/stroke instead.
+  - desktop dock panels now pass a transparent header background override so the shared shell can visually become the header bar instead of reading like a backdrop behind it.
+  - the shared shell still uses the same restored `bg-white/50` / `border-white/40` visual language, but now reads much closer to a single continuous path from button into header.
+- Verification for the unified active-shell refinement:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/DebugUiVisibility.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/ChatPanel.js app/catana/components/GameLogPanel.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/ChatPanel.test.js`
+  - `git diff --check`
+- Added a fresh dev-only connection study route at `/catana/dev/sidebar-connection` to evaluate the left-dock attachment effect without touching the live `LeftMetaRail` implementation.
+- Sidebar connection study notes:
+  - the new route compares two desktop-only mockups side by side:
+    - `Variant A / Ribbon Shell`
+    - `Variant B / Header Cap`
+  - both mockups use a single active shell for the icon + header and keep the panel body separate underneath, which makes it easier to judge the “connected” feeling without the complexity of the real game UI code.
+  - the mockups use lightweight `@react-spring/web` state transitions for open/close so the movement can be judged along with the chrome shape.
+  - controls on the page cover the main states we care about right now:
+    - both panels open
+    - log only
+    - chat only
+    - dock only
+- Verification for the sidebar connection study route:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection`
+- Iterated `Variant B` on the sidebar connection study route into a `Headerless Rail` version so the active rail owns the title and the body starts beneath it without a second header layer.
+- Headerless rail iteration notes:
+  - the earlier `Header Cap` variant still read as two stacked glass objects because the body card visually carried its own top chrome.
+  - the new `Headerless Rail` version removes that extra top chrome from the body and lowers the body card so the active rail is the only header treatment.
+  - this keeps the springy dock/button motion while reducing the “overlapping cards” read that was making the connection feel fake.
+- Verification for the headerless rail iteration:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection`
+- Refined the sidebar connection study again so the route now focuses only on the `Headerless Rail` direction and uses one animated shell for both the closed button and open rail.
+- Unified-shell refinement notes:
+  - dropped the side-by-side variant comparison from the mockup route so the page can focus on the single promising direction instead of splitting attention across weaker alternatives.
+  - the dock button is no longer a separate filled element sitting on top of a rail:
+    - one animated shell now owns the button in the closed state
+    - that same shell widens into the open title rail
+  - the title fades/slides into the widening shell, while the body continues to settle in underneath it as a separate card.
+  - checked the key states after the refinement:
+    - both open
+    - log only
+    - dock only
+- Verification for the unified-shell refinement:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection`
+- Tuned the sidebar connection study styling back toward the original chat/log box treatment while keeping the unified shell interaction model.
+- Original-box styling pass notes:
+  - removed the decorative inner lines from the white rail/header shell so the open state reads as clean `bg-white/50` chrome instead of a styled object with extra ornament.
+  - restyled the body cards to mirror the original panel vocabulary more closely:
+    - `rounded-lg`
+    - `bg-white/25`
+    - `ring-1 ring-white/30`
+    - smaller log/chat typography and spacing
+    - original-style chat footer/input treatment
+  - widened the body to sit directly underneath the rail so the body/header relationship feels closer to the old full-width boxes instead of a detached sub-card.
+- Verification for the original-box styling pass:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection` in:
+    - both-open state
+    - log-only state
+- Refined the original-box styling pass again to sharpen the rail/body seam and re-inset the body under the rail instead of letting it span the full rail width.
+- Seam + inset refinement notes:
+  - removed the previous 2px overlap between the rail and body; the body now starts directly below the rail, which avoids the blurry stacked-glass handoff.
+  - added a single crisp white seam line at the bottom of the rail / top of the body to get closer to the clean divider line from the original panel header.
+  - narrowed the body and shifted it right so it sits under roughly `button width + a little extra`, instead of matching the full rail width.
+- Verification for the seam + inset refinement:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection` in:
+    - both-open state
+    - log-only state
+- Flattened the dock chrome a bit more on the sidebar connection study route by removing the focus ring, dropping the shell shadow, and squaring off the open rail's bottom-right corner.
+- Dock chrome flattening notes:
+  - the interactive icon button no longer shows the extra white focus ring after click/focus in the mockup route.
+  - removed the animated shell shadow so the dock/header reads flatter and closer to the rest of the glass UI.
+  - the open rail keeps its rounded shape except for the bottom-right edge, which is now squared off to better match the simplified body/header relationship.
+- Verification for the dock chrome flattening pass:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection`
+- Reworked the sidebar connection study shell again so the open header is thinner than the button and uses a tapered SVG shell that keeps the button-to-rail transition smooth.
+- Tapered thin-header refinement notes:
+  - fixed the slight right-edge mismatch by defining the open shell width from the same `BODY_RIGHT` value that sets the body width/inset.
+  - replaced the old full-height open rail rectangle with an SVG path driven by spring progress:
+    - closed state is a rounded button
+    - open state becomes a thinner header rail
+    - the transition between them is a smooth curved taper instead of a hard step
+  - kept the body inset and crisp seam line so the thinner rail still lands cleanly on the box beneath it.
+- Verification for the tapered thin-header refinement:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection` in:
+    - both-open state
+    - log-only state
+- Added a second comparison study to the sidebar connection route so the current thin-header taper and a new dock-to-body shoulder concept can be judged side by side.
+- Dock-to-body shoulder comparison notes:
+  - restored the route to a two-variant comparison layout:
+    - `Current / Thin Header Taper`
+    - `New Variant / Dock-To-Body Shoulder`
+  - the new shoulder variant introduces:
+    - a visible dock column behind the buttons
+    - an active shell that shares the body material
+    - a connection that opens into the panel shoulder/body plane rather than thinning into the header
+    - a standard internal panel header band so the connection belongs to the body, not the title strip
+- Verification for the dock-to-body shoulder comparison:
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js`
+  - browser verification at `http://localhost:3000/catana/dev/sidebar-connection` in:
+    - both-open state
+    - log-only state
+- Locked the sidebar connection study direction around the `Side-Tab Ribbon` variant and cleaned up the click motion while preserving the earlier open-state geometry.
+- Side-tab ribbon motion notes:
+  - root cause of the visible bounce was the side-tab button animating from `translateY(0)` to `translateY(33px)`, with the row height changing by the same offset.
+  - the side-tab button now stays at the fixed dock-stack position when clicked; single-open transitions no longer compress or expand the neighboring row.
+  - the panel geometry was raised instead of moving the button, so the title bar still sits above the fixed button and the connector lands at the header/body seam.
+  - consecutive open panels still use the extended panel gap, and the side-tab study stage has extra top breathing room so the raised first panel is not clipped.
+  - the connected panel/shell still animates with GSAP, but there is no visible button translate or crossfade.
+- Verification for the fixed-button side-tab motion pass:
+  - Chrome DevTools visual checks at `http://127.0.0.1:3000/catana/dev/sidebar-connection` confirmed log-only and chat-only states keep the fixed button stack while preserving the raised header/tab connection.
+  - Chrome DevTools transition sample confirmed the side-tab buttons stayed at fixed `y` positions through the click transition (`chatDelta: 0`, `logDelta: 0`).
+  - screenshots captured:
+    - `.tmp/side-tab-fixed-button-raised-panel-chat-open-2.png`
+    - `.tmp/side-tab-fixed-button-log-open-final.png`
+  - `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+  - `git diff --check`
+
+## Status (2026-04-16, dev-card reveal uses 3D GSAP flip)
+- Replaced the private dev-card purchase reveal's midpoint image swap with a CodePen-style two-face 3D card flip.
+- The reveal still keeps the existing dock release, center travel, hold timing, audio cues, and return-to-hand motion.
+- Implementation notes:
+  - `DevCardPurchaseReveal` now mounts both the dev-card back and bought-card face for the whole reveal.
+  - `flipRef` owns the perspective wrapper, while `card3dRef` rotates from `0` to `180` degrees with GSAP.
+  - face wrappers own `backfaceVisibility: "hidden"` and keep the SVG images inside the transformed wrappers.
+- Verification so far:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardPurchaseReveal.source.test.js app/catana/__tests__/utils/devCardPurchaseReveal.test.js app/catana/__tests__/effects/DevCardRevealLab.source.test.js`
+  - Chrome DevTools check at `/catana/dev/effects`: overlay stays mounted through the center flip window, both face images are present, wrapper perspective is applied, and the inner card has a live `matrix3d(...)` rotation.
+- Added old/new side-by-side comparison to the dev-card reveal lab.
+- Comparison lab notes:
+  - `DevCardPurchaseReveal` defaults to the new 3D flip, but accepts `flipVariant="midpoint"` for the lab-only old behavior.
+  - `/catana/dev/effects` now shows `Old Midpoint` and `New 3D` lanes with one `Replay Both` control.
+  - each lane supplies its own `centerPoint` so the two reveal actors fly to separate lane-local apex markers instead of overlapping at viewport center.
+- Quick browser performance sample:
+  - Chrome DevTools `requestAnimationFrame` / long-task sampling over three single-lane runs per variant showed both variants around a 16.6ms average frame interval.
+  - no sampled old/new run had frames over 20ms, frames over 33ms, or long tasks on the desktop dev browser.
+- Captured the remaining side-tab ribbon cleanup as a design-only follow-up before implementation.
+- Sidebar overlap/lift design notes:
+  - wrote `docs/superpowers/specs/2026-04-16-sidebar-connection-overlap-and-lift-design.md` for the remaining `/catana/dev/sidebar-connection` issue.
+  - confirmed the tiny both-open overlap is most likely caused by open-row spacing using the negative raised-panel top offset in `getSideTabRowHeight()`.
+  - confirmed the requested visual adjustment is a modest extra shell/header lift so the title bar reads above the fixed dock button, not a full extra title-bar jump.
+  - implementation should keep the fixed button model, raise the shell slightly, and decouple row reservation from that visual lift.
+- Finished the remaining side-tab ribbon overlap/lift cleanup in the dev route.
+- Side-tab overlap/lift implementation notes:
+  - increased `SIDE_TAB_PANEL_OPEN_LIFT` from `8` to `12` in `app/catana/dev/sidebar-connection/SidebarConnectionClient.js` so the header sits a touch higher above the fixed side-tab button.
+  - fixed the both-open overlap by changing `getSideTabRowHeight()` to reserve `panel.height + SIDE_TAB_OPEN_PANEL_GAP` instead of subtracting space through the negative raised-panel top offset.
+  - kept the fixed button-top model unchanged; only the shell lift and consecutive-open row reservation changed.
+- Verification for the side-tab overlap/lift pass:
+  - `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+  - `pnpm exec eslint app/catana/dev/sidebar-connection/page.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js app/catana/__tests__/SidebarConnectionStudy.source.test.js`
+  - Chrome DevTools check at `http://127.0.0.1:3000/catana/dev/sidebar-connection` confirmed:
+    - both-open side-tab panels now have a 20px gap (`Game Log` bottom `658`, `Chat` top `678`) with no overlap
+    - single-open `Game Log` still keeps the button fixed while the header sits visibly above it
+  - screenshots captured:
+    - `.tmp/sidebar-connection-both-open-after-fix.png`
+    - `.tmp/sidebar-connection-log-only-after-fix.png`
+- Integrated the approved side-tab ribbon treatment into the production desktop `LeftMetaRail`.
+- Left meta rail production ribbon notes:
+  - `app/catana/components/LeftMetaRail.js` now replaces the old desktop connector shell with the side-tab ribbon geometry used in `/catana/dev/sidebar-connection`, including the fixed button stack, lifted unified SVG shell, GSAP reveal motion, and both-open row spacing model.
+  - `GameLogPanel` and `ChatPanel` stay as the real production content bodies; the ribbon integration is handled from `LeftMetaRail` with parent-driven styling overrides.
+  - `MobileMetaRail` was left unchanged in this pass.
+  - the only production-only follow-up tweak from browser verification was widening the fixed desktop wrapper and allowing horizontal overflow so the ribbon does not get clipped by the real board viewport.
+- Verification for the production left meta rail ribbon pass:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/GameLogPanel.js app/catana/components/ChatPanel.js app/catana/__tests__/LeftMetaRail.test.js`
+  - Chrome DevTools checks at `http://127.0.0.1:3001/catana/dev/sandbox` confirmed:
+    - both-open desktop state now renders the production ribbon visibly at the left edge instead of clipping to a narrow fixed wrapper
+    - log-only and chat-only states preserve the fixed button stack model
+    - the chat composer remained editable (`value: "hello"`, `disabled: false`) in the ribbon shell
+  - comparison check at `http://127.0.0.1:3001/catana/dev/sidebar-connection` used the approved dev ribbon as the visual reference for the production desktop pass
+  - screenshots captured:
+    - `.tmp/left-meta-rail-sandbox-after-width-fix.png`
+    - `.tmp/left-meta-rail-sandbox-log-only.png`
+    - `.tmp/left-meta-rail-sandbox-chat-only-2.png`
+    - `.tmp/sidebar-connection-reference-1440.png`
+- Restored the production desktop meta rail to the older bottom-left anchoring while keeping the new ribbon chrome.
+- Bottom-anchored ribbon notes:
+  - `app/catana/components/LeftMetaRail.js` no longer stretches the desktop rail from `top-24` to `bottom-6`; the desktop wrapper is now fixed at `left-4 bottom-6`.
+  - the desktop wrapper/content containers also no longer rely on `min-h-full` / full-height overflow behavior, so the ribbon stack sizes to its content and sits at the bottom-left of the board again.
+  - this preserves the current ribbon treatment but restores the earlier visual hierarchy: `Chat` bottom-left, `Game Log` above it.
+- Verification for the bottom-anchored desktop ribbon tweak:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/GameLogPanel.js app/catana/components/ChatPanel.js app/catana/__tests__/LeftMetaRail.test.js`
+  - Chrome DevTools check at `http://127.0.0.1:3001/catana/dev/sandbox` confirmed the desktop stack now sits at the bottom-left again with `Chat` at the bottom and `Game Log` above it.
+  - screenshot captured:
+    - `.tmp/left-meta-rail-bottom-anchored.png`
+- Added anchor-aware desktop ribbon geometry so the bottom-left rail can place buttons against different parts of each panel shell.
+- Left meta rail anchor-mode notes:
+  - `app/catana/components/LeftMetaRail.js` now exports `getSideTabLayoutMetrics({ panelHeight, anchor })` and supports `top`, `middle`, and `bottom` anchor modes for desktop side-tab rows.
+  - production defaults are now `Game Log -> middle` and `Chat -> bottom`, which keeps `Chat` inside the viewport when the desktop stack is anchored from the bottom-left.
+  - row spacing now uses actual current/next panel footprints instead of one fixed top-anchored open-height assumption.
+- Verification for the anchor-mode pass:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/__tests__/LeftMetaRail.test.js`
+  - Chrome DevTools checks at `http://127.0.0.1:3000/catana/dev/sandbox` confirmed:
+    - both-open desktop state renders `log=middle` and `chat=bottom` with a 20px gap (`log` bottom `446`, `chat` top `466`) in a `1136x768` viewport
+    - `Chat` remains within the viewport (`bottom 696` in a `768`px-tall viewport)
+    - chat-only and log-only states remain visually stable with the new anchor geometry
+  - screenshots captured:
+    - `.tmp/left-meta-rail-anchor-modes-current.png`
+    - `.tmp/left-meta-rail-anchor-modes-chat-only.png`
+    - `.tmp/left-meta-rail-anchor-modes-log-only.png`
+    - `.tmp/left-meta-rail-anchor-modes-both-open-small.png`
+- Refined the desktop anchor geometry so `middle` and `bottom` keep the same rounded upper connector feel as the original lifted shell.
+- Anchor-join refinement notes:
+  - `app/catana/components/LeftMetaRail.js` now keeps `middle` and `bottom` on a lifted upper join seam instead of snapping the seam to the button top.
+  - the `bottom` anchor now also stops short of the button baseline with a small lift, so it reads as near-bottom rather than fully flush.
+  - this preserves the visual curve the user called out without changing the existing row-spacing model.
+- Verification for the anchor-join refinement:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js`
+  - Chrome DevTools checks at `http://127.0.0.1:3000/catana/dev/sandbox` confirmed:
+    - both-open state keeps a smooth upper elbow on the `Game Log` middle anchor
+    - chat-only state keeps the upper elbow and shows the `bottom` anchor slightly lifted from the button baseline
+  - screenshots captured:
+    - `.tmp/left-meta-rail-anchor-join-refined-both-open.png`
+    - `.tmp/left-meta-rail-anchor-join-refined-chat-only.png`
+- Corrected the `bottom` anchor's lower connector so it actually moves upward with the lifted shell instead of stretching farther down.
+- Bottom-connector correction notes:
+  - `app/catana/components/LeftMetaRail.js` now returns `lowerJoinY` from `getSideTabLayoutMetrics()`.
+  - the shell path uses `lowerJoinY` instead of a fixed `72px` lower rejoin point, so the `bottom` anchor's visible connector rises with the panel instead of leaving a longer downward tail.
+- Verification for the bottom-connector correction:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js`
+  - Chrome DevTools checks at `http://127.0.0.1:3000/catana/dev/sandbox` confirmed:
+    - chat-only state shows the lower connector higher than before
+    - both-open state still reads cleanly after the lower-join change
+  - screenshots captured:
+    - `.tmp/chat-only-lower-join-up.png`
+    - `.tmp/both-open-lower-join-up.png`
+- Corrected the anchor-mode design target for the bottom chat shell before further implementation.
+- Bottom-anchor design clarification:
+  - the previous refinement moved the whole chat panel too high; the intended production rule is to keep the chat panel body on the old desktop bottom baseline and lift only the lower connector seam above the message/composer band.
+  - updated spec: `docs/superpowers/specs/2026-04-16-left-meta-rail-anchor-modes-design.md`
