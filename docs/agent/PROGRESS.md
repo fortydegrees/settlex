@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-04-19, git artifact cleanup)
+- Removed generated Puffer training runs and checkpoint files from Git tracking while keeping the local files on disk.
+- Current behavior:
+- `.gitignore` now ignores `ai/pufferlib/runs*/`, Puffer `*.pt` checkpoints, and generated `*.egg-info/` package metadata,
+- the tracked repository payload drops from roughly `323M` to `28M`,
+- no `ai/**/*.pt` files remain tracked.
+- Focused verification:
+- `git ls-files -z | xargs -0 du -ch | tail -1`
+- `git ls-files 'ai/**/*.pt' | wc -l`
+- `git diff --check`
+
 ## Status (2026-04-16, feed-panel autoscroll idle resume)
 - Corrected the live chat/send case and broadened the shared idle-resume behavior to the `Game Log` panel without adding log send-specific behavior.
 - Current behavior:

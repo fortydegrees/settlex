@@ -1,5 +1,10 @@
 # NOTES
 
+- Git artifact hygiene note:
+- Puffer training run outputs belong outside normal Git history. Keep `ai/pufferlib/runs*/`, generated `*.pt` checkpoints, and `*.egg-info/` metadata ignored unless there is an explicit artifact-publishing decision.
+- If a trained model needs to be shared, prefer a release artifact, object storage, or a deliberate Git LFS path rather than committing every checkpoint from a run.
+- Removing these files from the current tree does not shrink already-pushed history; use a coordinated history rewrite only when intentionally cleaning remote clone size.
+
 - Feed-panel autoscroll note:
 - only the live `ChatPanel` should force-scroll back to the bottom on successful local send; the `Game Log` should not gain any analogous "resume on send" behavior.
 - the shared `FeedPanel` shell now owns the reusable interaction-idle behavior for both `ChatPanel` and `GameLogPanel`.
