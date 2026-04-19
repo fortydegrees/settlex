@@ -53,6 +53,9 @@ const normalizePlayerId = (playerId) => {
   return String(playerId);
 };
 
+const resolveActivePlayerId = (core, ctx) =>
+  normalizePlayerId(ctx?.currentPlayer ?? core?.turn?.currentPlayerId);
+
 const normalizePendingPlayerIds = (playerIds = []) =>
   Array.from(
     new Set(
@@ -203,7 +206,7 @@ const getDiscardStatus = ({
 export function getGameStatus(core, ctx, playerActionOrOptions = null) {
   const { playerAction = null, viewerPlayerId = null, playerMap = {} } =
     normalizeOptions(playerActionOrOptions);
-  const activePlayerId = normalizePlayerId(core.turn.currentPlayerId);
+  const activePlayerId = resolveActivePlayerId(core, ctx);
 
   if (ctx.phase === "preGame") {
     return makeStatus({

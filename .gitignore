@@ -17,6 +17,8 @@ node_modules/
 /build
 /game-core/dist
 
+
+
 # misc
 .DS_Store
 *.pem
@@ -24,9 +26,11 @@ node_modules/
 .worktrees/
 .superpowers/
 .claude/
+.factory/
 .playwright-cli/
 output/
 tmp/
+.tmp/
 artifacts/
 traces/
 public/svgs/working/

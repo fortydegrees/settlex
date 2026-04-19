@@ -72,4 +72,12 @@ describe("ChatPanel", () => {
     expect(markup).not.toContain("Spectators can read chat only");
     expect(markup).toContain("disabled");
   });
+
+  it("wires successful local sends into chat-only auto-scroll resume behavior", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+
+    expect(contents).toContain("resumeAutoScrollKey");
+    expect(contents).toContain("setResumeAutoScrollKey((value) => value + 1)");
+    expect(contents).toContain("autoScrollIdleMs: 12000");
+  });
 });

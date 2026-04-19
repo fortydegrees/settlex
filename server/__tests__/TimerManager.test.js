@@ -255,7 +255,7 @@ describe("TimerManager", () => {
     });
   });
 
-  it("delays postRoll turn timer after a roll animation", () => {
+  it("starts postRoll turn timer immediately after a roll", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({ dispatch });
 
@@ -272,7 +272,7 @@ describe("TimerManager", () => {
       [{ action: { type: "MAKE_MOVE", payload: { type: "rollDice" } } }]
     );
 
-    vi.advanceTimersByTime(45000 + 3500 - 1);
+    vi.advanceTimersByTime(45000 - 1);
     expect(dispatch).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(1);
@@ -283,7 +283,7 @@ describe("TimerManager", () => {
     });
   });
 
-  it("delays moveRobber stage timer after a roll animation", () => {
+  it("starts moveRobber stage timer immediately after a roll", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({ dispatch });
 
@@ -300,7 +300,7 @@ describe("TimerManager", () => {
       [{ action: { type: "MAKE_MOVE", payload: { type: "autoRoll" } } }]
     );
 
-    vi.advanceTimersByTime(20000 + 3500 - 1);
+    vi.advanceTimersByTime(20000 - 1);
     expect(dispatch).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(1);
@@ -370,6 +370,31 @@ describe("TimerManager", () => {
     ]);
 
     expect(manager.getTurnRemaining("match-1")).toBeGreaterThan(45000);
+  });
+
+  it("adds bonus time during same-stage postRoll updates", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+    const state = baseState({
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "0": "postRoll" },
+        turn: 1
+      }
+    });
+
+    manager.onState("match-1", state);
+
+    vi.advanceTimersByTime(5000);
+
+    expect(manager.getTimerSnapshot("match-1")?.remainingMs).toBe(40000);
+
+    manager.onState("match-1", state, [
+      { action: { type: "MAKE_MOVE", payload: { type: "maritimeTrade" } } }
+    ]);
+
+    expect(manager.getTimerSnapshot("match-1")?.remainingMs).toBe(50000);
   });
 
   it("returns stage timer snapshot when stage timer is active", () => {

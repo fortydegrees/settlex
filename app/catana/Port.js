@@ -22,6 +22,7 @@ export function Port({
   });
   const isGenericPort = tile.resource === "Any";
   const rateLabel = isGenericPort ? "3:1" : "2:1";
+  const rateLabelFontSize = Math.round(size * 0.14);
   const iconSrc = getPortIconPath(themeId, tile.resource);
   const iconFallbackSrc = getClassicPortIconPath(tile.resource);
 
@@ -66,7 +67,10 @@ export function Port({
       {
         "data-testid": "port-badge",
         className: "portBadge",
-        style: model.badge,
+        style: {
+          ...model.badge,
+          fontSize: `${rateLabelFontSize}px`,
+        },
       },
       rateLabel
     )
