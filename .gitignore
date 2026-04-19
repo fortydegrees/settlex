@@ -17,6 +17,11 @@ node_modules/
 /build
 /game-core/dist
 
+# AI training artifacts
+ai/pufferlib/runs*/
+ai/pufferlib/**/*.pt
+*.egg-info/
+
 
 
 # misc
