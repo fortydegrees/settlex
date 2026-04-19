@@ -19,46 +19,162 @@ const CARD_TYPE_OPTIONS = [
   { id: "monopoly", label: "Monopoly" }
 ];
 
+const EMPTY_LANDED_CARDS = Object.freeze({
+  midpoint: [],
+  threeD: []
+});
+
+const EMPTY_REVEALS = Object.freeze({
+  midpoint: null,
+  threeD: null
+});
+
+function getRectSnapshot(rect) {
+  return {
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height,
+    right: rect.right,
+    bottom: rect.bottom
+  };
+}
+
+function getCenterPoint(ref) {
+  const rect = ref.current?.getBoundingClientRect?.() ?? null;
+  if (!rect) return undefined;
+
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2
+  };
+}
+
+function RevealComparisonLane({
+  title,
+  description,
+  flipVariant,
+  dockCardRef,
+  destinationRef,
+  apexRef,
+  activeReveal,
+  landedCards,
+  onStartReveal,
+  onComplete
+}) {
+  return (
+    <section className="relative min-h-[560px] overflow-hidden rounded-lg border border-slate-700 bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.24),_rgba(37,99,235,0.14)_42%,_rgba(15,23,42,0.82)_100%)]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.16),_rgba(255,255,255,0)_72%)]" />
+
+      <div className="absolute left-4 top-4 z-10">
+        <div className="text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
+          {title}
+        </div>
+        <div className="mt-1 max-w-[16rem] text-sm font-medium text-slate-200/85">
+          {description}
+        </div>
+      </div>
+
+      <div
+        ref={apexRef}
+        className="absolute left-1/2 top-[22%] h-20 w-20 -translate-x-1/2 rounded-full border border-dashed border-white/30 bg-white/5"
+      />
+
+      <div className="pointer-events-none absolute left-1/2 top-[22%] -translate-x-1/2 translate-y-24 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">
+        Reveal Apex
+      </div>
+
+      <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 items-end gap-4">
+        <div className="rounded-lg bg-blue-200/45 p-4 shadow-xl ring-1 ring-white/30 backdrop-blur-sm">
+          <Dock>
+            <div ref={dockCardRef}>
+              <DockCard
+                action={{
+                  name: "devCard",
+                  enabled: true,
+                  count: 0,
+                  img: DEV_CARD_ICON_SVG,
+                  fallbackImg: DEV_CARD_ICON_SVG,
+                  preLaunchImg: DEV_CARD_EMBLEM_SVG,
+                  preLaunchFallbackImg: DEV_CARD_EMBLEM_SVG,
+                  preLaunchDelayMs: DEFAULT_PRELAUNCH_DELAY_MS,
+                  action: onStartReveal
+                }}
+              />
+            </div>
+          </Dock>
+        </div>
+
+        <div className="pointer-events-none mb-[-2px]">
+          <DevCardDisplay
+            cards={landedCards}
+            containerRef={destinationRef}
+            forceMount
+          />
+        </div>
+      </div>
+
+      <DevCardPurchaseReveal
+        flipVariant={flipVariant}
+        reveal={activeReveal}
+        onComplete={onComplete}
+      />
+    </section>
+  );
+}
+
 export function DevCardRevealLab() {
-  const dockCardRef = useRef(null);
-  const destinationRef = useRef(null);
+  const midpointDockCardRef = useRef(null);
+  const midpointDestinationRef = useRef(null);
+  const midpointApexRef = useRef(null);
+  const threeDDockCardRef = useRef(null);
+  const threeDDestinationRef = useRef(null);
+  const threeDApexRef = useRef(null);
+  const revealRunIdRef = useRef(0);
   const [selectedCardType, setSelectedCardType] = useState(DEFAULT_CARD_TYPE);
-  const [activeReveal, setActiveReveal] = useState(null);
-  const [landedCards, setLandedCards] = useState([]);
-  const [revealRunId, setRevealRunId] = useState(0);
+  const [activeReveals, setActiveReveals] = useState(EMPTY_REVEALS);
+  const [landedCardsByLane, setLandedCardsByLane] = useState(EMPTY_LANDED_CARDS);
 
-  const startReveal = ({ triggerRect, preLaunchDelayMs = 0 } = {}) => {
-    const destinationRect =
-      destinationRef.current?.getBoundingClientRect?.() ?? null;
-    if (!triggerRect || !destinationRect) return;
+  const startReveal =
+    ({ laneId, destinationRef, apexRef }) =>
+    ({ triggerRect, preLaunchDelayMs = 0 } = {}) => {
+      const destinationRect =
+        destinationRef.current?.getBoundingClientRect?.() ?? null;
+      if (!triggerRect || !destinationRect) return;
 
-    setLandedCards([]);
-    setRevealRunId((current) => current + 1);
-    setActiveReveal({
-      id: revealRunId + 1,
-      playerId: "0",
-      cardType: selectedCardType,
-      beforeCards: [],
-      vpSnapshot: {
-        publicPoints: 0,
-        totalPoints: selectedCardType === "victoryPoint" ? 1 : 0
-      },
-      triggerRect,
-      destinationRect: {
-        left: destinationRect.left,
-        top: destinationRect.top,
-        width: destinationRect.width,
-        height: destinationRect.height,
-        right: destinationRect.right,
-        bottom: destinationRect.bottom
-      },
-      launchDelayMs: preLaunchDelayMs
-    });
+      revealRunIdRef.current += 1;
+      setLandedCardsByLane((current) => ({
+        ...current,
+        [laneId]: []
+      }));
+      setActiveReveals((current) => ({
+        ...current,
+        [laneId]: {
+          id: `${laneId}-${revealRunIdRef.current}`,
+          playerId: "0",
+          cardType: selectedCardType,
+          beforeCards: [],
+          vpSnapshot: {
+            publicPoints: 0,
+            totalPoints: selectedCardType === "victoryPoint" ? 1 : 0
+          },
+          triggerRect,
+          destinationRect: getRectSnapshot(destinationRect),
+          centerPoint: getCenterPoint(apexRef),
+          launchDelayMs: preLaunchDelayMs
+        }
+      }));
+    };
+
+  const clearLanes = () => {
+    setLandedCardsByLane(EMPTY_LANDED_CARDS);
+    setActiveReveals(EMPTY_REVEALS);
   };
 
-  const replayReveal = () => {
-    setLandedCards([]);
-    dockCardRef.current?.querySelector("button")?.click();
+  const replayBoth = () => {
+    clearLanes();
+    midpointDockCardRef.current?.querySelector("button")?.click();
+    threeDDockCardRef.current?.querySelector("button")?.click();
   };
 
   return (
@@ -71,7 +187,7 @@ export function DevCardRevealLab() {
             value={selectedCardType}
             onChange={(event) => {
               setSelectedCardType(event.target.value);
-              setLandedCards([]);
+              clearLanes();
             }}
           >
             {CARD_TYPE_OPTIONS.map((option) => (
@@ -83,71 +199,77 @@ export function DevCardRevealLab() {
         </label>
 
         <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-3 text-sm text-slate-300">
-          Click the dev-card dock button or use replay to run the full dock squash,
-          detached reveal, flip, and handoff into the destination shell.
+          Replay both reveal variants together to compare the older midpoint
+          turn against the newer 3D GSAP flip.
         </div>
 
         <button
           className="rounded bg-lime-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-lime-400"
           type="button"
-          onClick={replayReveal}
+          onClick={replayBoth}
         >
-          Replay Reveal
+          Replay Both
         </button>
       </section>
 
-      <section className="relative overflow-hidden rounded-[28px] border border-slate-700 bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.35),_rgba(37,99,235,0.18)_40%,_rgba(15,23,42,0.88)_100%)] p-8">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.18),_rgba(255,255,255,0)_72%)]" />
+      <section className="relative overflow-hidden rounded-lg border border-slate-700 bg-slate-900/45 p-4">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <RevealComparisonLane
+            title="Old Midpoint"
+            description="Single visible card turns edge-on, swaps art, then turns back."
+            flipVariant="midpoint"
+            dockCardRef={midpointDockCardRef}
+            destinationRef={midpointDestinationRef}
+            apexRef={midpointApexRef}
+            activeReveal={activeReveals.midpoint}
+            landedCards={landedCardsByLane.midpoint}
+            onStartReveal={startReveal({
+              laneId: "midpoint",
+              destinationRef: midpointDestinationRef,
+              apexRef: midpointApexRef
+            })}
+            onComplete={() => {
+              setActiveReveals((current) => ({
+                ...current,
+                midpoint: null
+              }));
+              setLandedCardsByLane((current) => ({
+                ...current,
+                midpoint: [selectedCardType]
+              }));
+            }}
+          />
 
-        <div className="relative flex h-[560px] items-end justify-center">
-          <div className="absolute left-1/2 top-[18%] h-24 w-24 -translate-x-1/2 rounded-full border border-dashed border-white/30 bg-white/5" />
-
-          <div className="pointer-events-none absolute left-1/2 top-[18%] -translate-x-1/2 translate-y-28 text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
-            Reveal Apex
-          </div>
-
-          <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 items-end gap-4">
-            <div className="rounded-2xl bg-blue-200/45 p-4 shadow-xl ring-1 ring-white/30 backdrop-blur-sm">
-              <Dock>
-                <div ref={dockCardRef}>
-                  <DockCard
-                    action={{
-                      name: "devCard",
-                      enabled: true,
-                      count: 0,
-                      img: DEV_CARD_ICON_SVG,
-                      fallbackImg: DEV_CARD_ICON_SVG,
-                      preLaunchImg: DEV_CARD_EMBLEM_SVG,
-                      preLaunchFallbackImg: DEV_CARD_EMBLEM_SVG,
-                      preLaunchDelayMs: DEFAULT_PRELAUNCH_DELAY_MS,
-                      action: startReveal
-                    }}
-                  />
-                </div>
-              </Dock>
-            </div>
-
-            <div className="pointer-events-none mb-[-2px]">
-              <DevCardDisplay
-                cards={landedCards}
-                containerRef={destinationRef}
-                forceMount
-              />
-            </div>
-          </div>
+          <RevealComparisonLane
+            title="New 3D"
+            description="Two mounted faces rotate as one card in 3D space."
+            flipVariant="3d"
+            dockCardRef={threeDDockCardRef}
+            destinationRef={threeDDestinationRef}
+            apexRef={threeDApexRef}
+            activeReveal={activeReveals.threeD}
+            landedCards={landedCardsByLane.threeD}
+            onStartReveal={startReveal({
+              laneId: "threeD",
+              destinationRef: threeDDestinationRef,
+              apexRef: threeDApexRef
+            })}
+            onComplete={() => {
+              setActiveReveals((current) => ({
+                ...current,
+                threeD: null
+              }));
+              setLandedCardsByLane((current) => ({
+                ...current,
+                threeD: [selectedCardType]
+              }));
+            }}
+          />
         </div>
 
         <div className="pointer-events-none absolute bottom-3 right-4 text-[11px] font-medium uppercase tracking-[0.24em] text-white/40">
-          Dev Card Motion Preview
+          Dev Card Motion Comparison
         </div>
-
-        <DevCardPurchaseReveal
-          reveal={activeReveal}
-          onComplete={() => {
-            setActiveReveal(null);
-            setLandedCards([selectedCardType]);
-          }}
-        />
       </section>
     </div>
   );

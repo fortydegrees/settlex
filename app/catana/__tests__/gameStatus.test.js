@@ -225,6 +225,31 @@ describe("getGameStatus", () => {
       expect(status.statusType).toBe(STATUS_TYPES.PLACING_SETTLEMENT);
       expect(status.text).toBe("Place Settlement");
     });
+
+    it("uses ctx.currentPlayer for viewer-aware placement copy when core turn state is stale", () => {
+      const core = {
+        ...baseCoreState,
+        phase: "placement",
+        turn: { ...baseCoreState.turn, currentPlayerId: "0" }
+      };
+      const ctx = {
+        ...baseCtx,
+        phase: "placement",
+        currentPlayer: "1",
+        activePlayers: { "1": "settlement" }
+      };
+
+      expect(
+        getGameStatus(core, ctx, {
+          viewerPlayerId: "1",
+          playerMap: { "0": { name: "Ada" }, "1": { name: "Bren" } }
+        })
+      ).toMatchObject({
+        kind: "placing_settlement_self",
+        title: "Place settlement",
+        activePlayerId: "1"
+      });
+    });
   });
 
   describe("build action statuses", () => {

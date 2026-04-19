@@ -49,6 +49,32 @@ describe("Port rendering", () => {
     expect(markup).toContain(">3:1<");
   });
 
+  it("scales the exchange-rate label font size from the board tile size", () => {
+    const largeMarkup = renderToStaticMarkup(
+      React.createElement(Port, {
+        coordinate: [0, 0, 0],
+        size: 100,
+        boardCenter: [500, 400],
+        tile: { id: 21, direction: "EAST", resource: "Ore", nodes: [48, 49] },
+        themeId: "emoji",
+      })
+    );
+    const smallMarkup = renderToStaticMarkup(
+      React.createElement(Port, {
+        coordinate: [0, 0, 0],
+        size: 50,
+        boardCenter: [500, 400],
+        tile: { id: 22, direction: "WEST", resource: "Any", nodes: [24, 10] },
+        themeId: "emoji",
+      })
+    );
+
+    expect(largeMarkup).toContain('font-size:14px');
+    expect(smallMarkup).toContain('font-size:7px');
+    expect(largeMarkup).not.toContain('font-size:0.85rem');
+    expect(smallMarkup).not.toContain('font-size:0.85rem');
+  });
+
   it("layers the marker below the badge and leaves board pieces above the whole port layer", () => {
     expect(portCss).toMatch(/\.portLayer\s*\{[\s\S]*z-index:\s*0;/);
     expect(portCss).toMatch(/\.portMarker\s*\{[\s\S]*z-index:\s*1;/);

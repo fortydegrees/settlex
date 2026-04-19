@@ -20,6 +20,9 @@ describe("GameLogPanel", () => {
     expect(contents).toContain("FeedPanel");
     expect(contents).toContain("FeedTokenRow");
     expect(contents).toContain("formatLogEntry");
+    expect(contents).toContain("bg-white/50");
+    expect(contents).toContain("border-white/40");
+    expect(contents).not.toContain("bg-white/58");
   });
 
   it("uses a custom scroll class", () => {
@@ -51,6 +54,8 @@ describe("GameLogPanel", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("rows={formattedEntries}");
     expect(contents).toContain("renderRow");
+    expect(contents).toContain("autoScrollIdleMs={12000}");
+    expect(contents).toContain("trackPanelInteraction");
   });
 
   it("memoizes the formatted entries", () => {

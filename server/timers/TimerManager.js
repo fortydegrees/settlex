@@ -12,15 +12,6 @@ const DEFAULT_TURN_TIMER_MS = 45000;
 const TURN_TIMER_KEYS = new Set(["main:postRoll"]);
 const TURN_BONUS_MS = 10000;
 const TURN_BONUS_CAP_MS = 30000;
-const ROLL_ANIMATION_BUFFER_MS = 3500;
-
-const ROLL_DELAY_STAGES = new Set([
-  "main:postRoll",
-  "main:robberDiscard",
-  "main:moveRobber"
-]);
-
-const ROLL_DELAY_MOVES = new Set(["rollDice", "autoRoll"]);
 
 const TURN_BONUS_MOVES = new Set([
   "maritimeTrade",
@@ -65,6 +56,7 @@ export class TimerManager {
     const stageKey = this.getStageKey(state);
     const prev = this.matches.get(matchID) ?? {};
     const turnNumber = state.ctx.turn;
+    const bonusMs = this.getTurnBonusMs(deltalog);
 
     if (isResolvedState(state)) {
       if (prev.stageTimeoutId) {
@@ -90,6 +82,15 @@ export class TimerManager {
     this.scheduleBotAction(matchID, state, prev, stageKey);
 
     if (prev.stageKey === stageKey && prev.turnNumber === turnNumber) {
+      if (bonusMs > 0 && prev.turnRemainingMs != null) {
+        if (prev.turnTimeoutId) {
+          this.pauseTurnTimer(prev);
+        }
+        this.applyTurnBonus(prev, bonusMs);
+        if (TURN_TIMER_KEYS.has(stageKey)) {
+          this.startTurnTimer(matchID, state, prev);
+        }
+      }
       this.matches.set(matchID, prev);
       return;
     }
@@ -113,8 +114,6 @@ export class TimerManager {
       this.resetTurnTimer(prev);
     }
 
-    const stageDelayMs = this.getRollDelayMs(stageKey, deltalog);
-
     const stagePlayers =
       stageKey === "main:robberDiscard"
         ? [...(state.G?.core?.turn?.pendingDiscards ?? [])]
@@ -122,7 +121,7 @@ export class TimerManager {
 
     if (stageTimeoutMs && stagePlayers.length > 0) {
       const move = STAGE_TIMEOUT_MOVES[stageKey];
-      prev.stageStartedAtMs = Date.now() + stageDelayMs;
+      prev.stageStartedAtMs = Date.now();
       prev.stageDurationMs = stageTimeoutMs;
       prev.stageTimeoutId = setTimeout(() => {
         const dispatchStage = async () => {
@@ -131,7 +130,7 @@ export class TimerManager {
           }
         };
         void dispatchStage();
-      }, stageTimeoutMs + stageDelayMs);
+      }, stageTimeoutMs);
     } else {
       prev.stageStartedAtMs = undefined;
       prev.stageDurationMs = undefined;
@@ -141,10 +140,9 @@ export class TimerManager {
       if (prev.turnRemainingMs == null) {
         prev.turnRemainingMs = DEFAULT_TURN_TIMER_MS;
       }
-      this.startTurnTimer(matchID, state, prev, stageDelayMs);
+      this.startTurnTimer(matchID, state, prev);
     }
 
-    const bonusMs = this.getTurnBonusMs(deltalog);
     if (bonusMs > 0 && prev.turnRemainingMs != null) {
       if (prev.turnTimeoutId) {
         this.pauseTurnTimer(prev);
@@ -288,16 +286,6 @@ export class TimerManager {
       return "main:roadBuilding";
     }
     return `${ctx.phase}:${stage}`;
-  }
-
-  getRollDelayMs(stageKey, deltalog) {
-    if (!ROLL_DELAY_STAGES.has(stageKey)) return 0;
-    if (!Array.isArray(deltalog)) return 0;
-    const hasRoll = deltalog.some((entry) => {
-      if (entry?.action?.type !== "MAKE_MOVE") return false;
-      return ROLL_DELAY_MOVES.has(entry.action?.payload?.type);
-    });
-    return hasRoll ? ROLL_ANIMATION_BUFFER_MS : 0;
   }
 
   clearBotDispatch(record, playerID) {

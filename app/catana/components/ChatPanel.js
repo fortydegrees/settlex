@@ -20,8 +20,12 @@ const ChatPanelComponent = ({
   themeId,
   chatMessages = [],
   sendChatMessage,
+  headerClassName = "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
+  panelClassName =
+    "flex h-[20vh] xl:h-[24vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
 }) => {
   const [draft, setDraft] = useState("");
+  const [resumeAutoScrollKey, setResumeAutoScrollKey] = useState(0);
   const canSend = playerID != null && typeof sendChatMessage === "function";
 
   const rows = useMemo(() => {
@@ -47,6 +51,7 @@ const ChatPanelComponent = ({
         });
         if (result.sent) {
           setDraft(result.nextDraft);
+          setResumeAutoScrollKey((value) => value + 1);
         }
       },
     },
@@ -70,11 +75,12 @@ const ChatPanelComponent = ({
       chatMessages.length > 0
         ? chatMessages[chatMessages.length - 1]?.id ?? chatMessages.length
         : "chat-empty",
+    resumeAutoScrollKey,
+    autoScrollIdleMs: 12000,
     rootClassName: "w-full",
-    panelClassName:
-      "flex h-[20vh] xl:h-[24vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
-    headerClassName:
-      "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
+    trackPanelInteraction: true,
+    panelClassName,
+    headerClassName,
     contentWrapClassName: "min-h-0 flex-1",
     scrollViewportClassName: "h-full overflow-y-auto px-3",
     scrollClassName: "feed-panel-scroll chat-panel-scroll",

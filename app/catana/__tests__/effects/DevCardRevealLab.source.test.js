@@ -15,6 +15,15 @@ describe("Dev card reveal lab source", () => {
     expect(source).toContain("DevCardPurchaseReveal");
     expect(source).toContain("DevCardDisplay");
     expect(source).toContain("preLaunchDelayMs");
-    expect(source).toContain("Replay Reveal");
+    expect(source).toContain("Replay Both");
+  });
+
+  it("shows old midpoint and new 3D reveal variants side by side", () => {
+    const source = read("../../dev/effects/DevCardRevealLab.jsx");
+    expect(source).toContain("Replay Both");
+    expect(source).toContain("Old Midpoint");
+    expect(source).toContain("New 3D");
+    expect(source).toContain('flipVariant="midpoint"');
+    expect(source).toContain('flipVariant="3d"');
   });
 });

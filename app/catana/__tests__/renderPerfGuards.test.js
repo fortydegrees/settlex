@@ -6,6 +6,9 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import {
   AUTO_SCROLL_IDLE_MS,
   createFeedPanelScrollState,
+  forceFeedPanelAutoScroll,
+  handleFeedPanelBlur,
+  handleFeedPanelFocus,
   handleFeedPanelMouseEnter,
   handleFeedPanelMouseLeave,
   markFeedPanelManualScroll,
@@ -52,20 +55,27 @@ describe("render performance guards", () => {
     vi.useFakeTimers();
 
     const state = createFeedPanelScrollState();
+    const onIdleResume = vi.fn();
 
     markFeedPanelManualScroll(state);
     handleFeedPanelMouseEnter(state);
-    handleFeedPanelMouseLeave(state);
+    handleFeedPanelMouseLeave(state, {
+      idleMs: AUTO_SCROLL_IDLE_MS,
+      onIdleResume,
+    });
 
     expect(state.isHoveringRef.current).toBe(false);
     expect(state.shouldAutoScrollRef.current).toBe(false);
     expect(state.idleTimeoutRef.current).not.toBeNull();
+    expect(onIdleResume).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(AUTO_SCROLL_IDLE_MS - 1);
     expect(state.shouldAutoScrollRef.current).toBe(false);
+    expect(onIdleResume).not.toHaveBeenCalled();
 
     vi.advanceTimersByTime(1);
     expect(state.shouldAutoScrollRef.current).toBe(true);
+    expect(onIdleResume).toHaveBeenCalledTimes(1);
   });
 
   it("skips auto-scroll while hovering and scrolls when allowed", () => {
@@ -87,6 +97,95 @@ describe("render performance guards", () => {
     expect(runFeedPanelAutoScrollIfNeeded(state, scrollEl, { requestAnimationFrameFn: raf })).toBe(true);
     expect(scrollEl.scrollTo).toHaveBeenCalledWith({ top: 128, behavior: "smooth" });
     expect(state.isAutoScrollingRef.current).toBe(false);
+  });
+
+  it("jumps straight to the max scroll offset when a panel should resume at the bottom", () => {
+    const state = createFeedPanelScrollState();
+    const scrollEl = {
+      scrollHeight: 320,
+      clientHeight: 80,
+      scrollTop: 0,
+      scrollTo: vi.fn(function scrollTo(options) {
+        this.scrollTop = options.top;
+      }),
+    };
+    const raf = vi.fn((callback) => callback());
+
+    expect(
+      runFeedPanelAutoScrollIfNeeded(state, scrollEl, {
+        requestAnimationFrameFn: raf,
+        behavior: "auto",
+      })
+    ).toBe(true);
+    expect(scrollEl.scrollTo).not.toHaveBeenCalled();
+    expect(scrollEl.scrollTop).toBe(240);
+  });
+
+  it("keeps reopen instant but routes timed resume through the smooth helper path", () => {
+    const contents = readCatanaFile("components/FeedPanel.js");
+
+    expect(contents).toContain(
+      'behavior: hasMountedAutoScrollRef.current ? "smooth" : "auto"'
+    );
+    expect(contents).toContain("if (resumeAutoScrollKey == null || !scrollRef.current) return;");
+    expect(contents).toContain("forceScrollToBottom();");
+    expect(contents).toContain("onIdleResume: forceScrollToBottom");
+    expect(contents).not.toContain('forceScrollToBottom({ behavior: "auto" })');
+  });
+
+  it("can force auto-scroll even while chat interaction is active", () => {
+    const state = createFeedPanelScrollState();
+    const scrollEl = {
+      scrollHeight: 256,
+      scrollTop: 0,
+      scrollTo: vi.fn(function scrollTo(options) {
+        this.scrollTop = options.top;
+      }),
+    };
+    const raf = vi.fn((callback) => callback());
+
+    state.shouldAutoScrollRef.current = false;
+    state.isHoveringRef.current = true;
+    state.isFocusedRef.current = true;
+
+    expect(
+      forceFeedPanelAutoScroll(state, scrollEl, {
+        requestAnimationFrameFn: raf,
+      })
+    ).toBe(true);
+    expect(state.shouldAutoScrollRef.current).toBe(true);
+    expect(scrollEl.scrollTo).toHaveBeenCalledWith({
+      top: 256,
+      behavior: "smooth",
+    });
+  });
+
+  it("resumes auto-scroll after a longer blur idle when chat focus is gone", () => {
+    vi.useFakeTimers();
+
+    const state = createFeedPanelScrollState();
+    const onIdleResume = vi.fn();
+
+    markFeedPanelManualScroll(state);
+    handleFeedPanelFocus(state);
+    handleFeedPanelBlur(state, {
+      setTimeoutFn: setTimeout,
+      clearTimeoutFn: clearTimeout,
+      idleMs: 12000,
+      onIdleResume,
+    });
+
+    expect(state.isFocusedRef.current).toBe(false);
+    expect(state.shouldAutoScrollRef.current).toBe(false);
+    expect(onIdleResume).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(11999);
+    expect(state.shouldAutoScrollRef.current).toBe(false);
+    expect(onIdleResume).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1);
+    expect(state.shouldAutoScrollRef.current).toBe(true);
+    expect(onIdleResume).toHaveBeenCalledTimes(1);
   });
 
   it("wraps ChatPanel and FeedPanel in React.memo", () => {
