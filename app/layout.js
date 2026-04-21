@@ -13,8 +13,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={outfit.className}>
-        {children}
-        <GlobalReconnectBanner />
+        <div className="settlex-ui-root">
+          {children}
+          <GlobalReconnectBanner />
+        </div>
       </body>
     </html>
   )
