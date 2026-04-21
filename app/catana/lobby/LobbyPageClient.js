@@ -3,6 +3,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Banner } from "../../ui/Banner";
+import { Button } from "../../ui/Button";
+import { Input } from "../../ui/Input";
+import { Panel } from "../../ui/Panel";
+import { Select } from "../../ui/Select";
 import {
   getPlayerColorOption,
   normalizePlayerColorId
@@ -99,12 +104,12 @@ function SearchingModal({ onCancel, startedAt, phase = "searching" }) {
         <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
 
         {onCancel && (
-          <button
+          <Button
             onClick={onCancel}
-            className="mt-6 rounded-lg bg-slate-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700"
+            className="mt-6 rounded-lg bg-slate-600 px-5 py-2 font-semibold text-white shadow-sm hover:bg-slate-700"
           >
             Cancel
-          </button>
+          </Button>
         )}
       </div>
 
@@ -172,15 +177,16 @@ function RoomRow({ match, onJoin, isPending }) {
           Full
         </span>
       ) : (
-        <button
+        <Button
           onClick={() =>
             onJoin({ matchID: match.matchID, playerID: String(firstOpenSeat.id) })
           }
           disabled={isPending}
-          className="rounded-full bg-lime-500 px-4 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-lime-600 hover:scale-[1.02] disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:scale-100"
+          size="sm"
+          className="rounded-full px-4 py-1.5 text-xs"
         >
           {isPending ? "Joining…" : "Join"}
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -926,41 +932,43 @@ export function LobbyPageClient() {
 
         {/* ── Error ── */}
         {error && (
-          <div className="mb-4 w-full rounded-lg bg-rose-100 px-4 py-2.5 text-sm text-rose-700 ring-1 ring-rose-200">
-            {error}
-          </div>
+          <Banner
+            variant="danger"
+            title="Lobby error"
+            body={error}
+            className="mb-4 w-full"
+          />
         )}
 
-	         {/* ── Main card ── */}
-	        <div className="w-full rounded-xl bg-white/25 p-6 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
-	          {/* Play button */}
-	          <button
-	            onClick={() => requireIdentity(play)}
-	            disabled={!!searchState || !!challengeState}
-	            className="w-full rounded-lg bg-lime-500 px-6 py-3.5 text-lg font-bold text-white shadow-md transition-all hover:bg-lime-600 hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
-	          >
-	            Play
-	          </button>
-	          <p className="mt-1.5 text-center text-xs text-slate-600">
-	            1v1 &middot; instant matchmaking
-	          </p>
-	          <button
-	            onClick={() => requireIdentity(createFriendChallenge)}
-	            disabled={!!searchState || !!challengeState}
-	            className="mt-2 w-full rounded-lg bg-white/80 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-white/70 transition-all hover:bg-white hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
-	          >
-	            Play a Friend
-	          </button>
-	          <p className="mt-1 text-center text-xs text-slate-600">
-	            Private link &middot; share to challenge a friend
-	          </p>
-	          <button
-	            onClick={() => requireIdentity(playAgainstBot)}
-	            disabled={!!searchState || !!challengeState}
-	            className="mt-2 w-full rounded-lg bg-amber-400 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-amber-300 transition-all hover:bg-amber-300 hover:scale-[1.01] motion-reduce:hover:scale-100 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100"
-	          >
-	            Play Against Bot
-          </button>
+        {/* ── Main card ── */}
+        <Panel className="w-full" bodyClassName="p-6">
+          <Button
+            onClick={() => requireIdentity(play)}
+            disabled={!!searchState || !!challengeState}
+            className="w-full px-6 py-3.5 text-lg"
+          >
+            Play
+          </Button>
+          <p className="mt-1.5 text-center text-xs text-slate-600">
+            1v1 &middot; instant matchmaking
+          </p>
+          <Button
+            onClick={() => requireIdentity(createFriendChallenge)}
+            disabled={!!searchState || !!challengeState}
+            className="mt-2 w-full rounded-lg bg-white/80 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-white/70 hover:bg-white"
+          >
+            Play a Friend
+          </Button>
+          <p className="mt-1 text-center text-xs text-slate-600">
+            Private link &middot; share to challenge a friend
+          </p>
+          <Button
+            onClick={() => requireIdentity(playAgainstBot)}
+            disabled={!!searchState || !!challengeState}
+            className="mt-2 w-full rounded-lg bg-amber-400 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-amber-300 hover:bg-amber-300"
+          >
+            Play Against Bot
+          </Button>
           <p className="mt-1 text-center text-xs text-slate-600">
             Solo match &middot; fills seat 2 with Puffer bot
           </p>
@@ -975,32 +983,32 @@ export function LobbyPageClient() {
           </div>
 
           <form onSubmit={joinByCode} className="mt-4 flex gap-2">
-            <input
+            <Input
               value={joinMatchID}
               onChange={(e) => setJoinMatchID(e.target.value)}
               placeholder="Room code"
               autoComplete="off"
-              className="min-w-0 flex-1 rounded-lg bg-white/60 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-500 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70"
+              className="min-w-0 flex-1"
             />
-            <select
+            <Select
               value={joinSeat}
               onChange={(e) => setJoinSeat(e.target.value)}
-              className="w-20 rounded-lg bg-white/60 px-2 py-2 text-sm text-slate-800 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70"
+              className="w-20 px-2"
             >
               <option value="0">Seat 1</option>
               <option value="1">Seat 2</option>
               <option value="2">Seat 3</option>
               <option value="3">Seat 4</option>
-            </select>
-            <button
+            </Select>
+            <Button
               type="submit"
               disabled={!joinMatchID.trim()}
-              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700 disabled:bg-slate-300 disabled:text-slate-500"
+              className="rounded-lg bg-slate-600 px-4 py-2 font-semibold text-white shadow-sm hover:bg-slate-700"
             >
               Join
-            </button>
+            </Button>
           </form>
-        </div>
+        </Panel>
 
         {/* ── Custom game toggle ── */}
         <button
@@ -1019,61 +1027,60 @@ export function LobbyPageClient() {
         {/* ── Custom game section ── */}
          {showCustom && (
            <div className="mt-3 w-full space-y-4">
-             <div className="rounded-xl bg-white/25 p-5 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
-               <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-widest text-slate-700">
-                  Players
-                </span>
-                <div className="flex gap-1.5">
-                  {[2, 3, 4].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => setCreateNumPlayers(n)}
-                      className={`rounded-full px-3 py-1 text-sm font-semibold transition-all ${
-                        createNumPlayers === n
-                          ? "bg-amber-400 text-slate-800 shadow-md ring-1 ring-amber-300"
-                          : "bg-white/40 text-slate-700 ring-1 ring-white/50 hover:bg-white/60"
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex-1" />
-                <button
-                  onClick={() => requireIdentity(createCustomRoom)}
-                  disabled={createPending}
-                  className="rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-lime-600 hover:scale-[1.02] disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:scale-100"
-                >
-                  {createPending ? "Creating…" : "Create & Join"}
-                 </button>
+             <Panel title="Custom Room" bodyClassName="p-5">
+               <div className="flex flex-wrap items-center gap-3">
+                 <span className="text-xs font-semibold uppercase tracking-widest text-slate-700">
+                   Players
+                 </span>
+                 <div className="flex gap-1.5">
+                   {[2, 3, 4].map((n) => (
+                     <Button
+                       key={n}
+                       variant="chip"
+                       size="sm"
+                       onClick={() => setCreateNumPlayers(n)}
+                       className={
+                         createNumPlayers === n
+                           ? "bg-amber-400 text-slate-800 shadow-md ring-1 ring-amber-300 hover:bg-amber-300"
+                           : ""
+                       }
+                     >
+                       {n}
+                     </Button>
+                   ))}
+                 </div>
+                 <div className="flex-1" />
+                 <Button
+                   onClick={() => requireIdentity(createCustomRoom)}
+                   disabled={createPending}
+                 >
+                   {createPending ? "Creating…" : "Create & Join"}
+                 </Button>
                </div>
-             </div>
+             </Panel>
 
              {isDevEnvironment && (
-               <div className="rounded-xl bg-white/25 p-5 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
-                 <div className="flex items-center justify-between gap-3">
-                   <div>
-                     <div className="text-xs font-semibold uppercase tracking-widest text-slate-700">
-                       Dev Scenario
-                     </div>
-                     <div className="mt-1 text-xs text-slate-600">
-                       Start from scenario
-                     </div>
-                   </div>
-                   <button
+               <Panel
+                 title="Dev Scenario"
+                 bodyClassName="p-5"
+                 right={
+                   <Button
+                     variant="pill"
+                     size="sm"
                      onClick={fetchSavedScenarios}
                      disabled={isLoadingScenarios}
-                     className="rounded-full bg-white/60 px-2 py-0.5 text-xs font-semibold text-slate-600 ring-1 ring-white/50 transition hover:bg-white/80 disabled:text-slate-400"
+                     className="px-2 py-0.5 text-xs"
                    >
                      {isLoadingScenarios ? "…" : "Refresh"}
-                   </button>
-                 </div>
+                   </Button>
+                 }
+               >
+                 <div className="text-xs text-slate-600">Start from scenario</div>
                  <div className="mt-3 flex items-center gap-2">
-                   <select
+                   <Select
                      value={selectedScenarioId}
                      onChange={(event) => setSelectedScenarioId(event.target.value)}
-                     className="min-w-0 flex-1 rounded-lg bg-white/60 px-3 py-2 text-sm text-slate-800 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70"
+                     className="min-w-0 flex-1"
                    >
                      <option value="">
                        {isLoadingScenarios ? "Loading scenarios…" : "Choose a scenario"}
@@ -1083,38 +1090,38 @@ export function LobbyPageClient() {
                          {scenario.name}
                        </option>
                      ))}
-                   </select>
-                   <button
+                   </Select>
+                   <Button
                      onClick={() => requireIdentity(startFromScenario)}
                      disabled={!selectedScenarioId || scenarioStartPending}
-                     className="rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-lime-600 hover:scale-[1.02] disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:scale-100"
                    >
                      {scenarioStartPending ? "Starting…" : "Start from scenario"}
-                   </button>
+                   </Button>
                  </div>
                  <div className="mt-2 text-xs text-slate-600">
                    {selectedScenario
                      ? `${selectedScenario.data?.core?.players?.length ?? "?"} players`
                      : "Saved scenarios start a room with their stored player count."}
                  </div>
-               </div>
+               </Panel>
              )}
 
              {/* Open games list */}
-             <div className="overflow-hidden rounded-xl bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
-              <div className="flex items-center justify-between border-b border-white/40 bg-white/50 px-4 py-2.5">
-                <span className="text-xs font-semibold uppercase tracking-widest text-slate-700">
-                  Open Games &middot; {matches.length} live
-                </span>
-                <button
+             <Panel
+              title={`Open Games · ${matches.length} live`}
+              bodyClassName="space-y-2 p-3"
+              right={
+                <Button
+                  variant="pill"
+                  size="sm"
                   onClick={refreshMatches}
                   disabled={isRefreshing}
-                  className="rounded-full bg-white/60 px-2 py-0.5 text-xs font-semibold text-slate-600 ring-1 ring-white/50 transition hover:bg-white/80 disabled:text-slate-400"
+                  className="px-2 py-0.5 text-xs"
                 >
                   {isRefreshing ? "…" : "Refresh"}
-                </button>
-              </div>
-              <div className="space-y-2 p-3">
+                </Button>
+              }
+             >
                 {matches.length === 0 && (
                   <div className="rounded-lg bg-white/30 px-4 py-5 text-center text-sm text-slate-600">
                     No games yet — create one above!
@@ -1130,8 +1137,7 @@ export function LobbyPageClient() {
                     isPending={joinPendingMatchID === match.matchID}
                   />
                 ))}
-              </div>
-            </div>
+            </Panel>
           </div>
         )}
       </div>
