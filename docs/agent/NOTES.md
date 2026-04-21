@@ -2760,4 +2760,15 @@
     - browser check notes for `/catana/dev/ui`:
       - desktop looked visually stable and cohesive in Playwright screenshot capture
       - mobile-sized viewport kept the hero block readable and the shared dialog centered cleanly
+    - visual-identity pass note:
+      - phase 1 was originally structurally correct but visually too close to the older Catana product surfaces.
+      - the stronger direction that tested best kept the same blue/lime/rose Catana palette but changed the chrome language:
+        - controls moved to chunkier rounded rectangles rather than generic pills/cards
+        - buttons gained inset highlights, deeper shadows, and a small hover lift
+        - panels gained a brighter top seam and a more intentional header bar
+        - fields and dialogs were recast into the same layered-glass family
+      - this is the right balance for Settlex product UI:
+        - still clearly Catana
+        - more systematized than the older one-off components
+        - not trying to imitate 8-bit or neobrutalist libraries directly
     - known unrelated baseline issue: `pnpm verify` is still not globally clean in this worktree because of the pre-existing `app/catana/__tests__/LeftMetaRail.test.js` failure expecting `fixed left-4 bottom-4`; this slice did not touch that area.
