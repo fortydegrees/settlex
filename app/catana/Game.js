@@ -1,10 +1,11 @@
 import {
   buildTopology,
   createEmptyState,
-  DUEL_RULESET,
-  STANDARD_RULESET,
   generateBoard,
+  resolveDefaultGameModeId,
   resolveBoardConfig,
+  resolveGameMode,
+  resolveRuleset,
   ResourceType
 } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
@@ -61,6 +62,7 @@ const mergeScenarioState = (baseState, scenarioState) => ({
     scenarioState.robberReturnToStage ?? baseState.robberReturnToStage,
   gameLog: scenarioState.gameLog ?? baseState.gameLog,
   gameLogSeq: scenarioState.gameLogSeq ?? baseState.gameLogSeq,
+  modeId: scenarioState.modeId ?? baseState.modeId,
   rulesetId: scenarioState.rulesetId ?? baseState.rulesetId,
   boardConfigId: scenarioState.boardConfigId ?? baseState.boardConfigId
 });
@@ -264,18 +266,20 @@ const resolveGameSettings = (setupData) => ({
     setupData?.gameSettings?.showYearOfPlentyBankCounts === true
 });
 
-const resolveRulesetSpec = ({ numPlayers, setupData }) => {
-  const requestedRulesetId = setupData?.rulesetId;
-  if (requestedRulesetId === "duel") {
-    return { rulesetId: "duel", rulesetSpec: DUEL_RULESET };
-  }
-  if (requestedRulesetId === "standard") {
-    return { rulesetId: "standard", rulesetSpec: STANDARD_RULESET };
-  }
-  if (numPlayers === 2) {
-    return { rulesetId: "duel", rulesetSpec: DUEL_RULESET };
-  }
-  return { rulesetId: "standard", rulesetSpec: STANDARD_RULESET };
+const resolveModeSetup = ({ numPlayers, setupData }) => {
+  const modeId = setupData?.modeId ?? resolveDefaultGameModeId(numPlayers);
+  const mode = resolveGameMode(modeId);
+  const rulesetId = setupData?.rulesetId ?? mode.rulesetId;
+  const boardConfigId =
+    setupData?.boardConfigId ??
+    (setupData?.boardConfig ? "custom" : mode.boardConfigId);
+
+  return {
+    modeId: mode.id,
+    rulesetId,
+    rulesetSpec: resolveRuleset(rulesetId),
+    boardConfigId
+  };
 };
 
 export const createCatanGame = ({
@@ -347,20 +351,23 @@ export const createCatanGame = ({
       }
       return random.Number();
     };
-    const defaultBoardConfigId = "standard-official";
-    const selectedBoardConfigId = setupData?.boardConfigId ?? defaultBoardConfigId;
+    const {
+      modeId,
+      rulesetId,
+      rulesetSpec,
+      boardConfigId
+    } = resolveModeSetup({
+      numPlayers: ctx.numPlayers,
+      setupData
+    });
+    const selectedBoardConfigId = setupData?.boardConfigId ?? boardConfigId;
     const boardConfig = setupData?.boardConfig ?? resolveBoardConfig(selectedBoardConfigId);
-    const boardConfigId = setupData?.boardConfigId ?? (setupData?.boardConfig ? "custom" : defaultBoardConfigId);
     const tiles = generateBoard(boardConfig, rng);
     const valids = { nodes: [], edges: [], tiles: [] };
     const diceRoll = [3,4]
     const robberTile = tiles.find((tile) => tile.tile.resource === ResourceType.DESERT)?.tile.id ?? null;
     const coreTopology = buildTopology(tiles);
     const playerIds = Array.from({ length: ctx.numPlayers }, (_, i) => i.toString());
-    const { rulesetId, rulesetSpec } = resolveRulesetSpec({
-      numPlayers: ctx.numPlayers,
-      setupData
-    });
     const core = createEmptyState(playerIds, rulesetSpec);
     core.phase = ctx.phase === "placement" ? "placement" : "normal";
     core.robberTileId = robberTile;
@@ -377,6 +384,7 @@ export const createCatanGame = ({
     const initialState = {
       core,
       coreTopology,
+      modeId,
       rulesetId,
       gameSettings: resolveGameSettings(setupData),
       boardConfigId,

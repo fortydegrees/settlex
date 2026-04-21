@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAccount.js";
 import { createMatchForAccount } from "../../../../lib/server/matches/createMatchForAccount.js";
+import { resolveMatchCreationMode } from "../../../../lib/server/matches/gameModeSetupData.js";
 import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
 
 const unauthorizedResponse = () =>
@@ -28,10 +29,15 @@ export const createMatchCreateRoute =
       }
 
       const payload = await request.json();
-      const result = await createMatchForAccountImpl({
-        account: sessionAccount.account,
+      const creationMode = resolveMatchCreationMode({
+        modeId: payload?.modeId,
         numPlayers: Number(payload?.numPlayers) || 2,
         setupData: payload?.setupData,
+      });
+      const result = await createMatchForAccountImpl({
+        account: sessionAccount.account,
+        numPlayers: creationMode.numPlayers,
+        setupData: creationMode.setupData,
       });
 
       const response = NextResponse.json(result);

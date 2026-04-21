@@ -12,6 +12,7 @@ describe("LobbyPageClient play-with-friend flow", () => {
     expect(source).toContain("Play a Friend");
     expect(source).toContain('route: "/api/challenges/create"');
     expect(source).toContain('route: "/api/matches/open"');
+    expect(source).toContain("modeId=duel");
     expect(source).toContain('route: `/api/challenges/${challengeState.matchID}/cancel`');
   });
 

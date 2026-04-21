@@ -4102,3 +4102,15 @@
 - Bottom-anchor design clarification:
   - the previous refinement moved the whole chat panel too high; the intended production rule is to keep the chat panel body on the old desktop bottom baseline and lift only the lower connector seam above the message/composer band.
   - updated spec: `docs/superpowers/specs/2026-04-16-left-meta-rail-anchor-modes-design.md`
+- Added mode-based match creation for Catana defaults and 1v1 matchmaking.
+- Game mode wiring notes:
+  - `game-core/src/gameModes.ts` now defines serializable mode ids: `duel`, `standard-3p`, and `standard-4p`.
+  - `duel` resolves to `rulesetId: "duel"` plus `boardConfigId: "standard-balanced"`, so default 1v1 setup now uses balanced board generation.
+  - `app/catana/Game.js` resolves `setupData.modeId` first and falls back by player count for older/dev callers.
+  - public 1v1 matchmaking and bot creation now create matches with `modeId: "duel"` instead of raw `numPlayers: 2`.
+  - open-match listing accepts `modeId` filtering so future 4p queues can avoid joining 1v1 waiting rooms.
+  - friend challenges stamp the same duel mode metadata alongside `matchKind: "friend_challenge"`.
+- Verification for mode-based matchmaking defaults:
+  - `pnpm -C game-core test`
+  - `pnpm -C game-core build`
+  - `pnpm exec vitest run --exclude '.worktrees/**' lib/server/__tests__/listPublicOpenMatches.test.js app/catana/__tests__/Game.boardConfig.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`

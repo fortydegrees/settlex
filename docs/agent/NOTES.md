@@ -2722,3 +2722,12 @@
     - the lower connector itself must also move with the `bottom` anchor. Lifting only `panelBottom` while keeping the shell path hardcoded to rejoin at `buttonBottom = 72` creates a longer downward tail and makes the bottom connection look lower, not higher.
     - `getSideTabLayoutMetrics()` now returns `lowerJoinY`, and the shell path uses that metric instead of a fixed lower rejoin point. For `bottom`, `lowerJoinY` follows the lifted `panelBottom`.
     - follow-up correction: the desired `bottom` behavior is not "lift the whole chat panel." The chat panel body should stay on the old desktop baseline, and only the lower connector seam should sit above the message/composer band, analogous to how the top anchor joins below the title bar instead of at the panel edge.
+  - Catana game mode note:
+    - matchmaking should pass `modeId` as product intent rather than raw ruleset objects.
+    - current modes live in `game-core/src/gameModes.ts`:
+      - `duel` -> 2 players, `rulesetId: "duel"`, `boardConfigId: "standard-balanced"`
+      - `standard-3p` -> 3 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
+      - `standard-4p` -> 4 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
+    - `app/catana/Game.js` still falls back from `ctx.numPlayers` for old callers, scenarios, and custom/dev creation flows.
+    - app-owned create routes should resolve/stamp `modeId`, `rulesetId`, and `boardConfigId` into `setupData` so match metadata, archives, and future queue filters stay self-describing.
+    - tests that run 1v1 setup now need a sequence RNG such as `makeDeterministicRng`; a constant `Number: () => 0.5` can make balanced generation retry the same failed placement indefinitely.

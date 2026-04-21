@@ -555,7 +555,7 @@ export function LobbyPageClient() {
 
     try {
       const data = await appRequest({
-        route: "/api/matches/open",
+        route: "/api/matches/open?modeId=duel",
       });
       const allMatches = (data?.matches || []).map(normalizeMatch);
       const openMatch = allMatches.find(
@@ -585,7 +585,7 @@ export function LobbyPageClient() {
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ numPlayers: 2 }),
+          body: JSON.stringify({ modeId: "duel" }),
         },
       });
 
@@ -665,7 +665,7 @@ export function LobbyPageClient() {
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ numPlayers: 2 }),
+          body: JSON.stringify({ modeId: "duel" }),
         },
       });
 

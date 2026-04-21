@@ -11,9 +11,11 @@ export const createOpenMatchesRoute =
   ({
     listPublicOpenMatches: listPublicOpenMatchesImpl = listPublicOpenMatches,
   } = {}) =>
-  async () => {
+  async (request) => {
     try {
-      const matches = await listPublicOpenMatchesImpl();
+      const { searchParams } = new URL(request.url);
+      const modeId = searchParams.get("modeId") || undefined;
+      const matches = await listPublicOpenMatchesImpl({ modeId });
       return NextResponse.json({ matches });
     } catch (error) {
       return errorResponse(error);
