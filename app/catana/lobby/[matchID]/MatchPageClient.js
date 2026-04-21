@@ -8,6 +8,11 @@ import { SocketIO } from "boardgame.io/multiplayer";
 import { Catan } from "../../Game";
 import { GameScreenWithEffects } from "../../GameScreen";
 import { GlassPillButton } from "../../components/GlassPillButton";
+import { Banner } from "../../../ui/Banner";
+import { Button } from "../../../ui/Button";
+import { Input } from "../../../ui/Input";
+import { Panel } from "../../../ui/Panel";
+import { Select } from "../../../ui/Select";
 import { LiveMatchLoadingShell } from "./LiveMatchLoadingShell";
 import {
   getCredentialsStorageKey,
@@ -42,45 +47,6 @@ const apiRequest = async ({ baseUrl, route, init }) => {
 };
 
 const appRequest = ({ route, init }) => apiRequest({ baseUrl: "", route, init });
-
-function GlassPanel({ title, right, children }) {
-  return (
-    <div className="overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
-      <div className="flex items-center justify-between gap-3 bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700">
-        <div>{title}</div>
-        {right}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
-
-function GlassInput({ className = "", ...props }) {
-  return (
-    <input
-      className={`w-full rounded-lg bg-white/60 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-500 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70 focus-visible:ring-2 focus-visible:ring-white/70 ${className}`}
-      {...props}
-    />
-  );
-}
-
-function GlassSelect({ className = "", ...props }) {
-  return (
-    <select
-      className={`w-full rounded-lg bg-white/60 px-3 py-2 text-sm text-slate-800 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70 focus-visible:ring-2 focus-visible:ring-white/70 ${className}`}
-      {...props}
-    />
-  );
-}
-
-function PrimaryButton({ className = "", ...props }) {
-  return (
-    <button
-      className={`rounded-lg bg-green-500 hover:bg-green-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02] motion-reduce:transition-none motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:scale-100 ${className}`}
-      {...props}
-    />
-  );
-}
 
 function seatLabel(seat) {
   if (!seat) return "Seat";
@@ -351,7 +317,7 @@ export function MatchPageClient({
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600">
       <div className="mx-auto w-full max-w-4xl px-4 py-10">
-        <div className="rounded-xl bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm p-6 md:p-8">
+        <Panel bodyClassName="p-6 md:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-xs uppercase tracking-[0.3em] text-slate-700">
@@ -384,20 +350,23 @@ export function MatchPageClient({
           </div>
 
           {error ? (
-            <div className="mt-4 rounded-lg bg-rose-100 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-200">
-              {error}
-            </div>
+            <Banner
+              variant="danger"
+              title="Match error"
+              body={error}
+              className="mt-4"
+            />
           ) : null}
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <GlassPanel title="Join Seat">
+            <Panel title="Join Seat">
               <form className="space-y-3" onSubmit={joinSeat}>
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-widest text-slate-700">
                     Player name
                   </label>
                   <div className="mt-2">
-                    <GlassInput
+                    <Input
                       value={playerName}
                       onChange={(e) => setPlayerName(e.target.value)}
                       placeholder="Visitor"
@@ -411,7 +380,7 @@ export function MatchPageClient({
                     Seat
                   </label>
                   <div className="mt-2">
-                    <GlassSelect
+                    <Select
                       value={playerID}
                       onChange={(e) => setPlayerID(e.target.value)}
                       disabled={openSeats.length === 0}
@@ -424,12 +393,16 @@ export function MatchPageClient({
                           {seatLabel(seat)}
                         </option>
                       ))}
-                    </GlassSelect>
+                    </Select>
                   </div>
                 </div>
-                <PrimaryButton type="submit" disabled={joinPending || openSeats.length === 0}>
+                <Button
+                  type="submit"
+                  disabled={joinPending || openSeats.length === 0}
+                  className="w-full"
+                >
                   {joinPending ? "Joining…" : "Join & Play"}
-                </PrimaryButton>
+                </Button>
                 <GlassPillButton
                   type="button"
                   onClick={fillOpenSeatsWithBots}
@@ -441,9 +414,9 @@ export function MatchPageClient({
                   Game server: <span className="font-mono">{gameServer}</span>
                 </div>
               </form>
-            </GlassPanel>
+            </Panel>
 
-            <GlassPanel title="Seats">
+            <Panel title="Seats">
               {isLoadingMatch && !match ? (
                 <div className="h-24 rounded-lg bg-white/40 ring-1 ring-white/40 animate-pulse motion-reduce:animate-none" />
               ) : null}
@@ -475,9 +448,9 @@ export function MatchPageClient({
                   Match details unavailable.
                 </div>
               )}
-            </GlassPanel>
+            </Panel>
           </div>
-        </div>
+        </Panel>
       </div>
     </div>
   );
