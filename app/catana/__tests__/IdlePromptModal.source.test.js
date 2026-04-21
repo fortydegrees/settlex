@@ -17,18 +17,17 @@ describe("IdlePromptModal", () => {
   it("renders the approved idle prompt copy and acknowledgement action", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
 
+    expect(contents).toContain('from "../../ui/Dialog"');
     expect(contents).toContain("Are you still there?");
     expect(contents).toContain("I’m still here");
     expect(contents).toContain("You’ll forfeit in");
     expect(contents).toContain("tabular-nums");
   });
 
-  it("uses Catana danger-modal styling hooks", () => {
+  it("routes through the shared dialog shell and primary button", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
 
-    expect(contents).toContain("fixed inset-0");
-    expect(contents).toContain("bg-blue-900/40");
-    expect(contents).toContain("bg-blue-200/95");
-    expect(contents).toContain("bg-lime-500");
+    expect(contents).toContain("Dialog");
+    expect(contents).toContain('variant="primary"');
   });
 });
