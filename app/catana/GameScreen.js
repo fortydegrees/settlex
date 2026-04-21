@@ -45,6 +45,7 @@ import { LeftMetaRail } from "./components/LeftMetaRail";
 import { StatusBanner } from "./components/StatusBanner";
 import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { IdlePromptModal } from "./components/IdlePromptModal";
+import { ResignConfirmDialog } from "./components/ResignConfirmDialog";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
 import { PostgameOverlay } from "./components/PostgameOverlay";
@@ -140,6 +141,7 @@ export function GameScreen(bgioProps) {
   const [themeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
+  const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showConnectionBanner, setShowConnectionBanner] = useState(false);
   const [presentedGameLogEntries, setPresentedGameLogEntries] = useState([]);
   const [deferredLogEntries, setDeferredLogEntries] = useState([]);
@@ -842,12 +844,11 @@ export function GameScreen(bgioProps) {
   const handleResign = () => {
     if (isGameOver) return;
     if (typeof moves.resign !== "function") return;
-    if (typeof window !== "undefined") {
-      const didConfirm = window.confirm(
-        "Resign this match? You will immediately lose."
-      );
-      if (!didConfirm) return;
-    }
+    setShowResignConfirm(true);
+  };
+
+  const handleConfirmResign = () => {
+    setShowResignConfirm(false);
     moves.resign();
   };
 
@@ -1273,6 +1274,14 @@ TODO: accurately colour it
           onAcknowledge={handleAcknowledgeIdle}
           isSubmitting={isAcknowledgingIdle}
           error={idleAckError}
+        />
+      ) : null}
+
+      {!isReplay ? (
+        <ResignConfirmDialog
+          open={showResignConfirm}
+          onOpenChange={setShowResignConfirm}
+          onConfirm={handleConfirmResign}
         />
       ) : null}
 

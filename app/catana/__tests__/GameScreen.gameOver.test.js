@@ -27,11 +27,11 @@ describe("GameScreen game over", () => {
     expect(contents).toContain("onConfettiFired={() => {\n              winnerConfettiSeenRef.current = true;\n            }}");
   });
 
-  it("wires a confirm-backed resign action", () => {
+  it("wires a shared resign confirm dialog", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
-    expect(contents).toContain("window.confirm");
+    expect(contents).toContain("ResignConfirmDialog");
     expect(contents).toContain("moves.resign");
-    expect(contents).toContain("Resign this match?");
+    expect(contents).not.toContain("window.confirm");
   });
 
   it("guards live-only flows when rendering archived replay state", () => {
