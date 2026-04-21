@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-21, standard UI system design)
+- Wrote the design spec for a shared Settlex standard UI system spanning product surfaces and in-game standard UI, with bespoke exceptions only for gameplay-specific controls and board presentation.
+- Current direction:
+- `docs/superpowers/specs/2026-04-21-settlex-standard-ui-system-design.md` recommends one shared Settlex UI layer over unstyled primitives rather than separate "web" and "game chrome" systems,
+- the recommended foundation is `Base UI` for accessibility/behavior primitives,
+- the main motion reference is `Animate UI`,
+- the main surface/style reference is `AICanvas`, translated into the existing Catana light/airy language rather than copied literally,
+- the first standardized inventory is `Button`, `Dialog`, `AlertDialog`, `Banner`, `Toast`, `Panel`, `Sheet/Drawer`, `Tabs`, `Tooltip`, `Popover`, `Input`, `Textarea`, `Select`, `Slider`, `Switch`, `Checkbox`, `Table`, and `ScrollArea`.
+- Focused verification:
+- design reviewed against `docs/agent/skills/catana-brand/SKILL.md`, existing UI components under `app/catana/`, and the referenced external component systems and primitive-library docs
+- no code or dependency changes yet; this is a design-direction checkpoint before planning
+
 ## Status (2026-04-19, git artifact cleanup)
 - Removed generated Puffer training runs and checkpoint files from Git tracking while keeping the local files on disk.
 - Current behavior:

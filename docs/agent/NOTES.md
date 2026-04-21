@@ -1,5 +1,12 @@
 # NOTES
 
+- Standard UI system direction note:
+- Settlex should use one shared standard UI system for normal interface components across landing/product surfaces and in-game standard UI; do not split standard interface work into separate "web UI" and "game chrome" systems by default.
+- Keep bespoke exceptions for gameplay-specific controls and board presentation only: board rendering/themes, piece/board effects, and mechanics-bound controls such as `End Turn`, `Roll Dice`, and build actions.
+- The recommended long-term primitive foundation is `Base UI`, with `Animate UI` as the main motion reference and `AICanvas` as the main surface/style reference translated into Catana's existing light, airy, glass-leaning language.
+- Do not adopt external theme-system aesthetics wholesale from Gridcn, Neobrutalism, Sabraman, or Pixelact; use them only as evidence that strong systems come from owned component recipes rather than ad hoc styling.
+- For standard UI work, own component recipes and motion defaults in the Settlex layer instead of relying on tokens/colors alone. The initial standardized inventory should cover `Button`, `Dialog`, `AlertDialog`, `Banner`, `Toast`, `Panel`, `Sheet/Drawer`, `Tabs`, `Tooltip`, `Popover`, `Input`, `Textarea`, `Select`, `Slider`, `Switch`, `Checkbox`, `Table`, and `ScrollArea`.
+
 - Git artifact hygiene note:
 - Puffer training run outputs belong outside normal Git history. Keep `ai/pufferlib/runs*/`, generated `*.pt` checkpoints, and `*.egg-info/` metadata ignored unless there is an explicit artifact-publishing decision.
 - If a trained model needs to be shared, prefer a release artifact, object storage, or a deliberate Git LFS path rather than committing every checkpoint from a run.
