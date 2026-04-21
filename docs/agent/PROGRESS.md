@@ -1,5 +1,14 @@
 # PROGRESS
 
+## Status (2026-04-21, standard UI foundation phase-1 plan)
+- Wrote the first implementation plan for the new Settlex standard UI system.
+- Current direction:
+- `docs/superpowers/plans/2026-04-21-standard-ui-foundation-phase-1-plan.md` scopes Phase 1 to the shared foundation plus `Button`, `Panel`, `Banner`, `Input`, `Select`, `Dialog`, and `AlertDialog`,
+- the first proving-ground migrations are the reconnect banner, idle prompt, resign confirmation, and the duplicated panel/field/button helpers in `MatchPageClient` and the custom-game slice of `LobbyPageClient`,
+- `@base-ui/react` is the assumed primitive dependency for dialog/alert-dialog behavior, while simple inputs/selects stay as shared styled wrappers over native elements in this phase.
+- Focused verification:
+- plan grounded against `app/layout.js`, `app/globals.css`, `app/catana/components/{StatusBanner,GlobalReconnectBanner,IdlePromptModal,GlassPillButton}.js`, `app/catana/GameScreen.js`, `app/catana/lobby/[matchID]/MatchPageClient.js`, and `app/catana/lobby/LobbyPageClient.js`
+- no implementation changes yet; this is the execution handoff plan for Phase 1
 ## Status (2026-04-21, standard UI system design)
 - Wrote the design spec for a shared Settlex standard UI system spanning product surfaces and in-game standard UI, with bespoke exceptions only for gameplay-specific controls and board presentation.
 - Current direction:

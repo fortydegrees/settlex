@@ -1,5 +1,10 @@
 # NOTES
 
+- Standard UI phase-1 planning note:
+- The first implementation slice for the Settlex standard UI system should stay narrow: foundation hooks plus `Button`, `Panel`, `Banner`, `Input`, `Select`, `Dialog`, and `AlertDialog`.
+- Early proving-ground migrations should target existing duplicated standard UI surfaces first: reconnect banner, idle prompt, resign confirmation, `MatchPageClient` glass helpers, and the custom-game section of `LobbyPageClient`.
+- Inputs/selects can remain native elements with shared Settlex styling wrappers in Phase 1; the immediate need for `@base-ui/react` is overlay/dialog behavior, not simple field rendering.
+
 - Standard UI system direction note:
 - Settlex should use one shared standard UI system for normal interface components across landing/product surfaces and in-game standard UI; do not split standard interface work into separate "web UI" and "game chrome" systems by default.
 - Keep bespoke exceptions for gameplay-specific controls and board presentation only: board rendering/themes, piece/board effects, and mechanics-bound controls such as `End Turn`, `Roll Dice`, and build actions.
