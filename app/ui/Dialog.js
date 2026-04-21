@@ -22,7 +22,7 @@ export function Dialog({
         <BaseDialog.Viewport className="fixed inset-0 z-40 flex items-center justify-center px-4">
           <BaseDialog.Popup
             className={cn(
-              "settlex-ui-dialog-popup w-full rounded-xl bg-blue-200/95 p-6 shadow-2xl ring-2 ring-slate-300",
+              "settlex-ui-dialog-popup w-full rounded-[1.75rem] border border-white/60 bg-[linear-gradient(180deg,rgba(191,219,254,0.96),rgba(219,234,254,0.94)_18%,rgba(255,255,255,0.94))] p-6 shadow-[0_30px_90px_-36px_rgba(15,23,42,0.72)] ring-1 ring-white/45 backdrop-blur-xl",
               maxWidthClassName,
               className
             )}
