@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { Button } from "../../ui/Button";
 import { GlassPillButton } from "./GlassPillButton";
 import { StatusBanner } from "./StatusBanner";
 import { resolveReconnectBannerCandidate } from "../utils/reconnectBanner";
@@ -51,13 +52,12 @@ export function GlobalReconnectBanner() {
               Rejoin match
             </GlassPillButton>
 
-            <button
-              type="button"
+            <Button
+              variant="ghost"
               onClick={() => setDismissed(true)}
-              className="rounded-full px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-white/60 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
             >
               Dismiss
-            </button>
+            </Button>
           </>
         }
       />
