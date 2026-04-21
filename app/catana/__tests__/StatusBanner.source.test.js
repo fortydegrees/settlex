@@ -3,17 +3,13 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 describe("StatusBanner component", () => {
-  it("defines a shared glass banner shell with danger and neutral variants", () => {
+  it("routes through the shared Settlex banner recipe", () => {
     const source = readFileSync(
       resolve(process.cwd(), "app/catana/components/StatusBanner.js"),
       "utf8"
     );
 
-    expect(source).toContain("bg-white/80");
-    expect(source).toContain("rounded-2xl");
-    expect(source).toContain("backdrop-blur-md");
-    expect(source).toContain("danger");
-    expect(source).toContain("neutral");
-    expect(source).toContain("rose-500");
+    expect(source).toContain('from "../../ui/Banner"');
+    expect(source).toContain("export function StatusBanner");
   });
 });

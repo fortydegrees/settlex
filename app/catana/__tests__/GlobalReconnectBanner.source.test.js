@@ -15,10 +15,12 @@ describe("GlobalReconnectBanner wiring", () => {
       "utf8"
     );
 
+    expect(source).toContain('from "../../ui/Button"');
     expect(source).toContain("StatusBanner");
     expect(source).toContain("You're already in a game");
     expect(source).toContain("Rejoin match");
     expect(source).toContain("Dismiss");
     expect(source).toContain("resolveReconnectBannerCandidate");
+    expect(source).not.toContain("rounded-full px-3 py-2");
   });
 });
