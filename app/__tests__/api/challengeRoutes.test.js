@@ -80,6 +80,9 @@ describe("challenge API routes", () => {
         numPlayers: 2,
         creatorSeatId: "1",
         setupData: {
+          modeId: "duel",
+          rulesetId: "duel",
+          boardConfigId: "standard-balanced",
           matchKind: "friend_challenge",
           friendChallenge: {
             inviterAccountId: "acct_1",

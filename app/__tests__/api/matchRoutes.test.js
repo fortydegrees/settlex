@@ -69,7 +69,7 @@ describe("match API routes", () => {
       new Request("http://localhost/api/matches/create", {
         method: "POST",
         headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
-        body: JSON.stringify({ numPlayers: 2 }),
+        body: JSON.stringify({ modeId: "duel", numPlayers: 4 }),
       })
     );
     const json = await authorized.json();
@@ -79,6 +79,11 @@ describe("match API routes", () => {
       expect.objectContaining({
         account: expect.objectContaining({ id: "acct_1" }),
         numPlayers: 2,
+        setupData: {
+          modeId: "duel",
+          rulesetId: "duel",
+          boardConfigId: "standard-balanced",
+        },
       })
     );
     expect(json.playerCredentials).toBe("secret_123");
@@ -132,11 +137,14 @@ describe("match API routes", () => {
     );
     expect(unauthorizedJoin.status).toBe(401);
 
-    const openResponse = await OPEN(new Request("http://localhost/api/matches/open"));
+    const openResponse = await OPEN(new Request("http://localhost/api/matches/open?modeId=duel"));
     expect(openResponse.status).toBe(200);
     expect(await openResponse.json()).toEqual({
       matches: [{ matchID: "public_1" }],
     });
+    expect(listPublicOpenMatches).toHaveBeenCalledWith(
+      expect.objectContaining({ modeId: "duel" })
+    );
 
     getSessionAccount.mockResolvedValue({
       account: {

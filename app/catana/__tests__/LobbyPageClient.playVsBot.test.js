@@ -15,6 +15,7 @@ describe("LobbyPageClient play-vs-bot entrypoint", () => {
     expect(source).toContain('botKey: "puffer"');
     expect(source).toContain('avatarEmoji: "🤖"');
     expect(source).toContain("const playAgainstBot = async");
+    expect(source).toContain('modeId: "duel"');
   });
 
   it("normalizes stored colors and uses canonical ids for bot seats", () => {

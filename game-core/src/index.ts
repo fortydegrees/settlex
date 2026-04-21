@@ -6,6 +6,7 @@ export * from "./core/ids";
 export * from "./core/topology";
 export * from "./core/state";
 export * from "./ruleset";
+export * from "./gameModes";
 export * from "./rules/buildability";
 export * from "./rules/apply";
 export * from "./rules/buildActions";

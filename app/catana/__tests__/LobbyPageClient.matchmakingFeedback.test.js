@@ -10,8 +10,27 @@ describe("LobbyPageClient matchmaking feedback", () => {
     );
 
     expect(source).toMatch(
-      /const startedAt = Date\.now\(\);[\s\S]*?setSearchState\(\{\s+matchID: null,\s+playerID: null,\s+startedAt,\s+phase: "searching",\s+\}\);[\s\S]*?route: "\/api\/matches\/open"/
+      /const startedAt = Date\.now\(\);[\s\S]*?setSearchState\(\{\s+matchID: null,\s+playerID: null,\s+startedAt,\s+phase: "searching",\s+\}\);[\s\S]*?route: "\/api\/matches\/open\?modeId=duel"/
     );
+  });
+
+  it("filters only the Play queue by duel mode", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "app/catana/lobby/LobbyPageClient.js"),
+      "utf8"
+    );
+    const refreshSource = source.slice(
+      source.indexOf("const refreshMatches = useCallback"),
+      source.indexOf("const fetchSavedScenarios")
+    );
+    const playSource = source.slice(
+      source.indexOf("const play = async"),
+      source.indexOf("const createFriendChallenge")
+    );
+
+    expect(refreshSource).toContain('route: "/api/matches/open"');
+    expect(refreshSource).not.toContain("modeId=duel");
+    expect(playSource).toContain('route: "/api/matches/open?modeId=duel"');
   });
 
   it("only enables polling and cancel once the search has a real joined seat", () => {

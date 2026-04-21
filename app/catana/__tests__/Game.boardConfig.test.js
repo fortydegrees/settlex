@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import { makeDeterministicRng } from "@settlex/game-core";
 import { Catan } from "../Game";
+
+const createRandom = (seed = 123) => ({
+  Number: makeDeterministicRng(seed),
+  Shuffle: (items) => items
+});
 
 describe("Catan setup board config", () => {
   it("keeps non-current seats Stage.NULL-active so they can use global moves", () => {
@@ -15,10 +21,7 @@ describe("Catan setup board config", () => {
 
   it("uses boardConfigId from setupData", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
-    const random = {
-      Number: () => 0.5,
-      Shuffle: (items) => items
-    };
+    const random = createRandom();
     const setupData = { boardConfigId: "standard-random" };
 
     const G = Catan.setup({ ctx, random }, setupData);
@@ -26,38 +29,45 @@ describe("Catan setup board config", () => {
     expect(G.boardConfigId).toBe("standard-random");
   });
 
+  it("resolves duel mode to duel rules and balanced board generation", () => {
+    const ctx = { numPlayers: 2, phase: "placement" };
+    const random = createRandom();
+
+    const G = Catan.setup({ ctx, random }, { modeId: "duel" });
+
+    expect(G.modeId).toBe("duel");
+    expect(G.rulesetId).toBe("duel");
+    expect(G.boardConfigId).toBe("standard-balanced");
+    expect(G.core.ruleset.victoryPointsToWin).toBe(15);
+  });
+
   it("defaults 2-player setup to duel ruleset", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
-    const random = {
-      Number: () => 0.5,
-      Shuffle: (items) => items
-    };
+    const random = createRandom();
 
     const G = Catan.setup({ ctx, random }, {});
 
+    expect(G.modeId).toBe("duel");
+    expect(G.boardConfigId).toBe("standard-balanced");
     expect(G.core.ruleset.victoryPointsToWin).toBe(15);
     expect(G.core.ruleset.discardLimit).toBe(9);
   });
 
   it("keeps standard ruleset defaults for 3+ players", () => {
     const ctx = { numPlayers: 3, phase: "placement" };
-    const random = {
-      Number: () => 0.5,
-      Shuffle: (items) => items
-    };
+    const random = createRandom();
 
     const G = Catan.setup({ ctx, random }, {});
 
+    expect(G.modeId).toBe("standard-3p");
+    expect(G.boardConfigId).toBe("standard-official");
     expect(G.core.ruleset.victoryPointsToWin).toBe(10);
     expect(G.core.ruleset.discardLimit).toBe(7);
   });
 
   it("defaults Year of Plenty bank counts to hidden", () => {
     const ctx = { numPlayers: 3, phase: "placement" };
-    const random = {
-      Number: () => 0.5,
-      Shuffle: (items) => items
-    };
+    const random = createRandom();
 
     const G = Catan.setup({ ctx, random }, {});
 
@@ -66,10 +76,7 @@ describe("Catan setup board config", () => {
 
   it("preserves an explicit Year of Plenty bank count setting from setupData", () => {
     const ctx = { numPlayers: 3, phase: "placement" };
-    const random = {
-      Number: () => 0.5,
-      Shuffle: (items) => items
-    };
+    const random = createRandom();
 
     const G = Catan.setup(
       { ctx, random },
@@ -95,7 +102,7 @@ describe("Catan setup board config", () => {
         activePlayers: { "0": "waiting", "1": "waiting" }
       };
       const random = {
-        Number: () => 0.5,
+        Number: makeDeterministicRng(123),
         Shuffle: (items) => items
       };
       const scenarioState = {

@@ -15,6 +15,8 @@ export type Ruleset = {
   buildCosts: { road: Cost; settlement: Cost; city: Cost; devCard: Cost };
 };
 
+export type RulesetId = "standard" | "duel";
+
 export const STANDARD_RULESET: Ruleset = {
   victoryPointsToWin: 10,
   discardLimit: 7,
@@ -95,6 +97,11 @@ export const DUEL_RULESET: Ruleset = {
   }
 };
 
+export const RULESETS: Record<RulesetId, Ruleset> = {
+  standard: STANDARD_RULESET,
+  duel: DUEL_RULESET
+};
+
 function cloneRuleset(spec: Ruleset): Ruleset {
   if (typeof structuredClone === "function") {
     return structuredClone(spec) as Ruleset;
@@ -104,6 +111,14 @@ function cloneRuleset(spec: Ruleset): Ruleset {
 
 export function createRuleset(spec: Ruleset): Ruleset {
   return cloneRuleset(spec);
+}
+
+export function resolveRuleset(id: RulesetId | string): Ruleset {
+  const ruleset = RULESETS[id as RulesetId];
+  if (!ruleset) {
+    throw new Error(`Unknown ruleset: ${id}`);
+  }
+  return ruleset;
 }
 
 export function createStandardRuleset(): Ruleset {
