@@ -15,6 +15,7 @@
     "serve": "node server/server.js"
   },
   "dependencies": {
+    "@base-ui/react": "^1.4.1",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@react-spring/web": "^9.7.3",
