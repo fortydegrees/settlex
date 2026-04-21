@@ -4135,3 +4135,12 @@
   - `pnpm -C game-core test`
   - `pnpm -C game-core build`
   - `pnpm exec vitest run --exclude '.worktrees/**' lib/server/__tests__/listPublicOpenMatches.test.js app/catana/__tests__/Game.boardConfig.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+- Added the first live Settlex standard UI showcase and migrated the main proving-ground surfaces onto shared primitives.
+- Standard UI phase 1 notes:
+  - `app/catana/lobby/[matchID]/MatchPageClient.js` now imports shared `Panel`, `Input`, `Select`, `Button`, and `Banner` instead of maintaining local glass helpers for the join-seat flow.
+  - `app/catana/lobby/LobbyPageClient.js` now routes the lobby card, join-by-code row, custom-room tools, dev-scenario picker, open-games list, and feedback banners through the shared `app/ui/*` layer.
+  - `app/catana/dev/ui/page.js` and `app/catana/dev/ui/UiShowcaseClient.js` provide a development-only component-registry screen for the standard layer, including live dialog and alert-dialog previews.
+  - the showcase page was browser-checked at `http://localhost:3001/catana/dev/ui` on desktop and mobile-sized viewports using the Playwright skill.
+- Verification for the standard UI proving-ground pass:
+  - `pnpm exec vitest run app/catana/__tests__/SettlexUiFoundation.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/IdlePromptModal.source.test.js app/catana/__tests__/GameScreen.gameOver.test.js app/catana/__tests__/MatchPageClient.standardUi.source.test.js app/catana/__tests__/LobbyPageClient.standardUi.source.test.js app/catana/__tests__/StandardUiShowcase.source.test.js`
+  - `pnpm exec eslint app/ui/Button.js app/ui/Panel.js app/ui/Banner.js app/ui/Input.js app/ui/Select.js app/ui/Dialog.js app/ui/AlertDialog.js app/catana/lobby/LobbyPageClient.js 'app/catana/lobby/[matchID]/MatchPageClient.js' app/catana/dev/ui/UiShowcaseClient.js app/catana/dev/ui/page.js app/catana/components/IdlePromptModal.js app/catana/components/ResignConfirmDialog.js app/catana/GameScreen.js`

@@ -2740,6 +2740,24 @@
       - `duel` -> 2 players, `rulesetId: "duel"`, `boardConfigId: "standard-balanced"`
       - `standard-3p` -> 3 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
       - `standard-4p` -> 4 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
-    - `app/catana/Game.js` still falls back from `ctx.numPlayers` for old callers, scenarios, and custom/dev creation flows.
-    - app-owned create routes should resolve/stamp `modeId`, `rulesetId`, and `boardConfigId` into `setupData` so match metadata, archives, and future queue filters stay self-describing.
-    - tests that run 1v1 setup now need a sequence RNG such as `makeDeterministicRng`; a constant `Number: () => 0.5` can make balanced generation retry the same failed placement indefinitely.
+  - `app/catana/Game.js` still falls back from `ctx.numPlayers` for old callers, scenarios, and custom/dev creation flows.
+  - app-owned create routes should resolve/stamp `modeId`, `rulesetId`, and `boardConfigId` into `setupData` so match metadata, archives, and future queue filters stay self-describing.
+  - tests that run 1v1 setup now need a sequence RNG such as `makeDeterministicRng`; a constant `Number: () => 0.5` can make balanced generation retry the same failed placement indefinitely.
+  - Settlex standard UI phase 1 note:
+    - the standard layer is now concrete enough to review in-browser at `/catana/dev/ui`; use that page as the visual proving ground before spreading new recipes across more product surfaces.
+    - the first migration target should stay "normal product UI" rather than bespoke board controls:
+      - lobby forms
+      - room/join panels
+      - reconnect/status banners
+      - resign/idle dialogs
+      - future chat/log/settings rails
+    - `app/ui/Button.js`, `Panel.js`, `Banner.js`, `Input.js`, `Select.js`, `Dialog.js`, and `AlertDialog.js` are the current canonical primitives.
+    - adapters such as `GlassPillButton` are still acceptable when they simply preserve existing call sites while delegating to the shared layer underneath.
+    - the showcase layout that felt strongest in practice was not a pixel-art clone of any registry site; it was a Catana-native docs/registry structure with:
+      - a sticky left rail for section jumping
+      - a hero block with system intent and live triggers
+      - stacked example panels for buttons, forms, feedback, shared surfaces, and overlays
+    - browser check notes for `/catana/dev/ui`:
+      - desktop looked visually stable and cohesive in Playwright screenshot capture
+      - mobile-sized viewport kept the hero block readable and the shared dialog centered cleanly
+    - known unrelated baseline issue: `pnpm verify` is still not globally clean in this worktree because of the pre-existing `app/catana/__tests__/LeftMetaRail.test.js` failure expecting `fixed left-4 bottom-4`; this slice did not touch that area.
