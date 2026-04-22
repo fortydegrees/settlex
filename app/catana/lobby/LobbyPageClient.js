@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Banner } from "../../ui/Banner";
 import { Button } from "../../ui/Button";
@@ -104,10 +103,7 @@ function SearchingModal({ onCancel, startedAt, phase = "searching" }) {
         <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
 
         {onCancel && (
-          <Button
-            onClick={onCancel}
-            className="mt-6 rounded-lg bg-slate-600 px-5 py-2 font-semibold text-white shadow-sm hover:bg-slate-700"
-          >
+          <Button onClick={onCancel} variant="secondary" className="mt-6">
             Cancel
           </Button>
         )}
@@ -181,6 +177,7 @@ function RoomRow({ match, onJoin, isPending }) {
           onClick={() =>
             onJoin({ matchID: match.matchID, playerID: String(firstOpenSeat.id) })
           }
+          variant="secondary"
           disabled={isPending}
           size="sm"
           className="rounded-full px-4 py-1.5 text-xs"
@@ -895,23 +892,24 @@ export function LobbyPageClient() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600">
-      <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center px-4 py-12">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-4 py-10 sm:px-6 sm:py-12">
         {/* ── Hero ── */}
-        <div className="mb-8 text-center">
-          <h1 className="text-5xl font-bold tracking-tight text-white drop-shadow-md">
+        <div className="mb-8 w-full text-center">
+          <h1 className="text-5xl font-bold tracking-tight text-white drop-shadow-md sm:text-6xl">
             Settlehex
           </h1>
-          <p className="mt-2 text-sm font-medium tracking-widest text-white/70">
+          <p className="mt-3 text-sm font-medium tracking-[0.32em] text-white/72 sm:text-base">
             settle &middot; trade &middot; conquer
           </p>
         </div>
 
         {/* ── Identity pill (shown when logged in) ── */}
         {hasIdentity && (
-          <div className="mb-5 flex items-center gap-2">
-            <button
+          <div className="mb-6 flex w-full flex-wrap justify-center gap-3">
+            <Button
               onClick={() => setShowIdentity(true)}
-              className="flex items-center gap-1.5 rounded-full bg-white/70 px-4 py-1.5 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/60 backdrop-blur-sm transition hover:bg-white/85 hover:scale-[1.02]"
+              variant="secondary"
+              className="min-w-[15rem] justify-start rounded-full px-5"
             >
               {playerColor && (
                 <span
@@ -919,14 +917,15 @@ export function LobbyPageClient() {
                 />
               )}
               <span>{playerEmoji || EMOJI_OPTIONS[0]}</span>
-              <span>{playerName}</span>
-            </button>
-            <Link
-              href="/account"
-              className="rounded-full bg-white/60 px-4 py-1.5 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/60 backdrop-blur-sm transition hover:bg-white/85"
+              <span className="truncate">{playerName}</span>
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/account")}
+              className="rounded-full px-5"
             >
               Account
-            </Link>
+            </Button>
           </div>
         )}
 
@@ -941,79 +940,110 @@ export function LobbyPageClient() {
         )}
 
         {/* ── Main card ── */}
-        <Panel className="w-full" bodyClassName="p-6">
-          <Button
-            onClick={() => requireIdentity(play)}
-            disabled={!!searchState || !!challengeState}
-            className="w-full px-6 py-3.5 text-lg"
-          >
-            Play
-          </Button>
-          <p className="mt-1.5 text-center text-xs text-slate-600">
-            1v1 &middot; instant matchmaking
-          </p>
-          <Button
-            onClick={() => requireIdentity(createFriendChallenge)}
-            disabled={!!searchState || !!challengeState}
-            className="mt-2 w-full rounded-lg bg-white/80 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-white/70 hover:bg-white"
-          >
-            Play a Friend
-          </Button>
-          <p className="mt-1 text-center text-xs text-slate-600">
-            Private link &middot; share to challenge a friend
-          </p>
-          <Button
-            onClick={() => requireIdentity(playAgainstBot)}
-            disabled={!!searchState || !!challengeState}
-            className="mt-2 w-full rounded-lg bg-amber-400 px-6 py-3 text-base font-bold text-slate-800 shadow-md ring-1 ring-amber-300 hover:bg-amber-300"
-          >
-            Play Against Bot
-          </Button>
-          <p className="mt-1 text-center text-xs text-slate-600">
-            Solo match &middot; fills seat 2 with Puffer bot
-          </p>
-
-          {/* Join by code */}
-          <div className="mt-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-white/40" />
-            <span className="text-xs font-medium text-slate-600">
-              have a room code?
-            </span>
-            <div className="h-px flex-1 bg-white/40" />
+        <Panel className="w-full" bodyClassName="p-5 sm:p-6">
+          <div className="text-center">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+              Matchmaking
+            </div>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-800 sm:text-[2rem]">
+              Choose how you want to play.
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Jump into ranked matchmaking, open a private challenge, or fill the
+              second seat with Puffer for a quick solo game.
+            </p>
           </div>
 
-          <form onSubmit={joinByCode} className="mt-4 flex gap-2">
-            <Input
-              value={joinMatchID}
-              onChange={(e) => setJoinMatchID(e.target.value)}
-              placeholder="Room code"
-              autoComplete="off"
-              className="min-w-0 flex-1"
-            />
-            <Select
-              value={joinSeat}
-              onChange={(e) => setJoinSeat(e.target.value)}
-              className="w-20 px-2"
+          <div className="mt-6 space-y-3">
+            <div>
+              <Button
+                onClick={() => requireIdentity(play)}
+                disabled={!!searchState || !!challengeState}
+                size="xl"
+                sheen
+                className="w-full"
+              >
+                Play
+              </Button>
+              <p className="mt-2 text-center text-sm text-slate-500">
+                1v1 &middot; instant matchmaking
+              </p>
+            </div>
+
+            <div>
+              <Button
+                onClick={() => requireIdentity(createFriendChallenge)}
+                variant="secondary"
+                size="lg"
+                disabled={!!searchState || !!challengeState}
+                className="w-full"
+              >
+                Play a Friend
+              </Button>
+              <p className="mt-2 text-center text-sm text-slate-500">
+                Private link &middot; share to challenge a friend
+              </p>
+            </div>
+
+            <div>
+              <Button
+                onClick={() => requireIdentity(playAgainstBot)}
+                variant="accent"
+                size="lg"
+                disabled={!!searchState || !!challengeState}
+                className="w-full"
+              >
+                Play Against Bot
+              </Button>
+              <p className="mt-2 text-center text-sm text-slate-500">
+                Solo match &middot; fills seat 2 with Puffer bot
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-[1.35rem] border border-white/35 bg-white/18 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.24)]">
+            <div className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+              Have a room code?
+            </div>
+
+            <form
+              onSubmit={joinByCode}
+              className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_7.5rem_auto]"
             >
-              <option value="0">Seat 1</option>
-              <option value="1">Seat 2</option>
-              <option value="2">Seat 3</option>
-              <option value="3">Seat 4</option>
-            </Select>
-            <Button
-              type="submit"
-              disabled={!joinMatchID.trim()}
-              className="rounded-lg bg-slate-600 px-4 py-2 font-semibold text-white shadow-sm hover:bg-slate-700"
-            >
-              Join
-            </Button>
-          </form>
+              <Input
+                value={joinMatchID}
+                onChange={(e) => setJoinMatchID(e.target.value)}
+                placeholder="Room code"
+                autoComplete="off"
+                className="min-w-0"
+              />
+              <Select
+                value={joinSeat}
+                onChange={(e) => setJoinSeat(e.target.value)}
+                className="w-full"
+              >
+                <option value="0">Seat 1</option>
+                <option value="1">Seat 2</option>
+                <option value="2">Seat 3</option>
+                <option value="3">Seat 4</option>
+              </Select>
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={!joinMatchID.trim()}
+                className="w-full"
+              >
+                Join
+              </Button>
+            </form>
+          </div>
         </Panel>
 
         {/* ── Custom game toggle ── */}
-        <button
+        <Button
           onClick={() => setShowCustom((v) => !v)}
-          className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-white/80 transition hover:text-white"
+          variant="secondary"
+          className="mt-5 rounded-full px-5"
         >
           <span
             className="inline-block transition-transform"
@@ -1022,7 +1052,7 @@ export function LobbyPageClient() {
             &#9656;
           </span>
           Host Custom Game
-        </button>
+        </Button>
 
         {/* ── Custom game section ── */}
          {showCustom && (
@@ -1036,14 +1066,9 @@ export function LobbyPageClient() {
                    {[2, 3, 4].map((n) => (
                      <Button
                        key={n}
-                       variant="chip"
+                       variant={createNumPlayers === n ? "accent" : "subtle"}
                        size="sm"
                        onClick={() => setCreateNumPlayers(n)}
-                       className={
-                         createNumPlayers === n
-                           ? "bg-amber-400 text-slate-800 shadow-md ring-1 ring-amber-300 hover:bg-amber-300"
-                           : ""
-                       }
                      >
                        {n}
                      </Button>
@@ -1065,7 +1090,7 @@ export function LobbyPageClient() {
                  bodyClassName="p-5"
                  right={
                    <Button
-                     variant="pill"
+                     variant="secondary"
                      size="sm"
                      onClick={fetchSavedScenarios}
                      disabled={isLoadingScenarios}
@@ -1111,11 +1136,11 @@ export function LobbyPageClient() {
               title={`Open Games · ${matches.length} live`}
               bodyClassName="space-y-2 p-3"
               right={
-                <Button
-                  variant="pill"
-                  size="sm"
-                  onClick={refreshMatches}
-                  disabled={isRefreshing}
+                 <Button
+                   variant="secondary"
+                   size="sm"
+                   onClick={refreshMatches}
+                   disabled={isRefreshing}
                   className="px-2 py-0.5 text-xs"
                 >
                   {isRefreshing ? "…" : "Refresh"}

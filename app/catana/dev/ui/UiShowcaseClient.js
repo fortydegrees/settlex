@@ -32,23 +32,32 @@ const MOTION_OPTIONS = [
 ];
 
 const SAMPLE_LOG = [
-  { title: "Reconnect banner", body: "Shared banner recipe with fast slide/fade entry." },
-  { title: "Chat + game log rail", body: "Standard panels, inputs, and tabs can live beside the board." },
-  { title: "Matchmaking + room setup", body: "Shared buttons and fields stop the lobby from drifting." },
+  {
+    title: "Reconnect banner",
+    body: "Shared banner recipe with fast slide/fade entry.",
+  },
+  {
+    title: "Chat + game log rail",
+    body: "Standard panels, inputs, and tabs can live beside the board.",
+  },
+  {
+    title: "Matchmaking + room setup",
+    body: "Shared buttons and fields stop the lobby from drifting.",
+  },
 ];
 
 const SHARED_SURFACES = [
   {
     title: "Product Web",
-    body: "Landing pages, profiles, leaderboards, and blog chrome should all use the same core recipes."
+    body: "Landing pages, profiles, leaderboards, and blog chrome should all use the same core recipes.",
   },
   {
     title: "In-Game Shared UI",
-    body: "Reconnect banners, resign dialogs, chat, logs, and room settings can stay on the same standard layer."
+    body: "Reconnect banners, resign dialogs, chat, logs, and room settings can stay on the same standard layer.",
   },
   {
     title: "Bespoke Gameplay",
-    body: "Board pieces, action bars, dice, and turn-critical controls still get custom treatment on top."
+    body: "Board pieces, action bars, dice, and turn-critical controls still get custom treatment on top.",
   },
 ];
 
@@ -129,7 +138,7 @@ export function UiShowcaseClient() {
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <Button onClick={() => setDialogOpen(true)}>Open Dialog</Button>
-                      <Button variant="pill" onClick={() => setAlertOpen(true)}>
+                      <Button variant="secondary" onClick={() => setAlertOpen(true)}>
                         Open Confirm
                       </Button>
                     </div>
@@ -148,35 +157,34 @@ export function UiShowcaseClient() {
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                    <div className="rounded-2xl bg-white/55 p-4 shadow-lg ring-1 ring-white/60 backdrop-blur-sm">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
-                        Motion
+                    {[
+                      {
+                        title: "Motion",
+                        value: "140-220ms",
+                        body: "Fast enough for product UI, but still alive on entry and exit.",
+                      },
+                      {
+                        title: "Coverage",
+                        value: "7 recipes",
+                        body: "Button, panel, banner, input, select, dialog, and alert dialog.",
+                      },
+                      {
+                        title: "Rule",
+                        value: "Primitive first",
+                        body: "Compose surfaces from shared parts before writing another custom widget.",
+                      },
+                    ].map((item) => (
+                      <div
+                        key={item.title}
+                        className="rounded-2xl bg-white/55 p-4 shadow-lg ring-1 ring-white/60 backdrop-blur-sm"
+                      >
+                        <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+                          {item.title}
+                        </div>
+                        <div className="mt-2 text-xl font-bold text-slate-900">{item.value}</div>
+                        <p className="mt-2 text-sm text-slate-700">{item.body}</p>
                       </div>
-                      <div className="mt-2 text-xl font-bold text-slate-900">140-220ms</div>
-                      <p className="mt-2 text-sm text-slate-700">
-                        Fast enough for product UI, but still alive on entry and exit.
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl bg-white/55 p-4 shadow-lg ring-1 ring-white/60 backdrop-blur-sm">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
-                        Coverage
-                      </div>
-                      <div className="mt-2 text-xl font-bold text-slate-900">7 recipes</div>
-                      <p className="mt-2 text-sm text-slate-700">
-                        Button, panel, banner, input, select, dialog, and alert dialog.
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl bg-white/55 p-4 shadow-lg ring-1 ring-white/60 backdrop-blur-sm">
-                      <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
-                        Rule
-                      </div>
-                      <div className="mt-2 text-xl font-bold text-slate-900">Primitive first</div>
-                      <p className="mt-2 text-sm text-slate-700">
-                        Compose surfaces from shared parts before writing another custom widget.
-                      </p>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </Panel>
@@ -204,9 +212,9 @@ export function UiShowcaseClient() {
 
                   <div className="rounded-2xl bg-white/35 p-4 ring-1 ring-white/40">
                     <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
-                      Pill
+                      Secondary
                     </div>
-                    <Button variant="pill" className="mt-3 w-full rounded-lg">
+                    <Button variant="secondary" className="mt-3 w-full rounded-lg">
                       View Rules
                     </Button>
                     <p className="mt-3 text-sm text-slate-700">
@@ -216,21 +224,21 @@ export function UiShowcaseClient() {
 
                   <div className="rounded-2xl bg-white/35 p-4 ring-1 ring-white/40">
                     <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
-                      Chip
+                      Accent + Subtle
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Button variant="chip" size="sm">2P</Button>
-                      <Button
-                        variant="chip"
-                        size="sm"
-                        className="bg-amber-400 text-slate-800 ring-amber-300 hover:bg-amber-300"
-                      >
+                      <Button variant="subtle" size="sm">
+                        2P
+                      </Button>
+                      <Button variant="accent" size="sm">
                         3P
                       </Button>
-                      <Button variant="chip" size="sm">4P</Button>
+                      <Button variant="subtle" size="sm">
+                        4P
+                      </Button>
                     </div>
                     <p className="mt-3 text-sm text-slate-700">
-                      Toggles, filters, and small mode selectors.
+                      Alternate emphasis plus low-noise toggles, filters, and mode selectors.
                     </p>
                   </div>
 
@@ -303,7 +311,7 @@ export function UiShowcaseClient() {
 
                     <div className="flex flex-wrap gap-3">
                       <Button>Save Preferences</Button>
-                      <Button variant="pill" className="rounded-lg">
+                      <Button variant="secondary" className="rounded-lg">
                         Reset Preview
                       </Button>
                     </div>
@@ -459,7 +467,7 @@ export function UiShowcaseClient() {
         actions={
           <div className="flex flex-wrap justify-end gap-2">
             <Button
-              variant="pill"
+              variant="secondary"
               className="rounded-lg"
               onClick={() => setDialogOpen(false)}
             >

@@ -52,6 +52,23 @@
   }
 }
 
+@keyframes settlex-ui-cta-shimmer {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%);
+  }
+
+  12% {
+    opacity: 0.55;
+  }
+
+  40%,
+  100% {
+    opacity: 0;
+    transform: translateX(60%);
+  }
+}
+
 /* :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;

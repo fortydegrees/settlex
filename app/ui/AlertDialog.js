@@ -30,11 +30,11 @@ export function AlertDialog({
   return (
     <BaseAlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseAlertDialog.Portal>
-        <BaseAlertDialog.Backdrop className="settlex-ui-dialog-backdrop fixed inset-0 z-40 bg-blue-900/40 backdrop-blur-sm" />
+        <BaseAlertDialog.Backdrop className="settlex-ui-dialog-backdrop fixed inset-0 z-40 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_32%),rgba(15,23,42,0.42)] backdrop-blur-sm" />
         <BaseAlertDialog.Viewport className="fixed inset-0 z-40 flex items-center justify-center px-4">
           <BaseAlertDialog.Popup
             className={cn(
-              "settlex-ui-dialog-popup w-full max-w-md rounded-[1.75rem] border border-white/60 bg-[linear-gradient(180deg,rgba(191,219,254,0.96),rgba(219,234,254,0.94)_18%,rgba(255,255,255,0.94))] p-6 shadow-[0_30px_90px_-36px_rgba(15,23,42,0.72)] ring-1 ring-white/45 backdrop-blur-xl",
+              "settlex-ui-dialog-popup w-full max-w-md rounded-[1.65rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(239,246,255,0.76))] p-6 shadow-[0_34px_90px_-44px_rgba(15,23,42,0.72)]",
               className
             )}
           >
