@@ -1,5 +1,8 @@
 # NOTES
 
+- Agent workflow note:
+- repo-root `AGENTS.md` now has a `Fast iteration` carveout for UI/audio/animation/copy/timing tuning. For Catana sandbox/effects work, prefer direct edits plus manual verification and skip test churn unless the change affects shared logic, wiring, state flow, or a deliberate regression lock.
+
 - Standard UI phase-1 planning note:
 - The first implementation slice for the Settlex standard UI system should stay narrow: foundation hooks plus `Button`, `Panel`, `Banner`, `Input`, `Select`, `Dialog`, and `AlertDialog`.
 - Early proving-ground migrations should target existing duplicated standard UI surfaces first: reconnect banner, idle prompt, resign confirmation, `MatchPageClient` glass helpers, and the custom-game section of `LobbyPageClient`.

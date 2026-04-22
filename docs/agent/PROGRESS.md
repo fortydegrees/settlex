@@ -1,5 +1,13 @@
 # PROGRESS
 
+## Status (2026-04-22, agent fast-iteration carveout)
+- Added an explicit fast-iteration rule to the repo-root `AGENTS.md` so small UI/audio/animation tuning passes can use direct edits and manual sandbox verification without defaulting to new tests or broad suites.
+- Current direction:
+- keep the existing test-first stance for game rules, state transitions, shared logic, wiring changes, and regressions,
+- treat Catana sandbox/effects-lab tuning as a separate faster loop where value-only tweaks, timing nudges, sound swaps, CSS tuning, and copy adjustments should usually skip test edits unless explicitly requested.
+- Focused verification:
+- `git diff --check`
+
 ## Status (2026-04-21, standard UI foundation phase-1 plan)
 - Wrote the first implementation plan for the new Settlex standard UI system.
 - Current direction:
