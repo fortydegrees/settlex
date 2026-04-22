@@ -5,9 +5,11 @@ import { createAudioManager } from "./AudioManager";
 import { registerEffects } from "./registry";
 import { EffectLayer } from "./EffectLayer";
 import { DEFAULT_TURN_START_STATE, getTurnStartCueDecision } from "./turnStartCue";
+import { buildDiceRollTimeline } from "./diceRollTimeline";
 
 export function GameEffects({
   effects = {},
+  effectsBus: providedBus = null,
   boardRef,
   currentPlayerId,
   playerID,
@@ -15,7 +17,8 @@ export function GameEffects({
   gameOverState,
   isWinner
 }) {
-  const bus = useMemo(() => createEffectBus(), []);
+  const localBus = useMemo(() => createEffectBus(), []);
+  const bus = providedBus ?? localBus;
   const layerRef = useRef(null);
   const audio = useMemo(() => createAudioManager({ bus }), [bus]);
   const turnStartRef = useRef({ ...DEFAULT_TURN_START_STATE });
@@ -60,10 +63,18 @@ export function GameEffects({
 
   useEffectListener(
     "roll",
-    () => {
-      bus.emit({ type: "cue", payload: { name: "dice:roll" } });
+    (dice) => {
+      const plan = audio.planCue("dice:roll");
+      bus.emit({ type: "cue", payload: { name: "dice:roll", plan } });
+      bus.emit({
+        type: "dice:roll:timeline",
+        payload: {
+          dice,
+          timeline: buildDiceRollTimeline({ plan })
+        }
+      });
     },
-    [bus]
+    [audio, bus]
   );
 
   useEffectListener(

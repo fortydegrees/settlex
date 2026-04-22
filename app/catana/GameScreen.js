@@ -50,6 +50,7 @@ import { GameOverModal } from "./components/GameOverModal";
 import { PostgameOverlay } from "./components/PostgameOverlay";
 import { DevCardPurchaseReveal } from "./DevCardPurchaseReveal";
 import { GameEffects } from "./effects/GameEffects";
+import { createEffectBus } from "./effects/EffectBus";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
 import {
@@ -157,6 +158,7 @@ export function GameScreen(bgioProps) {
   const devCardDisplayRef = useRef(null);
   const pendingDevCardRevealRef = useRef(null);
   const deferredLogEntriesRef = useRef([]);
+  const effectsBus = useMemo(() => createEffectBus(), []);
   const { width, height } = useWindowSize();
   const moves = bgioProps.moves;
   const isReplay = bgioProps.isReplay === true;
@@ -1187,6 +1189,7 @@ export function GameScreen(bgioProps) {
 
       {!isReplay && (
         <GameEffects
+          effectsBus={effectsBus}
           boardRef={boardRef}
           effects={effects}
           currentPlayerId={bgioProps.ctx?.currentPlayer}
@@ -1202,6 +1205,7 @@ TODO: accurately colour it
 */}
       {!!player && (
         <PlayerActionContainer
+          effectsBus={effectsBus}
           setPlayerAction={setPlayerAction}
           buildPickup={buildPickup}
           setBuildPickup={setBuildPickup}
