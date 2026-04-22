@@ -21,6 +21,14 @@ Ship small, correct changes with a stable, testable game engine.
 - Avoid scope creep; implement only what was requested.
 - If you notice repeated mistakes, propose a short edit to `AGENTS.md`.
 
+## Fast iteration
+- For UI, animation, audio, copy, and timing tuning work, prefer direct edits plus manual verification in the relevant dev surface.
+- In particular, use `app/catana/dev/sandbox/` and `app/catana/dev/effects/` as the default loop for Catana board/effects/audio iteration.
+- Do not add or update tests for value-only tweaks, timing nudges, sound swaps, CSS adjustments, or other tuning-only changes unless the user explicitly asks.
+- Add or update tests when changing shared logic, reusable helpers, event wiring, state flow, or fixing a regression that should stay locked in.
+- For tuning tasks, use the smallest relevant verification step. Prefer targeted sandbox/effects-lab/manual checks over broad automated test runs.
+- If a tuning pass grows into a logic change, shared abstraction change, or bug fix, switch back to the normal test-oriented workflow.
+
 ## Updates
 - Provide brief updates only when starting a new phase or when the plan changes.
 - Each update should include a concrete outcome (e.g., “Added X”, “Found Y”).
