@@ -6,17 +6,45 @@ export const DEFAULT_THEME = {
   "build:road": { src: "/sounds/road.mp3", volume: 0.6 },
   "build:place": { src: "/sounds/build_settlement.mp3", volume: 0.8 },
   "dice:roll": {
+    // Dice visuals use these clip lengths to sync the shake and settle phases.
+    leadIn: {
+      variants: [
+        "/sounds/dice-heavy/dice-shake-1.mp3",
+        "/sounds/dice-heavy/dice-shake-2.mp3",
+        "/sounds/dice-heavy/dice-shake-3.mp3",
+        "/sounds/dice-heavy/dice-shake-4.mp3",
+        "/sounds/dice-heavy/dice-shake-5.mp3"
+      ],
+      durationMsBySrc: {
+        "/sounds/dice-heavy/dice-shake-1.mp3": 334,
+        "/sounds/dice-heavy/dice-shake-2.mp3": 546,
+        "/sounds/dice-heavy/dice-shake-3.mp3": 764,
+        "/sounds/dice-heavy/dice-shake-4.mp3": 356,
+        "/sounds/dice-heavy/dice-shake-5.mp3": 486
+      },
+      volume: 0.32,
+      shuffle: true
+    },
     variants: [
-      "/sounds/dice_roll1.mp3",
-      "/sounds/dice_roll2.mp3",
-      "/sounds/dice_roll3.mp3",
-      "/sounds/dice_roll4.mp3",
-      "/sounds/dice_roll5.mp3"
+      "/sounds/die-throw-1.mp3",
+      "/sounds/die-throw-2.mp3",
+      "/sounds/die-throw-3.mp3",
+      "/sounds/die-throw-4.mp3"
     ],
-    volume: 0.5,
+    durationMsBySrc: {
+      "/sounds/die-throw-1.mp3": 418,
+      "/sounds/die-throw-2.mp3": 461,
+      "/sounds/die-throw-3.mp3": 591,
+      "/sounds/die-throw-4.mp3": 391
+    },
+    layers: 2,
+    volume: 0.32,
+    startDelayPortion: 0,
+    impactLeadPortion: 0.5,
+    layerDelayMs: [0, 30],
     allowWhenHidden: true,
     shuffle: true,
-    randomize: { volume: [0.9, 1.0], rate: [0.98, 1.02] }
+    randomize: { volume: [0.9, 1.0], rate: [0.95, 1.05] }
   },
   "turn:start": { src: "/sounds/turn-start.mp3", volume: 0.6, allowWhenHidden: true },
   "game:win": { src: "/sounds/turn-start.mp3", volume: 0.7 },
