@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { Button } from "../../ui/Button";
+import { Dialog } from "../../ui/Dialog";
+import { Input } from "../../ui/Input";
+import { Panel } from "../../ui/Panel";
 
 const formatTimeRemaining = (expiresAt) => {
   const expiresAtMs = new Date(expiresAt).getTime();
@@ -63,56 +67,46 @@ export function FriendChallengeModal({
   };
 
   const isExpired = phase === "expired";
+  const handleOpenChange = (nextOpen) => {
+    if (!nextOpen) {
+      onClose();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-blue-900/40 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-md rounded-xl bg-blue-200/95 p-6 shadow-2xl ring-2 ring-slate-300">
-        <h2 className="text-center text-lg font-bold text-slate-800">
-          {isExpired ? "Challenge expired" : "Waiting for friend to join"}
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-600">
-          {isExpired
-            ? "Your friend did not join in time."
-            : "Keep this open while your friend joins. Closing it cancels the invite."}
-        </p>
-
-        <div className="mt-5 rounded-xl bg-white/50 p-3 shadow-inner ring-1 ring-white/60">
-          <label className="text-xs font-semibold uppercase tracking-widest text-slate-700">
-            Share link
-          </label>
-          <div className="mt-2 flex gap-2">
-            <input
-              readOnly
-              value={shareUrl}
-              className="min-w-0 flex-1 rounded-lg bg-white/70 px-3 py-2 text-sm text-slate-700 shadow-inner ring-1 ring-white/60"
-            />
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="rounded-lg bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-white/60 transition hover:bg-white"
-            >
-              {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
-          {!isExpired && timeRemaining && (
-            <div className="mt-2 text-xs text-slate-500">
-              Expires in {timeRemaining}
-            </div>
-          )}
+    <Dialog
+      open
+      onOpenChange={handleOpenChange}
+      title={isExpired ? "Challenge expired" : "Waiting for friend to join"}
+      description={
+        isExpired
+          ? "Your friend did not join in time."
+          : "Keep this open while your friend joins. Closing it cancels the invite."
+      }
+      maxWidthClassName="max-w-md"
+    >
+      <Panel title="Share Link" bodyClassName="p-4">
+        <div className="flex gap-2">
+          <Input readOnly value={shareUrl} className="min-w-0 flex-1 text-sm" />
+          <Button type="button" variant="secondary" onClick={handleCopy}>
+            {copied ? "Copied" : "Copy"}
+          </Button>
         </div>
+        {!isExpired && timeRemaining && (
+          <div className="mt-2 text-xs text-slate-500">
+            Expires in {timeRemaining}
+          </div>
+        )}
+      </Panel>
 
-        <button
+      <Button
           type="button"
           onClick={onClose}
-          className={`mt-5 w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition ${
-            isExpired
-              ? "bg-slate-600 hover:bg-slate-700"
-              : "bg-rose-500 hover:bg-rose-600"
-          }`}
+          variant={isExpired ? "secondary" : "danger"}
+          className="mt-5 w-full"
         >
           {isExpired ? "Close" : "Close & cancel invite"}
-        </button>
-      </div>
-    </div>
+        </Button>
+    </Dialog>
   );
 }

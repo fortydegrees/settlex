@@ -4,19 +4,19 @@ import { cn } from "./cn";
 const VARIANT_STYLES = {
   neutral: {
     container:
-      "border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(239,246,255,0.78))] ring-white/60",
+      "border-white/44 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(239,246,255,0.68))]",
     indicator:
-      "bg-sky-200/95 shadow-[0_0_0_5px_rgba(191,219,254,0.55),0_0_0_10px_rgba(255,255,255,0.18)]",
+      "bg-sky-200 shadow-[0_0_0_5px_rgba(191,219,254,0.42)]",
     title: "text-slate-900",
     body: "text-slate-700",
   },
   danger: {
     container:
-      "border-rose-200/85 bg-[linear-gradient(180deg,rgba(255,241,242,0.96),rgba(255,228,230,0.84))] ring-rose-200/85",
+      "border-rose-200/75 bg-[linear-gradient(180deg,rgba(255,241,242,0.98),rgba(255,228,230,0.76))]",
     indicator:
-      "bg-rose-500 shadow-[0_0_0_5px_rgba(254,205,211,0.72),0_0_0_10px_rgba(255,255,255,0.16)] animate-pulse motion-reduce:animate-none",
+      "bg-rose-500 shadow-[0_0_0_5px_rgba(254,205,211,0.62)] animate-pulse motion-reduce:animate-none",
     title: "text-rose-700",
-    body: "text-rose-600",
+    body: "text-rose-600/95",
   },
 };
 
@@ -33,16 +33,16 @@ export function Banner({
   return (
     <div
       className={cn(
-        `flex items-start gap-4 rounded-[1.4rem] border px-4 ${
+        `flex items-start gap-4 rounded-[1.2rem] border px-4 ${
           hasBody ? "py-3" : "py-2.5"
-        } text-slate-800 shadow-[0_18px_42px_-24px_rgba(15,23,42,0.48)] ring-1 backdrop-blur-xl`,
+        } text-slate-800 shadow-[0_18px_34px_-26px_rgba(15,23,42,0.34)] backdrop-blur-xl`,
         styles.container,
         className
       )}
     >
       <span
         aria-hidden="true"
-        className={cn("h-3 w-3 shrink-0 rounded-full", styles.indicator)}
+        className={cn("mt-[0.2rem] h-3 w-3 shrink-0 rounded-full", styles.indicator)}
       />
 
       <div className="min-w-0 flex-1">

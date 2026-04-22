@@ -1,6 +1,12 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { Button } from "../../ui/Button";
+import { Dialog } from "../../ui/Dialog";
+import { IconButton } from "../../ui/IconButton";
+import { Input } from "../../ui/Input";
+import { Popover } from "../../ui/Popover";
+import { SwatchPicker } from "../../ui/SwatchPicker";
 import {
   PLAYER_COLOR_PICKER_OPTIONS,
   getPlayerColorOption,
@@ -12,23 +18,11 @@ import {
 } from "./playerIdentityStorage";
 
 function EmojiPicker({ value, onChange, colorGradient }) {
-  const [showGrid, setShowGrid] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [slideDir, setSlideDir] = useState(0);
   const [slideKey, setSlideKey] = useState(0);
-  const gridRef = useRef(null);
   const idx = EMOJI_OPTIONS.indexOf(value);
   const currentIdx = idx >= 0 ? idx : 0;
-
-  useEffect(() => {
-    if (!showGrid) return;
-    const handler = (event) => {
-      if (gridRef.current && !gridRef.current.contains(event.target)) {
-        setShowGrid(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [showGrid]);
 
   const navigate = (direction) => {
     const nextIndex = (currentIdx + direction + EMOJI_OPTIONS.length) % EMOJI_OPTIONS.length;
@@ -47,81 +41,78 @@ function EmojiPicker({ value, onChange, colorGradient }) {
   return (
     <div className="relative flex flex-col items-center">
       <div className="relative flex items-center gap-4">
-        <button
-          type="button"
+        <IconButton
+          aria-label="Previous emoji"
           onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/40 text-lg text-slate-600 ring-1 ring-white/50 transition hover:bg-white/60 hover:scale-105 active:scale-95"
+          className="backdrop-blur-sm"
         >
           &#8249;
-        </button>
+        </IconButton>
 
-        <button
-          type="button"
-          onClick={() => setShowGrid((current) => !current)}
-          className="group relative flex flex-col items-center"
-        >
-          <span
-            className={`relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-t ring-4 ring-white shadow-lg ${colorGradient || ""}`}
-          >
-            <span
-              className="relative z-10 block"
-              style={{ animation: "emojiBounce 2s ease-in-out infinite" }}
-            >
+        <Popover
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          triggerAriaLabel="Browse emoji options"
+          triggerClassName="group relative flex flex-col items-center"
+          triggerContent={
+            <>
               <span
-                key={slideKey}
-                className="block text-5xl"
-                style={{ animation: slideAnim, display: "inline-block" }}
+                className={`relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.4rem] bg-gradient-to-t ring-4 ring-white shadow-[0_20px_36px_-24px_rgba(15,23,42,0.5)] ${colorGradient || ""}`}
               >
-                {value}
+                <span
+                  className="relative z-10 block"
+                  style={{ animation: "emojiBounce 2s ease-in-out infinite" }}
+                >
+                  <span
+                    key={slideKey}
+                    className="block text-5xl"
+                    style={{ animation: slideAnim, display: "inline-block" }}
+                  >
+                    {value}
+                  </span>
+                </span>
+                <div
+                  className="absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-full"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse, rgba(0,0,0,0.25) 0%, transparent 70%)",
+                    animation: "emojiShadow 2s ease-in-out infinite",
+                  }}
+                />
               </span>
-            </span>
-            <div
-              className="absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-full"
-              style={{
-                background:
-                  "radial-gradient(ellipse, rgba(0,0,0,0.25) 0%, transparent 70%)",
-                animation: "emojiShadow 2s ease-in-out infinite",
-              }}
-            />
-          </span>
-          <span className="mt-1.5 block text-[10px] font-medium text-slate-500 opacity-0 transition-opacity group-hover:opacity-100">
-            tap to browse
-          </span>
-        </button>
+              <span className="mt-1.5 block text-[10px] font-medium text-slate-500 opacity-0 transition-opacity group-hover:opacity-100">
+                tap to browse
+              </span>
+            </>
+          }
+        >
+          <div className="grid grid-cols-4 gap-1.5">
+            {EMOJI_OPTIONS.map((emojiOption) => (
+              <Button
+                key={emojiOption}
+                type="button"
+                variant={value === emojiOption ? "accent" : "subtle"}
+                size="sm"
+                onClick={() => {
+                  onChange(emojiOption);
+                  setIsOpen(false);
+                }}
+                className="h-12 w-12 rounded-[1rem] p-0 text-2xl"
+              >
+                {emojiOption}
+              </Button>
+            ))}
+          </div>
+        </Popover>
 
-        <button
-          type="button"
+        <IconButton
+          aria-label="Next emoji"
           onClick={() => navigate(1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/40 text-lg text-slate-600 ring-1 ring-white/50 transition hover:bg-white/60 hover:scale-105 active:scale-95"
+          className="backdrop-blur-sm"
         >
           &#8250;
-        </button>
+        </IconButton>
       </div>
-
-      {showGrid && (
-        <div
-          ref={gridRef}
-          className="absolute top-full z-10 mt-2 grid grid-cols-4 gap-1.5 rounded-xl bg-blue-200/95 p-3 shadow-xl ring-2 ring-slate-300"
-        >
-          {EMOJI_OPTIONS.map((e) => (
-            <button
-              key={e}
-              type="button"
-              onClick={() => {
-                onChange(e);
-                setShowGrid(false);
-              }}
-              className={`rounded-lg px-1 py-1.5 text-2xl transition-all ${
-                value === e
-                  ? "bg-amber-400 shadow-md ring-2 ring-amber-300 scale-110"
-                  : "hover:bg-white/50 hover:scale-105"
-              }`}
-            >
-              {e}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -142,7 +133,6 @@ export function IdentityModal({
       suggestedIdentity.color
   );
   const inputRef = useRef(null);
-  const formRef = useRef(null);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -158,27 +148,22 @@ export function IdentityModal({
     });
   };
 
-  const handleBackdropClick = (event) => {
-    if (formRef.current && !formRef.current.contains(event.target)) {
+  const handleOpenChange = (nextOpen) => {
+    if (!nextOpen) {
       onClose();
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-blue-900/40 backdrop-blur-sm"
-      onMouseDown={handleBackdropClick}
+    <Dialog
+      open
+      onOpenChange={handleOpenChange}
+      title="Pick a username"
+      description="Choose the emoji, color, and name you want to take into the match."
+      maxWidthClassName="max-w-sm"
     >
-      <form
-        ref={formRef}
-        onSubmit={handleSubmit}
-        className="mx-4 w-full max-w-xs rounded-xl bg-blue-200/95 p-6 shadow-2xl ring-2 ring-slate-300"
-      >
-        <h2 className="text-center text-lg font-bold text-slate-800">
-          Pick a username
-        </h2>
-
-        <div className="mt-5">
+      <form onSubmit={handleSubmit}>
+        <div className="mt-1">
           <EmojiPicker
             value={emoji}
             onChange={setEmoji}
@@ -186,41 +171,32 @@ export function IdentityModal({
           />
         </div>
 
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {PLAYER_COLOR_PICKER_OPTIONS.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setColor(c.id)}
-              className={`h-7 w-7 rounded-full ${c.swatch} transition-all ${
-                color === c.id
-                  ? "ring-2 ring-white ring-offset-2 ring-offset-blue-200 scale-110"
-                  : "ring-1 ring-white/40 hover:scale-110"
-              }`}
-              aria-label={c.id}
-            />
-          ))}
-        </div>
+        <SwatchPicker
+          options={PLAYER_COLOR_PICKER_OPTIONS}
+          value={color}
+          onChange={setColor}
+          className="mt-4"
+        />
 
-        <input
+        <Input
           ref={inputRef}
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Your name"
           autoComplete="nickname"
           maxLength={28}
-          className="mt-5 w-full rounded-lg bg-white/60 px-3 py-2.5 text-center text-sm font-semibold text-slate-800 placeholder:text-slate-500 shadow-inner ring-1 ring-white/50 focus:outline-none focus:ring-2 focus:ring-white/70"
+          className="mt-5 text-center text-sm font-semibold"
         />
 
-        <button
+        <Button
           type="submit"
           disabled={!name.trim()}
-          className="mt-4 w-full rounded-lg bg-lime-500 px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-lime-600 hover:scale-[1.01] disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:scale-100"
+          size="lg"
+          className="mt-4 w-full"
         >
           Let&apos;s go!
-        </button>
+        </Button>
       </form>
-
       <style>{`
         @keyframes emojiBounce {
           0%, 100% { transform: translateY(0); }
@@ -239,6 +215,6 @@ export function IdentityModal({
           100% { transform: translateX(0); opacity: 1; }
         }
       `}</style>
-    </div>
+    </Dialog>
   );
 }

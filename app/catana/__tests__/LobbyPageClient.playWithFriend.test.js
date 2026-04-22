@@ -16,13 +16,17 @@ describe("LobbyPageClient play-with-friend flow", () => {
     expect(source).toContain('route: `/api/challenges/${challengeState.matchID}/cancel`');
   });
 
-  it("renders the waiting modal copy and cancel affordances", () => {
+  it("renders the waiting modal through the shared dialog + field primitives", () => {
     const source = readFileSync(
       resolve(process.cwd(), "app/catana/lobby/FriendChallengeModal.js"),
       "utf8"
     );
 
+    expect(source).toContain('from "../../ui/Dialog"');
+    expect(source).toContain('from "../../ui/Input"');
+    expect(source).toContain('from "../../ui/Button"');
     expect(source).toContain("Waiting for friend to join");
     expect(source).toContain("Close & cancel invite");
+    expect(source).not.toContain("fixed inset-0 z-40");
   });
 });

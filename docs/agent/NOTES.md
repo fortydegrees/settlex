@@ -2771,4 +2771,118 @@
         - still clearly Catana
         - more systematized than the older one-off components
         - not trying to imitate 8-bit or neobrutalist libraries directly
+    - variant-exploration note:
+      - this is a good point in the process to sample alternate visual passes from other coding models, because the primitive architecture and showcase route now exist.
+      - `docs/agent/SETTLEX_STANDARD_UI_VARIANT_PROMPT.md` is the reusable handoff for that purpose.
+      - the useful framing is:
+        - keep the same system structure
+        - keep the same brand family
+        - vary the visual judgment
+      - asking another model for a “different but still Settlex” pass is more useful than asking for a completely fresh design system.
+    - recovery note for the interrupted variant pass:
+      - keep alternate visual directions inside `app/catana/dev/ui/UiShowcaseClient.js` until one wins.
+      - do not restyle `app/ui/*` or `app/globals.css` just to preview a new theme direction; that is the canonical layer.
+      - the current comparison contract is:
+        - same showcase structure
+        - same product content
+        - different visual judgment only
+      - the recovered comparison lanes are:
+        - `Current Pass`
+        - `Liquid Glass`
+        - `Motion-Accent CTA`
+      - the comparison route was rechecked in-browser at `http://localhost:3000/catana/dev/ui` on desktop and mobile, with screenshots saved to `output/playwright/`.
+      - follow-up motion correction:
+        - the experimental modal had been rendered as a plain fixed div, so it lost the shared overlay entry motion even though the baseline lane still had it through `Dialog` / `AlertDialog`.
+        - keep experimental shells visually custom, but reuse `settlex-ui-dialog-backdrop` and `settlex-ui-dialog-popup` when the intent is “same motion contract, different chrome.”
+      - promotion note:
+        - `Motion-Accent CTA` is now the canonical shared UI family rather than a dev-only variant.
+        - keep future experiments relative to this baseline instead of preserving the old `Current Pass` / `Liquid Glass` lanes in the showcase.
+        - the dev showcase route should act as a baseline proving ground again:
+          - built from shared primitives
+          - one current system, not a comparison switcher
+        - the current baseline traits are:
+          - calmer glass shells
+          - stronger CTA emphasis
+          - simpler form chrome
+          - same shared modal entry timing as before
     - known unrelated baseline issue: `pnpm verify` is still not globally clean in this worktree because of the pre-existing `app/catana/__tests__/LeftMetaRail.test.js` failure expecting `fixed left-4 bottom-4`; this slice did not touch that area.
+    - semantic button follow-up:
+      - the visual baseline alone was not enough; the missing layer was a semantic component API.
+      - `Button` should be spoken about in product roles, not shape nicknames:
+        - `primary`
+        - `secondary`
+        - `accent`
+        - `subtle`
+        - `ghost`
+        - `danger`
+      - keep `pill` and `chip` only as compatibility aliases while older call sites are migrated.
+      - this is the useful rule going forward:
+        - do not hardcode lobby/profile/settings CTA colors per page
+        - choose from the shared semantic button roles first
+    - homepage composition follow-up:
+      - the problem with the old homepage after the motion-accent promotion was mostly composition plus semantic drift, not that the new primitive family was wrong.
+      - widening the shell to `max-w-xl`, adding a real matchmaking heading, and separating the room-code form into an inset sub-surface materially improved the page.
+      - the best mapping for the homepage entrypoints is:
+        - `Play` = `primary`
+        - `Play a Friend` = `secondary`
+        - `Play Against Bot` = `accent`
+        - `Join` / utility CTAs = `secondary`
+      - custom-game toggles and small player-count selectors should prefer `secondary` / `subtle` / `accent` rather than bespoke ad hoc button classes.
+    - browser check notes for `http://localhost:3000/` after the semantic-button pass:
+      - desktop now reads as a single authored landing surface instead of a cramped card of mismatched controls.
+      - mobile kept the hierarchy intact; the room-code strip stacks cleanly into three rows.
+      - there is still a console `500` against `/api/matches/open` in local dev without the expected backing service; that was observed during visual checking and appears unrelated to the button/layout pass itself.
+    - picker primitive follow-up:
+      - the correct abstraction for the identity emoji flow is not a monolithic “emoji picker” component.
+      - treat it as:
+        - `IconButton` for previous / next
+        - `Popover` for the browse menu
+        - shared button/grid recipes for the menu options
+      - the current color swatch row was already good enough visually; the right move was to preserve that interaction/style and elevate it into `SwatchPicker`, not redesign it.
+      - this aligns with the user’s broader requirement:
+        - do not preserve page-local custom controls just because they already exist
+        - extract the repeatable interaction pattern into the kit, then rebuild the local flow on top
+    - identity modal implementation note:
+      - `IdentityModal` now uses the shared dialog shell and field/button language, but still keeps its distinctive emoji bounce/slide animation and the large gradient avatar trigger.
+      - this is the right split:
+        - shared shell and control semantics
+        - custom inner flourish where the identity flow benefits from it
+    - popover layering note:
+      - the first `Popover` implementation mounted correctly and exposed the open menu to the DOM/accessibility tree, but the popup did not visually clear the dialog layer.
+      - raising `Popover.Positioner` to `z-[60]` fixed the visible stacking issue.
+      - if future floating surfaces seem to “exist but not show,” check stacking/layering before assuming the state logic is broken.
+    - shared-primitive workflow doc:
+      - there is now a single short handoff doc for future shared standard UI work:
+        - `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`
+      - this doc is the bridge between:
+        - brand philosophy in `SKILL.md`
+        - system direction in `2026-04-21-settlex-standard-ui-system-design.md`
+        - concrete implementation in `app/ui/*`
+      - use it whenever the task is “add a new reusable product-surface primitive.”
+      - the intended effect is:
+        - future agents do not need the full history of the design-system conversation
+        - future prompts only need:
+          - `SKILL.md`
+          - `ADDING_SHARED_PRIMITIVES.md`
+          - the standard-ui system design spec
+          - the current `app/ui/*` primitives
+          - the showcase route
+      - external links should remain targeted behavior references only, not the primary design brief.
+    - banner polish note:
+      - the shared banner indicator read slightly too high against the title text, especially in the danger style.
+      - adding a small top offset to the dot improved perceived alignment without needing to resize or restyle the indicator.
+    - homepage typography polish note:
+      - the issue on the lobby homepage was not that the text should return to white; it was that the main matchmaking panel had drifted too dark for this UI language.
+      - keep white text for the page hero on the blue background.
+      - keep dark text inside light glass panels for contrast.
+      - but avoid near-black `text-slate-900` in the homepage matchmaking card; `text-slate-800` / `600` / `500` is the better hierarchy there.
+      - if this feeling shows up again elsewhere, prefer stepping text down one level before changing the whole surface/background treatment.
+    - CTA sheen note:
+      - the ambient shimmer should not be a default property of all “important” button variants.
+      - constant motion across `accent` / `danger` / alternate CTAs makes the system feel noisy and weakens hierarchy.
+      - the better rule is:
+        - hover/press motion is shared
+        - ambient sheen is opt-in and used sparingly for a genuinely primary call to action
+      - current application:
+        - homepage `Play` keeps the sheen
+        - `Play Against Bot` and other non-primary actions do not

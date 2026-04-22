@@ -30,5 +30,13 @@ describe("Standard UI showcase source", () => {
     expect(source).toContain("Settlex Standard UI");
     expect(source).toContain("Button Recipes");
     expect(source).toContain("Overlay Preview");
+    expect(source).toContain("setDialogOpen");
+    expect(source).toContain("setAlertOpen");
+    expect(source).not.toContain("Current Pass");
+    expect(source).not.toContain("Liquid Glass");
+    expect(source).not.toContain("Motion-Accent CTA");
+    expect(source).not.toContain("setActiveVariant");
+    expect(source).toContain("open={dialogOpen}");
+    expect(source).toContain("open={alertOpen}");
   });
 });

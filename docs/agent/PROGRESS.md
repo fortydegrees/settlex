@@ -4153,3 +4153,118 @@
 - Verification for the standard UI visual pass:
   - `pnpm exec vitest run app/catana/__tests__/SettlexUiFoundation.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/StandardUiShowcase.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/IdlePromptModal.source.test.js app/catana/__tests__/GameScreen.gameOver.test.js app/catana/__tests__/MatchPageClient.standardUi.source.test.js app/catana/__tests__/LobbyPageClient.standardUi.source.test.js`
   - `pnpm exec eslint app/ui/Button.js app/ui/Panel.js app/ui/Banner.js app/ui/Input.js app/ui/Select.js app/ui/Dialog.js app/ui/AlertDialog.js app/catana/dev/ui/UiShowcaseClient.js app/catana/lobby/LobbyPageClient.js 'app/catana/lobby/[matchID]/MatchPageClient.js' app/catana/components/IdlePromptModal.js app/catana/components/ResignConfirmDialog.js app/catana/GameScreen.js`
+- Added a reusable handoff doc for parallel standard-UI design experiments.
+- Handoff prompt note:
+  - `docs/agent/SETTLEX_STANDARD_UI_VARIANT_PROMPT.md` packages the current architecture, brand constraints, scope boundaries, working files, comparison criteria, and a copy-paste prompt for another agentic coding model.
+  - the doc also includes optional bias lines so multiple external models can be nudged into different but still brand-compatible directions.
+- Recovered the dev-only variant experiment after an interrupted jewel-like overwrite.
+- Variant recovery note:
+  - restored `app/ui/*` and `app/globals.css` to the committed shared-layer baseline so the experiment no longer mutates the canonical primitives.
+  - `app/catana/dev/ui/UiShowcaseClient.js` now keeps the comparison explicitly inside the showcase route with three lanes:
+    - `Current Pass`
+    - `Liquid Glass`
+    - `Motion-Accent CTA`
+  - browser checks at `http://localhost:3000/catana/dev/ui` confirmed the comparison route renders on desktop and mobile after the recovery, with screenshots captured under `output/playwright/`.
+- Verification for the variant recovery pass:
+  - `pnpm exec vitest run app/catana/__tests__/StandardUiShowcase.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js`
+  - `pnpm exec eslint app/catana/dev/ui/UiShowcaseClient.js`
+- Restored shared modal entry motion to the experimental showcase variants.
+- Variant motion note:
+  - the split between `Current Pass` and the experimental lanes had accidentally dropped the shared overlay animation classes from the custom dev-only modal.
+  - `app/catana/dev/ui/UiShowcaseClient.js` now applies `settlex-ui-dialog-backdrop` and `settlex-ui-dialog-popup` to the experimental modal shell, so `Liquid Glass` and `Motion-Accent CTA` reuse the same dialog entry timing as the canonical shared layer.
+- Verification for the variant motion fix:
+  - `pnpm exec vitest run app/catana/__tests__/StandardUiShowcase.source.test.js`
+  - `pnpm exec eslint app/catana/dev/ui/UiShowcaseClient.js`
+  - live browser check at `http://localhost:3000/catana/dev/ui` confirmed the `Motion-Accent CTA` popup computes `animation-name: settlex-ui-dialog-in` and the backdrop computes `animation-name: settlex-ui-backdrop-in`
+- Promoted the `Motion-Accent CTA` experiment into the actual Settlex shared UI baseline.
+- Promotion note:
+  - `app/ui/Button.js`, `Panel.js`, `Banner.js`, `Input.js`, `Select.js`, `Dialog.js`, and `AlertDialog.js` now use the motion-accent styling as the canonical shared layer.
+  - `app/globals.css` now includes the shared `settlex-ui-cta-shimmer` keyframes used by the promoted CTA buttons.
+  - `app/catana/dev/ui/UiShowcaseClient.js` is no longer a three-way comparison page; it is back to a single baseline showcase built from the promoted shared primitives.
+  - browser checks at `http://localhost:3000/catana/dev/ui` confirmed the promoted baseline on desktop and mobile, including the updated dialog shell.
+- Verification for the motion-accent promotion pass:
+  - `pnpm exec vitest run app/catana/__tests__/SettlexUiFoundation.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/StandardUiShowcase.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/IdlePromptModal.source.test.js app/catana/__tests__/GameScreen.gameOver.test.js app/catana/__tests__/MatchPageClient.standardUi.source.test.js app/catana/__tests__/LobbyPageClient.standardUi.source.test.js`
+  - `pnpm exec eslint app/ui/Button.js app/ui/Panel.js app/ui/Banner.js app/ui/Input.js app/ui/Select.js app/ui/Dialog.js app/ui/AlertDialog.js app/catana/dev/ui/UiShowcaseClient.js app/catana/dev/ui/page.js app/catana/lobby/LobbyPageClient.js 'app/catana/lobby/[matchID]/MatchPageClient.js' app/catana/components/IdlePromptModal.js app/catana/components/ResignConfirmDialog.js app/catana/GameScreen.js`
+- Added the semantic button layer on top of the motion-accent baseline and applied it to the homepage.
+- Semantic-button pass note:
+  - `app/ui/Button.js` now exposes semantic roles `primary`, `secondary`, `accent`, `subtle`, `ghost`, and `danger`, plus an `xl` size for oversized hero CTAs.
+  - legacy `pill` and `chip` names still resolve through aliases, so older call sites keep working while the public API shifts toward product-meaningful names.
+  - `app/catana/lobby/LobbyPageClient.js` now uses those shared variants for the main homepage entrypoints instead of hardcoded CTA classes:
+    - `Play` uses `primary`
+    - `Play a Friend` uses `secondary`
+    - `Play Against Bot` uses `accent`
+    - room-code join and custom-game entry now use shared button recipes too
+  - the homepage shell widened from `max-w-sm` to `max-w-xl`, gained a clearer matchmaking header, and turned the room-code flow into a distinct inset sub-surface so the page reads like an intentional landing surface rather than a compressed form stack.
+  - `app/catana/dev/ui/UiShowcaseClient.js` now demonstrates the new semantic names (`secondary`, `accent`, `subtle`) instead of teaching `pill` / `chip`.
+- Verification for the semantic-button homepage pass:
+  - `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.scenarios.test.js app/catana/__tests__/LobbyPageClient.standardUi.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/StandardUiShowcase.source.test.js`
+  - `pnpm exec eslint app/ui/Button.js app/catana/lobby/LobbyPageClient.js app/catana/dev/ui/UiShowcaseClient.js`
+  - Playwright screenshots captured from `http://localhost:3000/`:
+    - `output/playwright/homepage-semantic-buttons-desktop.png`
+    - `output/playwright/homepage-semantic-buttons-mobile.png`
+- Added reusable picker primitives and migrated the lobby identity/friend-invite modals onto the shared UI layer.
+- Picker + modal pass note:
+  - new shared primitives:
+    - `app/ui/IconButton.js`
+    - `app/ui/SwatchPicker.js`
+    - `app/ui/Popover.js`
+  - `IconButton` now covers icon-only controls such as the emoji left/right cycle buttons while staying inside the shared semantic button language.
+  - `SwatchPicker` preserves the existing lobby color-swatch feel and selected treatment, but moves it into the shared kit so future avatar/theme pickers do not reimplement it.
+  - `Popover` is now the first shared floating-picker primitive, built on `@base-ui/react/popover`, and is used for the emoji chooser instead of a local click-outside panel.
+  - `app/catana/lobby/IdentityModal.js` now uses `Dialog`, `Input`, `Button`, `IconButton`, `SwatchPicker`, and `Popover`.
+  - `app/catana/lobby/FriendChallengeModal.js` now uses `Dialog`, `Panel`, `Input`, and `Button` rather than a custom full-screen shell.
+  - browser-checked the username modal flow at `http://localhost:3000/`:
+    - base modal open state
+    - emoji popover open state
+    - fixed a popover layering issue by raising `Popover.Positioner` to `z-[60]`
+  - screenshots captured:
+    - `output/playwright/identity-modal-popover-open-fixed.png`
+- Verification for the picker + modal pass:
+  - `pnpm exec vitest run app/catana/__tests__/SettlexUiPickers.source.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.standardUi.source.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js app/catana/__tests__/SettlexUiPickers.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js`
+  - `pnpm exec eslint app/ui/IconButton.js app/ui/SwatchPicker.js app/ui/Popover.js app/catana/lobby/IdentityModal.js app/catana/lobby/FriendChallengeModal.js`
+- Added a short workflow doc for future agents adding shared standard UI primitives.
+- Shared-primitive workflow note:
+  - new doc: `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`
+  - purpose:
+    - make future primitive work more repeatable
+    - stop agents from “vibing” from scratch when adding things like `Tooltip`, `Toast`, `Table`, or `Tabs`
+    - give one short reference for:
+      - what counts as a shared primitive
+      - what to read first
+      - current canonical primitives
+      - design / implementation / reference rules
+      - definition of done
+      - a reusable prompt template
+  - `docs/agent/skills/catana-brand/SKILL.md` now points to that workflow doc when the task is adding or extending a reusable product-surface primitive.
+  - `AGENTS.md` in the working tree now tells UI-building agents to read the workflow doc as well when the task adds a reusable standard UI primitive.
+- Verification for the shared-primitive workflow doc pass:
+  - reference check via `rg -n "ADDING_SHARED_PRIMITIVES" AGENTS.md docs/agent/skills/catana-brand/SKILL.md docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`
+  - no code-path tests run; this was a docs/instructions pass only
+- Tightened the shared banner indicator alignment.
+- Banner polish note:
+  - `app/ui/Banner.js` now applies a small top offset to the status dot so it aligns more naturally with the banner title line, especially on the danger variant.
+  - this was a polish-only change; no banner structure or styling direction changed beyond the indicator position.
+- Verification for the banner polish:
+  - `pnpm exec vitest run app/catana/__tests__/SettlexUiRecipes.source.test.js`
+  - `pnpm exec eslint app/ui/Banner.js`
+  - browser check at `http://localhost:3000/catana/dev/ui`
+  - screenshot: `output/playwright/banner-indicator-alignment-fixed.png`
+- Softened the homepage matchmaking-card typography so the panel no longer reads with near-black ink.
+- Homepage typography polish note:
+  - `app/catana/lobby/LobbyPageClient.js` now uses the lighter standard-ui text hierarchy inside the main matchmaking card:
+    - heading: `text-slate-800` instead of `text-slate-900`
+    - body copy: `text-slate-600` instead of `text-slate-700`
+    - helper/eyebrow labels: `text-slate-500` instead of `text-slate-600`
+  - this preserves contrast on the light panel while reducing the “too black / too standard web card” feel the user flagged.
+- Verification for the homepage typography polish:
+  - `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.standardUi.source.test.js`
+  - `pnpm exec eslint app/catana/lobby/LobbyPageClient.js`
+- Reduced ambient CTA shimmer so it is opt-in instead of automatic for all emphasis buttons.
+- CTA sheen polish note:
+  - `app/ui/Button.js` now exposes a `sheen` prop instead of automatically animating all `primary`, `accent`, and `danger` buttons.
+  - the lobby homepage keeps sheen only on the main `Play` CTA in `app/catana/lobby/LobbyPageClient.js`.
+  - `Play a Friend`, `Play Against Bot`, danger actions, and other shared buttons still keep their hover/press motion, but no longer run a constant ambient sweep by default.
+- Verification for the CTA sheen polish:
+  - `pnpm exec vitest run app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/LobbyPageClient.standardUi.source.test.js`
+  - `pnpm exec eslint app/ui/Button.js app/catana/lobby/LobbyPageClient.js`
