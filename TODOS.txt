@@ -59,6 +59,7 @@ add database/basic accounts system
             different from all players ready? probs not necessary as only show game board when all players ready..
     [ ] game end - win/lose?
     [ ] chat sound
+    need to go through and optimize/sort them. like noise gating, normalising, trimming
 
 
 
