@@ -5,8 +5,9 @@ import { DevCardDisplay } from "./DevCardDisplay";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { TurnControlCluster } from "./TurnControlCluster";
 import { getBadgeClasses } from "./CardStackStyles";
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useDie } from "./Die";
+import { buildDiceAnimationPair } from "./diceAnimationPlan";
 import { useEffectListener } from "bgio-effects/react";
 import {
   canBuildRoad,
@@ -38,6 +39,8 @@ const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
 const LOW_TIMER_THRESHOLD_SECONDS = 5;
 const LOW_TIMER_ALERT_SUPPRESSED_STATUS_KINDS = new Set(["waiting_for_roll", "waiting_for_roll_other"]);
 const LOW_TIMER_ALERT_SUPPRESSED_STATUS_TYPES = new Set(["rolling"]);
+const FALLBACK_DICE_ROLL_MS = 1000;
+const FALLBACK_DICE_SLOWDOWN_START_MS = 400;
 
 const getTimerSeconds = (ms) => {
   if (ms == null) return Number.POSITIVE_INFINITY;
@@ -89,6 +92,7 @@ export const CardIcon = ({
 };
 
 export const PlayerActionContainer = ({
+  effectsBus = null,
   setPlayerAction,
   buildPickup,
   setBuildPickup,
@@ -196,14 +200,43 @@ export const PlayerActionContainer = ({
 
   const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
 
-  //dice roll animation
+  const playDiceRoll = useCallback(
+    ({ dice, timeline = {} }) => {
+      if (!Array.isArray(dice) || dice.length < 2) return;
+      const [firstDieAnimation, secondDieAnimation] = buildDiceAnimationPair({
+        dice,
+        timeline
+      });
+      rollTo(firstDieAnimation);
+      rollTo2(secondDieAnimation);
+    },
+    [rollTo, rollTo2]
+  );
+
+  useEffect(() => {
+    if (!effectsBus) return undefined;
+    return effectsBus.on("dice:roll:timeline", (event) => {
+      playDiceRoll({
+        dice: event.payload?.dice,
+        timeline: event.payload?.timeline
+      });
+    });
+  }, [effectsBus, playDiceRoll]);
+
+  // dice roll animation
   useEffectListener(
     "roll",
     (dice) => {
-      rollTo(dice[0]);
-      rollTo2(dice[1]);
+      if (effectsBus) return;
+      playDiceRoll({
+        dice,
+        timeline: {
+          rollMs: FALLBACK_DICE_ROLL_MS,
+          slowdownStartMs: FALLBACK_DICE_SLOWDOWN_START_MS
+        }
+      });
     },
-    []
+    [effectsBus, playDiceRoll]
   );
   const ACTIONS = [
     {
