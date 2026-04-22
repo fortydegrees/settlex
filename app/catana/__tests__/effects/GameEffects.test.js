@@ -13,6 +13,8 @@ describe("GameEffects", () => {
     expect(source).toContain("resource:distribution");
     expect(source).toContain("roll");
     expect(source).toContain("dice:roll");
+    expect(source).toContain("planCue(\"dice:roll\")");
+    expect(source).toContain("dice:roll:timeline");
     expect(source).toContain("turn:start");
   });
 

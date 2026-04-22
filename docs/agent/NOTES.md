@@ -3,6 +3,30 @@
 - Agent workflow note:
 - repo-root `AGENTS.md` now has a `Fast iteration` carveout for UI/audio/animation/copy/timing tuning. For Catana sandbox/effects work, prefer direct edits plus manual verification and skip test churn unless the change affects shared logic, wiring, state flow, or a deliberate regression lock.
 
+- Dice-roll timeline sync note:
+- the dice visuals now follow the same planned `dice:roll` cue that audio uses; the shared handoff lives in `app/catana/effects/GameEffects.js`, not inside `PlayerActionContainer`.
+- `app/catana/GameScreen.js` should keep owning the shared `effectsBus` for this path so roll audio and roll visuals stay on one timeline.
+- `app/catana/components/PlayerActionContainer.js` listens for `dice:roll:timeline` from that bus and should only use the raw `useEffectListener("roll", ...)` path as a fallback when no shared bus is provided.
+- `app/catana/components/Die.js` now uses one continuous Web Animations API roll instead of mixing infinite CSS keyframes with later CSS transitions on the same 3D transform. That phase handoff was the main source of the janky slowdown.
+- the current animation shape is intentionally based on the original pure-CSS roll: the authored tumble keyframes occupy only the early part of the animation, and the rest of the duration is the browser interpolating into the final face transform.
+- current slowdown rule: `app/catana/effects/diceRollTimeline.js` starts slowdown at `100%` of the shake lead-in, and when the audio plan includes the two throw layers it now exposes per-layer `slowdownStartMs` and `rollMs` so each die can follow its assigned throw clip. The older short settle-tail math is now only the fallback when per-layer timings are unavailable.
+- `app/catana/effects/AudioManager.js` now supports `startDelayPortion` and `impactLeadPortion` on a cue entry. `startDelayPortion` feeds the visual layer timing, while `impactLeadPortion` pushes the actual audio playback later relative to that visual timing so a clip's perceived impact can land with the die without changing the die animation itself.
+- per-die roll variation now lives in `app/catana/components/diceAnimationPlan.js`; when layer timings are present it ties die 1 and die 2 to those exact throw layers, and when they are not it falls back to the lighter synthetic jitter path. Distinct tumble variants are still used so the dice do not look mirrored.
+- `app/catana/effects/soundThemes.js` now carries `durationMsBySrc` for the active dice shake/throw assets because the visual sync currently depends on those clip lengths. If the runtime dice files change materially, update those durations too or the animation timing will drift.
+- after trimming `sounds/dice_roll/die-throw-*.mp3`, resync those files into the worktree `public/sounds/` copies and refresh the `durationMsBySrc` entries in `app/catana/effects/soundThemes.js`; the dice timing path trusts those numbers.
+
+- Dice-roll audio layering note:
+- keep `/catana/dev/sandbox` as the fastest high-fidelity tuning loop for dice audio because it already exercises the real roll animation and the adjacent resource-distribution follow-up.
+- `app/catana/effects/AudioManager.js` now supports `layers` for variant-driven cues; use that when a cue should stack multiple distinct files for one event instead of choosing only one variant.
+- `app/catana/effects/AudioManager.js` also supports an optional `leadIn` clip/variant pool; use that when a cue needs a short intro sound to finish before the main layered playback begins.
+- if a lead-in should hand off slightly before it ends, provide `durationMsBySrc` plus `overlapMs` on the lead-in config so `AudioManager` can schedule the handoff against the selected source and playback rate.
+- `app/catana/effects/AudioManager.js` also supports optional `layerDelayMs`; use that for tiny start offsets between stacked samples without inventing a separate cue.
+- the current dice audition uses a shuffled `/sounds/dice-heavy/dice-shake-{1,2,3,4,5}.mp3` lead-in plus the baseline `/sounds/die-throw-{1,2,3,4}.mp3` throws in `public/sounds/`, with `layers: 2`, `layerDelayMs: [0, 30]`, and throw `rate: [0.95, 1.05]` on `dice:roll`.
+- `public/sounds/dice-heavy/` is a generated audition folder, not a source-of-truth asset folder. Rebuild it from `sounds/dice_roll/` when source clips change, and point `soundThemes.js` back to the non-processed files if the experiment is rejected.
+- because the current lead-in path waits for the actual clip `end` event, differing shake lengths are fine; they only change how long the pre-roll shake lasts before the throw starts.
+- when source dice assets change in `sounds/dice_roll/`, resync the whole `dice-shake-*` and `die-throw-*` set into `public/sounds/` before auditioning in `/catana/dev/sandbox`; the runtime route only sees the public copies.
+- when layering multiple samples, lower the per-layer base volume in `app/catana/effects/soundThemes.js` so the combined mix does not jump far above the prior single-sample level.
+
 - Standard UI phase-1 planning note:
 - The first implementation slice for the Settlex standard UI system should stay narrow: foundation hooks plus `Button`, `Panel`, `Banner`, `Input`, `Select`, `Dialog`, and `AlertDialog`.
 - Early proving-ground migrations should target existing duplicated standard UI surfaces first: reconnect banner, idle prompt, resign confirmation, `MatchPageClient` glass helpers, and the custom-game section of `LobbyPageClient`.
