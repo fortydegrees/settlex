@@ -15,7 +15,7 @@
 - Do not modify `app/catana/effects/soundThemes.js` in this pass.
 - Do not replace anything in `public/sounds/`.
 - Do not add dependencies.
-- Do not import or embed Strudel in v1. The official Strudel docs call out AGPL integration obligations, and a full live-coding/pattern engine is more than this one-shot UI sound workflow needs.
+- Do not import or embed Strudel in the Settlex app in v1. Strudel and Dittytoy are fine as private sketchpads for exploring ideas, but Settlex should only promote exported static audio files into the public game.
 - Do not add package scripts unless the user explicitly approves build-tooling/script changes during execution.
 - Keep generated audition files under `sounds/catana-synth/output/`.
 - If generated WAV output is unexpectedly large, stop before committing the generated files and ask whether to keep outputs checked in or require local rendering.
@@ -32,10 +32,11 @@ Use these sources as design references, not vendored code:
 
 Implementation implication:
 
-- Add a small local event scheduler instead of a Strudel dependency.
+- Add a small local event scheduler instead of a Strudel runtime dependency.
 - Add `midiToHz` / note-name support so game-start and award cues can be written musically when that is clearer than raw Hz.
 - Add tone partials, colored noise, and delay/filter processing before spending time hand-tuning individual cue files.
 - Keep recipe metadata able to store `referenceUrls` for provenance and future review.
+- If Strudel/Dittytoy produces a promising private sketch, recreate or export the approved idea as a static `.wav`/`.mp3` asset before any production wiring.
 
 ## File Structure
 
