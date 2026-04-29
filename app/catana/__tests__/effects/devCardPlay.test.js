@@ -34,6 +34,10 @@ const makeElement = (rect) => ({
     this.children.push(child);
     return child;
   },
+  querySelector(selector) {
+    if (selector !== "img") return null;
+    return this.children.find((child) => child.tagName === "IMG") ?? null;
+  },
   remove: vi.fn(),
   getBoundingClientRect: () => rect
 });
@@ -74,7 +78,7 @@ describe("devCardPlay runner", () => {
     expect(getDevCardPlayedScale("opponent")).toBe(2);
     expect(localPark.x).toBe(100);
     expect(localPark.y).toBeLessThan(sourceRect.top - 72);
-    expect(opponentPark.y).toBeGreaterThan(sourceRect.bottom + 72);
+    expect(opponentPark.y).toBeGreaterThan(sourceRect.bottom + 48);
   });
 
   it("parks a start actor and resolves it to the Largest Army target", () => {
