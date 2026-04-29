@@ -244,6 +244,14 @@ const configuredEffectsPlugin = EffectsPlugin({
     buyDevCardReveal: {
       create: (value) => value,
       duration: 2
+    },
+    devCardPlayStarted: {
+      create: (value) => value,
+      duration: 0
+    },
+    devCardPlayResolved: {
+      create: (value) => value,
+      duration: 0
     }
   },
 });

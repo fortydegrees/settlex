@@ -59,6 +59,38 @@ export function SandboxBoardShell({
     moves.DEBUG_takeDevCards(viewerSeat, [cardType]);
   };
 
+  const getSyntheticOpponentId = () =>
+    playerIds.find((playerId) => String(playerId) !== String(viewerSeat)) ??
+    playerIds[0] ??
+    viewerSeat;
+
+  const dispatchDevCardPlayEffect = (detail) => {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+      new CustomEvent("catana:dev-sandbox:devcard-play", { detail })
+    );
+  };
+
+  const handleOpponentDevCardPlayStart = () => {
+    dispatchDevCardPlayEffect({
+      playerId: getSyntheticOpponentId(),
+      cardType: "knight",
+      phase: "start"
+    });
+  };
+
+  const handleOpponentDevCardPlayResolve = () => {
+    dispatchDevCardPlayEffect({
+      playerId: getSyntheticOpponentId(),
+      cardType: "knight",
+      phase: "resolve"
+    });
+  };
+
+  const handleDevCardPlayReset = () => {
+    dispatchDevCardPlayEffect({ action: "reset", cardType: "knight" });
+  };
+
   return (
     <>
       <GameScreenWithEffects
@@ -86,6 +118,9 @@ export function SandboxBoardShell({
           onToggleCollapsed={onTogglePanelCollapsed}
           onGiveResource={handleGiveResource}
           onGiveDevCard={handleGiveDevCard}
+          onOpponentDevCardPlayStart={handleOpponentDevCardPlayStart}
+          onOpponentDevCardPlayResolve={handleOpponentDevCardPlayResolve}
+          onDevCardPlayReset={handleDevCardPlayReset}
         />
       </div>
     </>

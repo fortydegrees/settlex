@@ -99,6 +99,32 @@ export function GameEffects({
     [bus]
   );
 
+  useEffectListener(
+    "devCardPlayStarted",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "devcard:play:start",
+        payload,
+        effectId: payload.effectId
+      });
+    },
+    [bus]
+  );
+
+  useEffectListener(
+    "devCardPlayResolved",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "devcard:play:resolve",
+        payload,
+        effectId: payload.effectId
+      });
+    },
+    [bus]
+  );
+
   useEffect(() => {
     const decision = getTurnStartCueDecision({
       currentPlayerId,

@@ -26,4 +26,16 @@ describe("GameEffects", () => {
     expect(source).toContain("buyDevCardReveal");
     expect(source).toContain("devcard:reveal");
   });
+
+  it("wires Knight dev card play lifecycle effects to public bus events", () => {
+    const path = fileURLToPath(
+      new URL("../../effects/GameEffects.js", import.meta.url)
+    );
+    const source = fs.readFileSync(path, "utf8");
+
+    expect(source).toContain("devCardPlayStarted");
+    expect(source).toContain("devcard:play:start");
+    expect(source).toContain("devCardPlayResolved");
+    expect(source).toContain("devcard:play:resolve");
+  });
 });

@@ -13,6 +13,10 @@ export function registerEffects({ bus, effects } = {}) {
   if (effects.devCardReveal) {
     unsubscribes.push(bus.on("devcard:reveal", effects.devCardReveal));
   }
+  if (effects.devCardPlay) {
+    unsubscribes.push(bus.on("devcard:play:start", effects.devCardPlay));
+    unsubscribes.push(bus.on("devcard:play:resolve", effects.devCardPlay));
+  }
 
   return () => {
     unsubscribes.forEach((unsubscribe) => unsubscribe());

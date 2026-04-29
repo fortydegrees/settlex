@@ -31,4 +31,13 @@ describe("getVpDisplay", () => {
     expect(source).toContain("vpDisplayOverride?.publicPoints");
     expect(source).toContain("vpDisplayOverride?.totalPoints");
   });
+
+  it("allows Knight count and Largest Army display to be temporarily overridden", () => {
+    const source = fs.readFileSync(playerAvatarStatsPath, "utf8");
+
+    expect(source).toContain("knightDisplayOverride");
+    expect(source).toContain("knightDisplayOverride?.knightsPlayed");
+    expect(source).toContain("knightDisplayOverride?.largestArmyOwnerId");
+    expect(source).toContain("`p${player.id}-largest-army`");
+  });
 });

@@ -28,4 +28,12 @@ describe("DevCardDisplay layout source", () => {
     expect(componentSource).toContain('"absolute top-0 devcard-card"');
     expect(cardRuleBody).not.toContain("position:");
   });
+
+  it("exposes player-scoped dev card anchor ids for play animations", () => {
+    const componentSource = fs.readFileSync(componentPath, "utf8");
+
+    expect(componentSource).toContain("playerId");
+    expect(componentSource).toContain("`p${playerId}-devcards`");
+    expect(componentSource).toContain("`p${playerId}-devcard-${group.type}`");
+  });
 });
