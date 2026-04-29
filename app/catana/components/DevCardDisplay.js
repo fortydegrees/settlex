@@ -17,6 +17,7 @@ const DEV_CARD_SVGS = {
 
 export const DevCardDisplay = ({
   cards = [],
+  playerId = null,
   playableCountsByType = {},
   onPlayCard,
   activeCardType,
@@ -81,6 +82,7 @@ export const DevCardDisplay = ({
   return (
     <div
       ref={containerRef}
+      id={playerId != null ? `p${playerId}-devcards` : undefined}
       className="devcard-box inline-flex h-20 items-center rounded-md bg-blue-200/50 px-3 ring-2 ring-slate-300 shadow-sm origin-bottom-left relative"
       style={{ width: `${shellWidth}px` }}
     >
@@ -103,6 +105,7 @@ export const DevCardDisplay = ({
         {playableGroups.map((group, groupIndex) => (
           <div
             key={`playable-group-${group.type}`}
+            id={playerId != null ? `p${playerId}-devcard-${group.type}` : undefined}
             className="relative h-[72px]"
             style={{
               width: `${group.layout.width}px`,

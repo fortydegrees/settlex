@@ -18,6 +18,10 @@ describe("Dev sandbox panel source", () => {
     expect(source).toContain("Reset");
     expect(source).toContain("Quick resources");
     expect(source).toContain("Quick dev cards");
+    expect(source).toContain("Dev-card effects");
+    expect(source).toContain("Opponent Plays Knight");
+    expect(source).toContain("Resolve Opponent Knight");
+    expect(source).toContain("Reset Knight Visual");
     expect(source).toContain("Collapse");
   });
 
@@ -27,5 +31,9 @@ describe("Dev sandbox panel source", () => {
     expect(source).toContain("SandboxPanel");
     expect(source).toContain("moves.DEBUG_takeCardsFromBank");
     expect(source).toContain("moves.DEBUG_takeDevCards");
+    expect(source).toContain("catana:dev-sandbox:devcard-play");
+    expect(source).toContain("handleOpponentDevCardPlayStart");
+    expect(source).toContain("handleOpponentDevCardPlayResolve");
+    expect(source).toContain("handleDevCardPlayReset");
   });
 });

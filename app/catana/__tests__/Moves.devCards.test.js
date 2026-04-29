@@ -1,6 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import { createEmptyState, buildTopology, ResourceType, TileTypes } from "@settlex/game-core";
-import { DEBUG_takeDevCards, buyDevCard, playDevCardStart, placeRoadFromDevCard } from "../Moves";
+import {
+  DEBUG_takeDevCards,
+  buyDevCard,
+  moveRobber,
+  playDevCardStart,
+  placeRoadFromDevCard
+} from "../Moves";
 
 const tiles = [
   {
@@ -120,19 +126,81 @@ describe("dev card play moves", () => {
   it("playDevCardStart sends knight to moveRobber and stores return stage", () => {
     const state = createEmptyState(["0"]);
     state.playerStateById["0"].devCards = ["knight"];
+    state.playerStateById["0"].knightsPlayed = 0;
     const events = { setStage: vi.fn() };
-    const ctx = { currentPlayer: "0", activePlayers: { "0": "preRoll" } };
+    const effects = { devCardPlayStarted: vi.fn() };
+    const ctx = { currentPlayer: "0", activePlayers: { "0": "preRoll" }, turn: 12 };
     const context = {
       G: { core: state, coreTopology, tiles },
       playerID: "0",
       ctx,
-      events
+      events,
+      effects
     };
 
     playDevCardStart.move(context, "knight");
 
     expect(context.G.robberReturnToStage).toBe("preRoll");
     expect(events.setStage).toHaveBeenCalledWith("moveRobber");
+    expect(effects.devCardPlayStarted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playerId: "0",
+        cardType: "knight",
+        phase: "start",
+        startedFromStage: "preRoll",
+        previousKnightsPlayed: 0,
+        nextKnightsPlayed: 1,
+        previousLargestArmyOwnerId: null
+      })
+    );
+    expect(context.G.pendingDevCardPlayAnimation).toMatchObject({
+      playerId: "0",
+      cardType: "knight",
+      previousKnightsPlayed: 0,
+      nextKnightsPlayed: 1
+    });
+  });
+
+  it("emits a Knight play resolve effect when robber resolution finishes", () => {
+    const state = createEmptyState(["0", "1"]);
+    state.playerStateById["0"].devCards = ["knight"];
+    state.playerStateById["1"].resources = [ResourceType.WOOD];
+    const effects = {
+      devCardPlayStarted: vi.fn(),
+      devCardPlayResolved: vi.fn()
+    };
+    const events = {
+      setStage: vi.fn(),
+      setActivePlayers: vi.fn()
+    };
+    const ctx = {
+      currentPlayer: "0",
+      activePlayers: { "0": "postRoll" },
+      turn: 12
+    };
+    const random = { Number: () => 0 };
+    const context = {
+      G: { core: state, coreTopology, tiles, gameLog: [], gameLogSeq: 0 },
+      playerID: "0",
+      ctx,
+      events,
+      effects,
+      random
+    };
+
+    playDevCardStart.move(context, "knight");
+    moveRobber.move(context, 1);
+
+    expect(effects.devCardPlayResolved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playerId: "0",
+        cardType: "knight",
+        phase: "resolve",
+        previousKnightsPlayed: 0,
+        nextKnightsPlayed: 1
+      })
+    );
+    expect(context.G.pendingDevCardPlayAnimation).toBe(null);
   });
 
   it("playDevCardStart skips robber move when no legal tile exists", () => {
@@ -154,6 +222,10 @@ describe("dev card play moves", () => {
     ];
     const singleTileTopology = buildTopology(singleTile);
     const events = { setStage: vi.fn() };
+    const effects = {
+      devCardPlayStarted: vi.fn(),
+      devCardPlayResolved: vi.fn()
+    };
     const ctx = { currentPlayer: "0", activePlayers: { "0": "preRoll" } };
     const context = {
       G: {
@@ -165,7 +237,8 @@ describe("dev card play moves", () => {
       },
       playerID: "0",
       ctx,
-      events
+      events,
+      effects
     };
 
     playDevCardStart.move(context, "knight");
@@ -174,6 +247,9 @@ describe("dev card play moves", () => {
     expect(state.turn.phase).toBe("preRoll");
     expect(context.G.robberReturnToStage).toBe(null);
     expect(context.G.gameLog.some((entry) => entry.type === "robber:skip")).toBe(true);
+    expect(effects.devCardPlayStarted).toHaveBeenCalled();
+    expect(effects.devCardPlayResolved).toHaveBeenCalled();
+    expect(context.G.pendingDevCardPlayAnimation).toBe(null);
   });
 
   it("placeRoadFromDevCard consumes pendingRoads and clears when done", () => {

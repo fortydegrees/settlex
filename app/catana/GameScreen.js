@@ -54,9 +54,19 @@ import { GameEffects } from "./effects/GameEffects";
 import { createEffectBus } from "./effects/EffectBus";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
+import { createDevCardPlayRunner } from "./effects/devCardPlay";
+import {
+  getDevCardPlayMotionPolicy,
+  getDevCardPlayPerspective
+} from "./effects/devCardPlayPerspective";
 import {
   getVisibleDevCardsDuringReveal,
 } from "./utils/devCardPurchaseReveal";
+import {
+  createKnightDisplayOverride,
+  removeKnightDisplayOverride,
+  upsertKnightDisplayOverride
+} from "./utils/devCardPlayPresentation";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
 import {
@@ -146,6 +156,8 @@ export function GameScreen(bgioProps) {
   const [showConnectionBanner, setShowConnectionBanner] = useState(false);
   const [presentedGameLogEntries, setPresentedGameLogEntries] = useState([]);
   const [deferredLogEntries, setDeferredLogEntries] = useState([]);
+  const [knightDisplayOverrideByPlayerId, setKnightDisplayOverrideByPlayerId] =
+    useState({});
   const [lastSeenGameLogId, setLastSeenGameLogId] = useState(0);
   const [boardViewportScale, setBoardViewportScale] = useState(1);
   const robberPlacementMotionMode = DEFAULT_ROBBER_PLACEMENT_MOTION_MODE;
@@ -158,6 +170,8 @@ export function GameScreen(bgioProps) {
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
   const devCardDisplayRef = useRef(null);
+  const devCardDisplayRectRef = useRef(null);
+  const devCardPlayActorStoreRef = useRef(new Map());
   const pendingDevCardRevealRef = useRef(null);
   const deferredLogEntriesRef = useRef([]);
   const effectsBus = useMemo(() => createEffectBus(), []);
@@ -379,6 +393,29 @@ export function GameScreen(bgioProps) {
     ]);
     setDeferredLogEntries([]);
   }, []);
+  const clearDevCardPlayActors = useCallback(() => {
+    devCardPlayActorStoreRef.current.forEach((actor) => {
+      actor?.el?.remove?.();
+    });
+    devCardPlayActorStoreRef.current.clear();
+    setKnightDisplayOverrideByPlayerId({});
+  }, []);
+  const freezeKnightDisplayFromPayload = useCallback((payload) => {
+    const override = createKnightDisplayOverride(payload);
+    if (!override) return;
+    setKnightDisplayOverrideByPlayerId((current) =>
+      upsertKnightDisplayOverride(current, {
+        ...override,
+        playerId: String(override.playerId)
+      })
+    );
+  }, []);
+  const releaseKnightDisplayFromPayload = useCallback((payload) => {
+    if (!payload?.playerId) return;
+    setKnightDisplayOverrideByPlayerId((current) =>
+      removeKnightDisplayOverride(current, String(payload.playerId))
+    );
+  }, []);
 
   useEffect(() => {
     if (!isGameOver) {
@@ -397,10 +434,11 @@ export function GameScreen(bgioProps) {
       pendingDevCardRevealRef.current = null;
       setPendingDevCardReveal(null);
       setActiveDevCardReveal(null);
+      clearDevCardPlayActors();
       setShowTradeModal(false);
       setTradePresetResource(null);
     }
-  }, [clearBuildPickup, isGameOver]);
+  }, [clearBuildPickup, clearDevCardPlayActors, isGameOver]);
 
   useEffect(() => {
     if (!isGameOver || !matchID || typeof window === "undefined") return;
@@ -430,13 +468,21 @@ export function GameScreen(bgioProps) {
     deferredLogEntriesRef.current = [];
     setPendingDevCardReveal(null);
     setActiveDevCardReveal(null);
+    clearDevCardPlayActors();
     hasSeenTransportConnectionRef.current = false;
     bypassNextGameLogDelayRef.current = false;
-  }, [matchID]);
+  }, [clearDevCardPlayActors, matchID]);
 
   useEffect(() => {
     pendingDevCardRevealRef.current = pendingDevCardReveal;
   }, [pendingDevCardReveal]);
+
+  useEffect(() => {
+    const rect = copyRect(devCardDisplayRef.current?.getBoundingClientRect?.());
+    if (rect) {
+      devCardDisplayRectRef.current = rect;
+    }
+  });
 
   useEffect(() => {
     deferredLogEntriesRef.current = deferredLogEntries;
@@ -794,6 +840,9 @@ export function GameScreen(bgioProps) {
       String(pendingDevCardReveal.playerId) === String(playerRevealId)) ||
     (activeDevCardReveal &&
       String(activeDevCardReveal.playerId) === String(playerRevealId));
+  const localKnightPlayInFlight =
+    playerRevealId != null &&
+    Boolean(knightDisplayOverrideByPlayerId[String(playerRevealId)]);
   const displayPlayer = !player
     ? player
     : {
@@ -1061,6 +1110,40 @@ export function GameScreen(bgioProps) {
           if (String(payload.playerId) !== String(playerID)) return;
           startDevCardRevealFromEffect(payload);
         };
+      },
+      devCardPlay: ({ layerRef, emitCue }) => {
+        const runner = createDevCardPlayRunner({
+          getLayerEl: () => layerRef.current,
+          getSourceEl: (payload, id) => {
+            const sourceEl = document.getElementById(id);
+            if (sourceEl) return sourceEl;
+            if (String(payload?.playerId) !== String(playerID)) return null;
+            const cachedRect = devCardDisplayRectRef.current;
+            if (!cachedRect) return null;
+            return {
+              getBoundingClientRect: () => cachedRect
+            };
+          },
+          getTargetEl: (_payload, id) => document.getElementById(id),
+          getPerspective: (payload) =>
+            getDevCardPlayPerspective({
+              viewerPlayerId: playerID,
+              actorPlayerId: payload.playerId
+            }),
+          getMotionPolicy: () =>
+            getDevCardPlayMotionPolicy({
+              reducedMotion:
+                typeof window !== "undefined" &&
+                typeof window.matchMedia === "function" &&
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            }),
+          actorStore: devCardPlayActorStoreRef,
+          emitCue,
+          onStart: freezeKnightDisplayFromPayload,
+          onResolveComplete: releaseKnightDisplayFromPayload
+        });
+
+        return (event) => runner(event);
       }
     };
   }, [
@@ -1069,9 +1152,67 @@ export function GameScreen(bgioProps) {
     bgioProps.G,
     effectiveColorByPlayerId,
     handleResourceDistributionComplete,
+    freezeKnightDisplayFromPayload,
+    releaseKnightDisplayFromPayload,
     playerID,
     startDevCardRevealFromEffect,
     themeId
+  ]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    if (matchID !== "dev-sandbox") return undefined;
+
+    const buildSandboxKnightPayload = ({ playerId, phase }) => {
+      const actorId = String(playerId ?? opponents[0]?.id ?? playerID ?? "0");
+      const actor = playerViewMap[actorId];
+      const previousKnightsPlayed = actor?.knightsPlayed ?? 0;
+      return {
+        effectId: `dev-sandbox:knight:${actorId}`,
+        playerId: actorId,
+        cardType: "knight",
+        phase,
+        startedFromStage: "postRoll",
+        previousKnightsPlayed,
+        nextKnightsPlayed: previousKnightsPlayed + 1,
+        previousLargestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? null,
+        nextLargestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? actorId
+      };
+    };
+
+    const handleDevSandboxDevCardPlay = (event) => {
+      const detail = event?.detail ?? {};
+      if (detail.action === "reset") {
+        clearDevCardPlayActors();
+        return;
+      }
+      const phase = detail.phase === "resolve" ? "resolve" : "start";
+      effectsBus.emit({
+        type: phase === "resolve" ? "devcard:play:resolve" : "devcard:play:start",
+        payload: buildSandboxKnightPayload({
+          playerId: detail.playerId,
+          phase
+        })
+      });
+    };
+
+    window.addEventListener(
+      "catana:dev-sandbox:devcard-play",
+      handleDevSandboxDevCardPlay
+    );
+    return () =>
+      window.removeEventListener(
+        "catana:dev-sandbox:devcard-play",
+        handleDevSandboxDevCardPlay
+      );
+  }, [
+    clearDevCardPlayActors,
+    core?.awards?.largestArmyOwnerId,
+    effectsBus,
+    matchID,
+    opponents,
+    playerID,
+    playerViewMap
   ]);
   // console.log('p', player)
   // console.log('opps', opponents)
@@ -1217,8 +1358,13 @@ TODO: accurately colour it
           onDevCardPurchaseStart={handleDevCardPurchaseStart}
           devCardDisplayRef={devCardDisplayRef}
           displayDevCards={displayPlayer?.devCards ?? null}
-          keepDevCardShellMounted={Boolean(revealInFlight)}
+          keepDevCardShellMounted={Boolean(revealInFlight || localKnightPlayInFlight)}
           vpDisplayOverride={frozenVpSnapshot}
+          knightDisplayOverride={
+            player?.id != null
+              ? knightDisplayOverrideByPlayerId[String(player.id)] ?? null
+              : null
+          }
           onTradeClick={handleTradeOpen}
           isActive={!isGameOver && gameStatus.activePlayerId === player.id}
           statusType={gameStatus.statusType}
@@ -1302,6 +1448,9 @@ TODO: accurately colour it
                   coreTopology={bgioProps.G.coreTopology}
                   isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}
                   statusType={gameStatus.statusType}
+                  knightDisplayOverride={
+                    knightDisplayOverrideByPlayerId[String(opponent.id)] ?? null
+                  }
                 />
               ))}
             </div>

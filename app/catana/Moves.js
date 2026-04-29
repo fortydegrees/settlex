@@ -77,6 +77,62 @@ const getAwardOwners = (core) => ({
   largestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? null
 });
 
+const buildDevCardPlayEffectId = ({ playerId, cardType, turn }) =>
+  `devcard:${cardType}:${playerId}:turn-${turn ?? "unknown"}`;
+
+const buildKnightPlayPayload = ({
+  G,
+  ctx,
+  playerId,
+  phase,
+  startedFromStage,
+  previousKnightsPlayed,
+  previousLargestArmyOwnerId
+}) => {
+  const currentPlayerState = G?.core?.playerStateById?.[playerId];
+  const nextKnightsPlayed = currentPlayerState?.knightsPlayed ?? previousKnightsPlayed;
+  const currentAwards = getAwardOwners(G?.core);
+  return {
+    effectId: buildDevCardPlayEffectId({
+      playerId,
+      cardType: "knight",
+      turn: ctx?.turn
+    }),
+    playerId,
+    cardType: "knight",
+    phase,
+    startedFromStage: startedFromStage ?? null,
+    previousKnightsPlayed,
+    nextKnightsPlayed,
+    previousLargestArmyOwnerId: previousLargestArmyOwnerId ?? null,
+    nextLargestArmyOwnerId: currentAwards.largestArmyOwnerId ?? null
+  };
+};
+
+const storePendingKnightPlayAnimation = (G, payload) => {
+  G.pendingDevCardPlayAnimation = {
+    ...payload,
+    phase: "pending"
+  };
+};
+
+const emitPendingDevCardPlayResolved = (context) => {
+  const { G, ctx, effects } = context;
+  const pending = G?.pendingDevCardPlayAnimation;
+  if (!pending || pending.cardType !== "knight") return;
+  const payload = buildKnightPlayPayload({
+    G,
+    ctx,
+    playerId: pending.playerId,
+    phase: "resolve",
+    startedFromStage: pending.startedFromStage,
+    previousKnightsPlayed: pending.previousKnightsPlayed,
+    previousLargestArmyOwnerId: pending.previousLargestArmyOwnerId
+  });
+  effects?.devCardPlayResolved?.(payload);
+  G.pendingDevCardPlayAnimation = null;
+};
+
 const logAwardChanges = (G, ctx, previousAwards, options) => {
   if (!previousAwards) return;
   const currentAwards = getAwardOwners(G?.core);
@@ -476,6 +532,7 @@ const finishRobberResolution = (context) => {
   }
   G.robberReturnToStage = null;
   setCurrentPlayerStage(context, returnTo);
+  emitPendingDevCardPlayResolved(context);
   return returnTo;
 };
 
@@ -1022,7 +1079,7 @@ const isDevCardStage = (ctx, playerID) => {
 
 export const playDevCardStart = {
   move: (context, cardType, options) => {
-    const { G, playerID, ctx, events } = context;
+    const { G, playerID, ctx, events, effects } = context;
     if (playerID !== ctx.currentPlayer) return;
     if (!isDevCardStage(ctx, playerID)) return;
     if (G.devCardPlay) return;
@@ -1032,6 +1089,8 @@ export const playDevCardStart = {
     const currentStage = ctx.activePlayers?.[playerID] ?? "postRoll";
     if (cardType === "knight") {
       const previousAwards = getAwardOwners(G.core);
+      const previousKnightsPlayed =
+        G.core?.playerStateById?.[playerID]?.knightsPlayed ?? 0;
       const played = playDevCard(G.core, playerID, "knight");
       if (!played.ok) {
         console.log(`Invalid play dev card: ${played.error}`);
@@ -1050,6 +1109,17 @@ export const playDevCardStart = {
       });
       logAwardChanges(G, ctx, previousAwards, options);
       maybeLogGameOver(G, ctx);
+      const startPayload = buildKnightPlayPayload({
+        G,
+        ctx,
+        playerId: playerID,
+        phase: "start",
+        startedFromStage: currentStage,
+        previousKnightsPlayed,
+        previousLargestArmyOwnerId: previousAwards.largestArmyOwnerId
+      });
+      storePendingKnightPlayAnimation(G, startPayload);
+      effects?.devCardPlayStarted?.(startPayload);
       G.robberReturnToStage = currentStage;
       beginRobberMoveStage(context, options);
       return;

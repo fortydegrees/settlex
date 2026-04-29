@@ -4311,3 +4311,23 @@
 - Verification for the CTA sheen polish:
   - `pnpm exec vitest run app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/LobbyPageClient.standardUi.source.test.js`
   - `pnpm exec eslint app/ui/Button.js app/catana/lobby/LobbyPageClient.js`
+- Added the first Knight development-card play animation path.
+- Knight dev-card animation note:
+  - `playDevCardStart` now emits public `devCardPlayStarted` payloads for Knight plays and stores a pending presentation record until robber resolution.
+  - robber completion now emits `devCardPlayResolved`, allowing the UI to park the played Knight during robber placement and release the Largest Army count on landing.
+  - `GameEffects` forwards those authoritative lifecycle effects onto `devcard:play:start` and `devcard:play:resolve`.
+  - `app/catana/effects/devCardPlay.js` owns the GSAP choreography:
+    - local viewer: Knight card hops out from the local card group
+    - opponent/spectator viewer: Knight card emerges from the opponent dev-card stack
+    - resolve: parked card flies to the actor's Largest Army target and then releases the frozen stat display
+  - `/catana/dev/sandbox` now has dev-only controls for `Opponent Plays Knight`, `Resolve Opponent Knight`, and `Reset Knight Visual`.
+- Verification for the Knight dev-card animation path:
+  - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/effects/GameEffects.test.js app/catana/__tests__/effects/registry.test.js app/catana/__tests__/effects/devCardPlayPerspective.test.js app/catana/__tests__/utils/devCardPlayPresentation.test.js app/catana/__tests__/effects/devCardPlay.test.js app/catana/__tests__/effects/soundThemes.test.js app/catana/__tests__/DevCardDisplayLayout.source.test.js app/catana/__tests__/PlayerActionContainer.devCardReveal.test.js app/catana/__tests__/playerAvatarStats.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js app/catana/__tests__/DevSandboxPanel.source.test.js`
+  - `pnpm exec eslint app/catana/Moves.js app/catana/Game.js app/catana/GameScreen.js app/catana/effects/GameEffects.js app/catana/effects/registry.js app/catana/effects/devCardPlay.js app/catana/effects/devCardPlayPerspective.js app/catana/effects/soundThemes.js app/catana/utils/devCardPlayPresentation.js app/catana/components/DevCardDisplay.js app/catana/components/PlayerActionContainer.js app/catana/components/OpponentPlayerBox.js app/catana/components/PlayerAvatarStats.js app/catana/dev/sandbox/SandboxPanel.js app/catana/dev/sandbox/SandboxBoardShell.js`
+  - `pnpm dev` served the worktree on `http://localhost:3001`; `curl -I http://localhost:3001/catana/dev/sandbox` returned `200 OK`.
+  - Chrome DevTools smoke check confirmed the sandbox route renders the new controls and synthetic opponent start/resolve/reset actions run without new console errors.
+- Tuned Knight dev-card play scale and shadow:
+  - local played Knight now parks at 2x scale.
+  - opponent/spectator played Knight now parks at 2x scale.
+  - parked cards use a stronger drop-shadow and larger source offset so they read as floating above the board.
+  - opponent/spectator reveal now pops the dev-card back out first, then flips to the Knight face once parked.

@@ -21,4 +21,16 @@ describe("soundThemes", () => {
       ]
     });
   });
+
+  it("maps Knight dev-card play cues to conservative existing clips", () => {
+    expect(DEFAULT_THEME["devcard:knight:play"]).toMatchObject({
+      src: "/sounds/card_woosh.mp3"
+    });
+    expect(DEFAULT_THEME["devcard:knight:flip"]).toMatchObject({
+      src: "/sounds/card_woosh.mp3"
+    });
+    expect(DEFAULT_THEME["devcard:knight:resolve"]).toMatchObject({
+      src: "/sounds/card_woosh.mp3"
+    });
+  });
 });

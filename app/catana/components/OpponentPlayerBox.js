@@ -11,7 +11,8 @@ export const OpponentPlayerBox = ({
   core,
   coreTopology,
   isActive,
-  statusType
+  statusType,
+  knightDisplayOverride
 }) => {
   if (!player) return null;
 
@@ -28,7 +29,7 @@ export const OpponentPlayerBox = ({
   });
 
   return (
-    <div className="flex items-start">
+    <div id={`p${player.id}-opponent-box`} className="flex items-start">
       <PlayerAvatarStats
         player={player}
         presence={presence}
@@ -37,6 +38,7 @@ export const OpponentPlayerBox = ({
         isMe={false}
         isActive={isActive}
         statusType={statusType}
+        knightDisplayOverride={knightDisplayOverride}
       />
       <div
         className={`ml-2 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
@@ -54,12 +56,14 @@ export const OpponentPlayerBox = ({
             className={stackMotionClass}
           />
         </div>
-        <CardStack
-          count={devCount}
-          src={devCardBackIcon}
-          alt="Dev cards"
-          className={stackMotionClass}
-        />
+        <div id={`p${player.id}-devcards`}>
+          <CardStack
+            count={devCount}
+            src={devCardBackIcon}
+            alt="Dev cards"
+            className={stackMotionClass}
+          />
+        </div>
       </div>
     </div>
   );

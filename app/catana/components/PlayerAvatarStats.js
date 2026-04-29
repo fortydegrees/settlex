@@ -28,6 +28,7 @@ export const PlayerAvatarStats = ({
   statusType,
   presence,
   vpDisplayOverride,
+  knightDisplayOverride,
 }) => {
   if (!player) return null;
 
@@ -37,9 +38,12 @@ export const PlayerAvatarStats = ({
   const currentRoadLength = core && coreTopology
     ? getLongestRoadLength(core, coreTopology, player.id)
     : 0;
-  const currentArmySize = player.knightsPlayed || 0;
+  const currentArmySize =
+    knightDisplayOverride?.knightsPlayed ?? player.knightsPlayed ?? 0;
   const hasLongestRoad = core?.awards?.longestRoadOwnerId === player.id;
-  const hasLargestArmy = core?.awards?.largestArmyOwnerId === player.id;
+  const displayedLargestArmyOwnerId =
+    knightDisplayOverride?.largestArmyOwnerId ?? core?.awards?.largestArmyOwnerId;
+  const hasLargestArmy = displayedLargestArmyOwnerId === player.id;
 
   const totalPoints =
     vpDisplayOverride?.totalPoints ??
@@ -102,7 +106,7 @@ export const PlayerAvatarStats = ({
           }`}
         >
           <div className="flex flex-col gap-y-1">
-            <div className="flex items-center">
+            <div className="flex items-center" id={`p${player.id}-largest-army`}>
               <div className="w-8 h-8 flex items-center justify-center">
                 <Image
                   src={longestRoadIcon}

@@ -2913,3 +2913,44 @@
       - current application:
         - homepage `Play` keeps the sheen
         - `Play Against Bot` and other non-primary actions do not
+    - Knight dev-card play animation contract:
+      - game/effect payload names:
+        - `devCardPlayStarted`
+        - `devCardPlayResolved`
+      - bus event names:
+        - `devcard:play:start`
+        - `devcard:play:resolve`
+      - payload shape is intentionally public and presentation-oriented:
+        - `effectId`
+        - `playerId`
+        - `cardType: "knight"`
+        - `phase: "start" | "resolve"`
+        - `startedFromStage`
+        - `previousKnightsPlayed`
+        - `nextKnightsPlayed`
+        - `previousLargestArmyOwnerId`
+        - `nextLargestArmyOwnerId`
+      - start is emitted immediately after the Knight card is legally consumed and `applyKnight` succeeds.
+      - resolve is emitted from robber resolution, including the no-valid-tile skip path, and clears `G.pendingDevCardPlayAnimation`.
+    - Knight animation anchor ids:
+      - local per-card group: `p{playerId}-devcard-knight`
+      - generic dev-card stack/shell: `p{playerId}-devcards`
+      - Largest Army target: `p{playerId}-largest-army`
+      - resource-distribution style DOM targeting is still the model here: authoritative payload plus local anchor lookup in `GameScreen`.
+    - Knight local/opponent presentation split:
+      - local viewer uses `p{playerId}-devcard-knight` so the played card appears to come from the local playable card group.
+      - opponent and spectator viewers use `p{playerId}-devcards` so the public card appears to come from the opponent dev-card stack.
+      - `GameScreen` freezes the actor's Knight count/Largest Army owner at previous values on start, then removes the override when the resolve animation completes.
+      - reduced motion uses the same payload path but avoids long movement and must still clear parked actors and display overrides.
+      - current played-card tuning:
+        - local Knight parked scale: `2`
+        - opponent/spectator Knight parked scale: `2`
+        - the card actor uses a layered drop-shadow filter so the enlarged card reads as elevated above the board.
+        - opponent/spectator start presentation shows the dev-card back during pop-out, then flips to the Knight face after the card has parked.
+    - Sandbox tuning controls:
+      - `/catana/dev/sandbox` dispatches `catana:dev-sandbox:devcard-play`.
+      - current buttons are:
+        - `Opponent Plays Knight`
+        - `Resolve Opponent Knight`
+        - `Reset Knight Visual`
+      - these synthetic controls route through the same local `EffectBus` event names as authoritative effects, so tuning stays close to real board behavior.

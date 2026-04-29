@@ -46,4 +46,26 @@ describe("registerEffects", () => {
     cleanup();
     expect(unsubscribe).toHaveBeenCalled();
   });
+
+  it("registers dev card play lifecycle handler and cleans up both channels", () => {
+    const unsubscribeStart = vi.fn();
+    const unsubscribeResolve = vi.fn();
+    const bus = {
+      on: vi.fn((type) =>
+        type === "devcard:play:start" ? unsubscribeStart : unsubscribeResolve
+      )
+    };
+    const handler = vi.fn();
+
+    const cleanup = registerEffects({
+      bus,
+      effects: { devCardPlay: handler }
+    });
+
+    expect(bus.on).toHaveBeenCalledWith("devcard:play:start", handler);
+    expect(bus.on).toHaveBeenCalledWith("devcard:play:resolve", handler);
+    cleanup();
+    expect(unsubscribeStart).toHaveBeenCalled();
+    expect(unsubscribeResolve).toHaveBeenCalled();
+  });
 });

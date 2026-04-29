@@ -18,7 +18,10 @@ export function SandboxPanel({
   onReset,
   onToggleCollapsed,
   onGiveResource,
-  onGiveDevCard
+  onGiveDevCard,
+  onOpponentDevCardPlayStart,
+  onOpponentDevCardPlayResolve,
+  onDevCardPlayReset
 }) {
   return (
     <div className="pointer-events-auto w-full" data-allow-interaction="true">
@@ -111,6 +114,35 @@ export function SandboxPanel({
                     {card.label}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+                Dev-card effects
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  type="button"
+                  onClick={onOpponentDevCardPlayStart}
+                  className="rounded-lg bg-violet-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-violet-200 transition hover:bg-violet-200"
+                >
+                  Opponent Plays Knight
+                </button>
+                <button
+                  type="button"
+                  onClick={onOpponentDevCardPlayResolve}
+                  className="rounded-lg bg-violet-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-violet-200 transition hover:bg-violet-200"
+                >
+                  Resolve Opponent Knight
+                </button>
+                <button
+                  type="button"
+                  onClick={onDevCardPlayReset}
+                  className="rounded-lg bg-slate-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200"
+                >
+                  Reset Knight Visual
+                </button>
               </div>
             </div>
           </div>

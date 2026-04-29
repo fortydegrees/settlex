@@ -105,6 +105,7 @@ export const PlayerActionContainer = ({
   displayDevCards,
   keepDevCardShellMounted,
   vpDisplayOverride,
+  knightDisplayOverride,
   isActive,
   statusType,
   gameStatus,
@@ -424,6 +425,7 @@ export const PlayerActionContainer = ({
           isActive={isActive}
           statusType={statusType}
           vpDisplayOverride={vpDisplayOverride}
+          knightDisplayOverride={knightDisplayOverride}
         />
 
         <div className="relative">
@@ -463,6 +465,7 @@ export const PlayerActionContainer = ({
           <div className="absolute left-full ml-0 bottom-[-2px]">
             <DevCardDisplay
               cards={displayDevCards ?? player.devCards}
+              playerId={player.id}
               playableCountsByType={devPlayableCountsByType}
               onPlayCard={(card) => moves.playDevCardStart(card)}
               activeCardType={activeDevCardType}
