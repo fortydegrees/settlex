@@ -20,6 +20,8 @@ describe("ruleset factory", () => {
     expect(duel.discardLimit).toBe(9);
     expect(duel.friendlyRobber.enabled).toBe(true);
     expect(duel.allowPlayerTrades).toBe(false);
+    expect(STANDARD_RULESET.diceMode).toBe("random");
+    expect(duel.diceMode).toBe("balanced");
   });
 });
 
@@ -29,6 +31,14 @@ it("reports invalid rulesets with negative values", () => {
   const result = validateRuleset(broken);
   expect(result.ok).toBe(false);
   expect(result.errors.length).toBeGreaterThan(0);
+});
+
+it("reports invalid dice modes", () => {
+  const broken = createRuleset(STANDARD_RULESET);
+  broken.diceMode = "loaded" as never;
+  const result = validateRuleset(broken);
+  expect(result.ok).toBe(false);
+  expect(result.errors).toContain("diceMode must be random or balanced");
 });
 
 it("throws when createEmptyState receives invalid ruleset", () => {

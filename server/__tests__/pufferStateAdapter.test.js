@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { makeDeterministicRng } from "@settlex/game-core";
 import { Catan } from "../../app/catana/Game";
 import { createPufferStateAdapter } from "../bots/pufferStateAdapter";
 
 function createRandomStub() {
+  const number = makeDeterministicRng(456);
   return {
-    Number: () => 0.123456789,
+    Number: number,
     Shuffle: (items) => [...items],
     D6: (count) => Array.from({ length: count }, () => 1)
   };

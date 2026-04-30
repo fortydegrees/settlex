@@ -1,5 +1,6 @@
 import {
   buildTopology,
+  createBalancedDiceState,
   createEmptyState,
   generateBoard,
   resolveDefaultGameModeId,
@@ -9,7 +10,7 @@ import {
   ResourceType
 } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
-import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, DEBUG_takeDevCards, DEBUG_captureScenarioState, DEBUG_clearCapturedScenarioState, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, cancelDevCardPlay, placeRoadFromDevCard, readyUp, autoStartGame, resign, resolveDisconnectForfeit, resolveIdleForfeit, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
+import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, DEBUG_takeDevCards, DEBUG_captureScenarioState, DEBUG_clearCapturedScenarioState, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, placeRoadFromDevCard, readyUp, autoStartGame, resign, resolveDisconnectForfeit, resolveIdleForfeit, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
 import { appendGameLog } from "./utils/gameLog.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 import {
@@ -54,6 +55,7 @@ const mergeScenarioState = (baseState, scenarioState) => ({
   tiles: scenarioState.tiles ?? baseState.tiles,
   valids: scenarioState.valids ?? baseState.valids,
   diceRoll: scenarioState.diceRoll ?? baseState.diceRoll,
+  diceState: scenarioState.diceState ?? baseState.diceState,
   robberTileId: scenarioState.robberTileId ?? baseState.robberTileId,
   placementOrder: scenarioState.placementOrder ?? baseState.placementOrder,
   preGame: scenarioState.preGame ?? baseState.preGame,
@@ -346,6 +348,10 @@ export const createCatanGame = ({
       }
     }
 
+    if (masked.diceState?.mode === "balanced") {
+      masked.diceState = { mode: "balanced" };
+    }
+
     return masked;
   },
 
@@ -389,6 +395,11 @@ export const createCatanGame = ({
       core.devDeck = random.Shuffle(core.devDeck);
     }
 
+    const diceState =
+      core.ruleset.diceMode === "balanced"
+        ? createBalancedDiceState(playerIds)
+        : null;
+
     const initialState = {
       core,
       coreTopology,
@@ -399,6 +410,7 @@ export const createCatanGame = ({
       tiles,
       valids,
       diceRoll,
+      diceState,
       robberTileId: robberTile,
       placementOrder,
       preGame: { readyByPlayerId: {} },
@@ -556,9 +568,6 @@ export const createCatanGame = ({
             rollDice, //after roll dice (and no 7) go to main
             autoRoll,
             playDevCardStart,
-            confirmDevCardPlay,
-            autoResolveDevCard,
-            cancelDevCardPlay,
             placeRoadFromDevCard,
             ...terminalStageMoves,
             ...debugMoves
@@ -585,9 +594,6 @@ export const createCatanGame = ({
               maritimeTrade,
               buyDevCard,
               playDevCardStart,
-              confirmDevCardPlay,
-              autoResolveDevCard,
-              cancelDevCardPlay,
               placeRoadFromDevCard,
               ...terminalStageMoves,
               // buyDev,55
@@ -604,6 +610,14 @@ export const createCatanGame = ({
             moves:{
               moveRobber,
               autoMoveRobber,
+              ...terminalStageMoves,
+              ...debugMoves
+            }
+          },
+          devCardChoice: {
+            moves: {
+              confirmDevCardPlay,
+              autoResolveDevCard,
               ...terminalStageMoves,
               ...debugMoves
             }

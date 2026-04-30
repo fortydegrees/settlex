@@ -58,7 +58,23 @@ describe("turnUiState", () => {
   });
 
   describe("canRenderDevPlayModal", () => {
-    it("renders a player-owned Year of Plenty dialog during preRoll", () => {
+    it("renders a player-owned Year of Plenty dialog during forced dev-card choice", () => {
+      expect(
+        canRenderDevPlayModal({
+          devPlay: { type: "yearOfPlenty", playerId: "0" },
+          playerID: "0",
+          ctx: {
+            phase: "main",
+            currentPlayer: "0",
+            activePlayers: { "0": "devCardChoice" }
+          },
+          corePhase: "normal",
+          isGameOver: false
+        })
+      ).toBe(true);
+    });
+
+    it("hides the dev-card dialog outside the forced choice stage", () => {
       expect(
         canRenderDevPlayModal({
           devPlay: { type: "yearOfPlenty", playerId: "0" },
@@ -71,7 +87,7 @@ describe("turnUiState", () => {
           corePhase: "normal",
           isGameOver: false
         })
-      ).toBe(true);
+      ).toBe(false);
     });
 
     it("hides the dev-card dialog after the turn has passed", () => {

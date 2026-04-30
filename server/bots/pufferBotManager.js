@@ -12,6 +12,7 @@ const STAGE_FALLBACK_MOVES = {
   "placement:road": "autoPlaceRoad",
   "main:moveRobber": "autoMoveRobber",
   "main:roadBuilding": "autoPlaceRoad",
+  "main:devCardChoice": "autoResolveDevCard",
   "main:postRoll": "autoEndTurn"
 };
 
@@ -37,6 +38,13 @@ function getStageKey(state) {
     devPlay?.playerId === ctx.currentPlayer
   ) {
     return "main:roadBuilding";
+  }
+  if (
+    ctx.phase === "main" &&
+    (devPlay?.type === "yearOfPlenty" || devPlay?.type === "monopoly") &&
+    devPlay?.playerId === ctx.currentPlayer
+  ) {
+    return "main:devCardChoice";
   }
   return `${ctx.phase}:${stage}`;
 }
@@ -163,6 +171,10 @@ export class PufferBotManager {
 
     if (stageKey === "main:robberDiscard") {
       return [{ move: "autoDiscard", args: [] }];
+    }
+
+    if (stageKey === "main:devCardChoice") {
+      return [{ move: "autoResolveDevCard", args: [] }];
     }
 
     let adapter;

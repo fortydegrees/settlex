@@ -2,7 +2,9 @@ import { describe, it, expect, vi } from "vitest";
 import { createEmptyState, buildTopology, ResourceType, TileTypes } from "@settlex/game-core";
 import {
   DEBUG_takeDevCards,
+  autoResolveDevCard,
   buyDevCard,
+  cancelDevCardPlay,
   confirmDevCardPlay,
   moveRobber,
   playDevCardStart,
@@ -74,8 +76,9 @@ describe("dev card play moves", () => {
     const state = createEmptyState(["0"]);
     state.playerStateById["0"].devCards = ["yearOfPlenty"];
     const ctx = { currentPlayer: "0", activePlayers: { "0": "preRoll" }, turn: 4 };
+    const events = { setStage: vi.fn() };
     const effects = { devCardPlayStarted: vi.fn() };
-    const context = { G: { core: state }, playerID: "0", ctx, effects };
+    const context = { G: { core: state }, playerID: "0", ctx, events, effects };
 
     playDevCardStart.move(context, "yearOfPlenty");
 
@@ -94,6 +97,31 @@ describe("dev card play moves", () => {
         startedFromStage: "preRoll"
       })
     );
+    expect(events.setStage).toHaveBeenCalledWith("devCardChoice");
+  });
+
+  it("cancelDevCardPlay does not clear committed year of plenty choices", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["yearOfPlenty"];
+    const context = {
+      G: {
+        core: state,
+        devCardPlay: {
+          type: "yearOfPlenty",
+          playerId: "0",
+          startedFromStage: "postRoll"
+        }
+      },
+      playerID: "0"
+    };
+
+    cancelDevCardPlay.move(context);
+
+    expect(context.G.devCardPlay).toMatchObject({
+      type: "yearOfPlenty",
+      playerId: "0",
+      startedFromStage: "postRoll"
+    });
   });
 
   it("confirmDevCardPlay emits a year of plenty resolve effect with selected resources", () => {
@@ -113,7 +141,8 @@ describe("dev card play moves", () => {
         }
       },
       playerID: "0",
-      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" }, turn: 4 },
+      ctx: { currentPlayer: "0", activePlayers: { "0": "devCardChoice" }, turn: 4 },
+      events: { setStage: vi.fn() },
       effects
     };
 
@@ -129,6 +158,7 @@ describe("dev card play moves", () => {
       })
     );
     expect(context.G.devCardPlay).toBe(null);
+    expect(context.events.setStage).toHaveBeenCalledWith("postRoll");
   });
 
   it("confirmDevCardPlay emits a monopoly resolve effect with per-player transfers", () => {
@@ -150,7 +180,8 @@ describe("dev card play moves", () => {
         }
       },
       playerID: "0",
-      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" }, turn: 5 },
+      ctx: { currentPlayer: "0", activePlayers: { "0": "devCardChoice" }, turn: 5 },
+      events: { setStage: vi.fn() },
       effects
     };
 
@@ -170,6 +201,7 @@ describe("dev card play moves", () => {
         totalTransferred: 3
       })
     );
+    expect(context.events.setStage).toHaveBeenCalledWith("postRoll");
   });
 
   it("does not emit a masked local monopoly resolve effect without known transfer counts", () => {
@@ -191,13 +223,95 @@ describe("dev card play moves", () => {
         }
       },
       playerID: "0",
-      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" }, turn: 5 },
+      ctx: { currentPlayer: "0", activePlayers: { "0": "devCardChoice" }, turn: 5 },
+      events: { setStage: vi.fn() },
       effects
     };
 
     confirmDevCardPlay.move(context, ResourceType.WOOD);
 
     expect(effects.devCardPlayResolved).not.toHaveBeenCalled();
+  });
+
+  it("autoResolveDevCard resolves year of plenty with available bank resources", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["yearOfPlenty"];
+    state.bank.resources = [ResourceType.ORE, ResourceType.ORE];
+    const effects = { devCardPlayResolved: vi.fn() };
+    const context = {
+      G: {
+        core: state,
+        gameLog: [],
+        gameLogSeq: 0,
+        devCardPlay: {
+          type: "yearOfPlenty",
+          playerId: "0",
+          effectId: "devcard:yearOfPlenty:0:turn-7",
+          startedFromStage: "preRoll"
+        }
+      },
+      playerID: "0",
+      ctx: { currentPlayer: "0", activePlayers: { "0": "devCardChoice" }, turn: 7 },
+      events: { setStage: vi.fn() },
+      effects,
+      random: { Shuffle: (items) => [...items] },
+      log: { setMetadata: vi.fn() }
+    };
+
+    autoResolveDevCard.move(context);
+
+    expect(state.playerStateById["0"].resources).toEqual([
+      ResourceType.ORE,
+      ResourceType.ORE
+    ]);
+    expect(context.G.devCardPlay).toBe(null);
+    expect(context.events.setStage).toHaveBeenCalledWith("preRoll");
+    expect(effects.devCardPlayResolved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resources: [ResourceType.ORE, ResourceType.ORE],
+        phase: "resolve"
+      })
+    );
+  });
+
+  it("autoResolveDevCard completes year of plenty when the finite bank has fewer than two resources", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["yearOfPlenty"];
+    state.bank.resources = [ResourceType.SHEEP];
+    const effects = { devCardPlayResolved: vi.fn() };
+    const context = {
+      G: {
+        core: state,
+        gameLog: [],
+        gameLogSeq: 0,
+        devCardPlay: {
+          type: "yearOfPlenty",
+          playerId: "0",
+          effectId: "devcard:yearOfPlenty:0:turn-8",
+          startedFromStage: "postRoll"
+        }
+      },
+      playerID: "0",
+      ctx: { currentPlayer: "0", activePlayers: { "0": "devCardChoice" }, turn: 8 },
+      events: { setStage: vi.fn() },
+      effects,
+      random: { Shuffle: (items) => [...items] },
+      log: { setMetadata: vi.fn() }
+    };
+
+    autoResolveDevCard.move(context);
+
+    expect(state.playerStateById["0"].resources).toEqual([ResourceType.SHEEP]);
+    expect(state.playerStateById["0"].devCards).toEqual([]);
+    expect(state.bank.resources).toEqual([]);
+    expect(context.G.devCardPlay).toBe(null);
+    expect(context.events.setStage).toHaveBeenCalledWith("postRoll");
+    expect(effects.devCardPlayResolved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resources: [ResourceType.SHEEP],
+        phase: "resolve"
+      })
+    );
   });
 
   it("playDevCardStart allows road building when exactly one road remains", () => {

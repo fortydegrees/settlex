@@ -908,10 +908,6 @@ export function GameScreen(bgioProps) {
     bgioProps.moves.confirmDevCardPlay(payload);
   };
 
-  const handleDevPlayCancel = () => {
-    bgioProps.moves.cancelDevCardPlay();
-  };
-
   const handleTradeOpen = (resource) => {
     setTradePresetResource(resource ?? null);
     setShowTradeModal(true);
@@ -1612,7 +1608,6 @@ TODO: accurately colour it
           mode={devPlayMode}
           player={player}
           onConfirm={handleDevPlayConfirm}
-          onCancel={handleDevPlayCancel}
           G={bgioProps.G}
           themeId={themeId}
         />

@@ -3,6 +3,7 @@ import { ResourceType, type Resource, type Cost, type DevCardType } from "./type
 export type Ruleset = {
   victoryPointsToWin: number;
   discardLimit: number;
+  diceMode: "random" | "balanced";
   friendlyRobber: { enabled: boolean; vpThreshold: number };
   bank: { finite: boolean; resourceCounts: Record<Resource, number> };
   allowPlayerTrades: boolean;
@@ -20,6 +21,7 @@ export type RulesetId = "standard" | "duel";
 export const STANDARD_RULESET: Ruleset = {
   victoryPointsToWin: 10,
   discardLimit: 7,
+  diceMode: "random",
   friendlyRobber: { enabled: false, vpThreshold: 2 },
   bank: {
     finite: true,
@@ -80,6 +82,7 @@ export const DUEL_RULESET: Ruleset = {
   ...STANDARD_RULESET,
   victoryPointsToWin: 15,
   discardLimit: 9,
+  diceMode: "balanced",
   friendlyRobber: { enabled: true, vpThreshold: 2 },
   allowPlayerTrades: false,
   bank: {
@@ -145,6 +148,9 @@ export function validateRuleset(
   }
   if (!isFiniteNumber(ruleset.discardLimit) || ruleset.discardLimit < 0) {
     errors.push("discardLimit must be >= 0");
+  }
+  if (ruleset.diceMode !== "random" && ruleset.diceMode !== "balanced") {
+    errors.push("diceMode must be random or balanced");
   }
 
   const tradeRates = ruleset.tradeRates ?? { bank: NaN, genericPort: NaN, specificPort: NaN };

@@ -27,4 +27,15 @@ describe("GameScreen dev card play animation wiring", () => {
     expect(source).toContain("devcard:play:resolve");
     expect(source).toContain("clearDevCardPlayActors");
   });
+
+  it("does not pass a cancel handler to forced YoP and Monopoly dialogs", () => {
+    const source = readGameScreen();
+    const devDialogMarkup = source.match(
+      /\{!!player && devPlayModalVisible[\s\S]*?<TradeDiscardModal[\s\S]*?\/>/
+    )?.[0] ?? "";
+
+    expect(devDialogMarkup).toContain("onConfirm={handleDevPlayConfirm}");
+    expect(devDialogMarkup).not.toContain("onCancel=");
+    expect(source).not.toContain("handleDevPlayCancel");
+  });
 });

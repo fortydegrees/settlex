@@ -5,7 +5,8 @@ const DEFAULT_STAGE_TIMERS_MS = {
   "placement:settlement": 60000,
   "placement:road": 10000,
   "main:moveRobber": 20000,
-  "main:roadBuilding": 10000
+  "main:roadBuilding": 10000,
+  "main:devCardChoice": 20000
 };
 
 const DEFAULT_TURN_TIMER_MS = 45000;
@@ -29,7 +30,8 @@ const STAGE_TIMEOUT_MOVES = {
   "placement:settlement": "autoPlaceSettlement",
   "placement:road": "autoPlaceRoad",
   "main:moveRobber": "autoMoveRobber",
-  "main:roadBuilding": "autoPlaceRoad"
+  "main:roadBuilding": "autoPlaceRoad",
+  "main:devCardChoice": "autoResolveDevCard"
 };
 
 const BOT_ACTION_STAGE_KEYS = new Set([
@@ -38,7 +40,8 @@ const BOT_ACTION_STAGE_KEYS = new Set([
   "main:preRoll",
   "main:postRoll",
   "main:moveRobber",
-  "main:roadBuilding"
+  "main:roadBuilding",
+  "main:devCardChoice"
 ]);
 
 const isResolvedState = (state) =>
@@ -284,6 +287,13 @@ export class TimerManager {
       devPlay?.playerId === ctx.currentPlayer
     ) {
       return "main:roadBuilding";
+    }
+    if (
+      ctx.phase === "main" &&
+      (devPlay?.type === "yearOfPlenty" || devPlay?.type === "monopoly") &&
+      devPlay?.playerId === ctx.currentPlayer
+    ) {
+      return "main:devCardChoice";
     }
     return `${ctx.phase}:${stage}`;
   }

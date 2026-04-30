@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createEmptyState } from "@settlex/game-core";
+import { createEmptyState, makeDeterministicRng } from "@settlex/game-core";
 import { Client } from "boardgame.io/dist/cjs/client.js";
 import { Catan } from "../Game";
 import { resign, resolveDisconnectForfeit, resolveIdleForfeit } from "../Moves";
@@ -32,13 +32,17 @@ const getStageMoveMaps = (game) => [
   game.phases.main.turn.stages.preRoll.moves,
   game.phases.main.turn.stages.robberDiscard.moves,
   game.phases.main.turn.stages.postRoll.moves,
-  game.phases.main.turn.stages.moveRobber.moves
+  game.phases.main.turn.stages.moveRobber.moves,
+  game.phases.main.turn.stages.devCardChoice.moves
 ];
 
-const makeRandom = () => ({
-  Number: () => 0.5,
-  Shuffle: (items) => items
-});
+const makeRandom = () => {
+  const number = makeDeterministicRng(789);
+  return {
+    Number: number,
+    Shuffle: (items) => items
+  };
+};
 
 const seedClientFromScenario = ({ playerID, scenarioState }) => {
   const client = Client({ game: Catan, playerID });
