@@ -25,6 +25,6 @@ describe("LobbyPageClient play-vs-bot entrypoint", () => {
     );
 
     expect(source).toContain("normalizePlayerColorId");
-    expect(source).toContain('avatarColor: "sky"');
+    expect(source).toContain('avatarColor: "royal"');
   });
 });

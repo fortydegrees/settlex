@@ -3106,6 +3106,7 @@
       - use CSS/React for simple isolated count feedback; keep GSAP for coordinated board and gameplay timelines.
       - first production use is the `PlayerAvatarStats` victory-point badge only.
       - do not apply this to resource and development-card stack counts by default; those values change more often and already sit near card movement effects.
+      - exception: the local player's resource dock uses `AnimatedCount` with the `resource-dock-count` class for subtle green/rose gain-loss flashes, while opponent hidden totals remain unchanged.
       - pass an explicit `motionValue` when the rendered display is not the value to compare, such as local hidden-VP text like `2 (+1)`.
     - action dock press prototype note:
       - `app/catana/components/ActionsDock/DockCard.js` already owns the dock button spring state through `@react-spring/web`.
@@ -3137,6 +3138,11 @@
         - the actor's optimistic client may execute the move against a player-view-masked state where opponent resources are `hidden`.
         - do not emit a local optimistic Monopoly resolve effect from that masked state, because it cannot know transfer counts.
         - let the server-authoritative resolve effect with real transfer counts finish the parked-card animation.
+    - Dev-card purchase reveal note:
+      - `buyDevCardReveal` should stay a zero-duration bgio effect so `updateStateAfterEffects: true` does not hold the resource-count decrement behind the reveal animation.
+      - `DevCardPurchaseReveal` still owns the actual visual timing, while `GameScreen` freezes the local dev-card hand and VP badge until reveal completion.
+      - when the local dev-card shell is force-mounted with zero cards as a reveal destination, keep it invisible rather than showing an empty glass box.
+      - the 0-to-1 dev-card shell entrance should stay a short opacity/translate/scale settle in `DevCardDisplay.css`; do not move this into the GSAP reveal runner unless the shell needs to coordinate with card travel.
     - Balanced dice note:
       - `game-core/src/rules/balancedDice.ts` owns the balanced dice tuning constants; rulesets expose only `diceMode: "random" | "balanced"`.
       - Duel defaults to balanced dice; standard modes keep random dice.

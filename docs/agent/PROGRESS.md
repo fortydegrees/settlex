@@ -4654,3 +4654,39 @@
 - Reordered picker colors to lead with primary hues and keep black/white at the end.
 - Verification:
   - Not run; value-only UI tuning per request.
+
+## Status (2026-04-30, local resource dock count feedback)
+- Added local resource dock count feedback:
+  - the per-resource counts in `PlayerActionContainer` now render through `AnimatedCount`,
+  - increases flash green with a small upward count motion,
+  - decreases flash rose with a small downward count motion,
+  - opponent hidden resource totals are unchanged.
+- Fixed the dock loss animation selector so it is more specific than the generic decrease animation and the rose flash actually applies.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/AnimatedCount.test.js`
+
+## Status (2026-04-30, player color test maintenance)
+- Updated stale player-color tests to match the current visual color contract:
+  - legacy `blue` now canonicalizes to `royal`,
+  - second-seat and bot fallback color expectations now use `royal`,
+  - the lobby picker expectation now matches the curated 12-color order.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/playerColors.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/playerIdentityStorage.test.js app/catana/__tests__/playerView.test.js app/catana/__tests__/pieceAssets.test.js app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.playerColors.test.js app/catana/__tests__/playerColorsInGame.test.js app/catana/__tests__/playerAvatarStats.color.test.js app/catana/__tests__/GameOverModal.test.js app/catana/__tests__/PostgameOverlay.test.js`
+
+## Status (2026-04-30, dev-card purchase count timing)
+- Changed `buyDevCardReveal` to a zero-duration bgio effect so the authoritative post-purchase board state can render immediately:
+  - the local resource dock count decrements as soon as the buy move resolves,
+  - `DevCardPurchaseReveal` still owns the visual reveal animation,
+  - the local dev-card hand and VP badge remain frozen during the reveal.
+- Added a source contract test for the non-blocking purchase reveal effect.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/GameScreen.devCardReveal.test.js --reporter=dot`
+
+## Status (2026-04-30, dev-card shell entrance)
+- Smoothed the local dev-card shell transition when a player goes from 0 to 1 dev cards:
+  - empty forced-mounted shells stay invisible but keep their layout anchor for reveal destinations,
+  - the visible shell fades and settles upward with the same short bouncy timing used for Catana game feedback,
+  - reduced-motion users get the shell without the entrance animation.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/DevCardDisplayLayout.source.test.js app/catana/__tests__/DevCardDisplay.disabledStyle.test.js --reporter=dot`
+  - `pnpm exec eslint app/catana/components/DevCardDisplay.js`

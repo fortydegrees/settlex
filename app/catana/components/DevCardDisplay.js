@@ -341,12 +341,23 @@ export const DevCardDisplay = ({
     return null;
   }
 
+  const isEmptyShell = cards.length === 0;
+  const boxClassName = [
+    "devcard-box",
+    "inline-flex",
+    "origin-bottom-left",
+    "relative",
+    isEmptyShell ? "devcard-box--empty-shell" : "devcard-box--has-cards",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <TooltipProvider delay={130} closeDelay={40}>
       <div
         ref={setContainerNode}
         id={playerId != null ? `p${playerId}-devcards` : undefined}
-        className="devcard-box inline-flex origin-bottom-left relative"
+        className={boxClassName}
         style={{ width: `${Math.round(boxWidth)}px` }}
         onMouseMove={handlePointerMove}
         onMouseLeave={() => {

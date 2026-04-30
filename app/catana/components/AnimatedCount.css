@@ -34,6 +34,23 @@
   animation: catana-animated-count-exit 180ms ease-out both;
 }
 
+.resource-dock-count {
+  color: rgb(255 255 255);
+  font-variant-numeric: normal;
+}
+
+.resource-dock-count .animated-count__stack {
+  overflow: visible;
+}
+
+.animated-count.resource-dock-count[data-direction="increase"] .animated-count__value--enter {
+  animation-name: catana-resource-count-gain;
+}
+
+.animated-count.resource-dock-count[data-direction="decrease"] .animated-count__value--enter {
+  animation-name: catana-resource-count-loss;
+}
+
 .animated-count[data-direction="decrease"] .animated-count__value--enter {
   animation-name: catana-animated-count-enter-down;
 }
@@ -137,6 +154,60 @@
   to {
     opacity: 0;
     transform: scale(0.96);
+  }
+}
+
+@keyframes catana-resource-count-gain {
+  from {
+    color: rgb(187 247 208);
+    opacity: 0;
+    text-shadow:
+      0 0 8px rgb(34 197 94 / 0.85),
+      0 0 18px rgb(34 197 94 / 0.45);
+    transform: translateY(0.34em) scale(0.96);
+  }
+
+  58% {
+    color: rgb(134 239 172);
+    opacity: 1;
+    text-shadow:
+      0 0 10px rgb(34 197 94 / 0.9),
+      0 0 22px rgb(34 197 94 / 0.52);
+    transform: translateY(-0.04em) scale(1.12);
+  }
+
+  to {
+    color: rgb(255 255 255);
+    opacity: 1;
+    text-shadow: 0 0 0 rgb(34 197 94 / 0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes catana-resource-count-loss {
+  from {
+    color: rgb(254 205 211);
+    opacity: 0;
+    text-shadow:
+      0 0 8px rgb(244 63 94 / 0.85),
+      0 0 18px rgb(244 63 94 / 0.45);
+    transform: translateY(-0.34em) scale(0.96);
+  }
+
+  58% {
+    color: rgb(251 113 133);
+    opacity: 1;
+    text-shadow:
+      0 0 10px rgb(244 63 94 / 0.9),
+      0 0 22px rgb(244 63 94 / 0.52);
+    transform: translateY(0.04em) scale(1.12);
+  }
+
+  to {
+    color: rgb(255 255 255);
+    opacity: 1;
+    text-shadow: 0 0 0 rgb(244 63 94 / 0);
+    transform: translateY(0) scale(1);
   }
 }
 
