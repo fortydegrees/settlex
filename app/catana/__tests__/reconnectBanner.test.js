@@ -142,6 +142,34 @@ describe("resolveReconnectBannerCandidate", () => {
     expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).toBeNull();
   });
 
+  it("suppresses pending friend challenges until both seats are occupied", async () => {
+    const storage = seededStorageForMatch("m1", "0", "Alice");
+    const fetchImpl = vi.fn().mockResolvedValue(
+      okJson({
+        matchID: "m1",
+        players: [{ id: 0, name: "Alice" }, { id: 1, name: "" }],
+        metadata: {
+          setupData: {
+            matchKind: "friend_challenge",
+            friendChallenge: {
+              inviterSeatId: "0",
+              expiresAt: "2099-04-09T08:05:00.000Z"
+            }
+          }
+        }
+      })
+    );
+
+    const result = await resolveReconnectBannerCandidate({
+      pathname: "/",
+      storage,
+      fetchImpl
+    });
+
+    expect(result).toBeNull();
+    expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).not.toBeNull();
+  });
+
   it("suppresses the banner without clearing state on fetch errors", async () => {
     const storage = seededStorageForMatch("m1", "0");
     const fetchImpl = vi.fn().mockRejectedValue(new Error("network"));

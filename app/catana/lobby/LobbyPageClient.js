@@ -17,6 +17,11 @@ import {
   readLastActiveMatch,
   writeLastActiveMatch
 } from "../utils/activeMatchStorage";
+import {
+  clearPendingFriendChallenge,
+  restorePendingFriendChallenge,
+  writePendingFriendChallenge
+} from "../utils/pendingFriendChallenge";
 import { sanitizeDisplayName } from "../utils/playerIdentity";
 import { FriendChallengeModal } from "./FriendChallengeModal";
 import { IdentityModal } from "./IdentityModal";
@@ -374,6 +379,36 @@ export function LobbyPageClient() {
     fetchSavedScenarios();
   }, [fetchSavedScenarios, refreshMatches, restoreOrCreateAccount]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const restorePendingChallengeState = async () => {
+      const restored = await restorePendingFriendChallenge({
+        storage: window.localStorage,
+        fetchImpl: fetch
+      });
+
+      if (cancelled || !restored) {
+        return;
+      }
+
+      if (restored.status === "pending") {
+        setChallengeState((current) => current ?? restored.challengeState);
+        return;
+      }
+
+      if (restored.status === "accepted") {
+        router.push(restored.href);
+      }
+    };
+
+    void restorePendingChallengeState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
   // Auto-refresh when custom section is open
   useEffect(() => {
     if (!showCustom) return;
@@ -427,6 +462,7 @@ export function LobbyPageClient() {
         });
 
         if (challenge?.status === "accepted") {
+          clearPendingFriendChallenge(window.localStorage);
           router.push(
             `/g/${challengeState.matchID}?playerID=${encodeURIComponent(challengeState.playerID)}`
           );
@@ -449,6 +485,15 @@ export function LobbyPageClient() {
             }
           } catch (err) {
             /* ignore cleanup errors */
+          }
+
+          clearPendingFriendChallenge(window.localStorage);
+          const activeMatch = readLastActiveMatch(window.localStorage);
+          if (
+            activeMatch?.matchID === challengeState.matchID &&
+            activeMatch?.playerID === String(challengeState.playerID)
+          ) {
+            clearLastActiveMatch(window.localStorage);
           }
 
           setChallengeState((current) =>
@@ -644,6 +689,10 @@ export function LobbyPageClient() {
         credentials: created.playerCredentials,
         playerName: account.currentUsername,
       });
+      writePendingFriendChallenge(window.localStorage, {
+        matchID: created.matchID,
+        playerID: created.playerID
+      });
 
       setChallengeState({
         ...created,
@@ -726,6 +775,8 @@ export function LobbyPageClient() {
     } catch (err) {
       /* ignore cleanup errors */
     }
+
+    clearPendingFriendChallenge(window.localStorage);
 
     const activeMatch = readLastActiveMatch(window.localStorage);
     if (
