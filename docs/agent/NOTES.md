@@ -3121,3 +3121,7 @@
       - YoP resolve payloads carry the selected resources and animate those cards from the parked dev card into the actor's resource area.
       - Monopoly resolve payloads carry per-player transfer counts and animate resource cards from affected player resource areas into the actor's resource area.
       - local YoP/Monopoly hides one matching dev card from the dock while the card is parked, matching Road Building's temporary-hide behavior.
+      - local Monopoly has one extra caveat in live games:
+        - the actor's optimistic client may execute the move against a player-view-masked state where opponent resources are `hidden`.
+        - do not emit a local optimistic Monopoly resolve effect from that masked state, because it cannot know transfer counts.
+        - let the server-authoritative resolve effect with real transfer counts finish the parked-card animation.

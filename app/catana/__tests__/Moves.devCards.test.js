@@ -172,6 +172,34 @@ describe("dev card play moves", () => {
     );
   });
 
+  it("does not emit a masked local monopoly resolve effect without known transfer counts", () => {
+    const state = createEmptyState(["0", "1", "2"]);
+    state.playerStateById["0"].devCards = ["monopoly"];
+    state.playerStateById["1"].resources = ["hidden", "hidden"];
+    state.playerStateById["2"].resources = ["hidden"];
+    const effects = { devCardPlayResolved: vi.fn() };
+    const context = {
+      G: {
+        core: state,
+        gameLog: [],
+        gameLogSeq: 0,
+        devCardPlay: {
+          type: "monopoly",
+          playerId: "0",
+          effectId: "devcard:monopoly:0:turn-5",
+          startedFromStage: "postRoll"
+        }
+      },
+      playerID: "0",
+      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" }, turn: 5 },
+      effects
+    };
+
+    confirmDevCardPlay.move(context, ResourceType.WOOD);
+
+    expect(effects.devCardPlayResolved).not.toHaveBeenCalled();
+  });
+
   it("playDevCardStart allows road building when exactly one road remains", () => {
     const state = createEmptyState(["0"]);
     state.playerStateById["0"].devCards = ["roadBuilding"];

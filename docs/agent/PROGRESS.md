@@ -4587,3 +4587,14 @@
 - Verification:
   - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/effects/devCardPlay.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js --exclude='.worktrees/**'`
   - `pnpm exec eslint app/catana/Moves.js app/catana/effects/devCardPlay.js app/catana/effects/soundThemes.js app/catana/GameScreen.js app/catana/dev/sandbox/SandboxPanel.js app/catana/dev/sandbox/SandboxBoardShell.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/effects/devCardPlay.test.js`
+
+## Status (2026-04-30, local Monopoly resolve animation fix)
+- Fixed the local-player Monopoly resolve path in live games:
+  - local optimistic move execution can run against player-view-masked opponent hands,
+  - those masked hands contain `hidden` placeholders instead of real resource names,
+  - the optimistic Monopoly resolve effect is now suppressed when transfer counts are not knowable,
+  - the server-authoritative resolve payload can then drive the incoming-card animation with real transfer counts.
+- Added a regression test for masked local Monopoly confirmation.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/effects/devCardPlay.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js --exclude='.worktrees/**'`
+  - `pnpm exec eslint app/catana/Moves.js app/catana/__tests__/Moves.devCards.test.js`
