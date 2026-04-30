@@ -10,6 +10,7 @@ export * from "./gameModes";
 export * from "./rules/buildability";
 export * from "./rules/apply";
 export * from "./rules/buildActions";
+export * from "./rules/balancedDice";
 export * from "./rules/turnFlow";
 export type {
   Distribution,

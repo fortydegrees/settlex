@@ -18,11 +18,13 @@ We skipped UI tests for the dev-card play UX in this pass. This captures the tes
   - Selects exactly two resources.
   - Enforces bank availability when bank is finite.
   - Confirm calls move with two resources.
-  - Cancel clears devCardPlay.
+  - Does not render a cancel action after the card is played.
+  - Timeout/bot auto-resolution completes the choice and clears devCardPlay.
 - Monopoly modal:
   - Selects exactly one resource.
   - Confirm calls move with resource.
-  - Cancel clears devCardPlay.
+  - Does not render a cancel action after the card is played.
+  - Timeout/bot auto-resolution completes the choice and clears devCardPlay.
 
 ## Road building flow
 - Clicking Road Building dev card enters road-building placement mode.
@@ -32,4 +34,3 @@ We skipped UI tests for the dev-card play UX in this pass. This captures the tes
 ## Visual/interaction states
 - Playable cards show hover/active styling.
 - Active (in-progress) dev card displays active state.
-

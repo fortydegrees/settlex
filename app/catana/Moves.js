@@ -21,9 +21,21 @@ import {
   buyDevCard as applyBuyDevCard,
   canPlaceRobber,
   canPlayDevCard,
+  createBalancedDiceState,
+  drawBalancedDice,
   playDevCard
 } from "@settlex/game-core";
 import { appendGameLog } from "./utils/gameLog.js";
+
+const DEV_CARD_CHOICE_STAGE = "devCardChoice";
+const CHOICE_DEV_CARD_TYPES = new Set(["yearOfPlenty", "monopoly"]);
+const STANDARD_RESOURCE_TYPES = [
+  ResourceType.WOOD,
+  ResourceType.BRICK,
+  ResourceType.SHEEP,
+  ResourceType.WHEAT,
+  ResourceType.ORE
+];
 
 const countResources = (resources = []) =>
   resources.reduce((acc, resource) => {
@@ -69,6 +81,23 @@ const logResourceShortages = (G, ctx, shortages, options) => {
       data: shortage,
       forced: options?.forced
     });
+  });
+};
+
+const drawDiceForRoll = ({ G, ctx, random }) => {
+  if (G.core?.ruleset?.diceMode !== "balanced") {
+    return random.D6(2);
+  }
+
+  const playerIds = G.core?.players ?? ctx?.playOrder ?? [];
+  if (!G.diceState || G.diceState.mode !== "balanced") {
+    G.diceState = createBalancedDiceState(playerIds);
+  }
+
+  return drawBalancedDice(G.diceState, {
+    playerId: String(ctx?.currentPlayer ?? G.core?.turn?.currentPlayerId ?? "0"),
+    playerIds: playerIds.map(String),
+    rng: () => random.Number()
   });
 };
 
@@ -594,7 +623,7 @@ const setCurrentPlayerStage = (context, stage) => {
     events.setActivePlayers({ currentPlayer: stage, others: null });
     return;
   }
-  events.setStage(stage);
+  events?.setStage?.(stage);
 };
 
 const finishRobberResolution = (context) => {
@@ -766,7 +795,7 @@ export const rollDice = {
   canDo: () => console.log("hi roll dive"),
   move: (context, options) => {
     const { G, random, effects, events } = context;
-    const roll = random.D6(2);
+    const roll = drawDiceForRoll(context);
     G.diceRoll = roll;
     effects?.roll?.([roll[0], roll[1]]);
 
@@ -1150,6 +1179,36 @@ const isDevCardStage = (ctx, playerID) => {
   return stage === "preRoll" || stage === "postRoll";
 };
 
+const isDevCardChoiceStage = (ctx, playerID) =>
+  ctx.activePlayers?.[playerID] === DEV_CARD_CHOICE_STAGE;
+
+const getDevCardReturnStage = (devPlay) =>
+  devPlay?.startedFromStage === "preRoll" ? "preRoll" : "postRoll";
+
+const finishDevCardChoice = (context, devPlay) => {
+  context.G.devCardPlay = null;
+  setCurrentPlayerStage(context, getDevCardReturnStage(devPlay));
+};
+
+const buildAutoYearOfPlentyPayload = (core, random) => {
+  if (!core?.ruleset?.bank?.finite) {
+    const shuffled = random?.Shuffle
+      ? random.Shuffle(STANDARD_RESOURCE_TYPES)
+      : STANDARD_RESOURCE_TYPES;
+    return [shuffled[0], shuffled[1] ?? shuffled[0]];
+  }
+
+  const available = [];
+  for (const resource of STANDARD_RESOURCE_TYPES) {
+    const count = (core.bank?.resources ?? []).filter((entry) => entry === resource).length;
+    for (let index = 0; index < Math.min(2, count); index += 1) {
+      available.push(resource);
+    }
+  }
+  const shuffled = random?.Shuffle ? random.Shuffle(available) : available;
+  return shuffled.slice(0, 2);
+};
+
 export const playDevCardStart = {
   move: (context, cardType, options) => {
     const { G, playerID, ctx, events, effects } = context;
@@ -1243,6 +1302,7 @@ export const playDevCardStart = {
         startedFromStage: currentStage
       };
       effects?.devCardPlayStarted?.(startPayload);
+      setCurrentPlayerStage(context, DEV_CARD_CHOICE_STAGE);
     }
   }
 };
@@ -1253,7 +1313,7 @@ export const confirmDevCardPlay = {
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.playerId !== playerID) return;
     if (playerID !== ctx.currentPlayer) return;
-    if (!isDevCardStage(ctx, playerID)) return;
+    if (!isDevCardChoiceStage(ctx, playerID)) return;
 
     let applied = { ok: false, error: "unknown" };
     let resolvePayload = null;
@@ -1322,7 +1382,7 @@ export const confirmDevCardPlay = {
     if (resolvePayload) {
       effects?.devCardPlayResolved?.(resolvePayload);
     }
-    G.devCardPlay = null;
+    finishDevCardChoice(context, devPlay);
   }
 };
 
@@ -1331,7 +1391,7 @@ export const autoResolveDevCard = {
     const { G, ctx, random, log } = context;
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.playerId !== ctx.currentPlayer) return;
-    if (!isDevCardStage(ctx, devPlay.playerId)) return;
+    if (!isDevCardChoiceStage(ctx, devPlay.playerId)) return;
     appendGameLog(G, ctx, {
       type: "forced:devCardResolution",
       actorId: "system",
@@ -1339,19 +1399,14 @@ export const autoResolveDevCard = {
     });
 
     if (devPlay.type === "yearOfPlenty") {
-      const resources = Object.values(ResourceType);
-      const shuffled = random?.Shuffle
-        ? random.Shuffle(resources)
-        : resources;
-      const payload = [shuffled[0], shuffled[1] ?? shuffled[0]];
+      const payload = buildAutoYearOfPlentyPayload(G.core, random);
       log.setMetadata({ message: "auto-resolving Year of Plenty" });
       confirmDevCardPlay.move(context, payload, { forced: true });
       return;
     }
 
     if (devPlay.type === "monopoly") {
-      const resources = Object.values(ResourceType);
-      const choice = pickRandom(resources, random);
+      const choice = pickRandom(STANDARD_RESOURCE_TYPES, random);
       if (!choice) return;
       log.setMetadata({ message: "auto-resolving Monopoly" });
       confirmDevCardPlay.move(context, choice, { forced: true });
@@ -1363,6 +1418,7 @@ export const cancelDevCardPlay = {
   move: (context) => {
     const { G, playerID } = context;
     if (!G.devCardPlay || G.devCardPlay.playerId !== playerID) return;
+    if (CHOICE_DEV_CARD_TYPES.has(G.devCardPlay.type)) return;
     G.devCardPlay = null;
   }
 };

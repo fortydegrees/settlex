@@ -1,4 +1,4 @@
-const DEV_PLAY_MODAL_STAGES = new Set(["preRoll", "postRoll"]);
+const DEV_PLAY_MODAL_STAGES = new Set(["devCardChoice"]);
 
 function hasActiveTurnContext({ playerID, ctx, corePhase, isGameOver }) {
   if (isGameOver) {

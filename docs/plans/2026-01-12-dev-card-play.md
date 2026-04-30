@@ -4,6 +4,8 @@
 
 **Goal:** Enable playing dev cards (knight, road building, year of plenty, monopoly) with server-tracked flows, proper rules enforcement, and UI feedback.
 
+**Update (2026-04-30):** The original YoP/Monopoly confirm/cancel picker model was superseded. Once `playDevCardStart` starts Year of Plenty or Monopoly, the choice is forced; cancel should not clear `G.devCardPlay`, and timeout/bot handling should resolve through `autoResolveDevCard`.
+
 **Architecture:** Store a transient `G.devCardPlay` state for in‑progress dev card actions (YoP/Monopoly selection, road‑building placements). Add a core helper to place a free road without spending resources. Moves validate `canPlayDevCard` and stage (`preRoll`/`postRoll`). UI uses `TradeDiscardModal` in new dev modes and allows clickable dev cards with playability styling.
 
 **Tech Stack:** boardgame.io (moves/stages), React/Next.js UI, Tailwind CSS, game-core rules, Vitest.

@@ -134,6 +134,34 @@ describe("TimerManager", () => {
     });
   });
 
+  it("auto-resolves a forced choice dev card after timeout", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+
+    manager.onState("match-1", {
+      G: { devCardPlay: { type: "monopoly", playerId: "0", startedFromStage: "postRoll" } },
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "0": "devCardChoice" },
+        turn: 1
+      }
+    });
+
+    vi.advanceTimersByTime(20000);
+
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoResolveDevCard",
+      playerID: "0"
+    });
+    expect(dispatch).not.toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoEndTurn",
+      playerID: "0"
+    });
+  });
+
   it("auto-starts preGame after timeout", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({ dispatch });

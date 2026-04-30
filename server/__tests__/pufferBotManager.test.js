@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { makeDeterministicRng } from "@settlex/game-core";
 import { Catan } from "../../app/catana/Game";
 import { PufferBotManager } from "../bots/pufferBotManager";
 
 function createRandomStub() {
+  const number = makeDeterministicRng(123);
   return {
-    Number: () => 0.3333,
+    Number: number,
     Shuffle: (items) => [...items],
     D6: (count) => Array.from({ length: count }, () => 1)
   };
@@ -52,6 +54,27 @@ describe("PufferBotManager", () => {
 
     const moves = await manager.chooseMoves(state, "0");
     expect(moves).toEqual([{ move: "autoDiscard", args: [] }]);
+  });
+
+  it("uses autoResolveDevCard for forced dev-card choices", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["0"] });
+    const state = createState({
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "0": "devCardChoice" },
+      turn: 5
+    });
+    state.G.core.phase = "normal";
+    state.G.core.turn.currentPlayerId = "0";
+    state.G.core.turn.phase = "postRoll";
+    state.G.devCardPlay = {
+      type: "monopoly",
+      playerId: "0",
+      startedFromStage: "postRoll"
+    };
+
+    const moves = await manager.chooseMoves(state, "0");
+    expect(moves).toEqual([{ move: "autoResolveDevCard", args: [] }]);
   });
 
   it("uses readyUp in preGame waiting stage for bot seats", async () => {

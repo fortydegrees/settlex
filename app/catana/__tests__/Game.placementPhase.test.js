@@ -91,6 +91,17 @@ describe("main phase configuration", () => {
     expect(postRollMoves.placeSettlement).toBeDefined();
     expect(postRollMoves.endTurn).toBeDefined();
   });
+
+  it("uses a forced dev-card choice stage without cancel or normal turn moves", () => {
+    const stages = Catan.phases.main.turn.stages;
+    const devCardChoiceMoves = stages.devCardChoice.moves;
+
+    expect(devCardChoiceMoves.confirmDevCardPlay).toBeDefined();
+    expect(devCardChoiceMoves.autoResolveDevCard).toBeDefined();
+    expect(devCardChoiceMoves.cancelDevCardPlay).toBeUndefined();
+    expect(devCardChoiceMoves.rollDice).toBeUndefined();
+    expect(devCardChoiceMoves.endTurn).toBeUndefined();
+  });
 });
 
 describe("placement phase turn order", () => {

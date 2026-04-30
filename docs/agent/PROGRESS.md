@@ -4598,3 +4598,35 @@
 - Verification:
   - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/effects/devCardPlay.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js --exclude='.worktrees/**'`
   - `pnpm exec eslint app/catana/Moves.js app/catana/__tests__/Moves.devCards.test.js`
+
+## Status (2026-04-30, forced YoP and Monopoly choices)
+- Changed Year of Plenty and Monopoly dev-card play from a cancellable picker into a forced choice stage:
+  - `playDevCardStart` now parks the card and enters `devCardChoice`,
+  - the choice stage exposes only confirm, auto-resolve, terminal, and debug moves,
+  - stale `cancelDevCardPlay` calls no longer clear YoP/Monopoly pending choices.
+- Removed the cancel handler from the YoP/Monopoly dialog path so the modal only offers the forced confirmation flow.
+- Wired timeout/bot handling for forced dev-card choices:
+  - server timers dispatch `autoResolveDevCard` for `devCardChoice`,
+  - Puffer bot fallback also auto-resolves the pending choice,
+  - auto Year of Plenty chooses available finite-bank resources and still completes if fewer than two are available.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.endTurn.test.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Game.debugMoves.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js app/catana/__tests__/turnUiState.test.js server/__tests__/TimerManager.test.js server/__tests__/pufferBotManager.test.js server/__tests__/pufferStateAdapter.test.js server/__tests__/serverGameConfig.test.js --exclude='.worktrees/**'`
+  - `pnpm exec eslint app/catana/Moves.js app/catana/Game.js app/catana/GameScreen.js app/catana/utils/turnUiState.js server/timers/TimerManager.js server/bots/pufferBotManager.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js app/catana/__tests__/turnUiState.test.js server/__tests__/TimerManager.test.js server/__tests__/serverGameConfig.test.js app/catana/__tests__/Game.debugMoves.test.js app/catana/__tests__/Moves.resign.test.js server/__tests__/pufferBotManager.test.js server/__tests__/pufferStateAdapter.test.js`
+
+## Status (2026-04-30, duel balanced dice)
+- Added ruleset-level dice modes:
+  - standard keeps `diceMode: "random"`,
+  - duel now uses `diceMode: "balanced"`.
+- Added a deterministic balanced dice helper in `game-core`:
+  - 36-card exact dice-pair deck,
+  - reshuffle below 13 cards,
+  - five-roll recent-total penalty,
+  - Colonist-style 7 balancing by player and streak.
+- Wired Catana live rolls so `rollDice` uses balanced state only when the ruleset asks for it; random mode still uses `random.D6(2)`.
+- Added private match-scoped `G.diceState` for balanced games and masked it in `playerView` to expose only `{ mode: "balanced" }`.
+- Design note: `docs/superpowers/specs/2026-04-30-balanced-dice-design.md`.
+- Verification:
+  - `pnpm -C game-core build`
+  - `pnpm -C game-core test`
+  - `pnpm exec vitest run app/catana/__tests__/Game.boardConfig.test.js app/catana/__tests__/stateMasking.test.js app/catana/__tests__/Moves.balancedDice.test.js`
+  - Broader targeted Catana run still has an existing dev-card-choice failure in `app/catana/__tests__/Moves.gameLog.test.js`; the balanced-dice tests in that run passed.

@@ -3121,7 +3121,17 @@
       - YoP resolve payloads carry the selected resources and animate those cards from the parked dev card into the actor's resource area.
       - Monopoly resolve payloads carry per-player transfer counts and animate resource cards from affected player resource areas into the actor's resource area.
       - local YoP/Monopoly hides one matching dev card from the dock while the card is parked, matching Road Building's temporary-hide behavior.
+      - forced-choice correction:
+        - once `playDevCardStart` starts YoP or Monopoly, the pending choice is committed and should not be cancellable.
+        - the January 2026 confirm/cancel modal wiring is the source of the old `cancelDevCardPlay` behavior; do not reintroduce cancel for these choice cards.
+        - timeouts and bots should resolve the pending choice through `autoResolveDevCard`.
+        - auto Year of Plenty must choose from finite-bank availability and still clear the pending choice if the bank has fewer than two resources.
       - local Monopoly has one extra caveat in live games:
         - the actor's optimistic client may execute the move against a player-view-masked state where opponent resources are `hidden`.
         - do not emit a local optimistic Monopoly resolve effect from that masked state, because it cannot know transfer counts.
         - let the server-authoritative resolve effect with real transfer counts finish the parked-card animation.
+    - Balanced dice note:
+      - `game-core/src/rules/balancedDice.ts` owns the balanced dice tuning constants; rulesets expose only `diceMode: "random" | "balanced"`.
+      - Duel defaults to balanced dice; standard modes keep random dice.
+      - Balanced dice persists private deck/recent/seven-tracking data in `G.diceState`.
+      - `playerView` must keep masking `G.diceState` down to `{ mode: "balanced" }` so clients do not receive the exact internal deck snapshot.

@@ -24,6 +24,14 @@ describe("Catan.playerView (state masking)", () => {
     },
     tiles: [],
     diceRoll: [3, 4],
+    diceState: {
+      mode: "balanced",
+      cardsLeft: 35,
+      deck: [{ totalDice: 7, dicePairs: [[3, 4]], recentlyRolledCount: 0 }],
+      recentTotals: [7],
+      sevensRolledByPlayer: { "0": 1, "1": 0 },
+      sevenStreak: { playerId: "0", streakCount: 1 },
+    },
   });
 
   it("player 0 sees their own full resources and devCards", () => {
@@ -76,6 +84,15 @@ describe("Catan.playerView (state masking)", () => {
 
     expect(result.core.devDeck.length).toBe(3);
     expect(result.core.devDeck).toEqual(["hidden", "hidden", "hidden"]);
+  });
+
+  it("masks private balanced dice state", () => {
+    const G = makeG();
+    const ctx = { gameover: undefined };
+    const result = Catan.playerView({ G, ctx, playerID: "0" });
+
+    expect(result.diceState).toEqual({ mode: "balanced" });
+    expect(G.diceState.cardsLeft).toBe(35);
   });
 
   it("does not mutate the original G", () => {

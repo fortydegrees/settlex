@@ -39,6 +39,8 @@ describe("Catan setup board config", () => {
     expect(G.rulesetId).toBe("duel");
     expect(G.boardConfigId).toBe("standard-balanced");
     expect(G.core.ruleset.victoryPointsToWin).toBe(15);
+    expect(G.core.ruleset.diceMode).toBe("balanced");
+    expect(G.diceState?.mode).toBe("balanced");
   });
 
   it("defaults 2-player setup to duel ruleset", () => {
@@ -51,6 +53,8 @@ describe("Catan setup board config", () => {
     expect(G.boardConfigId).toBe("standard-balanced");
     expect(G.core.ruleset.victoryPointsToWin).toBe(15);
     expect(G.core.ruleset.discardLimit).toBe(9);
+    expect(G.core.ruleset.diceMode).toBe("balanced");
+    expect(G.diceState?.mode).toBe("balanced");
   });
 
   it("keeps standard ruleset defaults for 3+ players", () => {
@@ -63,6 +67,8 @@ describe("Catan setup board config", () => {
     expect(G.boardConfigId).toBe("standard-official");
     expect(G.core.ruleset.victoryPointsToWin).toBe(10);
     expect(G.core.ruleset.discardLimit).toBe(7);
+    expect(G.core.ruleset.diceMode).toBe("random");
+    expect(G.diceState).toBeNull();
   });
 
   it("defaults Year of Plenty bank counts to hidden", () => {

@@ -14,7 +14,8 @@ const getStageMoveMaps = (game) => [
   game.phases.main.turn.stages.preRoll.moves,
   game.phases.main.turn.stages.robberDiscard.moves,
   game.phases.main.turn.stages.postRoll.moves,
-  game.phases.main.turn.stages.moveRobber.moves
+  game.phases.main.turn.stages.moveRobber.moves,
+  game.phases.main.turn.stages.devCardChoice.moves
 ];
 
 describe("ServerCatan config", () => {
