@@ -1,15 +1,7 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { gsap } from "gsap";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameLogPanel } from "./GameLogPanel";
 import { ChatPanel } from "./ChatPanel";
 import {
-  clampLeftMetaRailDesktopPanelWidth,
   normalizeLeftMetaRailDesktopPrefs,
   readLeftMetaRailDesktopPrefs,
   writeLeftMetaRailDesktopPrefs,
@@ -19,31 +11,7 @@ const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
 const panelIds = new Set(["log", "chat"]);
 const defaultDesktopOpenPanels = ["log", "chat"];
-
-const BUTTON_SIZE = 72;
-const BUTTON_RADIUS = 18;
-const SIDE_TAB_BUTTON_TAB_LEFT = BUTTON_SIZE - BUTTON_RADIUS;
-const SIDE_TAB_PANEL_GAP = 8;
-const SIDE_TAB_PANEL_LEFT = BUTTON_SIZE + SIDE_TAB_PANEL_GAP;
-const SIDE_TAB_BUTTON_TAB_WIDTH = SIDE_TAB_PANEL_LEFT - SIDE_TAB_BUTTON_TAB_LEFT;
-const SIDE_TAB_PANEL_OVERLAP = 2;
-const SIDE_TAB_CARD_LEFT = SIDE_TAB_PANEL_LEFT - SIDE_TAB_PANEL_OVERLAP;
-const SIDE_TAB_HEADER_HEIGHT = 33;
-const SIDE_TAB_PANEL_OPEN_LIFT = 12;
-const SIDE_TAB_PANEL_TOP = -(
-  SIDE_TAB_HEADER_HEIGHT + SIDE_TAB_PANEL_OPEN_LIFT
-);
-const SIDE_TAB_BOTTOM_PANEL_TOP = 0;
-const SIDE_TAB_MIDDLE_PANEL_TOP = Math.round(
-  (SIDE_TAB_PANEL_TOP + SIDE_TAB_BOTTOM_PANEL_TOP) / 2
-);
-const SIDE_TAB_PANEL_MAX_WIDTH = 448;
-const SIDE_TAB_PANEL_RADIUS = 18;
-const SIDE_TAB_BUTTON_CLOSED_TOP = 0;
-const SIDE_TAB_BUTTON_STACK_GAP = 16;
-const SIDE_TAB_OPEN_PANEL_GAP = 20;
-const SIDE_TAB_ATTACHMENTS = ["top", "middle", "bottom"];
-const DESKTOP_META_DOCK_WIDTH_SLACK = 32;
+export const LEFT_META_RAIL_DESKTOP_WIDTH_PX = 0;
 
 const mobileButtonBaseClassName =
   "flex h-14 w-14 items-center justify-center rounded-[1.45rem] border transition-colors focus:outline-none focus:ring-2 focus:ring-white/80";
@@ -52,27 +20,37 @@ const mobileButtonActiveClassName =
 const mobileButtonIdleClassName =
   "border-white/30 bg-white/18 text-slate-700 shadow-md hover:bg-white/28";
 const mobileButtonIconClassName = "h-5 w-5";
-const desktopButtonIconClassName = "h-8 w-8";
-const desktopSideTabPanelHeaderClassName =
-  "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700";
+const desktopButtonIconClassName = "h-6 w-6 shrink-0";
+const desktopFeedLaneClassName =
+  "pointer-events-auto w-[min(25rem,calc(100vw-2rem))]";
+const desktopFeedOpenSizeClassName = "h-[clamp(14rem,36vh,20rem)] w-full";
+const desktopFeedCollapsedSizeClassName = "h-14 w-14";
+const desktopFeedHeaderSizeClassName = "h-14 w-full";
+const desktopFeedSlotClassName =
+  "relative transition-[width,height,opacity,transform,border-radius] [will-change:width,height,opacity,transform] motion-reduce:transition-none";
+const desktopFeedFrameClassName = joinClassNames(
+  "relative flex h-full flex-col overflow-hidden rounded-[1.15rem] border border-white/[0.55] shadow-[0_22px_58px_-36px_rgba(15,23,42,0.62),inset_0_1px_0_rgba(255,255,255,0.48)] ring-1 ring-white/40 select-none"
+);
+const desktopFeedGlassLayerStyle = {
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.36), rgba(239,246,255,0.24)), linear-gradient(90deg, rgba(255,255,255,0.2), rgba(191,219,254,0.14), rgba(147,197,253,0.1))",
+  backdropFilter: "blur(24px) saturate(1.18)",
+  WebkitBackdropFilter: "blur(24px) saturate(1.18)",
+};
+const desktopFeedPanelClassName =
+  "flex h-full min-h-0 flex-col overflow-hidden bg-transparent select-text";
+const desktopFeedHeaderClassName = "sr-only";
 const mobileRailWrapperClassName =
   "pointer-events-auto flex flex-col gap-2 rounded-[1.4rem] bg-white/24 p-1.5 shadow-2xl ring-1 ring-white/35 backdrop-blur-md";
 const mobileDrawerShellClassName =
   "pointer-events-auto w-[min(22rem,calc(100vw-5.75rem))] max-w-[22rem] transition-all duration-200 ease-out";
 const mobileDrawerPanelClassName =
   "flex h-[42vh] min-h-[11rem] max-h-[24rem] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text";
+const desktopFeedWidthStageMs = 210;
+const desktopFeedBodyStageMs = 190;
 
 const normalizePanelId = (panelId) =>
   typeof panelId === "string" && panelIds.has(panelId) ? panelId : null;
-
-const normalizeSideTabAttachment = (attachment, anchor) => {
-  const nextAttachment =
-    typeof attachment === "string" ? attachment : typeof anchor === "string" ? anchor : "top";
-
-  return SIDE_TAB_ATTACHMENTS.includes(nextAttachment)
-    ? nextAttachment
-    : "top";
-};
 
 const LogIcon = ({ className = mobileButtonIconClassName } = {}) =>
   React.createElement(
@@ -112,131 +90,6 @@ const ChatIcon = ({ className = mobileButtonIconClassName } = {}) =>
       d: "M6.5 7.5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H11l-4.5 3v-3H6.5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z",
     })
   );
-
-function lerp(start, end, progress) {
-  return start + (end - start) * progress;
-}
-
-function easeOutCubic(value) {
-  return 1 - (1 - value) ** 3;
-}
-
-function interpolateStops(value, inputRange, outputRange) {
-  if (value <= inputRange[0]) {
-    return outputRange[0];
-  }
-
-  for (let index = 1; index < inputRange.length; index += 1) {
-    const currentStop = inputRange[index];
-    if (value <= currentStop) {
-      const previousStop = inputRange[index - 1];
-      const localProgress = (value - previousStop) / (currentStop - previousStop);
-      return lerp(outputRange[index - 1], outputRange[index], localProgress);
-    }
-  }
-
-  return outputRange[outputRange.length - 1];
-}
-
-function usePrefersReducedMotion() {
-  const [reduceMotion, setReduceMotion] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) {
-      return undefined;
-    }
-
-    const mediaQuery = window.matchMedia("prefers-reduced-motion: reduce");
-    const syncPreference = () => setReduceMotion(mediaQuery.matches);
-
-    syncPreference();
-    mediaQuery.addEventListener?.("change", syncPreference);
-
-    return () => {
-      mediaQuery.removeEventListener?.("change", syncPreference);
-    };
-  }, []);
-
-  return reduceMotion;
-}
-
-function useGsapDockMotion({ isOpen, height }) {
-  const targetProgress = isOpen ? 1 : 0;
-  const reduceMotion = usePrefersReducedMotion();
-  const valuesRef = useRef({ progress: targetProgress, height });
-  const [motion, setMotion] = useState(() => ({ ...valuesRef.current }));
-
-  useEffect(() => {
-    const values = valuesRef.current;
-
-    gsap.killTweensOf(values);
-    const tween = gsap.to(values, {
-      progress: targetProgress,
-      height,
-      duration: reduceMotion ? 0 : 0.22,
-      ease: "power3.out",
-      overwrite: "auto",
-      onUpdate() {
-        setMotion({ progress: values.progress, height: values.height });
-      },
-      onComplete() {
-        values.progress = targetProgress;
-        values.height = height;
-        setMotion({ progress: targetProgress, height });
-      },
-    });
-
-    return () => {
-      tween.kill();
-    };
-  }, [height, reduceMotion, targetProgress]);
-
-  return motion;
-}
-
-const getSideTabShellWidth = (panelWidth = SIDE_TAB_PANEL_MAX_WIDTH) =>
-  SIDE_TAB_CARD_LEFT + panelWidth;
-
-const getDesktopDockWidth = (panelWidth = SIDE_TAB_PANEL_MAX_WIDTH) =>
-  getSideTabShellWidth(panelWidth) + DESKTOP_META_DOCK_WIDTH_SLACK;
-
-export function getSideTabLayoutMetrics({
-  panelHeight,
-  attachment = "top",
-  anchor,
-}) {
-  const normalizedAttachment = normalizeSideTabAttachment(attachment, anchor);
-  const buttonTop = SIDE_TAB_BUTTON_CLOSED_TOP;
-  const buttonBottom = buttonTop + BUTTON_SIZE;
-  const attachmentLayout =
-    {
-      top: { panelTop: SIDE_TAB_PANEL_TOP },
-      middle: { panelTop: SIDE_TAB_MIDDLE_PANEL_TOP },
-      bottom: { panelTop: SIDE_TAB_BOTTOM_PANEL_TOP },
-    }[normalizedAttachment] ?? { panelTop: SIDE_TAB_PANEL_TOP };
-  const panelTop = attachmentLayout.panelTop;
-  const panelBottom = panelTop + panelHeight;
-
-  return {
-    attachment: normalizedAttachment,
-    panelTop,
-    panelBottom,
-    buttonTop,
-    buttonBottom,
-  };
-}
-
-export function getSideTabRowHeight({ layout, isOpen, nextIsOpen, nextLayout }) {
-  if (isOpen && nextIsOpen && nextLayout) {
-    return layout.panelBottom + SIDE_TAB_OPEN_PANEL_GAP - nextLayout.panelTop;
-  }
-
-  if (isOpen) {
-    return BUTTON_SIZE + SIDE_TAB_BUTTON_STACK_GAP;
-  }
-
-  return BUTTON_SIZE + SIDE_TAB_BUTTON_STACK_GAP;
-}
 
 const MobileDockButton = ({
   panel,
@@ -304,21 +157,20 @@ const buildMetaPanels = ({
 }) => [
   {
     id: "log",
-    attachment: "bottom",
+    side: "left",
     shortLabel: "Log",
     label: "Game Log",
-    ariaLabel: "Open game log panel",
+    ariaLabel: "Toggle game log panel",
     icon: React.createElement(LogIcon),
-    height: 286,
+    defaultOpenDesktop: true,
     renderDesktop: () =>
       React.createElement(GameLogPanel, {
         entries,
         playerMap: logPlayerMap,
         themeId,
-        rootClassName: "w-full",
-        panelClassName:
-          "flex h-[286px] flex-col overflow-hidden bg-transparent select-text",
-        headerClassName: desktopSideTabPanelHeaderClassName,
+        rootClassName: "h-full w-full",
+        panelClassName: desktopFeedPanelClassName,
+        headerClassName: desktopFeedHeaderClassName,
       }),
     renderMobile: () =>
       React.createElement(GameLogPanel, {
@@ -331,12 +183,12 @@ const buildMetaPanels = ({
   },
   {
     id: "chat",
-    attachment: "top",
+    side: "left",
     shortLabel: "Chat",
     label: "Chat",
-    ariaLabel: "Open chat panel",
+    ariaLabel: "Toggle chat panel",
     icon: React.createElement(ChatIcon),
-    height: 230,
+    defaultOpenDesktop: true,
     renderDesktop: () =>
       React.createElement(ChatPanel, {
         playerID,
@@ -344,9 +196,9 @@ const buildMetaPanels = ({
         themeId,
         chatMessages: bgioProps?.chatMessages ?? [],
         sendChatMessage: bgioProps?.sendChatMessage,
-        panelClassName:
-          "flex h-[230px] flex-col overflow-hidden bg-transparent select-text",
-        headerClassName: desktopSideTabPanelHeaderClassName,
+        rootClassName: "h-full w-full",
+        panelClassName: desktopFeedPanelClassName,
+        headerClassName: desktopFeedHeaderClassName,
       }),
     renderMobile: () =>
       React.createElement(ChatPanel, {
@@ -360,163 +212,221 @@ const buildMetaPanels = ({
   },
 ];
 
-function DesktopSideTabRow({
-  panel,
-  panelWidth,
-  isOpen,
-  nextIsOpen,
-  onToggle,
-  onResizePointerDown,
-  onResizePointerMove,
-  onResizePointerUp,
-  onResizePointerCancel,
-}) {
-  const layout = getSideTabLayoutMetrics({
-    panelHeight: panel.height,
-    attachment: panel.attachment,
-  });
-  const nextLayout = nextIsOpen
-    ? getSideTabLayoutMetrics({
-        panelHeight: panel.nextHeight ?? panel.height,
-        attachment: panel.nextAttachment,
-      })
-    : null;
-  const rowHeight = getSideTabRowHeight({
-    layout,
-    isOpen,
-    nextIsOpen,
-    nextLayout,
-  });
-  const motion = useGsapDockMotion({ isOpen, height: rowHeight });
-  const progress = motion.progress;
-  const panelHeight = panel.height;
-  const currentButtonTop = SIDE_TAB_BUTTON_CLOSED_TOP;
-  const shouldRenderOpenChrome = isOpen || progress > 0.001;
-  const buttonShellOpacity = 1;
-  const shellOpacity = interpolateStops(progress, [0, 0.1, 1], [0, 0.16, 1]);
-  const shellTransform = `translate3d(${((1 - progress) * -10).toFixed(
-    1
-  )}px,0,0)`;
-  const shellShadow = `0 18px 34px rgba(15,23,42,${(
-    0.04 +
-    progress * 0.08
-  ).toFixed(3)})`;
-  const bodyOpacity = interpolateStops(progress, [0, 0.24, 1], [0, 0, 1]);
-  const bodyTransform = `translate3d(${((1 - progress) * -10).toFixed(
-    1
-  )}px,${((1 - progress) * -10).toFixed(1)}px,0) scale(${(
-    0.986 +
-    progress * 0.014
-  ).toFixed(3)})`;
-  const bodyHeight = Math.max(0, panelHeight * progress);
+const getDesktopFeedSlotSizeClassName = (phase) => {
+  if (phase === "open" || phase === "opening-body") {
+    return desktopFeedOpenSizeClassName;
+  }
+
+  if (phase === "opening-width" || phase === "closing-body") {
+    return desktopFeedHeaderSizeClassName;
+  }
+
+  return desktopFeedCollapsedSizeClassName;
+};
+
+const getDesktopFeedSlotMotionClassName = (phase) => {
+  if (phase === "closing-body") {
+    return "duration-[170ms] ease-[cubic-bezier(0.4,0,1,1)]";
+  }
+
+  if (phase === "closing-width") {
+    return "duration-[190ms] ease-[cubic-bezier(0.4,0,0.2,1)]";
+  }
+
+  return "duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]";
+};
+
+function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
+  const [phase, setPhase] = useState(() => (isOpen ? "open" : "closed"));
+  const hasMountedRef = useRef(false);
+  const isRestoreButton = phase === "closed";
+  const shouldShowPanelBody = phase === "opening-body" || phase === "open";
+  const shouldShowHeaderDetails =
+    phase === "opening-body" || phase === "open" || phase === "closing-body";
+  const handleRestoreKeyDown = useCallback(
+    (event) => {
+      if (!isRestoreButton) return;
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      onRestore(panel.id);
+    },
+    [isRestoreButton, onRestore, panel.id]
+  );
+  const handleHeaderKeyDown = useCallback(
+    (event) => {
+      if (!shouldShowHeaderDetails) return;
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      onMinimize(panel.id);
+    },
+    [onMinimize, panel.id, shouldShowHeaderDetails]
+  );
+
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      setPhase(isOpen ? "open" : "closed");
+      return undefined;
+    }
+
+    const timers = [];
+
+    if (isOpen) {
+      setPhase("opening-width");
+      timers.push(
+        setTimeout(() => setPhase("opening-body"), desktopFeedWidthStageMs)
+      );
+      timers.push(
+        setTimeout(
+          () => setPhase("open"),
+          desktopFeedWidthStageMs + desktopFeedBodyStageMs
+        )
+      );
+    } else {
+      setPhase("closing-body");
+      timers.push(
+        setTimeout(() => setPhase("closing-width"), desktopFeedBodyStageMs)
+      );
+      timers.push(
+        setTimeout(
+          () => setPhase("closed"),
+          desktopFeedBodyStageMs + desktopFeedWidthStageMs
+        )
+      );
+    }
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
+  }, [isOpen]);
 
   return React.createElement(
-    "div",
+    "section",
     {
-      className: "pointer-events-none relative",
-      style: { height: motion.height },
-      "data-meta-dock-row": panel.id,
-      "data-meta-side-tab-attachment": layout.attachment,
+      className: joinClassNames(
+        "group pointer-events-auto",
+        desktopFeedSlotClassName,
+        getDesktopFeedSlotSizeClassName(phase),
+        getDesktopFeedSlotMotionClassName(phase),
+        !isRestoreButton
+          ? "overflow-hidden rounded-[1.15rem] opacity-100 translate-y-0"
+          : "overflow-visible rounded-[1.15rem] opacity-95 translate-y-0.5 cursor-pointer hover:scale-[1.035] hover:opacity-100 active:translate-y-0 active:scale-[0.96] focus:outline-none"
+      ),
+      role: isRestoreButton ? "button" : undefined,
+      tabIndex: isRestoreButton ? 0 : undefined,
+      onClick: isRestoreButton ? () => onRestore(panel.id) : undefined,
+      onKeyDown: isRestoreButton ? handleRestoreKeyDown : undefined,
+      "aria-label": panel.label,
+      "aria-expanded": isRestoreButton ? "false" : undefined,
+      "aria-controls": isRestoreButton
+        ? `desktop-meta-panel-${panel.id}`
+        : undefined,
+      "data-meta-feed-frame": panel.id,
+      "data-meta-feed-frame-state": isOpen ? "open" : "minimized",
+      "data-meta-feed-frame-phase": phase,
+      "data-meta-feed-toggle": isRestoreButton ? panel.id : undefined,
+      "data-meta-sidebar-button": isRestoreButton ? panel.id : undefined,
+      "data-allow-interaction": "true",
     },
-    shouldRenderOpenChrome
-      ? React.createElement(
-          "div",
-          {
-            className:
-              "pointer-events-none absolute z-10 rounded-[18px] bg-white/25 ring-1 ring-white/45 backdrop-blur-sm",
-            style: {
-              opacity: shellOpacity,
-              transform: shellTransform,
-              transformOrigin: "left center",
-              boxShadow: shellShadow,
-              left: `${SIDE_TAB_BUTTON_TAB_LEFT}px`,
-              top: `${currentButtonTop}px`,
-              width: `${SIDE_TAB_BUTTON_TAB_WIDTH}px`,
-              height: `${BUTTON_SIZE}px`,
-            },
-            "data-meta-side-tab-shell": panel.id,
-          }
-        )
-      : null,
-    shouldRenderOpenChrome
-      ? React.createElement("div", {
-          className:
-            "pointer-events-auto absolute z-40 w-4 cursor-ew-resize touch-none",
-          style: {
-            top: `${layout.panelTop}px`,
-            left: `${SIDE_TAB_CARD_LEFT + panelWidth - 8}px`,
-            height: `${bodyHeight}px`,
-          },
-          onPointerDown: onResizePointerDown,
-          onPointerMove: onResizePointerMove,
-          onPointerUp: onResizePointerUp,
-          onPointerCancel: onResizePointerCancel,
-          "data-meta-side-tab-resize-handle": panel.id,
-          "data-allow-interaction": "true",
-          "aria-hidden": "true",
-        })
-      : null,
-    React.createElement("div", {
-      className:
-        "pointer-events-none absolute left-0 top-0 z-20 h-[72px] w-[72px] rounded-[18px] bg-white/25 ring-1 ring-white/45 backdrop-blur-sm",
-      style: {
-        opacity: buttonShellOpacity,
-        top: `${currentButtonTop}px`,
-        transformOrigin: "center center",
-      },
-      "data-meta-side-tab-button-shell": panel.id,
-      "data-meta-dock-button-shell": panel.id,
-    }),
     React.createElement(
-      "button",
+      "div",
       {
-        type: "button",
-        onClick: () => onToggle(panel.id),
-        "aria-expanded": isOpen ? "true" : "false",
-        "aria-controls": `desktop-meta-panel-${panel.id}`,
-        "aria-label": panel.ariaLabel,
-        title: panel.label,
-        className:
-          "pointer-events-auto absolute left-0 z-40 flex h-[72px] w-[72px] items-center justify-center rounded-[18px] bg-transparent focus:outline-none",
-        style: {
-          top: `${currentButtonTop}px`,
-        },
-        "data-meta-sidebar-button": panel.id,
-        "data-allow-interaction": "true",
+        className: joinClassNames(
+          desktopFeedFrameClassName,
+          "transition-[border-color,box-shadow] duration-150 ease-out motion-reduce:transition-none",
+          isRestoreButton
+            ? "group-hover:border-white/70 group-hover:shadow-[0_22px_46px_-28px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.55)] group-hover:ring-white/50 group-active:ring-white/60"
+            : null
+        ),
       },
-      React.cloneElement(panel.icon, {
-        className: desktopButtonIconClassName,
+      React.createElement("div", {
+        className: "pointer-events-none absolute inset-0 rounded-[inherit]",
+        style: desktopFeedGlassLayerStyle,
+        "aria-hidden": "true",
       }),
-      React.createElement("span", { className: "sr-only" }, panel.label)
-    ),
-    shouldRenderOpenChrome
-      ? React.createElement(
+      React.createElement("div", {
+        className:
+          "pointer-events-none absolute inset-0 rounded-[inherit] bg-white/0 transition-colors duration-150 ease-out group-hover:bg-white/[0.08] group-active:bg-white/[0.1] motion-reduce:transition-none",
+        "aria-hidden": "true",
+      }),
+      React.createElement(
+        "div",
+        {
+          className: joinClassNames(
+            "relative z-10 flex shrink-0 items-center justify-between gap-3 overflow-hidden pl-4 pr-4 text-slate-700 transition-[height,background-color,border-color] duration-150 ease-out motion-reduce:transition-none",
+            shouldShowHeaderDetails ? "h-12" : "h-14",
+            shouldShowHeaderDetails
+              ? "cursor-pointer border-b border-white/30 bg-white/25 hover:bg-white/40 focus:outline-none active:bg-white/30"
+              : "border-b border-transparent bg-transparent"
+          ),
+          role: shouldShowHeaderDetails ? "button" : undefined,
+          tabIndex: shouldShowHeaderDetails ? 0 : undefined,
+          onClick: shouldShowHeaderDetails
+            ? () => onMinimize(panel.id)
+            : undefined,
+          onKeyDown: shouldShowHeaderDetails ? handleHeaderKeyDown : undefined,
+          "aria-label": shouldShowHeaderDetails
+            ? `Minimize ${panel.label}`
+            : undefined,
+          "data-meta-feed-minimize": shouldShowHeaderDetails
+            ? panel.id
+            : undefined,
+          "data-allow-interaction": shouldShowHeaderDetails
+            ? "true"
+            : undefined,
+        },
+        React.createElement(
           "div",
           {
-            id: `desktop-meta-panel-${panel.id}`,
-            className:
-              "pointer-events-auto absolute z-30 overflow-hidden will-change-transform",
-            style: {
-              opacity: bodyOpacity,
-              transform: bodyTransform,
-              height: bodyHeight,
-              borderRadius: `${SIDE_TAB_PANEL_RADIUS}px`,
-              left: `${SIDE_TAB_CARD_LEFT}px`,
-              top: `${layout.panelTop}px`,
-              width: `${panelWidth}px`,
-              background: "rgba(191,219,254,0.88)",
-              border: "1.3px solid rgba(255,255,255,0.45)",
-              boxShadow: `0 18px 34px rgba(15,23,42,${(
-                0.04 +
-                progress * 0.08
-              ).toFixed(3)})`,
-            },
-            "data-meta-dock-panel": panel.id,
-            "data-meta-side-tab-panel": panel.id,
-            "data-meta-side-tab-attachment": layout.attachment,
-            "data-allow-interaction": "true",
+            className: "flex min-w-0 items-center gap-2.5",
           },
-          panel.renderDesktop()
+          React.cloneElement(panel.icon, {
+            className: joinClassNames(
+              desktopButtonIconClassName,
+              isRestoreButton
+                ? "transition duration-150 ease-out group-hover:scale-110"
+                : null
+            ),
+          }),
+          React.createElement(
+            "span",
+            {
+              className: joinClassNames(
+                "truncate text-sm font-bold text-slate-700 transition-[max-width,opacity,transform] duration-150 ease-out motion-reduce:transition-none",
+                shouldShowHeaderDetails
+                  ? "max-w-[12rem] translate-x-0 opacity-100"
+                  : "max-w-0 -translate-x-1 opacity-0"
+              ),
+            },
+            panel.label
+          )
+        )
+      ),
+      React.createElement(
+        "div",
+        {
+          id: `desktop-meta-panel-${panel.id}`,
+          className: joinClassNames(
+            "relative z-10 min-h-0 flex-1 transition duration-[150ms] ease-out motion-reduce:transition-none",
+            shouldShowPanelBody
+              ? "translate-y-0 opacity-100 delay-[45ms]"
+              : "-translate-y-1 opacity-0 delay-0"
+          ),
+          "data-meta-feed-panel": panel.id,
+        },
+        panel.renderDesktop()
+      )
+    ),
+    isRestoreButton
+      ? React.createElement(
+          "span",
+          {
+            className:
+              "pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap rounded-[0.85rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(219,234,254,0.86))] px-3 py-1.5 text-xs font-semibold text-slate-700 opacity-0 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.52)] backdrop-blur-xl transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-none",
+            "aria-hidden": "true",
+            "data-meta-feed-tooltip": panel.id,
+          },
+          panel.label
         )
       : null
   );
@@ -535,163 +445,56 @@ const DesktopMetaDockComponent = ({
       initialOpenPanels,
     })
   );
-  const desktopPrefsRef = useRef(desktopPrefs);
-  const resizeStateRef = useRef(null);
   const openPanels = desktopPrefs.openPanels;
-  const panelWidth = desktopPrefs.panelWidth;
-
-  useEffect(() => {
-    desktopPrefsRef.current = desktopPrefs;
-  }, [desktopPrefs]);
-
-  const getDesktopPrefsOptions = useCallback(
-    () => ({
-      initialOpenPanels,
-      viewportWidth:
-        typeof window === "undefined" ? undefined : window.innerWidth,
-    }),
-    [initialOpenPanels]
-  );
 
   const updateDesktopPrefs = useCallback(
-    (updater, { persist = true } = {}) => {
+    (updater) => {
       setDesktopPrefs((currentPrefs) => {
         const nextPrefsValue =
           typeof updater === "function" ? updater(currentPrefs) : updater;
-        const normalized = normalizeLeftMetaRailDesktopPrefs(
-          nextPrefsValue,
-          getDesktopPrefsOptions()
-        );
+        const normalized = normalizeLeftMetaRailDesktopPrefs(nextPrefsValue, {
+          initialOpenPanels,
+        });
 
-        desktopPrefsRef.current = normalized;
-
-        if (persist) {
-          writeLeftMetaRailDesktopPrefs(
-            undefined,
-            normalized,
-            getDesktopPrefsOptions()
-          );
-        }
+        writeLeftMetaRailDesktopPrefs(undefined, normalized, {
+          initialOpenPanels,
+        });
 
         return normalized;
       });
     },
-    [getDesktopPrefsOptions]
+    [initialOpenPanels]
   );
 
-  const collapseAllPanels = useCallback(() => {
-    updateDesktopPrefs((currentPrefs) => ({
-      ...currentPrefs,
-      openPanels: [],
-    }));
-  }, [updateDesktopPrefs]);
-
-  useEscapeCollapse(openPanels.length > 0, collapseAllPanels);
-
-  const handleTogglePanel = useCallback((panelId) => {
-    updateDesktopPrefs((currentPrefs) => ({
-      ...currentPrefs,
-      openPanels: currentPrefs.openPanels.includes(panelId)
-        ? currentPrefs.openPanels.filter(
-            (currentPanelId) => currentPanelId !== panelId
-          )
-        : [...currentPrefs.openPanels, panelId],
-    }));
-  }, [updateDesktopPrefs]);
-
-  const restoreResizeBodyStyles = useCallback(() => {
-    const resizeState = resizeStateRef.current;
-    if (!resizeState || typeof document === "undefined") return;
-    document.body.style.cursor = resizeState.previousCursor;
-    document.body.style.userSelect = resizeState.previousUserSelect;
-  }, []);
-
-  const handleResizePointerDown = useCallback((event) => {
-    if (event.button != null && event.button !== 0) return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-
-    resizeStateRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startWidth: desktopPrefsRef.current.panelWidth,
-      previousCursor:
-        typeof document === "undefined" ? "" : document.body.style.cursor,
-      previousUserSelect:
-        typeof document === "undefined" ? "" : document.body.style.userSelect,
-    };
-
-    if (typeof document !== "undefined") {
-      document.body.style.cursor = "ew-resize";
-      document.body.style.userSelect = "none";
-    }
-  }, []);
-
-  const handleResizePointerMove = useCallback(
-    (event) => {
-      const resizeState = resizeStateRef.current;
-      if (!resizeState || resizeState.pointerId !== event.pointerId) return;
-
-      const nextWidth = clampLeftMetaRailDesktopPanelWidth(
-        resizeState.startWidth + (event.clientX - resizeState.startX),
-        getDesktopPrefsOptions()
-      );
-
-      updateDesktopPrefs(
-        (currentPrefs) =>
-          currentPrefs.panelWidth === nextWidth
-            ? currentPrefs
-            : {
-                ...currentPrefs,
-                panelWidth: nextWidth,
-              },
-        { persist: false }
-      );
-    },
-    [getDesktopPrefsOptions, updateDesktopPrefs]
-  );
-
-  const finishResizeInteraction = useCallback(
-    (event) => {
-      const resizeState = resizeStateRef.current;
-      if (!resizeState || resizeState.pointerId !== event.pointerId) return;
-
-      event.currentTarget.releasePointerCapture?.(event.pointerId);
-      restoreResizeBodyStyles();
-      resizeStateRef.current = null;
-      updateDesktopPrefs((currentPrefs) => currentPrefs);
-    },
-    [restoreResizeBodyStyles, updateDesktopPrefs]
-  );
-
-  useEffect(
-    () => () => {
-      restoreResizeBodyStyles();
-      resizeStateRef.current = null;
-    },
-    [restoreResizeBodyStyles]
-  );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return undefined;
-
-    const handleWindowResize = () => {
-      const clampedWidth = clampLeftMetaRailDesktopPanelWidth(
-        desktopPrefsRef.current.panelWidth,
-        getDesktopPrefsOptions()
-      );
-
-      if (clampedWidth === desktopPrefsRef.current.panelWidth) return;
+  const minimizePanel = useCallback(
+    (panelId) => {
+      const normalizedPanelId = normalizePanelId(panelId);
+      if (!normalizedPanelId) return;
 
       updateDesktopPrefs((currentPrefs) => ({
         ...currentPrefs,
-        panelWidth: clampedWidth,
+        openPanels: currentPrefs.openPanels.filter(
+          (currentPanelId) => currentPanelId !== normalizedPanelId
+        ),
       }));
-    };
+    },
+    [updateDesktopPrefs]
+  );
 
-    window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
-  }, [getDesktopPrefsOptions, updateDesktopPrefs]);
+  const restorePanel = useCallback(
+    (panelId) => {
+      const normalizedPanelId = normalizePanelId(panelId);
+      if (!normalizedPanelId) return;
+
+      updateDesktopPrefs((currentPrefs) => ({
+        ...currentPrefs,
+        openPanels: currentPrefs.openPanels.includes(normalizedPanelId)
+          ? currentPrefs.openPanels
+          : [...currentPrefs.openPanels, normalizedPanelId],
+      }));
+    },
+    [updateDesktopPrefs]
+  );
 
   const panels = useMemo(
     () =>
@@ -704,60 +507,30 @@ const DesktopMetaDockComponent = ({
       }),
     [entries, logPlayerMap, themeId, playerID, bgioProps]
   );
-  const desktopDockWidth = getDesktopDockWidth(panelWidth);
 
   return React.createElement(
     "div",
     {
       className:
-        "pointer-events-none fixed left-4 top-1/2 z-30 hidden -translate-y-1/2 lg:block",
-      style: { width: `${desktopDockWidth}px` },
-      "data-meta-dock-desktop": "true",
+        "pointer-events-none fixed bottom-32 left-4 z-30 hidden lg:block",
+      "data-meta-left-rail-shell": "true",
     },
     React.createElement(
-      "div",
+      "section",
       {
-        className:
-          "pointer-events-none overflow-x-visible overflow-y-visible pr-2",
+        className: joinClassNames(desktopFeedLaneClassName, "space-y-2"),
+        "aria-label": "Game feed",
+        "data-meta-feed-dock": "true",
+        "data-allow-interaction": "true",
       },
-      React.createElement(
-        "div",
-        { className: "pointer-events-none relative" },
-        React.createElement("div", {
-          className:
-            "pointer-events-none absolute left-3 top-6 bottom-0 z-0 w-[84px] rounded-[28px] bg-slate-950/14 ring-1 ring-white/8 backdrop-blur-sm",
-        }),
-        React.createElement(
-          "div",
-          {
-            className:
-              "pointer-events-none relative z-10 flex flex-col gap-0 px-3 pt-[52px]",
-          },
-          panels.map((panel, index) => {
-            const isOpen = openPanels.includes(panel.id);
-            const nextPanel = panels[index + 1];
-            const nextIsOpen = nextPanel
-              ? openPanels.includes(nextPanel.id)
-              : false;
-
-            return React.createElement(DesktopSideTabRow, {
-              key: panel.id,
-              panel: {
-                ...panel,
-                nextHeight: nextPanel?.height,
-                nextAttachment: nextPanel?.attachment,
-              },
-              panelWidth,
-              isOpen,
-              nextIsOpen,
-              onToggle: handleTogglePanel,
-              onResizePointerDown: handleResizePointerDown,
-              onResizePointerMove: handleResizePointerMove,
-              onResizePointerUp: finishResizeInteraction,
-              onResizePointerCancel: finishResizeInteraction,
-            });
-          })
-        )
+      panels.map((panel) =>
+        React.createElement(DesktopFeedFrame, {
+          key: panel.id,
+          panel,
+          isOpen: openPanels.includes(panel.id),
+          onMinimize: minimizePanel,
+          onRestore: restorePanel,
+        })
       )
     )
   );
@@ -857,4 +630,3 @@ const LeftMetaRailComponent = (props) =>
 
 export const LeftMetaRail = React.memo(LeftMetaRailComponent);
 LeftMetaRail.displayName = "LeftMetaRail";
-

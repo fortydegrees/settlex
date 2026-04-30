@@ -29,7 +29,7 @@ const VARIANT_ALIASES = {
 };
 
 const DISABLED_STYLES =
-  "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-sm disabled:hover:translate-y-0 disabled:hover:brightness-100 disabled:hover:bg-slate-300";
+  "disabled:cursor-not-allowed disabled:border-slate-200/80 disabled:bg-none disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none disabled:hover:translate-y-0 disabled:hover:brightness-100 disabled:hover:bg-none disabled:hover:bg-slate-200";
 
 export const Button = React.forwardRef(function Button(
   {

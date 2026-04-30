@@ -5,53 +5,66 @@ import { describe, expect, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const leftMetaRailPath = path.resolve(
   __dirname,
   "..",
   "components",
   "LeftMetaRail.js"
 );
-const gameLogPanelPath = path.resolve(
-  __dirname,
-  "..",
-  "components",
-  "GameLogPanel.js"
-);
-const chatPanelPath = path.resolve(
-  __dirname,
-  "..",
-  "components",
-  "ChatPanel.js"
-);
 
 describe("LeftMetaRail", () => {
-  it("owns the fixed bottom-left rail layout for the meta panels", () => {
+  it("renders desktop as a low-chrome feed lane with independent frames", () => {
     const contents = fs.readFileSync(leftMetaRailPath, "utf8");
 
-    expect(contents).toContain("fixed left-4 bottom-4");
-    expect(contents).toContain("w-72 md:w-80 xl:w-96");
-    expect(contents).toContain("GameLogPanel");
-    expect(contents).toContain("ChatPanel");
-    expect(contents).not.toContain("DebugPanel");
-    expect(contents).toMatch(/gap-\d+/);
+    expect(contents).toContain("DesktopFeedFrame");
+    expect(contents).toContain("isRestoreButton");
+    expect(contents).toContain("data-meta-feed-dock");
+    expect(contents).toContain("data-meta-feed-frame");
+    expect(contents).toContain("data-meta-feed-frame-state");
+    expect(contents).toContain("data-meta-feed-panel");
+    expect(contents).toContain("data-meta-feed-minimize");
+    expect(contents).toContain("data-meta-feed-toggle");
+    expect(contents).toContain("transition-[width,height,opacity,transform,border-radius]");
+    expect(contents).not.toContain("DesktopUtilityDockRow");
+    expect(contents).not.toContain("RailTabBridge");
+    expect(contents).not.toContain("DockedMetaPanel");
+    expect(contents).not.toContain("data-meta-utility-rail");
+    expect(contents).not.toContain("data-meta-side-tab");
+    expect(contents).not.toContain("data-meta-feed-tab");
+    expect(contents).not.toContain("getSideTabLayoutMetrics");
+    expect(contents).not.toContain('import { gsap } from "gsap"');
   });
 
-  it("keeps the game log above chat in the same-width column", () => {
+  it("defaults desktop to both support panels open", () => {
     const contents = fs.readFileSync(leftMetaRailPath, "utf8");
-    const gameLogIndex = contents.indexOf("GameLogPanel");
-    const chatIndex = contents.indexOf("ChatPanel");
+
+    expect(contents).toContain('const defaultDesktopOpenPanels = ["log", "chat"];');
+    expect(contents).toContain("initialOpenPanels = defaultDesktopOpenPanels");
+    expect(contents).toContain("openPanels.includes(panel.id)");
+  });
+
+  it("keeps restore pills when desktop panels are minimized", () => {
+    const contents = fs.readFileSync(leftMetaRailPath, "utf8");
+
+    expect(contents).toContain("panels.map((panel) =>");
+    expect(contents).toContain("restorePanel");
+    expect(contents).toContain("data-meta-feed-toggle");
+    expect(contents).toContain("data-meta-feed-tooltip");
+    expect(contents).toContain("data-meta-sidebar-button");
+    expect(contents).toContain("desktopFeedCollapsedSizeClassName");
+    expect(contents).toContain("flex shrink-0 items-center justify-between");
+    expect(contents).not.toContain("data-meta-docked-panel-stack");
+  });
+
+  it("keeps Game Log and Chat in the desktop feed order", () => {
+    const contents = fs.readFileSync(leftMetaRailPath, "utf8");
+    const gameLogIndex = contents.indexOf('id: "log"');
+    const chatIndex = contents.indexOf('id: "chat"');
 
     expect(gameLogIndex).toBeGreaterThan(-1);
     expect(chatIndex).toBeGreaterThan(-1);
     expect(gameLogIndex).toBeLessThan(chatIndex);
-  });
-
-  it("keeps the feed panels at the same height", () => {
-    const gameLogContents = fs.readFileSync(gameLogPanelPath, "utf8");
-    const chatContents = fs.readFileSync(chatPanelPath, "utf8");
-
-    expect(gameLogContents).toContain("h-[20vh] xl:h-[24vh]");
-    expect(chatContents).toContain("h-[20vh] xl:h-[24vh]");
+    expect(contents).toContain('side: "left"');
+    expect(contents).not.toContain('side: "right"');
   });
 });

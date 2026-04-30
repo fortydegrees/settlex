@@ -15,6 +15,8 @@ Before designing or implementing a new shared primitive, read:
 
 If the component is an overlay, floating surface, or anything with focus/dismissal/keyboard behavior, also read the relevant Base UI docs.
 
+After reading the local docs/code, look for two or three targeted external references before inventing a new shared interaction pattern.
+
 ## What Counts As A Shared Primitive
 
 Shared primitives belong to the Settlex standard UI layer.
@@ -53,6 +55,23 @@ The current canonical primitives live in `app/ui/`:
 
 New primitives should feel like they belong beside these, not like a mini design system of their own.
 
+## Reference-First Workflow
+
+When adding a shared primitive, do this in order:
+
+1. Check whether the pattern already exists in `app/ui/*`.
+2. If not, review two or three targeted external references for the interaction pattern.
+3. Prefer copying/adapting an open-code interaction recipe over inventing a bespoke one from scratch.
+4. Restyle that recipe into the Settlex system.
+5. Add or extend the shared primitive first, then rebuild the product surface on top of it.
+
+This is the intended workflow for things like copy buttons, tooltips, toasts, invite rows, pickers, and other reusable product-surface UI.
+
+The goal is:
+- do not preserve random page-local controls just because they already exist
+- do not invent a new interaction from vibes when a strong open pattern already exists
+- do keep the final visual language recognizably Settlex
+
 ## Design Rules
 
 - Use semantic roles, not visual nicknames.
@@ -72,29 +91,43 @@ When adding a new shared primitive:
 
 1. Build it in `app/ui/`
 2. Prefer Base UI/headless primitives when accessibility or interaction behavior matters
-3. Add or update source tests under `app/catana/__tests__/`
-4. Add an example to `app/catana/dev/ui/UiShowcaseClient.js`
-5. If sensible, migrate one real surface to prove it in production context
-6. Browser-check desktop and mobile if the component is visual or interactive
+3. Review two or three external references for the interaction before writing the shared component
+4. Copy/adapt the behavior pattern or open-code implementation where sensible; do not import a whole styling system just to get one pattern
+5. Add or update source tests under `app/catana/__tests__/`
+6. Add an example to `app/catana/dev/ui/UiShowcaseClient.js`
+7. If sensible, migrate one real surface to prove it in production context
+8. Browser-check desktop and mobile if the component is visual or interactive
 
 ## Reference Rules
 
-External references are optional, not required.
+External references are required for new shared interaction patterns unless the pattern already clearly exists in `app/ui/*`.
 
-Use them only when they help with:
+Use them for:
 - behavior patterns
 - interaction structure
-- motion feel
+- copied-state / loading-state / success-state handling
+- motion feel when the component needs motion
 
-Do not use them as permission to import a whole new visual language.
+Prefer references that expose real code or a clear open implementation path.
+
+Good sources:
+- Base UI docs for accessibility and interaction contracts
+- targeted open-code examples from the approved inspiration pool such as Animate UI, Magic UI, Shadcnblocks, Shadcn UI Blocks, and Shadcn Space
+- one focused product-pattern example when composition matters more than the individual primitive
+
+Do not use external references as permission to import a whole new visual language.
 
 Good reference usage:
 - Base UI docs for accessibility/interaction
-- one or two targeted examples for behavior
+- two or three targeted examples for behavior/composition
+- borrowing a copy-button or input-group recipe, then restyling it into Settlex
 
 Bad reference usage:
 - pasting ten registry links and asking the agent to vibe from them
 - copying an external library’s styling wholesale
+- skipping reference review and inventing a fresh interaction for a common pattern
+
+When relevant, record which external references were used in the work notes or handoff summary.
 
 ## Definition Of Done
 
@@ -103,6 +136,7 @@ A shared primitive is not done until:
 - the primitive exists in `app/ui/*`
 - its API is semantically named
 - it matches the existing Settlex visual language
+- two or three relevant external references were reviewed, or the agent explicitly notes that the pattern already existed locally
 - it has source-test coverage
 - it has a showcase example
 - at least one real surface uses it when appropriate
@@ -126,11 +160,13 @@ Requirements:
 - This belongs to the shared standard UI layer, not bespoke gameplay UI.
 - Reuse the existing Settlex visual language, semantic variants, spacing, and motion.
 - Prefer Base UI/headless primitives when accessibility or overlay behavior matters.
+- Before inventing the interaction, review two or three targeted external references from the approved inspiration pool and adapt the best open pattern.
 - Add or update source tests.
 - Add a showcase example.
 - Migrate one real surface if it helps prove the primitive.
 - Keep the diff focused.
+- Tell me which references you used and what you borrowed from each.
 
-Optional external reference for behavior only:
-- [paste 1-2 links here]
+Suggested external references:
+- [paste 2-3 links here]
 ```

@@ -19,6 +19,8 @@ describe("Settlex UI recipes", () => {
     expect(source).toContain("bg-[linear-gradient(180deg");
     expect(source).toContain("settlex-ui-cta-shimmer");
     expect(source).toContain("sheen = false");
+    expect(source).toContain("disabled:bg-none");
+    expect(source).toContain("disabled:border-slate-200/80");
     expect(source).not.toContain("resolvedVariant === \"accent\"");
     expect(source).toContain("motion-reduce");
   });
@@ -37,6 +39,9 @@ describe("Settlex UI recipes", () => {
     expect(banner).toContain("rounded-[1.2rem]");
     expect(banner).toContain("shadow-[0_18px_34px_-26px");
     expect(banner).toContain("mt-[0.2rem]");
+    expect(banner).toContain("flex flex-col gap-3");
+    expect(banner).toContain("sm:flex-row");
+    expect(banner).toContain("[&>*]:w-full");
   });
 
   it("defines the shared input and select wrappers with the motion-accent control silhouette", () => {
@@ -49,5 +54,16 @@ describe("Settlex UI recipes", () => {
     expect(select).toContain("rounded-[1.1rem]");
     expect(select).toContain("shadow-[0_14px_26px");
     expect(select).toContain("focus:ring-sky-100");
+  });
+
+  it("defines the shared tooltip primitive", () => {
+    const tooltip = readFileSync(resolve(process.cwd(), "app/ui/Tooltip.js"), "utf8");
+
+    expect(tooltip).toContain("@base-ui/react/tooltip");
+    expect(tooltip).toContain("Tooltip.Provider");
+    expect(tooltip).toContain("Tooltip.Trigger");
+    expect(tooltip).toContain("Tooltip.Popup");
+    expect(tooltip).toContain("aria-label");
+    expect(tooltip).toContain("motion-reduce");
   });
 });

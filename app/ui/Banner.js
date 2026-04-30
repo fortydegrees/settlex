@@ -33,26 +33,32 @@ export function Banner({
   return (
     <div
       className={cn(
-        `flex items-start gap-4 rounded-[1.2rem] border px-4 ${
+        `flex flex-col gap-3 rounded-[1.2rem] border px-4 ${
           hasBody ? "py-3" : "py-2.5"
-        } text-slate-800 shadow-[0_18px_34px_-26px_rgba(15,23,42,0.34)] backdrop-blur-xl`,
+        } text-slate-800 shadow-[0_18px_34px_-26px_rgba(15,23,42,0.34)] backdrop-blur-xl sm:flex-row sm:items-start`,
         styles.container,
         className
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn("mt-[0.2rem] h-3 w-3 shrink-0 rounded-full", styles.indicator)}
-      />
+      <div className="flex min-w-0 flex-1 items-start gap-4">
+        <span
+          aria-hidden="true"
+          className={cn("mt-[0.2rem] h-3 w-3 shrink-0 rounded-full", styles.indicator)}
+        />
 
-      <div className="min-w-0 flex-1">
-        <div className={cn("text-sm font-semibold tracking-[0.01em]", styles.title)}>
-          {title}
+        <div className="min-w-0 flex-1">
+          <div className={cn("text-sm font-semibold tracking-[0.01em]", styles.title)}>
+            {title}
+          </div>
+          {hasBody ? <div className={cn("mt-0.5 text-sm", styles.body)}>{body}</div> : null}
         </div>
-        {hasBody ? <div className={cn("mt-0.5 text-sm", styles.body)}>{body}</div> : null}
       </div>
 
-      {actions}
+      {actions ? (
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:[&>*]:w-auto [&>*]:w-full">
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 }

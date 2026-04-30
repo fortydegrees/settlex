@@ -10,12 +10,15 @@ export function computeDefaultSize({ width, height }) {
   return width / numLevels / SQRT3;
 }
 
-export function getBoardLayout({ width, height }) {
+export function getBoardLayout({ width, height, leftInset = 0, rightInset = 0 }) {
   const containerHeight = height - 144 - 38 - 40;
-  const containerWidth = width;
+  const safeLeftInset = Number.isFinite(leftInset) ? Math.max(0, leftInset) : 0;
+  const safeRightInset = Number.isFinite(rightInset) ? Math.max(0, rightInset) : 0;
+  const containerWidth = Math.max(0, width - safeLeftInset - safeRightInset);
   const size = computeDefaultSize({ width: containerWidth, height: containerHeight });
   // Size the board against the reserved UI height, but keep the board itself
-  // centered in the viewport so the first load feels visually balanced.
-  const center = [containerWidth / 2, height / 2];
+  // centered in the playable area so persistent side UI does not make it feel
+  // optically off-center.
+  const center = [safeLeftInset + containerWidth / 2, height / 2];
   return { containerWidth, containerHeight, size, center };
 }

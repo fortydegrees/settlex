@@ -6,9 +6,11 @@ import { AlertDialog } from "../../../ui/AlertDialog";
 import { Banner } from "../../../ui/Banner";
 import { Button } from "../../../ui/Button";
 import { Dialog } from "../../../ui/Dialog";
+import { IconButton } from "../../../ui/IconButton";
 import { Input } from "../../../ui/Input";
 import { Panel } from "../../../ui/Panel";
 import { Select } from "../../../ui/Select";
+import { Tooltip, TooltipProvider } from "../../../ui/Tooltip";
 
 const SECTION_LINKS = [
   { href: "#overview", label: "Overview" },
@@ -251,6 +253,25 @@ export function UiShowcaseClient() {
                     </Button>
                     <p className="mt-3 text-sm text-slate-700">
                       Reserved for destructive choices and explicit risk.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-white/35 p-4 ring-1 ring-white/40">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+                      Tooltip
+                    </div>
+                    <div className="mt-3">
+                      <TooltipProvider>
+                        <Tooltip label="Open game log">
+                          <IconButton aria-label="Open game log" variant="secondary">
+                            <span aria-hidden="true">L</span>
+                          </IconButton>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-700">
+                      Icon-only controls keep their accessible name while tooltips add
+                      quick visual labels.
                     </p>
                   </div>
                 </div>

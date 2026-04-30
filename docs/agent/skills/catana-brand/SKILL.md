@@ -9,7 +9,7 @@ Related specs:
 - `docs/agent/skills/catana-brand/RESOURCE_ICON_STYLE_GUIDE.md` (authoritative resource-icon system and handoff contract)
 - `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` (short workflow for adding new shared standard UI primitives)
 
-If you are adding or extending a reusable product-surface primitive in `app/ui/*`, also read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` before implementation.
+If you are adding or extending a reusable product-surface primitive in `app/ui/*`, also read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` before implementation. That workflow requires checking the existing Settlex primitives first, then reviewing two or three targeted external references before inventing a new shared interaction pattern.
 
 ## Philosophy
 
