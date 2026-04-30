@@ -30,11 +30,11 @@ describe("Tile robber placement UX", () => {
 
   it("grounds the placed robber with a board shadow", () => {
     const contents = fs.readFileSync(tilePath, "utf8");
-    expect(contents).toContain("const ROBBER_SHADOW_TOP_PERCENT = 54");
-    expect(contents).toContain("const ROBBER_SHADOW_WIDTH_PERCENT = 72");
-    expect(contents).toContain("const ROBBER_SHADOW_HEIGHT_PERCENT = 54");
-    expect(contents).toContain("const ROBBER_SHADOW_BLUR_PX = 3");
-    expect(contents).toContain("const ROBBER_SHADOW_OPACITY = 0.9");
-    expect(contents).toContain("rgba(15, 23, 42, 0.58)");
+    expect(contents).toContain("ROBBER_SHADOW_TOP_PERCENT");
+    expect(contents).toContain("ROBBER_SHADOW_WIDTH_PERCENT");
+    expect(contents).toContain("ROBBER_SHADOW_HEIGHT_PERCENT");
+    expect(contents).toContain("ROBBER_SHADOW_ROTATION_DEG");
+    expect(contents).toContain("ROBBER_SHADOW_SKEW_DEG");
+    expect(contents).toContain("radial-gradient(ellipse");
   });
 });

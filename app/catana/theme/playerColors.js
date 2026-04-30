@@ -1,7 +1,7 @@
 export const DEFAULT_PLAYER_COLOR_ID = "red";
 
 export const LEGACY_PLAYER_COLOR_ALIASES = Object.freeze({
-  blue: "sky",
+  blue: "royal",
   cyan: "teal",
   pink: "coral",
   amber: "gold",
@@ -10,7 +10,7 @@ export const LEGACY_PLAYER_COLOR_ALIASES = Object.freeze({
 
 export const SEAT_FALLBACK_COLOR_IDS = Object.freeze([
   "red",
-  "sky",
+  "royal",
   "green",
   "orange",
   "teal",
@@ -144,16 +144,21 @@ const PLAYER_COLOR_OPTIONS_BY_ID = new Map(
 
 const PLAYER_COLOR_PICKER_ORDER = Object.freeze([
   "red",
+  "royal",
+  "green",
+  "orange",
+  "gold",
+  "lime",
+  "teal",
   "sky",
+  "magenta",
+  "purple",
   "white",
-  "orange"
+  "black"
 ]);
 
 export const PLAYER_COLOR_PICKER_OPTIONS = Object.freeze([
-  ...PLAYER_COLOR_PICKER_ORDER.map((id) => PLAYER_COLOR_OPTIONS_BY_ID.get(id)),
-  ...PLAYER_COLOR_OPTIONS.filter(
-    (option) => !PLAYER_COLOR_PICKER_ORDER.includes(option.id)
-  )
+  ...PLAYER_COLOR_PICKER_ORDER.map((id) => PLAYER_COLOR_OPTIONS_BY_ID.get(id))
 ]);
 
 export function normalizePlayerColorId(colorId) {

@@ -4642,3 +4642,15 @@
   - `pnpm -C game-core test`
   - `pnpm exec vitest run app/catana/__tests__/Game.boardConfig.test.js app/catana/__tests__/stateMasking.test.js app/catana/__tests__/Moves.balancedDice.test.js`
   - Broader targeted Catana run still has an existing dev-card-choice failure in `app/catana/__tests__/Moves.gameLog.test.js`; the balanced-dice tests in that run passed.
+
+## Status (2026-04-30, darker blue lobby default)
+- Changed Catana's default blue treatment from `sky` to `royal`:
+  - legacy `blue` identity ids now normalize to `royal`,
+  - automatic seat fallback uses `royal` for the second color,
+  - the color picker surfaces `royal` as the second swatch,
+  - guest/bot match fallbacks use `royal` instead of `sky`.
+- Curated the lobby color picker down to 12 visible choices while keeping the full palette available for stored identities and assets.
+- Updated the swatch picker presentation for the curated set: larger swatches, intrinsic centered 4-column grid, and more breathing room.
+- Reordered picker colors to lead with primary hues and keep black/white at the end.
+- Verification:
+  - Not run; value-only UI tuning per request.

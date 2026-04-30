@@ -11,7 +11,12 @@ export function SwatchPicker({
   swatchClassName = "",
 }) {
   return (
-    <div className={cn("flex flex-wrap justify-center gap-2", className)}>
+    <div
+      className={cn(
+        "mx-auto grid w-fit grid-cols-4 place-items-center gap-x-6 gap-y-5 py-3",
+        className
+      )}
+    >
       {options.map((option) => {
         const isActive = value === option.id;
 
@@ -23,7 +28,7 @@ export function SwatchPicker({
             aria-pressed={isActive}
             onClick={() => onChange(option.id)}
             className={cn(
-              "h-7 w-7 rounded-full transition-transform duration-[var(--settlex-ui-duration-fast)]",
+              "h-9 w-9 rounded-full transition-transform duration-[var(--settlex-ui-duration-fast)]",
               option.swatch,
               isActive
                 ? "scale-[1.08] ring-2 ring-white ring-offset-2 ring-offset-sky-300/80"

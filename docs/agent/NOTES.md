@@ -3142,3 +3142,9 @@
       - Duel defaults to balanced dice; standard modes keep random dice.
       - Balanced dice persists private deck/recent/seven-tracking data in `G.diceState`.
       - `playerView` must keep masking `G.diceState` down to `{ mode: "balanced" }` so clients do not receive the exact internal deck snapshot.
+    - Lobby color note:
+      - `royal` is now the preferred dark-blue identity color.
+      - Keep `sky` available in the full palette, but use `royal` for legacy `blue`, second-seat fallback, prominent picker placement, and guest/bot blue defaults.
+      - The lobby picker is intentionally curated to 12 visible colors; keep extra palette entries available for existing stored identities and assets unless they are fully retired.
+      - With 12 visible colors, the picker is tuned as an intrinsic-width centered 4-column grid of larger swatches rather than a wrapped dense strip.
+      - Picker order leads with primary/bright hues and leaves neutral black/white options at the end.
