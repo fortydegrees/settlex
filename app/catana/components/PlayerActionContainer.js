@@ -114,6 +114,7 @@ export const PlayerActionContainer = ({
   timerMs,
   themeId,
   showTurnControls = true,
+  layoutOffsetX = 0,
 }) => {
   const { G, ctx, moves } = bgioProps;
   const SHOW_PLAYER_HAND_BADGES = false;
@@ -413,6 +414,11 @@ export const PlayerActionContainer = ({
       <div className="relative flex items-end">
       <div
         className="absolute left-1/2 -translate-x-1/2 bottom-0 flex items-end pointer-events-auto"
+        style={{
+          left: layoutOffsetX
+            ? `calc(50% + ${Math.round(layoutOffsetX)}px)`
+            : undefined,
+        }}
         data-allow-interaction="true"
       >
         {/* Avatar + centered dock */}

@@ -5,6 +5,12 @@ import {
   TransformComponent,
 } from "../../react-zoom-pan-pinch";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import {
+  Cog6ToothIcon,
+  QuestionMarkCircleIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+} from "@heroicons/react/24/outline";
 
 import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
@@ -75,6 +81,10 @@ import {
 import {
   DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
 } from "./utils/robberPlacementMotion";
+import { Button } from "../ui/Button";
+import { Dialog } from "../ui/Dialog";
+import { IconButton } from "../ui/IconButton";
+import { Tooltip, TooltipProvider } from "../ui/Tooltip";
 import { Howler } from "howler";
 import { getVictoryPoints } from "@settlex/game-core";
 import {
@@ -153,6 +163,8 @@ export function GameScreen(bgioProps) {
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
   const [showResignConfirm, setShowResignConfirm] = useState(false);
+  const [showGameSettings, setShowGameSettings] = useState(false);
+  const [showGameRules, setShowGameRules] = useState(false);
   const [showConnectionBanner, setShowConnectionBanner] = useState(false);
   const [presentedGameLogEntries, setPresentedGameLogEntries] = useState([]);
   const [deferredLogEntries, setDeferredLogEntries] = useState([]);
@@ -176,6 +188,8 @@ export function GameScreen(bgioProps) {
   const deferredLogEntriesRef = useRef([]);
   const effectsBus = useMemo(() => createEffectBus(), []);
   const { width, height } = useWindowSize();
+  const leftMetaRailLayoutInset = 0;
+  const playfieldCenterOffsetX = 0;
   const moves = bgioProps.moves;
   const isReplay = bgioProps.isReplay === true;
 
@@ -186,6 +200,7 @@ export function GameScreen(bgioProps) {
   const matchID = bgioProps.matchID ?? "default";
 
   const core = bgioProps.G.core;
+  const ruleset = core?.ruleset ?? {};
   const coreTurn = core?.turn;
   const gameOverState = bgioProps.ctx?.gameover ?? core?.gameOver;
   const isGameOver = Boolean(gameOverState);
@@ -979,7 +994,9 @@ export function GameScreen(bgioProps) {
     needsToDiscard ||
     devPlayModalVisible ||
     showGameOverModal ||
-    showPostgame;
+    showPostgame ||
+    showGameSettings ||
+    showGameRules;
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
@@ -1085,7 +1102,11 @@ export function GameScreen(bgioProps) {
           getLayerEl: () => layerRef.current,
           getLayout: () => {
             if (!width || !height) return null;
-            return getBoardLayout({ width, height });
+            return getBoardLayout({
+              width,
+              height,
+              leftInset: leftMetaRailLayoutInset,
+            });
           },
           getBoardRect: () =>
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
@@ -1104,7 +1125,11 @@ export function GameScreen(bgioProps) {
               : placementLayerRef.current,
           getLayout: () => {
             if (!width || !height) return null;
-            return getBoardLayout({ width, height });
+            return getBoardLayout({
+              width,
+              height,
+              leftInset: leftMetaRailLayoutInset,
+            });
           },
           getBoardRect: () =>
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
@@ -1169,6 +1194,7 @@ export function GameScreen(bgioProps) {
     handleResourceDistributionComplete,
     freezeKnightDisplayFromPayload,
     releaseKnightDisplayFromPayload,
+    leftMetaRailLayoutInset,
     playerID,
     startDevCardRevealFromEffect,
     themeId
@@ -1271,9 +1297,9 @@ export function GameScreen(bgioProps) {
   ]);
   // console.log('p', player)
   // console.log('opps', opponents)
-  const handleToggleMute = () => {
+  const handleToggleMute = useCallback(() => {
     setIsMuted((prev) => !prev);
-  };
+  }, []);
   const handleBoardTransformed = useCallback((_ref, state) => {
     const nextScale =
       Number.isFinite(state?.scale) && state.scale > 0 ? state.scale : 1;
@@ -1282,6 +1308,18 @@ export function GameScreen(bgioProps) {
       Math.abs(currentScale - nextScale) < 0.001 ? currentScale : nextScale
     );
   }, []);
+  const friendlyRobberRule = ruleset.friendlyRobber?.enabled
+    ? `On up to ${ruleset.friendlyRobber.vpThreshold ?? 2} VP`
+    : "Off";
+  const gameRulesRows = [
+    ["Ruleset", bgioProps.G?.rulesetId ?? "Custom"],
+    ["Victory target", `${ruleset.victoryPointsToWin ?? 10} VP`],
+    ["Discard limit", `${ruleset.discardLimit ?? 7} cards`],
+    ["Bank trade", `${ruleset.tradeRates?.bank ?? 4}:1`],
+    ["Ports", `${ruleset.tradeRates?.genericPort ?? 3}:1 / ${ruleset.tradeRates?.specificPort ?? 2}:1`],
+    ["Friendly robber", friendlyRobberRule],
+    ["Development cards", ruleset.devCardsEnabled === false ? "Off" : "On"],
+  ];
   return (
     <div
       className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600 select-none"
@@ -1320,6 +1358,7 @@ export function GameScreen(bgioProps) {
             setBuildPickup={setBuildPickup}
             playerColorMap={effectiveColorByPlayerId}
             robberPlacementMotionMode={robberPlacementMotionMode}
+            boardLayoutLeftInset={leftMetaRailLayoutInset}
             themeId={themeId}
             {...bgioProps}
           />
@@ -1331,27 +1370,54 @@ export function GameScreen(bgioProps) {
         onComplete={handleDevCardRevealComplete}
       />
 
-      <button
-        type="button"
-        onClick={handleToggleMute}
-        className="fixed left-4 top-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white/60 text-slate-700 shadow-lg ring-1 ring-white/50 backdrop-blur-sm transition hover:bg-white/80"
-        aria-label={isMuted ? "Unmute audio" : "Mute audio"}
-        data-allow-interaction="true"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="h-5 w-5"
-          fill="currentColor"
+      <TooltipProvider delay={0}>
+        <div
+          className="fixed left-3 top-3 z-40 flex items-center gap-1.5 sm:left-4 sm:top-4 sm:gap-2"
+          data-game-utility-cluster="true"
+          data-allow-interaction="true"
         >
-          <path d="M11 4.5 6.8 8H4.5A1.5 1.5 0 0 0 3 9.5v5A1.5 1.5 0 0 0 4.5 16h2.3L11 19.5a1 1 0 0 0 1.6-.8V5.3A1 1 0 0 0 11 4.5Z" />
-          {isMuted ? (
-            <path d="m19.5 7.5-1-1-13 13 1 1 13-13Z" />
-          ) : (
-            <path d="M15.5 8.2a1 1 0 0 1 1.4 0c.9.9 1.4 2.1 1.4 3.3s-.5 2.4-1.4 3.3a1 1 0 1 1-1.4-1.4c.6-.6.9-1.3.9-1.9s-.3-1.3-.9-1.9a1 1 0 0 1 0-1.4Z" />
-          )}
-        </svg>
-      </button>
+          <Tooltip label={isMuted ? "Unmute audio" : "Mute audio"}>
+            <IconButton
+              variant="secondary"
+              size="md"
+              onClick={handleToggleMute}
+              className="h-10 w-10 border-white/45 bg-white/40 text-slate-800 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.45)] backdrop-blur-md hover:bg-white/50 sm:h-12 sm:w-12"
+              aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+              data-allow-interaction="true"
+            >
+              {isMuted ? (
+                <SpeakerXMarkIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+              ) : (
+                <SpeakerWaveIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+              )}
+            </IconButton>
+          </Tooltip>
+          <Tooltip label="Game settings">
+            <IconButton
+              variant="secondary"
+              size="md"
+              onClick={() => setShowGameSettings(true)}
+              className="hidden h-10 w-10 border-white/45 bg-white/40 text-slate-800 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.45)] backdrop-blur-md hover:bg-white/50 sm:inline-flex sm:h-12 sm:w-12"
+              aria-label="Open game settings"
+              data-allow-interaction="true"
+            >
+              <Cog6ToothIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip label="Game rules">
+            <IconButton
+              variant="secondary"
+              size="md"
+              onClick={() => setShowGameRules(true)}
+              className="hidden h-10 w-10 border-white/45 bg-white/40 text-slate-800 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.45)] backdrop-blur-md hover:bg-white/50 sm:inline-flex sm:h-12 sm:w-12"
+              aria-label="Open game rules"
+              data-allow-interaction="true"
+            >
+              <QuestionMarkCircleIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+            </IconButton>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
 
       {!isReplay && !isGameOver && !!player && (
         <GlassPillButton
@@ -1383,6 +1449,84 @@ export function GameScreen(bgioProps) {
         playerID={playerID}
         bgioProps={bgioProps}
       />
+
+      <Dialog
+        open={showGameSettings}
+        onOpenChange={setShowGameSettings}
+        title="Game settings"
+        description="Local controls for this match."
+        maxWidthClassName="max-w-sm"
+        actions={
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => setShowGameSettings(false)}
+            data-allow-interaction="true"
+          >
+            Close
+          </Button>
+        }
+      >
+        <div className="space-y-3 text-sm text-slate-700">
+          <div className="rounded-[1rem] border border-white/55 bg-white/36 px-4 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-semibold text-slate-900">Audio</span>
+              <span className="font-semibold text-slate-700">
+                {isMuted ? "Muted" : "On"}
+              </span>
+            </div>
+            <Button
+              variant={isMuted ? "primary" : "secondary"}
+              size="sm"
+              className="mt-3 w-full"
+              onClick={handleToggleMute}
+              data-allow-interaction="true"
+            >
+              {isMuted ? "Unmute audio" : "Mute audio"}
+            </Button>
+          </div>
+          <div className="rounded-[1rem] border border-white/55 bg-white/36 px-4 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-semibold text-slate-900">Theme</span>
+              <span className="font-semibold capitalize text-slate-700">
+                {themeId}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        open={showGameRules}
+        onOpenChange={setShowGameRules}
+        title="Game rules"
+        description="Current match configuration."
+        maxWidthClassName="max-w-md"
+        actions={
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => setShowGameRules(false)}
+            data-allow-interaction="true"
+          >
+            Close
+          </Button>
+        }
+      >
+        <dl className="grid gap-2 text-sm">
+          {gameRulesRows.map(([label, value]) => (
+            <div
+              key={label}
+              className="flex items-center justify-between gap-4 rounded-[1rem] border border-white/55 bg-white/36 px-4 py-3"
+            >
+              <dt className="font-semibold text-slate-900">{label}</dt>
+              <dd className="text-right font-semibold text-slate-700">
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </Dialog>
 
       {!isReplay && (
         <GameEffects
@@ -1428,6 +1572,7 @@ TODO: accurately colour it
           canEnd={canEnd}
           timerMs={visibleTimerMs}
           themeId={themeId}
+          layoutOffsetX={playfieldCenterOffsetX}
           showTurnControls={!isReplay && !isGameOver}
         />
       )}
@@ -1491,7 +1636,14 @@ TODO: accurately colour it
       ) : null}
 
       {(opponents.length > 0 || showConnectionBanner) && (
-        <div className="pointer-events-none fixed inset-x-0 top-6 z-30 flex flex-col items-center gap-3 px-4">
+        <div
+          className="pointer-events-none fixed inset-x-0 top-6 z-30 flex flex-col items-center gap-3 px-4"
+          style={{
+            transform: playfieldCenterOffsetX
+              ? `translateX(${Math.round(playfieldCenterOffsetX)}px)`
+              : undefined,
+          }}
+        >
           {opponents.length > 0 && (
             <div className="pointer-events-auto flex items-start gap-4">
               {opponents.map((opponent) => (

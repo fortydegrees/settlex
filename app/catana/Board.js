@@ -102,6 +102,7 @@ export function CatanBoard({
   setBuildPickup,
   robberPlacementMotionMode,
   boardViewportScale = 1,
+  boardLayoutLeftInset = 0,
   themeId,
   isMobile,
   playerID,
@@ -181,6 +182,7 @@ export function CatanBoard({
   const { containerWidth, containerHeight, center, size } = getBoardLayout({
     width,
     height,
+    leftInset: boardLayoutLeftInset,
   });
   const [boardCenterX, boardCenterY] = center;
   const { nodeRenderById, edgeRenderById } = useMemo(

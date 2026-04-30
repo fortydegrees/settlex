@@ -20,6 +20,7 @@ const ChatPanelComponent = ({
   themeId,
   chatMessages = [],
   sendChatMessage,
+  rootClassName = "w-full",
   headerClassName = "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
   panelClassName =
     "flex h-[20vh] xl:h-[24vh] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text",
@@ -77,7 +78,7 @@ const ChatPanelComponent = ({
         : "chat-empty",
     resumeAutoScrollKey,
     autoScrollIdleMs: 12000,
-    rootClassName: "w-full",
+    rootClassName,
     trackPanelInteraction: true,
     panelClassName,
     headerClassName,
