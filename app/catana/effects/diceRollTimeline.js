@@ -34,7 +34,10 @@ export function buildDiceRollTimeline({
   slowdownStartPortion = DEFAULT_SLOWDOWN_START_PORTION,
   settleMultiplier = DEFAULT_SETTLE_MULTIPLIER
 } = {}) {
-  const shakeMs = toDurationMs(plan?.mainStartMs, 0);
+  const shakeMs = Math.max(
+    0,
+    toDurationMs(plan?.mainStartMs, 0) - toDurationMs(plan?.leadIn?.timelineLeadMs, 0)
+  );
   const fallbackDurationMs = toDurationMs(fallbackRollMs, DEFAULT_FALLBACK_ROLL_MS);
   const cueDurationMs = toDurationMs(
     plan?.totalDurationMs,
