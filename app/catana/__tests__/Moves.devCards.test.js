@@ -3,6 +3,7 @@ import { createEmptyState, buildTopology, ResourceType, TileTypes } from "@settl
 import {
   DEBUG_takeDevCards,
   buyDevCard,
+  confirmDevCardPlay,
   moveRobber,
   playDevCardStart,
   placeRoadFromDevCard
@@ -69,15 +70,106 @@ describe("dev card play moves", () => {
     expect(buyDevCard.client).toBe(false);
   });
 
-  it("playDevCardStart sets devCardPlay for year of plenty", () => {
+  it("playDevCardStart emits a start effect for year of plenty", () => {
     const state = createEmptyState(["0"]);
     state.playerStateById["0"].devCards = ["yearOfPlenty"];
-    const ctx = { currentPlayer: "0", activePlayers: { "0": "preRoll" } };
-    const context = { G: { core: state }, playerID: "0", ctx };
+    const ctx = { currentPlayer: "0", activePlayers: { "0": "preRoll" }, turn: 4 };
+    const effects = { devCardPlayStarted: vi.fn() };
+    const context = { G: { core: state }, playerID: "0", ctx, effects };
 
     playDevCardStart.move(context, "yearOfPlenty");
 
-    expect(context.G.devCardPlay).toEqual({ type: "yearOfPlenty", playerId: "0" });
+    expect(context.G.devCardPlay).toMatchObject({
+      type: "yearOfPlenty",
+      playerId: "0",
+      effectId: "devcard:yearOfPlenty:0:turn-4",
+      startedFromStage: "preRoll"
+    });
+    expect(effects.devCardPlayStarted).toHaveBeenCalledWith(
+      expect.objectContaining({
+        effectId: "devcard:yearOfPlenty:0:turn-4",
+        playerId: "0",
+        cardType: "yearOfPlenty",
+        phase: "start",
+        startedFromStage: "preRoll"
+      })
+    );
+  });
+
+  it("confirmDevCardPlay emits a year of plenty resolve effect with selected resources", () => {
+    const state = createEmptyState(["0"]);
+    state.playerStateById["0"].devCards = ["yearOfPlenty"];
+    const effects = { devCardPlayResolved: vi.fn() };
+    const context = {
+      G: {
+        core: state,
+        gameLog: [],
+        gameLogSeq: 0,
+        devCardPlay: {
+          type: "yearOfPlenty",
+          playerId: "0",
+          effectId: "devcard:yearOfPlenty:0:turn-4",
+          startedFromStage: "postRoll"
+        }
+      },
+      playerID: "0",
+      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" }, turn: 4 },
+      effects
+    };
+
+    confirmDevCardPlay.move(context, [ResourceType.WOOD, ResourceType.BRICK]);
+
+    expect(effects.devCardPlayResolved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        effectId: "devcard:yearOfPlenty:0:turn-4",
+        playerId: "0",
+        cardType: "yearOfPlenty",
+        phase: "resolve",
+        resources: [ResourceType.WOOD, ResourceType.BRICK]
+      })
+    );
+    expect(context.G.devCardPlay).toBe(null);
+  });
+
+  it("confirmDevCardPlay emits a monopoly resolve effect with per-player transfers", () => {
+    const state = createEmptyState(["0", "1", "2"]);
+    state.playerStateById["0"].devCards = ["monopoly"];
+    state.playerStateById["1"].resources = [ResourceType.WOOD, ResourceType.WOOD];
+    state.playerStateById["2"].resources = [ResourceType.WOOD, ResourceType.ORE];
+    const effects = { devCardPlayResolved: vi.fn() };
+    const context = {
+      G: {
+        core: state,
+        gameLog: [],
+        gameLogSeq: 0,
+        devCardPlay: {
+          type: "monopoly",
+          playerId: "0",
+          effectId: "devcard:monopoly:0:turn-5",
+          startedFromStage: "postRoll"
+        }
+      },
+      playerID: "0",
+      ctx: { currentPlayer: "0", activePlayers: { "0": "postRoll" }, turn: 5 },
+      effects
+    };
+
+    confirmDevCardPlay.move(context, ResourceType.WOOD);
+
+    expect(effects.devCardPlayResolved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        effectId: "devcard:monopoly:0:turn-5",
+        playerId: "0",
+        cardType: "monopoly",
+        phase: "resolve",
+        resource: ResourceType.WOOD,
+        transfers: [
+          { fromPlayerId: "1", toPlayerId: "0", resource: ResourceType.WOOD, count: 2 },
+          { fromPlayerId: "2", toPlayerId: "0", resource: ResourceType.WOOD, count: 1 }
+        ],
+        totalTransferred: 3
+      })
+    );
   });
 
   it("playDevCardStart allows road building when exactly one road remains", () => {
@@ -90,7 +182,7 @@ describe("dev card play moves", () => {
 
     playDevCardStart.move(context, "roadBuilding");
 
-    expect(context.G.devCardPlay).toEqual({
+    expect(context.G.devCardPlay).toMatchObject({
       type: "roadBuilding",
       playerId: "0",
       pendingRoads: 1

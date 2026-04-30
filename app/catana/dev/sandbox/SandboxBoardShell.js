@@ -71,24 +71,24 @@ export function SandboxBoardShell({
     );
   };
 
-  const handleOpponentDevCardPlayStart = () => {
+  const handleOpponentDevCardPlayStart = (cardType = "knight") => {
     dispatchDevCardPlayEffect({
       playerId: getSyntheticOpponentId(),
-      cardType: "knight",
+      cardType,
       phase: "start"
     });
   };
 
-  const handleOpponentDevCardPlayResolve = () => {
+  const handleOpponentDevCardPlayResolve = (cardType = "knight") => {
     dispatchDevCardPlayEffect({
       playerId: getSyntheticOpponentId(),
-      cardType: "knight",
+      cardType,
       phase: "resolve"
     });
   };
 
   const handleDevCardPlayReset = () => {
-    dispatchDevCardPlayEffect({ action: "reset", cardType: "knight" });
+    dispatchDevCardPlayEffect({ action: "reset" });
   };
 
   return (
