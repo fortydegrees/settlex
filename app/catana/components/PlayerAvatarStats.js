@@ -1,6 +1,7 @@
 import Image from "./NextImage";
 import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
+import { AnimatedCount } from "./AnimatedCount";
 import { StatusBubble } from "./StatusBubble";
 import {
   getLongestRoadLength,
@@ -52,6 +53,7 @@ export const PlayerAvatarStats = ({
     vpDisplayOverride?.publicPoints ??
     (core ? getPublicVictoryPoints(core, player.id) : 0);
   const vpDisplay = getVpDisplay({ publicPoints, totalPoints, isMe });
+  const vpMotionValue = isMe ? totalPoints : publicPoints;
   const isDisconnected = presence?.status === "disconnected";
   const isIdle = presence?.status === "idle";
   const isSeatWarning = isDisconnected || isIdle;
@@ -85,7 +87,11 @@ export const PlayerAvatarStats = ({
             {player.emoji || "🤠"}
           </div>
           <span className="absolute right-0 top-0 z-10 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
-            {vpDisplay}
+            <AnimatedCount
+              value={vpDisplay}
+              motionValue={vpMotionValue}
+              className="player-vp-count"
+            />
           </span>
           {isSeatWarning && (
             <span className="absolute bottom-1 right-1 text-[1rem] leading-none">

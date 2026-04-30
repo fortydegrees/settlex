@@ -19,14 +19,16 @@ const cssPath = path.resolve(
 );
 
 describe("DevCardDisplay layout source", () => {
-  it("keeps playable dev card buttons absolutely stacked inside each group", () => {
+  it("renders grouped dev cards as a dock strip with relative card items", () => {
     const componentSource = fs.readFileSync(componentPath, "utf8");
     const cssSource = fs.readFileSync(cssPath, "utf8");
-    const cardRuleMatch = cssSource.match(/\\.devcard-card\\s*\\{([\\s\\S]*?)\\}/);
+    const cardRuleMatch = cssSource.match(/\.devcard-card\s*\{([\s\S]*?)\}/);
     const cardRuleBody = cardRuleMatch?.[1] ?? "";
 
-    expect(componentSource).toContain('"absolute top-0 devcard-card"');
-    expect(cardRuleBody).not.toContain("position:");
+    expect(componentSource).toContain("devcard-dock-track");
+    expect(componentSource).toContain("getDockItemMotion");
+    expect(cardRuleBody).toContain("position: relative;");
+    expect(componentSource).not.toContain('"absolute top-0 devcard-card"');
   });
 
   it("exposes player-scoped dev card anchor ids for play animations", () => {
@@ -34,6 +36,6 @@ describe("DevCardDisplay layout source", () => {
 
     expect(componentSource).toContain("playerId");
     expect(componentSource).toContain("`p${playerId}-devcards`");
-    expect(componentSource).toContain("`p${playerId}-devcard-${group.type}`");
+    expect(componentSource).toContain("`p${playerId}-devcard-${item.type}`");
   });
 });

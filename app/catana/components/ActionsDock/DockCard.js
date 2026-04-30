@@ -9,9 +9,18 @@ import "./dockStyles.css";
 import { handleThemeImageError } from "../../theme/themes";
 
 const INITIAL_WIDTH = 48;
-const HOVER_LIFT_PX = -4;
+const HOVER_LIFT_PX = -5;
 const PRESS_LIFT_PX = -1;
 const SELECTED_LIFT_PX = -2;
+const RESTING_SCALE = 1;
+const HOVER_SCALE = 1.1;
+const SELECTED_SCALE = 1.03;
+const PRESS_SCALE_MULTIPLIER = 0.96;
+const CARD_MOTION_CONFIG = {
+  mass: 0.9,
+  tension: 320,
+  friction: 18,
+};
 const ICON_PRELAUNCH_SQUASH_SCALE_X = 1.12;
 const ICON_PRELAUNCH_SQUASH_SCALE_Y = 0.78;
 const ICON_PRELAUNCH_SQUASH_Y_PX = 3;
@@ -38,6 +47,21 @@ const ICON_PRELAUNCH_SETTLE_CONFIG = {
   clamp: false
 };
 
+const getCardLift = ({ isHovered, isSelected }) => {
+  if (isHovered) return HOVER_LIFT_PX;
+  if (isSelected) return SELECTED_LIFT_PX;
+  return 0;
+};
+
+const getCardScale = ({ isHovered, isSelected }) => {
+  if (isHovered) return HOVER_SCALE;
+  if (isSelected) return SELECTED_SCALE;
+  return RESTING_SCALE;
+};
+
+const getPressedCardScale = ({ isHovered, isSelected }) =>
+  getCardScale({ isHovered, isSelected }) * PRESS_SCALE_MULTIPLIER;
+
 export const DockCard = ({ action }) => {
   const cardRef = React.useRef(null);
   const squashReboundTimeoutRef = React.useRef(null);
@@ -51,10 +75,7 @@ export const DockCard = ({ action }) => {
     },
   });
   const scale = useSpringValue(1, {
-    config: {
-      friction: 26,
-      tension: 320,
-    },
+    config: CARD_MOTION_CONFIG,
   });
   const iconScaleX = useSpringValue(1, {
     config: {
@@ -87,10 +108,13 @@ export const DockCard = ({ action }) => {
   }, []);
 
   React.useEffect(() => {
-    const restingLift = action.selected ? SELECTED_LIFT_PX : 0;
+    const restingLift = getCardLift({
+      isHovered: false,
+      isSelected: action.selected,
+    });
     if (!action.enabled) {
       y.start(restingLift);
-      scale.start(1);
+      scale.start(RESTING_SCALE);
       iconScaleX.start(1);
       iconScaleY.start(1);
       iconY.start(0);
@@ -99,7 +123,9 @@ export const DockCard = ({ action }) => {
     }
 
     y.start(isHovered ? HOVER_LIFT_PX : restingLift);
-    scale.start(1);
+    scale.start(getCardScale({ isHovered, isSelected: action.selected }), {
+      config: CARD_MOTION_CONFIG,
+    });
   }, [action.enabled, action.selected, iconScaleX, iconScaleY, iconY, isHovered, scale, y]);
 
   const handleClick = () => {
@@ -107,7 +133,7 @@ export const DockCard = ({ action }) => {
     const triggerRect = cardRef.current?.getBoundingClientRect?.() ?? null;
     const preLaunchDelayMs = action.preLaunchDelayMs ?? 0;
 
-    scale.start(0.96);
+    scale.start(getPressedCardScale({ isHovered, isSelected: action.selected }));
     y.start(PRESS_LIFT_PX);
     if (squashReboundTimeoutRef.current != null) {
       clearTimeout(squashReboundTimeoutRef.current);
@@ -161,9 +187,12 @@ export const DockCard = ({ action }) => {
     action.action?.({ triggerRect, preLaunchDelayMs });
 
     requestAnimationFrame(() => {
-      const restingLift = action.selected || isHovered ? HOVER_LIFT_PX : 0;
-      scale.start(1);
-      y.start(restingLift);
+      scale.start(getCardScale({ isHovered, isSelected: action.selected }), {
+        config: CARD_MOTION_CONFIG,
+      });
+      y.start(getCardLift({ isHovered, isSelected: action.selected }), {
+        config: CARD_MOTION_CONFIG,
+      });
     });
   };
 
@@ -184,15 +213,19 @@ export const DockCard = ({ action }) => {
         }}
         onMouseDown={() => {
           if (!action.enabled) return;
-          scale.start(0.96);
+          scale.start(
+            getPressedCardScale({ isHovered, isSelected: action.selected })
+          );
           y.start(PRESS_LIFT_PX);
         }}
         onMouseUp={() => {
           if (!action.enabled) return;
-          scale.start(1);
-          y.start(
-            isHovered ? HOVER_LIFT_PX : action.selected ? SELECTED_LIFT_PX : 0
-          );
+          scale.start(getCardScale({ isHovered, isSelected: action.selected }), {
+            config: CARD_MOTION_CONFIG,
+          });
+          y.start(getCardLift({ isHovered, isSelected: action.selected }), {
+            config: CARD_MOTION_CONFIG,
+          });
         }}
         onClick={handleClick}
         style={{

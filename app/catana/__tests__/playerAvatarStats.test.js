@@ -40,4 +40,13 @@ describe("getVpDisplay", () => {
     expect(source).toContain("knightDisplayOverride?.largestArmyOwnerId");
     expect(source).toContain("`p${player.id}-largest-army`");
   });
+
+  it("renders the VP badge through the reusable animated count component", () => {
+    const source = fs.readFileSync(playerAvatarStatsPath, "utf8");
+
+    expect(source).toContain('import { AnimatedCount } from "./AnimatedCount";');
+    expect(source).toContain("<AnimatedCount");
+    expect(source).toContain("value={vpDisplay}");
+    expect(source).toContain("motionValue={");
+  });
 });
