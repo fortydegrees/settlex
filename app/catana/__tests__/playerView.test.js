@@ -25,6 +25,6 @@ describe("buildPlayerViewMap", () => {
     const core = { players: ["0", "1"], playerStateById: { "0": {}, "1": {} } };
     const view = buildPlayerViewMap(core, { "0": "gold" });
     expect(view["0"].color).toBe("gold");
-    expect(view["1"].color).toBe("sky");
+    expect(view["1"].color).toBe("royal");
   });
 });

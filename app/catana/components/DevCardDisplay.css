@@ -14,7 +14,21 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
   padding: 8px 12px 7px;
   transform: translateZ(0);
-  transition: width 180ms ease, opacity 180ms ease, transform 180ms ease;
+  transition:
+    width 180ms ease,
+    opacity 190ms ease,
+    transform 210ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.devcard-box--empty-shell {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.96);
+}
+
+.devcard-box--has-cards {
+  animation: catana-devcard-box-enter 210ms cubic-bezier(0.34, 1.56, 0.64, 1)
+    both;
 }
 
 .devcard-box::before {
@@ -168,9 +182,28 @@
   user-select: none;
 }
 
+@keyframes catana-devcard-box-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .devcard-box {
     transition: none;
+    animation: none;
+    transform: none;
   }
 
   .devcard-card {

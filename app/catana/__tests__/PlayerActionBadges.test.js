@@ -45,6 +45,14 @@ describe("PlayerActionContainer", () => {
     expect(contents).not.toContain('getPieceSvgFile("settlement", "red")');
     expect(contents).not.toContain('getPieceSvgFile("city", "red")');
   });
+
+  it("animates local resource dock count changes through AnimatedCount", () => {
+    const contents = fs.readFileSync(actionContainerPath, "utf8");
+
+    expect(contents).toContain('import { AnimatedCount } from "./AnimatedCount";');
+    expect(contents).toContain('className="resource-dock-count"');
+    expect(contents).toContain('ariaLabel={`${resourceCount} ${resource}`}');
+  });
 });
 
 describe("DevCardDisplay", () => {

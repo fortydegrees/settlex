@@ -58,4 +58,13 @@ describe("AnimatedCount", () => {
     expect(source).toContain("ANIMATION_CLEAR_MS");
     expect(source).toContain("window.setTimeout");
   });
+
+  it("keeps resource dock loss styling more specific than the generic decrease animation", () => {
+    const contents = fs.readFileSync(cssPath, "utf8");
+
+    expect(contents).toContain(
+      '.animated-count.resource-dock-count[data-direction="decrease"] .animated-count__value--enter'
+    );
+    expect(contents).toContain("animation-name: catana-resource-count-loss");
+  });
 });

@@ -36,36 +36,30 @@ describe("playerColors", () => {
     expect(getPlayerColorOption("unknown").id).toBe("red");
   });
 
-  it("orders lobby picker swatches with the classic colors first", () => {
+  it("orders lobby picker swatches with the curated primary set", () => {
     expect(PLAYER_COLOR_PICKER_OPTIONS.map((entry) => entry.id)).toEqual([
       "red",
-      "sky",
-      "white",
-      "orange",
+      "royal",
       "green",
+      "orange",
+      "gold",
+      "lime",
       "teal",
+      "sky",
       "magenta",
       "purple",
-      "maroon",
-      "brown",
-      "royal",
-      "violet",
-      "lime",
-      "coral",
-      "lavender",
-      "tan",
-      "black",
-      "silver",
-      "gold"
+      "white",
+      "black"
     ]);
   });
 
   it("maps legacy lobby ids onto the new canonical palette", () => {
-    expect(getPlayerColorOption("blue").id).toBe("sky");
+    expect(getPlayerColorOption("blue").id).toBe("royal");
     expect(getPlayerColorOption("cyan").id).toBe("teal");
     expect(getPlayerColorOption("pink").id).toBe("coral");
     expect(getPlayerColorOption("amber").id).toBe("gold");
     expect(getPlayerColorOption("olive").id).toBe("lime");
+    expect(normalizePlayerColorId("blue")).toBe("royal");
     expect(normalizePlayerColorId("olive")).toBe("lime");
   });
 

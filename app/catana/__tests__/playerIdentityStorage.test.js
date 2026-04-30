@@ -47,7 +47,7 @@ describe("playerIdentityStorage", () => {
     expect(readStoredPlayerIdentity(storage)).toEqual({
       name: "Ada",
       emoji: "🤠",
-      color: "sky",
+      color: "royal",
     });
   });
 });

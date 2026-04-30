@@ -4,6 +4,7 @@ import { DockCard } from "./ActionsDock/DockCard";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { TurnControlCluster } from "./TurnControlCluster";
+import { AnimatedCount } from "./AnimatedCount";
 import { getBadgeClasses } from "./CardStackStyles";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { useDie } from "./Die";
@@ -78,7 +79,11 @@ export const CardIcon = ({
       
     >
       <div className="w-7 text-center leading-none select-none text-white mr-1 text-3xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
-        {resourceCount}
+        <AnimatedCount
+          value={resourceCount}
+          className="resource-dock-count"
+          ariaLabel={`${resourceCount} ${resource}`}
+        />
       </div>
       <img
         src={iconSrc}
