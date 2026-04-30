@@ -109,6 +109,72 @@ const buildKnightPlayPayload = ({
   };
 };
 
+const buildRoadBuildingPlayPayload = ({
+  ctx,
+  playerId,
+  phase,
+  startedFromStage,
+  pendingRoads,
+  previousRoadsRemaining,
+  nextRoadsRemaining,
+  effectId
+}) => ({
+  effectId:
+    effectId ??
+    buildDevCardPlayEffectId({
+      playerId,
+      cardType: "roadBuilding",
+      turn: ctx?.turn
+    }),
+  playerId,
+  cardType: "roadBuilding",
+  phase,
+  startedFromStage: startedFromStage ?? null,
+  pendingRoads,
+  previousRoadsRemaining,
+  nextRoadsRemaining
+});
+
+const buildChoiceDevCardPlayPayload = ({
+  ctx,
+  playerId,
+  cardType,
+  phase,
+  startedFromStage,
+  effectId,
+  resources,
+  resource,
+  transfers,
+  totalTransferred
+}) => ({
+  effectId:
+    effectId ??
+    buildDevCardPlayEffectId({
+      playerId,
+      cardType,
+      turn: ctx?.turn
+    }),
+  playerId,
+  cardType,
+  phase,
+  startedFromStage: startedFromStage ?? null,
+  ...(resources ? { resources } : {}),
+  ...(resource ? { resource } : {}),
+  ...(transfers ? { transfers } : {}),
+  ...(totalTransferred != null ? { totalTransferred } : {})
+});
+
+const buildMonopolyTransfers = (core, playerId, resource) =>
+  Object.entries(core?.playerStateById ?? {})
+    .filter(([otherId]) => otherId !== playerId)
+    .map(([otherId, other]) => ({
+      fromPlayerId: otherId,
+      toPlayerId: playerId,
+      resource,
+      count: (other?.resources ?? []).filter((entry) => entry === resource).length
+    }))
+    .filter((entry) => entry.count > 0);
+
 const storePendingKnightPlayAnimation = (G, payload) => {
   G.pendingDevCardPlayAnimation = {
     ...payload,
@@ -1128,34 +1194,87 @@ export const playDevCardStart = {
     if (cardType === "roadBuilding") {
       const player = G.core?.playerStateById?.[playerID];
       if (!player || player.roadsRemaining <= 0) return;
+      const previousRoadsRemaining = player.roadsRemaining;
       const legalEdges = buildableEdges(G.core, G.coreTopology, playerID, {
         initialPlacement: false
       });
       const pendingRoads = Math.min(2, player.roadsRemaining, legalEdges.length);
       if (pendingRoads <= 0) return;
-      G.devCardPlay = { type: "roadBuilding", playerId: playerID, pendingRoads };
+      const startPayload = buildRoadBuildingPlayPayload({
+        ctx,
+        playerId: playerID,
+        phase: "start",
+        startedFromStage: currentStage,
+        pendingRoads,
+        previousRoadsRemaining,
+        nextRoadsRemaining: player.roadsRemaining
+      });
+      G.devCardPlay = {
+        type: "roadBuilding",
+        playerId: playerID,
+        pendingRoads,
+        effectId: startPayload.effectId,
+        startedFromStage: currentStage,
+        previousRoadsRemaining
+      };
+      effects?.devCardPlayStarted?.(startPayload);
       return;
     }
 
     if (cardType === "yearOfPlenty" || cardType === "monopoly") {
-      G.devCardPlay = { type: cardType, playerId: playerID };
+      const startPayload = buildChoiceDevCardPlayPayload({
+        ctx,
+        playerId: playerID,
+        cardType,
+        phase: "start",
+        startedFromStage: currentStage
+      });
+      G.devCardPlay = {
+        type: cardType,
+        playerId: playerID,
+        effectId: startPayload.effectId,
+        startedFromStage: currentStage
+      };
+      effects?.devCardPlayStarted?.(startPayload);
     }
   }
 };
 
 export const confirmDevCardPlay = {
   move: (context, payload, options) => {
-    const { G, playerID, ctx } = context;
+    const { G, playerID, ctx, effects } = context;
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.playerId !== playerID) return;
     if (playerID !== ctx.currentPlayer) return;
     if (!isDevCardStage(ctx, playerID)) return;
 
     let applied = { ok: false, error: "unknown" };
+    let resolvePayload = null;
     if (devPlay.type === "yearOfPlenty") {
       applied = applyYearOfPlenty(G.core, playerID, payload);
+      resolvePayload = buildChoiceDevCardPlayPayload({
+        ctx,
+        playerId: playerID,
+        cardType: devPlay.type,
+        phase: "resolve",
+        startedFromStage: devPlay.startedFromStage,
+        effectId: devPlay.effectId,
+        resources: Array.isArray(payload) ? payload : []
+      });
     } else if (devPlay.type === "monopoly") {
+      const transfers = buildMonopolyTransfers(G.core, playerID, payload);
       applied = applyMonopoly(G.core, playerID, payload);
+      resolvePayload = buildChoiceDevCardPlayPayload({
+        ctx,
+        playerId: playerID,
+        cardType: devPlay.type,
+        phase: "resolve",
+        startedFromStage: devPlay.startedFromStage,
+        effectId: devPlay.effectId,
+        resource: payload,
+        transfers,
+        totalTransferred: transfers.reduce((total, entry) => total + entry.count, 0)
+      });
     } else {
       return;
     }
@@ -1188,6 +1307,7 @@ export const confirmDevCardPlay = {
       });
     }
 
+    effects?.devCardPlayResolved?.(resolvePayload);
     G.devCardPlay = null;
   }
 };
@@ -1278,6 +1398,19 @@ export const placeRoadFromDevCard = {
         data: { cardType: "roadBuilding" },
         forced: options?.forced
       });
+      effects?.devCardPlayResolved?.(
+        buildRoadBuildingPlayPayload({
+          ctx,
+          playerId: playerID,
+          phase: "resolve",
+          startedFromStage: devPlay.startedFromStage,
+          pendingRoads: devPlay.pendingRoads,
+          previousRoadsRemaining: devPlay.previousRoadsRemaining,
+          nextRoadsRemaining:
+            G.core?.playerStateById?.[playerID]?.roadsRemaining ?? null,
+          effectId: devPlay.effectId
+        })
+      );
       G.devCardPlay = null;
     }
   }

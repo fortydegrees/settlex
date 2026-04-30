@@ -827,12 +827,24 @@ export function GameScreen(bgioProps) {
 
   const playerDevCards = player?.devCards ?? null;
   const playerRevealId = player?.id ?? null;
-  const displayDevCards = getVisibleDevCardsDuringReveal({
+  const displayDevCardsDuringReveal = getVisibleDevCardsDuringReveal({
     pendingReveal: pendingDevCardReveal,
     activeReveal: activeDevCardReveal,
     playerId: playerRevealId,
     playerDevCards: playerDevCards ?? [],
   });
+  const localParkedDevCardType =
+    devPlay?.playerId != null &&
+    String(devPlay.playerId) === String(playerRevealId) &&
+    ["roadBuilding", "yearOfPlenty", "monopoly"].includes(devPlay.type)
+      ? devPlay.type
+      : null;
+  const displayDevCards = localParkedDevCardType
+    ? displayDevCardsDuringReveal.filter((card, index) => {
+        if (card !== localParkedDevCardType) return true;
+        return displayDevCardsDuringReveal.indexOf(card) !== index;
+      })
+    : displayDevCardsDuringReveal;
   const frozenVpSnapshot =
     activeDevCardReveal?.vpSnapshot ?? pendingDevCardReveal?.vpSnapshot ?? null;
   const revealInFlight =
@@ -843,6 +855,8 @@ export function GameScreen(bgioProps) {
   const localKnightPlayInFlight =
     playerRevealId != null &&
     Boolean(knightDisplayOverrideByPlayerId[String(playerRevealId)]);
+  const localDevCardPlayInFlight =
+    localKnightPlayInFlight || Boolean(localParkedDevCardType);
   const displayPlayer = !player
     ? player
     : {
@@ -1140,7 +1154,8 @@ export function GameScreen(bgioProps) {
           actorStore: devCardPlayActorStoreRef,
           emitCue,
           onStart: freezeKnightDisplayFromPayload,
-          onResolveComplete: releaseKnightDisplayFromPayload
+          onResolveComplete: releaseKnightDisplayFromPayload,
+          themeId
         });
 
         return (event) => runner(event);
@@ -1163,16 +1178,55 @@ export function GameScreen(bgioProps) {
     if (typeof window === "undefined") return undefined;
     if (matchID !== "dev-sandbox") return undefined;
 
-    const buildSandboxKnightPayload = ({ playerId, phase }) => {
+    const buildSandboxDevCardPayload = ({ playerId, cardType, phase }) => {
       const actorId = String(playerId ?? opponents[0]?.id ?? playerID ?? "0");
+      const resolvedCardType = [
+        "roadBuilding",
+        "yearOfPlenty",
+        "monopoly"
+      ].includes(cardType)
+        ? cardType
+        : "knight";
       const actor = playerViewMap[actorId];
       const previousKnightsPlayed = actor?.knightsPlayed ?? 0;
-      return {
-        effectId: `dev-sandbox:knight:${actorId}`,
+      const basePayload = {
+        effectId: `dev-sandbox:${resolvedCardType}:${actorId}`,
         playerId: actorId,
-        cardType: "knight",
+        cardType: resolvedCardType,
         phase,
-        startedFromStage: "postRoll",
+        startedFromStage: "postRoll"
+      };
+      if (resolvedCardType === "roadBuilding") {
+        return {
+          ...basePayload,
+          pendingRoads: phase === "resolve" ? 0 : 2,
+          previousRoadsRemaining: actor?.roadsRemaining ?? null,
+          nextRoadsRemaining: actor?.roadsRemaining ?? null
+        };
+      }
+      if (resolvedCardType === "yearOfPlenty") {
+        return {
+          ...basePayload,
+          resources: ["Wood", "Brick"]
+        };
+      }
+      if (resolvedCardType === "monopoly") {
+        return {
+          ...basePayload,
+          resource: "Wood",
+          transfers: [
+            {
+              fromPlayerId: String(playerID ?? "0"),
+              toPlayerId: actorId,
+              resource: "Wood",
+              count: 2
+            }
+          ],
+          totalTransferred: 2
+        };
+      }
+      return {
+        ...basePayload,
         previousKnightsPlayed,
         nextKnightsPlayed: previousKnightsPlayed + 1,
         previousLargestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? null,
@@ -1189,8 +1243,9 @@ export function GameScreen(bgioProps) {
       const phase = detail.phase === "resolve" ? "resolve" : "start";
       effectsBus.emit({
         type: phase === "resolve" ? "devcard:play:resolve" : "devcard:play:start",
-        payload: buildSandboxKnightPayload({
+        payload: buildSandboxDevCardPayload({
           playerId: detail.playerId,
+          cardType: detail.cardType,
           phase
         })
       });
@@ -1358,7 +1413,7 @@ TODO: accurately colour it
           onDevCardPurchaseStart={handleDevCardPurchaseStart}
           devCardDisplayRef={devCardDisplayRef}
           displayDevCards={displayPlayer?.devCards ?? null}
-          keepDevCardShellMounted={Boolean(revealInFlight || localKnightPlayInFlight)}
+          keepDevCardShellMounted={Boolean(revealInFlight || localDevCardPlayInFlight)}
           vpDisplayOverride={frozenVpSnapshot}
           knightDisplayOverride={
             player?.id != null

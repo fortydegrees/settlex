@@ -6,6 +6,12 @@ const DEV_CARD_OPTIONS = [
   { id: "yearOfPlenty", label: "Plenty" },
   { id: "monopoly", label: "Mono" }
 ];
+const DEV_CARD_EFFECT_OPTIONS = [
+  { id: "knight", label: "Knight" },
+  { id: "roadBuilding", label: "Road Building" },
+  { id: "yearOfPlenty", label: "Year of Plenty" },
+  { id: "monopoly", label: "Monopoly" }
+];
 
 export function SandboxPanel({
   presets,
@@ -121,27 +127,33 @@ export function SandboxPanel({
               <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
                 Dev-card effects
               </div>
-              <div className="grid grid-cols-1 gap-2">
-                <button
-                  type="button"
-                  onClick={onOpponentDevCardPlayStart}
-                  className="rounded-lg bg-violet-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-violet-200 transition hover:bg-violet-200"
-                >
-                  Opponent Plays Knight
-                </button>
-                <button
-                  type="button"
-                  onClick={onOpponentDevCardPlayResolve}
-                  className="rounded-lg bg-violet-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-violet-200 transition hover:bg-violet-200"
-                >
-                  Resolve Opponent Knight
-                </button>
+              <div className="grid grid-cols-2 gap-2">
+                {DEV_CARD_EFFECT_OPTIONS.map((card) => (
+                  <button
+                    key={`${card.id}-start`}
+                    type="button"
+                    onClick={() => onOpponentDevCardPlayStart(card.id)}
+                    className="rounded-lg bg-violet-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-violet-200 transition hover:bg-violet-200"
+                  >
+                    {`Opponent Plays ${card.label}`}
+                  </button>
+                ))}
+                {DEV_CARD_EFFECT_OPTIONS.map((card) => (
+                  <button
+                    key={`${card.id}-resolve`}
+                    type="button"
+                    onClick={() => onOpponentDevCardPlayResolve(card.id)}
+                    className="rounded-lg bg-violet-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-violet-200 transition hover:bg-violet-200"
+                  >
+                    {`Resolve ${card.label}`}
+                  </button>
+                ))}
                 <button
                   type="button"
                   onClick={onDevCardPlayReset}
-                  className="rounded-lg bg-slate-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200"
+                  className="col-span-2 rounded-lg bg-slate-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-200"
                 >
-                  Reset Knight Visual
+                  Reset Dev Visual
                 </button>
               </div>
             </div>

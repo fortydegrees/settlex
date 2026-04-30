@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("gsap", () => {
   const makeTimeline = (options = {}) => {
     const timeline = {
+      call: vi.fn((callback) => {
+        callback?.();
+        return timeline;
+      }),
       to: vi.fn(() => {
         options.onComplete?.();
         return timeline;
@@ -127,6 +131,53 @@ describe("devCardPlay runner", () => {
 
       expect(onResolveComplete).toHaveBeenCalled();
       expect(actorStore.current.has(getDevCardPlayActorKey(payload))).toBe(false);
+    } finally {
+      if (previousDocument === undefined) {
+        delete global.document;
+      } else {
+        global.document = previousDocument;
+      }
+    }
+  });
+
+  it("runs non-Knight dev cards through a spent-card resolve", () => {
+    const previousDocument = global.document;
+    const layer = makeElement({ left: 0, top: 0, width: 0, height: 0 });
+    const source = makeElement({ left: 100, top: 200, width: 52, height: 72, bottom: 272 });
+    const onResolveComplete = vi.fn();
+
+    global.document = {
+      hidden: false,
+      createElement: () => makeElement({ left: 0, top: 0, width: 0, height: 0 }),
+      getElementById: (id) => {
+        if (id === "p0-devcards") return source;
+        if (id === "p0-Wood") return makeElement({ left: 20, top: 30, width: 44, height: 44 });
+        return null;
+      }
+    };
+
+    try {
+      const actorStore = { current: new Map() };
+      const run = createDevCardPlayRunner({
+        layerEl: layer,
+        getPerspective: () => "local",
+        getMotionPolicy: () => "full",
+        actorStore,
+        onResolveComplete
+      });
+      const payload = {
+        effectId: "devcard:yearOfPlenty:0:turn-1",
+        playerId: "0",
+        cardType: "yearOfPlenty",
+        phase: "start"
+      };
+
+      run(payload);
+      run({ ...payload, phase: "resolve", resources: ["Wood"] });
+
+      expect(onResolveComplete).toHaveBeenCalled();
+      expect(actorStore.current.has(getDevCardPlayActorKey(payload))).toBe(false);
+      expect(layer.children.length).toBeGreaterThanOrEqual(1);
     } finally {
       if (previousDocument === undefined) {
         delete global.document;

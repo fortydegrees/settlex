@@ -8,6 +8,15 @@ export const DEFAULT_THEME = {
   "devcard:knight:play": { src: "/sounds/card_woosh.mp3", volume: 0.42 },
   "devcard:knight:flip": { src: "/sounds/card_woosh.mp3", volume: 0.36 },
   "devcard:knight:resolve": { src: "/sounds/card_woosh.mp3", volume: 0.38 },
+  "devcard:roadBuilding:play": { src: "/sounds/card_woosh.mp3", volume: 0.42 },
+  "devcard:roadBuilding:flip": { src: "/sounds/card_woosh.mp3", volume: 0.36 },
+  "devcard:roadBuilding:resolve": { src: "/sounds/card_woosh.mp3", volume: 0.34 },
+  "devcard:yearOfPlenty:play": { src: "/sounds/card_woosh.mp3", volume: 0.42 },
+  "devcard:yearOfPlenty:flip": { src: "/sounds/card_woosh.mp3", volume: 0.36 },
+  "devcard:yearOfPlenty:resolve": { src: "/sounds/card_woosh.mp3", volume: 0.34 },
+  "devcard:monopoly:play": { src: "/sounds/card_woosh.mp3", volume: 0.42 },
+  "devcard:monopoly:flip": { src: "/sounds/card_woosh.mp3", volume: 0.36 },
+  "devcard:monopoly:resolve": { src: "/sounds/card_woosh.mp3", volume: 0.34 },
   "dice:roll": {
     // Dice visuals use these clip lengths to sync the shake and settle phases.
     leadIn: {
