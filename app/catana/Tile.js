@@ -19,12 +19,14 @@ const TILE_ICON_TOP_FACTOR = 0.204;
 const TILE_ICON_SCALE = 0.68;
 const EMOJI_TILE_ICON_SCALE_MULTIPLIER = 0.85;
 const EMOJI_TILE_ICON_TOP_MULTIPLIER = 1.16;
-const ROBBER_SHADOW_LEFT_PERCENT = 55;
-const ROBBER_SHADOW_TOP_PERCENT = 54;
-const ROBBER_SHADOW_WIDTH_PERCENT = 72;
-const ROBBER_SHADOW_HEIGHT_PERCENT = 54;
-const ROBBER_SHADOW_BLUR_PX = 3;
-const ROBBER_SHADOW_OPACITY = 0.9;
+const ROBBER_SHADOW_LEFT_PERCENT = 62;
+const ROBBER_SHADOW_TOP_PERCENT = 68;
+const ROBBER_SHADOW_WIDTH_PERCENT = 82;
+const ROBBER_SHADOW_HEIGHT_PERCENT = 30;
+const ROBBER_SHADOW_ROTATION_DEG = -8;
+const ROBBER_SHADOW_SKEW_DEG = -7;
+const ROBBER_SHADOW_BLUR_PX = 4;
+const ROBBER_SHADOW_OPACITY = 0.82;
 
 const numberToPips = (number) => {
   switch (number) {
@@ -259,9 +261,10 @@ export function Tile({
                 width: `${ROBBER_SHADOW_WIDTH_PERCENT}%`,
                 height: `${ROBBER_SHADOW_HEIGHT_PERCENT}%`,
                 borderRadius: 999,
-                transform: "translate(-50%, 0)",
+                transform: `translate(-50%, 0) rotate(${ROBBER_SHADOW_ROTATION_DEG}deg) skewX(${ROBBER_SHADOW_SKEW_DEG}deg)`,
+                transformOrigin: "50% 50%",
                 background:
-                  "radial-gradient(ellipse at center, rgba(15, 23, 42, 0.58) 0%, rgba(15, 23, 42, 0.28) 48%, rgba(15, 23, 42, 0.12) 72%, rgba(15, 23, 42, 0) 100%)",
+                  "radial-gradient(ellipse at 42% 50%, rgba(15, 23, 42, 0.46) 0%, rgba(15, 23, 42, 0.24) 44%, rgba(15, 23, 42, 0.1) 70%, rgba(15, 23, 42, 0) 100%)",
                 filter: `blur(${ROBBER_SHADOW_BLUR_PX}px)`,
                 opacity: showOriginRobber
                   ? ROBBER_SHADOW_OPACITY * 0.45

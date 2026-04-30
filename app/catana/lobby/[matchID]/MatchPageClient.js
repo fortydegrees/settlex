@@ -133,9 +133,9 @@ export function MatchPageClient({
           })(),
           avatarColor: (() => {
             try {
-              return window.localStorage.getItem(PLAYER_COLOR_STORAGE_KEY) || "sky";
+              return window.localStorage.getItem(PLAYER_COLOR_STORAGE_KEY) || "royal";
             } catch (err) {
-              return "sky";
+              return "royal";
             }
           })(),
         }),
@@ -289,7 +289,7 @@ export function MatchPageClient({
               botKey: "puffer",
               botName: `${BOT_NAME_PREFIX} ${Number(seat.id) + 1}`,
               avatarEmoji: "🤖",
-              avatarColor: "sky",
+              avatarColor: "royal",
             }),
           },
         });

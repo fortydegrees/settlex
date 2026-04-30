@@ -175,7 +175,7 @@ export function IdentityModal({
           options={PLAYER_COLOR_PICKER_OPTIONS}
           value={color}
           onChange={setColor}
-          className="mt-4"
+          className="mt-6"
         />
 
         <Input
@@ -185,7 +185,7 @@ export function IdentityModal({
           placeholder="Your name"
           autoComplete="nickname"
           maxLength={28}
-          className="mt-5 text-center text-sm font-semibold"
+          className="mt-6 text-center text-sm font-semibold"
         />
 
         <Button

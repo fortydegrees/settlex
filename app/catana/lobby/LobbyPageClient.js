@@ -743,7 +743,7 @@ export function LobbyPageClient() {
             botKey: "puffer",
             botName: `${BOT_NAME_PREFIX} 2`,
             avatarEmoji: "🤖",
-            avatarColor: "sky",
+            avatarColor: "royal",
           }),
         },
       });
