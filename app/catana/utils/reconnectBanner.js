@@ -13,6 +13,19 @@ const readPlayers = (match) => {
   return null;
 };
 
+const readSetupData = (match) => match?.metadata?.setupData ?? match?.setupData ?? null;
+
+const isOccupiedSeat = (player) =>
+  Boolean(player?.name || player?.data?.usernameSnapshot);
+
+const isPendingFriendChallengeMatch = (match, players) => {
+  if (readSetupData(match)?.matchKind !== "friend_challenge") {
+    return false;
+  }
+
+  return players.some((player) => player?.id != null && !isOccupiedSeat(player));
+};
+
 export const isSameMatchPath = (pathname, matchID) =>
   pathname === `/g/${matchID}`;
 
@@ -67,6 +80,10 @@ export async function resolveReconnectBannerCandidate({
   );
   if (!savedSeatStillExists) {
     clearLastActiveMatch(storage);
+    return null;
+  }
+
+  if (isPendingFriendChallengeMatch(match, players)) {
     return null;
   }
 

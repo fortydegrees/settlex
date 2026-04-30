@@ -14,6 +14,9 @@ describe("LobbyPageClient play-with-friend flow", () => {
     expect(source).toContain('route: "/api/matches/open"');
     expect(source).toContain("modeId=duel");
     expect(source).toContain('route: `/api/challenges/${challengeState.matchID}/cancel`');
+    expect(source).toContain("writePendingFriendChallenge");
+    expect(source).toContain("restorePendingFriendChallenge");
+    expect(source).toContain("clearPendingFriendChallenge");
   });
 
   it("renders the waiting modal through the shared dialog + field primitives", () => {
@@ -27,6 +30,12 @@ describe("LobbyPageClient play-with-friend flow", () => {
     expect(source).toContain('from "../../ui/Button"');
     expect(source).toContain("Waiting for friend to join");
     expect(source).toContain("Close & cancel invite");
+    expect(source).toContain("Invite Link");
+    expect(source).toContain('maxWidthClassName="max-w-lg"');
+    expect(source).toContain('aria-label={copied ? "Link copied" : "Copy invite link"}');
+    expect(source).toContain("hover:translate-y-0");
+    expect(source).toContain('className="inline-flex items-center justify-center"');
+    expect(source).not.toContain('from "../../ui/Panel"');
     expect(source).not.toContain("fixed inset-0 z-40");
   });
 });

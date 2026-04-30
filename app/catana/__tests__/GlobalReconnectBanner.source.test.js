@@ -21,6 +21,7 @@ describe("GlobalReconnectBanner wiring", () => {
     expect(source).toContain("Rejoin match");
     expect(source).toContain("Dismiss");
     expect(source).toContain("resolveReconnectBannerCandidate");
+    expect(source).toContain("max-w-2xl");
     expect(source).not.toContain("rounded-full px-3 py-2");
   });
 });
