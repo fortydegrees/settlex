@@ -21,20 +21,19 @@ export const DEFAULT_THEME = {
     // Dice visuals use these clip lengths to sync the shake and settle phases.
     leadIn: {
       variants: [
-        "/sounds/dice-heavy/dice-shake-1.mp3",
-        "/sounds/dice-heavy/dice-shake-2.mp3",
-        "/sounds/dice-heavy/dice-shake-3.mp3",
-        "/sounds/dice-heavy/dice-shake-4.mp3",
-        "/sounds/dice-heavy/dice-shake-5.mp3"
+        "/sounds/dice-roll-test/dice_roll1.mp3",
+        "/sounds/dice-roll-test/dice_roll2.mp3",
+        "/sounds/dice-roll-test/dice_roll3.mp3",
+        "/sounds/dice-roll-test/dice_roll4.mp3"
       ],
       durationMsBySrc: {
-        "/sounds/dice-heavy/dice-shake-1.mp3": 334,
-        "/sounds/dice-heavy/dice-shake-2.mp3": 546,
-        "/sounds/dice-heavy/dice-shake-3.mp3": 764,
-        "/sounds/dice-heavy/dice-shake-4.mp3": 356,
-        "/sounds/dice-heavy/dice-shake-5.mp3": 486
+        "/sounds/dice-roll-test/dice_roll1.mp3": 424,
+        "/sounds/dice-roll-test/dice_roll2.mp3": 567,
+        "/sounds/dice-roll-test/dice_roll3.mp3": 458,
+        "/sounds/dice-roll-test/dice_roll4.mp3": 498
       },
       volume: 0.32,
+      timelineLeadMs: 120,
       shuffle: true
     },
     variants: [
@@ -52,8 +51,8 @@ export const DEFAULT_THEME = {
     layers: 2,
     volume: 0.32,
     startDelayPortion: 0,
-    impactLeadPortion: 0.5,
-    layerDelayMs: [0, 30],
+    impactLeadPortion: 0,
+    layerDelayMs: [0, 20],
     allowWhenHidden: true,
     shuffle: true,
     randomize: { volume: [0.9, 1.0], rate: [0.95, 1.05] }

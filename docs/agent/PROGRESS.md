@@ -1,5 +1,64 @@
 # PROGRESS
 
+## Status (2026-04-29, dev-card magic dock prototype)
+- Replaced the local player's dev-card placeholder tray with a MagicDock-inspired grouped card dock.
+- Current behavior:
+- `app/catana/components/DevCardDisplay.js` groups the hand by development-card type, keeps playable cards clickable by type, keeps victory points passive, renders every duplicate copy as a compressed horizontal mini-stack inside one continuous dock target, adds hover-driven fan/lean during dock magnification, damps neighboring card-type magnification, and adds compact centered tooltips with card name, description, and count.
+- `app/catana/components/DevCardDisplay.css` now gives the tray a light glass dock shell plus cursor-proximity card magnification/lift, per-card disabled dimming, thresholded count badges for duplicate card types, and reduced-motion fallback.
+- `app/catana/components/PlayerActionContainer.js` keeps the dev-card dock aligned with the player action dock in the original right-side slot, preserving the hand-tray baseline while the prototype interaction is evaluated on desktop.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/DevCardDisplay.js app/catana/components/PlayerActionContainer.js`
+- Browser sandbox checks at `/catana/dev/sandbox`, including a two-copy Year of Plenty mini-stack, hover tooltip, and whole-stack magnification/lift.
+- No automated tests were added for this prototype pass.
+
+## Status (2026-04-28, desktop separate feed frames)
+- Reworked the low-chrome desktop feed from one tabbed `Log` / `Chat` panel into two independent HUD frames.
+- Current behavior:
+- `app/catana/components/LeftMetaRail.js` renders desktop `Game Log` and `Chat` as equal-size translucent frames in the same bottom-left feed lane,
+- both desktop frames are visible by default and can be minimized/restored independently,
+- desktop feed frames now use a taller clamped height and a stable full-width minimized row state so closing both panels keeps the stack vertical instead of producing loose side-by-side pills,
+- open/restore uses a restrained CSS height/opacity/transform transition; Playwright sampling confirmed restore height animates from `44px` toward the `256px` desktop panel height at `1440x900`,
+- `app/catana/components/ChatPanel.js` now accepts `rootClassName` so the desktop chat feed can fill the HUD frame and keep the composer pinned to the bottom,
+- mobile keeps the existing compact rail/drawer behavior.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/components/ChatPanel.js app/catana/GameScreen.js`
+- `pnpm exec vitest run --dir app/catana/__tests__ LeftMetaRail.test.js ChatPanel.test.js`
+- `git diff --check`
+- Playwright sandbox checks at `/catana/dev/sandbox` on `1440x900` for both frames open, log minimized with chat still open, both frames minimized as stacked full-width rows, and restore animation sampling.
+
+## Status (2026-04-27, desktop low-chrome feed HUD experiment)
+- Replaced the desktop vertical meta/utility rail experiment with a lower-chrome, WoW-inspired feed treatment.
+- Current behavior:
+- `app/catana/components/LeftMetaRail.js` now renders desktop `Log` / `Chat` as a compact bottom-left translucent feed dock with tabs and a minimize state,
+- `app/catana/GameScreen.js` no longer reserves desktop playfield width for the old left shelf, so the board and bottom action dock center against the actual viewport again,
+- desktop mute, game settings, and game rules are back in the top-left utility cluster,
+- mobile keeps the existing compact rail/drawer behavior for now.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/GameScreen.js`
+- Playwright sandbox checks at `/catana/dev/sandbox` on `1440x900` for the Log view, Chat tab, minimized feed state, and top-left settings/rules actions.
+
+## Status (2026-04-27, desktop meta rail utility consolidation)
+- Reworked the desktop left meta rail from a Log/Chat-only toggle strip into the desktop utility rail.
+- Current behavior:
+- `app/catana/components/LeftMetaRail.js` now renders chunkier Catana-style desktop rail buttons, groups information panels separately from utility actions, and uses full selected-button treatment instead of the previous thin active stripe,
+- `app/catana/GameScreen.js` passes desktop rail actions for audio mute, game rules, and game settings, while the old top-left utility cluster is hidden on desktop and retained for smaller viewports,
+- `Log` and `Chat` still toggle independently and can remain open together,
+- the left playfield inset now accounts for the wider rail plus panel shelf.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/GameScreen.js`
+- Playwright sandbox check at `/catana/dev/sandbox` on `1440x900` desktop for both panels open, settings/rules rail actions, and `390x844` mobile to confirm the compact mobile HUD path remains intact.
+
+## Status (2026-04-26, desktop vertical left meta rail)
+- Replaced the experimental desktop bottom-left `Log` / `Chat` chips with a compact vertical icon rail next to the left meta panel stack.
+- Current behavior:
+- `app/catana/components/LeftMetaRail.js` now treats the desktop left meta area as a persistent icon spine plus independently toggleable `Game Log` and `Chat` panels,
+- both desktop panels can still be open at the same time, while either rail icon or the panel minimize button can close its own panel without affecting the other,
+- the desktop left playfield inset now accounts for the rail plus panel shelf, so the board/action dock alignment remains centered in the remaining free playfield,
+- mobile keeps the existing one-panel-at-a-time rail/drawer behavior.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/GameScreen.js app/catana/Board.js app/catana/components/PlayerActionContainer.js app/catana/utils/boardLayout.js`
+- Playwright sandbox check at `/catana/dev/sandbox` with both desktop panels open, independent Log/Chat toggles, both panels closed, and a 390px mobile viewport screenshot.
+
 ## Status (2026-04-22, agent fast-iteration carveout)
 - Added an explicit fast-iteration rule to the repo-root `AGENTS.md` so small UI/audio/animation tuning passes can use direct edits and manual sandbox verification without defaulting to new tests or broad suites.
 - Current direction:
@@ -4331,3 +4390,200 @@
   - opponent/spectator played Knight now parks at 2x scale.
   - parked cards use a stronger drop-shadow and larger source offset so they read as floating above the board.
   - opponent/spectator reveal now pops the dev-card back out first, then flips to the Knight face once parked.
+- Polished the friend-invite modal so the share-link area reads as a lighter grouped section instead of a full card nested inside the dialog.
+- Friend-invite modal polish note:
+  - `app/catana/lobby/FriendChallengeModal.js` no longer uses a nested `Panel` for the share row.
+  - the share area is now a lighter inset section with an eyebrow label, which reduces the “card within a card” effect inside the dialog.
+  - the copy button now reserves a fixed width and resets after a short timeout, so `Copy` -> `Copied` no longer causes the input width to jump.
+- Verification for the friend-invite modal polish:
+  - `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+  - `pnpm exec eslint app/catana/lobby/FriendChallengeModal.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+- Fixed the reconnect banner so a freshly-created private friend invite no longer reads as an active game after a homepage refresh.
+- Pending friend-challenge reconnect note:
+  - `app/catana/utils/reconnectBanner.js` now suppresses the global reconnect banner when the saved match is a private friend challenge with an open seat.
+  - this keeps the saved seat record around, so if the friend joins later the browser can still offer a rejoin path once the live match is actually full.
+  - the banner only treats the invite as an active match after both seats are occupied.
+- Verification for the pending friend-challenge reconnect fix:
+  - `pnpm exec vitest run app/catana/__tests__/reconnectBanner.test.js`
+- Added first-pass friend-challenge rehydration so a pending `Play a Friend` invite survives lobby refresh instead of silently disappearing from local UI state.
+- Friend-challenge rehydration note:
+  - `app/catana/utils/pendingFriendChallenge.js` now stores a minimal local pointer for the inviter’s pending challenge and restores it against `/api/challenges/:matchID` on lobby load.
+  - `app/catana/lobby/LobbyPageClient.js` writes that pointer when challenge creation succeeds, reopens the waiting modal after refresh when the invite is still pending, routes into `/g/:matchID` if the friend joined while the page was away, and clears the pointer on accept/cancel/expiry.
+  - explicit close still means cancel; refresh now means resume if the server still considers the invite pending.
+- Verification for the friend-challenge rehydration pass:
+  - `pnpm exec vitest run app/catana/__tests__/pendingFriendChallenge.test.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+- Tightened the shared-primitive workflow so future agents must do reference-first design work for new standard UI components.
+- Shared-primitive workflow polish note:
+  - `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` now requires agents to:
+    - check `app/ui/*` first
+    - review two or three targeted external references for new shared interaction patterns
+    - prefer copying/adapting open-code interaction recipes over inventing from scratch
+    - record which references informed the work when relevant
+  - `docs/agent/skills/catana-brand/SKILL.md` and `AGENTS.md` now both point future UI work toward that reference-first process instead of leaving external references as purely optional.
+- Verification for the shared-primitive workflow polish:
+  - `rg -n "reference-first|two or three|targeted external references|inventing a new shared interaction pattern" docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md docs/agent/skills/catana-brand/SKILL.md AGENTS.md`
+  - `git diff --check`
+- Polished the friend-invite share row into a more intentional invite-link control.
+- Share-row polish note:
+  - `app/catana/lobby/FriendChallengeModal.js` now treats the invite link as a unified input-group style control instead of a generic field plus trailing button.
+  - the row now has:
+    - a lighter grouped surface
+    - an inline expiry pill
+    - icon-backed `Copy link` action with stable sizing
+    - a success-tint path for copied state
+    - click-to-select behavior without auto-selecting the URL on modal open
+  - external references used for the interaction pattern:
+    - Animate UI copy button
+    - Shadcn Space promo-code copy
+    - Shadcnblocks input-group patterns
+  - updated source assertion in `app/catana/__tests__/LobbyPageClient.playWithFriend.test.js` to match the new invite-link control.
+- Verification for the share-row polish:
+  - `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playWithFriend.test.js --exclude='.worktrees/**'`
+  - `pnpm exec eslint app/catana/lobby/FriendChallengeModal.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+  - browser-check at `http://localhost:3000/` with the real waiting-for-friend modal on desktop and mobile
+  - screenshots:
+    - `output/playwright/friend-challenge-share-row-resting.png`
+    - `output/playwright/friend-challenge-share-row-mobile.png`
+- Follow-up polish pass:
+  - `app/catana/lobby/FriendChallengeModal.js`
+    - widened the invite modal from `max-w-md` to `max-w-lg`
+    - tightened the share row so the input and copy action read more like a single desktop bar
+    - shortened the copy CTA label from `Copy link` to `Copy`
+  - `app/ui/Banner.js`
+    - refactored the shared banner shell to stack content and actions on mobile and restore a row layout on larger screens
+    - added an internal actions wrapper so banner consumers no longer have to solve the mobile action layout themselves
+  - `app/catana/components/GlobalReconnectBanner.js`
+    - widened the reconnect banner to `max-w-2xl`
+    - made `Rejoin match` and `Dismiss` explicitly responsive so they center and stack cleanly on small screens
+  - `app/ui/Button.js`
+    - fixed disabled shared buttons so gradient backgrounds do not survive disabled state
+    - disabled buttons now drop their background image, use a muted solid fill, and keep a lighter border
+- Verification for the follow-up polish pass:
+  - `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playWithFriend.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js --exclude='.worktrees/**'`
+  - `pnpm exec eslint app/ui/Button.js app/ui/Banner.js app/catana/components/GlobalReconnectBanner.js app/catana/lobby/FriendChallengeModal.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js`
+  - `http://localhost:3000/` browser sanity check via live Playwright DOM snapshots for:
+    - reconnect banner present with responsive action structure
+    - waiting-for-friend modal showing the revised `Invite Link` row
+- Invite-row micro polish:
+  - `app/catana/lobby/FriendChallengeModal.js`
+    - removed the copy label from the docked invite-row action so the control is icon-only
+    - removed the hover lift from that local copy action so it stays visually fused to the input
+    - tightened the row further so the input and copy affordance read as one bar on all viewports
+    - kept accessibility via `aria-label`, and still switch the icon for copied-state feedback
+  - updated the source assertion in `app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+- Verification for the invite-row micro polish:
+  - `pnpm exec vitest run app/catana/__tests__/LobbyPageClient.playWithFriend.test.js --exclude='.worktrees/**'`
+  - `pnpm exec eslint app/catana/lobby/FriendChallengeModal.js app/catana/__tests__/LobbyPageClient.playWithFriend.test.js`
+  - Playwright element screenshot:
+    - `output/playwright/share-copy-icon-button.png`
+
+## Status (2026-04-25, split meta HUD redesign)
+- Superseded the utility-dock direction with a conventional split HUD:
+  - `Game Log` renders as a fixed desktop panel on the left,
+  - `Chat` renders as a fixed desktop panel on the right,
+  - both desktop panels default open,
+  - each bottom edge toggle independently opens/closes its own panel,
+  - closed desktop panels leave only the compact Log/Chat toggles,
+  - mobile keeps the existing one-active-panel rail.
+- Added a top-left game utility cluster:
+  - persistent mute/unmute control,
+  - game settings dialog for local audio/theme state,
+  - game rules dialog for the current match ruleset,
+  - settings/rules buttons are hidden on the narrow mobile HUD so they do not crowd the top player row.
+- Kept the shared Settlex `Tooltip` primitive for the desktop icon utility controls.
+- Focused verification:
+  - `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameScreen.audioMute.test.js app/catana/__tests__/leftMetaRailPreferences.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/GameLogPanel.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/renderPerfGuards.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/SettlexUiRecipes.source.test.js`
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/GameScreen.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameScreen.audioMute.test.js app/ui/Tooltip.js`
+  - `pnpm exec eslint app/catana/dev/ui/UiShowcaseClient.js app/catana/__tests__/SettlexUiRecipes.source.test.js`
+  - `git diff --check -- app/catana/components/LeftMetaRail.js app/catana/GameScreen.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameScreen.audioMute.test.js app/ui/Tooltip.js`
+  - browser check at `/catana/dev/sandbox` for both-open desktop layout, independent Log/Chat toggle states, settings/rules dialogs, right toggle clearance from the turn button, and mobile HUD regression.
+
+## Status (2026-04-26, left meta rail layout experiment)
+- Follow-up experiment to compare against the split left/right HUD:
+  - desktop `Game Log` and `Chat` now stack together on the left again,
+  - board layout centers inside the remaining playfield after subtracting the left meta rail width,
+  - the bottom hand/action dock is nudged toward that playfield center but clamped so it does not collide with the turn controls,
+  - opponent/status row gets the same clamped nudge,
+  - mobile remains on the compact one-active-panel rail.
+- Verification for this exploratory pass:
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/GameScreen.js app/catana/Board.js app/catana/components/PlayerActionContainer.js app/catana/utils/boardLayout.js`
+  - browser screenshots at `/catana/dev/sandbox`:
+    - `output/playwright/left-meta-experiment-4.png`
+    - `output/playwright/left-meta-experiment-collapsed.png`
+    - `output/playwright/left-meta-experiment-mobile.png`
+
+## Status (2026-04-26, Catana synth audio canvas design)
+- Added the approved design for a dev-only Catana sound-design workbench:
+  - source recipes under `sounds/catana-synth/`,
+  - rendered audition outputs kept separate from `public/sounds/`,
+  - a future `/catana/dev/sounds` lab for comparing generated variants against the existing resource and placement anchor sounds.
+- Committed the design doc as `docs: add catana synth audio canvas design`.
+- Added and committed the implementation plan for the audio canvas:
+  - incorporates Strudel/Dittytoy research as local recipe/scheduler inspiration,
+  - avoids importing Strudel in v1 because the local one-shot SFX renderer does not need a full live-coding engine,
+  - includes MIDI/note-name helpers and event sequencing for short melodic cues such as game start.
+
+## Status (2026-04-28, VP badge animated count)
+- Added a reusable Catana `AnimatedCount` component for compact whole-value changes:
+  - short slide/fade animation on increases and decreases,
+  - tabular numeric layout to avoid badge jitter,
+  - `prefers-reduced-motion` fallback,
+  - optional `motionValue` for display strings that are not plain numbers.
+- Wired the component only into the `PlayerAvatarStats` victory-point badge.
+  - Resource, development-card, and other HUD numbers remain unchanged for now so routine numeric churn does not compete with board/effects motion.
+  - Local hidden-VP strings such as `2 (+1)` animate based on total points while preserving the existing public/hidden display rules.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/AnimatedCount.test.js app/catana/__tests__/playerAvatarStats.test.js app/catana/__tests__/PlayerAvatarStatsCounts.test.js app/catana/__tests__/PlayerActionContainer.devCardReveal.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js --exclude '**/.worktrees/**'`
+  - `pnpm exec eslint app/catana/components/AnimatedCount.js app/catana/components/PlayerAvatarStats.js app/catana/__tests__/AnimatedCount.test.js app/catana/__tests__/playerAvatarStats.test.js`
+  - `git diff --check -- app/catana/components/AnimatedCount.js app/catana/components/AnimatedCount.css app/catana/components/PlayerAvatarStats.js app/catana/__tests__/AnimatedCount.test.js app/catana/__tests__/playerAvatarStats.test.js`
+  - Browser check at `/catana/dev/sandbox` using the Quick Dev Cards VP control, with DOM animation-state inspection plus desktop and mobile screenshots:
+    - `tmp/vp-animated-count-sandbox-final.png`
+    - `tmp/vp-animated-count-mobile.png`
+
+## Status (2026-04-28, action dock press prototype)
+- Added a small reversible action-dock motion prototype inspired by the glass-sidebar reference:
+  - enabled dock cards now scale up on hover,
+  - whole-button press is back to the former subtle 4% compression so it does not compete with the existing icon squash,
+  - selected cards get a subtle resting scale,
+  - the existing build-piece prelaunch squash/pop-out behavior is unchanged.
+- Verification:
+  - browser check at `/catana/dev/sandbox` on `http://localhost:3010`,
+  - DOM inspection confirmed hover reaches `scale(1.1)` with a 5px lift and hovered press settles around `scale(1.05)`,
+  - screenshot captured at `/tmp/settlex-action-dock-press-prototype.png`.
+- Known local dev noise during verification:
+  - Next emitted repeated `EMFILE: too many open files, watch` warnings,
+  - the browser console still shows the existing `fetchpriority` React warning from `BoardUnderlay`.
+
+## Status (2026-04-28, top-left utility tooltip timing)
+- Matched the top-left utility button tooltip delay to the quicker log/chat restore-button hover labels.
+- Current behavior:
+  - the top-left `TooltipProvider` in `GameScreen` uses `delay={0}`,
+  - the shared tooltip visual fade remains unchanged,
+  - only the game utility cluster timing changed.
+
+## Status (2026-04-29, Road Building dev-card play animation)
+- Extended the existing GSAP dev-card play runner to support Road Building:
+  - local and opponent start/reveal use the same parked-card treatment as Knight,
+  - final Road Building resolution uses a short spent-card lift, shrink, and fade instead of flying to a counter,
+  - local Road Building temporarily hides one Road Building card from the dock while the played card is parked.
+- Added Road Building play/flip/resolve cues to the current sound theme using the existing card whoosh.
+- Added Road Building start/resolve buttons to `/catana/dev/sandbox` dev-card effects.
+- Verification:
+  - `pnpm exec eslint app/catana/Moves.js app/catana/effects/devCardPlay.js app/catana/effects/soundThemes.js app/catana/GameScreen.js app/catana/dev/sandbox/SandboxPanel.js app/catana/dev/sandbox/SandboxBoardShell.js`
+
+## Status (2026-04-29, YoP and Monopoly dev-card play animation)
+- Extended the dev-card play lifecycle to Year of Plenty and Monopoly:
+  - `playDevCardStart` emits the same parked-card start effect used by Knight/Road Building,
+  - `confirmDevCardPlay` emits a resolve payload after the authoritative move applies,
+  - YoP resolve carries the selected resources,
+  - Monopoly resolve carries per-player resource transfers.
+- Added a lightweight resource-card flow before the spent-card exit:
+  - YoP resources flow from the parked dev card to the actor's resource area,
+  - Monopoly resources flow from each affected player's resource area to the actor.
+- Added YoP/Monopoly play, flip, and resolve cue mappings using the current card whoosh.
+- Added YoP/Monopoly controls to the `/catana/dev/sandbox` dev-card effects panel.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/effects/devCardPlay.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js --exclude='.worktrees/**'`
+  - `pnpm exec eslint app/catana/Moves.js app/catana/effects/devCardPlay.js app/catana/effects/soundThemes.js app/catana/GameScreen.js app/catana/dev/sandbox/SandboxPanel.js app/catana/dev/sandbox/SandboxBoardShell.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/effects/devCardPlay.test.js`

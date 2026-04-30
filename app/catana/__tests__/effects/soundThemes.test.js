@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME } from "../../effects/soundThemes";
 
 describe("soundThemes", () => {
-  it("uses heavy shake lead-ins with baseline throw clips for dice rolls", () => {
+  it("uses selected dice-roll-test lead-ins with baseline throw clips for dice rolls", () => {
     expect(DEFAULT_THEME["dice:roll"]).toMatchObject({
       leadIn: {
         variants: [
-          "/sounds/dice-heavy/dice-shake-1.mp3",
-          "/sounds/dice-heavy/dice-shake-2.mp3",
-          "/sounds/dice-heavy/dice-shake-3.mp3",
-          "/sounds/dice-heavy/dice-shake-4.mp3",
-          "/sounds/dice-heavy/dice-shake-5.mp3"
-        ]
+          "/sounds/dice-roll-test/dice_roll1.mp3",
+          "/sounds/dice-roll-test/dice_roll2.mp3",
+          "/sounds/dice-roll-test/dice_roll3.mp3",
+          "/sounds/dice-roll-test/dice_roll4.mp3"
+        ],
+        timelineLeadMs: 120
       },
       variants: [
         "/sounds/die-throw-1.mp3",

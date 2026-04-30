@@ -188,6 +188,7 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
           entry: leadInEntry
         });
         plan.leadIn.overlapMs = Math.max(0, leadInEntry.overlapMs ?? 0);
+        plan.leadIn.timelineLeadMs = Math.max(0, leadInEntry.timelineLeadMs ?? 0);
         plan.mainStartMs =
           plan.leadIn.durationMs != null
             ? Math.max(0, plan.leadIn.durationMs - plan.leadIn.overlapMs)

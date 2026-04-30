@@ -3,6 +3,45 @@
 - Agent workflow note:
 - repo-root `AGENTS.md` now has a `Fast iteration` carveout for UI/audio/animation/copy/timing tuning. For Catana sandbox/effects work, prefer direct edits plus manual verification and skip test churn unless the change affects shared logic, wiring, state flow, or a deliberate regression lock.
 
+- Dev-card dock prototype note:
+- the local player's dev-card tray is currently a grouped MagicDock-style strip, not the older stacked placeholder box.
+- group by dev-card type, not by individual copy; duplicate card types should render every owned copy as a compressed horizontal mini-stack inside one continuous hover/click/tooltip target, with fan/lean only emerging from the dock hover influence.
+- the directly hovered/focused dev-card type gets the full dock pop; neighboring card types should get a damped response so they do not visually overpower the active stack's back cards.
+- count badges still start at the configured badge threshold.
+- keep the tray aligned with the player action dock in the original right-side slot while the prototype is evaluated on desktop.
+- do not optimize this dev-card dock placement for smaller screens yet; the current direction prioritizes preserving the desktop hand-tray baseline.
+- tooltips should be compact and centered, with the card name, rules description, and duplicate count when relevant; avoid the extra ready/sleeping/passive status line in the tooltip.
+- disabled dev-card stacks should use the sleeping veil clipped to each individual card, not opacity on the image and not a veil over the whole widened stack hitbox.
+
+- Desktop low-chrome feed HUD note:
+- current desktop direction supersedes the vertical meta utility rail experiment.
+- treat `Log` and `Chat` as separate bottom-left ambient game feed frames, not as large side/admin panels and not as desktop tabs.
+- both desktop frames should be visible by default, equal in width and equal in default height, with independent minimize/restore controls.
+- default desktop frame height should stay tall enough to be useful as a feed, currently a clamped `12rem` to `16rem` height driven by viewport height.
+- minimized desktop feed entries should remain full-width rows in the same vertical lane; avoid reverting to inline pills that sit side-by-side when both panels are closed.
+- open/close motion should stay quiet and HUD-like: a short height/opacity/transform transition, not a bouncy reward animation.
+- keep the feed lane translucent but readable; it should clear the bottom player/action dock and avoid reserving board-layout width.
+- future HUD customization can allow shared width, vertical lane movement, and independent heights, but that belongs behind a deliberate edit/unlock mode.
+- desktop utility actions currently live in the top-left round button cluster: audio mute, game settings, and game rules.
+- mobile intentionally still uses the existing compact rail/drawer path until there is a dedicated mobile pass.
+
+- Desktop meta utility rail note:
+- superseded for desktop by the low-chrome feed HUD experiment above.
+- the desktop left rail should carry the whole secondary/meta utility system, not only `Log` and `Chat`.
+- current desktop rail grouping:
+- information surfaces: `Game Log`, `Chat`
+- utility actions: audio mute, game rules, game settings
+- keep primary gameplay controls outside this rail; roll/end-turn, build/trade, bank/dev-card, and hand/resource controls belong in the bottom gameplay dock.
+- avoid thin active stripes for this rail. Selected rail items should read as proper selected buttons with a disciplined amber outline/inset, not as a cheap status marker.
+- the old top-left utility cluster should stay hidden on desktop while the rail owns those actions, but remain available on smaller viewports where the desktop rail is absent.
+
+- Desktop vertical left meta rail note:
+- superseded for desktop by the low-chrome feed HUD experiment above.
+- the current desktop `LeftMetaRail` direction is a persistent vertical icon spine plus a left panel shelf, not bottom-left text chips and not one-tab-at-a-time navigation.
+- keep `Log` and `Chat` as independent toggles so multiple meta panels can remain open together; treat rail icons as disclosure buttons, not tabs.
+- the desktop board/action-dock centering still depends on `LEFT_META_RAIL_DESKTOP_WIDTH_PX`, so update that inset when changing the rail width, panel width, or rail/panel gap.
+- mobile intentionally remains a separate compact rail/drawer path with one active panel at a time.
+
 - Dice-roll timeline sync note:
 - the dice visuals now follow the same planned `dice:roll` cue that audio uses; the shared handoff lives in `app/catana/effects/GameEffects.js`, not inside `PlayerActionContainer`.
 - `app/catana/GameScreen.js` should keep owning the shared `effectsBus` for this path so roll audio and roll visuals stay on one timeline.
@@ -163,7 +202,7 @@
 - sandbox preset booting should stay in `app/catana/dev/sandbox/createSandboxGame.js` and `app/catana/dev/sandbox/presets.js` via sandbox-only `devScenarioState` wrappers. Do not push those preset shortcuts into `app/catana/Game.js` or live match route code unless product direction changes.
 - the sandbox client should keep its mount gate before rendering the local bgio client. Without it, the sandbox route can SSR a board tree that does not hydrate cleanly.
 - the sandbox route also needs a local active-player sync layer. The sandbox preset may carry `G.core.turn.phase = "postRoll"` or `robberDiscard`, but the local bgio client still starts from the phase default stage on first mount. Keep `app/catana/dev/sandbox/activePlayers.js` and the `setActivePlayers` sync in `SandboxBoardShell.js` so sandbox actions and legal moves line up with the preset state.
-- for the local hand tray, keep the non-VP dev-card buttons absolutely stacked. `app/catana/components/DevCardDisplay.css` should not override `.devcard-card` back to `position: relative`, or grouped dev cards will drop below the tray.
+- for the local hand tray, the active prototype groups dev cards by type inside a dock strip. `.devcard-card` is intentionally `position: relative` so the stacked images, disabled veil, duplicate badge, and magnification transform travel as one mini-stack.
 
 - Source-guard maintenance note:
 - Some tests in this repo intentionally assert against source text rather than runtime behavior.
@@ -1505,14 +1544,14 @@
 - Added applyEndTurn behavior coverage in `game-core/src/rules/turnFlow.test.ts` to specify end-turn resets/validation.
 - Root `vitest.config.ts` aliases `@settlex/game-core` to `game-core/src/index.ts` for app-level tests.
 - `rollDice` now routes 7s to `moveRobber` stage; `moveRobber` resets core turn phase to `postRoll`.
-- Dev-card UI sizing/animation lives in `app/catana/components/DevCardDisplay.js` + `app/catana/components/DevCardDisplay.css`; display groups duplicates by first-seen order.
+- Dev-card UI sizing/animation lives in `app/catana/components/DevCardDisplay.js` + `app/catana/components/DevCardDisplay.css`; display groups duplicates by fixed dev-card type order, shows a compact two-card mini-stack for duplicate types, and uses count badges at the configured threshold.
 - Dev-card play UI hooks live in `app/catana/components/PlayerActionContainer.js`; playable cards invoke `moves.playDevCardStart`.
 - `TradeDiscardModal` now supports dev-card modes (`dev-yop`, `dev-monopoly`) for resource selection.
 - Maritime trade quick-open uses `app/catana/utils/trade.js` to compute per-resource trade rate eligibility.
 - `TradeDiscardModal` accepts `tradePresetResource` to prefill maritime give selections on open.
 - Resource bar quick-trade now only shows pointer + click handler for tradable resources.
 - Bottom-right dice/end-turn layout is controlled in `app/catana/components/PlayerActionContainer.js`.
-- Victory point dev cards now render as a stacked pile with a count badge when there are 3+.
+- Victory point dev cards now render as a passive grouped dock item with the same duplicate mini-stack and thresholded count badge treatment as other dev-card types.
 - Dev-card UX backlog lives in `docs/future_plans/dev-card-box.md`.
 - Dev-card play UI test plan lives in `docs/future_plans/dev-card-play-tests.md`.
 - Dock button sizing/hover uses react-spring in `app/catana/components/ActionsDock/DockCard.js`.
@@ -2933,12 +2972,12 @@
       - start is emitted immediately after the Knight card is legally consumed and `applyKnight` succeeds.
       - resolve is emitted from robber resolution, including the no-valid-tile skip path, and clears `G.pendingDevCardPlayAnimation`.
     - Knight animation anchor ids:
-      - local per-card group: `p{playerId}-devcard-knight`
       - generic dev-card stack/shell: `p{playerId}-devcards`
+      - per-card group when available: `p{playerId}-devcard-knight`
       - Largest Army target: `p{playerId}-largest-army`
       - resource-distribution style DOM targeting is still the model here: authoritative payload plus local anchor lookup in `GameScreen`.
     - Knight local/opponent presentation split:
-      - local viewer uses `p{playerId}-devcard-knight` so the played card appears to come from the local playable card group.
+      - local viewer uses `p{playerId}-devcards` so the played card appears to come from the center of the local dev-card shell, even when the played card was the last Knight and the precise card group disappears.
       - opponent and spectator viewers use `p{playerId}-devcards` so the public card appears to come from the opponent dev-card stack.
       - `GameScreen` freezes the actor's Knight count/Largest Army owner at previous values on start, then removes the override when the resolve animation completes.
       - reduced motion uses the same payload path but avoids long movement and must still clear parked actors and display overrides.
@@ -2954,3 +2993,131 @@
         - `Resolve Opponent Knight`
         - `Reset Knight Visual`
       - these synthetic controls route through the same local `EffectBus` event names as authoritative effects, so tuning stays close to real board behavior.
+    - friend invite modal note:
+      - a dialog does not always need a full `Panel` nested inside it just because content is grouped.
+      - for the invite link flow, the nested panel header/shell made the modal feel like “card inside card” and added more chrome than the interaction needed.
+      - the better pattern here is:
+        - dialog shell as the main container
+        - lighter inset grouping for the share-link section
+        - fixed-width copy action so `Copy` -> `Copied` does not cause row reflow
+      - this is a good example of borrowing a common “copy to clipboard” interaction recipe from library ecosystems without importing their styling system directly.
+    - reconnect banner / friend challenge note:
+      - a pending private friend invite is not the same product state as “you are already in a game,” even though the backing live match record already exists.
+      - for reconnect purposes, private friend challenges should stay hidden from the global banner while the invitee seat is still open.
+      - keep the saved seat record anyway:
+        - it avoids losing recovery once the friend actually joins later
+        - the banner can become eligible naturally after both seats are occupied
+      - this is a useful rule whenever product state and backend record existence diverge:
+        - prefer UI gating on the user-meaningful state
+        - do not throw away recovery data just to hide an early or misleading affordance
+    - pending lobby activity note:
+      - for first-pass lobby flows, do not try to infer “user intent to cancel” from refresh/navigation/unload.
+      - explicit user cancel actions should cancel server-backed activity.
+      - refresh should instead rehydrate from a tiny saved pointer and ask the server for truth.
+      - this is the right level of generalization for now:
+        - not a full app-wide state-sync framework
+        - not a brittle unload-cancel hack
+        - just a resumable pattern for server-owned pending lobby flows
+      - current application:
+        - private friend challenges persist a minimal local pointer and restore the waiting modal after refresh when the challenge is still pending
+        - accepted challenges route directly into the live match on restore
+        - expired/canceled challenges clear local resume state
+    - shared-primitive workflow note:
+      - future agents should not treat external component-library references as optional flavor when adding a new shared product-surface primitive.
+      - the intended order is now:
+        - inspect the existing `app/ui/*` kit first
+        - if the pattern does not already exist locally, review two or three targeted external references
+        - borrow the interaction recipe or open-code behavior
+        - restyle it into Settlex
+        - then migrate the product surface onto the shared primitive
+      - this is especially relevant for common patterns like:
+        - copy buttons
+        - tooltips
+        - toasts
+        - input groups
+        - invite/share flows
+      - the point is not to import outside visual systems wholesale.
+      - the point is to stop reinventing common product interactions while still keeping the final result recognizably Settlex.
+    - friend invite share-row note:
+      - the share-link section works better when it is treated as a single invite control, not as “an input and then a separate button next to it.”
+      - the useful reference family here was:
+        - Animate UI copy button
+        - Shadcn Space promo-code copy
+        - Shadcnblocks input groups
+      - the right takeaway was not their styling.
+      - the right takeaway was:
+        - stable copied-state sizing
+        - input-group composition
+        - lightweight affirmative feedback
+      - one subtle visual trap:
+        - click-to-select is helpful for a share URL
+        - auto-selecting on focus made the field open in a blue highlighted state inside the modal
+        - keep click-to-select, but do not auto-select on modal open
+    - reconnect banner layout note:
+      - the original shared `Banner` primitive was too naive for action-bearing top-of-page status banners.
+      - letting `actions` render as an unstructured tail slot worked on desktop, but collapsed the title/body column badly on mobile.
+      - the better primitive shape is:
+        - text block in one internal row
+        - action wrapper owned by `Banner`
+        - stacked layout on mobile
+        - row layout on larger screens
+      - if a banner has buttons, do not make every caller reinvent that responsive arrangement.
+    - disabled button note:
+      - a disabled variant override must neutralize both `background-color` and `background-image`.
+      - otherwise gradient-based CTAs can still read as active even if text and cursor look disabled.
+      - for shared buttons, prefer:
+        - no gradient
+        - muted solid fill
+        - lighter border
+        - no lift/shadow emphasis
+    - invite copy-control note:
+    - when a copy action is visually docked to an input and meant to read as part of one control, it should not inherit the normal button hover lift.
+    - treat it more like a trailing affordance inside an input group:
+        - no hover rise
+        - compact width
+        - icon-only is fine if the affordance is obvious and the accessible label remains explicit
+    - left/right split meta HUD note:
+      - the utility-dock direction was superseded by a simpler, more standard desktop HUD.
+      - production desktop `LeftMetaRail` should keep `Game Log` as a left support panel and `Chat` as a right support panel.
+      - desktop should default `log` and `chat` open but persist later user open/closed choices.
+      - bottom edge toggles should independently open/close their matching panels; do not reintroduce the prior rail-plus-stacked-card interaction.
+      - keep `GameLogPanel` and `ChatPanel` as content payloads; do not duplicate feed formatting or chat submission logic in the rail.
+      - future support panels can still be added, but they should not compete with primary gameplay controls or create custom menu chrome around the board.
+      - game utility actions such as mute/settings/rules belong in the top-left utility cluster, with narrower mobile treatment if the top player row gets crowded.
+    - left meta rail centering experiment note:
+      - the follow-up experiment stacks `Game Log` and `Chat` together on the left again.
+      - when the left meta rail is treated as persistent occupied space, the board should center in the remaining playfield rather than the full browser window.
+      - full mathematical centering works for the board, but the lower hand/action dock needs a clamped nudge to avoid colliding with the turn controls on 1440px desktop.
+      - if this direction is kept, make the inset/offset policy explicit rather than letting each HUD layer choose its own center.
+    - Catana synth audio canvas note:
+      - keep the existing resource pop, card travel, road placement, and settlement placement sounds as the initial style anchors.
+      - first implementation pass should create an audition workbench and generated recipe outputs only; do not wire missing gameplay cues into production yet.
+      - generated audition files should stay outside `public/sounds/` until a cue is explicitly accepted.
+      - prefer editable deterministic recipes as the source of truth, with audio files treated as rendered exports.
+    - VP badge animated count note:
+      - `app/catana/components/AnimatedCount.js` is the local reusable whole-count animation primitive for compact numeric badges.
+      - use CSS/React for simple isolated count feedback; keep GSAP for coordinated board and gameplay timelines.
+      - first production use is the `PlayerAvatarStats` victory-point badge only.
+      - do not apply this to resource and development-card stack counts by default; those values change more often and already sit near card movement effects.
+      - pass an explicit `motionValue` when the rendered display is not the value to compare, such as local hidden-VP text like `2 (+1)`.
+    - action dock press prototype note:
+      - `app/catana/components/ActionsDock/DockCard.js` already owns the dock button spring state through `@react-spring/web`.
+      - the glass-sidebar-style feel can stay as local spring tuning: hover scale/lift and selected resting scale.
+      - keep whole-button press subtle; use the former 4% compression relative to the current card state rather than a deep outer squash.
+      - keep the build-piece prelaunch icon squash separate from the whole-button hover/press spring so card pickup still reads cleanly.
+      - if the effect feels too loud in play, revert the whole-button constants first before changing the prelaunch animation.
+    - top-left utility tooltip timing note:
+      - the top-left utility cluster should feel as immediate as the log/chat restore hover labels.
+      - keep the shared tooltip primitive's default delay conservative for general product UI, but pass `delay={0}` for the in-game utility cluster.
+      - this changes the wait before showing, not the tooltip's visual fade.
+    - Road Building dev-card animation note:
+      - Road Building now uses the same `devcard:play:start` effect path as Knight, keyed by `cardType: "roadBuilding"` and a stable `effectId`.
+      - its resolve phase should read as a spent-card exit, not a flight to another UI counter.
+      - the local dock hides one Road Building card while the played card is parked because the engine only consumes the card after the free roads are placed.
+      - `/catana/dev/sandbox` can trigger opponent start/resolve for both Knight and Road Building through the dev-card effects panel.
+    - YoP and Monopoly dev-card animation note:
+      - Year of Plenty and Monopoly now use the same start/park/resolve lifecycle as the other played dev cards.
+      - start happens from `playDevCardStart`; resolve happens from `confirmDevCardPlay` only after the server-authoritative move applies.
+      - YoP resolve payloads carry the selected resources and animate those cards from the parked dev card into the actor's resource area.
+      - Monopoly resolve payloads carry per-player transfer counts and animate resource cards from affected player resource areas into the actor's resource area.
+      - local YoP/Monopoly hides one matching dev card from the dock while the card is parked, matching Road Building's temporary-hide behavior.
