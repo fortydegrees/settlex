@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-04-30, prod deploy verify unblock)
+- Investigated the slow `deploy-prod` pushes on `main`.
+- Current behavior:
+- GitHub Actions runs `pnpm verify` before any server deploy work; recent long runs were stuck in the verify job and never reached the rsync/Docker deploy job.
+- `app/catana/__tests__/Game.logInit.test.js` and `app/catana/__tests__/Game.phaseLog.test.js` now use `makeDeterministicRng` instead of a constant RNG, avoiding infinite balanced-board generation during setup tests.
+- `app/catana/__tests__/Moves.gameLog.test.js` now seeds the expected dev-card choice stage for the monopoly-result log case.
+- stale source guards in `app/catana/__tests__/DevSandboxPanel.source.test.js` and `app/catana/__tests__/DevCardDisplay.disabledStyle.test.js` now match the current dev-card sandbox/display implementation.
+- `pnpm verify` now splits app Vitest files through `scripts/run-vitest-app-tests.mjs`, with a per-file timeout, so a single app test hang fails clearly instead of tying up deployment for hours.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Game.logInit.test.js app/catana/__tests__/Game.phaseLog.test.js app/catana/__tests__/Game.placementOrder.test.js --reporter=dot`
+- `pnpm run test:app`
+
 ## Status (2026-04-29, dev-card magic dock prototype)
 - Replaced the local player's dev-card placeholder tray with a MagicDock-inspired grouped card dock.
 - Current behavior:

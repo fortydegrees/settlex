@@ -1,5 +1,12 @@
 # NOTES
 
+- Prod deploy workflow note:
+- `.github/workflows/deploy-prod.yml` is intentionally a gated deployment: push to `main` runs install plus `pnpm verify` first, and only after that passes does it rsync the repo to the OCI app directory and run `infra/scripts/deploy-prod.sh`.
+- `infra/scripts/deploy-prod.sh` restarts/rebuilds the Docker Compose `postgres`, `web`, `game`, and `proxy` services, then runs `pnpm db:migrate` inside `web` if that script exists.
+- If `deploy-prod` appears to run for hours, inspect the `verify` job before the deploy job. A stuck Vitest process means production has not been updated yet.
+- App Vitest files now run one file per subprocess via `scripts/run-vitest-app-tests.mjs`; keep the per-file timeout so future hangs fail with a concrete file name instead of waiting on the GitHub job timeout.
+- Catan setup tests must use a moving deterministic RNG such as `makeDeterministicRng(...)`. A constant `random.Number` can trap balanced board generation indefinitely.
+
 - Agent workflow note:
 - repo-root `AGENTS.md` now has a `Fast iteration` carveout for UI/audio/animation/copy/timing tuning. For Catana sandbox/effects work, prefer direct edits plus manual verification and skip test churn unless the change affects shared logic, wiring, state flow, or a deliberate regression lock.
 

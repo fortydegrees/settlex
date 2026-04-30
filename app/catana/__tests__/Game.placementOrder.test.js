@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { makeDeterministicRng } from "@settlex/game-core";
 import { Catan, getPlacementOrder } from "../Game";
 
 describe("placement order", () => {
@@ -19,7 +20,7 @@ describe("placement order", () => {
   it("stores placement order in G during setup", () => {
     const ctx = { numPlayers: 3, phase: "placement" };
     const random = {
-      Number: () => 0.5,
+      Number: makeDeterministicRng(123),
       Shuffle: (arr) => arr
     };
     const G = Catan.setup({ ctx, random });

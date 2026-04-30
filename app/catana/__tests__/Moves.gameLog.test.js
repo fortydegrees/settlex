@@ -166,8 +166,20 @@ describe("game log moves", () => {
   });
 
   it("logs a monopoly result entry with the claimed total", () => {
-    const context = makeContext();
-    context.G.devCardPlay = { type: "monopoly", playerId: "0" };
+    const context = makeContext({
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "0": "devCardChoice" },
+        numPlayers: 2,
+        turn: 1
+      }
+    });
+    context.G.devCardPlay = {
+      type: "monopoly",
+      playerId: "0",
+      startedFromStage: "postRoll"
+    };
     context.G.core.playerStateById["0"].devCards = ["monopoly"];
     context.G.core.playerStateById["1"].resources = [
       ResourceType.WOOD,
