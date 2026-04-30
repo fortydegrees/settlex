@@ -19,9 +19,11 @@ describe("Dev sandbox panel source", () => {
     expect(source).toContain("Quick resources");
     expect(source).toContain("Quick dev cards");
     expect(source).toContain("Dev-card effects");
-    expect(source).toContain("Opponent Plays Knight");
-    expect(source).toContain("Resolve Opponent Knight");
-    expect(source).toContain("Reset Knight Visual");
+    expect(source).toContain('id: "knight"');
+    expect(source).toContain('label: "Knight"');
+    expect(source).toContain("Opponent Plays ${card.label}");
+    expect(source).toContain("Resolve ${card.label}");
+    expect(source).toContain("Reset Dev Visual");
     expect(source).toContain("Collapse");
   });
 

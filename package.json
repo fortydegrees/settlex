@@ -11,7 +11,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "verify": "pnpm -C game-core build && pnpm exec vitest run && pnpm lint",
+    "test:app": "node scripts/run-vitest-app-tests.mjs",
+    "test:non-app": "pnpm exec vitest run game-core/src server lib ai react-zoom-pan-pinch --reporter=dot",
+    "verify": "pnpm -C game-core build && pnpm run test:non-app && pnpm run test:app && pnpm lint",
     "serve": "node server/server.js"
   },
   "dependencies": {
