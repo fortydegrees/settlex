@@ -175,6 +175,13 @@ const buildMonopolyTransfers = (core, playerId, resource) =>
     }))
     .filter((entry) => entry.count > 0);
 
+const hasMaskedOpponentResources = (core, playerId) =>
+  Object.entries(core?.playerStateById ?? {}).some(
+    ([otherId, other]) =>
+      otherId !== playerId &&
+      (other?.resources ?? []).some((resource) => resource === "hidden")
+  );
+
 const storePendingKnightPlayAnimation = (G, payload) => {
   G.pendingDevCardPlayAnimation = {
     ...payload,
@@ -1262,19 +1269,24 @@ export const confirmDevCardPlay = {
         resources: Array.isArray(payload) ? payload : []
       });
     } else if (devPlay.type === "monopoly") {
-      const transfers = buildMonopolyTransfers(G.core, playerID, payload);
+      const transfersAreKnown = !hasMaskedOpponentResources(G.core, playerID);
+      const transfers = transfersAreKnown
+        ? buildMonopolyTransfers(G.core, playerID, payload)
+        : [];
       applied = applyMonopoly(G.core, playerID, payload);
-      resolvePayload = buildChoiceDevCardPlayPayload({
-        ctx,
-        playerId: playerID,
-        cardType: devPlay.type,
-        phase: "resolve",
-        startedFromStage: devPlay.startedFromStage,
-        effectId: devPlay.effectId,
-        resource: payload,
-        transfers,
-        totalTransferred: transfers.reduce((total, entry) => total + entry.count, 0)
-      });
+      if (transfersAreKnown) {
+        resolvePayload = buildChoiceDevCardPlayPayload({
+          ctx,
+          playerId: playerID,
+          cardType: devPlay.type,
+          phase: "resolve",
+          startedFromStage: devPlay.startedFromStage,
+          effectId: devPlay.effectId,
+          resource: payload,
+          transfers,
+          totalTransferred: transfers.reduce((total, entry) => total + entry.count, 0)
+        });
+      }
     } else {
       return;
     }
@@ -1307,7 +1319,9 @@ export const confirmDevCardPlay = {
       });
     }
 
-    effects?.devCardPlayResolved?.(resolvePayload);
+    if (resolvePayload) {
+      effects?.devCardPlayResolved?.(resolvePayload);
+    }
     G.devCardPlay = null;
   }
 };
