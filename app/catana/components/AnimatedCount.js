@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./AnimatedCount.css";
 
-const ANIMATION_CLEAR_MS = 260;
+const ANIMATION_CLEAR_MS = 520;
 
 const toDisplayText = (value) => (value == null ? "" : String(value));
 

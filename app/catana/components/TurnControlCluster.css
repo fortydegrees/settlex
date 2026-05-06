@@ -2,6 +2,26 @@
   animation: turn-control-timer-low-pulse 1s ease-in-out infinite;
 }
 
+.turn-control-cluster__dice-content {
+  transform: translateY(0.04rem) scale(0.94);
+  transform-origin: center;
+  transition: filter 160ms ease-out, opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+.turn-control-cluster__dice-content .jk-die {
+  margin-bottom: 0;
+}
+
+.turn-control-cluster__dice-content--disabled {
+  filter: grayscale(1) saturate(0.32) brightness(0.88);
+  opacity: 0.46;
+  transform: translateY(0.04rem) scale(0.92);
+}
+
+.turn-control-cluster__dice--rollable:hover .turn-control-cluster__dice-content {
+  transform: translateY(0.04rem) scale(0.97);
+}
+
 @keyframes turn-control-timer-low-pulse {
   0%, 100% {
     filter: brightness(1) saturate(1);
@@ -13,7 +33,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .turn-control-timer-low-pulse {
+  .turn-control-timer-low-pulse,
+  .turn-control-cluster__dice-content {
     animation: none;
+    transition: none;
   }
 }

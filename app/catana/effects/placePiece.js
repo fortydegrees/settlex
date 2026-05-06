@@ -214,12 +214,103 @@ function runNodePlacementAnimation({
     });
 }
 
+function runCityUpgradeAnimation({
+  settlementEl,
+  cityEl,
+  shadowEl,
+  dustEl,
+  tuning,
+  liftPx,
+  dropPx,
+  emitCue
+}) {
+  gsap.set(settlementEl, { y: 0, scale: 1, opacity: 1 });
+  gsap.set(cityEl, { y: -dropPx, scale: 1.04, opacity: 0 });
+  gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
+  gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
+
+  gsap.timeline({
+    onComplete: () => {
+      settlementEl.remove();
+      cityEl.remove();
+      dustEl.remove();
+      shadowEl.remove();
+    }
+  })
+    .to(settlementEl, {
+      y: -liftPx,
+      scale: tuning.upgradeLiftScale,
+      opacity: 0,
+      duration: tuning.upgradeLiftDuration,
+      ease: "power2.out"
+    })
+    .to(cityEl, {
+      y: 0,
+      opacity: 1,
+      duration: tuning.dropDuration,
+      ease: tuning.easeDrop
+    }, `-=${tuning.upgradeCityDropOverlap}`)
+    .to(
+      shadowEl,
+      {
+        scale: tuning.shadowScaleTo,
+        opacity: tuning.shadowOpacity,
+        duration: tuning.dropDuration,
+        ease: tuning.shadowEase
+      },
+      "<"
+    )
+    .add(() => emitCue?.("build:city"))
+    .fromTo(
+      dustEl,
+      { scale: tuning.dustScaleFrom, opacity: tuning.dustOpacity },
+      {
+        scale: tuning.dustScaleTo,
+        opacity: 0,
+        duration: tuning.dustDuration,
+        ease: tuning.easeDust
+      },
+      "<"
+    )
+    .to(
+      shadowEl,
+      {
+        opacity: 0,
+        duration: tuning.shadowFadeOutDuration,
+        ease: "power1.out"
+      },
+      "<"
+    )
+    .to(
+      cityEl,
+      {
+        scaleX: tuning.squishScaleX,
+        scaleY: tuning.squishScaleY,
+        duration: tuning.squishDuration,
+        ease: tuning.easeSquish
+      },
+      "<"
+    )
+    .to(cityEl, {
+      scaleX: 1,
+      scaleY: 1,
+      duration: tuning.settleDuration,
+      ease: tuning.easeSettle
+    })
+    .to(cityEl, {
+      opacity: 1,
+      duration: tuning.postHoldDuration,
+      ease: "none"
+    });
+}
+
 export function createPiecePlacementRunner({
   getLayerEl,
   getLayout,
   getBoardRect,
   getTiles,
   getPlayerColor,
+  getViewerPlayerId,
   emitCue,
   useBoardSpace = false,
   themeId
@@ -318,6 +409,58 @@ export function createPiecePlacementRunner({
       const pieceSize = size * PIECE_SCALE * scale;
       const x = offsetLeft + placement.x * scale;
       const y = offsetTop + placement.y * scale;
+      const viewerPlayerId = getViewerPlayerId?.();
+      const isRemoteCityUpgrade =
+        viewerPlayerId != null &&
+        String(payload.playerId) !== String(viewerPlayerId);
+
+      if (isRemoteCityUpgrade) {
+        const settlementEl = createSettlementEl({
+          size: pieceSize,
+          x,
+          y,
+          color,
+          themeId
+        });
+        const cityEl = createCityEl({
+          size: pieceSize,
+          x,
+          y,
+          color,
+          themeId
+        });
+        const shadowEl = createRing({
+          size: pieceSize * tuning.shadowSizeSettlement,
+          x,
+          y,
+          gradient: SHADOW_GRADIENT,
+          zIndex: 999
+        });
+        const dustEl = createRing({
+          size: pieceSize * tuning.dustSizeSettlement,
+          x,
+          y,
+          gradient: DUST_GRADIENT,
+          zIndex: 1000
+        });
+
+        layerEl.appendChild(shadowEl);
+        layerEl.appendChild(dustEl);
+        layerEl.appendChild(settlementEl);
+        layerEl.appendChild(cityEl);
+
+        runCityUpgradeAnimation({
+          settlementEl,
+          cityEl,
+          shadowEl,
+          dustEl,
+          tuning,
+          liftPx: size * tuning.upgradeLiftDistance * scale,
+          dropPx,
+          emitCue
+        });
+        return;
+      }
 
       const pieceEl = createCityEl({ size: pieceSize, x, y, color, themeId });
       const shadowEl = createRing({

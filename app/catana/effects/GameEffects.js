@@ -100,6 +100,71 @@ export function GameEffects({
   );
 
   useEffectListener(
+    "robberSteal",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "resource:robber-steal",
+        payload,
+        effectId: payload.effectId
+      });
+    },
+    [bus]
+  );
+
+  useEffectListener(
+    "robberMove",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "robber:move",
+        payload,
+        effectId: payload.effectId
+      });
+    },
+    [bus]
+  );
+
+  useEffectListener(
+    "awardClaimed",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "award:claim",
+        payload,
+        effectId: payload.effectId
+      });
+    },
+    [bus]
+  );
+
+  useEffectListener(
+    "maritimeTrade",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "resource:maritime-trade",
+        payload,
+        effectId: payload.effectId
+      });
+    },
+    [bus]
+  );
+
+  useEffectListener(
+    "discardResources",
+    (payload) => {
+      if (!payload) return;
+      bus.emit({
+        type: "resource:discard",
+        payload,
+        effectId: payload.effectId
+      });
+    },
+    [bus]
+  );
+
+  useEffectListener(
     "devCardPlayStarted",
     (payload) => {
       if (!payload) return;

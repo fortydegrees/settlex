@@ -39,32 +39,30 @@ export const OpponentPlayerBox = ({
         isActive={isActive}
         statusType={statusType}
         knightDisplayOverride={knightDisplayOverride}
+        statsPanelClassName={isSeatWarning ? "seat-disconnected-pulse" : ""}
+        statsPanelChildren={
+          <>
+            <div id={`p${player.id}-resources`}>
+              <CardStack
+                count={resourceCount}
+                src={resCardBackIcon}
+                alt="Resource cards"
+                badgeTone={resourceBadgeTone}
+                imageClassName="object-contain"
+                className={stackMotionClass}
+              />
+            </div>
+            <div id={`p${player.id}-devcards`}>
+              <CardStack
+                count={devCount}
+                src={devCardBackIcon}
+                alt="Dev cards"
+                className={stackMotionClass}
+              />
+            </div>
+          </>
+        }
       />
-      <div
-        className={`ml-2 rounded-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
-          isSeatWarning
-            ? "bg-rose-100/80 ring-white/60 seat-disconnected-panel seat-disconnected-pulse"
-            : "bg-blue-200 bg-opacity-50 ring-white/60"
-        }`}
-      >
-        <div id={`p${player.id}-resources`}>
-          <CardStack
-            count={resourceCount}
-            src={resCardBackIcon}
-            alt="Resource cards"
-            badgeTone={resourceBadgeTone}
-            className={stackMotionClass}
-          />
-        </div>
-        <div id={`p${player.id}-devcards`}>
-          <CardStack
-            count={devCount}
-            src={devCardBackIcon}
-            alt="Dev cards"
-            className={stackMotionClass}
-          />
-        </div>
-      </div>
     </div>
   );
 };

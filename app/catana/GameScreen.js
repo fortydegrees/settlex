@@ -62,6 +62,12 @@ import { createResourceDistributionRunner } from "./effects/resourceDistribution
 import { createPiecePlacementRunner } from "./effects/placePiece";
 import { createDevCardPlayRunner } from "./effects/devCardPlay";
 import {
+  createCardTransferRunner,
+  getRobberStealVisibleResource
+} from "./effects/cardTransfer";
+import { createRobberMoveRunner } from "./effects/robberMove";
+import { createAwardClaimRunner } from "./effects/awardClaim";
+import {
   getDevCardPlayMotionPolicy,
   getDevCardPlayPerspective
 } from "./effects/devCardPlayPerspective";
@@ -98,6 +104,8 @@ import {
 import { shouldAutoReady } from "./utils/preGameReady";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
+const topUtilityButtonClassName =
+  "h-10 w-10 border-white/[0.32] bg-white/[0.24] text-slate-700/90 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.38)] backdrop-blur-md hover:border-white/[0.42] hover:bg-white/[0.34] hover:text-slate-800 sm:h-12 sm:w-12 [&_svg]:opacity-[0.85] hover:[&_svg]:opacity-100";
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
@@ -129,6 +137,73 @@ const copyRect = (rect) => {
     right: rect.right,
     bottom: rect.bottom,
   };
+};
+
+const buildDevCardBuyTransfer = (payload) => [
+  {
+    kind: "dev",
+    fromKind: "bank",
+    toKind: "player",
+    toPlayerId: payload.playerId,
+    cueName: "devcard:buy:public",
+    startScale: 0.72,
+    endScale: 0.86
+  }
+];
+
+const buildMaritimeTradeTransfers = (payload) => [
+  ...(payload.give ?? []).map((resource) => ({
+    kind: "resource",
+    resource,
+    fromKind: "player",
+    toKind: "bank",
+    fromPlayerId: payload.playerId,
+    hidden: false
+  })),
+  ...(payload.receive ?? []).map((resource) => ({
+    kind: "resource",
+    resource,
+    fromKind: "bank",
+    toKind: "player",
+    toPlayerId: payload.playerId,
+    hidden: false
+  }))
+];
+
+const buildDiscardTransfers = (payload) =>
+  (payload.resources ?? []).map((resource) => ({
+    kind: "resource",
+    resource,
+    fromKind: "player",
+    toKind: "discard",
+    fromPlayerId: payload.playerId,
+    hidden: false,
+    endScale: 0.72
+  }));
+
+const buildRobberStealTransfers = ({ payload, visibleResource }) => [
+  {
+    kind: "resource",
+    resource: visibleResource ?? "hidden",
+    fromKind: "player",
+    toKind: "player",
+    fromPlayerId: payload.victimId,
+    toPlayerId: payload.thiefId,
+    hidden: !visibleResource,
+    cueName: "resource:travel:start"
+  }
+];
+
+const runAfterNextPaint = (callback) => {
+  if (typeof window === "undefined") {
+    callback();
+    return;
+  }
+  if (typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(callback);
+    return;
+  }
+  window.setTimeout(callback, 0);
 };
 
 const getGameOverReasonCopy = (reason) => {
@@ -185,6 +260,8 @@ export function GameScreen(bgioProps) {
   const devCardDisplayRectRef = useRef(null);
   const devCardPlayActorStoreRef = useRef(new Map());
   const pendingDevCardRevealRef = useRef(null);
+  const latestPlayerViewMapRef = useRef({});
+  const previousResourcesByPlayerIdRef = useRef(new Map());
   const deferredLogEntriesRef = useRef([]);
   const effectsBus = useMemo(() => createEffectBus(), []);
   const { width, height } = useWindowSize();
@@ -276,6 +353,7 @@ export function GameScreen(bgioProps) {
     () => buildPlayerViewMap(core, effectiveColorByPlayerId),
     [core, effectiveColorByPlayerId]
   );
+  latestPlayerViewMapRef.current = playerViewMap;
   const rawPlayer = playerViewMap[playerID];
   const player = rawPlayer
     ? { ...rawPlayer, name: nameMap[rawPlayer.id], emoji: emojiMap[rawPlayer.id] }
@@ -302,6 +380,15 @@ export function GameScreen(bgioProps) {
       }))
       .sort((a, b) => b.vp - a.vp);
   }, [core, playerViewMap, nameMap, winnerId]);
+
+  useEffect(() => {
+    const next = new Map();
+    Object.values(playerViewMap).forEach((view) => {
+      if (view?.id == null) return;
+      next.set(String(view.id), [...(view.resources ?? [])]);
+    });
+    previousResourcesByPlayerIdRef.current = next;
+  }, [playerViewMap]);
 
   const logPlayerMap = useMemo(() => {
     const ids = new Set([
@@ -431,6 +518,30 @@ export function GameScreen(bgioProps) {
       removeKnightDisplayOverride(current, String(payload.playerId))
     );
   }, []);
+  const emitLargestArmyAwardFromPayload = useCallback((payload) => {
+    if (payload?.cardType !== "knight") return;
+    const nextOwnerId = payload.nextLargestArmyOwnerId;
+    if (!nextOwnerId) return;
+    if (String(nextOwnerId) !== String(payload.playerId)) return;
+    if (String(nextOwnerId) === String(payload.previousLargestArmyOwnerId)) return;
+
+    const baseEffectId = payload.effectId ?? `award:largest-army:${nextOwnerId}`;
+    effectsBus.emit({
+      type: "award:claim",
+      payload: {
+        effectId: `${baseEffectId}:largest-army`,
+        awardType: "largestArmy",
+        playerId: nextOwnerId,
+        previousOwnerId: payload.previousLargestArmyOwnerId ?? null,
+        playerColorId: effectiveColorByPlayerId[nextOwnerId],
+        debugReplay: Boolean(payload.debugReplay)
+      }
+    });
+  }, [effectsBus, effectiveColorByPlayerId]);
+  const handleDevCardPlayResolveComplete = useCallback((payload) => {
+    releaseKnightDisplayFromPayload(payload);
+    emitLargestArmyAwardFromPayload(payload);
+  }, [emitLargestArmyAwardFromPayload, releaseKnightDisplayFromPayload]);
 
   useEffect(() => {
     if (!isGameOver) {
@@ -1131,6 +1242,7 @@ export function GameScreen(bgioProps) {
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
           getTiles: () => bgioProps.G?.tiles ?? [],
           getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId] ?? "red",
+          getViewerPlayerId: () => playerID,
           emitCue,
           useBoardSpace: true,
           themeId
@@ -1138,13 +1250,100 @@ export function GameScreen(bgioProps) {
 
         return (event) => runner(event?.payload);
       },
-      devCardReveal: () => {
+      devCardReveal: ({ layerRef, emitCue }) => {
+        const transferRunner = createCardTransferRunner({
+          getLayerEl: () => layerRef.current,
+          resolveTransfers: (payload) => payload.transfers ?? [],
+          emitCue,
+          themeId
+        });
+
         return (event) => {
           const payload = event?.payload;
           if (!payload) return;
-          if (String(payload.playerId) !== String(playerID)) return;
-          startDevCardRevealFromEffect(payload);
+          if (String(payload.playerId) === String(playerID)) {
+            startDevCardRevealFromEffect(payload);
+            return;
+          }
+          transferRunner({
+            ...payload,
+            transfers: buildDevCardBuyTransfer(payload)
+          });
         };
+      },
+      cardTransfer: ({ layerRef, emitCue }) => {
+        const runner = createCardTransferRunner({
+          getLayerEl: () => layerRef.current,
+          resolveTransfers: (payload) => payload.transfers ?? [],
+          emitCue,
+          themeId
+        });
+
+        return (event) => {
+          const payload = event?.payload;
+          if (!payload) return;
+
+          if (event.type === "resource:maritime-trade") {
+            runner({
+              ...payload,
+              transfers: buildMaritimeTradeTransfers(payload)
+            });
+            return;
+          }
+
+          if (event.type === "resource:discard") {
+            runner({
+              ...payload,
+              transfers: buildDiscardTransfers(payload)
+            });
+            return;
+          }
+
+          if (event.type === "resource:robber-steal") {
+            runAfterNextPaint(() => {
+              const visibleResource = getRobberStealVisibleResource({
+                payload,
+                viewerPlayerId: playerID,
+                previousResourcesByPlayerId: previousResourcesByPlayerIdRef.current,
+                currentPlayerViewMap: latestPlayerViewMapRef.current
+              });
+              runner({
+                ...payload,
+                transfers: buildRobberStealTransfers({ payload, visibleResource })
+              });
+            });
+          }
+        };
+      },
+      robberMove: ({ emitCue }) => {
+        const runner = createRobberMoveRunner({
+          getLayerEl: () => placementLayerRef.current,
+          getLayout: () => {
+            if (!width || !height) return null;
+            return getBoardLayout({
+              width,
+              height,
+              leftInset: leftMetaRailLayoutInset,
+            });
+          },
+          getTiles: () => bgioProps.G?.tiles ?? [],
+          viewerPlayerId: playerID,
+          emitCue,
+          themeId
+        });
+
+        return (event) => runner(event?.payload);
+      },
+      awardClaim: ({ layerRef, emitCue }) => {
+        const runner = createAwardClaimRunner({
+          getLayerEl: () => layerRef.current,
+          getRoadsByEdgeId: () => bgioProps.G?.core?.roadsByEdgeId ?? {},
+          getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId],
+          getTargetEl: (_payload, id) => document.getElementById(id),
+          emitCue
+        });
+
+        return (event) => runner(event?.payload);
       },
       devCardPlay: ({ layerRef, emitCue }) => {
         const runner = createDevCardPlayRunner({
@@ -1175,7 +1374,7 @@ export function GameScreen(bgioProps) {
           actorStore: devCardPlayActorStoreRef,
           emitCue,
           onStart: freezeKnightDisplayFromPayload,
-          onResolveComplete: releaseKnightDisplayFromPayload,
+          onResolveComplete: handleDevCardPlayResolveComplete,
           themeId
         });
 
@@ -1188,8 +1387,8 @@ export function GameScreen(bgioProps) {
     bgioProps.G,
     effectiveColorByPlayerId,
     handleResourceDistributionComplete,
+    handleDevCardPlayResolveComplete,
     freezeKnightDisplayFromPayload,
-    releaseKnightDisplayFromPayload,
     leftMetaRailLayoutInset,
     playerID,
     startDevCardRevealFromEffect,
@@ -1272,20 +1471,69 @@ export function GameScreen(bgioProps) {
         })
       });
     };
+    const handleDevSandboxRobberMove = (event) => {
+      const detail = event?.detail ?? {};
+      effectsBus.emit({
+        type: "robber:move",
+        payload: {
+          effectId: `dev-sandbox:robber-move:${detail.fromTileId}:${detail.toTileId}`,
+          actorId: detail.actorId ?? opponents[0]?.id ?? playerID ?? "0",
+          fromTileId: detail.fromTileId,
+          toTileId: detail.toTileId,
+          debugReplay: true,
+          forced: true,
+          hideSourceTile: true,
+          hideDestinationTile: false
+        }
+      });
+    };
+    const handleDevSandboxAwardClaim = (event) => {
+      const detail = event?.detail ?? {};
+      effectsBus.emit({
+        type: "award:claim",
+        payload: {
+          effectId: `dev-sandbox:award:${detail.awardType}:${detail.playerId}`,
+          awardType: detail.awardType ?? "longestRoad",
+          playerId: detail.playerId,
+          previousOwnerId: detail.previousOwnerId ?? null,
+          playerColorId: effectiveColorByPlayerId[detail.playerId],
+          roadIds: detail.roadIds ?? [],
+          debugReplay: true
+        }
+      });
+    };
 
     window.addEventListener(
       "catana:dev-sandbox:devcard-play",
       handleDevSandboxDevCardPlay
     );
-    return () =>
+    window.addEventListener(
+      "catana:dev-sandbox:robber-move",
+      handleDevSandboxRobberMove
+    );
+    window.addEventListener(
+      "catana:dev-sandbox:award-claim",
+      handleDevSandboxAwardClaim
+    );
+    return () => {
       window.removeEventListener(
         "catana:dev-sandbox:devcard-play",
         handleDevSandboxDevCardPlay
       );
+      window.removeEventListener(
+        "catana:dev-sandbox:robber-move",
+        handleDevSandboxRobberMove
+      );
+      window.removeEventListener(
+        "catana:dev-sandbox:award-claim",
+        handleDevSandboxAwardClaim
+      );
+    };
   }, [
     clearDevCardPlayActors,
     core?.awards?.largestArmyOwnerId,
     effectsBus,
+    effectiveColorByPlayerId,
     matchID,
     opponents,
     playerID,
@@ -1377,7 +1625,7 @@ export function GameScreen(bgioProps) {
               variant="secondary"
               size="md"
               onClick={handleToggleMute}
-              className="h-10 w-10 border-white/45 bg-white/40 text-slate-800 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.45)] backdrop-blur-md hover:bg-white/50 sm:h-12 sm:w-12"
+              className={topUtilityButtonClassName}
               aria-label={isMuted ? "Unmute audio" : "Mute audio"}
               data-allow-interaction="true"
             >
@@ -1393,7 +1641,7 @@ export function GameScreen(bgioProps) {
               variant="secondary"
               size="md"
               onClick={() => setShowGameSettings(true)}
-              className="hidden h-10 w-10 border-white/45 bg-white/40 text-slate-800 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.45)] backdrop-blur-md hover:bg-white/50 sm:inline-flex sm:h-12 sm:w-12"
+              className={`hidden sm:inline-flex ${topUtilityButtonClassName}`}
               aria-label="Open game settings"
               data-allow-interaction="true"
             >
@@ -1405,7 +1653,7 @@ export function GameScreen(bgioProps) {
               variant="secondary"
               size="md"
               onClick={() => setShowGameRules(true)}
-              className="hidden h-10 w-10 border-white/45 bg-white/40 text-slate-800 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.45)] backdrop-blur-md hover:bg-white/50 sm:inline-flex sm:h-12 sm:w-12"
+              className={`hidden sm:inline-flex ${topUtilityButtonClassName}`}
               aria-label="Open game rules"
               data-allow-interaction="true"
             >
@@ -1416,26 +1664,28 @@ export function GameScreen(bgioProps) {
       </TooltipProvider>
 
       {!isReplay && !isGameOver && !!player && (
-        <GlassPillButton
-          className="fixed right-4 top-4 z-40"
-          onClick={handleResign}
-          aria-label="Resign match"
-          data-allow-interaction="true"
-        >
-          <span>Resign</span>
-        </GlassPillButton>
+        <div className="fixed right-4 top-4 z-40" data-allow-interaction="true">
+          <GlassPillButton
+            onClick={handleResign}
+            aria-label="Resign match"
+            data-allow-interaction="true"
+          >
+            <span>Resign</span>
+          </GlassPillButton>
+        </div>
       )}
 
       {showResultsButton && (
-        <GlassPillButton
-          className="fixed right-4 top-4 z-40"
-          onClick={() => setShowGameOverModal(true)}
-          aria-label="Open game results"
-          data-allow-interaction="true"
-        >
-          <span aria-hidden="true">🏆</span>
-          <span>Results</span>
-        </GlassPillButton>
+        <div className="fixed right-4 top-4 z-40" data-allow-interaction="true">
+          <GlassPillButton
+            onClick={() => setShowGameOverModal(true)}
+            aria-label="Open game results"
+            data-allow-interaction="true"
+          >
+            <span aria-hidden="true">🏆</span>
+            <span>Results</span>
+          </GlassPillButton>
+        </div>
       )}
 
       <LeftMetaRail
@@ -1632,7 +1882,7 @@ TODO: accurately colour it
 
       {(opponents.length > 0 || showConnectionBanner) && (
         <div
-          className="pointer-events-none fixed inset-x-0 top-6 z-30 flex flex-col items-center gap-3 px-4"
+          className="pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-3 px-4"
           style={{
             transform: playfieldCenterOffsetX
               ? `translateX(${Math.round(playfieldCenterOffsetX)}px)`

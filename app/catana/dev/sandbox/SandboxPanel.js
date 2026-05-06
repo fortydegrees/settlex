@@ -27,7 +27,12 @@ export function SandboxPanel({
   onGiveDevCard,
   onOpponentDevCardPlayStart,
   onOpponentDevCardPlayResolve,
-  onDevCardPlayReset
+  onDevCardPlayReset,
+  onRemoteRobberMoveReplay,
+  onLongestRoadAwardReplay,
+  onLongestRoadTakeoverReplay,
+  onLargestArmyAwardReplay,
+  onLargestArmyTakeoverReplay
 }) {
   return (
     <div className="pointer-events-auto w-full" data-allow-interaction="true">
@@ -156,6 +161,47 @@ export function SandboxPanel({
                   Reset Dev Visual
                 </button>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+                Board effects
+              </div>
+              <button
+                type="button"
+                onClick={onRemoteRobberMoveReplay}
+                className="rounded-lg bg-sky-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-sky-200 transition hover:bg-sky-200"
+              >
+                Replay Remote Robber Move
+              </button>
+              <button
+                type="button"
+                onClick={onLongestRoadAwardReplay}
+                className="rounded-lg bg-amber-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-amber-200 transition hover:bg-amber-200"
+              >
+                Replay Longest Road Award
+              </button>
+              <button
+                type="button"
+                onClick={onLongestRoadTakeoverReplay}
+                className="rounded-lg bg-amber-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-amber-200 transition hover:bg-amber-200"
+              >
+                Replay Road Takeover
+              </button>
+              <button
+                type="button"
+                onClick={onLargestArmyAwardReplay}
+                className="rounded-lg bg-rose-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-rose-200 transition hover:bg-rose-200"
+              >
+                Replay Largest Army Award
+              </button>
+              <button
+                type="button"
+                onClick={onLargestArmyTakeoverReplay}
+                className="rounded-lg bg-rose-100 px-3 py-2 text-left text-[11px] font-semibold text-slate-700 ring-1 ring-rose-200 transition hover:bg-rose-200"
+              >
+                Replay Army Takeover
+              </button>
             </div>
           </div>
         )}

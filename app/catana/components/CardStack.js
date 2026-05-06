@@ -15,6 +15,7 @@ export const CardStack = ({
   badgeMinCount = 3,
   badgeTone = "default",
   className = "",
+  imageClassName = "object-contain drop-shadow-md",
 }) => {
   const layout = getCardStackLayout({
     count,
@@ -25,7 +26,6 @@ export const CardStack = ({
     badgeMinCount,
   });
 
-  const cardClass = "object-contain drop-shadow-md";
   const outlineClass = layout.isEmpty
     ? "opacity-30"
     : "";
@@ -46,7 +46,7 @@ export const CardStack = ({
             alt={alt}
             width={cardWidth}
             height={cardHeight}
-            className={`${cardClass} ${outlineClass}`}
+            className={`${imageClassName} ${outlineClass}`}
           />
         </div>
       ))}

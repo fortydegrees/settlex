@@ -6,6 +6,7 @@ import {
 } from "@react-spring/web";
 
 import "./dockStyles.css";
+import "../hudGlass.css";
 import { handleThemeImageError } from "../../theme/themes";
 
 const INITIAL_WIDTH = 48;
@@ -200,7 +201,7 @@ export const DockCard = ({ action }) => {
     <div className="dock-card-container">
       <animated.button
         ref={cardRef}
-        className={`bg-blue-300 ring-2 ring-slate-200 dock-card ${
+        className={`catana-hud-dock-card dock-card ${
           action.enabled ? "enabled" : ""
         } ${action.selected ? "selected" : ""}`}
         disabled={!action.enabled}
@@ -296,10 +297,14 @@ export const DockCard = ({ action }) => {
             </animated.span>
           )}
 
-          {(action.count > 0) && (
-            <span className="absolute right-0 top-0 w-6 h-6 block -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50"
-           >
-              <span className="text-sm font-medium">{action.count}</span>
+          {action.count > 0 && (
+            <span
+              className="catana-hud-piece-count-badge"
+              data-enabled={action.enabled ? "true" : "false"}
+            >
+              <span className="catana-hud-piece-count-badge__value">
+                {action.count}
+              </span>
             </span>
           )}
         </span>

@@ -10,6 +10,7 @@ import {
 } from "@settlex/game-core";
 import { getVpDisplay } from "./PlayerAvatarStatsUtils";
 import { getPlayerColorOption } from "../theme/playerColors";
+import "./hudGlass.css";
 import "./PlayerAvatarStats.css";
 
 const formatPresenceTimer = (ms) => {
@@ -30,6 +31,10 @@ export const PlayerAvatarStats = ({
   presence,
   vpDisplayOverride,
   knightDisplayOverride,
+  statsPanelChildren = null,
+  statsPanelClassName = "",
+  showStatsPanelNameplate = true,
+  statsPanelChildrenClassName = "flex min-w-0 flex-1 items-center justify-center gap-x-3",
 }) => {
   if (!player) return null;
 
@@ -62,93 +67,130 @@ export const PlayerAvatarStats = ({
     isSeatWarning && presence?.remainingMs != null
       ? formatPresenceTimer(presence.remainingMs)
       : null;
+  const hasExtendedStatsPanel = Boolean(statsPanelChildren);
+  const displayName =
+    String(player.name ?? player.username ?? `Player ${player.id}`).trim() ||
+    `Player ${player.id}`;
+  const statsPanelBaseClassName = hasExtendedStatsPanel
+    ? "catana-hud-glass catana-hud-glass--compact relative -ml-4 flex h-20 min-w-[17.75rem] items-center rounded-l-none rounded-r-[1.35rem] border-l-0 py-1 pl-8 pr-4"
+    : "catana-hud-glass catana-hud-glass--compact -ml-4 flex h-20 items-center gap-x-2 rounded-l-none rounded-r-[1.35rem] border-l-0 px-3 pl-8";
+  const vpBadgeClassName =
+    hasExtendedStatsPanel && showStatsPanelNameplate
+      ? "catana-hud-vp-badge absolute bottom-0 right-0 z-20 translate-x-1/2 translate-y-1/2 transform"
+      : "catana-hud-vp-badge absolute right-0 top-0 z-10 -translate-y-1/2 translate-x-1/2 transform";
+  const statsBlock = (
+    <div className="flex shrink-0 flex-col gap-y-1">
+      <div className="flex items-center" id={`p${player.id}-longest-road`}>
+        <div className="w-8 h-8 flex items-center justify-center">
+          <Image
+            src={longestRoadIcon}
+            alt="Longest road"
+            width={28}
+            height={28}
+            className="object-contain"
+          />
+        </div>
+        <span
+          className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
+            hasLongestRoad ? "text-yellow-400 font-bold" : "text-white"
+          }`}
+        >
+          {currentRoadLength}
+        </span>
+      </div>
+      <div className="flex items-center" id={`p${player.id}-largest-army`}>
+        <div className="w-8 h-8 flex items-center justify-center">
+          <Image
+            src={largestArmyIcon}
+            alt="Largest army"
+            width={28}
+            height={28}
+            className="object-contain"
+          />
+        </div>
+        <span
+          className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
+            hasLargestArmy ? "text-yellow-400 font-bold" : "text-white"
+          }`}
+        >
+          {currentArmySize}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="relative">
-        <div
-          className={`flex items-start ${
+      <div
+        className={`flex items-start ${
           isSeatWarning ? "seat-disconnected-pulse" : ""
         }`}
       >
         <div className="flex w-20 items-center justify-center">
           <span className="flex relative">
-          {isActive && (
-            <span className="absolute -top-5 left-1/2 -translate-x-1/2">
-              <span className="turn-chevron" />
+            {isActive && (
+              <span className="absolute left-[-1.4rem] top-1/2 -translate-y-1/2">
+                <span className="turn-chevron" />
+              </span>
+            )}
+            <div
+              className={`relative z-10 h-20 w-20 rounded-[1.15rem] bg-gradient-to-t ring-4 ring-white shadow-[0_18px_34px_-24px_rgba(15,23,42,0.58)] flex justify-center items-center text-6xl ${
+                isSeatWarning ? "seat-disconnected-avatar" : ""
+              } ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
+            >
+              {player.emoji || "🤠"}
+            </div>
+            <span className={vpBadgeClassName}>
+              <AnimatedCount
+                value={vpDisplay}
+                motionValue={vpMotionValue}
+                className="player-vp-count"
+              />
             </span>
-          )}
-          <div
-            className={`h-20 w-20 rounded-md bg-gradient-to-t ring-4 ring-white flex justify-center items-center text-6xl ${
-              isSeatWarning
-                ? "seat-disconnected-avatar"
-                : ""
-            } ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
-          >
-            {player.emoji || "🤠"}
-          </div>
-          <span className="absolute right-0 top-0 z-10 h-8 -translate-y-1/2 translate-x-1/2 transform rounded-full bg-blue-50 ring-2 ring-white text-xl font-semibold flex items-center justify-center min-w-[2rem] px-1">
-            <AnimatedCount
-              value={vpDisplay}
-              motionValue={vpMotionValue}
-              className="player-vp-count"
-            />
-          </span>
-          {isSeatWarning && (
-            <span className="absolute bottom-1 right-1 text-[1rem] leading-none">
-              ⚠️
-            </span>
-          )}
-          {/* Only show status bubble for opponents, not for self */}
-          {!isMe && !isSeatWarning && (
-            <StatusBubble statusType={statusType} isVisible={isActive} />
-          )}
+            {isSeatWarning && (
+              <span className="absolute bottom-1 right-1 text-[1rem] leading-none">
+                ⚠️
+              </span>
+            )}
+            {/* Only show status bubble for opponents, not for self */}
+            {!isMe && !isSeatWarning && (
+              <StatusBubble statusType={statusType} isVisible={isActive} />
+            )}
           </span>
         </div>
         <span
-          className={`rounded-r-md flex h-20 px-2 gap-x-2 items-center ring-2 ${
+          className={`${statsPanelBaseClassName} ${
             isSeatWarning
-              ? "bg-rose-100/80 ring-white/60 seat-disconnected-panel"
-              : "bg-blue-200 bg-opacity-50 ring-white/60"
-          }`}
+              ? "catana-hud-glass--warning seat-disconnected-panel"
+              : ""
+          } ${statsPanelClassName}`}
         >
-          <div className="flex flex-col gap-y-1">
-            <div className="flex items-center" id={`p${player.id}-largest-army`}>
-              <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src={longestRoadIcon}
-                  alt="Longest road"
-                  width={28}
-                  height={28}
-                  className="object-contain"
+          {hasExtendedStatsPanel ? (
+            <>
+              {showStatsPanelNameplate ? (
+                <span
+                  className={`catana-hud-nameplate ${
+                    isSeatWarning ? "catana-hud-nameplate--warning" : ""
+                  }`}
+                  title={displayName}
+                >
+                  {displayName}
+                </span>
+              ) : null}
+              <span className="flex w-full items-center">
+                {statsBlock}
+                <span
+                  className="mx-4 h-14 w-px shrink-0 rounded-full bg-sky-200/45 shadow-[1px_0_0_rgba(255,255,255,0.32)]"
+                  aria-hidden={true}
                 />
-              </div>
-              <span
-                className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
-                  hasLongestRoad ? "text-yellow-400 font-bold" : "text-white"
-                }`}
-              >
-                {currentRoadLength}
+                <span className={statsPanelChildrenClassName}>
+                  {statsPanelChildren}
+                </span>
               </span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src={largestArmyIcon}
-                  alt="Largest army"
-                  width={28}
-                  height={28}
-                  className="object-contain"
-                />
-              </div>
-              <span
-                className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
-                  hasLargestArmy ? "text-yellow-400 font-bold" : "text-white"
-                }`}
-              >
-                {currentArmySize}
-              </span>
-            </div>
-          </div>
+            </>
+          ) : (
+            statsBlock
+          )}
         </span>
       </div>
       {isSeatWarning ? (

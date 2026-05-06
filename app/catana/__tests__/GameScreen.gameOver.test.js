@@ -31,6 +31,12 @@ describe("GameScreen game over", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
     expect(contents).toContain("ResignConfirmDialog");
     expect(contents).toContain("moves.resign");
+    expect(contents).toContain(
+      '<div className="fixed right-4 top-4 z-40" data-allow-interaction="true">'
+    );
+    expect(contents).not.toContain(
+      '<GlassPillButton\n          className="fixed right-4 top-4 z-40"'
+    );
     expect(contents).not.toContain("window.confirm");
   });
 
