@@ -243,6 +243,7 @@ export function Tile({
         {number && <NumberToken size={size} number={number} />}
         {hasRobber && (
           <div
+            data-catana-robber-tile-id={id}
             style={{
               position: "absolute",
               width: size / 1.5,

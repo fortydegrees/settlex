@@ -25,6 +25,7 @@ import {
 import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 import { getBuildPickupPieceType } from "../utils/playerAction";
 import { getTurnControlMode } from "../utils/turnControlMode";
+import "./hudGlass.css";
 import {
   RESOURCE_ICON_FILES_BY_RESOURCE,
   getClassicResourceIconPath,
@@ -62,6 +63,7 @@ export const CardIcon = ({
   player,
   onResourceClick,
   themeId,
+  isLast = false,
 }) => {
   const handleClick = () => {
     if (onResourceClick) {
@@ -73,7 +75,7 @@ export const CardIcon = ({
 
   return (
     <div
-      className={`flex items-center mr-6 ${onResourceClick ? "cursor-pointer" : ""}`}
+      className={`flex items-center ${isLast ? "" : "mr-6"} ${onResourceClick ? "cursor-pointer" : ""}`}
       id={`p${player}-${resource}`}
       onClick={onResourceClick ? handleClick : undefined}
       
@@ -179,6 +181,9 @@ export const PlayerActionContainer = ({
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);
   const clientPlayerID = bgioProps.playerID;
   const isMe = clientPlayerID === player.id;
+  const playerHudRef = React.useRef(null);
+  const localResourceRailRef = React.useRef(null);
+  const [localDockAnchorStyle, setLocalDockAnchorStyle] = React.useState(null);
   const stage = ctx.activePlayers?.[player.id];
   const isDevStage = stage === "preRoll" || stage === "postRoll";
   const devPlayActive = G.devCardPlay && G.devCardPlay.playerId === player.id;
@@ -229,6 +234,55 @@ export const PlayerActionContainer = ({
       });
     });
   }, [effectsBus, playDiceRoll]);
+
+  const updateLocalDockAnchor = useCallback(() => {
+    const hudNode = playerHudRef.current;
+    const railNode = localResourceRailRef.current;
+    if (!hudNode || !railNode) {
+      setLocalDockAnchorStyle(null);
+      return;
+    }
+
+    const hudRect = hudNode.getBoundingClientRect();
+    const railRect = railNode.getBoundingClientRect();
+    const nextStyle = {
+      left: Math.round(railRect.left - hudRect.left),
+      width: Math.round(railRect.width),
+    };
+
+    setLocalDockAnchorStyle((currentStyle) => {
+      if (
+        currentStyle?.left === nextStyle.left &&
+        currentStyle?.width === nextStyle.width
+      ) {
+        return currentStyle;
+      }
+      return nextStyle;
+    });
+  }, []);
+
+  useEffect(() => {
+    updateLocalDockAnchor();
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    updateLocalDockAnchor();
+
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(updateLocalDockAnchor)
+        : null;
+    if (playerHudRef.current) observer?.observe(playerHudRef.current);
+    if (localResourceRailRef.current) observer?.observe(localResourceRailRef.current);
+
+    window.addEventListener("resize", updateLocalDockAnchor);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateLocalDockAnchor);
+    };
+  }, [updateLocalDockAnchor]);
 
   // dice roll animation
   useEffectListener(
@@ -400,116 +454,159 @@ export const PlayerActionContainer = ({
   const totalResources = player.resources.length;
   const discardLimit = G.core?.ruleset?.discardLimit ?? 7;
   const isOverLimit = totalResources > discardLimit;
+  const visibleDevCards = displayDevCards ?? player.devCards ?? [];
+  const showDevCardBay = visibleDevCards.length > 0 || Boolean(keepDevCardShellMounted);
+  const devCardBayClassName = [
+    "local-devcard-bay",
+    showDevCardBay ? "local-devcard-bay--visible" : "local-devcard-bay--empty",
+  ].join(" ");
+  const localDockStyle = localDockAnchorStyle
+    ? {
+        left: `${localDockAnchorStyle.left}px`,
+        width: `${localDockAnchorStyle.width}px`,
+      }
+    : {
+        left: 0,
+        visibility: "hidden",
+        width: 0,
+      };
 
-  // Determine container styling based on limit status
-  const containerStyle = isSeatWarning
-    ? "bg-rose-100/80 ring-white/60 seat-disconnected-panel seat-disconnected-pulse"
-    : isOverLimit
-    ? "bg-rose-500 bg-opacity-40 ring-rose-500"
-    : "bg-blue-200 bg-opacity-50 ring-white/60";
   const rollContent = (
     <>
-      <Die dieSize="3.5rem" />
-      <Die2 dieSize="3.5rem" />
+      <Die dieSize="3.15rem" />
+      <Die2 dieSize="3.15rem" />
     </>
   );
 
   return (
     <div className="fixed bottom-4 left-0 right-0 pointer-events-none px-4">
       <div className="relative flex items-end">
-      <div
-        className="absolute left-1/2 -translate-x-1/2 bottom-0 flex items-end pointer-events-auto"
-        style={{
-          left: layoutOffsetX
-            ? `calc(50% + ${Math.round(layoutOffsetX)}px)`
-            : undefined,
-        }}
-        data-allow-interaction="true"
-      >
-        {/* Avatar + centered dock */}
-        <PlayerAvatarStats
-          player={player}
-          presence={presence}
-          core={G.core}
-          coreTopology={G.coreTopology}
-          isMe={isMe}
-          isActive={isActive}
-          statusType={statusType}
-          vpDisplayOverride={vpDisplayOverride}
-          knightDisplayOverride={knightDisplayOverride}
-        />
-
-        <div className="relative">
-          <div className={`relative h-20 ml-4 mr-4 flex pl-4 rounded-md ring-2 transition-colors duration-300 ${containerStyle}`}>
-            <Dock>
-            {dynamicActions.map((action, index) =>
-              action ? (
-                <DockCard key={action.name ?? index} action={action} />
-              ) : (
-                <span key={`empty-${index}`} />
-              )
-            )}
-            </Dock>
-            <div className="flex self-end mb-4">
-              {Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE).map((resource) => {
-                const canQuickTrade = canQuickTradeResource(resource);
-                return (
-                  <CardIcon
-                    resourceCount={resourceCounts[resource] ?? 0}
-                    key={resource}
-                    resource={resource}
-                    //TODO: change this for more players:
-                    player={player.id}
-                    onResourceClick={canQuickTrade ? handleResourceClick : null}
-                    themeId={themeId}
-                  />
-                );
-              })}
-            </div>
-            {SHOW_PLAYER_HAND_BADGES && (
-              <div className={getBadgeClasses(isOverLimit ? "danger" : "default")}>
-                {totalResources}
-              </div>
-            )}
-          </div>
-          {/* Dev Card Display */}
-          <div className="absolute left-full ml-0 bottom-[-2px]">
-            <DevCardDisplay
-              cards={displayDevCards ?? player.devCards}
-              playerId={player.id}
-              playableCountsByType={devPlayableCountsByType}
-              onPlayCard={(card) => moves.playDevCardStart(card)}
-              activeCardType={activeDevCardType}
-              showCountBadge={SHOW_PLAYER_HAND_BADGES}
-              containerRef={devCardDisplayRef}
-              forceMount={Boolean(keepDevCardShellMounted)}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-0">
-        {showTurnControls ? (
-          <TurnControlCluster
-            mode={turnControlMode}
-            statusText={gameStatus ? gameStatus.title : null}
-            timerText={timerText}
-            showTimer={showStatusTimer}
-            isTimerLow={isLowTimerAlertActive}
-            rollContent={rollContent}
-            onRoll={rollEnabled ? () => moves.rollDice() : undefined}
-            onEndTurn={
-              endTurnEnabled
-                ? () => {
-                    setPlayerAction(null);
-                    setBuildPickup(null);
-                    moves.endTurn();
-                  }
-                : undefined
+        <div
+          ref={playerHudRef}
+          className="absolute left-1/2 bottom-0 flex items-end pointer-events-auto -translate-x-1/2"
+          style={{
+            left: layoutOffsetX
+              ? `calc(50% + ${Math.round(layoutOffsetX)}px)`
+              : undefined,
+          }}
+          data-allow-interaction="true"
+        >
+          {/* Avatar + centered dock */}
+          <PlayerAvatarStats
+            player={player}
+            presence={presence}
+            core={G.core}
+            coreTopology={G.coreTopology}
+            isMe={isMe}
+            isActive={isActive}
+            statusType={statusType}
+            vpDisplayOverride={vpDisplayOverride}
+            knightDisplayOverride={knightDisplayOverride}
+            statsPanelClassName={
+              !isSeatWarning && isOverLimit ? "catana-hud-glass--danger" : ""
+            }
+            showStatsPanelNameplate={false}
+            statsPanelChildrenClassName="flex min-w-0 flex-1 items-center justify-start gap-x-3"
+            statsPanelChildren={
+              <>
+                <div
+                  ref={localResourceRailRef}
+                  className="relative flex h-20 items-end pl-4 pr-3"
+                >
+                  <div className="mb-4 flex self-end">
+                    {Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE).map((resource) => {
+                      const canQuickTrade = canQuickTradeResource(resource);
+                      return (
+                      <CardIcon
+                        resourceCount={resourceCounts[resource] ?? 0}
+                        key={resource}
+                        resource={resource}
+                        isLast={
+                          resource ===
+                          Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE).at(-1)
+                        }
+                        //TODO: change this for more players:
+                        player={player.id}
+                          onResourceClick={
+                            canQuickTrade ? handleResourceClick : null
+                          }
+                          themeId={themeId}
+                        />
+                      );
+                    })}
+                  </div>
+                  {SHOW_PLAYER_HAND_BADGES && (
+                    <div
+                      className={getBadgeClasses(
+                        isOverLimit ? "danger" : "default"
+                      )}
+                    >
+                      {totalResources}
+                    </div>
+                  )}
+                </div>
+                <div className={devCardBayClassName}>
+                  {showDevCardBay && (
+                    <>
+                      <span
+                        className="ml-0 mr-4 mb-3 h-14 w-px shrink-0 rounded-full bg-sky-200/45 shadow-[1px_0_0_rgba(255,255,255,0.32)]"
+                        aria-hidden={true}
+                      />
+                      <DevCardDisplay
+                        cards={visibleDevCards}
+                        playerId={player.id}
+                        playableCountsByType={devPlayableCountsByType}
+                        onPlayCard={(card) => moves.playDevCardStart(card)}
+                        activeCardType={activeDevCardType}
+                        showCountBadge={SHOW_PLAYER_HAND_BADGES}
+                        containerRef={devCardDisplayRef}
+                        forceMount={Boolean(keepDevCardShellMounted)}
+                        embedded={true}
+                      />
+                    </>
+                  )}
+                </div>
+              </>
             }
           />
-        ) : null}
-      </div>
+          <div
+            className="absolute bottom-0 h-20 pointer-events-none"
+            style={localDockStyle}
+          >
+            <Dock>
+              {dynamicActions.map((action, index) =>
+                action ? (
+                  <DockCard key={action.name ?? index} action={action} />
+                ) : (
+                  <span key={`empty-${index}`} />
+                )
+              )}
+            </Dock>
+          </div>
+        </div>
+
+        <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-0">
+          {showTurnControls ? (
+            <TurnControlCluster
+              mode={turnControlMode}
+              statusText={gameStatus ? gameStatus.title : null}
+              timerText={timerText}
+              showTimer={showStatusTimer}
+              isTimerLow={isLowTimerAlertActive}
+              rollContent={rollContent}
+              onRoll={rollEnabled ? () => moves.rollDice() : undefined}
+              onEndTurn={
+                endTurnEnabled
+                  ? () => {
+                      setPlayerAction(null);
+                      setBuildPickup(null);
+                      moves.endTurn();
+                    }
+                  : undefined
+              }
+            />
+          ) : null}
+        </div>
       </div>
     </div>
   );

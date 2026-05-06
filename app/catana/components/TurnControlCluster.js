@@ -81,10 +81,8 @@ const BUTTON_CORE_STANDBY_STYLE = {
   color: "rgba(219,234,254,0.32)",
 };
 
-const DICE_BUTTON_STYLE = {
+const DICE_TRAY_STYLE = {
   background: "transparent",
-  border: 0,
-  padding: 0,
   boxShadow: "none",
 };
 
@@ -98,22 +96,9 @@ export function TurnControlCluster({
   onRoll,
   onEndTurn,
 }) {
-  const showTimerChip = showTimer && Boolean(timerText);
-  const showLowTimer = showTimerChip && isTimerLow;
   const isRoll = mode === "roll";
   const isEndTurn = mode === "endTurn";
-  const isInactive = mode === "inactive";
-  const showDice = isRoll && Boolean(rollContent);
-
-  const stripClassName = joinClassNames(
-    "turn-control-strip flex min-h-[5.25rem] max-w-[22rem] items-stretch overflow-hidden rounded-[1.75rem]",
-    showTimerChip ? "min-w-[18.25rem]" : "min-w-[12.25rem]",
-    !showTimerChip && "turn-control-strip--no-timer",
-    isInactive && "turn-control-strip--inactive"
-  );
-
-  const stripStyle = isInactive ? STRIP_INACTIVE_STYLE : STRIP_ACTIVE_STYLE;
-  const stripTextStyle = isInactive ? INACTIVE_TEXT_STYLE : ACTIVE_TEXT_STYLE;
+  const showDice = Boolean(rollContent);
 
   const buttonShellStyle = isEndTurn
     ? BUTTON_SHELL_ACTIVE_STYLE
@@ -123,7 +108,7 @@ export function TurnControlCluster({
     : BUTTON_CORE_STANDBY_STYLE;
 
   const buttonClassName = joinClassNames(
-    "turn-control-cluster__button turn-control-cluster__button-core flex h-full w-full items-center justify-center rounded-[1.5rem] border-0 transition-all",
+    "turn-control-cluster__button turn-control-cluster__button-core flex h-full w-full items-center justify-center rounded-[1.3rem] border-0 transition-all",
     isEndTurn
       ? "turn-control-cluster__button-core--end-turn hover:scale-[1.02]"
       : "turn-control-cluster__button-core--standby cursor-not-allowed disabled:opacity-100"
@@ -132,95 +117,144 @@ export function TurnControlCluster({
   return React.createElement(
     "div",
     {
-      className: "pointer-events-auto flex translate-y-2.5 items-center gap-3",
+      className:
+        "pointer-events-auto flex flex-col items-end gap-4",
       "data-turn-control-mode": mode,
       "data-allow-interaction": "true",
     },
-    statusText || showTimerChip
-      ? React.createElement(
-          "div",
-          {
-            className: stripClassName,
-            style: stripStyle,
-          },
-          statusText
-            ? React.createElement(
-                "div",
-                {
-                  className: joinClassNames(
-                    "turn-control-strip__status flex min-w-0 flex-1 items-center px-6 py-3 text-[1rem] font-semibold leading-tight",
-                    showTimerChip ? "text-left" : "justify-center text-center"
-                  ),
-                  style: stripTextStyle,
-                },
-                statusText
-              )
-            : null,
-          showTimerChip
-            ? React.createElement(
-                "div",
-                {
-                  className: joinClassNames(
-                    "turn-control-strip__timer flex min-w-[5.9rem] items-center justify-center px-4 text-[1.05rem] font-semibold tracking-[0.01em] tabular-nums",
-                    showLowTimer &&
-                      "turn-control-strip__timer--low turn-control-timer-low-pulse"
-                  ),
-                  style: {
-                    ...(showLowTimer
-                      ? TIMER_SEGMENT_LOW_STYLE
-                      : TIMER_SEGMENT_STYLE),
-                    ...stripTextStyle,
-                    ...(showLowTimer ? LOW_TIMER_TEXT_STYLE : null),
-                  },
-                },
-                timerText
-              )
-            : null
-        )
-      : null,
+    React.createElement(TurnStatusStrip, {
+      mode,
+      statusText,
+      timerText,
+      showTimer,
+      isTimerLow,
+    }),
     React.createElement(
       "div",
       {
         className:
-          "turn-control-cluster__button-rail relative flex h-[6.5rem] w-[6.5rem] items-center justify-center",
+          "turn-control-cluster__control-row flex items-center justify-end gap-5",
       },
       showDice
         ? React.createElement(
             "button",
             {
               type: "button",
-              "aria-label": "Roll dice",
-              onClick: onRoll,
-              className:
-                "turn-control-cluster__dice absolute bottom-[calc(100%+0.65rem)] left-1/2 flex -translate-x-1/2 items-center gap-4 border-0 p-0 transition-transform hover:scale-[1.02]",
-              style: DICE_BUTTON_STYLE,
+              "aria-label": isRoll ? "Roll dice" : "Dice result",
+              disabled: !isRoll,
+              onClick: isRoll ? onRoll : undefined,
+              className: joinClassNames(
+                "turn-control-cluster__dice flex h-[5.35rem] min-w-[9.4rem] items-center justify-center overflow-hidden rounded-[1.45rem] border-0 px-4 py-2 disabled:cursor-default disabled:opacity-100",
+                isRoll && "turn-control-cluster__dice--rollable"
+              ),
+              style: DICE_TRAY_STYLE,
             },
-            rollContent
+            React.createElement(
+              "span",
+              {
+                className: joinClassNames(
+                  "turn-control-cluster__dice-content flex items-center justify-center gap-6",
+                  !isRoll && "turn-control-cluster__dice-content--disabled"
+                ),
+              },
+              rollContent
+            )
           )
         : null,
       React.createElement(
         "div",
         {
           className:
-            "turn-control-cluster__button-shell flex h-[6.5rem] w-[6.5rem] items-center justify-center rounded-[1.9rem] p-[0.55rem]",
-          style: buttonShellStyle,
+            "turn-control-cluster__button-rail relative flex h-[5.35rem] w-[5.35rem] items-center justify-center",
         },
         React.createElement(
-          "button",
+          "div",
           {
-            type: "button",
-            "aria-label": isEndTurn ? "End turn" : "End turn unavailable",
-            disabled: !isEndTurn,
-            onClick: isEndTurn ? onEndTurn : undefined,
-            className: buttonClassName,
-            style: buttonStyle,
-          },
-          React.createElement(ForwardIcon, {
             className:
-              "turn-control-cluster__button-icon h-10 w-10 stroke-[1.45]",
-          })
+              "turn-control-cluster__button-shell flex h-[5.35rem] w-[5.35rem] items-center justify-center rounded-[1.6rem] p-[0.45rem]",
+            style: buttonShellStyle,
+          },
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              "aria-label": isEndTurn ? "End turn" : "End turn unavailable",
+              disabled: !isEndTurn,
+              onClick: isEndTurn ? onEndTurn : undefined,
+              className: buttonClassName,
+              style: buttonStyle,
+            },
+            React.createElement(ForwardIcon, {
+              className:
+                "turn-control-cluster__button-icon h-9 w-9 stroke-[1.45]",
+            })
+          )
         )
       )
     )
+  );
+}
+
+export function TurnStatusStrip({
+  mode = "inactive",
+  statusText = null,
+  timerText = null,
+  showTimer = false,
+  isTimerLow = false,
+}) {
+  const showTimerChip = showTimer && Boolean(timerText);
+  const showLowTimer = showTimerChip && isTimerLow;
+  const isInactive = mode === "inactive";
+
+  if (!statusText && !showTimerChip) return null;
+
+  const stripClassName = joinClassNames(
+    "turn-control-strip flex min-h-[3.45rem] max-w-[21rem] items-stretch overflow-hidden rounded-[1.35rem]",
+    showTimerChip ? "min-w-[16.5rem]" : "min-w-[11rem]",
+    !showTimerChip && "turn-control-strip--no-timer",
+    isInactive && "turn-control-strip--inactive"
+  );
+
+  const stripStyle = isInactive ? STRIP_INACTIVE_STYLE : STRIP_ACTIVE_STYLE;
+  const stripTextStyle = isInactive ? INACTIVE_TEXT_STYLE : ACTIVE_TEXT_STYLE;
+
+  return React.createElement(
+    "div",
+    {
+      className: stripClassName,
+      style: stripStyle,
+      "data-turn-status-mode": mode,
+    },
+    statusText
+      ? React.createElement(
+          "div",
+          {
+            className: joinClassNames(
+              "turn-control-strip__status flex min-w-0 flex-1 items-center px-4 py-2 text-[0.9rem] font-semibold leading-tight",
+              showTimerChip ? "text-left" : "justify-center text-center"
+            ),
+            style: stripTextStyle,
+          },
+          statusText
+        )
+      : null,
+    showTimerChip
+      ? React.createElement(
+          "div",
+          {
+            className: joinClassNames(
+              "turn-control-strip__timer flex min-w-[4.9rem] items-center justify-center px-3 text-[0.95rem] font-semibold tracking-[0.01em] tabular-nums",
+              showLowTimer &&
+                "turn-control-strip__timer--low turn-control-timer-low-pulse"
+            ),
+            style: {
+              ...(showLowTimer ? TIMER_SEGMENT_LOW_STYLE : TIMER_SEGMENT_STYLE),
+              ...stripTextStyle,
+              ...(showLowTimer ? LOW_TIMER_TEXT_STYLE : null),
+            },
+          },
+          timerText
+        )
+      : null
   );
 }

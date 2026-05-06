@@ -38,10 +38,12 @@ describe("PlayerActionContainer hitbox", () => {
       "pointer-events-auto flex w-36 flex-col items-center"
     );
     expect(clusterSource).toContain(
-      "pointer-events-auto flex translate-y-2.5 items-center gap-3"
+      "pointer-events-auto flex flex-col items-end gap-4"
     );
     expect(clusterSource).toContain("turn-control-strip");
+    expect(clusterSource).toContain("turn-control-cluster__control-row");
     expect(clusterSource).toContain("turn-control-cluster__dice");
+    expect(clusterSource).toContain("turn-control-cluster__dice-content--disabled");
     expect(clusterSource).toContain("turn-control-cluster__button-rail");
     expect(clusterSource).not.toContain(
       'showTimerChip ? "items-end" : "items-center"'

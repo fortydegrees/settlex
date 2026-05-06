@@ -18,6 +18,12 @@ const devCardDisplayPath = path.resolve(
   "components",
   "DevCardDisplay.js"
 );
+const playerAvatarStatsPath = path.resolve(
+  __dirname,
+  "..",
+  "components",
+  "PlayerAvatarStats.js"
+);
 
 describe("PlayerActionContainer", () => {
   it("gates player hand badges behind a flag", () => {
@@ -28,10 +34,21 @@ describe("PlayerActionContainer", () => {
 
   it("uses the white-ring danger disconnect styling for the player hand dock", () => {
     const contents = fs.readFileSync(actionContainerPath, "utf8");
+    const avatarStatsContents = fs.readFileSync(playerAvatarStatsPath, "utf8");
+
     expect(contents).toContain('presence?.status === "idle"');
-    expect(contents).toContain("ring-white/60");
-    expect(contents).toContain("seat-disconnected-pulse");
-    expect(contents).toContain("seat-disconnected-panel");
+    expect(contents).toContain("showStatsPanelNameplate={false}");
+    expect(contents).toContain("localResourceRailRef");
+    expect(contents).toContain("localDockAnchorStyle");
+    expect(contents).toContain("<Dock>");
+    expect(contents).toContain('className="relative flex h-20 items-end pl-4 pr-3"');
+    expect(contents).toContain("catana-hud-glass--danger");
+    expect(avatarStatsContents).toContain("catana-hud-glass--warning");
+    expect(avatarStatsContents).toContain("seat-disconnected-pulse");
+    expect(avatarStatsContents).toContain("seat-disconnected-panel");
+    expect(avatarStatsContents).toContain(
+      'hasExtendedStatsPanel && showStatsPanelNameplate'
+    );
     expect(contents).not.toContain("animate-pulse");
   });
 

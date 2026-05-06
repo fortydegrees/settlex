@@ -51,7 +51,7 @@ describe("LeftMetaRail", () => {
     expect(contents).toContain("data-meta-feed-toggle");
     expect(contents).toContain("data-meta-feed-tooltip");
     expect(contents).toContain("data-meta-sidebar-button");
-    expect(contents).toContain("desktopFeedCollapsedSizeClassName");
+    expect(contents).toContain('const desktopFeedCollapsedSizeClassName = "h-full w-14"');
     expect(contents).toContain("flex shrink-0 items-center justify-between");
     expect(contents).not.toContain("data-meta-docked-panel-stack");
   });
@@ -66,5 +66,42 @@ describe("LeftMetaRail", () => {
     expect(gameLogIndex).toBeLessThan(chatIndex);
     expect(contents).toContain('side: "left"');
     expect(contents).not.toContain('side: "right"');
+  });
+
+  it("anchors Game Log upward while keeping the rail fixed", () => {
+    const contents = fs.readFileSync(leftMetaRailPath, "utf8");
+
+    expect(contents).toContain(
+      "desktopFeedCollapsedHeight} + ${desktopFeedStackGap} + ${currentChatHeight}"
+    );
+    expect(contents).toContain("const isLogOpenBodyPhase =");
+    expect(contents).toContain("const [chatFramePhase, setChatFramePhase] = useState");
+    expect(contents).toContain("const handleChatFramePhaseChange = useCallback");
+    expect(contents).toContain("const isChatOpenBodyPhase =");
+    expect(contents).toContain(
+      "calc(${desktopFeedCollapsedHeight} - ${desktopFeedLogOpenHeight})"
+    );
+    expect(contents).toContain(
+      'logFramePhase === "opening-body" || logFramePhase === "open"'
+    );
+    expect(contents).toContain('const isLogOpenBodyPhase =');
+    expect(contents).toContain("top: currentLogTop");
+    expect(contents).toContain(
+      "top: `calc(${desktopFeedCollapsedHeight} + ${desktopFeedStackGap})`"
+    );
+    expect(contents).not.toContain("shellShift");
+  });
+
+  it("keeps log frame phase updates scoped to the log panel", () => {
+    const contents = fs.readFileSync(leftMetaRailPath, "utf8");
+
+    expect(contents).toContain("const handleLogFramePhaseChange = useCallback");
+    expect(contents).toContain('if (panelId !== "log") return;');
+    expect(contents).toContain("setLogFramePhase(nextPhase);");
+    expect(contents).toContain("setChatFramePhase(nextPhase);");
+    expect(contents).not.toContain("onPhaseChange: setLogFramePhase");
+    expect(contents).toContain('phase === "opening-width" || phase === "closing-body"');
+    expect(contents).toContain('return desktopFeedCollapsedSizeClassName;');
+    expect(contents).toContain('const desktopFeedHeaderSizeClassName = "h-full w-full"');
   });
 });

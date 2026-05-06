@@ -41,6 +41,17 @@ describe("placePiece wiring", () => {
     expect(source).toContain("build:city");
   });
 
+  it("uses a remote-only lift/drop animation for city upgrades", () => {
+    const source = read("../../effects/placePiece.js");
+    const screen = read("../../GameScreen.js");
+
+    expect(screen).toContain("getViewerPlayerId: () => playerID");
+    expect(source).toContain("runCityUpgradeAnimation");
+    expect(source).toContain("isRemoteCityUpgrade");
+    expect(source).toContain('createSettlementEl({');
+    expect(source).toContain("upgradeLiftDuration");
+  });
+
   it("does not keep raster-specific settlement placement logic", () => {
     const source = read("../../effects/placePiece.js");
     expect(source).not.toContain("isRasterAssetPath");

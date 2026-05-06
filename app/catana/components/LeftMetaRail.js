@@ -16,26 +16,37 @@ export const LEFT_META_RAIL_DESKTOP_WIDTH_PX = 0;
 const mobileButtonBaseClassName =
   "flex h-14 w-14 items-center justify-center rounded-[1.45rem] border transition-colors focus:outline-none focus:ring-2 focus:ring-white/80";
 const mobileButtonActiveClassName =
-  "border-transparent bg-transparent text-slate-700 shadow-none ring-0";
+  "border-white/[0.55] bg-white/[0.32] text-slate-800 shadow-[0_18px_38px_-26px_rgba(15,23,42,0.48),inset_0_1px_0_rgba(255,255,255,0.38)] ring-1 ring-white/35";
 const mobileButtonIdleClassName =
-  "border-white/30 bg-white/18 text-slate-700 shadow-md hover:bg-white/28";
+  "border-white/45 bg-white/[0.26] text-slate-800/95 shadow-[0_16px_34px_-26px_rgba(15,23,42,0.4),inset_0_1px_0_rgba(255,255,255,0.28)] hover:border-white/60 hover:bg-white/[0.36]";
 const mobileButtonIconClassName = "h-5 w-5";
 const desktopButtonIconClassName = "h-6 w-6 shrink-0";
 const desktopFeedLaneClassName =
-  "pointer-events-auto w-[min(25rem,calc(100vw-2rem))]";
-const desktopFeedOpenSizeClassName = "h-[clamp(14rem,36vh,20rem)] w-full";
-const desktopFeedCollapsedSizeClassName = "h-14 w-14";
-const desktopFeedHeaderSizeClassName = "h-14 w-full";
+  "pointer-events-auto w-[min(clamp(18rem,20vw,25rem),calc(100vw-2rem))]";
+const desktopFeedLogOpenHeight = "clamp(15rem,38vh,23rem)";
+const desktopFeedChatOpenHeight = "clamp(13rem,34vh,20rem)";
+const desktopFeedCollapsedSizeClassName = "h-full w-14";
+const desktopFeedHeaderSizeClassName = "h-full w-full";
+const desktopFeedCollapsedHeight = "3.5rem";
+const desktopFeedStackGap = "0.5rem";
 const desktopFeedSlotClassName =
-  "relative transition-[width,height,opacity,transform,border-radius] [will-change:width,height,opacity,transform] motion-reduce:transition-none";
+  "transition-[width,height,opacity,transform,border-radius] [will-change:width,height,opacity,transform] motion-reduce:transition-none";
 const desktopFeedFrameClassName = joinClassNames(
-  "relative flex h-full flex-col overflow-hidden rounded-[1.15rem] border border-white/[0.55] shadow-[0_22px_58px_-36px_rgba(15,23,42,0.62),inset_0_1px_0_rgba(255,255,255,0.48)] ring-1 ring-white/40 select-none"
+  "relative flex h-full flex-col overflow-hidden rounded-[1.15rem] border border-white/[0.38] shadow-[0_18px_42px_-28px_rgba(37,99,235,0.28),inset_0_1px_0_rgba(255,255,255,0.28)] ring-1 ring-white/35 select-none"
 );
+const desktopFeedRestoreFrameClassName =
+  "border-white/50 shadow-[0_20px_44px_-28px_rgba(15,23,42,0.44),inset_0_1px_0_rgba(255,255,255,0.42)] ring-white/45";
 const desktopFeedGlassLayerStyle = {
   background:
-    "linear-gradient(180deg, rgba(255,255,255,0.36), rgba(239,246,255,0.24)), linear-gradient(90deg, rgba(255,255,255,0.2), rgba(191,219,254,0.14), rgba(147,197,253,0.1))",
-  backdropFilter: "blur(24px) saturate(1.18)",
-  WebkitBackdropFilter: "blur(24px) saturate(1.18)",
+    "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06)), linear-gradient(90deg, rgba(255,255,255,0.24), rgba(191,219,254,0.14), rgba(147,197,253,0.1))",
+  backdropFilter: "blur(18px) saturate(1.1)",
+  WebkitBackdropFilter: "blur(18px) saturate(1.1)",
+};
+const desktopFeedRestoreGlassLayerStyle = {
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.1)), linear-gradient(90deg, rgba(255,255,255,0.28), rgba(191,219,254,0.18), rgba(147,197,253,0.12))",
+  backdropFilter: "blur(18px) saturate(1.16)",
+  WebkitBackdropFilter: "blur(18px) saturate(1.16)",
 };
 const desktopFeedPanelClassName =
   "flex h-full min-h-0 flex-col overflow-hidden bg-transparent select-text";
@@ -214,11 +225,15 @@ const buildMetaPanels = ({
 
 const getDesktopFeedSlotSizeClassName = (phase) => {
   if (phase === "open" || phase === "opening-body") {
-    return desktopFeedOpenSizeClassName;
+    return desktopFeedHeaderSizeClassName;
   }
 
   if (phase === "opening-width" || phase === "closing-body") {
     return desktopFeedHeaderSizeClassName;
+  }
+
+  if (phase === "closing-width") {
+    return desktopFeedCollapsedSizeClassName;
   }
 
   return desktopFeedCollapsedSizeClassName;
@@ -236,7 +251,13 @@ const getDesktopFeedSlotMotionClassName = (phase) => {
   return "duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]";
 };
 
-function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
+function DesktopFeedFrame({
+  panel,
+  isOpen,
+  onMinimize,
+  onRestore,
+  onPhaseChange,
+}) {
   const [phase, setPhase] = useState(() => (isOpen ? "open" : "closed"));
   const hasMountedRef = useRef(false);
   const isRestoreButton = phase === "closed";
@@ -300,11 +321,17 @@ function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (typeof onPhaseChange === "function") {
+      onPhaseChange(panel.id, phase);
+    }
+  }, [onPhaseChange, panel.id, phase]);
+
   return React.createElement(
     "section",
     {
       className: joinClassNames(
-        "group pointer-events-auto",
+        "group pointer-events-auto relative",
         desktopFeedSlotClassName,
         getDesktopFeedSlotSizeClassName(phase),
         getDesktopFeedSlotMotionClassName(phase),
@@ -334,6 +361,7 @@ function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
         className: joinClassNames(
           desktopFeedFrameClassName,
           "transition-[border-color,box-shadow] duration-150 ease-out motion-reduce:transition-none",
+          isRestoreButton ? desktopFeedRestoreFrameClassName : null,
           isRestoreButton
             ? "group-hover:border-white/70 group-hover:shadow-[0_22px_46px_-28px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.55)] group-hover:ring-white/50 group-active:ring-white/60"
             : null
@@ -341,7 +369,9 @@ function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
       },
       React.createElement("div", {
         className: "pointer-events-none absolute inset-0 rounded-[inherit]",
-        style: desktopFeedGlassLayerStyle,
+        style: isRestoreButton
+          ? desktopFeedRestoreGlassLayerStyle
+          : desktopFeedGlassLayerStyle,
         "aria-hidden": "true",
       }),
       React.createElement("div", {
@@ -353,8 +383,10 @@ function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
         "div",
         {
           className: joinClassNames(
-            "relative z-10 flex shrink-0 items-center justify-between gap-3 overflow-hidden pl-4 pr-4 text-slate-700 transition-[height,background-color,border-color] duration-150 ease-out motion-reduce:transition-none",
-            shouldShowHeaderDetails ? "h-12" : "h-14",
+            "relative z-10 flex shrink-0 items-center justify-between overflow-hidden text-slate-700 transition-[height,background-color,border-color] duration-150 ease-out motion-reduce:transition-none",
+            shouldShowHeaderDetails
+              ? "h-11 gap-2.5 px-3.5"
+              : "h-14 gap-3 px-4",
             shouldShowHeaderDetails
               ? "cursor-pointer border-b border-white/30 bg-white/25 hover:bg-white/40 focus:outline-none active:bg-white/30"
               : "border-b border-transparent bg-transparent"
@@ -384,7 +416,7 @@ function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
             className: joinClassNames(
               desktopButtonIconClassName,
               isRestoreButton
-                ? "transition duration-150 ease-out group-hover:scale-110"
+                ? "text-slate-800 drop-shadow-[0_1px_0_rgba(255,255,255,0.22)] transition duration-150 ease-out group-hover:scale-110 group-hover:text-slate-900"
                 : null
             ),
           }),
@@ -394,7 +426,7 @@ function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
               className: joinClassNames(
                 "truncate text-sm font-bold text-slate-700 transition-[max-width,opacity,transform] duration-150 ease-out motion-reduce:transition-none",
                 shouldShowHeaderDetails
-                  ? "max-w-[12rem] translate-x-0 opacity-100"
+                  ? "max-w-[11rem] translate-x-0 opacity-100"
                   : "max-w-0 -translate-x-1 opacity-0"
               ),
             },
@@ -507,30 +539,85 @@ const DesktopMetaDockComponent = ({
       }),
     [entries, logPlayerMap, themeId, playerID, bgioProps]
   );
-
+  const logPanel = panels.find((panel) => panel.id === "log") ?? panels[0];
+  const chatPanel = panels.find((panel) => panel.id === "chat") ?? panels[1];
+  const [logFramePhase, setLogFramePhase] = useState(
+    openPanels.includes("log") ? "open" : "closed"
+  );
+  const [chatFramePhase, setChatFramePhase] = useState(
+    openPanels.includes("chat") ? "open" : "closed"
+  );
+  const handleLogFramePhaseChange = useCallback((panelId, nextPhase) => {
+    if (panelId !== "log") return;
+    setLogFramePhase(nextPhase);
+  }, []);
+  const handleChatFramePhaseChange = useCallback((panelId, nextPhase) => {
+    if (panelId !== "chat") return;
+    setChatFramePhase(nextPhase);
+  }, []);
+  const isLogOpenBodyPhase =
+    logFramePhase === "opening-body" || logFramePhase === "open";
+  const currentLogHeight = isLogOpenBodyPhase
+    ? desktopFeedLogOpenHeight
+    : desktopFeedCollapsedHeight;
+  const currentLogTop = isLogOpenBodyPhase
+    ? `calc(${desktopFeedCollapsedHeight} - ${desktopFeedLogOpenHeight})`
+    : "0px";
+  const isChatOpenBodyPhase =
+    chatFramePhase === "opening-body" ||
+    chatFramePhase === "open";
+  const currentChatHeight = isChatOpenBodyPhase
+    ? desktopFeedChatOpenHeight
+    : desktopFeedCollapsedHeight;
+  const stackHeight = `min(calc(100vh - 12rem), calc(${desktopFeedCollapsedHeight} + ${desktopFeedStackGap} + ${currentChatHeight}))`;
   return React.createElement(
     "div",
     {
-      className:
-        "pointer-events-none fixed bottom-32 left-4 z-30 hidden lg:block",
+      className: "pointer-events-none fixed left-4 top-1/2 z-30 hidden lg:block",
       "data-meta-left-rail-shell": "true",
     },
     React.createElement(
       "section",
       {
-        className: joinClassNames(desktopFeedLaneClassName, "space-y-2"),
+        className: joinClassNames(desktopFeedLaneClassName, "relative"),
+        style: { height: stackHeight },
         "aria-label": "Game feed",
         "data-meta-feed-dock": "true",
         "data-allow-interaction": "true",
       },
-      panels.map((panel) =>
-        React.createElement(DesktopFeedFrame, {
-          key: panel.id,
-          panel,
-          isOpen: openPanels.includes(panel.id),
-          onMinimize: minimizePanel,
-          onRestore: restorePanel,
-        })
+      [
+        {
+          panel: logPanel,
+          top: currentLogTop,
+          height: currentLogHeight,
+          transform: "translateY(0px)",
+        },
+        {
+          panel: chatPanel,
+          top: `calc(${desktopFeedCollapsedHeight} + ${desktopFeedStackGap})`,
+          height: currentChatHeight,
+          transform: "translateY(0px)",
+        },
+      ].map(({ panel, top, height, transform }) =>
+        React.createElement(
+          "div",
+          {
+            key: panel.id,
+            className:
+              "absolute inset-x-0 transition-[top,height,opacity,transform] duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none",
+            style: { top, height, transform },
+          },
+          React.createElement(DesktopFeedFrame, {
+            panel,
+            isOpen: openPanels.includes(panel.id),
+            onMinimize: minimizePanel,
+            onRestore: restorePanel,
+            onPhaseChange:
+              panel.id === "log"
+                ? handleLogFramePhaseChange
+                : handleChatFramePhaseChange,
+          })
+        )
       )
     )
   );

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import Image from "./NextImage";
+import "./hudGlass.css";
 import "./DevCardDisplay.css";
 import { getCardStackLayout } from "./CardStackLayout";
 import { getBadgeClasses } from "./CardStackStyles";
@@ -263,6 +264,7 @@ export const DevCardDisplay = ({
   badgeMinCount = 3,
   containerRef = null,
   forceMount = false,
+  embedded = false,
 }) => {
   const dockRef = useRef(null);
   const [pointerX, setPointerX] = useState(null);
@@ -344,6 +346,8 @@ export const DevCardDisplay = ({
   const isEmptyShell = cards.length === 0;
   const boxClassName = [
     "devcard-box",
+    embedded ? "devcard-box--embedded" : "catana-hud-glass",
+    !embedded ? "catana-hud-glass--compact" : "",
     "inline-flex",
     "origin-bottom-left",
     "relative",

@@ -5,6 +5,7 @@ export const DEFAULT_THEME = {
   "build:city": { src: "/sounds/settle.mp3", volume: 0.6 },
   "build:road": { src: "/sounds/road.mp3", volume: 0.6 },
   "build:place": { src: "/sounds/build_settlement.mp3", volume: 0.8 },
+  "devcard:buy:public": { src: "/sounds/card_woosh.mp3", volume: 0.34 },
   "devcard:knight:play": { src: "/sounds/card_woosh.mp3", volume: 0.42 },
   "devcard:knight:flip": { src: "/sounds/card_woosh.mp3", volume: 0.36 },
   "devcard:knight:resolve": { src: "/sounds/card_woosh.mp3", volume: 0.38 },

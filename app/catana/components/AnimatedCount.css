@@ -27,14 +27,17 @@
 }
 
 .animated-count__value--enter {
-  animation: catana-animated-count-enter 220ms var(--settlex-ui-ease-standard, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation: catana-animated-count-enter var(--catana-animated-count-enter-duration, 220ms) var(--settlex-ui-ease-standard, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .animated-count__value--exit {
-  animation: catana-animated-count-exit 180ms ease-out both;
+  animation: catana-animated-count-exit var(--catana-animated-count-exit-duration, 180ms) ease-out both;
 }
 
 .resource-dock-count {
+  --catana-animated-count-enter-duration: 440ms;
+  --catana-animated-count-exit-duration: 360ms;
+
   color: rgb(255 255 255);
   font-variant-numeric: normal;
 }

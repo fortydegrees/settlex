@@ -247,6 +247,26 @@ const configuredEffectsPlugin = EffectsPlugin({
       create: (value) => value,
       duration: 0
     },
+    robberSteal: {
+      create: (value) => value,
+      duration: 0
+    },
+    robberMove: {
+      create: (value) => value,
+      duration: 0
+    },
+    awardClaimed: {
+      create: (value) => value,
+      duration: 0
+    },
+    maritimeTrade: {
+      create: (value) => value,
+      duration: 0
+    },
+    discardResources: {
+      create: (value) => value,
+      duration: 0
+    },
     devCardPlayStarted: {
       create: (value) => value,
       duration: 0

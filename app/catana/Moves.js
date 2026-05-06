@@ -235,7 +235,12 @@ const emitPendingDevCardPlayResolved = (context) => {
   G.pendingDevCardPlayAnimation = null;
 };
 
-const logAwardChanges = (G, ctx, previousAwards, options) => {
+const getPlayerRoadIds = (core, playerId) =>
+  Object.entries(core?.roadsByEdgeId ?? {})
+    .filter(([, ownerId]) => String(ownerId) === String(playerId))
+    .map(([edgeId]) => edgeId);
+
+const logAwardChanges = (G, ctx, previousAwards, options, effects) => {
   if (!previousAwards) return;
   const currentAwards = getAwardOwners(G?.core);
   const changes = [
@@ -260,6 +265,16 @@ const logAwardChanges = (G, ctx, previousAwards, options) => {
       data: previousOwnerId ? { previousOwnerId } : {},
       forced: options?.forced
     });
+    if (type === "award:longestRoad") {
+      effects?.awardClaimed?.({
+        effectId: `award:longest-road:${nextOwnerId}:turn-${ctx?.turn ?? "unknown"}`,
+        awardType: "longestRoad",
+        playerId: nextOwnerId,
+        previousOwnerId: previousOwnerId ?? null,
+        roadIds: getPlayerRoadIds(G?.core, nextOwnerId),
+        forced: Boolean(options?.forced)
+      });
+    }
   });
 };
 
@@ -507,7 +522,7 @@ export const placeSettlement = {
       data: { nodeId, initialPlacement: isPlacement },
       forced: options?.forced
     });
-    logAwardChanges(G, ctx, previousAwards, options);
+    logAwardChanges(G, ctx, previousAwards, options, effects);
     logResourceDistributions(G, ctx, distributions, options);
     maybeLogGameOver(G, ctx);
 
@@ -690,7 +705,7 @@ export const placeRoad = {
       data: { edgeId: edge, initialPlacement: isPlacement },
       forced: options?.forced
     });
-    logAwardChanges(G, ctx, previousAwards, options);
+    logAwardChanges(G, ctx, previousAwards, options, effects);
     maybeLogGameOver(G, ctx);
 
     //if we're in placement phase, end turn after placing road
@@ -745,7 +760,7 @@ export const placeCity = {
       data: { nodeId },
       forced: options?.forced
     });
-    logAwardChanges(G, ctx, previousAwards, options);
+    logAwardChanges(G, ctx, previousAwards, options, effects);
     maybeLogGameOver(G, ctx);
   }
 };
@@ -755,7 +770,8 @@ export const placeCity = {
 //or postRoll (if played from rolling a 7 or knight mid-turn)
 export const moveRobber = {
   move: (context, tileID, options) =>{
-    const { G, ctx, random } = context;
+    const { G, ctx, random, effects } = context;
+    const fromTileId = G.core?.robberTileId ?? null;
     
     // Generate a random number for stealing (deterministic)
     // We pass this to the core logic, which will use modulo to select the actual card if needed
@@ -767,7 +783,16 @@ export const moveRobber = {
       ctx.currentPlayer
     ).filter((id) => (G.core?.playerStateById?.[id]?.resources?.length ?? 0) > 0);
     
-    const result = applyMoveRobber(G.core, G.coreTopology, tileID, ctx.currentPlayer, stolenCardIndex);
+    const selectedVictimId =
+      potentialVictims.length === 1 ? potentialVictims[0] : undefined;
+    const result = applyMoveRobber(
+      G.core,
+      G.coreTopology,
+      tileID,
+      ctx.currentPlayer,
+      stolenCardIndex,
+      selectedVictimId
+    );
     if (!result.ok) {
       console.log(`Invalid robber placement on tile ${tileID}: ${result.error}`);
       return;
@@ -778,12 +803,24 @@ export const moveRobber = {
       data: getTileLogData(G, tileID),
       forced: options?.forced
     });
+    effects?.robberMove?.({
+      effectId: `robber:move:${ctx.currentPlayer}:${fromTileId}:${tileID}:turn-${ctx.turn ?? "unknown"}`,
+      actorId: ctx.currentPlayer,
+      fromTileId,
+      toTileId: tileID,
+      forced: Boolean(options?.forced)
+    });
     if (potentialVictims.length === 1) {
       appendGameLog(G, ctx, {
         type: "robber:steal",
         actorId: ctx.currentPlayer,
         data: { victimId: potentialVictims[0] },
         forced: options?.forced
+      });
+      effects?.robberSteal?.({
+        effectId: `robber:steal:${ctx.currentPlayer}:${potentialVictims[0]}:turn-${ctx.turn ?? "unknown"}`,
+        thiefId: ctx.currentPlayer,
+        victimId: potentialVictims[0]
       });
     }
 
@@ -920,7 +957,7 @@ export const endTurn = {
 
 export const discardResources = {
   move: (context, resources, options) => {
-    const { G, playerID, events } = context;
+    const { G, playerID, events, ctx, effects } = context;
     // Assume core G structure
     const result = applyDiscard(G.core, playerID, resources);
     if (!result.ok) {
@@ -932,6 +969,11 @@ export const discardResources = {
       actorId: playerID,
       data: { resources: countResources(resources) },
       forced: options?.forced
+    });
+    effects?.discardResources?.({
+      effectId: `discard:${playerID}:turn-${ctx?.turn ?? "unknown"}`,
+      playerId: playerID,
+      resources: [...resources]
     });
 
     if (G.core.turn.phase === "robberMove") {
@@ -1031,7 +1073,7 @@ export const autoEndTurn = {
 
 export const autoMoveRobber = {
   move: (context) => {
-    const { G, ctx, random, log } = context;
+    const { G, ctx, random, log, effects } = context;
     const candidates = getRobberCandidateTileIds(G);
     const tileId = pickRandom(candidates, random);
     if (tileId == null) {
@@ -1052,6 +1094,7 @@ export const autoMoveRobber = {
     });
     const stolenCardIndex = random?.Number ? random.Number() : 0;
     let selectedVictimId = potentialVictims.length === 1 ? potentialVictims[0] : undefined;
+    const fromTileId = G.core?.robberTileId ?? null;
     let result = applyMoveRobber(
       G.core,
       G.coreTopology,
@@ -1090,12 +1133,24 @@ export const autoMoveRobber = {
       data: getTileLogData(G, tileId),
       forced: true
     });
+    effects?.robberMove?.({
+      effectId: `robber:move:${ctx.currentPlayer}:${fromTileId}:${tileId}:turn-${ctx.turn ?? "unknown"}:forced`,
+      actorId: ctx.currentPlayer,
+      fromTileId,
+      toTileId: tileId,
+      forced: true
+    });
     if (selectedVictimId) {
       appendGameLog(G, ctx, {
         type: "robber:steal",
         actorId: ctx.currentPlayer,
         data: { victimId: selectedVictimId },
         forced: true
+      });
+      effects?.robberSteal?.({
+        effectId: `robber:steal:${ctx.currentPlayer}:${selectedVictimId}:turn-${ctx.turn ?? "unknown"}`,
+        thiefId: ctx.currentPlayer,
+        victimId: selectedVictimId
       });
     }
 
@@ -1119,7 +1174,7 @@ export const autoChooseSteal = {
 
 export const maritimeTrade = {
   move: (context, trade) => {
-    const { G, playerID } = context;
+    const { G, playerID, ctx, effects } = context;
 
     const receive = Array.isArray(trade?.receive)
       ? trade.receive
@@ -1148,6 +1203,12 @@ export const maritimeTrade = {
         give: countResources(trade.give),
         receive: countResources(receive)
       }
+    });
+    effects?.maritimeTrade?.({
+      effectId: `trade:maritime:${playerID}:turn-${ctx?.turn ?? "unknown"}`,
+      playerId: playerID,
+      give: [...trade.give],
+      receive: [...receive]
     });
   }
 };
@@ -1239,7 +1300,7 @@ export const playDevCardStart = {
         data: { cardType: "knight" },
         forced: options?.forced
       });
-      logAwardChanges(G, ctx, previousAwards, options);
+      logAwardChanges(G, ctx, previousAwards, options, effects);
       maybeLogGameOver(G, ctx);
       const startPayload = buildKnightPlayPayload({
         G,
@@ -1449,7 +1510,7 @@ export const placeRoadFromDevCard = {
       data: { edgeId: edge, free: true, via: "devCard" },
       forced: options?.forced
     });
-    logAwardChanges(G, ctx, previousAwards, options);
+    logAwardChanges(G, ctx, previousAwards, options, effects);
     maybeLogGameOver(G, ctx);
 
     devPlay.pendingRoads -= 1;
