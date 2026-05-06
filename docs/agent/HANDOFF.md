@@ -45,6 +45,13 @@ Build a playable online Catan MVP with a **thin UI** and a **deterministic game 
 - `app/catana/utils/playerView.js`  
   Maps core player state to UI colors/resources.
 
+### UI context and dev surfaces
+- `docs/agent/UI_CONTEXT.md`: fast routing guide for Catana UI work. Read this before UI, HUD, animation, audio, copy, or timing changes.
+- `docs/agent/skills/catana-brand/SKILL.md`: Catana visual language and component guidance. Read before styling or building UI.
+- `app/catana/dev/sandbox/`: real board sandbox for HUD, board, viewer-perspective, and anchor-dependent effect checks.
+- `app/catana/dev/effects/`: isolated deterministic effect/audio replay surface.
+- `app/catana/components/README.md`: local component context and common UI guardrails.
+
 ## Current status (Jan 9, 2026)
 Working minimal loop:
 - Initial placement (settlement + road) uses core rules.
@@ -106,3 +113,4 @@ Variants can be added by creating new ruleset objects.
 - Don’t mutate UI-only state that duplicates core state.
 - Engine is authoritative; UI should call core apply functions and render from `G.core`.
 - Keep changes small and test-driven for core logic.
+- For UI work, start at `docs/agent/UI_CONTEXT.md` and use the closest dev surface rather than relying on static source inspection alone.

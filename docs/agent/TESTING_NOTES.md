@@ -2,6 +2,22 @@
 
 Future tests to implement when ready.
 
+## UI Verification Matrix
+
+Use this matrix to choose the smallest check that proves a UI change. It does not replace focused tests for logic, event wiring, or regressions.
+
+| Change type | Canonical surface | First viewport/state | Verification default |
+| --- | --- | --- | --- |
+| Gameplay HUD, opponent boxes, resource/dev-card rails, turn controls | `/catana/dev/sandbox` | `1440x900`, relevant preset and viewer seat | Manual/dev-surface check plus `git diff --check` for tuning-only changes |
+| Mobile HUD or responsive layout | `/catana/dev/sandbox` | `390x844`, same preset/state as desktop | Manual/dev-surface check; add focused tests only for shared logic or regression locks |
+| Anchor-dependent board effects | `/catana/dev/sandbox` | actor and non-actor viewer perspectives | Sandbox replay or real flow; focused payload/registry tests when wiring changed |
+| Isolated effect runner or audio cue timing | `/catana/dev/effects` | selected effect replay, normal and reduced motion when relevant | Lab replay; focused lint/tests for runner, registry, cue, or helper changes |
+| Left meta rail connector geometry | `/catana/dev/sidebar-connection` first, then `/catana/dev/sandbox` | log-only, chat-only, both-open states | Visual comparison in scratch surface; sandbox check before production claims |
+| Shared product UI primitive | `/catana/dev/ui` | desktop first, mobile if responsive | Component/source tests when API or shared behavior changed |
+| Game rules, race conditions, server-authoritative state | Focused Vitest/game-core tests | reproduced failing state or server log sequence | Test-first regression; sandbox/browser checks are secondary |
+
+When the user says the change is minor or asks not to debug visually, stop at the code diff plus the smallest relevant source/lint check.
+
 ## Integration Tests (boardgame.io Client)
 
 ### Placement Phase Flow

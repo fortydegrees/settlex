@@ -24,7 +24,9 @@ Ship small, correct changes with a stable, testable game engine.
 ## Fast iteration
 - For UI, animation, audio, copy, and timing tuning work, prefer direct edits plus manual verification in the relevant dev surface.
 - In particular, use `app/catana/dev/sandbox/` and `app/catana/dev/effects/` as the default loop for Catana board/effects/audio iteration.
+- Use browser-based visual companions/mockups only when they are clearly necessary to decide or verify the work, or when the user asks for them. For small animation choices, text proposals plus the relevant dev surface are usually enough.
 - Do not add or update tests for value-only tweaks, timing nudges, sound swaps, CSS adjustments, or other tuning-only changes unless the user explicitly asks.
+- For presentation-only Catana animation features, do not add tests by default. Use focused manual/dev-surface verification unless the change alters shared logic, reusable helpers, event wiring, state flow, or fixes a regression that should stay locked in.
 - Add or update tests when changing shared logic, reusable helpers, event wiring, state flow, or fixing a regression that should stay locked in.
 - For tuning tasks, use the smallest relevant verification step. Prefer targeted sandbox/effects-lab/manual checks over broad automated test runs.
 - If a tuning pass grows into a logic change, shared abstraction change, or bug fix, switch back to the normal test-oriented workflow.
