@@ -18,6 +18,7 @@ export function SandboxClient() {
   );
   const [resetVersion, setResetVersion] = useState(0);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const [isViewportWall, setIsViewportWall] = useState(false);
   const preset = useMemo(
     () => cloneSandboxPreset(selectedPresetId),
     [selectedPresetId]
@@ -25,6 +26,12 @@ export function SandboxClient() {
   const resolvedViewerSeat = coerceViewerSeat(preset, viewerSeat);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const nextIsViewportWall = searchParams.get("viewportWall") === "1";
+      setIsViewportWall(nextIsViewportWall);
+      setIsPanelCollapsed(nextIsViewportWall);
+    }
     setIsMounted(true);
   }, []);
 
@@ -54,6 +61,7 @@ export function SandboxClient() {
       preset={preset}
       presets={SANDBOX_PRESETS}
       viewerSeat={resolvedViewerSeat}
+      isViewportWall={isViewportWall}
       isPanelCollapsed={isPanelCollapsed}
       onPresetChange={setSelectedPresetId}
       onViewerSeatChange={setViewerSeat}
