@@ -32,6 +32,23 @@ describe("balanced dice", () => {
     expect(state.deck.find((entry) => entry.totalDice === 2)?.dicePairs).toHaveLength(0);
   });
 
+  it("rehydrates a masked balanced state before drawing", () => {
+    const state = { mode: "balanced" } as ReturnType<typeof createBalancedDiceState>;
+
+    const dice = drawBalancedDice(state, {
+      playerId: "0",
+      playerIds: ["0", "1"],
+      rng: sequenceRng(0, 0)
+    });
+
+    expect(dice).toEqual([1, 1]);
+    expect(state.cardsLeft).toBe(35);
+    expect(state.recentTotals).toEqual([2]);
+    expect(state.sevensRolledByPlayer).toEqual({ "0": 0, "1": 0 });
+    expect(state.sevenStreak).toEqual({ playerId: null, streakCount: 0 });
+    expect(state.deck.find((entry) => entry.totalDice === 2)?.dicePairs).toHaveLength(0);
+  });
+
   it("suppresses totals that exceed the recent-roll penalty", () => {
     const state = createBalancedDiceState(["0", "1"]);
     clearDeck(state);
