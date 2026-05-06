@@ -66,6 +66,13 @@ const cloneStandardDeck = (): BalancedDiceDeckEntry[] =>
 const countStandardCards = () =>
   STANDARD_DICE_DECK.reduce((total, entry) => total + entry.dicePairs.length, 0);
 
+const countRemainingCards = (deck: BalancedDiceDeckEntry[] = []) =>
+  deck.reduce(
+    (total, entry) =>
+      total + (Array.isArray(entry.dicePairs) ? entry.dicePairs.length : 0),
+    0
+  );
+
 export function createBalancedDiceState(playerIds: string[] = []): BalancedDiceState {
   const sevensRolledByPlayer: Record<string, number> = {};
   for (const playerId of playerIds) {
@@ -170,17 +177,67 @@ function updateSevenRolls(state: BalancedDiceState, playerId: string) {
   state.sevenStreak = { playerId, streakCount: 1 };
 }
 
-export function drawBalancedDice(
+function normalizeBalancedDiceState(
   state: BalancedDiceState,
-  { playerId, playerIds = Object.keys(state.sevensRolledByPlayer), rng }: BalancedDiceDrawOptions
-): DicePair {
-  if (state.cardsLeft < BALANCED_DICE_DEFAULTS.minimumCardsBeforeReshuffling) {
-    reshuffleBalancedDiceDeck(state);
+  playerIds: string[]
+): void {
+  if (!Array.isArray(state.deck) || state.deck.length === 0) {
+    state.deck = cloneStandardDeck();
+    state.cardsLeft = countStandardCards();
+  } else {
+    state.deck = state.deck.map((entry) => ({
+      totalDice: entry.totalDice,
+      dicePairs: Array.isArray(entry.dicePairs)
+        ? entry.dicePairs.map((pair) => [pair[0], pair[1]] as DicePair)
+        : [],
+      recentlyRolledCount: Number.isFinite(entry.recentlyRolledCount)
+        ? entry.recentlyRolledCount
+        : 0
+    }));
+
+    if (!Number.isFinite(state.cardsLeft) || state.cardsLeft < 0) {
+      state.cardsLeft = countRemainingCards(state.deck);
+    }
   }
 
-  const trackedPlayerIds = Array.from(new Set([...playerIds, playerId].map(String)));
-  for (const id of trackedPlayerIds) {
+  if (!Array.isArray(state.recentTotals)) {
+    state.recentTotals = [];
+  }
+
+  if (!state.sevensRolledByPlayer || typeof state.sevensRolledByPlayer !== "object") {
+    state.sevensRolledByPlayer = {};
+  }
+
+  if (
+    !state.sevenStreak ||
+    typeof state.sevenStreak !== "object" ||
+    !("playerId" in state.sevenStreak) ||
+    !("streakCount" in state.sevenStreak)
+  ) {
+    state.sevenStreak = { playerId: null, streakCount: 0 };
+  }
+
+  for (const id of playerIds) {
     state.sevensRolledByPlayer[id] ??= 0;
+  }
+}
+
+export function drawBalancedDice(
+  state: BalancedDiceState,
+  { playerId, playerIds, rng }: BalancedDiceDrawOptions
+): DicePair {
+  const trackedPlayerIds = Array.from(
+    new Set(
+      [
+        ...(playerIds ?? Object.keys(state.sevensRolledByPlayer ?? {})),
+        playerId
+      ].map(String)
+    )
+  );
+  normalizeBalancedDiceState(state, trackedPlayerIds);
+
+  if (state.cardsLeft < BALANCED_DICE_DEFAULTS.minimumCardsBeforeReshuffling) {
+    reshuffleBalancedDiceDeck(state);
   }
 
   const weightedEntries = state.deck.map((entry) => ({
