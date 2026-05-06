@@ -1,5 +1,170 @@
 # PROGRESS
 
+## Status (2026-05-06, Catana viewport wall)
+- Added a dev-only responsive viewport wall at `/catana/dev/viewports`.
+- The wall embeds `/catana/dev/sandbox` at extra-wide, laptop, iPad landscape/portrait, and phone landscape/portrait sizes, with Fit/Large/Small preview scale controls, per-frame open links, and a reload-all action.
+- Added `viewportWall=1` sandbox mode so embedded frames hide the sandbox control panel and show only the game UI.
+- Focused verification:
+- `pnpm exec eslint app/catana/dev/viewports/ViewportWallClient.js app/catana/dev/viewports/page.js app/catana/dev/sandbox/SandboxClient.js app/catana/dev/sandbox/SandboxBoardShell.js app/catana/__tests__/DevViewportWall.source.test.js`
+- `pnpm exec vitest run app/catana/__tests__/DevViewportWall.source.test.js --reporter=dot`
+- Playwright rendered `/catana/dev/viewports` against the existing local dev server on port 3000 and captured `output/playwright/catana-viewport-wall-clean.png`.
+
+## Status (2026-05-03, responsive desktop feed tightening)
+- Tuned the desktop `LeftMetaRail` feed for mid-width laptops:
+- the lane now clamps narrower around ~1700px viewports while preserving the roomier >2000px default,
+- `Game Log` stays taller than `Chat`, and the expanded frame headers use less padding.
+- the desktop feed now uses a fixed mid-left dock shell with independent slot motion, so `Game Log` lifts upward from its collapsed baseline, `Chat` opens downward from its slot, and the buttons stay put while panels expand.
+- the `Game Log` desktop frame now uses a two-stage reveal: the collapsed button widens in place first, then the log slot animates to `collapsedHeight - openHeight` while growing, so the title/body reveal upward instead of behaving like the chat panel.
+- the `Game Log` minimize path now does the reverse order the user asked for: it drops down and shortens first, then narrows back to the button width.
+- the inner desktop feed frame now fills its animated slot instead of running its own fixed-height animation, so the outer slot is the only owner of `top`/height geometry and the log bottom does not visually dip during minimize.
+- chat now has the same outer-slot phase ownership as game log, but keeps a fixed top anchor so its open animation can stage downward instead of jumping to full height immediately.
+- fixed the log phase callback so chat frame updates cannot overwrite the log phase with `"chat"`/`"log"` and accidentally force the wrong height path.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/LeftMetaRail.js app/catana/__tests__/LeftMetaRail.test.js`
+- `pnpm exec vitest run app/catana/__tests__/LeftMetaRail.test.js --reporter=dot`
+- `git diff --check`
+
+## Status (2026-05-03, UI context harness first pass)
+- Added a lightweight Catana UI-context layer so future agents can find the right surface-specific guidance without changing the core workflow:
+- `docs/agent/UI_CONTEXT.md` now routes UI/HUD/animation/audio/copy/timing work to the correct local dev surface and records recurring agent reminders.
+- Added local README beacons for `app/catana/dev/sandbox/`, `app/catana/dev/effects/`, and `app/catana/components/`.
+- Linked the UI context from `docs/agent/HANDOFF.md`.
+- Added a UI verification matrix to `docs/agent/TESTING_NOTES.md` covering sandbox, effects lab, sidebar geometry, shared UI primitives, and server-authoritative logic.
+- Focused verification:
+- `git diff --check`
+
+## Status (2026-05-02, remote city upgrade animation)
+- Added a presentation-only remote city-upgrade animation for opponent settlement-to-city builds.
+- `app/catana/effects/placePiece.js` now detects non-local city upgrades and overlays a temporary settlement plus city in the effect layer: the settlement lifts/fades off the node, then the city drops into place with the existing shadow, dust, settle, and `build:city` cue language.
+- Local city placement keeps the existing build-pickup/drop path; `GameScreen` passes the viewer player id into the placement runner so the runner can split local vs remote presentation.
+- Focused verification:
+- `pnpm exec eslint app/catana/effects/placePiece.js app/catana/effects/placePieceDefaults.js app/catana/GameScreen.js app/catana/__tests__/effects/placePieceWiring.test.js`
+- `pnpm exec vitest run app/catana/__tests__/effects/placePieceWiring.test.js app/catana/__tests__/effects/placePieceDefaults.test.js app/catana/__tests__/Moves.placePieceEffects.test.js --reporter=dot`
+- `git diff --check`
+
+## Status (2026-05-02, Longest Road award animation first pass)
+- Added a presentation-only Longest Road award animation:
+- live Longest Road owner changes emit an `awardClaimed` effect payload with the winner, prior owner, and winner road ids,
+- `GameEffects` routes award claims through the effect bus as `award:claim`,
+- `app/catana/effects/awardClaim.js` shimmers the winner's roads and flies a compact Longest Road token into that player's road-stat HUD target.
+- Revised the road flourish to animate the actual placed road DOM pieces instead of drawing a separate overlay shimmer:
+- the winner's rendered roads now lift slightly off the board, scale up, glow in the player color, and settle back before the token lands.
+- Follow-up tuning:
+- removed road transform animation after sandbox testing showed placed roads could shift/rotate because their board placement already uses CSS transforms,
+- the actual road pieces now use a slower glow/brightness/box-shadow pass only, leaving their transform stack untouched.
+- Removed the road `z-index` bump from the award glow so settlements and cities keep stacking above roads during and after the effect.
+- Removed rectangular road `box-shadow` from the glow; the road pieces now use only `filter: drop-shadow(...)` so the glow follows the visible road art instead of showing the element box.
+- Staggered the award sequence so the road glow completes before the Longest Road token appears and flies into the player HUD.
+- Tuned the Longest Road token beat so it pops larger, holds for about half a second, then shrinks while moving to the HUD target.
+- Added Longest Road takeover motion: if `previousOwnerId` is present, the token starts at the previous holder's Longest Road HUD stat and travels to the new holder after the road glow.
+- Smoothed the road glow release by fading to transparent matching filter functions over a longer exit instead of tweening directly back to `filter: none`.
+- Added Largest Army award/takeover motion after Knight resolve: first awards pop from the new holder's army HUD stat, while takeovers move from the previous holder's army stat to the new holder.
+- Retuned first Largest Army awards so the army badge starts from the rendered board robber instead of the new holder's army HUD stat.
+- Generalized `awardClaim.js` so Longest Road and Largest Army share the same award token choreography with different icons, HUD anchors, and optional road glow.
+- Increased the shared award-token pop from `1.24x` to `1.5x` and restyled the token as a warmer gold award badge.
+- Added a dev-sandbox `Replay Longest Road Award` button under board effects for manual tuning without mutating game state.
+- Added a dev-sandbox `Replay Road Takeover` button for the previous-holder transfer path.
+- Added dev-sandbox `Replay Largest Army Award` and `Replay Army Takeover` buttons for direct army award tuning.
+- Corrected the HUD effect anchors in `PlayerAvatarStats` so Longest Road and Largest Army have distinct ids: `p{playerId}-longest-road` and `p{playerId}-largest-army`.
+- Focused verification:
+- `pnpm exec eslint app/catana/effects/awardClaim.js app/catana/effects/GameEffects.js app/catana/effects/registry.js app/catana/GameScreen.js app/catana/Moves.js app/catana/components/PlayerAvatarStats.js app/catana/dev/sandbox/SandboxBoardShell.js app/catana/dev/sandbox/SandboxPanel.js`
+- no tests added or run, per presentation-only animation guidance.
+
+## Status (2026-05-02, remote robber move animation)
+- Added a presentation-only remote robber move animation:
+- real robber moves emit a `robberMove` effect payload with source/destination tile ids,
+- `GameEffects` routes it through the effect bus as `robber:move`,
+- `app/catana/effects/robberMove.js` renders a lifted glide and landing drop for non-placing viewers, while skipping the active manual placer and respecting reduced motion/hidden-tab policy,
+- the live overlay temporarily hides the destination static robber so viewers do not see a duplicate piece during travel.
+- Added a dev-sandbox `Replay Remote Robber Move` button that dispatches the same board effect without changing game state, so the motion can be tuned from `/catana/dev/sandbox`.
+- Focused verification:
+- `pnpm exec eslint app/catana/effects/robberMove.js app/catana/effects/GameEffects.js app/catana/effects/registry.js app/catana/GameScreen.js app/catana/Tile.js app/catana/dev/sandbox/SandboxBoardShell.js app/catana/dev/sandbox/SandboxPanel.js app/catana/Moves.js`
+- no tests added or run, per presentation-only animation guidance.
+
+## Status (2026-05-02, remote robber move landing tune)
+- Tuned the remote robber move animation after sandbox review:
+- removed the white dust/flash underlay from the moving robber,
+- changed the runner to prefer the actual rendered robber DOM position as its source/destination anchor when available, so live landings align to the same left-offset resting placement used by the board tile instead of the raw tile center.
+- Follow-up sandbox fix:
+- when sandbox replay has no destination robber DOM because it does not mutate game state, the runner now carries the measured source robber resting offset to the destination fallback instead of landing at the raw tile center.
+- Focused verification:
+- `pnpm exec eslint app/catana/effects/robberMove.js`
+- no tests added or run, per presentation-only animation guidance.
+
+## Status (2026-05-02, Catana fast-iteration guidance tightened)
+- Updated repo-root `AGENTS.md` so browser-based visual companions/mockups are reserved for cases where they are clearly needed or explicitly requested.
+- Clarified that presentation-only Catana animation features should use focused manual/dev-surface verification by default, without adding tests unless shared logic, reusable helpers, event wiring, state flow, or regression coverage is involved.
+
+## Status (2026-05-01, gameplay card-transfer animation wiring)
+- Added effect wiring for several previously silent card movements:
+- opponent development-card purchases now reuse the authoritative `buyDevCardReveal` event, preserving the buyer-only face reveal while showing other viewers a dev-card back moving into the buyer's dev stack,
+- robber steals now emit a public transfer event with thief/victim ids and animate a resource card from victim to thief; thief/victim clients attempt a local before/after hand diff to show the resource face, while uninvolved viewers fall back to the resource back,
+- maritime trades now emit give/receive transfer payloads and animate resource cards through the shared effect layer,
+- robber discards now emit discard payloads and animate the discarded resource cards away from the player.
+- `app/catana/effects/cardTransfer.js` owns the shared GSAP card-transfer runner for resource backs/faces and dev-card backs.
+- `app/catana/GameEffects.js`, `app/catana/effects/registry.js`, and `app/catana/GameScreen.js` now route the new events through the same effect-bus pattern used by resource distribution and dev-card play.
+- Focused verification:
+- source review only per request; browser control and test runs intentionally skipped.
+
+## Status (2026-05-01, local HUD center alignment restore)
+- Kept the local VP badge on the avatar tile's top-right corner so it reads as an avatar chip instead of a panel-end badge.
+- Kept the player dock outside the shared glass shell so the button shading/backdrop blur remains intact.
+- Added a rail-measured dock overlay so the dock still anchors to the resource-count rail, preserving the pre-merge top-of-bar positioning behavior instead of centering against the whole merged HUD row.
+- Focused verification:
+  - `pnpm exec vitest run app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/Dock.buildPickupUx.test.js --reporter=dot`
+  - `pnpm exec eslint app/catana/components/PlayerActionContainer.js app/catana/components/ActionsDock/Dock.js`
+
+## Status (2026-05-01, bottom dice tray chrome removal)
+- Removed the visible glass background from the bottom-right dice tray while keeping its fixed hit area, spacing, inactive dimming, and roll-only interactivity.
+- Focused verification:
+- pending.
+
+# Status (2026-05-01, HUD badge polish for VP and build counts)
+- Re-skinned the player VP bubble and the build-piece remaining-count badges so they read like part of the Catana glass HUD instead of plain MVP-era circles.
+- `app/catana/components/PlayerAvatarStats.js` now uses a shared `catana-hud-vp-badge` treatment for the VP count.
+- `app/catana/components/ActionsDock/DockCard.js` now uses a shared `catana-hud-piece-count-badge` treatment for road/settlement/city remaining counts.
+- `app/catana/components/hudGlass.css` now owns the shared badge visuals, including glass fill, subtle amber VP emphasis, and smaller inventory-chip styling for piece counts.
+- The build-piece chips were then toned down further with lighter numerals and less ornate shadowing so they read as utility counters rather than a separate accent language.
+- The VP badge was also revised away from a visible gold rim toward the shared white/sky glass HUD ring, leaving only a faint warm interior highlight.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/PlayerAvatarStats.js app/catana/components/ActionsDock/DockCard.js`
+- `git diff --check`
+
+## Status (2026-05-01, opponent resource-card shadow cleanup)
+- Removed the image drop shadow from opponent resource-card stacks while leaving other `CardStack` uses unchanged.
+- `app/catana/components/CardStack.js` now accepts an `imageClassName` override for stack-specific card image styling.
+- `app/catana/components/OpponentPlayerBox.js` now passes a shadow-free `object-contain` image class for the opponent resource stack, so the stacked resource backs read flatter in the dock.
+- Focused verification:
+- pending visual check in the Catana dev sandbox.
+
+## Status (2026-05-01, opponent avatar and local dev holder tuning)
+- Tuned the extended Catana avatar panel:
+- the mounted username nameplate now left-aligns its text,
+- the mounted username nameplate now sizes to its text, capped by the panel max width for long names,
+- the mounted username nameplate now uses lighter text, a lower profile, and subtler border/shadow treatment,
+- the extended opponent VP badge is slightly smaller and less stark,
+- the extended opponent VP badge now anchors to the avatar tile's bottom-right corner instead of bottom-left.
+- the top opponent row now sits at `top-10` to leave more padding above the mounted username tabs.
+- the mounted username tab now uses a left-side-only downward connector, with the tab's right edge squared at the panel seam instead of curving or dropping down.
+- the local dev-card holder now renders as an embedded right-hand bay inside the bottom resource rail, separated by a subtle vertical divider.
+- the local dev-card bay divider no longer adds extra left margin after ore, so divider spacing is balanced against the first dev card.
+- the local dev-card bay now stays mounted at zero width and eases open with a slow-fast-slow max-width transition when the first dev card appears.
+- the local dev-card bay divider now uses a sky-tinted line with a white highlight so it reads more clearly on the bottom glass rail.
+- the opponent panel divider now uses the same sky-tinted line and white highlight for consistency.
+- the mounted opponent username text now uses lighter weight, softer shadow, and slight letter spacing to reduce letter merging.
+- the turn status/timer now stays in the bottom-right turn cluster as a smaller passive pill above the dice tray and end-turn button, with wider dice spacing to avoid overlap.
+- the bottom-right dice tray now stays visible across turn-control modes and only becomes clickable during roll mode.
+- inactive bottom-right dice now render dimmed/desaturated and the dice content is lowered/clipped within the tray so it sits inside the holder.
+- the bottom-right action cluster now uses the same 16px outer viewport padding as the top-left utility cluster, removes its downward nudge, and has slightly wider internal gaps.
+- restored the live-game resign/results pill placement by moving fixed positioning to an outer wrapper instead of applying it directly to the shared `GlassPillButton`.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/DevCardDisplay.js app/catana/components/PlayerActionContainer.js app/catana/components/OpponentPlayerBox.js app/catana/components/PlayerAvatarStats.js`
+- `pnpm exec vitest run app/catana/__tests__/DevCardDisplayLayout.source.test.js app/catana/__tests__/DevCardDisplay.disabledStyle.test.js app/catana/__tests__/PlayerActionBadges.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/components/TurnControlCluster.js app/catana/components/PlayerActionContainer.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/TurnControlCluster.test.js`
+- `pnpm exec vitest run app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/__tests__/GameScreen.gameOver.test.js`
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.gameOver.test.js --reporter=dot`
+
 ## Status (2026-04-30, prod deploy verify unblock)
 - Investigated the slow `deploy-prod` pushes on `main`.
 - Current behavior:
@@ -4655,6 +4820,41 @@
 - Verification:
   - Not run; value-only UI tuning per request.
 
+## Status (2026-04-30, bottom HUD glass visual spike)
+- Added a shared Catana HUD glass treatment for bottom gameplay chrome.
+- Applied the treatment to:
+  - the local action/resource dock shell,
+  - dock action buttons,
+  - local avatar stat panel,
+  - opponent avatar stat panels,
+  - opponent resource/dev-card panels.
+- Nudged the turn-control cluster inward and moved dice slightly higher to reduce the bottom-right crowding.
+- Increased dock button blur and opacity so underlying panel borders do not show through as strongly.
+- Moved the dock disabled dimming filter off the button surface and onto the icon layer, then added an inner dock-button fill layer so the parent resource shell does not show through crisply.
+- Removed dock-button overflow clipping so count badges can extend outside the button again, and made dock buttons use a mostly solid frosted fill because a child backdrop filter cannot reliably blur the parent resource shell.
+- Moved dock-button backdrop blur onto the visible `::before` glass layer with a transparent button background so the button reads as frosted glass rather than a white solid tile.
+- Removed the dock-button pseudo-element glass layer and put the translucent gradient, shadow, and `backdrop-filter` directly on `.catana-hud-dock-card`, matching the working dock/status-box pattern.
+- Moved the action dock out of the resource shell so dock-button backdrop filters are no longer nested inside the parent `.catana-hud-glass` backdrop root.
+- Reworked the avatar/stat transition so the avatar leads as the strong identity tile and the glass stat panel tucks behind with an asymmetric left edge.
+- Flattened the stat panel's left edge and tucked it further under the avatar so the join does not show a visible rounded dip.
+- Reduced the opponent resource/dev-card container radius so it reads as secondary chrome next to the avatar/stat unit.
+- Widened the opponent resource/dev-card container slightly with more horizontal padding and stack gap.
+- Reworked opponent HUD into one shared glass panel: road/army stats, a vertical divider, and resource/dev stacks now live inside the same stat panel behind the avatar.
+- Replaced the tall-panel username experiment with a mounted glass nameplate above the compact opponent panel, kept the VP badge on the avatar's top-left, and nudged the top opponent row down for clearance.
+- Softened the mounted nameplate by removing its hard border and increasing backdrop blur/saturation so it reads less like an outlined pill.
+- Repositioned the mounted nameplate so its bottom sits on the compact panel's top edge and its center aligns with the stat/card panel.
+- Restyled the mounted nameplate to match the main glass panel, with the bottom border omitted so it attaches visually to the panel below.
+- Added a reversible avatar-tab nameplate variation using the player's avatar gradient, attached from the avatar side and extending over the shared opponent panel.
+- Fixed the avatar-tab nameplate so its background explicitly uses the avatar gradient instead of being overridden by the base glass nameplate background, and increased its white outline to match the avatar tile treatment.
+- Moved the avatar-tab nameplate so its bottom edge aligns with the top of the compact stat/card panel and restored its left white border.
+- Shifted the avatar-tab nameplate left so its left edge aligns with the avatar tile.
+- Repositioned the avatar-tab nameplate using the shared stat/card panel's center point for comparison.
+- Reverted the avatar-tab nameplate experiment and restored the glass-themed mounted nameplate as the accepted direction.
+- Shifted the glass-themed nameplate left over the avatar side for a quick comparison.
+- Moved the opponent extended-layout VP badge from avatar top-left to avatar bottom-left.
+- Verification:
+  - Not run; visual spike per request.
+
 ## Status (2026-04-30, local resource dock count feedback)
 - Added local resource dock count feedback:
   - the per-resource counts in `PlayerActionContainer` now render through `AnimatedCount`,
@@ -4665,6 +4865,18 @@
 - Verification:
   - `pnpm exec vitest run app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/AnimatedCount.test.js`
 
+## Status (2026-04-30, local resource count timing)
+- Doubled the local resource dock count-change animation duration:
+  - resource count enter/gain-loss flash: `220ms` -> `440ms`,
+  - old-count exit: `180ms` -> `360ms`,
+  - fallback clear timeout: `260ms` -> `520ms`.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/AnimatedCount.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/AnimatedCount.test.js app/catana/__tests__/PlayerActionBadges.test.js` still hits the current HUD-glass source-test mismatch in `PlayerActionBadges.test.js` (`ring-white/60` no longer present in the dirty working tree).
+
+## Status (2026-05-01, left meta rail log lift)
+- Raised the desktop left meta rail so the game log sits higher on the screen and gave the open feed panels more vertical room by increasing the shared open-height clamp.
+
 ## Status (2026-04-30, player color test maintenance)
 - Updated stale player-color tests to match the current visual color contract:
   - legacy `blue` now canonicalizes to `royal`,
@@ -4672,6 +4884,23 @@
   - the lobby picker expectation now matches the curated 12-color order.
 - Verification:
   - `pnpm exec vitest run app/catana/__tests__/playerColors.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/playerIdentityStorage.test.js app/catana/__tests__/playerView.test.js app/catana/__tests__/pieceAssets.test.js app/catana/__tests__/themeAssets.test.js app/catana/__tests__/GameScreen.playerColors.test.js app/catana/__tests__/playerColorsInGame.test.js app/catana/__tests__/playerAvatarStats.color.test.js app/catana/__tests__/GameOverModal.test.js app/catana/__tests__/PostgameOverlay.test.js`
+
+## Status (2026-05-01, balanced dice masked-state rehydration)
+- Hardened balanced dice so the first local roll can rehydrate from the masked player-view state:
+  - `drawBalancedDice` now normalizes a partial `{ mode: "balanced" }` state before using the deck or seven counters,
+  - the normalized state preserves the exact deck/counter behavior for real game state,
+  - the first optimistic client-side roll no longer crashes when the balanced dice state has been player-view masked.
+- Verification:
+  - `pnpm -C game-core exec vitest run src/rules/balancedDice.test.ts`
+  - `pnpm -C game-core build`
+  - `pnpm -C game-core test`
+  - `pnpm exec vitest run app/catana/__tests__/Moves.balancedDice.test.js app/catana/__tests__/Game.boardConfig.test.js app/catana/__tests__/stateMasking.test.js`
+
+## Status (2026-05-01, local HUD shared seam)
+- Reworked the local player HUD so the road/army stats and resource/dev-card rail now share one glass panel with a single internal divider, matching the opponent box seam treatment.
+- Added a small `showStatsPanelNameplate` escape hatch on `PlayerAvatarStats` so the self HUD can reuse the shared shell without mounting the opponent-style nameplate.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/TurnControlCluster.test.js --reporter=dot`
 
 ## Status (2026-04-30, dev-card purchase count timing)
 - Changed `buyDevCardReveal` to a zero-duration bgio effect so the authoritative post-purchase board state can render immediately:
@@ -4690,3 +4919,24 @@
 - Verification:
   - `pnpm exec vitest run app/catana/__tests__/DevCardDisplayLayout.source.test.js app/catana/__tests__/DevCardDisplay.disabledStyle.test.js --reporter=dot`
   - `pnpm exec eslint app/catana/components/DevCardDisplay.js`
+
+## Status (2026-05-06, chat minimize motion)
+- Adjusted the desktop left meta rail chat minimize sequence so the chat panel collapses vertically first, then shrinks horizontally like the game log panel.
+- Verification:
+  - `pnpm exec eslint app/catana/components/LeftMetaRail.js`
+  - `git diff --check -- app/catana/components/LeftMetaRail.js`
+
+## Status (2026-05-06, chat glass touch-up)
+- Lightly retuned the log/chat desktop feed frame toward the newer Catana HUD glass language with a softer border, lighter blue-white gradient, and calmer shadow.
+- Updated the chat composer into a rounded glass input inside a subtler footer band, and muted the empty chat row so the open panel reads less like a flat blue sheet.
+- Verification:
+  - `pnpm exec eslint app/catana/components/ChatPanel.js app/catana/components/LeftMetaRail.js`
+  - `git diff --check -- app/catana/components/ChatPanel.js app/catana/components/LeftMetaRail.js`
+
+## Status (2026-05-06, utility button hierarchy)
+- Rebalanced the peripheral control hierarchy:
+  - softened the top-left mute/settings/rules buttons with a quieter glass fill and lighter shadow,
+  - raised the log/chat compact toggles with a clearer frosted fill, stronger border, and darker icon,
+  - gave desktop minimized log/chat buttons a slightly stronger restore-state glass treatment.
+- Verification:
+  - Not run; value-only UI tuning per request.

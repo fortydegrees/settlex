@@ -1,5 +1,76 @@
 # NOTES
 
+- Viewport wall note:
+- `/catana/dev/viewports` is the default side-by-side responsive review surface for Catana game UI layout work.
+- It embeds the real `/catana/dev/sandbox` route at extra-wide, laptop, iPad landscape/portrait, and phone landscape/portrait dimensions.
+- Use `viewportWall=1` on sandbox embeds to hide the sandbox control panel so the preview frames reflect game UI only.
+- Keep this dev-only; production gameplay should not depend on viewport-wall query params.
+
+- UI context harness note:
+- `docs/agent/UI_CONTEXT.md` is now the routing layer for Catana UI/HUD/animation/audio/copy/timing work. Keep it short and use it to point agents to local context rather than duplicating all history.
+- `app/catana/dev/sandbox/README.md` owns real-board sandbox guidance for HUD, board, viewer-perspective, and anchor-dependent effect checks.
+- `app/catana/dev/effects/README.md` owns isolated effect/audio replay guidance.
+- `app/catana/components/README.md` owns component-level guardrails and common Catana component surface mapping.
+- `docs/agent/TESTING_NOTES.md` now includes a UI verification matrix. For tuning-only UI work, prefer the smallest relevant dev-surface/manual check; use focused tests when shared logic, reusable helpers, event wiring, state flow, or a regression lock changes.
+- When future UI sessions reveal repeated corrections, add them to the closest surface README or to this notes file rather than expanding repo-root instructions.
+
+- Remote city upgrade animation note:
+- Opponent settlement-to-city upgrades should read as a replacement, not a normal new placement: temporarily show the settlement lifting off the node, then drop the city into place.
+- Keep this remote-only. The local player should keep the existing build-pickup/drop city placement feedback after choosing their own upgrade target.
+- `app/catana/effects/placePiece.js` owns this split through `getViewerPlayerId`; `GameScreen` supplies the current viewer id when creating the placement runner.
+- The board already suppresses the real city while the `placePiece` city effect is active, so the temporary effect-layer settlement/city can cover the authoritative state update without showing duplicate pieces.
+- Tune the lift/drop via `upgradeLiftDistance`, `upgradeLiftDuration`, `upgradeLiftScale`, and `upgradeCityDropOverlap` in `app/catana/effects/placePieceDefaults.js`.
+- Keep the audio cue as `build:city`, timed to the city landing rather than the settlement lift.
+
+- Longest Road award animation note:
+- Live Longest Road ownership changes now emit a presentation-only `awardClaimed` effect with `awardType: "longestRoad"`, the new owner, previous owner, and the new owner's road ids.
+- Largest Army award animation is driven locally after Knight `devCardPlayResolved` completes, using the payload's `previousLargestArmyOwnerId` and `nextLargestArmyOwnerId` so the badge does not move before the Knight resolve beat.
+- `app/catana/effects/awardClaim.js` owns the award token runner for both `longestRoad` and `largestArmy`: Longest Road first glows/brightens the actual rendered road DOM pieces, while Largest Army uses the same token beat with the army icon and `p{playerId}-largest-army` HUD target. The shared token should read as a small gold award medal, not a plain pale glass chip.
+- First Largest Army awards should source the army token from the rendered board robber; Largest Army takeovers should still source from the previous holder's army HUD stat.
+- Keep the Longest Road award staged: road glow first, then the award token pops large, holds briefly, and shrinks while traveling to the player HUD after the glow sequence finishes.
+- When an award is taken from another player, use the payload `previousOwnerId` to start the award token at that player's matching HUD stat; first awards and missing previous anchors should still start from the new award context.
+- Keep the road glow release smooth by tweening to transparent matching `drop-shadow(...) brightness(1) saturate(1)` filters before restoring the original inline filter. Avoid tweening directly to `filter: none`, which can snap.
+- Avoid `box-shadow` on the road elements for this glow because it reveals the rectangular element bounds around the road art.
+- Do not animate `transform`, `x`, `y`, or `scale` on placed road elements. Their board position and rotation already live in the element's CSS transform, and GSAP transform changes can decompose that stack and leave roads shifted/rotated.
+- Do not raise placed roads with `z-index` during the award glow; roads must keep their normal board stacking so settlements/cities stay above them.
+- This first pass intentionally animates all roads owned by the award winner rather than solving/rendering the exact longest path because the current engine exposes the winner/length, not the specific path edge list.
+- The dev sandbox has replay buttons for Longest Road award/takeover and Largest Army award/takeover under board effects; they dispatch `catana:dev-sandbox:award-claim` without mutating game state.
+- `PlayerAvatarStats` now exposes distinct `p{playerId}-longest-road` and `p{playerId}-largest-army` HUD anchors; keep these ids stable for award/dev-card effects.
+
+- Remote robber move animation note:
+- Live robber moves now emit a presentation-only `robberMove` effect payload with `actorId`, `fromTileId`, and `toTileId`.
+- `app/catana/effects/robberMove.js` owns the GSAP lift/glide/drop runner and skips the active non-forced actor view so the placer keeps the direct placement UX while other players/spectators see the remote motion.
+- The runner hides the destination static robber during the live overlay animation via `data-catana-robber-tile-id`, then restores it after landing; the dev-sandbox replay hides the source instead and does not mutate game state.
+- Robber move targeting should prefer the actual rendered robber DOM position when available so travel lands on the same left-offset resting position used by `Tile.js`, not the raw hex center.
+- Sandbox replay does not mutate game state, so there is no destination robber DOM node. In that case, carry the measured source robber resting offset over to the destination tile instead of falling back to the raw center.
+- Keep the remote move free of the old white dust/flash underlay; only the subtle dark board-contact shadow should travel with the robber.
+- The dev sandbox has a `Replay Remote Robber Move` button under board effects that dispatches `catana:dev-sandbox:robber-move` for manual tuning.
+
+- Agent workflow note:
+- repo-root `AGENTS.md` now makes the Catana fast-iteration carveout explicit for visual companions and presentation-only animation features:
+- use browser-based visual companions/mockups only when clearly needed or user-requested,
+- avoid tests by default for presentation-only Catana animation work, using focused sandbox/effects/manual verification unless shared logic, reusable helpers, event wiring, state flow, or regression coverage is involved.
+
+- Gameplay transfer animation note:
+- `app/catana/effects/cardTransfer.js` is the shared lightweight card-transfer runner for non-distribution card movement: public opponent dev-card buys, robber steals, maritime trades, and discards.
+- Keep this path presentation-only:
+- moves emit small factual effect payloads,
+- `GameEffects` maps bgio effects onto local effect-bus events,
+- `GameScreen` resolves viewer perspective, local known resources, and DOM anchors.
+- Opponent dev-card purchases must not reveal the card face. The buyer's private reveal remains in `DevCardPurchaseReveal`; everyone else sees only the dev-card back moving into `p{playerId}-devcards`.
+- Robber steal payloads should remain public-safe. Use thief/victim ids plus viewer-local hand diffs to show a resource face when the current viewer can know it; uninvolved viewers should see the resource back.
+- Maritime trade and discard animations can show resource faces because the current canonical game-log entries already publish those resource maps.
+
+- HUD badge note:
+- VP and build-piece remaining counts now share the new `catana-hud-vp-badge` and `catana-hud-piece-count-badge` treatments from `app/catana/components/hudGlass.css`.
+- keep these badges visually tied to the existing glass HUD language instead of reverting to plain blue/white circles.
+- avoid a visible gold rim on the VP badge; it should read as a glass HUD score chip, not an achievement medal.
+- the build-piece chip version is intentionally quieter than VP: smaller numerals, lighter weight, and less decorative shadowing.
+
+- Local player HUD note:
+- the player dock should stay outside the glass shell so its button backdrop blur keeps sampling the board backdrop instead of the parent panel.
+- anchor the dock overlay to the measured resource rail, not the whole merged avatar/stat/resource row, so it keeps the pre-merge positioning behavior while preserving the glass button treatment.
+
 - Prod deploy workflow note:
 - `.github/workflows/deploy-prod.yml` is intentionally a gated deployment: push to `main` runs install plus `pnpm verify` first, and only after that passes does it rsync the repo to the OCI app directory and run `infra/scripts/deploy-prod.sh`.
 - `infra/scripts/deploy-prod.sh` restarts/rebuilds the Docker Compose `postgres`, `web`, `game`, and `proxy` services, then runs `pnpm db:migrate` inside `web` if that script exists.
@@ -9,6 +80,9 @@
 
 - Agent workflow note:
 - repo-root `AGENTS.md` now has a `Fast iteration` carveout for UI/audio/animation/copy/timing tuning. For Catana sandbox/effects work, prefer direct edits plus manual verification and skip test churn unless the change affects shared logic, wiring, state flow, or a deliberate regression lock.
+
+- Opponent resource-card note:
+- the opponent resource-card stack now uses a shadow-free `CardStack` image override, while the shared stack component still defaults to `drop-shadow-md` for other uses.
 
 - Dev-card dock prototype note:
 - the local player's dev-card tray is currently a grouped MagicDock-style strip, not the older stacked placeholder box.
@@ -23,9 +97,17 @@
 - Desktop low-chrome feed HUD note:
 - current desktop direction supersedes the vertical meta utility rail experiment.
 - treat `Log` and `Chat` as separate bottom-left ambient game feed frames, not as large side/admin panels and not as desktop tabs.
-- both desktop frames should be visible by default, equal in width and equal in default height, with independent minimize/restore controls.
-- default desktop frame height should stay tall enough to be useful as a feed, currently a clamped `12rem` to `16rem` height driven by viewport height.
+- both desktop frames should be visible by default, equal in width, with independent minimize/restore controls.
+- `Game Log` should stay a bit taller than `Chat` on mid-width desktops, while the wide-screen default remains roomier.
+- the frame header can tighten a little at expanded state; trim padding before changing the open/close timing.
+- keep the desktop dock shell fixed at its mid-left resting position; `Game Log` should open upward from its slot, `Chat` should open downward from its slot, and neither button should jump when the other panel opens.
 - minimized desktop feed entries should remain full-width rows in the same vertical lane; avoid reverting to inline pills that sit side-by-side when both panels are closed.
+- keep the dock shell fixed at its resting position; only `Game Log` should lift upward from the compact baseline while `Chat` stays anchored downward from the same compact button stack.
+- `Game Log` should use a two-stage upward reveal: the collapsed button widens in place first, then the log slot animates from `top: 0` to `collapsedHeight - openHeight` while growing. Do not drive this with a bottom-anchored inner frame, because that can still read like the chat panel and can disturb the compact button stack.
+- when minimizing `Game Log`, make `closing-body` the down/short stage and `closing-width` the thin stage. The close should reverse the open order: first drop down and shorten while still full width, then narrow back to the button size.
+- keep slot geometry single-owned: the outer log/chat slot owns animated `top` and `height`; the inner `DesktopFeedFrame` should use `h-full` and only switch width states. Avoid reintroducing explicit open-height classes on the inner frame, or the close animation can dip because two height transitions race.
+- chat should use its own outer-slot phase state too, even though its top stays fixed. That lets the open motion stage downward instead of jumping to full height on the first open beat, while still preserving the minimize direction the user already liked.
+- when a frame reports animation phase, filter the callback to `panelId === "log"` before updating `logFramePhase`; passing `setLogFramePhase` directly accepts the panel id as the state value and breaks the height/top path.
 - open/close motion should stay quiet and HUD-like: a short height/opacity/transform transition, not a bouncy reward animation.
 - keep the feed lane translucent but readable; it should clear the bottom player/action dock and avoid reserving board-layout width.
 - future HUD customization can allow shared width, vertical lane movement, and independent heights, but that belongs behind a deliberate edit/unlock mode.
@@ -3148,9 +3230,50 @@
       - Duel defaults to balanced dice; standard modes keep random dice.
       - Balanced dice persists private deck/recent/seven-tracking data in `G.diceState`.
       - `playerView` must keep masking `G.diceState` down to `{ mode: "balanced" }` so clients do not receive the exact internal deck snapshot.
+      - `drawBalancedDice` now rehydrates a masked balanced state before drawing so optimistic client-side rolls can still run against `{ mode: "balanced" }` without crashing.
     - Lobby color note:
       - `royal` is now the preferred dark-blue identity color.
       - Keep `sky` available in the full palette, but use `royal` for legacy `blue`, second-seat fallback, prominent picker placement, and guest/bot blue defaults.
       - The lobby picker is intentionally curated to 12 visible colors; keep extra palette entries available for existing stored identities and assets unless they are fully retired.
       - With 12 visible colors, the picker is tuned as an intrinsic-width centered 4-column grid of larger swatches rather than a wrapped dense strip.
       - Picker order leads with primary/bright hues and leaves neutral black/white options at the end.
+    - Bottom HUD glass note:
+      - `app/catana/components/hudGlass.css` is the experimental shared glass treatment for gameplay chrome.
+      - Keep avatar emoji tiles colorful; use the glass treatment mainly for shells, stat panels, and action buttons.
+      - Dock buttons need a stronger inner fill and heavier backdrop blur than larger panels so underlying resource-shell borders do not read through them.
+      - Do not apply ordinary CSS `filter` to the dock button surface itself; keep icon dimming on the image layer so the glass/backdrop surface remains independent.
+      - Do not use `overflow: hidden` on dock buttons; settlement/city count badges need to escape the button bounds.
+      - Keep dock-button glass on the button element itself: direct translucent gradient, direct shadow, and direct `backdrop-filter`, matching the main dock/status-box pattern.
+      - Keep the action dock as a sibling above the resource shell, not a child of the shell; nested `backdrop-filter` inside `.catana-hud-glass` cannot sample the board backdrop cleanly.
+      - Avatar tiles should lead as strong identity cards; stat panels should tuck behind with a flat left edge hidden under the avatar rather than using two fully rounded overlapping glass shapes.
+      - Opponent card stacks should share the same glass panel as road/army stats with a subtle vertical divider, instead of sitting in a separate rounded capsule.
+      - Opponent names should mount as a small overlapping nameplate above the compact shared panel, not by making the whole shared panel taller.
+      - Keep the mounted nameplate styled like the main glass panel, but omit its bottom border so it reads as attached to the compact panel below.
+      - The avatar-colored tab nameplate experiment did not read well; keep the glass-themed nameplate as the current accepted direction. Current comparison placement left-aligns the glass nameplate over the avatar side.
+      - In the opponent panel, the VP badge sits on the avatar's bottom-right while the mounted nameplate text stays left-aligned and the plate width sizes to the username, capped for long names.
+      - Keep the mounted nameplate lighter than the avatar tile: `700` weight, slight letter spacing, a softer text shadow, a lower tab height, and subtler border/shadow.
+      - Let the mounted nameplate connect down only on its left side, using a short connector foot while the tab's right edge stays square at the panel seam and does not extend downward.
+      - Keep the top opponent row at `top-10` so mounted username tabs have visible breathing room from the viewport top.
+      - The local `DevCardDisplay` holder should sit as an embedded right-hand bay inside the bottom resource rail, separated by a subtle vertical divider; card artwork and magnification behavior remain independent.
+      - Keep the local dev-card bay wrapper mounted at zero width when empty so first-card arrival can animate the rail open instead of jumping to the final width.
+      - Use a slightly sky-tinted divider (`bg-sky-200/45` plus a white highlight) for both the opponent card section and the local dev-card bay.
+      - The local player HUD now reuses the same shared-panel seam treatment as the opponent box: road/army stats and the resource/dev-card rail sit in one glass shell with a divider, and the self view suppresses the opponent-style nameplate.
+      - The local VP badge should sit on the avatar tile's top-right corner, not the lower edge of the shared shell.
+      - The player action dock stays as a sibling overlay outside the shared glass shell, but its anchor is measured from the local resource rail so it keeps the pre-merge top-of-bar positioning.
+    - Bottom-right turn controls are intentionally nudged inward from the viewport edge so dice do not feel pinned to the right side.
+    - Turn status/timer stays in the bottom-right turn cluster as passive HUD chrome above the action controls. Keep dice and end-turn in the bottom control row with roomy fixed spacing so the dice never overlap.
+      - Keep the dice tray visible across turn-control modes for layout stability; it should only be interactive during roll mode.
+      - Inactive dice should dim/desaturate, and the tray wrapper should own fit/overflow so the 3D die footprint sits inside the holder.
+      - The dice tray currently keeps its fixed layout box but has no visible background chrome, so the dice read directly over the board/HUD layer.
+      - Keep bottom-right turn-control viewport padding aligned with top-left utility padding unless the board/layout creates a specific collision.
+      - Do not pass `fixed`/absolute positioning directly into `GlassPillButton`; the shared `Button` base includes `relative`, so fixed HUD placement belongs on an outer wrapper.
+    - Left meta rail note:
+      - the desktop log/chat stack now sits higher on the screen via the shared left rail shell `bottom` offset.
+      - the open feed panels use a taller height clamp so the game log has more visible vertical room.
+      - chat minimize should leave the open-height phase during `closing-body`, matching the log sequence: vertical collapse first, then horizontal shrink during `closing-width`.
+      - keep the desktop feed frame aligned with the newer HUD glass language: lighter blue-white gradient, softer border/shadow, and a rounded integrated chat composer rather than a hard footer strip.
+      - keep log/chat compact toggles at medium emphasis: stronger than global utility buttons, but quieter than the board, player HUD, and primary action controls.
+    - Top-left utility note:
+      - mute/settings/rules are low-frequency global utilities, so their default state should stay as quiet frosted circles rather than bright white primary controls.
+    - Local resource dock count animation note:
+      - `AnimatedCount` defaults remain short for generic numbers, but `.resource-dock-count` doubles the gain/loss flash timing to make local resource changes easier to read.
