@@ -23,6 +23,7 @@ import {
   canPlayDevCard,
   createBalancedDiceState,
   drawBalancedDice,
+  getLongestRoadResult,
   playDevCard
 } from "@settlex/game-core";
 import { appendGameLog } from "./utils/gameLog.js";
@@ -240,6 +241,16 @@ const getPlayerRoadIds = (core, playerId) =>
     .filter(([, ownerId]) => String(ownerId) === String(playerId))
     .map(([edgeId]) => edgeId);
 
+const getLongestRoadAwardRoadIds = (G, playerId) => {
+  if (G?.core && G?.coreTopology) {
+    const result = getLongestRoadResult(G.core, G.coreTopology, playerId);
+    if (result.edgeIds.length > 0) {
+      return result.edgeIds;
+    }
+  }
+  return getPlayerRoadIds(G?.core, playerId);
+};
+
 const logAwardChanges = (G, ctx, previousAwards, options, effects) => {
   if (!previousAwards) return;
   const currentAwards = getAwardOwners(G?.core);
@@ -271,7 +282,7 @@ const logAwardChanges = (G, ctx, previousAwards, options, effects) => {
         awardType: "longestRoad",
         playerId: nextOwnerId,
         previousOwnerId: previousOwnerId ?? null,
-        roadIds: getPlayerRoadIds(G?.core, nextOwnerId),
+        roadIds: getLongestRoadAwardRoadIds(G, nextOwnerId),
         forced: Boolean(options?.forced)
       });
     }

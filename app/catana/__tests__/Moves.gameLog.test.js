@@ -74,6 +74,37 @@ const testTiles = [
 
 const testBoard = buildTopology(testTiles);
 
+const makeRoadTopology = (edges) => {
+  const edgeNodes = {};
+  const nodeEdges = {};
+  const nodeIds = [];
+  const seenNodes = new Set();
+
+  edges.forEach(([a, b]) => {
+    const edgeId = a < b ? `${a},${b}` : `${b},${a}`;
+    edgeNodes[edgeId] = [a, b];
+    [a, b].forEach((nodeId) => {
+      if (!seenNodes.has(nodeId)) {
+        seenNodes.add(nodeId);
+        nodeIds.push(nodeId);
+      }
+      nodeEdges[nodeId] = nodeEdges[nodeId] ?? [];
+      nodeEdges[nodeId].push(edgeId);
+    });
+  });
+
+  return {
+    tiles: [],
+    nodeIds,
+    landNodeIds: nodeIds,
+    edgeIds: Object.keys(edgeNodes),
+    edgeNodes,
+    nodeEdges,
+    nodeNeighbors: {},
+    portsByNodeId: {}
+  };
+};
+
 describe("game log moves", () => {
   it("redacts dev card buy", () => {
     const context = makeContext();
@@ -144,6 +175,44 @@ describe("game log moves", () => {
       actorId: "0",
       data: { previousOwnerId: "1" }
     });
+  });
+
+  it("emits only the exact longest road path for the award animation", () => {
+    const effects = { placePiece: vi.fn(), awardClaimed: vi.fn() };
+    const context = makeContext({
+      effects,
+      G: {
+        core: createEmptyState(["0", "1"]),
+        coreTopology: makeRoadTopology([
+          [1, 2],
+          [2, 3],
+          [3, 4],
+          [4, 5],
+          [5, 6],
+          [3, 30]
+        ]),
+        gameLog: [],
+        gameLogSeq: 0
+      }
+    });
+    context.G.core.awards.longestRoadOwnerId = "1";
+    context.G.core.roadsByEdgeId = {
+      "1,2": "0",
+      "2,3": "0",
+      "3,4": "0",
+      "4,5": "0",
+      "5,6": "0",
+      "3,30": "0"
+    };
+
+    placeRoad.move(context, "5,6");
+
+    expect(effects.awardClaimed).toHaveBeenCalledWith(
+      expect.objectContaining({
+        awardType: "longestRoad",
+        roadIds: ["1,2", "2,3", "3,4", "4,5", "5,6"]
+      })
+    );
   });
 
   it("logs largest army award changes from knight play", () => {

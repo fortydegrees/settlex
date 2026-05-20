@@ -2,6 +2,11 @@ import { GameState } from "../core/state";
 import { BoardTopology } from "../core/topology";
 import { EdgeId, NodeId } from "../core/ids";
 
+export type LongestRoadResult = {
+  length: number;
+  edgeIds: EdgeId[];
+};
+
 export function recomputeLargestArmy(state: GameState) {
   const minKnights = state.ruleset.largestArmyMinKnights;
   const current = state.awards.largestArmyOwnerId;
@@ -70,17 +75,70 @@ function dfsLongestFromNode(
   return max;
 }
 
-export function getLongestRoadLength(
-  state: GameState,
+function dfsLongestResultFromNode(
   board: BoardTopology,
+  roadsByEdgeId: Record<EdgeId, string>,
+  playerId: string,
+  blockedNodes: Set<NodeId>,
+  nodeId: NodeId,
+  visited: Set<EdgeId>
+): LongestRoadResult {
+  const edges = board.nodeEdges[nodeId] ?? [];
+  const isBlocked = blockedNodes.has(nodeId);
+  let best: LongestRoadResult = { length: 0, edgeIds: [] };
+
+  for (const edgeId of edges) {
+    if (roadsByEdgeId[edgeId] !== playerId) {
+      continue;
+    }
+    if (visited.has(edgeId)) {
+      continue;
+    }
+    visited.add(edgeId);
+    const [a, b] = board.edgeNodes[edgeId];
+    const nextNode = a === nodeId ? b : a;
+    const tail = isBlocked
+      ? { length: 0, edgeIds: [] }
+      : dfsLongestResultFromNode(
+          board,
+          roadsByEdgeId,
+          playerId,
+          blockedNodes,
+          nextNode,
+          visited
+        );
+    visited.delete(edgeId);
+    const candidate = {
+      length: 1 + tail.length,
+      edgeIds: [edgeId, ...tail.edgeIds]
+    };
+    if (candidate.length > best.length) {
+      best = candidate;
+    }
+  }
+
+  return best;
+}
+
+function getBlockedNodesForPlayer(
+  state: GameState,
   playerId: string
-): number {
+): Set<NodeId> {
   const blockedNodes = new Set<NodeId>();
   for (const [nodeId, building] of Object.entries(state.buildingsByNodeId)) {
     if (building.ownerId !== playerId) {
       blockedNodes.add(Number(nodeId));
     }
   }
+  return blockedNodes;
+}
+
+export function getLongestRoadLength(
+  state: GameState,
+  board: BoardTopology,
+  playerId: string
+): number {
+  const blockedNodes = getBlockedNodesForPlayer(state, playerId);
 
   let max = 0;
   for (const nodeId of board.nodeIds) {
@@ -97,6 +155,31 @@ export function getLongestRoadLength(
     }
   }
   return max;
+}
+
+export function getLongestRoadResult(
+  state: GameState,
+  board: BoardTopology,
+  playerId: string
+): LongestRoadResult {
+  const blockedNodes = getBlockedNodesForPlayer(state, playerId);
+  let best: LongestRoadResult = { length: 0, edgeIds: [] };
+
+  for (const nodeId of board.nodeIds) {
+    const result = dfsLongestResultFromNode(
+      board,
+      state.roadsByEdgeId,
+      playerId,
+      blockedNodes,
+      nodeId,
+      new Set()
+    );
+    if (result.length > best.length) {
+      best = result;
+    }
+  }
+
+  return best;
 }
 
 export function recomputeLongestRoad(state: GameState, board: BoardTopology) {
