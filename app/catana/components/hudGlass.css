@@ -34,6 +34,52 @@
     0 18px 34px rgba(37, 99, 235, 0.08);
 }
 
+.mobile-player-inventory--active {
+  border-color: rgba(255, 255, 255, 0.46);
+}
+
+.mobile-inventory-border-glide {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  -webkit-mask:
+    linear-gradient(transparent, transparent) padding-box,
+    linear-gradient(#000, #000) border-box;
+  -webkit-mask-composite: source-in;
+  mask:
+    linear-gradient(transparent, transparent) padding-box,
+    linear-gradient(#000, #000) border-box;
+  mask-composite: intersect;
+  pointer-events: none;
+}
+
+.mobile-inventory-border-glide__beam {
+  position: absolute;
+  left: 0;
+  top: 0;
+  aspect-ratio: 1;
+  width: 5.8rem;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.86) 0 14%, rgba(254, 240, 138, 0.62) 25%, rgba(125, 211, 252, 0.2) 42%, transparent 68%);
+  offset-path: rect(0 auto auto 0 round 5.8rem);
+  animation: catana-inventory-border-beam 6.2s linear infinite;
+  opacity: 0.76;
+  pointer-events: none;
+  will-change: transform;
+}
+
+@keyframes catana-inventory-border-beam {
+  from {
+    offset-distance: 0%;
+  }
+
+  to {
+    offset-distance: 100%;
+  }
+}
+
 .catana-hud-nameplate {
   position: absolute;
   left: -4rem;
@@ -195,4 +241,11 @@
 
 .catana-hud-piece-count-badge__value {
   transform: translateY(-0.02rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-inventory-border-glide__beam {
+    animation: none;
+    opacity: 0.58;
+  }
 }

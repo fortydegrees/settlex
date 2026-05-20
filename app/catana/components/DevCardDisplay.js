@@ -2,42 +2,13 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import Image from "./NextImage";
 import "./hudGlass.css";
 import "./DevCardDisplay.css";
-import { getCardStackLayout } from "./CardStackLayout";
 import { getBadgeClasses } from "./CardStackStyles";
-import { DEV_CARD_DISPLAY_ORDER, getPlayableDevCardGroups } from "./devCardDisplayUtils";
+import {
+  DEV_CARD_SVGS,
+  DEV_CARD_TEXT,
+  getDevCardHandGroups,
+} from "./devCardDisplayUtils";
 import { Tooltip, TooltipProvider } from "../../ui/Tooltip";
-
-// Map DevCard types to their SVGs
-const DEV_CARD_SVGS = {
-  knight: "/svgs/cards/development/knight.svg",
-  victoryPoint: "/svgs/cards/development/victory_point.svg",
-  roadBuilding: "/svgs/cards/development/roadbuilding.svg",
-  yearOfPlenty: "/svgs/cards/development/year_of_plenty.svg",
-  monopoly: "/svgs/cards/development/monopoly.svg",
-};
-
-const DEV_CARD_TEXT = {
-  knight: {
-    name: "Knight",
-    description: "Move the robber and build toward Largest Army."
-  },
-  victoryPoint: {
-    name: "Victory Point",
-    description: "A secret point that counts toward your final score."
-  },
-  roadBuilding: {
-    name: "Road Building",
-    description: "Place up to two roads without spending resources."
-  },
-  yearOfPlenty: {
-    name: "Year of Plenty",
-    description: "Take any two resources from the bank."
-  },
-  monopoly: {
-    name: "Monopoly",
-    description: "Choose a resource and claim every copy from other players."
-  },
-};
 
 const CARD_WIDTH = 52;
 const CARD_HEIGHT = 72;
@@ -80,59 +51,6 @@ const getDockItemMotion = ({
     lift: targetEased * maxLift,
     zIndex: Math.round(10 + targetEased * (isPrimaryTarget ? 40 : 18)),
   };
-};
-
-const getDevCardDockItems = ({
-  cards,
-  playableCountsByType,
-  badgeMinCount,
-}) => {
-  const victoryPointCount = cards.filter((card) => card === "victoryPoint").length;
-  const playableGroups = getPlayableDevCardGroups({
-    cards,
-    playableCountsByType,
-    cardWidth: CARD_WIDTH,
-    badgeMinCount,
-  });
-  const itemsByType = new Map();
-
-  if (victoryPointCount > 0) {
-    itemsByType.set("victoryPoint", {
-      type: "victoryPoint",
-      count: victoryPointCount,
-      playableCount: 0,
-      isPlayable: false,
-      layout: getCardStackLayout({
-        count: victoryPointCount,
-        cardWidth: CARD_WIDTH,
-        stackOffset: STACK_OFFSET,
-        maxVisible: victoryPointCount,
-        maxStackWidth: STACK_MAX_WIDTH,
-        badgeMinCount,
-      }),
-    });
-  }
-
-  playableGroups.forEach((group) => {
-    itemsByType.set(group.type, {
-      type: group.type,
-      count: group.count,
-      playableCount: group.playableCount,
-      isPlayable: group.playableCount > 0,
-      layout: getCardStackLayout({
-        count: group.count,
-        cardWidth: CARD_WIDTH,
-        stackOffset: STACK_OFFSET,
-        maxVisible: group.count,
-        maxStackWidth: STACK_MAX_WIDTH,
-        badgeMinCount,
-      }),
-    });
-  });
-
-  return ["victoryPoint", ...DEV_CARD_DISPLAY_ORDER]
-    .map((type) => itemsByType.get(type))
-    .filter(Boolean);
 };
 
 const getStackCardTransform = ({ cardIndex, visibleCount, lift, scale }) => {
@@ -271,9 +189,12 @@ export const DevCardDisplay = ({
   const [focusedIndex, setFocusedIndex] = useState(null);
   const dockItems = useMemo(
     () =>
-      getDevCardDockItems({
+      getDevCardHandGroups({
         cards,
         playableCountsByType,
+        cardWidth: CARD_WIDTH,
+        stackOffset: STACK_OFFSET,
+        maxStackWidth: STACK_MAX_WIDTH,
         badgeMinCount,
       }),
     [badgeMinCount, cards, playableCountsByType]

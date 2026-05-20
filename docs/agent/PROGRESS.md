@@ -12,6 +12,30 @@
 - `pnpm -C game-core build`
 - `git diff --check`
 
+## Status (2026-05-20, mobile log/chat bottom sheet)
+- Replaced the phone-only floating left Log/Chat rail with a compact bottom command-row feed trigger inside the mobile cockpit.
+- `GameScreen` now owns controlled mobile meta-sheet state and passes it to both `MobilePlayerCockpit` and `LeftMetaRail`.
+- Mobile `LeftMetaRail` now delegates to `MobileMetaDrawer`, a Vaul-backed bottom drawer with a drag handle and Log/Chat tabs.
+- The mobile drawer is non-modal: no backdrop/blur, no outside-tap close, and the visible board remains interactive for panning while the feed is open.
+- The bottom command row keeps one compact split feed control plus the remaining slot for `Roll Dice`, hold-to-end-turn, or passive turn status.
+- Added `vaul` as a dependency for drawer behavior without adopting shadcn or a new visual system.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/MobileMetaDrawer.source.test.js app/catana/__tests__/MobileMetaDrawer.package.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameScreen.mobileShell.source.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/MobilePrimaryTurnButton.test.js app/catana/__tests__/MobileTurnContextStrip.test.js app/catana/__tests__/ChatPanel.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/DebugUiVisibility.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/components/MobileMetaDrawer.js app/catana/components/MobilePlayerCockpit.js app/catana/components/LeftMetaRail.js app/catana/__tests__/MobileMetaDrawer.source.test.js app/catana/__tests__/MobileMetaDrawer.package.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/LeftMetaRail.test.js`
+- `git diff --check`
+- Browser sandbox verification at `http://127.0.0.1:3001/catana/dev/sandbox`: XR viewport rendered with compact feed trigger, Log drawer, Chat drawer, close control, and active tab state. SE viewport metrics showed the drawer occupying the lower portion of the viewport (`top ~= 320px`, `bottom ~= 667px` at `375x667`), but the screenshot command timed out on the SE capture.
+
+## Status (2026-05-09, mobile dev-card picker)
+- Replaced the mobile cockpit's scaled desktop dev-card display with a mobile-specific dev-card stack button and anchored tray picker.
+- Shared dev-card metadata/grouping now lives in `app/catana/components/devCardDisplayUtils.js`, so desktop and mobile use the same card order, counts, and playability rules.
+- The mobile button stays hidden at 0 dev cards, but can render an invisible reveal anchor during first-card purchase animations so card travel still has a destination without reserving visible rail space.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/devCardDisplayUtils.js app/catana/components/DevCardDisplay.js app/catana/components/MobileDevCardButton.js app/catana/components/MobileDevCardTray.js app/catana/components/MobilePlayerCockpit.js`
+- `pnpm exec vitest run app/catana/__tests__/DevCardDisplayGroups.test.js app/catana/__tests__/MobileDevCardButton.source.test.js app/catana/__tests__/MobileDevCardTray.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/DevCardDisplay.assets.test.js app/catana/__tests__/PlayerActionBadges.test.js --reporter=dot`
+- `git diff --check`
+
 ## Status (2026-05-06, Catana viewport wall)
 - Added a dev-only responsive viewport wall at `/catana/dev/viewports`.
 - The wall embeds `/catana/dev/sandbox` at extra-wide, laptop, iPad landscape/portrait, and phone landscape/portrait sizes, with Fit/Large/Small preview scale controls, per-frame open links, and a reload-all action.
@@ -4952,3 +4976,140 @@
   - gave desktop minimized log/chat buttons a slightly stronger restore-state glass treatment.
 - Verification:
   - Not run; value-only UI tuning per request.
+
+## Status (2026-05-06, mobile portrait game shell)
+- Added a portrait phone shell for Catana:
+  - `GameScreen` swaps the desktop local HUD for `MobilePlayerCockpit` below the phone-width breakpoint,
+  - the mobile cockpit reuses the local player avatar/stats, resources, dev-card bay, Trade/Build/Dev actions, turn context, and a single large Roll/End Turn CTA,
+  - the turn context strip keeps timer and dice result near the action area,
+  - mobile Log/Chat buttons float above the cockpit, and the 1v1 opponent strip is moved below the top controls on phone.
+- Extracted local dock/resource/action/timer derivation into `useLocalPlayerDockModel` so desktop and mobile share the same action model.
+- Added a board layout override for mobile overlay HUDs so the board is sized from the phone viewport instead of desktop reserved HUD height.
+- Verification:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/Board.js app/catana/utils/boardLayout.js app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileTurnContextStrip.js app/catana/components/MobilePrimaryTurnButton.js app/catana/components/useLocalPlayerDockModel.js app/catana/components/PlayerActionContainer.js app/catana/components/LeftMetaRail.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js app/catana/__tests__/MobileTurnContextStrip.test.js app/catana/__tests__/useLocalPlayerDockModel.test.js app/catana/__tests__/utils/boardLayout.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/useLocalPlayerDockModel.test.js app/catana/__tests__/MobileTurnContextStrip.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/utils/boardLayout.test.js app/catana/__tests__/PlayerActionBadges.test.js app/catana/__tests__/PlayerActionContainer.hitbox.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/Dock.buildPickupUx.test.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/LeftMetaRail.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.gameOver.test.js --reporter=dot`
+  - `pnpm exec playwright screenshot --viewport-size=390,844 "http://localhost:3010/catana/dev/sandbox?viewportWall=1&capture=v4" output/playwright/catana-mobile-cockpit-390x844-portrait-focus-v4.png`
+
+## Status (2026-05-07, mobile portrait top/side polish)
+- Tightened the first mobile shell polish pass:
+  - phone layouts pass `compact` to `OpponentPlayerBox`, scaling the existing shared opponent HUD down instead of creating a separate opponent component,
+  - mobile Log/Chat controls now use smaller glass buttons with normal labels, stronger blur, and no old all-caps letter-spaced badge treatment,
+  - the mobile meta rail sits above the board layer so the controls stay readable when the board overlaps the left edge.
+- Verification:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/components/OpponentPlayerBox.js app/catana/components/LeftMetaRail.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/LeftMetaRail.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/LeftMetaRail.test.js --reporter=dot`
+  - `pnpm exec playwright screenshot --viewport-size=430,932 "http://localhost:3010/catana/dev/sandbox?viewportWall=1&capture=iphone14promax-polish-3" output/playwright/catana-mobile-cockpit-430x932-polish-3.png`
+
+## Status (2026-05-07, mobile action dock order)
+- Moved the mobile Trade/Build/Dev action dock above the local player resource bar so the resource bar reads as the stable inventory base of the cockpit.
+- Added a source guard for the mobile cockpit ordering.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+  - `pnpm exec playwright screenshot --viewport-size=430,932 "http://localhost:3010/catana/dev/sandbox?viewportWall=1&capture=iphone14promax-actions-above-resources" output/playwright/catana-mobile-cockpit-430x932-actions-above-resources.png`
+
+## Status (2026-05-07, mobile top chrome)
+- Moved the compact phone opponent strip up near the top of the viewport so it sits between the left mute control and right resign control.
+- Changed the phone resign affordance from a text pill to a compact circular red-flag icon; desktop keeps the existing text pill.
+- Verification:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/__tests__/GameScreen.mobileShell.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/GameScreen.mobileShell.source.test.js --reporter=dot`
+  - `git diff --check -- app/catana/GameScreen.js app/catana/__tests__/GameScreen.mobileShell.source.test.js`
+
+## Status (2026-05-08, mobile cockpit compact tray)
+- Reworked the mobile bottom cockpit toward the compact tray direction:
+  - replaced the mobile-only `PlayerAvatarStats` embed with a custom compact inventory strip,
+  - floated the action dock half over the tray top edge,
+  - kept road/army stats as small chips beside the avatar,
+  - kept resources and the dev-card stack inline in the same inventory strip,
+  - slimmed the turn context strip and detached the primary Roll/End Turn CTA below the tray.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/components/MobilePrimaryTurnButton.js app/catana/components/MobileTurnContextStrip.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js app/catana/__tests__/MobileTurnContextStrip.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js app/catana/__tests__/MobileTurnContextStrip.test.js --reporter=dot`
+
+## Status (2026-05-08, mobile cockpit identity sizing)
+- Reduced the mobile local avatar tile and VP badge so the cockpit identity area is less dominant.
+- Kept the mobile cockpit stat/resource number weights lighter while scaling the road/army chips and resource counts/icons back up for readability.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/MobilePlayerCockpit.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-08, mobile cockpit hierarchy cleanup)
+- Flattened the mobile cockpit internals so the outer cockpit card is the main container:
+  - removed the default inner resource-row border/background,
+  - changed road/army from pill chips to simple icon+number stats,
+  - softened the turn context strip so it reads as status text rather than a second framed panel.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileTurnContextStrip.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobileTurnContextStrip.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobileTurnContextStrip.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileTurnContextStrip.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-08, mobile cockpit outer frame removal)
+- Removed the visible outer mobile cockpit frame; it is now only a layout wrapper.
+- Promoted the local player/resource inventory row into the single primary glass rail, with the turn context strip and End Turn CTA remaining separate below it.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileTurnContextStrip.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobileTurnContextStrip.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobileTurnContextStrip.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileTurnContextStrip.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-08, mobile top turn context trial)
+- Moved the mobile turn context strip out of the bottom cockpit and into the top phone HUD stack under the opponent box.
+- Left the bottom cockpit focused on the floating action dock, inventory rail, and primary CTA.
+- Verification:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileTurnContextStrip.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobileTurnContextStrip.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobileTurnContextStrip.test.js --reporter=dot`
+  - `git diff --check -- app/catana/GameScreen.js app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileTurnContextStrip.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-08, mobile vertical rhythm tweak)
+- Lowered the phone opponent/status HUD stack slightly so it feels less pinned to the safe area.
+- Increased spacing between the floating mobile action dock buttons.
+- Verification:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+  - `git diff --check -- app/catana/GameScreen.js app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/GameScreen.mobileShell.source.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-08, mobile end-turn hold confirm)
+- Changed the mobile End Turn CTA to require a 1s hold before firing, with a visible gradient fill progress affordance.
+- Kept Roll Dice as a normal tap action and added Space/Enter hold support for keyboard users.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/MobilePrimaryTurnButton.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePrimaryTurnButton.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/MobilePrimaryTurnButton.test.js`
+
+## Status (2026-05-08, mobile native tap highlight)
+- Scoped native mobile tap-highlight suppression to the Catana game screen so long-pressing HUD buttons does not show the browser's rectangular overlay.
+- Kept keyboard focus styling intact by targeting tap highlight/callout/selection rather than removing focus rings.
+- Verification:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/__tests__/GameScreen.mobileShell.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/GameScreen.mobileShell.source.test.js --reporter=dot`
+  - `git diff --check -- app/catana/GameScreen.js app/globals.css app/catana/__tests__/GameScreen.mobileShell.source.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-08, mobile end-turn context menu suppression)
+- Prevented the native context menu on the mobile End Turn hold button so releasing after a long press does not open the browser menu.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/MobilePrimaryTurnButton.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePrimaryTurnButton.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/MobilePrimaryTurnButton.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-09, mobile dock context menu suppression)
+- Prevented the native context menu on shared action dock cards so long-pressing Buy Dev or build/trade dock buttons does not open the browser menu.
+- Verification:
+  - `pnpm exec eslint app/catana/components/ActionsDock/DockCard.js app/catana/__tests__/Dock.buildPickupUx.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/Dock.buildPickupUx.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/ActionsDock/DockCard.js app/catana/__tests__/Dock.buildPickupUx.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-09, mobile local stat parity)
+- Aligned the mobile local road/army number treatment with the opponent `PlayerAvatarStats` style: larger type, fixed width, and matching shadow/award color.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/MobilePlayerCockpit.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-05-09, mobile local stat scale)
+- Reduced the local mobile road/army number scale so it better matches icon size while preserving the opponent-style shadow treatment.
+- Tightened the local stat group spacing near the inventory divider.
+- Verification:
+  - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+  - `git diff --check -- app/catana/components/MobilePlayerCockpit.js docs/agent/PROGRESS.md`

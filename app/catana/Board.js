@@ -103,6 +103,7 @@ export function CatanBoard({
   robberPlacementMotionMode,
   boardViewportScale = 1,
   boardLayoutLeftInset = 0,
+  boardLayoutReservedHeight,
   themeId,
   isMobile,
   playerID,
@@ -183,6 +184,7 @@ export function CatanBoard({
     width,
     height,
     leftInset: boardLayoutLeftInset,
+    reservedUiHeight: boardLayoutReservedHeight,
   });
   const [boardCenterX, boardCenterY] = center;
   const { nodeRenderById, edgeRenderById } = useMemo(

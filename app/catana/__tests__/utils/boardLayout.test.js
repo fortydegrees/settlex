@@ -34,6 +34,16 @@ describe("boardLayout", () => {
     expect(layout.center[1]).toBe(height / 2);
   });
 
+  it("can size mobile overlay layouts from the full viewport height", () => {
+    const width = 390;
+    const height = 844;
+    const layout = getBoardLayout({ width, height, reservedUiHeight: 0 });
+
+    expect(layout.containerWidth).toBe(width);
+    expect(layout.containerHeight).toBe(height);
+    expect(layout.size).toBeCloseTo(computeDefaultSize({ width, height }), 5);
+  });
+
   it("keeps the checked-in board underlay fully visible and vertically balanced on first load", () => {
     const width = 1920;
     const height = 1473;

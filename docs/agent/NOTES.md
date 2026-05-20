@@ -1,5 +1,22 @@
 # NOTES
 
+- Mobile log/chat bottom sheet note:
+- phone layout should trigger Log/Chat from the bottom command row, not from the old floating left edge rail.
+- `MobilePlayerCockpit` owns the visible closed affordance: one compact split feed trigger plus one contextual primary/status slot. Avoid making Log/Chat look like peer primary actions.
+- `LeftMetaRail` still owns the shared feed content, but its mobile path should render a bottom-anchored tabbed drawer only when `mobileActivePanel` is set.
+- `MobileMetaDrawer` wraps Vaul directly for drawer behavior; keep Catana styling local and do not import shadcn as a visual system for this.
+- the mobile feed drawer should behave as a non-modal tray: no backdrop/blur, no outside-tap close, and board panning remains available while it is open. Dragging the handle down remains the primary minimize gesture.
+- Vaul's non-modal content still prevents outside pointer-down by default, so `MobileMetaDrawer` intentionally neutralizes that `preventDefault` in `onPointerDownOutside` to allow the board pan gesture to start behind the tray.
+- Vaul/Radix can still leave outside layers affected by dialog pointer-event handling, so `GameScreen` explicitly sets the game root back to `pointerEvents: "auto"` while `mobileMetaPanel` is open.
+- expanded mobile feed sheets should cover the local inventory/action/end-turn zone and leave the board visible above; avoid middle-of-screen floating panels for this interaction.
+- keep the near-term mobile command row narrow: persistent feed access plus the current Roll/End/Waiting slot. Moving build/trade/dev actions into a full bottom command tray is a separate larger redesign.
+
+- Mobile dev-card picker note:
+- mobile should not show an empty dev-card bay at 0 cards; let resources use the width.
+- during first-card purchase reveal, keep an invisible `p{playerId}-devcards` anchor mounted so `DevCardPurchaseReveal` can measure a destination without adding visible empty space.
+- mobile dev-card selection is a compact stack button in the local inventory rail plus an anchored tray above the rail; do not reuse the desktop `DevCardDisplay` visuals inside the mobile cockpit.
+- desktop and mobile should share dev-card grouping/order/playability through `app/catana/components/devCardDisplayUtils.js`.
+
 - Viewport wall note:
 - `/catana/dev/viewports` is the default side-by-side responsive review surface for Catana game UI layout work.
 - It embeds the real `/catana/dev/sandbox` route at extra-wide, laptop, iPad landscape/portrait, and phone landscape/portrait dimensions.
@@ -3277,3 +3294,22 @@
       - mute/settings/rules are low-frequency global utilities, so their default state should stay as quiet frosted circles rather than bright white primary controls.
     - Local resource dock count animation note:
       - `AnimatedCount` defaults remain short for generic numbers, but `.resource-dock-count` doubles the gain/loss flash timing to make local resource changes easier to read.
+    - Mobile portrait shell note:
+      - The first mobile MVP is portrait-focused; do not optimize phone landscape yet.
+      - Phone opponent info should reuse `OpponentPlayerBox` in compact mode for now, keeping the existing shared avatar/stats behavior while reducing visual dominance.
+      - Phone Log/Chat controls should follow the newer glass feed language: normal labels, icon-first, modest blur/opacity, no old all-caps letter-spaced badge treatment.
+      - Mobile turn context placement is still being evaluated. A top HUD placement below the opponent strip is useful to test against the bottom-action placement, but keep the bottom action area focused when this is active.
+      - The mobile bottom cockpit should avoid nesting the desktop player stat panel inside another panel. Use a custom compact inventory strip: avatar, tiny road/army chips, resources, and inline dev-card stack in one row.
+      - The mobile cockpit should use the local player/resource inventory row as the dominant glass rail. Keep the outer cockpit wrapper structural only, with the turn context strip and primary CTA separate below it.
+      - Avoid extra inner borders/backgrounds inside the inventory rail; use spacing, one subtle divider, and icon/number scale for grouping.
+      - Mobile road/army stats should read as simple icon+number stats beside the avatar, not separate framed pills, unless an awarded state needs extra emphasis.
+      - Keep mobile local road/army number typography aligned with opponent `PlayerAvatarStats` indicators so both player boxes use the same stat language.
+      - Keep the mobile local avatar and VP badge smaller than the desktop HUD treatment; the avatar should identify the player without making the tray feel like nested desktop chrome.
+      - Mobile tray resource/stat numbers should use lighter weights than the desktop dock, but the icons and counts still need strong size because they are primary gameplay information.
+      - The mobile action dock should float half-overlapping the cockpit top edge, while the green Roll/End Turn CTA should read as a detached primary action below the tray.
+      - The mobile action dock needs enough horizontal gap for count badges to breathe; avoid visually chaining the buttons into one crowded strip.
+      - Action dock cards should suppress native `contextmenu`; mobile long-press on Buy Dev/build/trade should never open browser chrome.
+      - Mobile End Turn should use a short hold-to-confirm interaction to prevent accidental taps; Roll Dice remains a normal tap action.
+      - The mobile End Turn hold control must prevent native `contextmenu`; the game screen allows interaction controls through its root context-menu guard, so hold controls need local suppression.
+      - Catana game-screen buttons suppress native WebKit tap highlight/callout so long-press feedback comes from our HUD, not the browser's rectangular overlay. Keep this scoped to `.catana-game-screen`.
+      - Mobile dev cards are directionally a single inline stack beside resources; later interaction can expand that stack for choosing a playable card.
