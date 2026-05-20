@@ -197,6 +197,10 @@ export const DockCard = ({ action }) => {
     });
   };
 
+  const handleContextMenu = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <div className="dock-card-container">
       <animated.button
@@ -229,6 +233,7 @@ export const DockCard = ({ action }) => {
           });
         }}
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
         style={{
           width: INITIAL_WIDTH,
           height: INITIAL_WIDTH,

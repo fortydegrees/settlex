@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameLogPanel } from "./GameLogPanel";
 import { ChatPanel } from "./ChatPanel";
+import { MobileMetaDrawer } from "./MobileMetaDrawer";
 import {
   normalizeLeftMetaRailDesktopPrefs,
   readLeftMetaRailDesktopPrefs,
@@ -13,13 +14,7 @@ const panelIds = new Set(["log", "chat"]);
 const defaultDesktopOpenPanels = ["log", "chat"];
 export const LEFT_META_RAIL_DESKTOP_WIDTH_PX = 0;
 
-const mobileButtonBaseClassName =
-  "flex h-14 w-14 items-center justify-center rounded-[1.45rem] border transition-colors focus:outline-none focus:ring-2 focus:ring-white/80";
-const mobileButtonActiveClassName =
-  "border-white/[0.55] bg-white/[0.32] text-slate-800 shadow-[0_18px_38px_-26px_rgba(15,23,42,0.48),inset_0_1px_0_rgba(255,255,255,0.38)] ring-1 ring-white/35";
-const mobileButtonIdleClassName =
-  "border-white/45 bg-white/[0.26] text-slate-800/95 shadow-[0_16px_34px_-26px_rgba(15,23,42,0.4),inset_0_1px_0_rgba(255,255,255,0.28)] hover:border-white/60 hover:bg-white/[0.36]";
-const mobileButtonIconClassName = "h-5 w-5";
+const mobileButtonIconClassName = "h-6 w-6 drop-shadow-[0_1px_0_rgba(255,255,255,0.22)]";
 const desktopButtonIconClassName = "h-6 w-6 shrink-0";
 const desktopFeedLaneClassName =
   "pointer-events-auto w-[min(clamp(18rem,20vw,25rem),calc(100vw-2rem))]";
@@ -51,12 +46,8 @@ const desktopFeedRestoreGlassLayerStyle = {
 const desktopFeedPanelClassName =
   "flex h-full min-h-0 flex-col overflow-hidden bg-transparent select-text";
 const desktopFeedHeaderClassName = "sr-only";
-const mobileRailWrapperClassName =
-  "pointer-events-auto flex flex-col gap-2 rounded-[1.4rem] bg-white/24 p-1.5 shadow-2xl ring-1 ring-white/35 backdrop-blur-md";
-const mobileDrawerShellClassName =
-  "pointer-events-auto w-[min(22rem,calc(100vw-5.75rem))] max-w-[22rem] transition-all duration-200 ease-out";
-const mobileDrawerPanelClassName =
-  "flex h-[42vh] min-h-[11rem] max-h-[24rem] flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text";
+const mobileFeedContentPanelClassName =
+  "flex h-full min-h-0 flex-col overflow-hidden bg-transparent select-text";
 const desktopFeedWidthStageMs = 210;
 const desktopFeedBodyStageMs = 190;
 
@@ -102,63 +93,6 @@ const ChatIcon = ({ className = mobileButtonIconClassName } = {}) =>
     })
   );
 
-const MobileDockButton = ({
-  panel,
-  isOpen,
-  onToggle,
-  panelId,
-  showLabel = true,
-  className = "",
-  iconClassName = mobileButtonIconClassName,
-}) =>
-  React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => onToggle(panel.id),
-      className: joinClassNames(
-        mobileButtonBaseClassName,
-        isOpen ? mobileButtonActiveClassName : mobileButtonIdleClassName,
-        className
-      ),
-      "aria-expanded": isOpen ? "true" : "false",
-      "aria-controls": panelId,
-      "aria-label": panel.ariaLabel,
-      title: panel.label,
-      "data-meta-sidebar-button": panel.id,
-      "data-allow-interaction": "true",
-    },
-    React.cloneElement(panel.icon, {
-      className: iconClassName,
-    }),
-    showLabel
-      ? React.createElement(
-          "span",
-          {
-            className:
-              "mt-1 text-[0.6rem] font-semibold uppercase leading-none tracking-[0.24em]",
-          },
-          panel.shortLabel
-        )
-      : React.createElement("span", { className: "sr-only" }, panel.label)
-  );
-
-const useEscapeCollapse = (isEnabled, onCollapse) => {
-  useEffect(() => {
-    if (!isEnabled || typeof window === "undefined") return undefined;
-
-    const handleKeyDown = (event) => {
-      if (event.defaultPrevented) return;
-      if (event.code !== "Escape") return;
-      event.preventDefault();
-      onCollapse();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isEnabled, onCollapse]);
-};
-
 const buildMetaPanels = ({
   entries,
   logPlayerMap,
@@ -188,8 +122,9 @@ const buildMetaPanels = ({
         entries,
         playerMap: logPlayerMap,
         themeId,
-        rootClassName: "w-full",
-        panelClassName: mobileDrawerPanelClassName,
+        rootClassName: "h-full w-full",
+        panelClassName: mobileFeedContentPanelClassName,
+        headerClassName: "sr-only",
       }),
   },
   {
@@ -218,7 +153,9 @@ const buildMetaPanels = ({
         themeId,
         chatMessages: bgioProps?.chatMessages ?? [],
         sendChatMessage: bgioProps?.sendChatMessage,
-        panelClassName: mobileDrawerPanelClassName,
+        rootClassName: "h-full w-full",
+        panelClassName: mobileFeedContentPanelClassName,
+        headerClassName: "sr-only",
       }),
   },
 ];
@@ -629,25 +566,35 @@ const MobileMetaRailComponent = ({
   themeId,
   playerID,
   bgioProps,
+  mobileActivePanel,
+  onMobileActivePanelChange,
   initialActivePanel = null,
 }) => {
-  const [activePanel, setActivePanel] = useState(() =>
+  const isControlled = mobileActivePanel !== undefined;
+  const [uncontrolledActivePanel, setUncontrolledActivePanel] = useState(() =>
     normalizePanelId(initialActivePanel)
   );
 
   useEffect(() => {
-    setActivePanel(normalizePanelId(initialActivePanel));
-  }, [initialActivePanel]);
+    if (isControlled) return;
+    setUncontrolledActivePanel(normalizePanelId(initialActivePanel));
+  }, [initialActivePanel, isControlled]);
 
-  const clearActivePanel = useCallback(() => {
-    setActivePanel(null);
-  }, []);
+  const activePanel = isControlled
+    ? normalizePanelId(mobileActivePanel)
+    : uncontrolledActivePanel;
 
-  useEscapeCollapse(Boolean(activePanel), clearActivePanel);
-
-  const handleTogglePanel = useCallback((panelId) => {
-    setActivePanel((currentPanel) => (currentPanel === panelId ? null : panelId));
-  }, []);
+  const setActivePanel = useCallback(
+    (panelId) => {
+      const normalizedPanelId = normalizePanelId(panelId);
+      if (typeof onMobileActivePanelChange === "function") {
+        onMobileActivePanelChange(normalizedPanelId);
+        return;
+      }
+      setUncontrolledActivePanel(normalizedPanelId);
+    },
+    [onMobileActivePanelChange]
+  );
 
   const panels = useMemo(
     () =>
@@ -661,44 +608,11 @@ const MobileMetaRailComponent = ({
     [entries, logPlayerMap, themeId, playerID, bgioProps]
   );
 
-  const selectedPanel = panels.find((panel) => panel.id === activePanel) ?? null;
-
-  return React.createElement(
-    "div",
-    {
-      className:
-        "fixed left-3 top-16 bottom-32 z-30 flex items-end gap-3 pointer-events-none sm:left-4 sm:top-20 sm:bottom-6 lg:hidden",
-    },
-    React.createElement(
-      "div",
-      {
-        className: mobileRailWrapperClassName,
-        "data-meta-mobile-rail": "true",
-        "data-allow-interaction": "true",
-      },
-      panels.map((panel) =>
-        React.createElement(MobileDockButton, {
-          key: panel.id,
-          panel,
-          isOpen: selectedPanel?.id === panel.id,
-          onToggle: handleTogglePanel,
-          panelId: `mobile-meta-panel-${panel.id}`,
-        })
-      )
-    ),
-    selectedPanel
-      ? React.createElement(
-          "div",
-          {
-            id: `mobile-meta-panel-${selectedPanel.id}`,
-            className: mobileDrawerShellClassName,
-            "data-meta-mobile-panel": selectedPanel.id,
-            "data-allow-interaction": "true",
-          },
-          selectedPanel.renderMobile()
-        )
-      : null
-  );
+  return React.createElement(MobileMetaDrawer, {
+    activePanel,
+    panels,
+    onActivePanelChange: setActivePanel,
+  });
 };
 
 export const DesktopMetaDock = React.memo(DesktopMetaDockComponent);

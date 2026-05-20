@@ -19,6 +19,18 @@
   isolation: isolate;
 }
 
+.catana-game-screen button,
+.catana-game-screen [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.catana-game-screen button {
+  touch-action: manipulation;
+}
+
 .settlex-ui-dialog-backdrop {
   animation: settlex-ui-backdrop-in var(--settlex-ui-duration-dialog) ease-out
     both;
