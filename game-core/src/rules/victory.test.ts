@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createEmptyState } from "../core/state";
 import {
+  getLongestRoadResult,
   recomputeLargestArmy,
   recomputeLongestRoad,
   getVictoryPoints,
@@ -71,6 +72,29 @@ describe("largest army", () => {
 });
 
 describe("longest road", () => {
+  it("returns the exact edge ids for a straight longest road", () => {
+    const board = makeBoard([
+      [1, 2],
+      [2, 3],
+      [3, 4],
+      [4, 5],
+      [5, 6]
+    ]);
+    const state = createEmptyState(["0"]);
+    state.roadsByEdgeId = {
+      "1,2": "0",
+      "2,3": "0",
+      "3,4": "0",
+      "4,5": "0",
+      "5,6": "0"
+    };
+
+    expect(getLongestRoadResult(state, board, "0")).toEqual({
+      length: 5,
+      edgeIds: ["1,2", "2,3", "3,4", "4,5", "5,6"]
+    });
+  });
+
   it("awards longest road at threshold", () => {
     const board = makeBoard([
       [1, 2],

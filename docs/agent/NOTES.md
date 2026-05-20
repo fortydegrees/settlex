@@ -33,7 +33,7 @@
 - Avoid `box-shadow` on the road elements for this glow because it reveals the rectangular element bounds around the road art.
 - Do not animate `transform`, `x`, `y`, or `scale` on placed road elements. Their board position and rotation already live in the element's CSS transform, and GSAP transform changes can decompose that stack and leave roads shifted/rotated.
 - Do not raise placed roads with `z-index` during the award glow; roads must keep their normal board stacking so settlements/cities stay above them.
-- This first pass intentionally animates all roads owned by the award winner rather than solving/rendering the exact longest path because the current engine exposes the winner/length, not the specific path edge list.
+- Longest Road award payloads should carry only the exact winning path edge ids from `getLongestRoadResult(...)`, not every road owned by the winner. Keep `getLongestRoadLength(...)` as the compatibility wrapper for ownership scoring.
 - The dev sandbox has replay buttons for Longest Road award/takeover and Largest Army award/takeover under board effects; they dispatch `catana:dev-sandbox:award-claim` without mutating game state.
 - `PlayerAvatarStats` now exposes distinct `p{playerId}-longest-road` and `p{playerId}-largest-army` HUD anchors; keep these ids stable for award/dev-card effects.
 

@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-05-20, exact Longest Road award path)
+- Changed Longest Road award animation payloads to use the exact winning road path instead of every road owned by the new award holder.
+- `game-core/src/rules/victory.ts` now exposes `getLongestRoadResult(...)`, which preserves the existing length API while returning the selected path's edge ids for presentation.
+- `app/catana/Moves.js` uses that exact path when emitting `awardClaimed`, with a fallback to all owned roads only if topology is unavailable.
+- Added regression coverage for the core path helper and for excluding an off-path branch road from the award animation payload.
+- Focused verification:
+- `pnpm -C game-core test -- --run src/rules/victory.test.ts`
+- `pnpm exec vitest run app/catana/__tests__/Moves.gameLog.test.js --reporter=dot`
+- `pnpm exec eslint game-core/src/rules/victory.ts game-core/src/rules/victory.test.ts app/catana/Moves.js app/catana/__tests__/Moves.gameLog.test.js`
+- `pnpm -C game-core build`
+- `git diff --check`
+
 ## Status (2026-05-06, Catana viewport wall)
 - Added a dev-only responsive viewport wall at `/catana/dev/viewports`.
 - The wall embeds `/catana/dev/sandbox` at extra-wide, laptop, iPad landscape/portrait, and phone landscape/portrait sizes, with Fit/Large/Small preview scale controls, per-frame open links, and a reload-all action.
