@@ -29,10 +29,15 @@ describe("OpponentPlayerBox", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("presence={presence}");
     expect(contents).toContain('presence?.status === "idle"');
-    expect(contents).toContain("seat-disconnected-panel");
-    expect(contents).toContain("ring-white/60");
     expect(contents).toContain("seat-disconnected-pulse");
     expect(contents).not.toContain("animate-pulse");
+  });
+
+  it("supports a compact phone presentation without replacing the shared avatar stats", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("compact = false");
+    expect(contents).toContain("scale-[0.78]");
+    expect(contents).toContain("<PlayerAvatarStats");
   });
 
   it("top-aligns the opponent card stacks with taller disconnect status content", () => {

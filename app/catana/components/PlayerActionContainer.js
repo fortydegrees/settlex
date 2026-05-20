@@ -6,56 +6,26 @@ import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { TurnControlCluster } from "./TurnControlCluster";
 import { AnimatedCount } from "./AnimatedCount";
 import { getBadgeClasses } from "./CardStackStyles";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useDie } from "./Die";
 import { buildDiceAnimationPair } from "./diceAnimationPlan";
 import { useEffectListener } from "bgio-effects/react";
 import {
-  canBuildRoad,
-  canBuildSettlement,
-  canBuildCity,
-  canMaritimeTrade,
-  canAfford,
-  getPlayableDevCardCounts,
-  buildableNodes,
-  buildableEdges,
   getVictoryPoints,
   getPublicVictoryPoints,
 } from "@settlex/game-core";
-import { getMaritimeTradeRateIfTradable } from "../utils/trade";
 import { getBuildPickupPieceType } from "../utils/playerAction";
-import { getTurnControlMode } from "../utils/turnControlMode";
+import { useLocalPlayerDockModel } from "./useLocalPlayerDockModel";
 import "./hudGlass.css";
 import {
   RESOURCE_ICON_FILES_BY_RESOURCE,
   getClassicResourceIconPath,
-  getClassicSvgPath,
   getResourceIconPath,
-  getThemedSvgPath,
   handleThemeImageError,
 } from "../theme/themes";
-import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
-const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
-const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
-const LOW_TIMER_THRESHOLD_SECONDS = 5;
-const LOW_TIMER_ALERT_SUPPRESSED_STATUS_KINDS = new Set(["waiting_for_roll", "waiting_for_roll_other"]);
-const LOW_TIMER_ALERT_SUPPRESSED_STATUS_TYPES = new Set(["rolling"]);
 const FALLBACK_DICE_ROLL_MS = 1000;
 const FALLBACK_DICE_SLOWDOWN_START_MS = 400;
-
-const getTimerSeconds = (ms) => {
-  if (ms == null) return Number.POSITIVE_INFINITY;
-  return Math.max(0, Math.floor(ms / 1000));
-};
-
-const formatTimer = (ms) => {
-  if (ms == null) return null;
-  const total = getTimerSeconds(ms);
-  const minutes = Math.floor(total / 60);
-  const seconds = String(total % 60).padStart(2, "0");
-  return `${minutes}:${seconds}`;
-};
 
 export const CardIcon = ({
   resourceCount,
@@ -125,7 +95,6 @@ export const PlayerActionContainer = ({
 }) => {
   const { G, ctx, moves } = bgioProps;
   const SHOW_PLAYER_HAND_BADGES = false;
-  const activePickupPieceType = buildPickup?.pieceType ?? null;
 
   const copyTriggerRect = (triggerRect) => {
     if (!triggerRect) return null;
@@ -184,33 +153,43 @@ export const PlayerActionContainer = ({
   const playerHudRef = React.useRef(null);
   const localResourceRailRef = React.useRef(null);
   const [localDockAnchorStyle, setLocalDockAnchorStyle] = React.useState(null);
-  const stage = ctx.activePlayers?.[player.id];
-  const isDevStage = stage === "preRoll" || stage === "postRoll";
-  const devPlayActive = G.devCardPlay && G.devCardPlay.playerId === player.id;
-  const canStartDev =
-    isMe && ctx.currentPlayer === player.id && isDevStage && !devPlayActive;
-  const devPlayableCountsByType = useMemo(() => {
-    if (!G.core || !player?.devCards || !canStartDev) return {};
-    return getPlayableDevCardCounts(G.core, player.id);
-  }, [G.core, player?.devCards, player.id, canStartDev]);
-  const resourceCounts = useMemo(() => {
-    const counts = {};
-    for (const resource of player.resources) {
-      counts[resource] = (counts[resource] ?? 0) + 1;
-    }
-    return counts;
-  }, [player.resources]);
-  const timerText = formatTimer(timerMs);
-  const showStatusTimer = gameStatus?.showTimer !== false && Boolean(timerText);
-  const isLowTimerAlertSuppressed =
-    LOW_TIMER_ALERT_SUPPRESSED_STATUS_TYPES.has(statusType) ||
-    LOW_TIMER_ALERT_SUPPRESSED_STATUS_KINDS.has(gameStatus?.kind);
-  const isLowTimerAlertActive = showStatusTimer && !isLowTimerAlertSuppressed && getTimerSeconds(timerMs) <= LOW_TIMER_THRESHOLD_SECONDS;
+  const {
+    activeDevCardType,
+    canQuickTradeResource,
+    devPlayableCountsByType,
+    dynamicActions,
+    endTurnEnabled,
+    handleResourceClick,
+    isLowTimerAlertActive,
+    isOverLimit,
+    resourceCounts,
+    rollEnabled,
+    showDevCardBay,
+    showStatusTimer,
+    timerText,
+    totalResources,
+    turnControlMode,
+    visibleDevCards,
+  } = useLocalPlayerDockModel({
+    G,
+    ctx,
+    player,
+    clientPlayerID,
+    buildPickup,
+    displayDevCards,
+    keepDevCardShellMounted,
+    onTradeClick,
+    onBuildAction: startBuildPickup,
+    onDevCardPurchase: startDevCardPurchaseReveal,
+    canRoll,
+    canEnd,
+    timerMs,
+    statusType,
+    gameStatus,
+    themeId,
+  });
   const isSeatWarning =
     presence?.status === "disconnected" || presence?.status === "idle";
-  const pieceColor = player.color ?? "red";
-
-  const activeDevCardType = devPlayActive ? G.devCardPlay.type : null;
 
   const playDiceRoll = useCallback(
     ({ dice, timeline = {} }) => {
@@ -299,163 +278,6 @@ export const PlayerActionContainer = ({
     },
     [effectsBus, playDiceRoll]
   );
-  const ACTIONS = [
-    {
-      name: "trade",
-      action: onTradeClick, // Opens the modal
-      img: getThemedSvgPath(themeId, "icon_trade.svg"), // Placeholder icon for trade, maybe use a custom one later
-      fallbackImg: getClassicSvgPath("icon_trade.svg"),
-      count: 0,
-      enabled: ctx.currentPlayer === player.id && ctx.phase === 'main', // Only enable trade during main phase & turn
-      style: null, 
-    },
-    {
-      name: "road",
-      action: ({ triggerRect, preLaunchDelayMs }) =>
-        startBuildPickup("placeRoad", triggerRect, preLaunchDelayMs),
-      img: getThemedSvgPath(themeId, getPieceSvgFile("road", pieceColor)),
-      fallbackImg: getClassicSvgPath(getPieceSvgFile("road", pieceColor)),
-      count: player.roadsRemaining,
-      enabled: false,
-      style: { transform: "rotate(90deg) scale(0.9)" },
-      selected: buildPickup?.pieceType === "road",
-      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
-    },
-    {
-      name: "settlement",
-      action: ({ triggerRect, preLaunchDelayMs }) =>
-        startBuildPickup("placeSettlement", triggerRect, preLaunchDelayMs),
-      img: getThemedSvgPath(themeId, getPieceSvgFile("settlement", pieceColor)),
-      fallbackImg: getClassicSvgPath(getPieceSvgFile("settlement", pieceColor)),
-      count: player.settlementsRemaining,
-      enabled: false,
-      style: null,
-      selected: buildPickup?.pieceType === "settlement",
-      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
-    },
-    {
-      name: "city",
-      action: ({ triggerRect, preLaunchDelayMs }) =>
-        startBuildPickup("placeCity", triggerRect, preLaunchDelayMs),
-      img: getThemedSvgPath(themeId, getPieceSvgFile("city", pieceColor)),
-      fallbackImg: getClassicSvgPath(getPieceSvgFile("city", pieceColor)),
-      count: player.citiesRemaining,
-      enabled: false,
-      style: null,
-      selected: buildPickup?.pieceType === "city",
-      preLaunchDelayMs: BUILD_PICKUP_PRELAUNCH_DELAY_MS,
-    },
-    {
-      name: "devCard",
-      action: startDevCardPurchaseReveal,
-      img: getThemedSvgPath(themeId, "icon_devcard.svg"),
-      fallbackImg: getClassicSvgPath("icon_devcard.svg"),
-      preLaunchImg: getThemedSvgPath(themeId, "icon_devcard_emblem.svg"),
-      preLaunchFallbackImg: getClassicSvgPath("icon_devcard_emblem.svg"),
-      count: 0,
-      enabled: false,
-      style: null,
-      preLaunchDelayMs: DEV_CARD_PRELAUNCH_DELAY_MS,
-    },
-    null
-  ];
-
-  const isActionEnabled = (actionName) => {
-    // UI-level checks (boardgame.io state)
-    if (ctx.currentPlayer !== player.id.toString()) return false;
-    if (ctx.activePlayers?.[player.id] !== "postRoll") {
-        if (actionName === 'devCard') console.log(`DevCard disabled: Wrong phase/stage. Current: ${ctx.activePlayers?.[player.id]}`);
-        return false;
-    }
-    if (!G.core) return false;
-
-    // Game rule checks (from game-core)
-    switch (actionName) {
-      case 'road':
-        if (!canBuildRoad(G.core, player.id).ok) return false;
-        // Check if there are any buildable edges
-        return buildableEdges(G.core, G.coreTopology, player.id, { initialPlacement: false }).length > 0;
-      case 'settlement':
-        if (!canBuildSettlement(G.core, player.id).ok) return false;
-        // Check if there are any buildable nodes
-        return buildableNodes(G.core, G.coreTopology, player.id, { initialPlacement: false }).length > 0;
-      case 'city':
-        if (!canBuildCity(G.core, player.id).ok) return false;
-        // Check if player has any settlements to upgrade
-        // City build rule: must replace an existing settlement of the player
-        const settlements = Object.values(G.core.buildingsByNodeId).filter(
-          b => b.ownerId === player.id && b.type === 'settlement'
-        );
-        return settlements.length > 0;
-      case 'trade':
-        // Check if player has enough resources to trade at ANY rate
-        return canMaritimeTrade(G.core, G.coreTopology, player.id).ok;
-      case 'devCard':
-        if (!G.core.devDeck.length) {
-            console.log("DevCard disabled: Deck empty");
-            return false;
-        }
-        const affordable = canAfford(G.core.ruleset.buildCosts.devCard, player.resources);
-        if (!affordable) {
-             console.log("DevCard disabled: Cant afford", { cost: G.core.ruleset.buildCosts.devCard, resources: player.resources });
-        }
-        return affordable;
-      default:
-        return false;
-    }
-  };
-
-  const dynamicActions = ACTIONS.map((action) => {
-    if (!action) return null;
-    const pieceType = getBuildPickupPieceType(`place${action.name[0]?.toUpperCase() ?? ""}${action.name.slice(1)}`);
-    return {
-      ...action,
-      enabled: isActionEnabled(action.name),
-      selected: action.selected ?? pieceType === activePickupPieceType,
-    };
-  });
-
-  const canTradeNow = isActionEnabled("trade");
-  const rollEnabled = Boolean(canRoll);
-  const endTurnEnabled = Boolean(canEnd);
-  const turnControlMode = getTurnControlMode({
-    canRoll: rollEnabled,
-    canEnd: endTurnEnabled,
-  });
-
-  const canQuickTradeResource = (resource) => {
-    if (!onTradeClick || !canTradeNow) return false;
-    return !!getMaritimeTradeRateIfTradable({
-      core: G.core,
-      coreTopology: G.coreTopology,
-      playerId: player.id,
-      resource,
-      playerResources: player.resources
-    });
-  };
-
-  const handleResourceClick = (resource) => {
-    if (!onTradeClick) return;
-    if (!canTradeNow) return;
-
-    const rate = getMaritimeTradeRateIfTradable({
-      core: G.core,
-      coreTopology: G.coreTopology,
-      playerId: player.id,
-      resource,
-      playerResources: player.resources
-    });
-
-    if (!rate) return;
-    onTradeClick(resource);
-  };
-
-  // Calculate if player is over discard limit
-  const totalResources = player.resources.length;
-  const discardLimit = G.core?.ruleset?.discardLimit ?? 7;
-  const isOverLimit = totalResources > discardLimit;
-  const visibleDevCards = displayDevCards ?? player.devCards ?? [];
-  const showDevCardBay = visibleDevCards.length > 0 || Boolean(keepDevCardShellMounted);
   const devCardBayClassName = [
     "local-devcard-bay",
     showDevCardBay ? "local-devcard-bay--visible" : "local-devcard-bay--empty",

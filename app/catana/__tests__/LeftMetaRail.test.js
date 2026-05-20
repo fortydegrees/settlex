@@ -46,7 +46,7 @@ describe("LeftMetaRail", () => {
   it("keeps restore pills when desktop panels are minimized", () => {
     const contents = fs.readFileSync(leftMetaRailPath, "utf8");
 
-    expect(contents).toContain("panels.map((panel) =>");
+    expect(contents).toContain(".map(({ panel, top, height, transform }) =>");
     expect(contents).toContain("restorePanel");
     expect(contents).toContain("data-meta-feed-toggle");
     expect(contents).toContain("data-meta-feed-tooltip");
@@ -103,5 +103,17 @@ describe("LeftMetaRail", () => {
     expect(contents).toContain('phase === "opening-width" || phase === "closing-body"');
     expect(contents).toContain('return desktopFeedCollapsedSizeClassName;');
     expect(contents).toContain('const desktopFeedHeaderSizeClassName = "h-full w-full"');
+  });
+
+  it("uses a Vaul-backed bottom drawer instead of the old floating edge rail", () => {
+    const contents = fs.readFileSync(leftMetaRailPath, "utf8");
+
+    expect(contents).toContain('import { MobileMetaDrawer } from "./MobileMetaDrawer"');
+    expect(contents).toContain("mobileActivePanel");
+    expect(contents).toContain("onMobileActivePanelChange");
+    expect(contents).toContain("MobileMetaDrawer");
+    expect(contents).not.toContain("data-meta-mobile-rail");
+    expect(contents).not.toContain("data-meta-mobile-sheet");
+    expect(contents).not.toContain("fixed left-3 bottom-[18.75rem]");
   });
 });
