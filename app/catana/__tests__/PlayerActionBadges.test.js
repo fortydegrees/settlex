@@ -12,6 +12,12 @@ const actionContainerPath = path.resolve(
   "components",
   "PlayerActionContainer.js"
 );
+const localDockModelPath = path.resolve(
+  __dirname,
+  "..",
+  "components",
+  "useLocalPlayerDockModel.js"
+);
 const devCardDisplayPath = path.resolve(
   __dirname,
   "..",
@@ -53,7 +59,7 @@ describe("PlayerActionContainer", () => {
   });
 
   it("colors build-action piece icons from the player's in-game color", () => {
-    const contents = fs.readFileSync(actionContainerPath, "utf8");
+    const contents = fs.readFileSync(localDockModelPath, "utf8");
     expect(contents).toContain('const pieceColor = player.color ?? "red"');
     expect(contents).toContain('getPieceSvgFile("road", pieceColor)');
     expect(contents).toContain('getPieceSvgFile("settlement", pieceColor)');
@@ -81,7 +87,7 @@ describe("DevCardDisplay", () => {
   it("gates playable copies by count instead of type only", () => {
     const contents = fs.readFileSync(devCardDisplayPath, "utf8");
     expect(contents).toMatch(/playableCountsByType/);
-    expect(contents).toMatch(/getPlayableDevCardGroups/);
+    expect(contents).toMatch(/getDevCardHandGroups/);
   });
 
   it("can stay mounted as an empty destination shell during a reveal", () => {

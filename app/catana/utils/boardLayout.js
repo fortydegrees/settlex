@@ -10,8 +10,18 @@ export function computeDefaultSize({ width, height }) {
   return width / numLevels / SQRT3;
 }
 
-export function getBoardLayout({ width, height, leftInset = 0, rightInset = 0 }) {
-  const containerHeight = height - 144 - 38 - 40;
+const DEFAULT_RESERVED_UI_HEIGHT = 144 + 38 + 40;
+
+export function getBoardLayout({
+  width,
+  height,
+  leftInset = 0,
+  rightInset = 0,
+  reservedUiHeight = DEFAULT_RESERVED_UI_HEIGHT,
+}) {
+  const safeReservedUiHeight =
+    Number.isFinite(reservedUiHeight) ? Math.max(0, reservedUiHeight) : DEFAULT_RESERVED_UI_HEIGHT;
+  const containerHeight = Math.max(0, height - safeReservedUiHeight);
   const safeLeftInset = Number.isFinite(leftInset) ? Math.max(0, leftInset) : 0;
   const safeRightInset = Number.isFinite(rightInset) ? Math.max(0, rightInset) : 0;
   const containerWidth = Math.max(0, width - safeLeftInset - safeRightInset);

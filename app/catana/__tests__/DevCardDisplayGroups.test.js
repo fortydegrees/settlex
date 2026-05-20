@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { getPlayableDevCardGroups } from "../components/devCardDisplayUtils";
+import {
+  getDevCardHandGroups,
+  getPlayableDevCardGroups,
+} from "../components/devCardDisplayUtils";
 
 describe("getPlayableDevCardGroups", () => {
   it("orders dev card groups by fixed display order", () => {
@@ -72,5 +75,48 @@ describe("getPlayableDevCardGroups", () => {
     });
 
     expect(groups[0].layout.showBadge).toBe(false);
+  });
+});
+
+describe("getDevCardHandGroups", () => {
+  it("includes victory points before playable development cards", () => {
+    const groups = getDevCardHandGroups({
+      cards: ["monopoly", "victoryPoint", "knight", "victoryPoint"],
+      playableCountsByType: {
+        knight: 1,
+        monopoly: 1,
+      },
+    });
+
+    expect(groups.map((group) => group.type)).toEqual([
+      "victoryPoint",
+      "knight",
+      "monopoly",
+    ]);
+    expect(groups[0]).toMatchObject({
+      type: "victoryPoint",
+      count: 2,
+      playableCount: 0,
+      isPlayable: false,
+    });
+  });
+
+  it("marks a grouped card playable only when it has playable copies", () => {
+    const groups = getDevCardHandGroups({
+      cards: ["knight", "knight", "yearOfPlenty"],
+      playableCountsByType: {
+        knight: 1,
+        yearOfPlenty: 0,
+      },
+    });
+
+    expect(groups.map((group) => [group.type, group.isPlayable])).toEqual([
+      ["knight", true],
+      ["yearOfPlenty", false],
+    ]);
+  });
+
+  it("returns an empty hand for zero development cards", () => {
+    expect(getDevCardHandGroups()).toEqual([]);
   });
 });

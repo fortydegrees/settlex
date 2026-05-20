@@ -9,7 +9,7 @@ const componentPath = path.resolve(
   __dirname,
   "..",
   "components",
-  "DevCardDisplay.js"
+  "devCardDisplayUtils.js"
 );
 const publicSvgDir = path.resolve(__dirname, "..", "..", "..", "public", "svgs");
 

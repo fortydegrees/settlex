@@ -12,7 +12,8 @@ export const OpponentPlayerBox = ({
   coreTopology,
   isActive,
   statusType,
-  knightDisplayOverride
+  knightDisplayOverride,
+  compact = false
 }) => {
   if (!player) return null;
 
@@ -29,7 +30,12 @@ export const OpponentPlayerBox = ({
   });
 
   return (
-    <div id={`p${player.id}-opponent-box`} className="flex items-start">
+    <div
+      id={`p${player.id}-opponent-box`}
+      className={`flex items-start ${
+        compact ? "origin-top scale-[0.78]" : ""
+      }`}
+    >
       <PlayerAvatarStats
         player={player}
         presence={presence}

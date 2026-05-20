@@ -7,6 +7,7 @@ import {
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Cog6ToothIcon,
+  FlagIcon,
   QuestionMarkCircleIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
@@ -45,6 +46,8 @@ import {
 import { EffectsBoardWrapper } from "bgio-effects/react";
 
 import { PlayerActionContainer } from "./components/PlayerActionContainer";
+import { MobilePlayerCockpit } from "./components/MobilePlayerCockpit";
+import { MobileTurnContextStrip } from "./components/MobileTurnContextStrip";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GlassPillButton } from "./components/GlassPillButton";
 import { LeftMetaRail } from "./components/LeftMetaRail";
@@ -81,6 +84,7 @@ import {
 } from "./utils/devCardPlayPresentation";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
+import { getTurnControlMode } from "./utils/turnControlMode";
 import {
   getLobbyServerOrigin,
 } from "./utils/serverOrigins";
@@ -97,6 +101,10 @@ import {
   CATANA_THEME_STORAGE_KEY,
   resolveThemeId,
 } from "./theme/themes";
+import {
+  formatTimer,
+  getLowTimerAlertState,
+} from "./components/useLocalPlayerDockModel";
 import {
   clearLastActiveMatch,
   readLastActiveMatch
@@ -137,6 +145,12 @@ const copyRect = (rect) => {
     right: rect.right,
     bottom: rect.bottom,
   };
+};
+
+const getVisibleDiceRoll = (G) => {
+  if (!G?.core?.turn?.hasRolled) return null;
+  if (!Array.isArray(G.diceRoll) || G.diceRoll.length < 2) return null;
+  return G.diceRoll;
 };
 
 const buildDevCardBuyTransfer = (payload) => [
@@ -240,6 +254,7 @@ export function GameScreen(bgioProps) {
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showGameSettings, setShowGameSettings] = useState(false);
   const [showGameRules, setShowGameRules] = useState(false);
+  const [mobileMetaPanel, setMobileMetaPanel] = useState(null);
   const [showConnectionBanner, setShowConnectionBanner] = useState(false);
   const [presentedGameLogEntries, setPresentedGameLogEntries] = useState([]);
   const [deferredLogEntries, setDeferredLogEntries] = useState([]);
@@ -265,10 +280,17 @@ export function GameScreen(bgioProps) {
   const deferredLogEntriesRef = useRef([]);
   const effectsBus = useMemo(() => createEffectBus(), []);
   const { width, height } = useWindowSize();
+  const isPhoneLayout = width > 0 && width < 640;
+  const boardLayoutReservedHeight = isPhoneLayout ? 0 : undefined;
   const leftMetaRailLayoutInset = 0;
   const playfieldCenterOffsetX = 0;
   const moves = bgioProps.moves;
   const isReplay = bgioProps.isReplay === true;
+
+  useEffect(() => {
+    if (isPhoneLayout) return;
+    setMobileMetaPanel(null);
+  }, [isPhoneLayout]);
 
   //get the active playerID of who's watching
   //can be null for spectator?
@@ -1114,8 +1136,28 @@ export function GameScreen(bgioProps) {
       name: nameMap[view.id],
       emoji: emojiMap[view.id]
     }));
+  const displayedOpponents = isPhoneLayout ? opponents.slice(0, 1) : opponents;
   const localIdlePresence =
     playerID != null ? idleStateByPlayerId[playerID] ?? null : null;
+  const activePlayerName =
+    gameStatus.activePlayerId != null
+      ? nameMap[gameStatus.activePlayerId] ?? `Player ${gameStatus.activePlayerId}`
+      : null;
+  const mobileTurnContextMode = getTurnControlMode({
+    canRoll,
+    canEnd,
+  });
+  const mobileTurnContextTimerText = formatTimer(visibleTimerMs);
+  const {
+    showStatusTimer: showMobileTurnContextTimer,
+    isLowTimerAlertActive: isMobileTurnContextTimerLow,
+  } = getLowTimerAlertState({
+    timerMs: visibleTimerMs,
+    statusType: gameStatus.statusType,
+    gameStatus,
+  });
+  const mobileTurnContextDiceRoll = getVisibleDiceRoll(bgioProps.G);
+  const showMobileTopTurnContext = isPhoneLayout && Boolean(player);
   const showIdlePrompt =
     !isGameOver &&
     playerID != null &&
@@ -1213,6 +1255,7 @@ export function GameScreen(bgioProps) {
               width,
               height,
               leftInset: leftMetaRailLayoutInset,
+              reservedUiHeight: boardLayoutReservedHeight,
             });
           },
           getBoardRect: () =>
@@ -1236,6 +1279,7 @@ export function GameScreen(bgioProps) {
               width,
               height,
               leftInset: leftMetaRailLayoutInset,
+              reservedUiHeight: boardLayoutReservedHeight,
             });
           },
           getBoardRect: () =>
@@ -1324,6 +1368,7 @@ export function GameScreen(bgioProps) {
               width,
               height,
               leftInset: leftMetaRailLayoutInset,
+              reservedUiHeight: boardLayoutReservedHeight,
             });
           },
           getTiles: () => bgioProps.G?.tiles ?? [],
@@ -1384,6 +1429,7 @@ export function GameScreen(bgioProps) {
   }, [
     width,
     height,
+    boardLayoutReservedHeight,
     bgioProps.G,
     effectiveColorByPlayerId,
     handleResourceDistributionComplete,
@@ -1566,7 +1612,7 @@ export function GameScreen(bgioProps) {
   ];
   return (
     <div
-      className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600 select-none"
+      className="catana-game-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600 select-none"
       style={{
         width: "100vw", // Use viewport width to take the full screen width
         height: "100vh", // Use viewport height to take the full screen height
@@ -1574,6 +1620,7 @@ export function GameScreen(bgioProps) {
         position: "fixed", // Fix the object in place
         top: 0,
         left: 0,
+        pointerEvents: mobileMetaPanel ? "auto" : undefined,
       }}
       onClickCapture={handleScreenClickCapture}
       onContextMenu={handleContextMenu}
@@ -1603,6 +1650,7 @@ export function GameScreen(bgioProps) {
             playerColorMap={effectiveColorByPlayerId}
             robberPlacementMotionMode={robberPlacementMotionMode}
             boardLayoutLeftInset={leftMetaRailLayoutInset}
+            boardLayoutReservedHeight={boardLayoutReservedHeight}
             themeId={themeId}
             {...bgioProps}
           />
@@ -1664,14 +1712,27 @@ export function GameScreen(bgioProps) {
       </TooltipProvider>
 
       {!isReplay && !isGameOver && !!player && (
-        <div className="fixed right-4 top-4 z-40" data-allow-interaction="true">
-          <GlassPillButton
-            onClick={handleResign}
-            aria-label="Resign match"
-            data-allow-interaction="true"
-          >
-            <span>Resign</span>
-          </GlassPillButton>
+        <div className="fixed right-3 top-3 z-40 sm:right-4 sm:top-4" data-allow-interaction="true">
+          {isPhoneLayout ? (
+            <IconButton
+              variant="secondary"
+              size="md"
+              onClick={handleResign}
+              className="h-10 w-10 border-rose-200/70 bg-white/[0.82] text-rose-600 shadow-[0_14px_30px_-24px_rgba(190,24,93,0.58)] backdrop-blur-md hover:border-rose-200/90 hover:bg-white/95 hover:text-rose-700"
+              aria-label="Resign match"
+              data-allow-interaction="true"
+            >
+              <FlagIcon className="h-5 w-5" aria-hidden="true" />
+            </IconButton>
+          ) : (
+            <GlassPillButton
+              onClick={handleResign}
+              aria-label="Resign match"
+              data-allow-interaction="true"
+            >
+              <span>Resign</span>
+            </GlassPillButton>
+          )}
         </div>
       )}
 
@@ -1694,6 +1755,8 @@ export function GameScreen(bgioProps) {
         themeId={themeId}
         playerID={playerID}
         bgioProps={bgioProps}
+        mobileActivePanel={mobileMetaPanel}
+        onMobileActivePanelChange={setMobileMetaPanel}
       />
 
       <Dialog
@@ -1790,38 +1853,70 @@ export function GameScreen(bgioProps) {
       {/* our cards and action dock 
 TODO: accurately colour it
 */}
-      {!!player && (
-        <PlayerActionContainer
-          effectsBus={effectsBus}
-          setPlayerAction={setPlayerAction}
-          buildPickup={buildPickup}
-          setBuildPickup={setBuildPickup}
-          bgioProps={bgioProps}
-          //playerID={bgioProps.playerID} //for multiplayer
-          player={displayPlayer} //for testing/dev
-          presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
-          onDevCardPurchaseStart={handleDevCardPurchaseStart}
-          devCardDisplayRef={devCardDisplayRef}
-          displayDevCards={displayPlayer?.devCards ?? null}
-          keepDevCardShellMounted={Boolean(revealInFlight || localDevCardPlayInFlight)}
-          vpDisplayOverride={frozenVpSnapshot}
-          knightDisplayOverride={
-            player?.id != null
-              ? knightDisplayOverrideByPlayerId[String(player.id)] ?? null
-              : null
-          }
-          onTradeClick={handleTradeOpen}
-          isActive={!isGameOver && gameStatus.activePlayerId === player.id}
-          statusType={gameStatus.statusType}
-          gameStatus={gameStatus}
-          canRoll={canRoll}
-          canEnd={canEnd}
-          timerMs={visibleTimerMs}
-          themeId={themeId}
-          layoutOffsetX={playfieldCenterOffsetX}
-          showTurnControls={!isReplay && !isGameOver}
-        />
-      )}
+      {!!player &&
+        (isPhoneLayout ? (
+          <MobilePlayerCockpit
+            setPlayerAction={setPlayerAction}
+            buildPickup={buildPickup}
+            setBuildPickup={setBuildPickup}
+            bgioProps={bgioProps}
+            player={displayPlayer}
+            presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
+            onDevCardPurchaseStart={handleDevCardPurchaseStart}
+            devCardDisplayRef={devCardDisplayRef}
+            displayDevCards={displayPlayer?.devCards ?? null}
+            keepDevCardShellMounted={Boolean(revealInFlight || localDevCardPlayInFlight)}
+            vpDisplayOverride={frozenVpSnapshot}
+            knightDisplayOverride={
+              player?.id != null
+                ? knightDisplayOverrideByPlayerId[String(player.id)] ?? null
+                : null
+            }
+            onTradeClick={handleTradeOpen}
+            isActive={!isGameOver && gameStatus.activePlayerId === player.id}
+            statusType={gameStatus.statusType}
+            gameStatus={gameStatus}
+            activePlayerName={activePlayerName}
+            canRoll={canRoll}
+            canEnd={canEnd}
+            timerMs={visibleTimerMs}
+            themeId={themeId}
+            activeMobileMetaPanel={mobileMetaPanel}
+            onMobileMetaPanelOpen={setMobileMetaPanel}
+            showTurnControls={!isReplay && !isGameOver}
+          />
+        ) : (
+          <PlayerActionContainer
+            effectsBus={effectsBus}
+            setPlayerAction={setPlayerAction}
+            buildPickup={buildPickup}
+            setBuildPickup={setBuildPickup}
+            bgioProps={bgioProps}
+            //playerID={bgioProps.playerID} //for multiplayer
+            player={displayPlayer} //for testing/dev
+            presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
+            onDevCardPurchaseStart={handleDevCardPurchaseStart}
+            devCardDisplayRef={devCardDisplayRef}
+            displayDevCards={displayPlayer?.devCards ?? null}
+            keepDevCardShellMounted={Boolean(revealInFlight || localDevCardPlayInFlight)}
+            vpDisplayOverride={frozenVpSnapshot}
+            knightDisplayOverride={
+              player?.id != null
+                ? knightDisplayOverrideByPlayerId[String(player.id)] ?? null
+                : null
+            }
+            onTradeClick={handleTradeOpen}
+            isActive={!isGameOver && gameStatus.activePlayerId === player.id}
+            statusType={gameStatus.statusType}
+            gameStatus={gameStatus}
+            canRoll={canRoll}
+            canEnd={canEnd}
+            timerMs={visibleTimerMs}
+            themeId={themeId}
+            layoutOffsetX={playfieldCenterOffsetX}
+            showTurnControls={!isReplay && !isGameOver}
+          />
+        ))}
 
       {/* MODALS */}
       {/* 1. Force Discard Modal */}
@@ -1880,18 +1975,22 @@ TODO: accurately colour it
         />
       ) : null}
 
-      {(opponents.length > 0 || showConnectionBanner) && (
+      {(displayedOpponents.length > 0 || showConnectionBanner) && (
         <div
-          className="pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-3 px-4"
+          className={
+            isPhoneLayout
+              ? "pointer-events-none fixed inset-x-0 top-11 z-30 flex flex-col items-center gap-2 px-14"
+              : "pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-3 px-4"
+          }
           style={{
             transform: playfieldCenterOffsetX
               ? `translateX(${Math.round(playfieldCenterOffsetX)}px)`
               : undefined,
           }}
         >
-          {opponents.length > 0 && (
+          {displayedOpponents.length > 0 && (
             <div className="pointer-events-auto flex items-start gap-4">
-              {opponents.map((opponent) => (
+              {displayedOpponents.map((opponent) => (
                 <OpponentPlayerBox
                   key={opponent.id}
                   player={opponent}
@@ -1900,6 +1999,7 @@ TODO: accurately colour it
                   coreTopology={bgioProps.G.coreTopology}
                   isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}
                   statusType={gameStatus.statusType}
+                  compact={isPhoneLayout}
                   knightDisplayOverride={
                     knightDisplayOverrideByPlayerId[String(opponent.id)] ?? null
                   }
@@ -1907,6 +2007,29 @@ TODO: accurately colour it
               ))}
             </div>
           )}
+
+          {showMobileTopTurnContext ? (
+            <div className="pointer-events-auto w-full max-w-[18rem]">
+              <MobileTurnContextStrip
+                mode={mobileTurnContextMode}
+                statusText={
+                  mobileTurnContextMode === "roll" &&
+                  String(playerID) === String(gameStatus.activePlayerId)
+                    ? "Roll to start turn"
+                    : gameStatus?.title ?? null
+                }
+                timerText={mobileTurnContextTimerText}
+                showTimer={showMobileTurnContextTimer}
+                isTimerLow={isMobileTurnContextTimerLow}
+                diceRoll={mobileTurnContextDiceRoll}
+                activePlayerName={activePlayerName}
+                isViewerTurn={
+                  playerID != null &&
+                  String(playerID) === String(gameStatus.activePlayerId)
+                }
+              />
+            </div>
+          ) : null}
 
           {showConnectionBanner ? (
             <StatusBanner
