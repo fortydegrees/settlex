@@ -36,6 +36,10 @@ describe("MobilePrimaryTurnButton source", () => {
     const source = fs.readFileSync(buttonPath, "utf8");
 
     expect(source).toContain("END_TURN_HOLD_MS = 1000");
+    expect(source).toContain("onHaptic");
+    expect(source).toContain('name: "ui:roll:press"');
+    expect(source).toContain('name: "ui:end-turn:hold:start"');
+    expect(source).toContain('name: "ui:end-turn:hold:confirm"');
     expect(source).toContain('ariaLabel = isRoll ? "Roll dice" : "Hold to end turn"');
     expect(source).toContain("startEndTurnHold");
     expect(source).toContain("cancelEndTurnHold");

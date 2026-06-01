@@ -49,4 +49,11 @@ describe("getVpDisplay", () => {
     expect(source).toContain("value={vpDisplay}");
     expect(source).toContain("motionValue={");
   });
+
+  it("allows callers to add state-specific avatar chrome", () => {
+    const source = fs.readFileSync(playerAvatarStatsPath, "utf8");
+
+    expect(source).toContain('avatarClassName = ""');
+    expect(source).toContain("${avatarClassName}");
+  });
 });

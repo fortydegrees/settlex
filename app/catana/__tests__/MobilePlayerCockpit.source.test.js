@@ -35,13 +35,26 @@ describe("MobilePlayerCockpit source", () => {
     expect(source).toContain('onOpen?.("chat")');
     expect(source).toContain("mobile-command-row__feed-trigger");
     expect(source).toContain("mobile-command-row__status");
+    expect(source).toContain("MiniDiceFace");
+    expect(source).toContain("passiveCommandDice");
+    expect(source).toContain("gameStatus?.title");
+    expect(source).toContain("Rolled ${passiveCommandDice[0]} and ${passiveCommandDice[1]}");
+    expect(source).toContain("effectsBus");
+    expect(source).toContain("emitHaptic");
+    expect(source).toContain("onHaptic");
+    expect(source).toContain('name: "ui:action:press"');
+    expect(source).toContain('name: "ui:tray:toggle"');
+    expect(source).toContain('statusType !== "thinking"');
+    expect(source).toContain("whitespace-normal");
+    expect(source).toContain("[display:-webkit-box]");
+    expect(source).toContain("[-webkit-line-clamp:2]");
     expect(source).not.toContain("data-mobile-meta-button={panelId}");
     expect(source).not.toContain("grid-cols-[3.85rem_3.85rem_minmax(0,1fr)]");
   });
 
   it("places mobile action dock buttons above the local resource bar", () => {
     const source = fs.readFileSync(cockpitPath, "utf8");
-    const dockIndex = source.indexOf("{dynamicActions.filter(Boolean).map");
+    const dockIndex = source.indexOf("{mobileActions.filter(Boolean).map");
     const resourceBarIndex = source.indexOf("mobile-player-inventory");
 
     expect(dockIndex).toBeGreaterThan(-1);
@@ -65,6 +78,9 @@ describe("MobilePlayerCockpit source", () => {
     const source = fs.readFileSync(cockpitPath, "utf8");
 
     expect(source).toContain('id={`p${player.id}-resources`}');
+    expect(source).toContain('data-mobile-inventory-tone={isOverLimit ? "danger" : "default"}');
+    expect(source).toContain('data-mobile-avatar-tone={isOverLimit ? "danger" : "default"}');
+    expect(source).toContain("ring-rose-300");
     expect(source).toContain('id={`p${player.id}-longest-road`}');
     expect(source).toContain('id={`p${player.id}-largest-army`}');
     expect(source).toContain("MobileDevCardButton");

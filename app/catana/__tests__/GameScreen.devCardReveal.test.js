@@ -13,10 +13,13 @@ describe("GameScreen dev card reveal wiring", () => {
   it("starts the reveal from the authoritative buyDevCardReveal effect for the local player only", () => {
     const source = fs.readFileSync(gameScreenPath, "utf8");
 
-    expect(source).toContain("devCardReveal: () =>");
+    expect(source).toContain("devCardReveal: ({ layerRef, emitCue }) =>");
     expect(source).toContain("const payload = event?.payload");
-    expect(source).toContain("String(payload.playerId) !== String(playerID)");
+    expect(source).toContain("String(payload.playerId) === String(playerID)");
+    expect(source).toContain("startDevCardRevealFromEffect(payload)");
     expect(source).toContain("cardType: payload.cardType");
+    expect(source).toContain("transferRunner({");
+    expect(source).toContain("transfers: buildDevCardBuyTransfer(payload)");
     expect(source).not.toContain("findBoughtDevCardType");
   });
 

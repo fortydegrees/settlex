@@ -18,6 +18,18 @@ describe("GameEffects", () => {
     expect(source).toContain("turn:start");
   });
 
+  it("wires haptics to the shared cue bus", () => {
+    const path = fileURLToPath(
+      new URL("../../effects/GameEffects.js", import.meta.url)
+    );
+    const source = fs.readFileSync(path, "utf8");
+
+    expect(source).toContain("createHapticManager");
+    expect(source).toContain("const haptics = useMemo");
+    expect(source).toContain("haptics.unlock()");
+    expect(source).toContain("haptics.destroy()");
+  });
+
   it("wires buyDevCardReveal to buyer-only reveal events", () => {
     const path = fileURLToPath(
       new URL("../../effects/GameEffects.js", import.meta.url)

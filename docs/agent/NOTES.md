@@ -1,5 +1,29 @@
 # NOTES
 
+- Mobile haptics note:
+- `app/catana/effects/HapticManager.js` subscribes to the shared effect bus through `cue` events plus explicit local `haptic` events.
+- Keep haptics presentation-only. Do not route haptic state through `game-core`, the server, or move validation.
+- Haptics are mobile/coarse-pointer only by default, skip when `prefers-reduced-motion: reduce` is active, and no-op when the browser lacks `navigator.vibrate` or a native iOS haptic bridge.
+- Use explicit `haptic` bus events for local mobile controls such as Roll, End Turn hold start/confirm, action dock presses, quick trade taps, and dev-card tray toggles.
+- Keep high-frequency resource card pop/travel cues unmapped by default; add a throttled local-player-specific resource pulse later if the game needs it.
+- Dice haptics should stay tied to the existing `dice:roll` cue plan, not a separate timeout in the dice component, so audio, visual settle, and haptic impact remain on one shared timing path.
+
+- Mobile dice face display note:
+- use `MiniDiceFace` for compact roll displays instead of hard numeric chips when showing actual dice outcomes.
+- dice faces should read as small physical white/ivory dice with dark pips; keep only a light glass/HUD edge so they do not turn into blue translucent chips.
+- the phone bottom command/status box is the persistent turn surface. It may show rolled dice faces when there is no Roll/End primary CTA.
+- forced-action copy in the bottom command/status box should win over roll recap. Let the label wrap up to two lines and suppress the dice suffix for non-thinking states such as robber move/discard.
+- reserve `MobileTurnContextStrip` for a future transient event toast; do not render it as always-on top HUD for MVP.
+- game-log roll entries should emit `die` tokens from `gameText` and let `FeedTokenRow` render the same dice face treatment.
+- keep totals available for logic/accessibility, but avoid duplicating the total as a dominant visible chip in the smallest phone status strip.
+
+- Mobile match utility menu note:
+- phone layout should use one compact top-right match menu for low-frequency utilities instead of standalone mute/resign corner buttons.
+- `MobileMatchMenu` owns the phone utility popover: Sound, Game rules, Settings, and optional Resign match.
+- keep Log/Chat in the bottom command row; do not mix feed access into the utility menu.
+- keep Resign behind the utility menu and the existing `ResignConfirmDialog`; avoid making destructive match exit look like a primary board action.
+- the desktop utility cluster remains the top-left mute/settings/rules group, while phone hides that cluster in favor of the single match menu.
+
 - Mobile log/chat bottom sheet note:
 - phone layout should trigger Log/Chat from the bottom command row, not from the old floating left edge rail.
 - `MobilePlayerCockpit` owns the visible closed affordance: one compact split feed trigger plus one contextual primary/status slot. Avoid making Log/Chat look like peer primary actions.
@@ -10,6 +34,7 @@
 - Vaul/Radix can still leave outside layers affected by dialog pointer-event handling, so `GameScreen` explicitly sets the game root back to `pointerEvents: "auto"` while `mobileMetaPanel` is open.
 - expanded mobile feed sheets should cover the local inventory/action/end-turn zone and leave the board visible above; avoid middle-of-screen floating panels for this interaction.
 - keep the near-term mobile command row narrow: persistent feed access plus the current Roll/End/Waiting slot. Moving build/trade/dev actions into a full bottom command tray is a separate larger redesign.
+- Mobile feed trigger and drawer tab buttons intentionally use `.catana-mobile-feed-control` to suppress focus rings and native long-press/tap highlight chrome.
 
 - Mobile dev-card picker note:
 - mobile should not show an empty dev-card bay at 0 cards; let resources use the width.
@@ -3298,7 +3323,7 @@
       - The first mobile MVP is portrait-focused; do not optimize phone landscape yet.
       - Phone opponent info should reuse `OpponentPlayerBox` in compact mode for now, keeping the existing shared avatar/stats behavior while reducing visual dominance.
       - Phone Log/Chat controls should follow the newer glass feed language: normal labels, icon-first, modest blur/opacity, no old all-caps letter-spaced badge treatment.
-      - Mobile turn context placement is still being evaluated. A top HUD placement below the opponent strip is useful to test against the bottom-action placement, but keep the bottom action area focused when this is active.
+      - Mobile turn/status context should persist in the bottom command row. A top HUD placement below the opponent strip is reserved for a future transient event toast, not always-on MVP chrome.
       - The mobile bottom cockpit should avoid nesting the desktop player stat panel inside another panel. Use a custom compact inventory strip: avatar, tiny road/army chips, resources, and inline dev-card stack in one row.
       - The mobile cockpit should use the local player/resource inventory row as the dominant glass rail. Keep the outer cockpit wrapper structural only, with the turn context strip and primary CTA separate below it.
       - Avoid extra inner borders/backgrounds inside the inventory rail; use spacing, one subtle divider, and icon/number scale for grouping.
@@ -3313,3 +3338,5 @@
       - The mobile End Turn hold control must prevent native `contextmenu`; the game screen allows interaction controls through its root context-menu guard, so hold controls need local suppression.
       - Catana game-screen buttons suppress native WebKit tap highlight/callout so long-press feedback comes from our HUD, not the browser's rectangular overlay. Keep this scoped to `.catana-game-screen`.
       - Mobile dev cards are directionally a single inline stack beside resources; later interaction can expand that stack for choosing a playable card.
+      - Mobile resource over-limit danger should be obvious, closer to desktop: a stronger rose rail fill/shadow plus a rose avatar ring on `mobile-player-inventory`, not just a faint tint. Avoid making the rail border too heavy; the avatar ring should carry the sharpest warning cue.
+      - Opponent over-limit danger should mirror the same language through `OpponentPlayerBox`: danger badge, danger panel chrome, and a rose avatar ring via `PlayerAvatarStats.avatarClassName`.

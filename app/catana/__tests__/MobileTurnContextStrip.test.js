@@ -25,7 +25,8 @@ describe("MobileTurnContextStrip source", () => {
   it("renders roll result and dice chips after a roll", () => {
     const source = fs.readFileSync(stripPath, "utf8");
 
-    expect(source).toContain("Rolled ${rollTotal}");
+    expect(source).toContain("MiniDiceFace");
+    expect(source).toContain("Rolled ${dice[0]} and ${dice[1]}, total ${rollTotal}");
     expect(source).toContain("mobile-turn-context__die");
     expect(source).toContain("normalizeDiceRoll");
     expect(source).toContain("getRollTotal");

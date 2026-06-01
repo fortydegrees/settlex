@@ -5,6 +5,7 @@ import {
   handleThemeImageError,
 } from "../theme/themes";
 import { getPlayerNameHex } from "../theme/playerColors";
+import { MiniDiceFace } from "./MiniDiceFace";
 
 export const FeedTokenRow = ({ token, themeId }) => {
   if (!token) return null;
@@ -67,6 +68,14 @@ export const FeedTokenRow = ({ token, themeId }) => {
           { className: "mx-0.5 inline-block" },
           token.resource
         );
+  }
+
+  if (token.kind === "die") {
+    return React.createElement(MiniDiceFace, {
+      value: token.value,
+      className: "mx-0.5 h-5 w-5 align-[-0.22em]",
+      "aria-label": `Die ${token.value}`,
+    });
   }
 
   if (token.kind === "text") {

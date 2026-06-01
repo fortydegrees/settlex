@@ -28,6 +28,13 @@ export const OpponentPlayerBox = ({
     resourceCount,
     discardLimit,
   });
+  const isOverLimit = resourceBadgeTone === "danger";
+  const dangerPanelClassName =
+    !isSeatWarning && isOverLimit ? "catana-hud-glass--danger" : "";
+  const dangerAvatarClassName =
+    !isSeatWarning && isOverLimit
+      ? "ring-rose-300 shadow-[0_18px_36px_-22px_rgba(190,18,60,0.76),0_0_0_1px_rgba(255,255,255,0.32)]"
+      : "";
 
   return (
     <div
@@ -45,7 +52,11 @@ export const OpponentPlayerBox = ({
         isActive={isActive}
         statusType={statusType}
         knightDisplayOverride={knightDisplayOverride}
-        statsPanelClassName={isSeatWarning ? "seat-disconnected-pulse" : ""}
+        statsPanelClassName={[
+          isSeatWarning ? "seat-disconnected-pulse" : "",
+          dangerPanelClassName,
+        ].filter(Boolean).join(" ")}
+        avatarClassName={dangerAvatarClassName}
         statsPanelChildren={
           <>
             <div id={`p${player.id}-resources`}>

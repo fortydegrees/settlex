@@ -1,4 +1,5 @@
 import React from "react";
+import { MiniDiceFace } from "./MiniDiceFace";
 
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
@@ -62,15 +63,18 @@ export function MobileTurnContextStrip({
       className: "mobile-turn-context__roll",
       content: (
         <span className="inline-flex items-center gap-2">
-          <span>{`Rolled ${rollTotal}`}</span>
+          <span className="sr-only">
+            {`Rolled ${dice[0]} and ${dice[1]}, total ${rollTotal}`}
+          </span>
+          <span aria-hidden="true">Rolled</span>
           <span className="inline-flex items-center gap-1" aria-hidden="true">
             {dice.map((die, index) => (
-              <span
+              <MiniDiceFace
                 key={`${die}-${index}`}
-                className="mobile-turn-context__die flex h-6 w-6 items-center justify-center rounded-[0.5rem] bg-white/88 text-xs font-bold text-slate-900 shadow-[0_4px_10px_-6px_rgba(15,23,42,0.7)]"
-              >
-                {die}
-              </span>
+                value={die}
+                className="mobile-turn-context__die"
+                aria-hidden="true"
+              />
             ))}
           </span>
         </span>

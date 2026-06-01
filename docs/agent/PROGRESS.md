@@ -1,5 +1,73 @@
 # PROGRESS
 
+## Status (2026-06-01, mobile haptic feedback)
+- Added a Catana haptic feedback manager on the existing presentation effect bus.
+- `GameEffects` now creates `HapticManager` beside `AudioManager`, unlocks both from the first pointer gesture, and cleans up haptic subscriptions on unmount.
+- Added a default haptic theme for mobile control taps, dice impact, turn start, build placement, dev-card play/resolve, robber move, awards, and game over.
+- Wired the phone cockpit to emit local haptic events for action dock presses, quick trade taps, dev-card tray toggles/plays, Roll taps, and End Turn hold start/confirm.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/effects/HapticManager.test.js app/catana/__tests__/effects/GameEffects.test.js app/catana/__tests__/GameScreen.diceEffects.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/effects/HapticManager.js app/catana/effects/hapticThemes.js app/catana/effects/GameEffects.js app/catana/components/MobilePlayerCockpit.js app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/effects/HapticManager.test.js app/catana/__tests__/effects/GameEffects.test.js app/catana/__tests__/GameScreen.diceEffects.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js`
+- `git diff --check -- app/catana/effects/HapticManager.js app/catana/effects/hapticThemes.js app/catana/effects/GameEffects.js app/catana/components/MobilePlayerCockpit.js app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/effects/HapticManager.test.js app/catana/__tests__/effects/GameEffects.test.js app/catana/__tests__/GameScreen.diceEffects.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js docs/agent/NOTES.md docs/agent/PROGRESS.md`
+
+## Status (2026-06-01, mobile forced-action status wrap)
+- Changed the mobile bottom command/status label to wrap up to two lines instead of truncating forced-action copy.
+- Suppressed the dice suffix in non-thinking status states so high-attention states such as robber move prioritize the instruction text.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
+- `git diff --check -- app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/MobilePlayerCockpit.source.test.js docs/agent/NOTES.md docs/agent/PROGRESS.md`
+- Browser sandbox verification at `375x667`: the Robber move preset rendered both `Move the robber` and opponent-view `Visitor 1 is moving the robber` in the bottom status box without a top strip, truncation, or dice suffix.
+
+## Status (2026-06-01, mobile bottom command status)
+- Hid the always-on mobile top turn-context strip for MVP so the board has one fewer persistent overlay.
+- Moved persistent mobile turn/status responsibility into the bottom command box: forced states and waiting states use `gameStatus.title`, and rolled dice can render there when no Roll/End primary CTA is available.
+- Kept `MobileTurnContextStrip` available as a future transient event-toast component rather than deleting the concept.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
+- `git diff --check -- app/catana/GameScreen.js app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js docs/agent/NOTES.md docs/agent/PROGRESS.md`
+- Browser sandbox verification at `375x667`: the top mobile turn strip was absent, the bottom command box stayed visible, and an opponent-turn state rendered `Visitor 1's turn` with two dice faces in the bottom status box.
+
+## Status (2026-06-01, mobile dice face roll display)
+- Added shared `MiniDiceFace` rendering for compact pip-style dice.
+- Tuned the dice face to read as white/ivory physical dice with a light HUD edge rather than translucent blue glass chips.
+- Replaced the phone turn-context hard numeric roll chips with the actual rolled dice faces while preserving sr-only dice and total text.
+- Updated game-log roll formatting to emit `die` tokens and render those tokens through `FeedTokenRow`, so log entries match the status strip.
+- Updated the existing source expectation for `MobileTurnContextStrip`; no new test coverage was added per request.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/MiniDiceFace.js app/catana/components/MobileTurnContextStrip.js app/catana/components/FeedTokenRow.js app/catana/utils/gameText.js app/catana/__tests__/MobileTurnContextStrip.test.js`
+- `git diff --check -- app/catana/components/MiniDiceFace.js app/catana/components/MobileTurnContextStrip.js app/catana/components/FeedTokenRow.js app/catana/utils/gameText.js app/catana/__tests__/MobileTurnContextStrip.test.js docs/agent/NOTES.md docs/agent/PROGRESS.md`
+- Browser sandbox verification at `375x667`: `http://localhost:3000/catana/dev/sandbox?viewportWall=1` rendered two `.mobile-turn-context__die` faces in the mobile status strip, and the regular sandbox pre-roll scenario rendered two game-log dice tokens after rolling (`Die 5`, `Die 2`).
+
+## Status (2026-06-01, mobile match utility menu)
+- Replaced the phone-only standalone mute and resign corner controls with a single compact top-right `MobileMatchMenu`.
+- The menu uses the existing shared `Popover` behavior with Catana glass styling and contains Sound, Game rules, Settings, and optional Resign match.
+- Kept Log/Chat in the bottom command row and left the existing `ResignConfirmDialog` as the destructive confirmation path.
+- Desktop keeps the existing top-left utility cluster and right-side resign pill; the phone layout hides the desktop cluster.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobileMatchMenu.source.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/components/MobileMatchMenu.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/MobileMatchMenu.source.test.js`
+- Browser sandbox verification at `http://localhost:3000/catana/dev/sandbox?viewportWall=1` with `375x667`: closed menu trigger measured `36x36` at the top-right, desktop utility cluster display was `none`, the opened menu showed Sound/Game rules/Settings/Resign, and screenshots were saved under `output/playwright/mobile-match-menu-*.png`.
+
+## Status (2026-05-20, mobile resource danger emphasis)
+- Increased the mobile local inventory rail's over-limit danger state so it reads closer to desktop: stronger rose fill/shadow plus a rose avatar ring.
+- Softened the heavy mobile rail ring from the first pass so the avatar tile now carries the clearest danger cue.
+- Mirrored over-limit danger into opponent boxes by passing danger panel chrome and a rose avatar ring through `PlayerAvatarStats`.
+- Added `data-mobile-inventory-tone` and `data-mobile-avatar-tone` markers for the mobile rail state while keeping the existing shared `isOverLimit` model unchanged.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/components/OpponentPlayerBox.js app/catana/components/PlayerAvatarStats.js`
+- `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/playerAvatarStats.test.js --reporter=dot`
+- `git diff --check -- app/catana/components/MobilePlayerCockpit.js app/catana/components/OpponentPlayerBox.js app/catana/components/PlayerAvatarStats.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/OpponentPlayerBox.test.js app/catana/__tests__/playerAvatarStats.test.js docs/agent/NOTES.md docs/agent/PROGRESS.md`
+
+## Status (2026-05-20, mobile feed control highlight cleanup)
+- Removed the visible focus ring classes from the mobile game-log/chat command-row buttons and the expanded drawer's Log/Chat tabs.
+- Added `.catana-mobile-feed-control` so those feed controls explicitly suppress native WebKit tap highlight/callout chrome during long press.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileMetaDrawer.js`
+- `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobileMetaDrawer.source.test.js --reporter=dot`
+- `git diff --check -- app/catana/components/MobilePlayerCockpit.js app/catana/components/MobileMetaDrawer.js app/globals.css docs/agent/NOTES.md docs/agent/PROGRESS.md`
+
 ## Status (2026-05-20, exact Longest Road award path)
 - Changed Longest Road award animation payloads to use the exact winning road path instead of every road owned by the new award holder.
 - `game-core/src/rules/victory.ts` now exposes `getLongestRoadResult(...)`, which preserves the existing length API while returning the selected path's edge ids for presentation.

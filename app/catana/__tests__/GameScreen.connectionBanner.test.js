@@ -26,6 +26,7 @@ describe("GameScreen transport connection banner", () => {
     expect(contents).toContain('variant="danger"');
     expect(contents).toContain("Connection lost.");
     expect(contents).toContain("Trying to reconnect");
-    expect(contents).toContain("fixed inset-x-0 top-6 z-30 flex flex-col items-center gap-3");
+    expect(contents).toContain("pointer-events-none fixed inset-x-0 top-11 z-30 flex flex-col items-center gap-2 px-14");
+    expect(contents).toContain("pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-3 px-4");
   });
 });

@@ -34,11 +34,13 @@ describe("GameScreen mobile shell source", () => {
   it("uses compact mobile top chrome around the opponent strip", () => {
     const source = fs.readFileSync(gameScreenPath, "utf8");
 
-    expect(source).toContain("FlagIcon");
-    expect(source).toContain("MobileTurnContextStrip");
-    expect(source).toContain("showMobileTopTurnContext");
-    expect(source).toContain("isPhoneLayout ? (");
-    expect(source).toContain('aria-label="Resign match"');
+    expect(source).toContain("MobileMatchMenu");
+    expect(source).not.toContain("showMobileTopTurnContext");
+    expect(source).not.toContain("<MobileTurnContextStrip");
+    expect(source).toContain("hidden sm:flex");
+    expect(source).toContain("fixed right-3 top-3 z-40 sm:hidden");
+    expect(source).toContain("canResign={!isReplay && !isGameOver && !!player}");
+    expect(source).toContain("onResign={handleResign}");
     expect(source).toContain("top-11 z-30 flex flex-col items-center gap-2 px-14");
     expect(source).toContain("compact={isPhoneLayout}");
   });
