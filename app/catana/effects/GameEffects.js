@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { useEffectListener } from "bgio-effects/react";
 import { createEffectBus } from "./EffectBus";
 import { createAudioManager } from "./AudioManager";
+import { createHapticManager } from "./HapticManager";
 import { registerEffects } from "./registry";
 import { EffectLayer } from "./EffectLayer";
 import { DEFAULT_TURN_START_STATE, getTurnStartCueDecision } from "./turnStartCue";
@@ -21,6 +22,7 @@ export function GameEffects({
   const bus = providedBus ?? localBus;
   const layerRef = useRef(null);
   const audio = useMemo(() => createAudioManager({ bus }), [bus]);
+  const haptics = useMemo(() => createHapticManager({ bus }), [bus]);
   const turnStartRef = useRef({ ...DEFAULT_TURN_START_STATE });
   const gameOverCueRef = useRef(false);
 
@@ -48,10 +50,18 @@ export function GameEffects({
   }, [bus, handlers]);
 
   useEffect(() => {
-    const unlock = () => audio.unlock();
-    window.addEventListener("pointerdown", unlock, { once: true });
-    return () => window.removeEventListener("pointerdown", unlock);
-  }, [audio]);
+    const unlock = () => {
+      audio.unlock();
+      haptics.unlock();
+    };
+    const unlockOptions = { once: true, capture: true };
+    window.addEventListener("pointerdown", unlock, unlockOptions);
+    return () => window.removeEventListener("pointerdown", unlock, unlockOptions);
+  }, [audio, haptics]);
+
+  useEffect(() => {
+    return () => haptics.destroy();
+  }, [haptics]);
 
   useEffectListener(
     "distributeCardsFromTile",

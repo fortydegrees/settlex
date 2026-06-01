@@ -7,7 +7,6 @@ import {
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Cog6ToothIcon,
-  FlagIcon,
   QuestionMarkCircleIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
@@ -47,7 +46,7 @@ import { EffectsBoardWrapper } from "bgio-effects/react";
 
 import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { MobilePlayerCockpit } from "./components/MobilePlayerCockpit";
-import { MobileTurnContextStrip } from "./components/MobileTurnContextStrip";
+import { MobileMatchMenu } from "./components/MobileMatchMenu";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GlassPillButton } from "./components/GlassPillButton";
 import { LeftMetaRail } from "./components/LeftMetaRail";
@@ -84,7 +83,6 @@ import {
 } from "./utils/devCardPlayPresentation";
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout } from "./utils/boardLayout";
-import { getTurnControlMode } from "./utils/turnControlMode";
 import {
   getLobbyServerOrigin,
 } from "./utils/serverOrigins";
@@ -101,10 +99,6 @@ import {
   CATANA_THEME_STORAGE_KEY,
   resolveThemeId,
 } from "./theme/themes";
-import {
-  formatTimer,
-  getLowTimerAlertState,
-} from "./components/useLocalPlayerDockModel";
 import {
   clearLastActiveMatch,
   readLastActiveMatch
@@ -1143,21 +1137,7 @@ export function GameScreen(bgioProps) {
     gameStatus.activePlayerId != null
       ? nameMap[gameStatus.activePlayerId] ?? `Player ${gameStatus.activePlayerId}`
       : null;
-  const mobileTurnContextMode = getTurnControlMode({
-    canRoll,
-    canEnd,
-  });
-  const mobileTurnContextTimerText = formatTimer(visibleTimerMs);
-  const {
-    showStatusTimer: showMobileTurnContextTimer,
-    isLowTimerAlertActive: isMobileTurnContextTimerLow,
-  } = getLowTimerAlertState({
-    timerMs: visibleTimerMs,
-    statusType: gameStatus.statusType,
-    gameStatus,
-  });
-  const mobileTurnContextDiceRoll = getVisibleDiceRoll(bgioProps.G);
-  const showMobileTopTurnContext = isPhoneLayout && Boolean(player);
+  const mobileCommandDiceRoll = getVisibleDiceRoll(bgioProps.G);
   const showIdlePrompt =
     !isGameOver &&
     playerID != null &&
@@ -1664,7 +1644,7 @@ export function GameScreen(bgioProps) {
 
       <TooltipProvider delay={0}>
         <div
-          className="fixed left-3 top-3 z-40 flex items-center gap-1.5 sm:left-4 sm:top-4 sm:gap-2"
+          className="fixed left-3 top-3 z-40 hidden sm:flex items-center gap-1.5 sm:left-4 sm:top-4 sm:gap-2"
           data-game-utility-cluster="true"
           data-allow-interaction="true"
         >
@@ -1711,28 +1691,31 @@ export function GameScreen(bgioProps) {
         </div>
       </TooltipProvider>
 
-      {!isReplay && !isGameOver && !!player && (
-        <div className="fixed right-3 top-3 z-40 sm:right-4 sm:top-4" data-allow-interaction="true">
-          {isPhoneLayout ? (
-            <IconButton
-              variant="secondary"
-              size="md"
-              onClick={handleResign}
-              className="h-10 w-10 border-rose-200/70 bg-white/[0.82] text-rose-600 shadow-[0_14px_30px_-24px_rgba(190,24,93,0.58)] backdrop-blur-md hover:border-rose-200/90 hover:bg-white/95 hover:text-rose-700"
-              aria-label="Resign match"
-              data-allow-interaction="true"
-            >
-              <FlagIcon className="h-5 w-5" aria-hidden="true" />
-            </IconButton>
-          ) : (
-            <GlassPillButton
-              onClick={handleResign}
-              aria-label="Resign match"
-              data-allow-interaction="true"
-            >
-              <span>Resign</span>
-            </GlassPillButton>
-          )}
+      {!showResultsButton ? (
+        <div
+          className="fixed right-3 top-3 z-40 sm:hidden"
+          data-allow-interaction="true"
+        >
+          <MobileMatchMenu
+            isMuted={isMuted}
+            onToggleMute={handleToggleMute}
+            onOpenGameRules={() => setShowGameRules(true)}
+            onOpenGameSettings={() => setShowGameSettings(true)}
+            canResign={!isReplay && !isGameOver && !!player}
+            onResign={handleResign}
+          />
+        </div>
+      ) : null}
+
+      {!isReplay && !isGameOver && !!player && !isPhoneLayout && (
+        <div className="fixed right-3 top-3 z-40 hidden sm:block sm:right-4 sm:top-4" data-allow-interaction="true">
+          <GlassPillButton
+            onClick={handleResign}
+            aria-label="Resign match"
+            data-allow-interaction="true"
+          >
+            <span>Resign</span>
+          </GlassPillButton>
         </div>
       )}
 
@@ -1859,6 +1842,7 @@ TODO: accurately colour it
             setPlayerAction={setPlayerAction}
             buildPickup={buildPickup}
             setBuildPickup={setBuildPickup}
+            effectsBus={effectsBus}
             bgioProps={bgioProps}
             player={displayPlayer}
             presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
@@ -1884,6 +1868,7 @@ TODO: accurately colour it
             activeMobileMetaPanel={mobileMetaPanel}
             onMobileMetaPanelOpen={setMobileMetaPanel}
             showTurnControls={!isReplay && !isGameOver}
+            diceRoll={mobileCommandDiceRoll}
           />
         ) : (
           <PlayerActionContainer
@@ -2007,29 +1992,6 @@ TODO: accurately colour it
               ))}
             </div>
           )}
-
-          {showMobileTopTurnContext ? (
-            <div className="pointer-events-auto w-full max-w-[18rem]">
-              <MobileTurnContextStrip
-                mode={mobileTurnContextMode}
-                statusText={
-                  mobileTurnContextMode === "roll" &&
-                  String(playerID) === String(gameStatus.activePlayerId)
-                    ? "Roll to start turn"
-                    : gameStatus?.title ?? null
-                }
-                timerText={mobileTurnContextTimerText}
-                showTimer={showMobileTurnContextTimer}
-                isTimerLow={isMobileTurnContextTimerLow}
-                diceRoll={mobileTurnContextDiceRoll}
-                activePlayerName={activePlayerName}
-                isViewerTurn={
-                  playerID != null &&
-                  String(playerID) === String(gameStatus.activePlayerId)
-                }
-              />
-            </div>
-          ) : null}
 
           {showConnectionBanner ? (
             <StatusBanner

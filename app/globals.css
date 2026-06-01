@@ -31,6 +31,18 @@
   touch-action: manipulation;
 }
 
+.catana-mobile-feed-control {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  outline: none;
+}
+
+.catana-mobile-feed-control:focus,
+.catana-mobile-feed-control:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .settlex-ui-dialog-backdrop {
   animation: settlex-ui-backdrop-in var(--settlex-ui-duration-dialog) ease-out
     both;

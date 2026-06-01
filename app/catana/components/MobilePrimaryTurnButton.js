@@ -9,6 +9,7 @@ export function MobilePrimaryTurnButton({
   canEnd = false,
   onRoll,
   onEndTurn,
+  onHaptic,
   isBusy = false,
 }) {
   const isRoll = mode === "roll";
@@ -36,16 +37,18 @@ export function MobilePrimaryTurnButton({
     if (!isEndTurn || !isEnabled || isBusy || !onEndTurn) return;
     holdConfirmedRef.current = true;
     clearHold();
+    onHaptic?.({ name: "ui:end-turn:hold:confirm" });
     onEndTurn();
-  }, [clearHold, isBusy, isEnabled, isEndTurn, onEndTurn]);
+  }, [clearHold, isBusy, isEnabled, isEndTurn, onEndTurn, onHaptic]);
 
   const startEndTurnHold = useCallback(() => {
     if (!isEndTurn || !isEnabled || isBusy || !onEndTurn) return;
     clearHold();
     holdConfirmedRef.current = false;
     setIsHolding(true);
+    onHaptic?.({ name: "ui:end-turn:hold:start" });
     holdTimerRef.current = window.setTimeout(confirmEndTurn, END_TURN_HOLD_MS);
-  }, [clearHold, confirmEndTurn, isBusy, isEnabled, isEndTurn, onEndTurn]);
+  }, [clearHold, confirmEndTurn, isBusy, isEnabled, isEndTurn, onEndTurn, onHaptic]);
 
   const cancelEndTurnHold = useCallback(() => {
     if (!isEndTurn) return;
@@ -58,9 +61,12 @@ export function MobilePrimaryTurnButton({
         event.preventDefault();
         return;
       }
-      if (isEnabled && !isBusy) onClick?.();
+      if (isEnabled && !isBusy) {
+        onHaptic?.({ name: "ui:roll:press" });
+        onClick?.();
+      }
     },
-    [isBusy, isEnabled, isEndTurn, onClick]
+    [isBusy, isEnabled, isEndTurn, onClick, onHaptic]
   );
 
   const handlePointerDown = useCallback(

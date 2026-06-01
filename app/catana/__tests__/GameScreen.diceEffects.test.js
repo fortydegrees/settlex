@@ -13,5 +13,13 @@ describe("GameScreen dice effects wiring", () => {
     expect(source).toContain("effectsBus={effectsBus}");
     expect(source).toContain("<PlayerActionContainer");
     expect(source).toContain("effectsBus={effectsBus}");
+    expect(source).toContain("<MobilePlayerCockpit");
+    const mobileCockpitIndex = source.indexOf("<MobilePlayerCockpit");
+    const mobileCockpitEndIndex = source.indexOf("/>", mobileCockpitIndex);
+    const mobileCockpitSnippet = source.slice(
+      mobileCockpitIndex,
+      mobileCockpitEndIndex
+    );
+    expect(mobileCockpitSnippet).toContain("effectsBus={effectsBus}");
   });
 });

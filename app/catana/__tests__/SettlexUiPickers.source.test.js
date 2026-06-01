@@ -12,10 +12,11 @@ describe("Settlex picker primitives", () => {
     expect(source).toContain("secondary");
   });
 
-  it("defines SwatchPicker as a reusable wrapped color selector while preserving the existing swatch feel", () => {
+  it("defines SwatchPicker as a reusable grid color selector while preserving the existing swatch feel", () => {
     const source = readFileSync(resolve(process.cwd(), "app/ui/SwatchPicker.js"), "utf8");
 
-    expect(source).toContain("flex flex-wrap justify-center gap-2");
+    expect(source).toContain("grid w-fit grid-cols-4 place-items-center");
+    expect(source).toContain("gap-x-6 gap-y-5");
     expect(source).toContain("aria-pressed");
     expect(source).toContain("ring-offset-sky-300/80");
     expect(source).toContain("scale-[1.08]");

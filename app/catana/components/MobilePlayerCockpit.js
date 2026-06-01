@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getPublicVictoryPoints,
   getLongestRoadLength,
@@ -10,6 +10,7 @@ import { AnimatedCount } from "./AnimatedCount";
 import { MobileDevCardButton } from "./MobileDevCardButton";
 import { MobileDevCardTray } from "./MobileDevCardTray";
 import { MobileInventoryBorderGlide } from "./MobileInventoryBorderGlide";
+import { MiniDiceFace } from "./MiniDiceFace";
 import { MobilePrimaryTurnButton } from "./MobilePrimaryTurnButton";
 import { useLocalPlayerDockModel } from "./useLocalPlayerDockModel";
 import { getBuildPickupPieceType } from "../utils/playerAction";
@@ -25,6 +26,15 @@ import "./hudGlass.css";
 const RESOURCE_ORDER = Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE);
 
 const mobileMetaButtonIconClassName = "h-5 w-5";
+
+const normalizeCommandDice = (diceRoll) => {
+  if (!Array.isArray(diceRoll) || diceRoll.length < 2) return null;
+  const dice = diceRoll.slice(0, 2).map((value) => Number(value));
+  if (dice.some((value) => !Number.isInteger(value) || value < 1 || value > 6)) {
+    return null;
+  }
+  return dice;
+};
 
 const LogIcon = ({ className = mobileMetaButtonIconClassName } = {}) => (
   <svg
@@ -69,7 +79,7 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
   >
     <button
       type="button"
-      className={`flex items-center justify-center border-r border-white/[0.24] transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white/80 motion-reduce:transition-none ${
+      className={`catana-mobile-feed-control flex items-center justify-center border-r border-white/[0.24] transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
         activePanel === "log" ? "bg-white/[0.5]" : "hover:bg-white/[0.24]"
       }`}
       onClick={() => onOpen?.("log")}
@@ -80,7 +90,7 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
     </button>
     <button
       type="button"
-      className={`flex items-center justify-center transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white/80 motion-reduce:transition-none ${
+      className={`catana-mobile-feed-control flex items-center justify-center transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
         activePanel === "chat" ? "bg-white/[0.5]" : "hover:bg-white/[0.24]"
       }`}
       onClick={() => onOpen?.("chat")}
@@ -184,6 +194,7 @@ export function MobilePlayerCockpit({
   setPlayerAction,
   buildPickup,
   setBuildPickup,
+  effectsBus = null,
   bgioProps,
   player,
   presence,
@@ -205,10 +216,19 @@ export function MobilePlayerCockpit({
   activeMobileMetaPanel = null,
   onMobileMetaPanelOpen,
   showTurnControls = true,
+  diceRoll = null,
 }) {
   const { G, ctx, moves } = bgioProps;
   const clientPlayerID = bgioProps.playerID;
   const [isDevTrayOpen, setIsDevTrayOpen] = useState(false);
+  const emitHaptic = useCallback(
+    (payload) => {
+      const name = typeof payload === "string" ? payload : payload?.name;
+      if (!name) return;
+      effectsBus?.emit({ type: "haptic", payload: { name } });
+    },
+    [effectsBus]
+  );
 
   const startBuildPickup = useCallback(
     (playerAction, triggerRect, preLaunchDelayMs = 0) => {
@@ -283,10 +303,27 @@ export function MobilePlayerCockpit({
   const hasVisibleDevCards = visibleDevCards.length > 0;
   const showMobileDevCardButton =
     hasVisibleDevCards || Boolean(keepDevCardShellMounted);
+  const mobileActions = useMemo(
+    () =>
+      dynamicActions.map((action) => {
+        if (!action) return null;
+        return {
+          ...action,
+          action: (args) => {
+            emitHaptic({ name: "ui:action:press" });
+            action.action?.(args);
+          }
+        };
+      }),
+    [dynamicActions, emitHaptic]
+  );
+  const passiveCommandDice =
+    showPrimaryAction || statusType !== "thinking"
+      ? null
+      : normalizeCommandDice(diceRoll);
   const passiveCommandLabel =
-    activePlayerName != null
-      ? `${activePlayerName}'s turn`
-      : gameStatus?.title ?? "Waiting";
+    gameStatus?.title ??
+    (activePlayerName != null ? `${activePlayerName}'s turn` : "Waiting");
   const avatarColor = player.color
     ? getPlayerColorOption(player.color).gradient
     : "from-slate-500 to-slate-800";
@@ -313,8 +350,9 @@ export function MobilePlayerCockpit({
 
   const handleDevTrayToggle = useCallback(() => {
     if (!hasVisibleDevCards) return;
+    emitHaptic({ name: "ui:tray:toggle" });
     setIsDevTrayOpen((current) => !current);
-  }, [hasVisibleDevCards]);
+  }, [emitHaptic, hasVisibleDevCards]);
 
   const handleDevTrayClose = useCallback(() => {
     setIsDevTrayOpen(false);
@@ -322,10 +360,19 @@ export function MobilePlayerCockpit({
 
   const handleMobileDevCardPlay = useCallback(
     (cardType) => {
+      emitHaptic({ name: "ui:action:press" });
       moves.playDevCardStart(cardType);
       setIsDevTrayOpen(false);
     },
-    [moves]
+    [emitHaptic, moves]
+  );
+
+  const handleMobileResourceClick = useCallback(
+    (resource) => {
+      emitHaptic({ name: "ui:action:press" });
+      handleResourceClick(resource);
+    },
+    [emitHaptic, handleResourceClick]
   );
 
   return (
@@ -344,17 +391,18 @@ export function MobilePlayerCockpit({
             }`}
             data-mobile-action-dock={isDevTrayOpen ? "dev-tray-open" : "closed"}
           >
-            {dynamicActions.filter(Boolean).map((action) => (
+            {mobileActions.filter(Boolean).map((action) => (
               <DockCard key={action.name} action={action} />
             ))}
           </div>
 
           <div
-            className={`mobile-player-inventory relative flex min-w-0 flex-col rounded-[1.25rem] border px-2.5 pb-2.5 pt-5 shadow-[0_18px_42px_-30px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.24)] backdrop-blur-2xl transition-[background-color,border-color,padding] duration-200 ease-out ${
+            className={`mobile-player-inventory relative flex min-w-0 flex-col rounded-[1.25rem] border px-2.5 pb-2.5 pt-5 backdrop-blur-2xl transition-[background-color,border-color,box-shadow,padding] duration-200 ease-out ${
               isOverLimit
-                ? "border-rose-200/60 bg-rose-300/[0.18] ring-1 ring-rose-200/40"
-                : "border-white/[0.28] bg-white/[0.14]"
+                ? "border-rose-300/80 bg-rose-400/[0.3] shadow-[0_18px_46px_-26px_rgba(190,18,60,0.68),0_0_0_1px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_0_24px_rgba(244,63,94,0.18)] ring-1 ring-rose-200/65"
+                : "border-white/[0.28] bg-white/[0.14] shadow-[0_18px_42px_-30px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.24)]"
             } ${isActive ? "mobile-player-inventory--active" : ""}`}
+            data-mobile-inventory-tone={isOverLimit ? "danger" : "default"}
           >
             {isActive ? <MobileInventoryBorderGlide /> : null}
 
@@ -387,9 +435,14 @@ export function MobilePlayerCockpit({
                 </span>
               ) : null}
               <div
-                className={`relative flex h-[3.65rem] w-[3.65rem] items-center justify-center rounded-[0.9rem] bg-gradient-to-t text-[2.45rem] shadow-[0_16px_30px_-24px_rgba(15,23,42,0.68)] ring-2 ring-white ${
+                className={`relative flex h-[3.65rem] w-[3.65rem] items-center justify-center rounded-[0.9rem] bg-gradient-to-t text-[2.45rem] ring-2 ${
                   isSeatWarning ? "seat-disconnected-avatar" : ""
+                } ${
+                  isOverLimit
+                    ? "ring-rose-300 shadow-[0_16px_32px_-20px_rgba(190,18,60,0.82),0_0_0_1px_rgba(255,255,255,0.28)]"
+                    : "ring-white shadow-[0_16px_30px_-24px_rgba(15,23,42,0.68)]"
                 } ${avatarColor}`}
+                data-mobile-avatar-tone={isOverLimit ? "danger" : "default"}
               >
                 {player.emoji || "🤠"}
                 <span className="absolute left-0 top-0 z-10 flex h-5 min-w-5 -translate-x-[35%] -translate-y-1/2 transform items-center justify-center rounded-full border border-sky-200/65 bg-slate-50/95 px-1 text-[0.78rem] font-semibold leading-none text-slate-800 shadow-[0_0_0_2px_rgba(255,255,255,0.56),0_8px_16px_-14px_rgba(15,23,42,0.72)]">
@@ -439,7 +492,7 @@ export function MobilePlayerCockpit({
                   resource={resource}
                   count={resourceCounts[resource] ?? 0}
                   canQuickTrade={canQuickTradeResource(resource)}
-                  onResourceClick={handleResourceClick}
+                  onResourceClick={handleMobileResourceClick}
                   themeId={themeId}
                 />
               ))}
@@ -476,6 +529,7 @@ export function MobilePlayerCockpit({
                 mode={turnControlMode}
                 canRoll={rollEnabled}
                 canEnd={endTurnEnabled}
+                onHaptic={emitHaptic}
                 onRoll={rollEnabled ? () => moves.rollDice() : undefined}
                 onEndTurn={
                   endTurnEnabled
@@ -493,8 +547,30 @@ export function MobilePlayerCockpit({
                 data-mobile-command-status="true"
                 data-allow-interaction="true"
               >
-                <span className="truncate drop-shadow-[0_1px_1px_rgba(15,23,42,0.45)]">
-                  {passiveCommandLabel}
+                <span className="flex min-w-0 max-w-full items-center justify-center gap-2 drop-shadow-[0_1px_1px_rgba(15,23,42,0.45)]">
+                  <span className="min-w-0 overflow-hidden whitespace-normal [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+                    {passiveCommandLabel}
+                  </span>
+                  {passiveCommandDice ? (
+                    <>
+                      <span className="sr-only">
+                        {` / Rolled ${passiveCommandDice[0]} and ${passiveCommandDice[1]}`}
+                      </span>
+                      <span
+                        className="inline-flex shrink-0 items-center gap-1"
+                        aria-hidden="true"
+                      >
+                        {passiveCommandDice.map((die, index) => (
+                          <MiniDiceFace
+                            key={`${die}-${index}`}
+                            value={die}
+                            className="h-6 w-6"
+                            aria-hidden="true"
+                          />
+                        ))}
+                      </span>
+                    </>
+                  ) : null}
                 </span>
               </div>
             )}

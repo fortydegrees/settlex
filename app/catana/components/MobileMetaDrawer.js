@@ -6,7 +6,7 @@ const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 const drawerContentClassName =
   "fixed inset-x-0 bottom-0 z-[65] mx-auto flex h-[min(52vh,26rem)] min-h-[15rem] w-full max-w-[28rem] flex-col overflow-hidden rounded-t-[1.55rem] border border-white/[0.56] bg-[linear-gradient(180deg,rgba(219,234,254,0.94),rgba(191,219,254,0.86))] shadow-[0_-28px_70px_-38px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.46)] ring-1 ring-white/35 backdrop-blur-2xl outline-none select-text";
 const drawerTabClassName =
-  "rounded-[0.95rem] border px-3 py-2 text-sm font-extrabold transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/80 motion-reduce:transition-none";
+  "catana-mobile-feed-control rounded-[0.95rem] border px-3 py-2 text-sm font-extrabold transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none";
 const drawerTabActiveClassName =
   "border-white/[0.78] bg-white/[0.72] text-slate-800 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.66),inset_0_1px_0_rgba(255,255,255,0.58)]";
 const drawerTabIdleClassName =

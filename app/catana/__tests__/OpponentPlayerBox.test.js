@@ -44,4 +44,13 @@ describe("OpponentPlayerBox", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("flex items-start");
   });
+
+  it("mirrors over-limit danger state into opponent panel and avatar chrome", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+
+    expect(contents).toContain('resourceBadgeTone === "danger"');
+    expect(contents).toContain("catana-hud-glass--danger");
+    expect(contents).toContain("avatarClassName={dangerAvatarClassName}");
+    expect(contents).toContain("ring-rose-300");
+  });
 });

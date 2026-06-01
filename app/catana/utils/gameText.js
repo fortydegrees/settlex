@@ -12,6 +12,7 @@ export const STATUS_TEXT = {
 
 const textToken = (text, extra = {}) => ({ kind: "text", text, ...extra });
 const labelToken = (text, extra = {}) => ({ kind: "label", text, ...extra });
+const dieToken = (value) => ({ kind: "die", value });
 const resolvePlayerMeta = (id, playerMap = {}) => {
   const value = playerMap?.[id];
   if (typeof value === "string") {
@@ -187,7 +188,7 @@ export function formatLogEntry(entry, playerMap = {}) {
       const total = data.total ?? (Array.isArray(data.dice) ? data.dice[0] + data.dice[1] : null);
       tokens.push(textToken(" rolled "));
       if (Array.isArray(data.dice)) {
-        tokens.push(textToken(`${data.dice[0]} + ${data.dice[1]}`));
+        tokens.push(...data.dice.slice(0, 2).map((die) => dieToken(die)));
       } else if (total != null) {
         tokens.push(textToken(String(total)));
       }

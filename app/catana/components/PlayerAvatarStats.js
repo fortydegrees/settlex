@@ -33,6 +33,7 @@ export const PlayerAvatarStats = ({
   knightDisplayOverride,
   statsPanelChildren = null,
   statsPanelClassName = "",
+  avatarClassName = "",
   showStatsPanelNameplate = true,
   statsPanelChildrenClassName = "flex min-w-0 flex-1 items-center justify-center gap-x-3",
 }) => {
@@ -136,7 +137,7 @@ export const PlayerAvatarStats = ({
             <div
               className={`relative z-10 h-20 w-20 rounded-[1.15rem] bg-gradient-to-t ring-4 ring-white shadow-[0_18px_34px_-24px_rgba(15,23,42,0.58)] flex justify-center items-center text-6xl ${
                 isSeatWarning ? "seat-disconnected-avatar" : ""
-              } ${avatarColor} ${isActive ? "avatar-active-glow" : ""}`}
+              } ${avatarColor} ${isActive ? "avatar-active-glow" : ""} ${avatarClassName}`}
             >
               {player.emoji || "🤠"}
             </div>

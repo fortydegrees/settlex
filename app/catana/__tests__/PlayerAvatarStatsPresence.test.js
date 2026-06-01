@@ -56,7 +56,7 @@ describe("PlayerAvatarStats disconnect presence", () => {
 
   it("keeps disconnected stats surfaces on white-ring glass with a dedicated disconnected pulse hook", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("ring-white/60");
+    expect(contents).toContain("ring-4 ring-white");
     expect(contents).toContain("seat-disconnected-pulse");
     expect(contents).not.toContain("animate-pulse");
   });
