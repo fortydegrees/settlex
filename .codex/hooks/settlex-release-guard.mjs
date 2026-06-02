@@ -3,14 +3,8 @@
 import { pathToFileURL } from "node:url";
 
 import {
-  validateReleaseApproval,
-  validateReleaseNotes,
-  validateReleaseVersionBump
-} from "../../scripts/release/check-release.mjs";
-import {
-  readReleaseNotesFile,
-  readReleaseNotesFromGitRef
-} from "../../scripts/release/read-release-notes.mjs";
+  getReleaseStatus
+} from "../../scripts/release/status.mjs";
 
 const releasePromptPattern =
   /\b(deploy|prod|production|settlehex\.com|push main|go live)\b/i;
@@ -23,7 +17,7 @@ const protectedCommandPatterns = [
 ];
 
 const releaseWorkflowContext =
-  "This looks like a Settlex production release/deploy request. Before pushing or deploying settlehex.com, use the $settlex-release skill to draft readable release notes, show the exact What changed copy to the user, get approval, set approved: true in release/release-notes.json, and run pnpm release:check -- --require-approved.";
+  "This looks like a Settlex production release/deploy request. Before pushing or deploying settlehex.com, use the $settlex-release skill, run pnpm release:status, draft readable release notes when needed, show the exact What changed copy to the user, get approval, set approved: true in release/release-notes.json, and run the status-listed checks.";
 
 export function isReleasePrompt(prompt = "") {
   return releasePromptPattern.test(String(prompt));
@@ -36,21 +30,14 @@ export function isProtectedReleaseCommand(command = "") {
 export function runPreparedReleaseCheck({
   baseRef = process.env.SETTLEX_RELEASE_BASE_REF || "origin/main"
 } = {}) {
-  try {
-    const currentNotes = readReleaseNotesFile();
-    validateReleaseNotes(currentNotes);
-    validateReleaseApproval(currentNotes);
-    const previousNotes = readReleaseNotesFromGitRef(baseRef);
-    if (previousNotes) {
-      validateReleaseVersionBump(currentNotes, previousNotes);
-    }
-    return { ok: true };
-  } catch (error) {
-    return {
-      ok: false,
-      message: error?.message || "release notes are not prepared"
-    };
-  }
+  const status = getReleaseStatus({ baseRef });
+  if (status.ok) return { ok: true };
+
+  return {
+    ok: false,
+    message:
+      status.problems.join("; ") || "release notes are not prepared"
+  };
 }
 
 export function buildHookResponse(input, { releaseCheck = runPreparedReleaseCheck } = {}) {
