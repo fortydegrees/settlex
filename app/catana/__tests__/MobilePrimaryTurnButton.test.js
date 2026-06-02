@@ -30,6 +30,7 @@ describe("MobilePrimaryTurnButton source", () => {
     expect(source).toContain("disabled={!isEnabled || isBusy}");
     expect(source).toContain("mobile-primary-turn-button--roll");
     expect(source).toContain("mobile-primary-turn-button--end-turn");
+    expect(source).toContain("max-[380px]:h-[3.25rem]");
   });
 
   it("requires hold-to-confirm for mobile end turn only", () => {

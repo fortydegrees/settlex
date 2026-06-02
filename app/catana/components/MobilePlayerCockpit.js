@@ -25,6 +25,7 @@ import "./hudGlass.css";
 
 const RESOURCE_ORDER = Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE);
 
+const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 const mobileMetaButtonIconClassName = "h-5 w-5";
 
 const normalizeCommandDice = (diceRoll) => {
@@ -73,7 +74,7 @@ const ChatIcon = ({ className = mobileMetaButtonIconClassName } = {}) => (
 
 const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
   <div
-    className="mobile-command-row__feed-trigger grid h-[3.85rem] grid-cols-2 overflow-hidden rounded-[1.15rem] border border-white/[0.42] bg-white/[0.22] text-slate-800 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.58),inset_0_1px_0_rgba(255,255,255,0.32)] backdrop-blur-xl"
+    className="mobile-command-row__feed-trigger grid h-[3.85rem] grid-cols-2 overflow-hidden rounded-[1.15rem] border border-white/[0.42] bg-white/[0.22] text-slate-800 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.58),inset_0_1px_0_rgba(255,255,255,0.32)] backdrop-blur-xl max-[380px]:h-[3.25rem]"
     data-mobile-meta-feed-trigger="true"
     data-allow-interaction="true"
   >
@@ -101,6 +102,30 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
     </button>
   </div>
 );
+
+const MobileCommandTimerBox = ({ timerText, showTimer, isLow }) => {
+  const hasTimerText = showTimer && Boolean(timerText);
+  const displayTimerText = hasTimerText ? timerText : "--:--";
+
+  return (
+    <div
+      className={joinClassNames(
+        "mobile-command-row__timer flex h-[3.85rem] min-w-0 items-center justify-center rounded-[1.15rem] border px-2 text-center text-[1rem] font-black leading-none tabular-nums shadow-[0_16px_34px_-24px_rgba(15,23,42,0.56),inset_0_1px_0_rgba(255,255,255,0.26)] backdrop-blur-xl max-[380px]:h-[3.25rem] max-[380px]:text-[0.9rem]",
+        hasTimerText
+          ? "border-white/[0.38] bg-white/[0.22] text-white"
+          : "border-white/[0.22] bg-white/[0.1] text-white/55",
+        hasTimerText && isLow
+          ? "border-rose-200/75 bg-rose-400/[0.32] text-white ring-1 ring-rose-200/60"
+          : null
+      )}
+      data-mobile-command-timer="true"
+      data-mobile-command-timer-visible={hasTimerText ? "true" : "false"}
+      aria-label={hasTimerText ? `Timer ${timerText}` : "Timer unavailable"}
+    >
+      {displayTimerText}
+    </div>
+  );
+};
 
 const copyTriggerRect = (triggerRect) => {
   if (!triggerRect) return null;
@@ -274,9 +299,12 @@ export function MobilePlayerCockpit({
     dynamicActions,
     endTurnEnabled,
     handleResourceClick,
+    isLowTimerAlertActive,
     isOverLimit,
     resourceCounts,
     rollEnabled,
+    showStatusTimer,
+    timerText,
     turnControlMode,
     visibleDevCards,
   } = useLocalPlayerDockModel({
@@ -517,7 +545,7 @@ export function MobilePlayerCockpit({
 
         {showCommandRow ? (
           <div
-            className="grid grid-cols-[6.25rem_minmax(0,1fr)] gap-2"
+            className="grid grid-cols-[5.75rem_minmax(0,1fr)_4rem] gap-1.5 min-[400px]:grid-cols-[6.25rem_minmax(0,1fr)_4rem] min-[400px]:gap-2"
             data-mobile-command-row="true"
           >
             <MobileMetaFeedTrigger
@@ -543,7 +571,7 @@ export function MobilePlayerCockpit({
               />
             ) : (
               <div
-                className="mobile-command-row__status flex h-[3.85rem] min-w-0 items-center justify-center rounded-[1.15rem] border border-white/[0.38] bg-white/[0.2] px-3 text-center text-[0.95rem] font-extrabold leading-tight text-white shadow-[0_16px_34px_-24px_rgba(15,23,42,0.56),inset_0_1px_0_rgba(255,255,255,0.26)] backdrop-blur-xl"
+                className="mobile-command-row__status flex h-[3.85rem] min-w-0 items-center justify-center rounded-[1.15rem] border border-white/[0.38] bg-white/[0.2] px-3 text-center text-[0.95rem] font-semibold leading-tight text-white shadow-[0_16px_34px_-24px_rgba(15,23,42,0.56),inset_0_1px_0_rgba(255,255,255,0.26)] backdrop-blur-xl max-[380px]:h-[3.25rem] max-[380px]:text-[0.8rem]"
                 data-mobile-command-status="true"
                 data-allow-interaction="true"
               >
@@ -574,6 +602,11 @@ export function MobilePlayerCockpit({
                 </span>
               </div>
             )}
+            <MobileCommandTimerBox
+              timerText={timerText}
+              showTimer={showStatusTimer}
+              isLow={isLowTimerAlertActive}
+            />
           </div>
         ) : null}
       </div>

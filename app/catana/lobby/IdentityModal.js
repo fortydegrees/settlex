@@ -182,6 +182,7 @@ export function IdentityModal({
           ref={inputRef}
           value={name}
           onChange={(event) => setName(event.target.value)}
+          aria-label="Player name"
           placeholder="Your name"
           autoComplete="nickname"
           maxLength={28}

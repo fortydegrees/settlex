@@ -1065,6 +1065,7 @@ export function LobbyPageClient() {
               <Input
                 value={joinMatchID}
                 onChange={(e) => setJoinMatchID(e.target.value)}
+                aria-label="Room code"
                 placeholder="Room code"
                 autoComplete="off"
                 className="min-w-0"
@@ -1072,6 +1073,7 @@ export function LobbyPageClient() {
               <Select
                 value={joinSeat}
                 onChange={(e) => setJoinSeat(e.target.value)}
+                aria-label="Seat"
                 className="w-full"
               >
                 <option value="0">Seat 1</option>

@@ -17,7 +17,10 @@ describe("Settlex picker primitives", () => {
 
     expect(source).toContain("grid w-fit grid-cols-4 place-items-center");
     expect(source).toContain("gap-x-6 gap-y-5");
+    expect(source).toContain("Choose ${label} player color");
     expect(source).toContain("aria-pressed");
+    expect(source).toContain("h-11 w-11");
+    expect(source).toContain("focus-visible:ring-2");
     expect(source).toContain("ring-offset-sky-300/80");
     expect(source).toContain("scale-[1.08]");
   });
@@ -26,9 +29,11 @@ describe("Settlex picker primitives", () => {
     const source = readFileSync(resolve(process.cwd(), "app/ui/Popover.js"), "utf8");
 
     expect(source).toContain("@base-ui/react/popover");
+    expect(source).toContain("focus-visible:ring-2");
     expect(source).toContain("rounded-[1.35rem]");
     expect(source).toContain("border-white/34");
     expect(source).toContain("backdrop-blur-xl");
     expect(source).toContain("data-[starting-style]:opacity-0");
+    expect(source).toContain("motion-reduce:transition-none");
   });
 });
