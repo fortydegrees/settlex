@@ -2,11 +2,14 @@
 
 ## Status (2026-06-02, release version visibility)
 - Added a tracked release-note source for public deploy history at `release/release-notes.json`.
-- Added `pnpm release:check` to validate release notes, require `currentVersion` to increase against the previous deployed ref in CI, and require `approved: true` for production deploy checks.
+- Added `pnpm release:check` to validate release notes, require `approved: true` for production deploy checks, and require `currentVersion` to increase when `release/release-notes.json` changes in CI.
 - Added a small homepage `rN` release badge that opens approved release highlights plus build metadata through the shared animated Popover.
 - Wired GitHub Actions, `deploy-prod.sh`, Docker Compose, and `Dockerfile.web` so production builds receive release version, commit SHA, and build timestamp.
 - Added repo-local Codex release workflow guardrails: `.agents/skills/settlex-release/SKILL.md` plus `.codex/hooks/settlex-release-guard.mjs`.
 - Release 1 is approved with the public title `Initial MVP Launch`.
+- Fixed production deploy retries after the first `main` push:
+- `infra/scripts/deploy-prod.sh` no longer requires host-level Node before Docker build to read the release version.
+- Docker builds pin Corepack to `pnpm@9.13.2` in `Dockerfile.web`, `Dockerfile.game`, and `package.json` so server builds do not drift to pnpm 11 on Node 20.
 - Focused verification:
 - `pnpm exec vitest run scripts/release/__tests__/check-release.test.mjs scripts/release/__tests__/codex-release-guard.test.mjs app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js server/__tests__/deploymentFiles.source.test.js --reporter=dot`
 - `pnpm release:check`
@@ -16,6 +19,10 @@
 - `pnpm build`
 - `pnpm verify`
 - `git diff --check`
+- `pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js --reporter=dot`
+- `bash -n infra/scripts/deploy-prod.sh`
+- `docker build -f Dockerfile.web --target deps .`
+- `docker build -f Dockerfile.game .`
 - Browser verification at `http://localhost:3000`: the homepage rendered the bottom-right `r1` badge, and clicking it opened the release panel with the release 1 highlights and `Build local`.
 
 ## Status (2026-06-01, mobile haptic feedback)
