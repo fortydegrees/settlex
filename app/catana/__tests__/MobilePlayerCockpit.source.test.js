@@ -35,6 +35,16 @@ describe("MobilePlayerCockpit source", () => {
     expect(source).toContain('onOpen?.("chat")');
     expect(source).toContain("mobile-command-row__feed-trigger");
     expect(source).toContain("mobile-command-row__status");
+    expect(source).toContain("mobile-command-row__timer");
+    expect(source).toContain("MobileCommandTimerBox");
+    expect(source).toContain('data-mobile-command-timer="true"');
+    expect(source).toContain("timerText");
+    expect(source).toContain("showStatusTimer");
+    expect(source).toContain("isLowTimerAlertActive");
+    expect(source).toContain("grid-cols-[5.75rem_minmax(0,1fr)_4rem]");
+    expect(source).toContain("min-[400px]:grid-cols-[6.25rem_minmax(0,1fr)_4rem]");
+    expect(source).toContain('const displayTimerText = hasTimerText ? timerText : "--:--";');
+    expect(source).toContain("max-[380px]:h-[3.25rem]");
     expect(source).toContain("MiniDiceFace");
     expect(source).toContain("passiveCommandDice");
     expect(source).toContain("gameStatus?.title");
@@ -50,6 +60,16 @@ describe("MobilePlayerCockpit source", () => {
     expect(source).toContain("[-webkit-line-clamp:2]");
     expect(source).not.toContain("data-mobile-meta-button={panelId}");
     expect(source).not.toContain("grid-cols-[3.85rem_3.85rem_minmax(0,1fr)]");
+  });
+
+  it("keeps passive command status text quieter than primary actions", () => {
+    const source = fs.readFileSync(cockpitPath, "utf8");
+    const statusClassName = source.match(
+      /className="([^"]*mobile-command-row__status[^"]*)"/
+    )?.[1];
+
+    expect(statusClassName).toContain("font-semibold");
+    expect(statusClassName).not.toContain("font-extrabold");
   });
 
   it("places mobile action dock buttons above the local resource bar", () => {

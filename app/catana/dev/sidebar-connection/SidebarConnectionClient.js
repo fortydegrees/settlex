@@ -136,7 +136,7 @@ function usePrefersReducedMotion() {
       return undefined;
     }
 
-    const mediaQuery = window.matchMedia("prefers-reduced-motion: reduce");
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const syncPreference = () => setReduceMotion(mediaQuery.matches);
 
     syncPreference();

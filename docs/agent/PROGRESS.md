@@ -25,6 +25,35 @@
 - `docker build -f Dockerfile.game .`
 - Browser verification at `http://localhost:3000`: the homepage rendered the bottom-right `r1` badge, and clicking it opened the release panel with the release 1 highlights and `Build local`.
 
+## Status (2026-06-02, UUPM UI sanity pass)
+- Applied a small reversible UI/accessibility pass based on UI UX Pro Max checklist items while keeping Catana brand rules authoritative.
+- Added focus-visible treatment to the shared `Popover` trigger and reduced-motion handling to its popup.
+- Increased `SwatchPicker` and the mobile match-menu trigger to 44px touch targets, and added clearer accessible names for color swatches plus compact lobby/identity fields.
+- Fixed the reduced-motion media-query typo in the sidebar connection dev surface.
+- Saved the reverse patch to `/tmp/settlex-uupm-quick-fixes.patch`; `git apply --check -R /tmp/settlex-uupm-quick-fixes.patch` passed.
+- Captured before/after screenshots under `/tmp/settlex-uupm-screenshots/`, including identity modal and mobile sandbox states.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/SettlexUiPickers.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js --exclude '.worktrees/**' --reporter=dot`
+- `git diff --check -- app/ui/Button.js app/ui/Popover.js app/ui/SwatchPicker.js app/catana/components/MobileMatchMenu.js app/catana/lobby/LobbyPageClient.js app/catana/lobby/IdentityModal.js app/catana/dev/sidebar-connection/SidebarConnectionClient.js app/catana/__tests__/SettlexUiPickers.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js`
+
+## Status (2026-06-02, mobile command-row timer)
+- Added a reserved bottom-right timer slot to the mobile command row so timer text remains visible beside `Roll Dice`, `End Turn`, and passive status states.
+- Kept timer visibility tied to the existing `showStatusTimer` path while preserving the timer column as a muted `--:--` placeholder when timer text is hidden.
+- Tuned the command row controls to a `3.25rem` / `52px` height on SE-width phones while keeping the resource inventory rail unchanged.
+- Softened passive mobile command/status copy from extra-bold to semibold so forced/waiting text reads less like a primary CTA.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js`
+- `git diff --check -- app/catana/components/MobilePlayerCockpit.js app/catana/components/MobilePrimaryTurnButton.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/MobilePrimaryTurnButton.test.js docs/agent/NOTES.md docs/agent/PROGRESS.md docs/superpowers/specs/2026-06-02-mobile-command-row-timer-design.md docs/superpowers/plans/2026-06-02-mobile-command-row-timer.md`
+- Browser sandbox verification at `/catana/dev/sandbox?viewportWall=1`: at `375x667`, the command row rendered `[92px feed] [183px End Turn] [64px timer]` with all three controls at `52px` height and the timer slot showing `--:--`; at `414x896`, it rendered `[100px feed] [210px End Turn] [64px timer]` at the original `62px` height. The sandbox intentionally has no timer snapshot, so it verified the reserved placeholder rather than live countdown text.
+
+## Status (2026-06-02, game-log dice shadow)
+- Removed the drop shadow from compact dice faces when they render inside game-log feed entries.
+- Kept the existing shadowed mini dice default for other compact dice surfaces such as mobile turn/status displays.
+- Focused verification:
+- `pnpm exec eslint app/catana/components/MiniDiceFace.js app/catana/components/FeedTokenRow.js`
+- `git diff --check -- app/catana/components/MiniDiceFace.js app/catana/components/FeedTokenRow.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
 ## Status (2026-06-01, mobile haptic feedback)
 - Added a Catana haptic feedback manager on the existing presentation effect bus.
 - `GameEffects` now creates `HapticManager` beside `AudioManager`, unlocks both from the first pointer gesture, and cleans up haptic subscriptions on unmount.

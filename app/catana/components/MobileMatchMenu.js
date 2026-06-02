@@ -97,7 +97,7 @@ export function MobileMatchMenu({
       align="end"
       sideOffset={8}
       triggerAriaLabel="Open match menu"
-      triggerClassName="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.44] bg-white/[0.3] text-slate-800 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.48),inset_0_1px_0_rgba(255,255,255,0.28)] backdrop-blur-xl transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.96] hover:border-white/[0.62] hover:bg-white/[0.44]"
+      triggerClassName="flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.44] bg-white/[0.3] text-slate-800 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.48),inset_0_1px_0_rgba(255,255,255,0.28)] backdrop-blur-xl transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.96] hover:border-white/[0.62] hover:bg-white/[0.44] motion-reduce:transition-none"
       triggerContent={
         <EllipsisHorizontalIcon className="h-5 w-5" aria-hidden="true" />
       }

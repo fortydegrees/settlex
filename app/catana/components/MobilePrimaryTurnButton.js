@@ -126,7 +126,7 @@ export function MobilePrimaryTurnButton({
     <button
       type="button"
       className={joinClassNames(
-        "mobile-primary-turn-button relative flex h-[3.85rem] w-full touch-none items-center justify-center overflow-hidden rounded-[1.35rem] border px-6 text-[1.28rem] font-black tracking-normal shadow-[0_20px_38px_-24px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.46)] transition-[transform,filter,opacity] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-white/80 active:scale-[0.985]",
+        "mobile-primary-turn-button relative flex h-[3.85rem] w-full touch-none items-center justify-center overflow-hidden rounded-[1.35rem] border px-6 text-[1.28rem] font-black tracking-normal shadow-[0_20px_38px_-24px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.46)] transition-[transform,filter,opacity] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-white/80 active:scale-[0.985] max-[380px]:h-[3.25rem] max-[380px]:text-[1.14rem]",
         isRoll &&
           "mobile-primary-turn-button--roll border-yellow-100/70 bg-[linear-gradient(180deg,rgba(254,230,138,0.98),rgba(250,204,21,0.96))] text-amber-950",
         isEndTurn &&

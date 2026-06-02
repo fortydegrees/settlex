@@ -50,7 +50,7 @@ export const Button = React.forwardRef(function Button(
       ref={ref}
       type={type}
       className={cn(
-        "relative isolate inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap tracking-[0.02em] transition-[transform,box-shadow,background-color,border-color,color,filter] duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none",
+        "relative isolate inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden whitespace-nowrap tracking-[0.02em] transition-[transform,box-shadow,background-color,border-color,color,filter] duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none",
         SIZE_STYLES[size] ?? SIZE_STYLES.md,
         VARIANT_STYLES[resolvedVariant] ?? VARIANT_STYLES.primary,
         DISABLED_STYLES,

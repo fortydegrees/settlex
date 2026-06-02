@@ -74,6 +74,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
     return React.createElement(MiniDiceFace, {
       value: token.value,
       className: "mx-0.5 h-5 w-5 align-[-0.22em]",
+      withShadow: false,
       "aria-label": `Die ${token.value}`,
     });
   }

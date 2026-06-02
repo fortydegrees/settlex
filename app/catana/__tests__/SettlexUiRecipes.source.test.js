@@ -16,6 +16,7 @@ describe("Settlex UI recipes", () => {
     expect(source).toContain("ghost");
     expect(source).toContain("rounded-[1.2rem]");
     expect(source).toContain("hover:-translate-y-0.5");
+    expect(source).toContain("cursor-pointer");
     expect(source).toContain("bg-[linear-gradient(180deg");
     expect(source).toContain("settlex-ui-cta-shimmer");
     expect(source).toContain("sheen = false");

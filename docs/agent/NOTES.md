@@ -11,6 +11,23 @@
 - `infra/scripts/deploy-prod.sh` should not assume Node exists on the OCI host before Docker build. Actions passes `SETTLEX_RELEASE_VERSION`, and the script has a shell fallback for manual runs.
 - Repo-local Codex hooks in `.codex/hooks.json` steer deploy-related prompts toward `$settlex-release` and block protected Codex-run deploy/push commands when release notes are not prepared or not approved. Codex may require reviewing/trusting the hook through `/hooks` after this file changes.
 
+- UUPM sanity-pass note:
+- Treat UI UX Pro Max as a one-time generic UI/accessibility checklist, not as a Catana design-system source of truth.
+- Useful checklist items for Settlex are focus-visible replacements after `outline-none`, 44px touch targets for icon/swatch controls, explicit accessible names for compact form fields, and reduced-motion hooks.
+- Keep visual changes screenshot-backed and reversible when applying external-checklist suggestions. The UUPM quick-fix pass used `/tmp/settlex-uupm-quick-fixes.patch` as a reverse patch and before/after screenshots under `/tmp/settlex-uupm-screenshots/`.
+- Do not use its generated palette, typography, landing-page, or design-system persistence output to override `docs/agent/skills/catana-brand/SKILL.md`.
+
+- Mobile command-row timer note:
+- phone bottom command row now uses three stable zones: `[Log/Chat] [primary action or passive status] [timer]`.
+- keep the timer in the bottom-right command row for normal turns so it stays visible while the middle slot can remain `Roll Dice`, `End Turn`, or contextual status copy.
+- reserve the timer slot even when no timer text is shown; show a muted `--:--` placeholder and do not resize the row between timed and untimed states.
+- timer text visibility still comes from the existing `showStatusTimer` / `gameStatus.showTimer` path. Hidden cases include pre-game, game-over, stale stage mismatch, and no current timer snapshot.
+- keep the SE-width compact row height local to the command row controls; current SE compact target is `3.25rem` / `52px`. Do not shrink the resource inventory rail to make room.
+- keep passive command/status text quieter than primary actions. Use semibold status copy; reserve heavier weight for `Roll Dice`, `End Turn`, and the timer.
+
+- Game-log dice note:
+- `MiniDiceFace` keeps its shadow by default for compact status/cockpit dice, but `FeedTokenRow` disables that shadow for log `die` tokens so the feed reads flatter and less visually heavy.
+
 - Mobile haptics note:
 - `app/catana/effects/HapticManager.js` subscribes to the shared effect bus through `cue` events plus explicit local `haptic` events.
 - Keep haptics presentation-only. Do not route haptic state through `game-core`, the server, or move validation.
