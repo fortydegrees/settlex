@@ -1,5 +1,14 @@
 # PROGRESS
 
+## Status (2026-06-02, app test runner worktree exclusion)
+- Fixed the app Vitest runner so per-file app test invocations exclude nested `.worktrees/**` checkouts.
+- Root cause: Vitest treated the per-file path as a filter and also ran matching tests inside `.worktrees/release-versioning`, which made local `pnpm verify` fail against stale auxiliary worktree tests.
+- Focused verification:
+- `pnpm exec vitest run scripts/release/__tests__/run-vitest-app-tests.test.mjs --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/SettlexUiRecipes.source.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec vitest run app/catana/__tests__/SidebarConnectionStudy.source.test.js --reporter=dot --exclude '.worktrees/**'`
+- `node --check scripts/run-vitest-app-tests.mjs`
+
 ## Status (2026-06-02, release version visibility)
 - Added a tracked release-note source for public deploy history at `release/release-notes.json`.
 - Added `pnpm release:check` to validate release notes, require `approved: true` for production deploy checks, and require `currentVersion` to increase when `release/release-notes.json` changes in CI.
