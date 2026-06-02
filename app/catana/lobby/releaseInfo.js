@@ -31,7 +31,7 @@ export function buildPublicReleaseInfo({
 
   return {
     version,
-    releaseLabel: `r${version}`,
+    releaseLabel: `release ${version}`,
     title: toTrimmedString(currentRelease.title) || "Settlex update",
     date: toTrimmedString(currentRelease.date),
     highlights: normalizeHighlights(currentRelease.highlights),

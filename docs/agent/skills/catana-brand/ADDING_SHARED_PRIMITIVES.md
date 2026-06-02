@@ -51,6 +51,7 @@ The current canonical primitives live in `app/ui/`:
 - `AlertDialog.js`
 - `IconButton.js`
 - `Popover.js`
+- `MetaDisclosure.js`
 - `SwatchPicker.js`
 
 New primitives should feel like they belong beside these, not like a mini design system of their own.

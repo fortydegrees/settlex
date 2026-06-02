@@ -8,6 +8,7 @@ import { Button } from "../../../ui/Button";
 import { Dialog } from "../../../ui/Dialog";
 import { IconButton } from "../../../ui/IconButton";
 import { Input } from "../../../ui/Input";
+import { MetaDisclosure } from "../../../ui/MetaDisclosure";
 import { Panel } from "../../../ui/Panel";
 import { Select } from "../../../ui/Select";
 import { Tooltip, TooltipProvider } from "../../../ui/Tooltip";
@@ -17,6 +18,7 @@ const SECTION_LINKS = [
   { href: "#buttons", label: "Button Recipes" },
   { href: "#forms", label: "Forms + Filters" },
   { href: "#feedback", label: "Feedback" },
+  { href: "#metadata", label: "Metadata" },
   { href: "#surfaces", label: "Shared Surfaces" },
   { href: "#overlays", label: "Overlay Preview" },
 ];
@@ -70,6 +72,7 @@ export function UiShowcaseClient() {
   const [roomCode, setRoomCode] = useState("SET-2048");
   const [theme, setTheme] = useState("classic");
   const [motionMode, setMotionMode] = useState("standard");
+  const [metadataOpen, setMetadataOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(125,211,252,1)_0%,_rgba(59,130,246,1)_42%,_rgba(2,132,199,1)_100%)]">
@@ -394,6 +397,47 @@ export function UiShowcaseClient() {
                           <div className="mt-1 text-slate-700">{item.body}</div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              </Panel>
+            </section>
+
+            <section id="metadata">
+              <Panel title="Ambient Metadata">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)]">
+                  <div className="rounded-2xl bg-white/35 p-5 ring-1 ring-white/40">
+                    <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+                      Role
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-700">
+                      Release marks, build ids, diagnostics, and timestamps are not
+                      commands. If they reveal details, they should read as quiet
+                      metadata first and use disclosure behavior second.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-sky-500/80 p-4 ring-1 ring-white/35">
+                    <div className="relative min-h-36 rounded-[1.35rem] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.22),_rgba(37,99,235,0.24)_46%,_rgba(29,78,216,0.42)_100%)]">
+                      <div className="absolute bottom-4 right-4">
+                        <MetaDisclosure
+                          open={metadataOpen}
+                          onOpenChange={setMetadataOpen}
+                          label="release 1"
+                          ariaLabel="Show release notes for release 1"
+                        >
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                            What changed
+                          </div>
+                          <h2 className="mt-1 text-sm font-bold text-slate-900">
+                            Release 1 · Initial MVP Launch
+                          </h2>
+                          <p className="mt-3 text-xs font-medium leading-relaxed text-slate-700">
+                            This preview uses the same low-emphasis trigger as the
+                            homepage release mark.
+                          </p>
+                        </MetaDisclosure>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -67,4 +67,30 @@ describe("Settlex UI recipes", () => {
     expect(tooltip).toContain("aria-label");
     expect(tooltip).toContain("motion-reduce");
   });
+
+  it("defines a quiet shared metadata disclosure primitive", () => {
+    const disclosure = readFileSync(
+      resolve(process.cwd(), "app/ui/MetaDisclosure.js"),
+      "utf8"
+    );
+
+    expect(disclosure).toContain('from "./Popover"');
+    expect(disclosure).toContain("text-white/60");
+    expect(disclosure).toContain("hover:underline");
+    expect(disclosure).toContain("focus-visible:outline");
+    expect(disclosure).not.toContain("rounded-full");
+    expect(disclosure).not.toContain("shadow-[");
+  });
+
+  it("documents the role-first chrome rule for future UI additions", () => {
+    const skill = readFileSync(
+      resolve(process.cwd(), "docs/agent/skills/catana-brand/SKILL.md"),
+      "utf8"
+    );
+
+    expect(skill).toContain("Designer Judgment Before Styling");
+    expect(skill).toContain("Ambient metadata");
+    expect(skill).toContain("MetaDisclosure");
+    expect(skill).toContain("Do not start from Button just because it is clickable");
+  });
 });
