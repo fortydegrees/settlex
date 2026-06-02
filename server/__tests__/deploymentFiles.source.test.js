@@ -68,7 +68,10 @@ describe("deployment file wiring", () => {
 
   it("packages migration files into the web runtime image", () => {
     const dockerfile = readRepoFile("Dockerfile.web");
+    const packageJson = JSON.parse(readRepoFile("package.json"));
 
+    expect(packageJson.packageManager).toBe("pnpm@9.13.2");
+    expect(dockerfile).toContain("corepack prepare pnpm@9.13.2 --activate");
     expect(dockerfile).toContain("ARG SETTLEX_RELEASE_VERSION");
     expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_RELEASE_VERSION");
     expect(dockerfile).toContain("ARG SETTLEX_BUILD_SHA");
@@ -77,6 +80,13 @@ describe("deployment file wiring", () => {
     expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_BUILD_DATE");
     expect(dockerfile).toContain("COPY --from=build /app/scripts ./scripts");
     expect(dockerfile).toContain("COPY --from=build /app/lib/server/db ./lib/server/db");
+  });
+
+  it("pins pnpm in the game runtime image", () => {
+    const dockerfile = readRepoFile("Dockerfile.game");
+
+    expect(dockerfile).toContain("corepack prepare pnpm@9.13.2 --activate");
+    expect(dockerfile).toContain("RUN pnpm install --frozen-lockfile");
   });
 
   it("verifies before syncing source and triggering a server-side rebuild", () => {
