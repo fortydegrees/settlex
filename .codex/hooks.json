@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/settlex-release-guard.mjs",
+            "statusMessage": "Checking Settlex release workflow"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/settlex-release-guard.mjs",
+            "statusMessage": "Checking Settlex release command"
+          }
+        ]
+      }
+    ]
+  }
+}

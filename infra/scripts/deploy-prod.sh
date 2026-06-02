@@ -7,6 +7,21 @@ COMPOSE_FILE="infra/docker-compose.prod.yml"
 
 cd "$ROOT_DIR"
 
+if [ -z "${SETTLEX_BUILD_SHA:-}" ]; then
+  if git rev-parse --short=12 HEAD >/dev/null 2>&1; then
+    SETTLEX_BUILD_SHA="$(git rev-parse --short=12 HEAD)"
+  else
+    SETTLEX_BUILD_SHA="local"
+  fi
+fi
+
+SETTLEX_BUILD_DATE="${SETTLEX_BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}"
+SETTLEX_RELEASE_VERSION="${SETTLEX_RELEASE_VERSION:-$(node scripts/release/read-release-notes.mjs)}"
+
+export SETTLEX_BUILD_SHA
+export SETTLEX_BUILD_DATE
+export SETTLEX_RELEASE_VERSION
+
 docker compose -f "$COMPOSE_FILE" up -d postgres
 docker compose -f "$COMPOSE_FILE" up -d --build web game
 docker compose -f "$COMPOSE_FILE" up -d proxy --remove-orphans

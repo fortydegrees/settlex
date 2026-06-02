@@ -25,6 +25,7 @@ import {
 import { sanitizeDisplayName } from "../utils/playerIdentity";
 import { FriendChallengeModal } from "./FriendChallengeModal";
 import { IdentityModal } from "./IdentityModal";
+import { VersionBadge } from "./VersionBadge";
 import {
   EMOJI_OPTIONS,
   buildSuggestedGuestIdentity,
@@ -1217,6 +1218,7 @@ export function LobbyPageClient() {
           </div>
         )}
       </div>
+      <VersionBadge />
 
       {/* ── Identity modal ── */}
       {showIdentity && (

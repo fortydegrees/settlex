@@ -1,5 +1,14 @@
 # NOTES
 
+- Release versioning note:
+- `release/release-notes.json` is the public source of truth for the homepage release badge. Keep `currentVersion` as a small integer and put the matching release first in `releases`.
+- The visible badge label is `rN` for production release sequence, not `vN` product maturity.
+- Use the `$settlex-release` skill before pushing/deploying production. It should draft 3-6 user-facing highlights from the actual diff/commits, show the exact `What changed` copy to the user, keep `approved: false` while drafting, and set `approved: true` only after explicit approval.
+- `pnpm release:check` validates release-note shape. Production deploy checks run it with `--require-approved`; GitHub Actions push deploys also check that `currentVersion` increased compared with `github.event.before`.
+- The homepage badge reads approved release notes from `app/catana/lobby/releaseInfo.js` and build metadata from `NEXT_PUBLIC_SETTLEX_RELEASE_VERSION`, `NEXT_PUBLIC_SETTLEX_BUILD_SHA`, and `NEXT_PUBLIC_SETTLEX_BUILD_DATE`. The badge disclosure uses the shared `app/ui/Popover` animation.
+- Production build metadata flows from `.github/workflows/deploy-prod.yml` to `infra/scripts/deploy-prod.sh`, then through `infra/docker-compose.prod.yml` build args into `Dockerfile.web` before `next build`.
+- Repo-local Codex hooks in `.codex/hooks.json` steer deploy-related prompts toward `$settlex-release` and block protected Codex-run deploy/push commands when release notes are not prepared or not approved. Codex may require reviewing/trusting the hook through `/hooks` after this file changes.
+
 - Mobile haptics note:
 - `app/catana/effects/HapticManager.js` subscribes to the shared effect bus through `cue` events plus explicit local `haptic` events.
 - Keep haptics presentation-only. Do not route haptic state through `game-core`, the server, or move validation.

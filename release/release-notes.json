@@ -1,0 +1,14 @@
+{
+  "currentVersion": 1,
+  "releases": [
+    {
+      "version": 1,
+      "date": "2026-06-02",
+      "title": "Initial MVP Launch",
+      "approved": true,
+      "highlights": [
+        "Initial MVP launch."
+      ]
+    }
+  ]
+}
