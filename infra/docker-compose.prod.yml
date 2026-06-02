@@ -21,6 +21,10 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile.web
+      args:
+        SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
+        SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
+        SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
     depends_on:
       postgres:
         condition: service_healthy

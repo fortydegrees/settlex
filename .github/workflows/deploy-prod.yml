@@ -15,6 +15,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:
@@ -26,6 +28,12 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - name: Check release notes for push deploy
+        if: github.event_name == 'push'
+        run: pnpm release:check -- --require-bump-from "${{ github.event.before }}" --require-approved
+      - name: Check release notes for manual deploy
+        if: github.event_name != 'push'
+        run: pnpm release:check -- --require-approved
       - run: pnpm verify
 
   deploy:
@@ -64,8 +72,10 @@ jobs:
           OCI_APP_DIR: ${{ secrets.OCI_APP_DIR }}
           OCI_HOST: ${{ secrets.OCI_HOST }}
           OCI_USER: ${{ secrets.OCI_USER }}
+          SETTLEX_BUILD_SHA: ${{ github.sha }}
         run: |
+          SETTLEX_BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
           ssh "$OCI_USER@$OCI_HOST" "
             cd '$OCI_APP_DIR' &&
-            infra/scripts/deploy-prod.sh
+            SETTLEX_BUILD_SHA='$SETTLEX_BUILD_SHA' SETTLEX_BUILD_DATE='$SETTLEX_BUILD_DATE' infra/scripts/deploy-prod.sh
           "

@@ -55,6 +55,10 @@ describe("deployment file wiring", () => {
 
     expect(script).not.toContain("docker compose -f infra/docker-compose.prod.yml pull");
     expect(script).toContain('COMPOSE_FILE="infra/docker-compose.prod.yml"');
+    expect(script).toContain("SETTLEX_BUILD_SHA");
+    expect(script).toContain("SETTLEX_BUILD_DATE");
+    expect(script).toContain("SETTLEX_RELEASE_VERSION");
+    expect(script).toContain("scripts/release/read-release-notes.mjs");
     expect(script).toContain('docker compose -f "$COMPOSE_FILE" up -d --build web game');
     expect(script).toContain('docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate');
   });
@@ -62,6 +66,12 @@ describe("deployment file wiring", () => {
   it("packages migration files into the web runtime image", () => {
     const dockerfile = readRepoFile("Dockerfile.web");
 
+    expect(dockerfile).toContain("ARG SETTLEX_RELEASE_VERSION");
+    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_RELEASE_VERSION");
+    expect(dockerfile).toContain("ARG SETTLEX_BUILD_SHA");
+    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_BUILD_SHA");
+    expect(dockerfile).toContain("ARG SETTLEX_BUILD_DATE");
+    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_BUILD_DATE");
     expect(dockerfile).toContain("COPY --from=build /app/scripts ./scripts");
     expect(dockerfile).toContain("COPY --from=build /app/lib/server/db ./lib/server/db");
   });
@@ -69,7 +79,12 @@ describe("deployment file wiring", () => {
   it("verifies before syncing source and triggering a server-side rebuild", () => {
     const workflow = readRepoFile(".github", "workflows", "deploy-prod.yml");
 
+    expect(workflow).toContain("fetch-depth: 0");
+    expect(workflow).toContain("pnpm release:check -- --require-approved");
+    expect(workflow).toContain("pnpm release:check -- --require-bump-from");
     expect(workflow).toContain("pnpm verify");
+    expect(workflow).toContain("SETTLEX_BUILD_SHA");
+    expect(workflow).toContain("SETTLEX_BUILD_DATE");
     expect(workflow).toContain("rsync -az");
     expect(workflow).toContain("--filter=':- .gitignore'");
     expect(workflow).not.toContain("docker/setup-qemu-action");
@@ -78,5 +93,14 @@ describe("deployment file wiring", () => {
     expect(workflow).not.toContain("platforms: linux/arm64");
     expect(workflow).not.toContain("docker login ghcr.io");
     expect(workflow).toContain("infra/scripts/deploy-prod.sh");
+  });
+
+  it("passes release build arguments through production compose", () => {
+    const compose = readRepoFile("infra", "docker-compose.prod.yml");
+
+    expect(compose).toContain("args:");
+    expect(compose).toContain("SETTLEX_RELEASE_VERSION:");
+    expect(compose).toContain("SETTLEX_BUILD_SHA:");
+    expect(compose).toContain("SETTLEX_BUILD_DATE:");
   });
 });
