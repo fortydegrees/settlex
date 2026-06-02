@@ -25,6 +25,9 @@ describe("settlex release Codex hook", () => {
       "$settlex-release"
     );
     expect(response.hookSpecificOutput.additionalContext).toContain(
+      "pnpm release:status"
+    );
+    expect(response.hookSpecificOutput.additionalContext).toContain(
       "approved: true"
     );
   });
