@@ -16,7 +16,21 @@ if [ -z "${SETTLEX_BUILD_SHA:-}" ]; then
 fi
 
 SETTLEX_BUILD_DATE="${SETTLEX_BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}"
-SETTLEX_RELEASE_VERSION="${SETTLEX_RELEASE_VERSION:-$(node scripts/release/read-release-notes.mjs)}"
+
+if [ -z "${SETTLEX_RELEASE_VERSION:-}" ]; then
+  if command -v node >/dev/null 2>&1; then
+    SETTLEX_RELEASE_VERSION="$(node scripts/release/read-release-notes.mjs)"
+  else
+    SETTLEX_RELEASE_VERSION="$(
+      sed -n 's/.*"currentVersion"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' release/release-notes.json | head -n 1
+    )"
+  fi
+fi
+
+if [ -z "${SETTLEX_RELEASE_VERSION:-}" ]; then
+  echo "Could not determine SETTLEX_RELEASE_VERSION." >&2
+  exit 1
+fi
 
 export SETTLEX_BUILD_SHA
 export SETTLEX_BUILD_DATE

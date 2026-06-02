@@ -58,7 +58,10 @@ describe("deployment file wiring", () => {
     expect(script).toContain("SETTLEX_BUILD_SHA");
     expect(script).toContain("SETTLEX_BUILD_DATE");
     expect(script).toContain("SETTLEX_RELEASE_VERSION");
+    expect(script).toContain("command -v node");
     expect(script).toContain("scripts/release/read-release-notes.mjs");
+    expect(script).toContain("release/release-notes.json");
+    expect(script).toContain("Could not determine SETTLEX_RELEASE_VERSION.");
     expect(script).toContain('docker compose -f "$COMPOSE_FILE" up -d --build web game');
     expect(script).toContain('docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate');
   });
@@ -82,9 +85,12 @@ describe("deployment file wiring", () => {
     expect(workflow).toContain("fetch-depth: 0");
     expect(workflow).toContain("pnpm release:check -- --require-approved");
     expect(workflow).toContain("pnpm release:check -- --require-bump-from");
+    expect(workflow).toContain("git diff --quiet");
     expect(workflow).toContain("pnpm verify");
     expect(workflow).toContain("SETTLEX_BUILD_SHA");
     expect(workflow).toContain("SETTLEX_BUILD_DATE");
+    expect(workflow).toContain("SETTLEX_RELEASE_VERSION");
+    expect(workflow).toContain("node scripts/release/read-release-notes.mjs");
     expect(workflow).toContain("rsync -az");
     expect(workflow).toContain("--filter=':- .gitignore'");
     expect(workflow).not.toContain("docker/setup-qemu-action");

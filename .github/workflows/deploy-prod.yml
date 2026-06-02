@@ -30,7 +30,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check release notes for push deploy
         if: github.event_name == 'push'
-        run: pnpm release:check -- --require-bump-from "${{ github.event.before }}" --require-approved
+        run: |
+          pnpm release:check -- --require-approved
+          if ! git diff --quiet "${{ github.event.before }}" -- release/release-notes.json; then
+            pnpm release:check -- --require-bump-from "${{ github.event.before }}"
+          fi
       - name: Check release notes for manual deploy
         if: github.event_name != 'push'
         run: pnpm release:check -- --require-approved
@@ -75,7 +79,8 @@ jobs:
           SETTLEX_BUILD_SHA: ${{ github.sha }}
         run: |
           SETTLEX_BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          SETTLEX_RELEASE_VERSION="$(node scripts/release/read-release-notes.mjs)"
           ssh "$OCI_USER@$OCI_HOST" "
             cd '$OCI_APP_DIR' &&
-            SETTLEX_BUILD_SHA='$SETTLEX_BUILD_SHA' SETTLEX_BUILD_DATE='$SETTLEX_BUILD_DATE' infra/scripts/deploy-prod.sh
+            SETTLEX_BUILD_SHA='$SETTLEX_BUILD_SHA' SETTLEX_BUILD_DATE='$SETTLEX_BUILD_DATE' SETTLEX_RELEASE_VERSION='$SETTLEX_RELEASE_VERSION' infra/scripts/deploy-prod.sh
           "
