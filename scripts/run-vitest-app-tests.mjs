@@ -33,7 +33,15 @@ for (const file of files) {
   console.log(`\n[vitest:app] ${file}`);
   const result = spawnSync(
     "pnpm",
-    ["exec", "vitest", "run", file, "--reporter=dot"],
+    [
+      "exec",
+      "vitest",
+      "run",
+      file,
+      "--reporter=dot",
+      "--exclude",
+      ".worktrees/**"
+    ],
     {
       cwd: rootDir,
       stdio: "inherit",

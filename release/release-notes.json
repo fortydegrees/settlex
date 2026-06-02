@@ -1,6 +1,18 @@
 {
-  "currentVersion": 1,
+  "currentVersion": 2,
   "releases": [
+    {
+      "version": 2,
+      "date": "2026-06-02",
+      "title": "Mobile Play Polish",
+      "approved": true,
+      "highlights": [
+        "Mobile turns now keep the timer visible beside Roll Dice, End Turn, and waiting states.",
+        "Small phone layouts have a tighter command row while keeping the resource inventory stable.",
+        "Shared controls now have clearer focus states, larger touch targets, and better accessible labels.",
+        "Game-log dice now read flatter in the feed while compact dice elsewhere keep their raised look."
+      ]
+    },
     {
       "version": 1,
       "date": "2026-06-02",

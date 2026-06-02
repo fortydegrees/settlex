@@ -78,7 +78,7 @@ describe("sidebar connection study source", () => {
     expect(source).toContain('ease: "power3.out"');
     expect(source).toContain("duration: reduceMotion ? 0 : 0.22");
     expect(source).toContain('overwrite: "auto"');
-    expect(source).toContain('"prefers-reduced-motion: reduce"');
+    expect(source).toContain('"(prefers-reduced-motion: reduce)"');
     expect(source).not.toContain("@react-spring/web");
     expect(source).not.toContain("useSpring");
     expect(source).not.toContain("<animated.");
