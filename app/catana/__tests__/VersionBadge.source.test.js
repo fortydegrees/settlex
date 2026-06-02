@@ -13,15 +13,17 @@ describe("homepage release badge", () => {
     expect(source).toContain("<VersionBadge />");
   });
 
-  it("renders as a small fixed bottom-right disclosure", () => {
+  it("renders as a small responsive release disclosure", () => {
     const source = readRepoFile("app/catana/lobby/VersionBadge.js");
 
-    expect(source).toContain('import { Popover } from "../../ui/Popover";');
-    expect(source).toContain("fixed bottom-3 right-3");
+    expect(source).toContain('import { MetaDisclosure } from "../../ui/MetaDisclosure";');
+    expect(source).toContain("max-w-xl justify-end");
+    expect(source).toContain("sm:fixed sm:bottom-5 sm:right-5");
     expect(source).toContain("What changed");
     expect(source).toContain("buildShaShort");
     expect(source).toContain("releaseInfo.releaseLabel");
     expect(source).not.toContain("document.addEventListener");
-    expect(source).not.toContain("uppercase tracking-[0.08em]");
+    expect(source).not.toContain("rounded-full border");
+    expect(source).not.toContain("triggerClassName");
   });
 });

@@ -2,11 +2,11 @@
 
 - Release versioning note:
 - `release/release-notes.json` is the public source of truth for the homepage release badge. Keep `currentVersion` as a small integer and put the matching release first in `releases`.
-- The visible badge label is `rN` for production release sequence, not `vN` product maturity.
+- The visible release label is `release N` for production release sequence, not `vN` product maturity.
 - Use the `$settlex-release` skill before pushing/deploying production. It should draft 3-6 user-facing highlights from the actual diff/commits, show the exact `What changed` copy to the user, keep `approved: false` while drafting, and set `approved: true` only after explicit approval.
 - `pnpm release:status` is the release-readiness summary. It reports whether release notes changed, whether deploy infra changed, whether the current release is approved, and which checks to run before pushing/deploying.
 - `pnpm release:check` validates release-note shape. Production deploy checks run it with `--require-approved`; GitHub Actions push deploys require `currentVersion` to increase compared with `github.event.before` only when `release/release-notes.json` changed in that push.
-- The homepage badge reads approved release notes from `app/catana/lobby/releaseInfo.js` and build metadata from `NEXT_PUBLIC_SETTLEX_RELEASE_VERSION`, `NEXT_PUBLIC_SETTLEX_BUILD_SHA`, and `NEXT_PUBLIC_SETTLEX_BUILD_DATE`. The badge disclosure uses the shared `app/ui/Popover` animation.
+- The homepage release mark reads approved release notes from `app/catana/lobby/releaseInfo.js` and build metadata from `NEXT_PUBLIC_SETTLEX_RELEASE_VERSION`, `NEXT_PUBLIC_SETTLEX_BUILD_SHA`, and `NEXT_PUBLIC_SETTLEX_BUILD_DATE`. It uses `app/ui/MetaDisclosure` so release/build metadata stays text-first and lower emphasis than lobby actions while still using the shared `app/ui/Popover` disclosure behavior.
 - Production build metadata flows from `.github/workflows/deploy-prod.yml` to `infra/scripts/deploy-prod.sh`, then through `infra/docker-compose.prod.yml` build args into `Dockerfile.web` before `next build`.
 - Production Docker builds pin Corepack to `pnpm@9.13.2` in both app Dockerfiles and `package.json`; do not let Docker builds float to Corepack's latest pnpm while the images remain on Node 20.
 - `infra/scripts/deploy-prod.sh` should not assume Node exists on the OCI host before Docker build. Actions passes `SETTLEX_RELEASE_VERSION`, and the script has a shell fallback for manual runs.

@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-06-02, release mark design-system cleanup)
+- Replaced the homepage release pill with quiet `release N` metadata text that opens the same release-notes disclosure.
+- Added shared `app/ui/MetaDisclosure.js` for ambient metadata that can reveal details without borrowing action-button chrome.
+- Added the metadata-disclosure recipe to the UI showcase and documented the role-first chrome decision in the Catana brand skill.
+- Updated release label generation so the helper exposes `release N`, not `rN`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js --reporter=dot`
+- `pnpm exec eslint app/ui/MetaDisclosure.js app/catana/lobby/releaseInfo.js app/catana/lobby/VersionBadge.js app/catana/dev/ui/UiShowcaseClient.js app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js app/catana/__tests__/SettlexUiRecipes.source.test.js`
+- `git diff --check`
+- Browser verification at `http://localhost:3002`: desktop rendered the release mark fixed bottom-right; mobile rendered it as a right-aligned footer mark below the lobby controls; both opened the release-notes panel.
+
 ## Status (2026-06-02, app test runner worktree exclusion)
 - Fixed the app Vitest runner so per-file app test invocations exclude nested `.worktrees/**` checkouts.
 - Root cause: Vitest treated the per-file path as a filter and also ran matching tests inside `.worktrees/release-versioning`, which made local `pnpm verify` fail against stale auxiliary worktree tests.

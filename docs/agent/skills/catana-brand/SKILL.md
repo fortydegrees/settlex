@@ -82,6 +82,28 @@ Core elements feel grounded and tangible. Meta elements feel like floating overl
 
 ---
 
+## Designer Judgment Before Styling
+
+Before writing classes or choosing a primitive, decide the element's job. A Settlex UI should feel like it was placed by someone who understands the board, the lobby, and the brand hierarchy, not by someone matching a screenshot one control at a time.
+
+Ask these questions first:
+- Is this a core gameplay action, a standard product control, status/feedback, or ambient metadata?
+- How much attention should it ask for compared with Play, Join, Roll, End Turn, and visible game state?
+- Does clicking it perform an action, change state, or only disclose supporting detail?
+- Should it feel tactile, informational, or nearly invisible until needed?
+- Is the element permanent chrome, transient feedback, or a one-off game moment?
+
+| Role | Examples | Treatment |
+|------|----------|-----------|
+| **Core gameplay action** | Play, Roll, End Turn, build/trade choices | Strong shared `Button` chrome or bespoke game control treatment. Clear color, size, and tactile feedback. |
+| **Standard product control** | Join room, filters, settings, dialogs | Use `app/ui/*` primitives before local classes. Keep motion snappy and consistent. |
+| **Status or feedback** | reconnect state, forced-action copy, validation | Use `Banner`, panel text, or HUD/status treatment. Visible enough to guide action. |
+| **Ambient metadata** | release/build labels, diagnostics, timestamps | Text-first, tiny, low contrast. If interactive, use `MetaDisclosure`; do not use glass-pill or action-button chrome. |
+
+Do not start from Button just because it is clickable. Start from the role. A release mark in a fixed corner is production metadata, so it should sit below lobby actions in emphasis: small text, no pill, no shadow, no CTA color, with an animated disclosure only after the user asks for details.
+
+---
+
 ## Component Patterns
 
 ### Glass Card (Primary Container)
@@ -142,6 +164,15 @@ rounded-xl bg-blue-200/95 ring-2 ring-slate-300 shadow-2xl p-6 max-w-xl
 **Glass input (forms):**
 ```
 w-full rounded-lg bg-white/60 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-500 shadow-inner ring-1 ring-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/70
+```
+
+### MetaDisclosure
+
+Use `app/ui/MetaDisclosure.js` for ambient metadata that can reveal supporting details, such as release notes, build ids, diagnostics, or timestamps. The trigger should read as quiet text on the edge of the surface, not as a gameplay or lobby action.
+
+**Ambient metadata trigger:**
+```
+text-[0.68rem] font-semibold text-white/60 hover:text-white/90 hover:underline
 ```
 
 ---

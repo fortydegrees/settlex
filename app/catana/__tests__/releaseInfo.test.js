@@ -25,7 +25,7 @@ describe("buildPublicReleaseInfo", () => {
     });
 
     expect(info.version).toBe(7);
-    expect(info.releaseLabel).toBe("r7");
+    expect(info.releaseLabel).toBe("release 7");
     expect(info.title).toBe("Visible versions");
     expect(info.highlights).toEqual([
       "Shows which production version is running."
@@ -37,7 +37,7 @@ describe("buildPublicReleaseInfo", () => {
   it("falls back to local build labels when deploy metadata is unavailable", () => {
     const info = buildPublicReleaseInfo({ releaseNotes, env: {} });
 
-    expect(info.releaseLabel).toBe("r7");
+    expect(info.releaseLabel).toBe("release 7");
     expect(info.buildShaShort).toBe("local");
     expect(info.buildDate).toBe("");
   });
