@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-06-02, release workflow cleanup)
+- Tightened the repo-local `$settlex-release` skill into an operational runbook for release drafting, approval, push/deploy monitoring, retry fixes, and live badge verification.
+- Added `pnpm release:status` as the deterministic release-readiness summary for approval state, release-note changes, deploy-infra changes, and required checks.
+- Updated the Codex release hook to use the same status logic, so deploy-infra retries under an already-approved release are not blocked by a fake version-bump requirement.
+- Focused verification:
+- `pnpm exec vitest run scripts/release/__tests__/check-release.test.mjs scripts/release/__tests__/status.test.mjs scripts/release/__tests__/codex-release-guard.test.mjs server/__tests__/deploymentFiles.source.test.js --reporter=dot`
+- `pnpm release:status`
+- `pnpm release:check -- --require-approved`
+- `git diff --check`
+
 ## Status (2026-06-02, release version visibility)
 - Added a tracked release-note source for public deploy history at `release/release-notes.json`.
 - Added `pnpm release:check` to validate release notes, require `approved: true` for production deploy checks, and require `currentVersion` to increase when `release/release-notes.json` changes in CI.
