@@ -1,5 +1,12 @@
 # PROGRESS
 
+## Status (2026-06-03, homepage direction brief)
+- Approved the Settlehex homepage product/UX direction before visual implementation.
+- Locked the homepage as a game-first title screen with beta/community proof-of-life rather than a conventional marketing page or full lobby dashboard.
+- Saved the direction brief at `docs/superpowers/specs/2026-06-03-settlehex-homepage-direction-brief.md`.
+- Current UX hierarchy: `Play Online` primary, `Play vs Bot` strong no-wait secondary, `Play a Friend` tertiary, with changelog/devlog/Discord/beta status as a compact supporting layer.
+- Preferred visual direction for further exploration: a real board/table hero that shows Settlehex polish while keeping CTAs readable and stable.
+
 ## Status (2026-06-02, release mark design-system cleanup)
 - Replaced the homepage release pill with quiet `release N` metadata text that opens the same release-notes disclosure.
 - Added shared `app/ui/MetaDisclosure.js` for ambient metadata that can reveal details without borrowing action-button chrome.
