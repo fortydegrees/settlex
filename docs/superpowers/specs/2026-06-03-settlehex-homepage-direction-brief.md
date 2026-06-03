@@ -24,6 +24,7 @@ This brief is intentionally not a final visual design or implementation spec. It
 2. New visitor wants to avoid waiting and chooses `Play vs Bot`.
 3. Visitor wants a known opponent and chooses `Play a Friend`.
 4. Curious visitor notices light beta/building-in-public material such as devlog, changelog, Discord, or bot-progress notes.
+5. Returning visitor sees their current identity/account state without that control competing with the play actions.
 
 ## CTA Hierarchy
 
@@ -40,6 +41,16 @@ The bot should not be framed as "no one is online, so settle for this." It shoul
 ### Tertiary: Play a Friend
 
 `Play a Friend` remains visible and useful, but it should not compete equally with the two main entry paths unless a future product decision changes that balance.
+
+## Account and Identity
+
+Account and identity controls should live in the homepage shell, not in the main hero/action stack.
+
+For logged-out or lightweight guest visitors, the homepage should show a compact guest identity affordance such as `Guest` or a randomized avatar/name pill. First play should stay low-friction: either create/use a lightweight guest identity automatically or ask for identity only at the moment it becomes necessary.
+
+For logged-in visitors, the homepage should show the current avatar/name in a compact top-right identity control. Account/profile access should be available through that control, but it should not read as a fourth primary destination beside `Play Online`, `Play vs Bot`, and `Play a Friend`.
+
+The identity surface should communicate continuity and polish while preserving the page's main job: starting a game quickly.
 
 ## Supporting Layer
 
@@ -82,6 +93,7 @@ Multiple visual treatments can still be explored. A candidate design should be j
 - `Play Online` is the primary path.
 - `Play vs Bot` is a strong no-wait path.
 - `Play a Friend` is available but tertiary.
+- Account/identity appears as a compact shell control, not a hero CTA.
 - Real game polish is visible quickly.
 - Beta/community/devlog material shows life without pretending maturity.
 - The page feels like the entrance to Settlehex, not a generic product page.

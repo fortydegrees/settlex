@@ -5,6 +5,7 @@
 - Locked the homepage as a game-first title screen with beta/community proof-of-life rather than a conventional marketing page or full lobby dashboard.
 - Saved the direction brief at `docs/superpowers/specs/2026-06-03-settlehex-homepage-direction-brief.md`.
 - Current UX hierarchy: `Play Online` primary, `Play vs Bot` strong no-wait secondary, `Play a Friend` tertiary, with changelog/devlog/Discord/beta status as a compact supporting layer.
+- Added the account/identity requirement: show guest or logged-in identity as a compact shell control, not as a competing hero CTA.
 - Preferred visual direction for further exploration: a real board/table hero that shows Settlehex polish while keeping CTAs readable and stable.
 
 ## Status (2026-06-02, release mark design-system cleanup)

@@ -4,6 +4,7 @@
 - the approved homepage purpose is a game-first title screen with beta/community proof-of-life, not a conventional long-form marketing page and not a full lobby dashboard.
 - primary CTA hierarchy should be `Play Online` first, `Play vs Bot` as a strong no-wait secondary, and `Play a Friend` as tertiary.
 - `Play vs Bot` should read as a legitimate mode and product hook, especially while the multiplayer audience is still growing.
+- account/identity belongs in the homepage shell, ideally as a compact top-right guest/logged-in identity control; do not treat account/profile as a fourth hero CTA.
 - supporting beta/devlog/changelog/Discord content should show the project is alive, but the homepage must not depend on a mature community or a large blog library.
 - preferred visual direction for exploration is a real board/table hero: use actual game polish as the proof, while keeping CTAs readable and avoiding an in-game control-surface feel.
 - durable brief: `docs/superpowers/specs/2026-06-03-settlehex-homepage-direction-brief.md`.
