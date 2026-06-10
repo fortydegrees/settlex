@@ -17,7 +17,8 @@
     "verify": "pnpm -C game-core build && pnpm run test:non-app && pnpm run test:app && pnpm lint",
     "serve": "node server/server.js",
     "release:check": "node scripts/release/check-release.mjs",
-    "release:status": "node scripts/release/status.mjs"
+    "release:status": "node scripts/release/status.mjs",
+    "docs:index": "node scripts/write-docs-index.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

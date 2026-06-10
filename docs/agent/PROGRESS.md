@@ -1,5 +1,53 @@
 # PROGRESS
 
+## Status (2026-06-05, docs index)
+- Added a generated docs map at `docs/INDEX.md` so agents can route directly to the right durable doc across `docs/agent`, `docs/plans`, `docs/superpowers`, deploy notes, and future plans.
+- Added `scripts/write-docs-index.mjs` plus `pnpm docs:index` to regenerate the map after adding, removing, or renaming Markdown docs.
+- Added focused script coverage for heading extraction, stable path mapping, `INDEX.md` exclusion, and writing the generated output.
+- Focused verification:
+- `pnpm exec vitest run scripts/__tests__/write-docs-index.test.mjs --reporter=dot`
+- `pnpm docs:index`
+
+## Status (2026-06-04, homepage demo board implementation)
+- Implemented the curated homepage demo board module under `app/catana/homeDemo/`.
+- Added a static board preset, authored four-colour legal-ish placement sequence, demo-owned committed road/building state, reduced-motion final state, board-only renderer, and `GameEffects` bridge using the existing placement GSAP/audio stack.
+- Rewired the dev home-table `ready` and `hybrid` variants to use `HomeDemoBoard`/`HomeDemoEffectBridge` instead of the boardgame.io sandbox board path; production homepage routing is unchanged.
+- Kept lasting demo pieces separate from the temporary GSAP DOM so placement effects can clean themselves up normally while the title-screen board keeps its visible result until the loop reset.
+- Fixed the React `fetchPriority` casing warning in `BoardUnderlay`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+- `pnpm exec eslint app/catana/homeDemo/*.js app/catana/BoardUnderlay.js app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/HomeDemoBoard.source.test.js` (passes with two existing prototype `<img>` warnings in `HomeTablePrototypeClient.js`)
+- Browser verification at `/catana/dev/home-table?variant=ready`: desktop and mobile screenshots saved as `output/playwright/home-demo-board-desktop.png` and `output/playwright/home-demo-board-mobile.png`; both rendered the board and committed demo pieces with no page/console errors in fresh browser contexts.
+
+## Status (2026-06-04, homepage demo board spec)
+- Wrote the approved design spec for the homepage demo board at `docs/superpowers/specs/2026-06-04-homepage-demo-board-design.md`.
+- Locked the next direction as a curated static board preset with an authored legal-ish four-colour event loop, demo-owned committed piece state, existing GSAP/audio effects, tunable timing, reduced-motion fallback, and no live game moves/server/runtime board generation.
+- Wrote the implementation plan at `docs/superpowers/plans/2026-06-04-homepage-demo-board.md`; first implementation pass should stabilize `/catana/dev/home-table` before production homepage promotion.
+
+## Status (2026-06-04, homepage attract-mode prototype)
+- Added a presentation-only attract loop to the dev homepage table prototype at `/catana/dev/home-table?variant=ready`.
+- The loop computes final overlay positions from the real board geometry, then scripts lightweight board-life beats: a road/settlement placement and a settlement-to-city upgrade.
+- Reworked the first pass to use the existing Catana effect stack: `GameEffects`, `createEffectBus`, and `createPiecePlacementRunner` now provide the GSAP placement motion and build audio cues instead of a custom CSS-only animation.
+- Stabilized the prototype-only final-piece layer so static road/settlement/city pieces are revealed just before the GSAP temporary DOM is cleaned up, then persist through the sequence until the clean loop reset.
+- Kept the loop non-interactive and out of game state: it does not call moves, mutate `G`, or imply the homepage board is an editable board.
+- Tuned the first pass down from multiple simultaneous piece additions to one construction beat and one upgrade beat so the title screen feels alive without becoming cluttered.
+- Fixed Next hydration warnings by gating the `GameEffects` portal until after client mount.
+- Focused verification:
+- `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/dev/home-table/HomeTableAttractLoop.js`
+- Browser verification at `http://localhost:3000/catana/dev/home-table?variant=ready`: no console errors after reload, real-effect screenshot saved as `output/playwright/home-table-attract-real-effects.png`.
+- Timing verification saved as `output/playwright/home-table-attract-stable-samples-2.json`; final city-state screenshot saved as `output/playwright/home-table-attract-stable-final.png`.
+
+## Status (2026-06-03, underlay wave preview)
+- Added a dev-only Catana underlay wave tuning route at `/catana/dev/underlay-waves`.
+- The route renders the real generated board-underlay geometry inline, with selectable GSAP preview variants for incoming lap and slow drift.
+- Revised the first pass away from outward expanding-surf glow and removed the non-working shore-wash variant.
+- The lap/drift overlays now render above the static underlay as translucent duplicate shoreline layers, so the visible SVG outline can move instead of only tinting a fixed silhouette.
+- Added board, port, base-layer, preview-scale, and motion-speed controls so shoreline motion can be judged both alone and behind a simplified board context.
+- Kept the work preview-only; production `BoardUnderlay` and `public/svgs/board_underlay_standard.svg` are unchanged.
+- Focused verification:
+- `pnpm exec eslint app/catana/dev/underlay-waves/UnderlayWavesClient.js app/catana/dev/underlay-waves/page.js`
+- `git diff --check -- app/catana/dev/underlay-waves docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
 ## Status (2026-06-03, homepage direction brief)
 - Approved the Settlehex homepage product/UX direction before visual implementation.
 - Locked the homepage as a game-first title screen with beta/community proof-of-life rather than a conventional marketing page or full lobby dashboard.
