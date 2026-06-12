@@ -1,13 +1,10 @@
-const DEFAULT_STAGE_TIMERS_MS = {
-  "preGame:waiting": 15000,
-  "main:preRoll": 5000,
-  "main:robberDiscard": 20000,
-  "placement:settlement": 60000,
-  "placement:road": 10000,
-  "main:moveRobber": 20000,
-  "main:roadBuilding": 10000,
-  "main:devCardChoice": 20000
-};
+import {
+  getStagePlayers,
+  getStageTimeoutMove,
+  getStageTimeoutMs,
+  isBotActionStage,
+  resolveStageKey
+} from "../stagePolicy.js";
 
 const DEFAULT_TURN_TIMER_MS = 45000;
 const TURN_TIMER_KEYS = new Set(["main:postRoll"]);
@@ -21,27 +18,6 @@ const TURN_BONUS_MOVES = new Set([
   "placeCity",
   "buyDevCard",
   "playDevCardStart"
-]);
-
-const STAGE_TIMEOUT_MOVES = {
-  "preGame:waiting": "autoStartGame",
-  "main:preRoll": "autoRoll",
-  "main:robberDiscard": "autoDiscard",
-  "placement:settlement": "autoPlaceSettlement",
-  "placement:road": "autoPlaceRoad",
-  "main:moveRobber": "autoMoveRobber",
-  "main:roadBuilding": "autoPlaceRoad",
-  "main:devCardChoice": "autoResolveDevCard"
-};
-
-const BOT_ACTION_STAGE_KEYS = new Set([
-  "placement:settlement",
-  "placement:road",
-  "main:preRoll",
-  "main:postRoll",
-  "main:moveRobber",
-  "main:roadBuilding",
-  "main:devCardChoice"
 ]);
 
 const isResolvedState = (state) =>
@@ -105,7 +81,7 @@ export class TimerManager {
     prev.stageStartedAtMs = undefined;
     prev.stageDurationMs = undefined;
 
-    const stageTimeoutMs = DEFAULT_STAGE_TIMERS_MS[stageKey];
+    const stageTimeoutMs = getStageTimeoutMs(stageKey);
     const isTurnStage = TURN_TIMER_KEYS.has(stageKey);
     const turnChanged = prev.turnNumber !== undefined && prev.turnNumber !== turnNumber;
 
@@ -117,13 +93,10 @@ export class TimerManager {
       this.resetTurnTimer(prev);
     }
 
-    const stagePlayers =
-      stageKey === "main:robberDiscard"
-        ? [...(state.G?.core?.turn?.pendingDiscards ?? [])]
-        : [state.ctx.currentPlayer];
+    const stagePlayers = getStagePlayers(state, stageKey);
 
     if (stageTimeoutMs && stagePlayers.length > 0) {
-      const move = STAGE_TIMEOUT_MOVES[stageKey];
+      const move = getStageTimeoutMove(stageKey);
       prev.stageStartedAtMs = Date.now();
       prev.stageDurationMs = stageTimeoutMs;
       prev.stageTimeoutId = setTimeout(() => {
@@ -267,35 +240,7 @@ export class TimerManager {
 
 
   getStageKey(state) {
-    const { ctx, G } = state;
-    const active =
-      ctx.activePlayers?.[ctx.currentPlayer] ?? ctx.activePlayers?.all ?? "";
-    const stage = typeof active === "string" ? active : active?.stage ?? "";
-    const devPlay = G?.devCardPlay;
-    const coreTurn = G?.core?.turn;
-    if (
-      ctx.phase === "main" &&
-      (coreTurn?.phase === "robberDiscard" ||
-        (coreTurn?.pendingDiscards?.length ?? 0) > 0)
-    ) {
-      return "main:robberDiscard";
-    }
-    if (
-      ctx.phase === "main" &&
-      devPlay?.type === "roadBuilding" &&
-      devPlay?.pendingRoads > 0 &&
-      devPlay?.playerId === ctx.currentPlayer
-    ) {
-      return "main:roadBuilding";
-    }
-    if (
-      ctx.phase === "main" &&
-      (devPlay?.type === "yearOfPlenty" || devPlay?.type === "monopoly") &&
-      devPlay?.playerId === ctx.currentPlayer
-    ) {
-      return "main:devCardChoice";
-    }
-    return `${ctx.phase}:${stage}`;
+    return resolveStageKey(state);
   }
 
   clearBotDispatch(record, playerID) {
@@ -394,7 +339,7 @@ export class TimerManager {
     }
 
     const isBot = this.isBotPlayer({ matchID, playerID, state });
-    const isBotStage = BOT_ACTION_STAGE_KEYS.has(stage);
+    const isBotStage = isBotActionStage(stage);
     if (!isBot || !isBotStage) {
       this.clearAllBotDispatches(record);
       return;

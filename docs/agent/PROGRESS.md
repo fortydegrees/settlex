@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-06-12, server stage policy refactor)
+- Extracted shared server stage policy into `server/stagePolicy.js` so timer expiry, bot fallback moves, and bot dispatch eligibility use one stage-key resolver for forced robber discard, road-building, and dev-card choice states.
+- Replaced duplicate stage-key/fallback logic in `server/timers/TimerManager.js` and `server/bots/pufferBotManager.js`.
+- Added `server/runtimeConfig.js` so the game server and lobby API keep the existing `8000`/`8080` defaults while allowing explicit alternate ports for isolated live smoke tests.
+- Focused verification:
+- `pnpm exec vitest run server/__tests__/stagePolicy.test.js server/__tests__/runtimeConfig.test.js server/__tests__/TimerManager.test.js server/__tests__/pufferBotManager.test.js server/__tests__/timerPubSub.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint server/stagePolicy.js server/runtimeConfig.js server/timers/TimerManager.js server/bots/pufferBotManager.js server/__tests__/stagePolicy.test.js server/__tests__/runtimeConfig.test.js`
+- `git diff --check -- server/stagePolicy.js server/runtimeConfig.js server/timers/TimerManager.js server/bots/pufferBotManager.js server/server.js server/__tests__/stagePolicy.test.js server/__tests__/runtimeConfig.test.js`
+- Live smoke: started `pnpm serve` with `SETTLEX_GAME_SERVER_PORT=18000 SETTLEX_LOBBY_API_PORT=18080`, confirmed lobby API `GET /games` returned `200`, confirmed `GET /timer/nonexistent-match` returned `404`, then stopped the temporary server.
+
 ## Status (2026-06-05, docs index)
 - Added a generated docs map at `docs/INDEX.md` so agents can route directly to the right durable doc across `docs/agent`, `docs/plans`, `docs/superpowers`, deploy notes, and future plans.
 - Added `scripts/write-docs-index.mjs` plus `pnpm docs:index` to regenerate the map after adding, removing, or renaming Markdown docs.

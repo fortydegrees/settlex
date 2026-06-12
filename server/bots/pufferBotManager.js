@@ -3,51 +3,7 @@ import { fileURLToPath } from "node:url";
 import { PufferPolicyClient } from "./PufferPolicyClient.js";
 import { createPufferStateAdapter } from "./pufferStateAdapter.js";
 import { chooseActionWithExpectimax } from "./pufferSearch.js";
-
-const STAGE_FALLBACK_MOVES = {
-  "preGame:waiting": "readyUp",
-  "main:preRoll": "autoRoll",
-  "main:robberDiscard": "autoDiscard",
-  "placement:settlement": "autoPlaceSettlement",
-  "placement:road": "autoPlaceRoad",
-  "main:moveRobber": "autoMoveRobber",
-  "main:roadBuilding": "autoPlaceRoad",
-  "main:devCardChoice": "autoResolveDevCard",
-  "main:postRoll": "autoEndTurn"
-};
-
-function getStageKey(state) {
-  const { ctx, G } = state;
-  const active =
-    ctx.activePlayers?.[ctx.currentPlayer] ?? ctx.activePlayers?.all ?? "";
-  const stage = typeof active === "string" ? active : active?.stage ?? "";
-  const devPlay = G?.devCardPlay;
-  const coreTurn = G?.core?.turn;
-
-  if (
-    ctx.phase === "main" &&
-    (coreTurn?.phase === "robberDiscard" ||
-      (coreTurn?.pendingDiscards?.length ?? 0) > 0)
-  ) {
-    return "main:robberDiscard";
-  }
-  if (
-    ctx.phase === "main" &&
-    devPlay?.type === "roadBuilding" &&
-    devPlay?.pendingRoads > 0 &&
-    devPlay?.playerId === ctx.currentPlayer
-  ) {
-    return "main:roadBuilding";
-  }
-  if (
-    ctx.phase === "main" &&
-    (devPlay?.type === "yearOfPlenty" || devPlay?.type === "monopoly") &&
-    devPlay?.playerId === ctx.currentPlayer
-  ) {
-    return "main:devCardChoice";
-  }
-  return `${ctx.phase}:${stage}`;
-}
+import { getBotFallbackMove, resolveStageKey } from "../stagePolicy.js";
 
 function randomLegalAction(mask, rng = Math.random) {
   const legal = [];
@@ -148,8 +104,7 @@ export class PufferBotManager {
   }
 
   getFallbackMove(state) {
-    const stageKey = getStageKey(state);
-    return STAGE_FALLBACK_MOVES[stageKey] ?? "autoEndTurn";
+    return getBotFallbackMove(state);
   }
 
   async chooseMoves(state, playerID, matchID = null) {
@@ -160,7 +115,7 @@ export class PufferBotManager {
       return [];
     }
 
-    const stageKey = getStageKey(state);
+    const stageKey = resolveStageKey(state);
     if (stageKey === "preGame:waiting") {
       return [{ move: "readyUp", args: [] }];
     }
