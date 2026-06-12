@@ -15,6 +15,7 @@ import { archiveFinishedMatch } from "./archive/archiveFinishedMatch.js"
 import { cleanupArchivedMatch } from "./archive/cleanupArchivedMatch.js"
 import { MatchChatStore } from "./chat/MatchChatStore.js"
 import { FinishedMatchRetentionManager } from "./lifecycle/FinishedMatchRetentionManager.js"
+import { resolveServerPorts } from "./runtimeConfig.js"
 const DEFAULT_BOT_MOVE_DELAY_MS = 450
 const DEFAULT_FINISHED_MATCH_CLEANUP_GRACE_MS = 300_000
 
@@ -153,9 +154,10 @@ server.router.post("/idle/:matchID/ack", koaBody(), async (ctx) => {
   }
 })
 
+const { gamePort, lobbyApiPort } = resolveServerPorts()
 const lobbyConfig = {
-  apiPort: 8080,
-  apiCallback: () => console.log("Running Lobby API on port 8080..."),
+  apiPort: lobbyApiPort,
+  apiCallback: () => console.log(`Running Lobby API on port ${lobbyApiPort}...`),
 }
 
-server.run({ port: 8000, lobbyConfig })
+server.run({ port: gamePort, lobbyConfig })
