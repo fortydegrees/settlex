@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-06-12, dev-card flow helper boundary)
+- Extracted pure dev-card choice flow helpers into `app/catana/moves/devCardFlow.js`.
+- `app/catana/Moves.js` now imports the dev-card choice stage name, choice-card predicate, return-stage helper, standard resource order, and auto Year of Plenty payload builder instead of owning those details inline.
+- Kept the boardgame.io move exports unchanged, so `Game.js` and existing move-stage wiring remain stable.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/devCardFlow.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Game.placementPhase.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint app/catana/Moves.js app/catana/moves/devCardFlow.js app/catana/__tests__/devCardFlow.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Game.placementPhase.test.js`
+- `git diff --check -- app/catana/Moves.js app/catana/moves/devCardFlow.js app/catana/__tests__/devCardFlow.test.js`
+- Browser sandbox verification at `http://localhost:3000/catana/dev/sandbox?viewportWall=1`: board-like surface rendered after hydration, game-log content was present, and browser console errors were empty.
+
 ## Status (2026-06-12, server stage policy refactor)
 - Extracted shared server stage policy into `server/stagePolicy.js` so timer expiry, bot fallback moves, and bot dispatch eligibility use one stage-key resolver for forced robber discard, road-building, and dev-card choice states.
 - Replaced duplicate stage-key/fallback logic in `server/timers/TimerManager.js` and `server/bots/pufferBotManager.js`.

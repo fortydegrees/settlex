@@ -1,5 +1,10 @@
 # NOTES
 
+- Dev-card flow helper note:
+- `app/catana/moves/devCardFlow.js` owns pure dev-card choice-flow helpers: choice stage name, choice-card predicate, return-stage derivation, standard resource ordering, and auto Year of Plenty payload construction.
+- Keep boardgame.io move objects exported from `app/catana/Moves.js` unless doing a deliberate larger move-module split; `Game.js` currently imports those move exports directly.
+- Prefer adding pure dev-card flow rules to `devCardFlow.js` with focused tests before expanding the `Moves.js` dev-card cluster.
+
 - Server stage policy note:
 - `server/stagePolicy.js` is the shared server-side source for bgio stage-key resolution, stage timeout moves, bot action-stage eligibility, and bot fallback moves.
 - Keep forced-state overrides there when adding server-visible forced flows: robber discard, road-building dev-card placement, and year-of-plenty/monopoly choice currently override the raw bgio active stage.

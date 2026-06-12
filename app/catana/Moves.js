@@ -1,5 +1,5 @@
 
-import { ResourceType, TileTypes } from "./types.js";
+import { TileTypes } from "./types.js";
 import {
   applyBuildCity,
   applyBuildRoad,
@@ -27,16 +27,14 @@ import {
   playDevCard
 } from "@settlex/game-core";
 import { appendGameLog } from "./utils/gameLog.js";
-
-const DEV_CARD_CHOICE_STAGE = "devCardChoice";
-const CHOICE_DEV_CARD_TYPES = new Set(["yearOfPlenty", "monopoly"]);
-const STANDARD_RESOURCE_TYPES = [
-  ResourceType.WOOD,
-  ResourceType.BRICK,
-  ResourceType.SHEEP,
-  ResourceType.WHEAT,
-  ResourceType.ORE
-];
+import {
+  DEV_CARD_CHOICE_STAGE,
+  STANDARD_RESOURCE_TYPES,
+  buildAutoYearOfPlentyPayload,
+  getDevCardReturnStage,
+  isChoiceDevCardType,
+  isDevCardChoiceStage
+} from "./moves/devCardFlow.js";
 
 const countResources = (resources = []) =>
   resources.reduce((acc, resource) => {
@@ -1251,34 +1249,9 @@ const isDevCardStage = (ctx, playerID) => {
   return stage === "preRoll" || stage === "postRoll";
 };
 
-const isDevCardChoiceStage = (ctx, playerID) =>
-  ctx.activePlayers?.[playerID] === DEV_CARD_CHOICE_STAGE;
-
-const getDevCardReturnStage = (devPlay) =>
-  devPlay?.startedFromStage === "preRoll" ? "preRoll" : "postRoll";
-
 const finishDevCardChoice = (context, devPlay) => {
   context.G.devCardPlay = null;
   setCurrentPlayerStage(context, getDevCardReturnStage(devPlay));
-};
-
-const buildAutoYearOfPlentyPayload = (core, random) => {
-  if (!core?.ruleset?.bank?.finite) {
-    const shuffled = random?.Shuffle
-      ? random.Shuffle(STANDARD_RESOURCE_TYPES)
-      : STANDARD_RESOURCE_TYPES;
-    return [shuffled[0], shuffled[1] ?? shuffled[0]];
-  }
-
-  const available = [];
-  for (const resource of STANDARD_RESOURCE_TYPES) {
-    const count = (core.bank?.resources ?? []).filter((entry) => entry === resource).length;
-    for (let index = 0; index < Math.min(2, count); index += 1) {
-      available.push(resource);
-    }
-  }
-  const shuffled = random?.Shuffle ? random.Shuffle(available) : available;
-  return shuffled.slice(0, 2);
 };
 
 export const playDevCardStart = {
@@ -1490,7 +1463,7 @@ export const cancelDevCardPlay = {
   move: (context) => {
     const { G, playerID } = context;
     if (!G.devCardPlay || G.devCardPlay.playerId !== playerID) return;
-    if (CHOICE_DEV_CARD_TYPES.has(G.devCardPlay.type)) return;
+    if (isChoiceDevCardType(G.devCardPlay.type)) return;
     G.devCardPlay = null;
   }
 };
