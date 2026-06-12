@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-06-12, dev-card presentation payload boundary)
+- Extracted dev-card presentation payload helpers into `app/catana/moves/devCardPresentation.js`.
+- `app/catana/Moves.js` now imports effect-id builders, knight/road-building/choice payload builders, monopoly transfer summaries, masked-resource detection, award owner snapshots, and pending knight animation resolution from the dedicated helper module.
+- Kept boardgame.io move exports and game-stage wiring unchanged.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/devCardPresentation.test.js app/catana/__tests__/devCardFlow.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Game.placementPhase.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint app/catana/Moves.js app/catana/moves/devCardFlow.js app/catana/moves/devCardPresentation.js app/catana/__tests__/devCardFlow.test.js app/catana/__tests__/devCardPresentation.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Game.placementPhase.test.js`
+- `git diff --check -- app/catana/Moves.js app/catana/moves/devCardPresentation.js app/catana/__tests__/devCardPresentation.test.js`
+- Browser sandbox reload at `http://localhost:3000/catana/dev/sandbox?viewportWall=1`: board-like surface rendered, game-log content was present, and browser console errors were empty.
+
 ## Status (2026-06-12, dev-card flow helper boundary)
 - Extracted pure dev-card choice flow helpers into `app/catana/moves/devCardFlow.js`.
 - `app/catana/Moves.js` now imports the dev-card choice stage name, choice-card predicate, return-stage helper, standard resource order, and auto Year of Plenty payload builder instead of owning those details inline.

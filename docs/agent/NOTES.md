@@ -1,5 +1,9 @@
 # NOTES
 
+- Dev-card presentation helper note:
+- `app/catana/moves/devCardPresentation.js` owns dev-card effect-id/payload construction, monopoly transfer summaries, masked-resource checks, award owner snapshots used by dev-card presentation, and pending knight animation resolution.
+- Keep presentation payload shaping there instead of growing the top of `app/catana/Moves.js`; move objects should orchestrate rule application and logging, not own every effect payload detail.
+
 - Dev-card flow helper note:
 - `app/catana/moves/devCardFlow.js` owns pure dev-card choice-flow helpers: choice stage name, choice-card predicate, return-stage derivation, standard resource ordering, and auto Year of Plenty payload construction.
 - Keep boardgame.io move objects exported from `app/catana/Moves.js` unless doing a deliberate larger move-module split; `Game.js` currently imports those move exports directly.
