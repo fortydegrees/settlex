@@ -120,10 +120,12 @@ export class BalancedBoard {
         bestBoardScoreStats = stats;
       }
     }
-    console.log("num boards generated: " + i);
-    console.log("Target score: " + this.targetScore);
-    console.log("Board score: " + bestBoardScore);
-    console.log(bestBoardScoreStats);
+    if (this.options?.logGenerationStats) {
+      console.log("num boards generated: " + i);
+      console.log("Target score: " + this.targetScore);
+      console.log("Board score: " + bestBoardScore);
+      console.log(bestBoardScoreStats);
+    }
 
     firstGenerated = true;
     return { board: bestBoard, score: bestBoardScore };

@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { generateBoard } from "./generateBoard";
+import { BalancedBoard } from "./generateBalancedBoard";
 import { makeDeterministicRng } from "../testUtils";
 import { ResourceType, TileTypes } from "../types";
 import { resolveBoardConfig } from "./boardConfigs";
@@ -9,6 +10,7 @@ import type { BoardTile } from "../core/topology";
 
 describe("board generation invariants", () => {
   const randomConfig = resolveBoardConfig("standard-random");
+  const balancedConfig = resolveBoardConfig("standard-balanced");
   const randomSpec = resolveBoardSpec(randomConfig.specId);
 
   it("is deterministic for a fixed seed", () => {
@@ -16,6 +18,39 @@ describe("board generation invariants", () => {
     const a = generateBoard(randomConfig, rng);
     const b = generateBoard(randomConfig, makeDeterministicRng(123));
     expect(a).toEqual(b);
+  });
+
+  it("does not log balanced generation diagnostics by default", () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    try {
+      generateBoard(balancedConfig, makeDeterministicRng(124));
+      expect(logSpy).not.toHaveBeenCalled();
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it("can opt into balanced generation diagnostics", () => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const balanced = new BalancedBoard(
+      {
+        desertPlacement: "Random",
+        resourceDistribution: 1,
+        numberDistribution: 1,
+        logGenerationStats: true
+      },
+      makeDeterministicRng(125)
+    );
+
+    try {
+      balanced.generateBoard(randomSpec);
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("num boards generated:"));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Target score:"));
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Board score:"));
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 
   it("matches resource counts and roll numbers from spec", () => {
