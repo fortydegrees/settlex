@@ -23,7 +23,7 @@ import {
   canBuildSettlement as coreCanBuildSettlement,
   canPlaceRobber
 } from "@settlex/game-core";
-import { getBuildableEdges } from "./Moves";
+import { getBuildableEdges } from "./moves/buildMoves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { resolveRobberPlacementMotionMode } from "./utils/robberPlacementMotion";

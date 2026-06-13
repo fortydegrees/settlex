@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import { Catan } from "../Game";
 import { createEmptyState, buildTopology } from "@settlex/game-core";
-import { getBuildableEdges } from "../Moves";
+import { getBuildableEdges } from "../moves/buildMoves";
 
 describe("placement phase transition", () => {
   it("has placement phase onEnd hook that sets G.core.phase to normal", () => {

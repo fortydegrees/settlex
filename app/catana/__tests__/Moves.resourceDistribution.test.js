@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { placeSettlement } from "../Moves";
+import { placeSettlement } from "../moves/buildMoves";
 import { ResourceType, TileTypes, applyPlaceSettlement } from "@settlex/game-core";
 
 vi.mock("@settlex/game-core", async () => {
