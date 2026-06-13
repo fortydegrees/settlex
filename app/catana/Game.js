@@ -10,22 +10,14 @@ import {
   ResourceType
 } from "@settlex/game-core";
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
-import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, DEBUG_takeCardsFromBank, DEBUG_takeDevCards, DEBUG_captureScenarioState, DEBUG_clearCapturedScenarioState, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, placeRoadFromDevCard, readyUp, autoStartGame, resign, resolveDisconnectForfeit, resolveIdleForfeit, DEBUG_loadState, DEBUG_setScenario } from "./Moves.js";
+import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, placeRoadFromDevCard, readyUp, autoStartGame, resign, resolveDisconnectForfeit, resolveIdleForfeit } from "./Moves.js";
+import { DEBUG_MOVES } from "./moves/debugMoves.js";
 import { appendGameLog } from "./utils/gameLog.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
 import {
   PLACE_PIECE_DEFAULT_TUNING,
   getPlacementEffectDuration
 } from "./effects/placePieceDefaults.js";
-
-const DEBUG_MOVES = {
-  DEBUG_takeCardsFromBank,
-  DEBUG_takeDevCards,
-  DEBUG_captureScenarioState,
-  DEBUG_clearCapturedScenarioState,
-  DEBUG_loadState,
-  DEBUG_setScenario
-};
 
 const isDebugEnvironment = (nodeEnv = process.env.NODE_ENV) =>
   nodeEnv !== "production";

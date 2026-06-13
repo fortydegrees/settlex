@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { createEmptyState, buildTopology, ResourceType, TileTypes } from "@settlex/game-core";
+import { DEBUG_takeDevCards } from "../moves/debugMoves";
 import {
-  DEBUG_takeDevCards,
   autoResolveDevCard,
   buyDevCard,
   cancelDevCardPlay,
