@@ -1,5 +1,16 @@
 # NOTES
 
+- Robber move boundary note:
+- `app/catana/moves/robberMoves.js` owns robber target candidacy, robber
+  movement, forced robber movement, no-valid-tile skip logging, and return-stage
+  resolution after robber interactions.
+- `app/catana/moves/stageControl.js` owns the boardgame.io active-stage setter
+  used by robber and dev-card flow code.
+- `app/catana/moves/randomChoice.js` owns deterministic forced-move selection;
+  reuse it instead of re-adding local `pickRandom` helpers to move modules.
+- `app/catana/Moves.js` re-exports robber moves for compatibility, but new
+  direct robber consumers should import from `moves/robberMoves.js`.
+
 - Build move boundary note:
 - `app/catana/moves/buildMoves.js` owns settlement, road, and city placement
   moves plus buildability helpers used by placement-stage validation and board

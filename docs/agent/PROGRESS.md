@@ -1,5 +1,21 @@
 # PROGRESS
 
+## Status (2026-06-13, robber move boundary)
+- Extracted manual and forced robber movement, robber target candidacy,
+  no-valid-tile skip handling, robber return-stage resolution, and shared stage
+  control from `app/catana/Moves.js` into `app/catana/moves/robberMoves.js`
+  and `app/catana/moves/stageControl.js`.
+- Added `app/catana/moves/randomChoice.js` for deterministic forced-move
+  selection shared by timeout moves and robber automation.
+- Updated `app/catana/Game.js` and direct robber tests to import the narrower
+  robber boundary while preserving compatibility re-exports from `Moves.js`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/stageControl.test.js app/catana/__tests__/randomChoice.test.js app/catana/__tests__/Moves.robber.test.js --reporter=dot` (red: missing `robberMoves`, `stageControl`, and `randomChoice`)
+- `pnpm exec vitest run app/catana/__tests__/stageControl.test.js app/catana/__tests__/randomChoice.test.js app/catana/__tests__/Moves.robber.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/stageControl.test.js app/catana/__tests__/randomChoice.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.balancedDice.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Moves.js app/catana/Game.js app/catana/moves/robberMoves.js app/catana/moves/randomChoice.js app/catana/moves/stageControl.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/randomChoice.test.js app/catana/__tests__/stageControl.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.balancedDice.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, build move boundary)
 - Extracted settlement/road/city placement moves and buildability helpers from
   `app/catana/Moves.js` into `app/catana/moves/buildMoves.js`.
