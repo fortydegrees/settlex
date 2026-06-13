@@ -1,5 +1,11 @@
 # NOTES
 
+- Board underlay priority note:
+- Use React's `fetchPriority` prop, not lowercase `fetchpriority`, when
+  rendering eager board-underlay images from React components.
+- The browser still receives the high-priority image hint, and the Catana dev
+  sandbox should stay free of React invalid-DOM-property warnings.
+
 - Board preview target note:
 - `app/catana/utils/boardPreviewTargets.js` owns pure target derivation for
   robber placement previews and build pickup magnetic targets.

@@ -31,7 +31,7 @@ describe("LiveMatchLoadingShell", () => {
     const html = renderToStaticMarkup(h(LiveMatchLoadingShell));
 
     expect(html).toContain("board_underlay_standard.svg");
-    expect(html).toContain('fetchpriority="high"');
+    expect(html).toContain('fetchPriority="high"');
     expect(html).toContain("Connecting to live match");
   });
 });

@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-06-13, board underlay fetch priority)
+- Fixed React DOM prop casing for eager board-underlay images in
+  `app/catana/BoardUnderlay.js` and
+  `app/catana/lobby/[matchID]/LiveMatchLoadingShell.js`.
+- This removes the live sandbox React warning caused by lowercase
+  `fetchpriority`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/BoardUnderlay.render.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/LiveMatchLoadingShell.render.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/BoardUnderlay.js 'app/catana/lobby/[matchID]/LiveMatchLoadingShell.js' app/catana/__tests__/BoardUnderlay.render.test.js app/catana/__tests__/Board.layering.test.js app/catana/__tests__/LiveMatchLoadingShell.render.test.js`
+- `git diff --check`
+- Live smoke: `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`
+  rendered board/feed content; captured console had no errors.
+
 ## Status (2026-06-13, board preview target helpers)
 - Extracted Board robber/build preview target derivation into
   `app/catana/utils/boardPreviewTargets.js`.

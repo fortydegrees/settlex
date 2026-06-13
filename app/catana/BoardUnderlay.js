@@ -21,7 +21,7 @@ export function BoardUnderlay({ center, size, themeId }) {
     "data-testid": "board-underlay",
     draggable: false,
     loading: "eager",
-    fetchpriority: "high",
+    fetchPriority: "high",
     style: {
       position: "absolute",
       left: frame.left,

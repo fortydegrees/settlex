@@ -13,6 +13,6 @@ describe("BoardUnderlay", () => {
       })
     );
 
-    expect(html).toContain('fetchpriority="high"');
+    expect(html).toContain('fetchPriority="high"');
   });
 });
