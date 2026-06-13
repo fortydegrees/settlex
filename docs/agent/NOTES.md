@@ -1,5 +1,15 @@
 # NOTES
 
+- Debug move boundary note:
+- `app/catana/moves/debugMoves.js` owns `DEBUG_*` move definitions and exports
+  the grouped `DEBUG_MOVES` map.
+- Keep `app/catana/Game.js` as the only place that decides whether those moves
+  are exposed; production and server configs should continue omitting debug
+  moves.
+- Do not add new dev tooling moves back to `app/catana/Moves.js`; put them in
+  the debug module and cover exposure with `Game.debugMoves.test.js` or
+  `serverGameConfig.test.js`.
+
 - Balanced-board diagnostics note:
 - `BalancedBoard` generation diagnostics are quiet by default; pass
   `logGenerationStats: true` only for explicit board-tuning/debug sessions.

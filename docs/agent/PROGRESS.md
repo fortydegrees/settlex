@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-06-13, debug move boundary)
+- Extracted dev-only/debug move definitions from `app/catana/Moves.js` into
+  `app/catana/moves/debugMoves.js`.
+- `app/catana/Game.js` now imports the grouped `DEBUG_MOVES` set from that
+  module and remains the production/non-production exposure gate.
+- Updated debug move tests to import debug helpers from the debug module, while
+  keeping existing game/server exposure guards.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Moves.debugScenario.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/Moves.debugScenario.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Game.debugMoves.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/preGameReady.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Game.js app/catana/Moves.js app/catana/moves/debugMoves.js app/catana/__tests__/Moves.debugScenario.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, balanced-board diagnostics)
 - Gated balanced-board generation diagnostics behind the existing
   `logGenerationStats` option so normal board generation and test runs stay

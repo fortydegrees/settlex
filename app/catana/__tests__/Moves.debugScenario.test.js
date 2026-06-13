@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEBUG_captureScenarioState,
   DEBUG_clearCapturedScenarioState
-} from "../Moves";
+} from "../moves/debugMoves";
 
 describe("debug scenario snapshot moves", () => {
   it("captures and clears scenario snapshots on the server only", () => {
