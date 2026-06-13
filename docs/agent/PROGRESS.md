@@ -1,5 +1,23 @@
 # PROGRESS
 
+## Status (2026-06-13, GameScreen display model helper)
+- Extracted `GameScreen` player/display derivation into
+  `app/catana/utils/gameScreenDisplayModel.js`.
+- The helper now owns merged player identity maps, effective in-game colors,
+  player view models, winner copy, scoreboard rows, log player map, and
+  postgame summary rows.
+- `app/catana/GameScreen.js` now delegates those screen-facing model concerns
+  to one memoized helper call while keeping render/effect orchestration in the
+  component.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/gameScreenDisplayModel.test.js --reporter=dot` (red: missing `gameScreenDisplayModel`)
+- `pnpm exec vitest run app/catana/__tests__/gameScreenDisplayModel.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.playerColors.test.js app/catana/__tests__/GameScreen.gameOver.test.js app/catana/__tests__/GameOverModal.test.js app/catana/__tests__/PostgameOverlay.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.*.test.js app/catana/__tests__/gameScreenDisplayModel.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/utils/gameScreenDisplayModel.js app/catana/__tests__/gameScreenDisplayModel.test.js app/catana/__tests__/GameScreen.gameOver.test.js app/catana/__tests__/GameScreen.playerColors.test.js`
+- `git diff --check`
+- Live smoke: `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`
+  rendered board tiles and game-feed content; captured console had no errors.
+
 ## Status (2026-06-13, board underlay fetch priority)
 - Fixed React DOM prop casing for eager board-underlay images in
   `app/catana/BoardUnderlay.js` and

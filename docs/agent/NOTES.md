@@ -1,5 +1,13 @@
 # NOTES
 
+- GameScreen display model note:
+- `app/catana/utils/gameScreenDisplayModel.js` owns screen-facing player
+  identity/model derivation for `GameScreen`: merged name/emoji/color maps,
+  effective player colors, player view models, winner copy, scoreboard rows,
+  log player map, and postgame summary rows.
+- Keep new display-model derivation there with direct pure-helper tests instead
+  of adding more inline `useMemo` blocks to `GameScreen.js`.
+
 - Board underlay priority note:
 - Use React's `fetchPriority` prop, not lowercase `fetchpriority`, when
   rendering eager board-underlay images from React components.

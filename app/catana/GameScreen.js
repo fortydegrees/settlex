@@ -12,18 +12,13 @@ import {
   SpeakerXMarkIcon,
 } from "@heroicons/react/24/outline";
 
-import { buildPlayerViewMap } from "./utils/playerView";
 import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
 import { getGameStatus, shouldShowGameStatusTimer } from "./utils/gameStatus";
 import {
   getBuildPickupPieceType,
   shouldResetPlayerAction
 } from "./utils/playerAction";
-import { resolveEffectivePlayerColors } from "./utils/playerColorsInGame";
-import {
-  mergePlayerMetadata,
-  sanitizeDisplayName,
-} from "./utils/playerIdentity";
+import { buildGameScreenDisplayModel } from "./utils/gameScreenDisplayModel";
 import {
   getActiveDisconnectStateByPlayerId,
   mergeVisibleLogEntries,
@@ -104,7 +99,6 @@ import { Dialog } from "../ui/Dialog";
 import { IconButton } from "../ui/IconButton";
 import { Tooltip, TooltipProvider } from "../ui/Tooltip";
 import { Howler } from "howler";
-import { getVictoryPoints } from "@settlex/game-core";
 import {
   CATANA_THEME_STORAGE_KEY,
   resolveThemeId,
@@ -169,14 +163,6 @@ const runAfterNextPaint = (callback) => {
     return;
   }
   window.setTimeout(callback, 0);
-};
-
-const getGameOverReasonCopy = (reason) => {
-  if (reason === "victoryPoints" || !reason) return "Victory Points";
-  if (reason === "Resignation") return "Resignation";
-  if (reason === "Disconnect Forfeit") return "Disconnect Forfeit";
-  if (reason === "AFK Forfeit") return "AFK Forfeit";
-  return String(reason);
 };
 
 export function GameScreen(bgioProps) {
@@ -261,14 +247,6 @@ export function GameScreen(bgioProps) {
       : devPlay?.type === "monopoly"
       ? "dev-monopoly"
       : null;
-  const mergedMatchData = useMemo(
-    () =>
-      mergePlayerMetadata(
-        Array.isArray(bgioProps.matchData) ? bgioProps.matchData : [],
-        Array.isArray(bgioProps.matchMetadata) ? bgioProps.matchMetadata : []
-      ),
-    [bgioProps.matchData, bgioProps.matchMetadata]
-  );
   const shouldCloseTradeModal = shouldResetTradeModal({
     showTradeModal,
     playerID,
@@ -286,73 +264,44 @@ export function GameScreen(bgioProps) {
       corePhase: core?.phase,
       isGameOver
     });
-  const { nameMap, emojiMap, colorMap } = useMemo(() => {
-    const names = {};
-    const emojis = {};
-    const colors = {};
-    if (Array.isArray(mergedMatchData)) {
-      mergedMatchData.forEach((player) => {
-        if (player?.id == null) return;
-        const cleanName = sanitizeDisplayName(player.name);
-        names[player.id] = cleanName || `Player ${player.id}`;
-        if (player.data?.emoji) emojis[player.id] = player.data.emoji;
-        if (player.data?.color) colors[player.id] = player.data.color;
-      });
-    }
-    return { nameMap: names, emojiMap: emojis, colorMap: colors };
-  }, [mergedMatchData]);
+  const {
+    nameMap,
+    emojiMap,
+    effectiveColorByPlayerId,
+    playerViewMap,
+    player,
+    winnerName,
+    isWinner,
+    winnerVP,
+    scoreboard,
+    logPlayerMap,
+    gameOverReasonText,
+    postgameSummary
+  } = useMemo(
+    () =>
+      buildGameScreenDisplayModel({
+        core,
+        playerID,
+        gameOverState,
+        isGameOver,
+        matchData: bgioProps.matchData,
+        matchMetadata: bgioProps.matchMetadata
+      }),
+    [
+      core,
+      playerID,
+      gameOverState,
+      isGameOver,
+      bgioProps.matchData,
+      bgioProps.matchMetadata
+    ]
+  );
   const rawGameStatus = getGameStatus(core, bgioProps.ctx, {
     playerAction,
     viewerPlayerId: playerID,
     playerMap: nameMap
   });
-  const seatOrderKey = useMemo(
-    () => (Array.isArray(core?.players) ? core.players.map(String).join("|") : ""),
-    [core?.players]
-  );
-  const seatPlayerIds = useMemo(
-    () => (seatOrderKey ? seatOrderKey.split("|") : []),
-    [seatOrderKey]
-  );
-  const effectiveColorByPlayerId = useMemo(
-    () =>
-      resolveEffectivePlayerColors({
-        playerIds: seatPlayerIds,
-        preferredColorByPlayerId: colorMap
-      }),
-    [seatPlayerIds, colorMap]
-  );
-  const playerViewMap = useMemo(
-    () => buildPlayerViewMap(core, effectiveColorByPlayerId),
-    [core, effectiveColorByPlayerId]
-  );
   latestPlayerViewMapRef.current = playerViewMap;
-  const rawPlayer = playerViewMap[playerID];
-  const player = rawPlayer
-    ? { ...rawPlayer, name: nameMap[rawPlayer.id], emoji: emojiMap[rawPlayer.id] }
-    : null;
-  const winnerId = gameOverState?.winnerId ?? gameOverState?.winner ?? null;
-  const winnerName =
-    winnerId != null
-      ? nameMap[winnerId] ?? `Player ${winnerId}`
-      : "Unknown";
-  const isWinner =
-    winnerId != null && playerID != null && String(winnerId) === String(playerID);
-  const winnerVP =
-    winnerId != null && core ? getVictoryPoints(core, String(winnerId)) : null;
-
-  const scoreboard = useMemo(() => {
-    if (!core) return [];
-    return Object.values(playerViewMap)
-      .map((view) => ({
-        id: view.id,
-        name: nameMap[view.id] ?? view.name ?? `Player ${view.id}`,
-        vp: getVictoryPoints(core, view.id),
-        color: view.color,
-        isWinner: String(view.id) === String(winnerId)
-      }))
-      .sort((a, b) => b.vp - a.vp);
-  }, [core, playerViewMap, nameMap, winnerId]);
 
   useEffect(() => {
     const next = new Map();
@@ -363,24 +312,6 @@ export function GameScreen(bgioProps) {
     previousResourcesByPlayerIdRef.current = next;
   }, [playerViewMap]);
 
-  const logPlayerMap = useMemo(() => {
-    const ids = new Set([
-      ...seatPlayerIds,
-      ...Object.keys(nameMap ?? {}),
-      ...Object.keys(emojiMap ?? {}),
-      ...Object.keys(colorMap ?? {}),
-      ...Object.keys(effectiveColorByPlayerId ?? {})
-    ]);
-    const map = {};
-    ids.forEach((id) => {
-      map[id] = {
-        name: nameMap[id] ?? `Player ${id}`,
-        emoji: emojiMap[id] ?? null,
-        color: effectiveColorByPlayerId[id] ?? "red"
-      };
-    });
-    return map;
-  }, [seatPlayerIds, nameMap, emojiMap, colorMap, effectiveColorByPlayerId]);
   const canonicalGameLogEntries = useMemo(
     () => (Array.isArray(bgioProps.G?.gameLog) ? bgioProps.G.gameLog : []),
     [bgioProps.G?.gameLog]
@@ -407,16 +338,6 @@ export function GameScreen(bgioProps) {
   const idleStateByPlayerId = useMemo(() => {
     return getActiveIdleStateByPlayerId(idlePresence, nowMs);
   }, [idlePresence, nowMs]);
-  const gameOverReasonText = getGameOverReasonCopy(gameOverState?.reason);
-
-  const postgameSummary = useMemo(() => {
-    if (!isGameOver) return [];
-    return [
-      { label: "Winner", value: winnerName },
-      { label: "Reason", value: gameOverReasonText },
-      { label: "Final VP", value: winnerVP != null ? `${winnerVP}` : "—" }
-    ];
-  }, [isGameOver, winnerName, gameOverReasonText, winnerVP]);
   const showResultsButton =
     isGameOver && !showGameOverModal && !showPostgame;
   const clearBuildPickup = useCallback(() => {

@@ -7,15 +7,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const screenPath = path.resolve(__dirname, "..", "GameScreen.js");
+const displayModelPath = path.resolve(
+  __dirname,
+  "..",
+  "utils",
+  "gameScreenDisplayModel.js"
+);
 
 describe("GameScreen game over", () => {
   it("checks for game over state", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
+    const displayModelContents = fs.readFileSync(displayModelPath, "utf8");
+
     expect(contents).toContain("gameOverState");
+    expect(contents).toContain("buildGameScreenDisplayModel");
     expect(contents).toContain("GameOverModal");
     expect(contents).toContain("Results");
-    expect(contents).toContain("Disconnect Forfeit");
-    expect(contents).toContain("Resignation");
+    expect(displayModelContents).toContain("Disconnect Forfeit");
+    expect(displayModelContents).toContain("Resignation");
   });
 
   it("tracks winner confetti outside the modal so reopening results does not replay it", () => {
