@@ -3600,3 +3600,9 @@
       - `docs/agent/ARCHITECTURE_REFACTOR_2026-06-13.md` is the durable summary of the large Catana architecture refactor.
       - Use it before future work that touches `Game.js`, `Moves.js`, `Board.js`, `GameScreen.js`, `server/stagePolicy.js`, game modes, 3D renderer planning, or performance-review scoping.
       - Treat `/tmp/refactor-settlex.md` as the detailed working log, not the durable source for future routing.
+    - Performance audit note:
+      - `/tmp/perf-settlex.md` is the working log for the current deep performance audit.
+      - Keep performance fixes evidence-backed: baseline first, focused test or benchmark, live sandbox/browser smoke for UI/runtime changes, then commit.
+      - `AudioManager.destroy()` owns Howler teardown; cached Howl instances should be unloaded when the manager is destroyed.
+      - `EffectBus` dedupe state must stay bounded; stale effect IDs should be pruned after the dedupe window.
+      - Current static follow-up: `Board.js` effect-event flash timeouts are untracked and should get a small cleanup guard before relying on them in longer leak soaks.

@@ -5669,3 +5669,12 @@
 - The note records the new setup, move, server-stage, board, GameScreen, and verification boundaries, plus deferred candidates for future work.
 - Verification:
   - `git diff --check -- docs/agent/ARCHITECTURE_REFACTOR_2026-06-13.md docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-06-13, performance audit effects cleanup)
+- Started the deep Catana performance audit in `/tmp/perf-settlex.md` with production build/route-weight evidence, dev-sandbox browser baselines, and route teardown notes.
+- Hardened the first evidence-backed lifecycle issue: `AudioManager.destroy()` now unloads cached Howler instances and clears audio variant caches.
+- Bounded `EffectBus` dedupe memory by pruning stale effect IDs after the dedupe window.
+- Verification:
+  - Red test run failed first for missing Howl unload and missing effect-bus dedupe-cache visibility.
+  - `pnpm vitest run app/catana/__tests__/effects/AudioManager.test.js app/catana/__tests__/effects/EffectBus.test.js --exclude '.worktrees/**'`
+  - Live sandbox smoke on an already loaded `/catana/dev/sandbox?viewportWall=1`: dispatched robber, award, and dev-card effect events; board stayed rendered with 19 hexes, no warning/error logs, and no failed requests.

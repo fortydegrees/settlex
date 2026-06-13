@@ -226,6 +226,7 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
   const playHowl = (howl, delayMs = 0, resolvedRandomize = null, onPlay = null) => {
     if (!howl) return;
     const runPlay = () => {
+      if (destroyed) return;
       const soundId = howl.play();
       applyResolvedRandomize(howl, soundId, resolvedRandomize);
       onPlay?.({ howl, soundId, applied: resolvedRandomize });
@@ -330,6 +331,9 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
       pendingTimeouts.forEach((timeoutId) => clearTimeout(timeoutId));
       pendingTimeouts.clear();
       unsubscribe?.();
+      variantHowls.forEach((howl) => howl.unload?.());
+      variantHowls.clear();
+      variantState.clear();
     },
     _debugLastPlay: () => lastPlay
   };
