@@ -3606,4 +3606,6 @@
       - `AudioManager.destroy()` owns Howler teardown; cached Howl instances should be unloaded when the manager is destroyed.
       - `EffectBus` dedupe state must stay bounded; stale effect IDs should be pruned after the dedupe window.
       - Board flash-clear timers for resource distribution and blocked-tile flashes are tracked through a board-local registry and cleared on unmount.
+      - `maskPlayerView` is performance-sensitive server/player-state code. Keep it as selective cloning: clone/mask private player card/resource arrays, dev deck, and private dice state, but do not deep-clone large public board/topology surfaces unless there is a measured reason.
+      - The current `playerView` benchmark fixture measured `playerView mask player 0` at about `555 us/op` after selective cloning, down from about `21.4 ms/op` with whole-state JSON cloning.
       - Next static follow-up: continue the render-count/runtime audit around the 250ms `GameScreen` timer/presence ticker before moving state or adding memoization.

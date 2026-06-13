@@ -5688,3 +5688,14 @@
   - `pnpm exec eslint app/catana/Board.js app/catana/__tests__/renderPerfGuards.test.js`
   - `git diff --check`
   - Live sandbox state check on loaded `/catana/dev/sandbox?viewportWall=1`: title `Settlehex`, board underlay present, 19 hexes, and game-log text visible.
+
+## Status (2026-06-13, performance audit player-view masking)
+- Optimized `maskPlayerView` after the engine/server benchmark identified whole-state JSON cloning as the largest non-bot hotspot.
+- Replaced whole-`G` deep cloning with selective cloning: private player/deck/dice data is still cloned or masked, while large public board/topology surfaces are reused.
+- Measured `playerView mask player 0` at `554.853 us/op` after the change, down from `21389.484 us/op` on the same generated-board fixture.
+- Verification:
+  - Red masking contract failed first on public-board identity with the old JSON-clone implementation.
+  - `pnpm vitest run app/catana/__tests__/playerViewMasking.test.js app/catana/__tests__/stateMasking.test.js --exclude '.worktrees/**'`
+  - `SETTLEX_PERF_ONLY=playerView node /tmp/settlex-engine-perf.cjs`
+  - `pnpm exec eslint app/catana/gameSetup/playerView.js app/catana/__tests__/playerViewMasking.test.js`
+  - `git diff --check`
