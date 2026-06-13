@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-06-13, player-view masking boundary)
+- Extracted secret-state masking from `app/catana/Game.js` into
+  `app/catana/gameSetup/playerView.js`.
+- Added direct helper coverage in
+  `app/catana/__tests__/playerViewMasking.test.js` while keeping the existing
+  `Catan.playerView` integration coverage in `stateMasking.test.js`.
+- `Game.js` now wires `playerView: maskPlayerView`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/playerViewMasking.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/playerViewMasking.test.js app/catana/__tests__/stateMasking.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Game.js app/catana/gameSetup/playerView.js app/catana/__tests__/playerViewMasking.test.js app/catana/__tests__/stateMasking.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, initial-state setup boundary)
 - Extracted initial board/rules/dice state creation from `app/catana/Game.js`
   into `app/catana/gameSetup/initialState.js`.

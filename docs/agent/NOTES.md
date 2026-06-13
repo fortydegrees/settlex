@@ -1,5 +1,12 @@
 # NOTES
 
+- Player-view masking note:
+- `app/catana/gameSetup/playerView.js` owns authoritative-state masking for
+  boardgame.io `playerView`: hidden dev deck values, opponent/spectator hand
+  placeholders, balanced dice private state, and game-over reveal behavior.
+- Keep secret-redaction policy there and preserve `stateMasking.test.js` as the
+  integration guard for `Catan.playerView`.
+
 - Initial-state setup note:
 - `app/catana/gameSetup/initialState.js` owns mode/rules resolution, snake
   placement order, deterministic board generation, core state creation,

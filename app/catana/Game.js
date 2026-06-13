@@ -13,6 +13,7 @@ import {
   validateScenarioSetupData
 } from "./gameSetup/devScenarios.js";
 import { createInitialGameState } from "./gameSetup/initialState.js";
+import { maskPlayerView } from "./gameSetup/playerView.js";
 export { getPlacementOrder } from "./gameSetup/initialState.js";
 //setup board and convert tiles/edges into right format to render
 
@@ -117,43 +118,7 @@ export const createCatanGame = ({
   validateSetupData: (setupData, numPlayers) =>
     validateScenarioSetupData(setupData, numPlayers),
 
-  // Hide secret state from opponents
-  // Each player sees their own resources/devCards but only counts for others
-  // Uses placeholder values to preserve .length for UI compatibility
-  playerView: ({ G, ctx, playerID }) => {
-    // After game over (core or ctx), reveal everything
-    if (ctx.gameover || G.core?.gameOver) return G;
-
-    // Deep clone to avoid mutating authoritative state
-    const masked = JSON.parse(JSON.stringify(G));
-
-    // Placeholder value - UI won't render the actual card type, just counts
-    const HIDDEN = "hidden";
-
-    // 1. Hide dev deck contents (replace with placeholders to preserve length)
-    if (masked.core?.devDeck) {
-      masked.core.devDeck = masked.core.devDeck.map(() => HIDDEN);
-    }
-
-    // 2. Mask other players' hands (replace with placeholders to preserve length)
-    if (masked.core?.playerStateById) {
-      for (const pid of Object.keys(masked.core.playerStateById)) {
-        if (pid !== playerID) {
-          const ps = masked.core.playerStateById[pid];
-          // Replace actual values with placeholders - length is preserved
-          ps.resources = (ps.resources || []).map(() => HIDDEN);
-          ps.devCards = (ps.devCards || []).map(() => HIDDEN);
-          ps.devCardsBoughtThisTurn = (ps.devCardsBoughtThisTurn || []).map(() => HIDDEN);
-        }
-      }
-    }
-
-    if (masked.diceState?.mode === "balanced") {
-      masked.diceState = { mode: "balanced" };
-    }
-
-    return masked;
-  },
+  playerView: maskPlayerView,
 
   //seed:Date.now(),
   //generate map here
