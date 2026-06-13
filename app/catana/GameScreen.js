@@ -34,6 +34,12 @@ import {
   flushDeferredGameLogEntries
 } from "./utils/gameLogPresentation";
 import {
+  buildDevCardBuyTransfer,
+  buildDiscardTransfers,
+  buildMaritimeTradeTransfers,
+  buildRobberStealTransfers
+} from "./utils/cardTransferPayloads";
+import {
   getActiveIdleStateByPlayerId,
   readIdlePresenceSnapshot
 } from "./utils/idlePresence";
@@ -148,61 +154,6 @@ const getVisibleDiceRoll = (G) => {
   if (!Array.isArray(G.diceRoll) || G.diceRoll.length < 2) return null;
   return G.diceRoll;
 };
-
-const buildDevCardBuyTransfer = (payload) => [
-  {
-    kind: "dev",
-    fromKind: "bank",
-    toKind: "player",
-    toPlayerId: payload.playerId,
-    cueName: "devcard:buy:public",
-    startScale: 0.72,
-    endScale: 0.86
-  }
-];
-
-const buildMaritimeTradeTransfers = (payload) => [
-  ...(payload.give ?? []).map((resource) => ({
-    kind: "resource",
-    resource,
-    fromKind: "player",
-    toKind: "bank",
-    fromPlayerId: payload.playerId,
-    hidden: false
-  })),
-  ...(payload.receive ?? []).map((resource) => ({
-    kind: "resource",
-    resource,
-    fromKind: "bank",
-    toKind: "player",
-    toPlayerId: payload.playerId,
-    hidden: false
-  }))
-];
-
-const buildDiscardTransfers = (payload) =>
-  (payload.resources ?? []).map((resource) => ({
-    kind: "resource",
-    resource,
-    fromKind: "player",
-    toKind: "discard",
-    fromPlayerId: payload.playerId,
-    hidden: false,
-    endScale: 0.72
-  }));
-
-const buildRobberStealTransfers = ({ payload, visibleResource }) => [
-  {
-    kind: "resource",
-    resource: visibleResource ?? "hidden",
-    fromKind: "player",
-    toKind: "player",
-    fromPlayerId: payload.victimId,
-    toPlayerId: payload.thiefId,
-    hidden: !visibleResource,
-    cueName: "resource:travel:start"
-  }
-];
 
 const runAfterNextPaint = (callback) => {
   if (typeof window === "undefined") {
