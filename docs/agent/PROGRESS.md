@@ -1,5 +1,26 @@
 # PROGRESS
 
+## Status (2026-06-13, verification lanes)
+- Added explicit verification lanes so refactor checks can match the work:
+  `pnpm run test:logic` for game-core build/tests,
+  `pnpm run test:server` for server/runtime/non-app support tests, and
+  `pnpm run test:catana` for Catana app tests when a broad Catana pass is
+  warranted.
+- Updated `pnpm verify` to compose the focused lanes plus the existing app
+  runner and lint, instead of hiding the verification policy inside one long
+  command.
+- Added root Vitest discovery exclusions for linked worktrees and generated
+  `game-core/dist` output so broad runs do not pick up duplicate or generated
+  tests.
+- Added a regression guard in
+  `scripts/release/__tests__/verification-lanes.test.mjs`.
+- Focused verification:
+- `pnpm exec vitest run scripts/release/__tests__/verification-lanes.test.mjs --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.devCardPlay.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js app/catana/__tests__/Board.buildPickupPreview.test.js --reporter=dot`
+- `pnpm run test:logic`
+- `pnpm run test:server`
+- `git diff --check`
+
 ## Status (2026-06-12, dev-card presentation payload boundary)
 - Extracted dev-card presentation payload helpers into `app/catana/moves/devCardPresentation.js`.
 - `app/catana/Moves.js` now imports effect-id builders, knight/road-building/choice payload builders, monopoly transfer summaries, masked-resource detection, award owner snapshots, and pending knight animation resolution from the dedicated helper module.

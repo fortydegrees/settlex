@@ -1,5 +1,19 @@
 # NOTES
 
+- Verification lanes note:
+- `pnpm run test:logic` is the default lane for game rules and deterministic
+  engine work. It builds `game-core` and runs the game-core test suite.
+- `pnpm run test:server` covers server/runtime/non-app support behavior without
+  running the full Catana app suite.
+- `pnpm run test:catana` is available when a broader Catana app pass is
+  warranted, but UI/presentation refactors should usually close with targeted
+  test files plus the relevant sandbox/effects live smoke.
+- Root Vitest discovery excludes `**/.worktrees/**` and
+  `**/game-core/dist/**`; keep those exclusions in `vitest.config.ts` so broad
+  runs do not execute linked-worktree or generated-output tests.
+- `pnpm verify` remains the release/PR gate. Do not use it as the default
+  closeout for small UI-adjacent refactors.
+
 - Dev-card presentation helper note:
 - `app/catana/moves/devCardPresentation.js` owns dev-card effect-id/payload construction, monopoly transfer summaries, masked-resource checks, award owner snapshots used by dev-card presentation, and pending knight animation resolution.
 - Keep presentation payload shaping there instead of growing the top of `app/catana/Moves.js`; move objects should orchestrate rule application and logging, not own every effect payload detail.

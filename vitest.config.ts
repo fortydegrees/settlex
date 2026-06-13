@@ -9,6 +9,14 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    globals: true
+    globals: true,
+    exclude: [
+      "**/node_modules/**",
+      "**/.git/**",
+      "**/.next/**",
+      "**/.worktrees/**",
+      "**/game-core/dist/**",
+      "**/coverage/**"
+    ]
   }
 });
