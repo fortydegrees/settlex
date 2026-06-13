@@ -3596,3 +3596,7 @@
       - `app/catana/utils/gameScreenCommandState.js` owns pure turn-command derivation for visible dice, discard requirements, roll/end-turn availability, and modal shortcut blocking.
       - Keep keyboard/event handlers in `GameScreen.js`, but avoid embedding command eligibility formulas directly in the component.
       - Command-state tests should stay focused on turn-state combinations rather than broad rendered UI checks.
+    - Architecture refactor reference:
+      - `docs/agent/ARCHITECTURE_REFACTOR_2026-06-13.md` is the durable summary of the large Catana architecture refactor.
+      - Use it before future work that touches `Game.js`, `Moves.js`, `Board.js`, `GameScreen.js`, `server/stagePolicy.js`, game modes, 3D renderer planning, or performance-review scoping.
+      - Treat `/tmp/refactor-settlex.md` as the detailed working log, not the durable source for future routing.

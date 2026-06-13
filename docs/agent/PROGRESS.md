@@ -5663,3 +5663,9 @@
   - `pnpm exec eslint app/catana/GameScreen.js app/catana/utils/gameScreenCommandState.js app/catana/__tests__/gameScreenCommandState.test.js`
   - `git diff --check`
   - Live sandbox smoke at `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`: board underlay rendered, 19 hex tiles were present, game-log and Resign content were visible, and browser warning/error logs were empty.
+
+## Status (2026-06-13, architecture refactor reference)
+- Added `docs/agent/ARCHITECTURE_REFACTOR_2026-06-13.md` as a durable summary of the large architecture refactor.
+- The note records the new setup, move, server-stage, board, GameScreen, and verification boundaries, plus deferred candidates for future work.
+- Verification:
+  - `git diff --check -- docs/agent/ARCHITECTURE_REFACTOR_2026-06-13.md docs/agent/PROGRESS.md docs/agent/NOTES.md`
