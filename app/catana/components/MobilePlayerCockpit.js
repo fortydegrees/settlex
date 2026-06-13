@@ -355,18 +355,25 @@ export function MobilePlayerCockpit({
   const avatarColor = player.color
     ? getPlayerColorOption(player.color).gradient
     : "from-slate-500 to-slate-800";
-  const currentRoadLength = G.core && G.coreTopology
-    ? getLongestRoadLength(G.core, G.coreTopology, player.id)
-    : 0;
+  const currentRoadLength = useMemo(
+    () =>
+      G.core && G.coreTopology
+        ? getLongestRoadLength(G.core, G.coreTopology, player.id)
+        : 0,
+    [G.core, G.coreTopology, player.id]
+  );
   const currentArmySize =
     knightDisplayOverride?.knightsPlayed ?? player.knightsPlayed ?? 0;
   const hasLongestRoad = G.core?.awards?.longestRoadOwnerId === player.id;
   const displayedLargestArmyOwnerId =
     knightDisplayOverride?.largestArmyOwnerId ?? G.core?.awards?.largestArmyOwnerId;
   const hasLargestArmy = displayedLargestArmyOwnerId === player.id;
-  const mobileVpDisplay =
-    vpDisplayOverride?.totalPoints ??
-    (G.core ? getVictoryPoints(G.core, player.id) : 0);
+  const mobileVpDisplay = useMemo(
+    () =>
+      vpDisplayOverride?.totalPoints ??
+      (G.core ? getVictoryPoints(G.core, player.id) : 0),
+    [G.core, player.id, vpDisplayOverride?.totalPoints]
+  );
   const isSeatWarning =
     presence?.status === "disconnected" || presence?.status === "idle";
 

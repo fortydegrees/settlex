@@ -1,4 +1,5 @@
 import Image from "./NextImage";
+import { useMemo } from "react";
 import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
 import { AnimatedCount } from "./AnimatedCount";
@@ -37,27 +38,38 @@ export const PlayerAvatarStats = ({
   showStatsPanelNameplate = true,
   statsPanelChildrenClassName = "flex min-w-0 flex-1 items-center justify-center gap-x-3",
 }) => {
+  const playerId = player?.id ?? null;
+  const currentRoadLength = useMemo(
+    () =>
+      playerId != null && core && coreTopology
+        ? getLongestRoadLength(core, coreTopology, playerId)
+        : 0,
+    [core, coreTopology, playerId]
+  );
+  const totalPoints = useMemo(
+    () =>
+      vpDisplayOverride?.totalPoints ??
+      (playerId != null && core ? getVictoryPoints(core, playerId) : 0),
+    [core, playerId, vpDisplayOverride?.totalPoints]
+  );
+  const publicPoints = useMemo(
+    () =>
+      vpDisplayOverride?.publicPoints ??
+      (playerId != null && core ? getPublicVictoryPoints(core, playerId) : 0),
+    [core, playerId, vpDisplayOverride?.publicPoints]
+  );
+
   if (!player) return null;
 
   const avatarColor = player.color
     ? getPlayerColorOption(player.color).gradient
     : "from-slate-500 to-slate-800";
-  const currentRoadLength = core && coreTopology
-    ? getLongestRoadLength(core, coreTopology, player.id)
-    : 0;
   const currentArmySize =
     knightDisplayOverride?.knightsPlayed ?? player.knightsPlayed ?? 0;
-  const hasLongestRoad = core?.awards?.longestRoadOwnerId === player.id;
+  const hasLongestRoad = core?.awards?.longestRoadOwnerId === playerId;
   const displayedLargestArmyOwnerId =
     knightDisplayOverride?.largestArmyOwnerId ?? core?.awards?.largestArmyOwnerId;
-  const hasLargestArmy = displayedLargestArmyOwnerId === player.id;
-
-  const totalPoints =
-    vpDisplayOverride?.totalPoints ??
-    (core ? getVictoryPoints(core, player.id) : 0);
-  const publicPoints =
-    vpDisplayOverride?.publicPoints ??
-    (core ? getPublicVictoryPoints(core, player.id) : 0);
+  const hasLargestArmy = displayedLargestArmyOwnerId === playerId;
   const vpDisplay = getVpDisplay({ publicPoints, totalPoints, isMe });
   const vpMotionValue = isMe ? totalPoints : publicPoints;
   const isDisconnected = presence?.status === "disconnected";

@@ -981,14 +981,21 @@ export function GameScreen(bgioProps) {
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
-  const opponents = Object.values(playerViewMap)
-    .filter((view) => view.id !== playerID)
-    .map((view) => ({
-      ...view,
-      name: nameMap[view.id],
-      emoji: emojiMap[view.id]
-    }));
-  const displayedOpponents = isPhoneLayout ? opponents.slice(0, 1) : opponents;
+  const opponents = useMemo(
+    () =>
+      Object.values(playerViewMap)
+        .filter((view) => view.id !== playerID)
+        .map((view) => ({
+          ...view,
+          name: nameMap[view.id],
+          emoji: emojiMap[view.id]
+        })),
+    [emojiMap, nameMap, playerID, playerViewMap]
+  );
+  const displayedOpponents = useMemo(
+    () => (isPhoneLayout ? opponents.slice(0, 1) : opponents),
+    [isPhoneLayout, opponents]
+  );
   const localIdlePresence =
     playerID != null ? idleStateByPlayerId[playerID] ?? null : null;
   const activePlayerName =
