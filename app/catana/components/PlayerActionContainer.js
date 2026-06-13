@@ -27,6 +27,18 @@ import {
 const FALLBACK_DICE_ROLL_MS = 1000;
 const FALLBACK_DICE_SLOWDOWN_START_MS = 400;
 
+const copyTriggerRect = (triggerRect) => {
+  if (!triggerRect) return null;
+  return {
+    left: triggerRect.left,
+    top: triggerRect.top,
+    width: triggerRect.width,
+    height: triggerRect.height,
+    right: triggerRect.right,
+    bottom: triggerRect.bottom
+  };
+};
+
 export const CardIcon = ({
   resourceCount,
   resource,
@@ -96,55 +108,45 @@ export const PlayerActionContainer = ({
   const { G, ctx, moves } = bgioProps;
   const SHOW_PLAYER_HAND_BADGES = false;
 
-  const copyTriggerRect = (triggerRect) => {
-    if (!triggerRect) return null;
-    return {
-      left: triggerRect.left,
-      top: triggerRect.top,
-      width: triggerRect.width,
-      height: triggerRect.height,
-      right: triggerRect.right,
-      bottom: triggerRect.bottom
-    };
-  };
+  const startBuildPickup = useCallback(
+    (playerAction, triggerRect, preLaunchDelayMs = 0) => {
+      const pieceType = getBuildPickupPieceType(playerAction);
+      if (!pieceType) return;
 
-  const startBuildPickup = (
-    playerAction,
-    triggerRect,
-    preLaunchDelayMs = 0
-  ) => {
-    const pieceType = getBuildPickupPieceType(playerAction);
-    if (!pieceType) return;
+      setPlayerAction(playerAction);
+      setBuildPickup({
+        pieceType,
+        originRect: copyTriggerRect(triggerRect),
+        startedAtMs: Date.now(),
+        launchDelayMs: preLaunchDelayMs
+      });
+    },
+    [setBuildPickup, setPlayerAction]
+  );
 
-    setPlayerAction(playerAction);
-    setBuildPickup({
-      pieceType,
-      originRect: copyTriggerRect(triggerRect),
-      startedAtMs: Date.now(),
-      launchDelayMs: preLaunchDelayMs
-    });
-  };
+  const startDevCardPurchaseReveal = useCallback(
+    ({
+      triggerRect,
+      preLaunchDelayMs = 0,
+    } = {}) => {
+      const totalPoints = G.core ? getVictoryPoints(G.core, player.id) : 0;
+      const publicPoints = G.core ? getPublicVictoryPoints(G.core, player.id) : 0;
 
-  const startDevCardPurchaseReveal = ({
-    triggerRect,
-    preLaunchDelayMs = 0,
-  } = {}) => {
-    const totalPoints = G.core ? getVictoryPoints(G.core, player.id) : 0;
-    const publicPoints = G.core ? getPublicVictoryPoints(G.core, player.id) : 0;
-
-    onDevCardPurchaseStart?.({
-      playerId: player.id,
-      triggerRect: copyTriggerRect(triggerRect),
-      preLaunchDelayMs,
-      beforeCards: Array.isArray(player.devCards) ? [...player.devCards] : [],
-      vpSnapshot: {
-        publicPoints,
-        totalPoints,
-      },
-      startedAtMs: Date.now(),
-    });
-    moves.buyDevCard();
-  };
+      onDevCardPurchaseStart?.({
+        playerId: player.id,
+        triggerRect: copyTriggerRect(triggerRect),
+        preLaunchDelayMs,
+        beforeCards: Array.isArray(player.devCards) ? [...player.devCards] : [],
+        vpSnapshot: {
+          publicPoints,
+          totalPoints,
+        },
+        startedAtMs: Date.now(),
+      });
+      moves.buyDevCard();
+    },
+    [G.core, moves, onDevCardPurchaseStart, player.devCards, player.id]
+  );
 
   const [Die, rollTo] = useDie(G.diceRoll[0]);
   const [Die2, rollTo2] = useDie(G.diceRoll[1]);

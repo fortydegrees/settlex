@@ -103,46 +103,54 @@ export function useLocalPlayerDockModel({
     return counts;
   }, [player.resources]);
 
-  const isActionEnabled = useCallback(
-    (actionName) => {
-      if (ctx.currentPlayer !== player.id.toString()) return false;
-      if (ctx.activePlayers?.[player.id] !== "postRoll") return false;
-      if (!G.core) return false;
+  const actionAvailability = useMemo(() => {
+    const disabled = {
+      trade: false,
+      road: false,
+      settlement: false,
+      city: false,
+      devCard: false,
+    };
 
-      switch (actionName) {
-        case "road":
-          if (!canBuildRoad(G.core, player.id).ok) return false;
-          return (
-            buildableEdges(G.core, G.coreTopology, player.id, {
-              initialPlacement: false,
-            }).length > 0
-          );
-        case "settlement":
-          if (!canBuildSettlement(G.core, player.id).ok) return false;
-          return (
-            buildableNodes(G.core, G.coreTopology, player.id, {
-              initialPlacement: false,
-            }).length > 0
-          );
-        case "city": {
-          if (!canBuildCity(G.core, player.id).ok) return false;
-          const settlements = Object.values(G.core.buildingsByNodeId).filter(
-            (building) =>
-              building.ownerId === player.id && building.type === "settlement"
-          );
-          return settlements.length > 0;
-        }
-        case "trade":
-          return canMaritimeTrade(G.core, G.coreTopology, player.id).ok;
-        case "devCard":
-          if (!G.core.devDeck.length) return false;
-          return canAfford(G.core.ruleset.buildCosts.devCard, player.resources);
-        default:
-          return false;
-      }
-    },
-    [G.core, G.coreTopology, ctx.activePlayers, ctx.currentPlayer, player]
-  );
+    if (ctx.currentPlayer !== player.id.toString()) return disabled;
+    if (ctx.activePlayers?.[player.id] !== "postRoll") return disabled;
+    if (!G.core) return disabled;
+
+    const canBuildRoadNow =
+      canBuildRoad(G.core, player.id).ok &&
+      buildableEdges(G.core, G.coreTopology, player.id, {
+        initialPlacement: false,
+      }).length > 0;
+    const canBuildSettlementNow =
+      canBuildSettlement(G.core, player.id).ok &&
+      buildableNodes(G.core, G.coreTopology, player.id, {
+        initialPlacement: false,
+      }).length > 0;
+    const canBuildCityNow =
+      canBuildCity(G.core, player.id).ok &&
+      Object.values(G.core.buildingsByNodeId).some(
+        (building) =>
+          building.ownerId === player.id && building.type === "settlement"
+      );
+    const canBuyDevCardNow =
+      G.core.devDeck.length > 0 &&
+      canAfford(G.core.ruleset.buildCosts.devCard, player.resources);
+
+    return {
+      trade: canMaritimeTrade(G.core, G.coreTopology, player.id).ok,
+      road: canBuildRoadNow,
+      settlement: canBuildSettlementNow,
+      city: canBuildCityNow,
+      devCard: canBuyDevCardNow,
+    };
+  }, [
+    G.core,
+    G.coreTopology,
+    ctx.activePlayers,
+    ctx.currentPlayer,
+    player.id,
+    player.resources,
+  ]);
 
   const actions = useMemo(
     () => [
@@ -232,14 +240,14 @@ export function useLocalPlayerDockModel({
         );
         return {
           ...action,
-          enabled: isActionEnabled(action.name),
+          enabled: Boolean(actionAvailability[action.name]),
           selected: action.selected ?? pieceType === activePickupPieceType,
         };
       }),
-    [actions, activePickupPieceType, isActionEnabled]
+    [actions, activePickupPieceType, actionAvailability]
   );
 
-  const canTradeNow = isActionEnabled("trade");
+  const canTradeNow = actionAvailability.trade;
   const canQuickTradeResource = useCallback(
     (resource) => {
       if (!onTradeClick || !canTradeNow) return false;

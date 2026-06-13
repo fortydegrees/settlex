@@ -3610,3 +3610,5 @@
       - The current `playerView` benchmark fixture measured `playerView mask player 0` at about `555 us/op` after selective cloning, down from about `21.4 ms/op` with whole-state JSON cloning.
       - The `GameScreen` 250ms timer/presence tick path should not rebuild unchanged opponent player objects or rerun longest-road/VP derivations. Keep `opponents`/`displayedOpponents` memoized, keep `OpponentPlayerBox` memo-wrapped, and keep expensive player-stat derivations memoized by core/topology/player inputs.
       - Future timer work should consider moving countdown display into a smaller clock component if runtime profiling still shows root `GameScreen` tick churn.
+      - The local dock render path is also timer-sensitive. Keep desktop dock action handlers stable, and keep action availability as one memoized object in `useLocalPlayerDockModel` instead of repeated per-action callbacks.
+      - The early `Puffer adapter/action mask` benchmark value around `107 ms/op` was stale/noisy. A rerun during the dock slice measured about `327 us/op`; do not prioritize Puffer adapter work without fresh evidence.

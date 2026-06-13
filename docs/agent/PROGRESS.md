@@ -5708,3 +5708,14 @@
   - `pnpm exec eslint app/catana/GameScreen.js app/catana/components/OpponentPlayerBox.js app/catana/components/PlayerAvatarStats.js app/catana/components/MobilePlayerCockpit.js`
   - `git diff --check`
   - Live in-app browser smoke at `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`: title `Settlehex`, 19 hexes, 3 opponent boxes, turn controls mounted, game-log text visible, and browser warning/error logs empty.
+
+## Status (2026-06-13, performance audit dock render path)
+- Reduced repeated local HUD/dock work during timer-driven rerenders.
+- Stabilized desktop dock build/dev-card handlers in `PlayerActionContainer`, matching the mobile cockpit pattern.
+- Replaced repeated per-action dock availability callbacks with one memoized `actionAvailability` object in `useLocalPlayerDockModel`.
+- Corrected the earlier Puffer adapter benchmark: rerun measured about `327 us/op`, so the previous high value was stale/noisy and was not optimized.
+- Verification:
+  - `pnpm exec eslint app/catana/components/useLocalPlayerDockModel.js app/catana/components/PlayerActionContainer.js`
+  - `git diff --check`
+  - Desktop in-app browser smoke at `http://127.0.0.1:3000/catana/dev/sandbox?viewportWall=1`: title `Settlehex`, 19 `.hex` nodes, 5 dock cards, enabled dock actions present, resource counts visible, End Turn enabled, game log visible, and browser warning/error logs empty.
+  - Mobile viewport smoke at `390x844`: 19 `.hex` nodes, mobile cockpit visible, 5 dock cards, 3 enabled dock actions, resource counts visible, `Hold to end turn` enabled, game log visible, browser warning/error logs empty; viewport reset afterward.
