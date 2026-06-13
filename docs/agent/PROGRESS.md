@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-06-13, board preview target helpers)
+- Extracted Board robber/build preview target derivation into
+  `app/catana/utils/boardPreviewTargets.js`.
+- Added focused coverage in `app/catana/__tests__/boardPreviewTargets.test.js`
+  for valid robber target filtering, magnetic robber targets, land preview tile
+  centers, and magnetic build targets.
+- `app/catana/Board.js` now delegates preview-target data shaping to the helper
+  while retaining rendering and event-handler ownership.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/boardPreviewTargets.test.js --reporter=dot` (red: missing `boardPreviewTargets`)
+- `pnpm exec vitest run app/catana/__tests__/boardPreviewTargets.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Board.robberPlacementUx.test.js app/catana/__tests__/RobberPlacementPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/renderPerfGuards.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Board.js app/catana/utils/boardPreviewTargets.js app/catana/__tests__/boardPreviewTargets.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Board.robberPlacementUx.test.js app/catana/__tests__/RobberPlacementPreview.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/renderPerfGuards.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, timer snapshot helpers)
 - Extracted GameScreen timer snapshot normalization and remaining-time math into
   `app/catana/utils/timerSnapshot.js`.

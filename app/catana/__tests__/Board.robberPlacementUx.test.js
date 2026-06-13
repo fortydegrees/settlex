@@ -24,7 +24,7 @@ describe("Board robber placement UX", () => {
 
   it("passes land tile geometry to the playful preview for board-only shadow gating", () => {
     const contents = fs.readFileSync(boardPath, "utf8");
-    expect(contents).toContain("tilePixelVector");
+    expect(contents).toContain("buildLandRobberPreviewTiles");
     expect(contents).toContain("landRobberPreviewTiles");
     expect(contents).toContain("const [boardCenterX, boardCenterY] = center");
     expect(contents).toContain("landTileCenters={landRobberPreviewTiles}");

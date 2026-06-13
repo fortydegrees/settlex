@@ -1,5 +1,11 @@
 # NOTES
 
+- Board preview target note:
+- `app/catana/utils/boardPreviewTargets.js` owns pure target derivation for
+  robber placement previews and build pickup magnetic targets.
+- Keep Board render/event code in `app/catana/Board.js`, but put new preview
+  target data shaping in the helper with direct tests.
+
 - Timer snapshot note:
 - `app/catana/utils/timerSnapshot.js` owns normalization of server timer
   snapshots and countdown remaining-time math.

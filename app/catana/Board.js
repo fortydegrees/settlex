@@ -20,17 +20,21 @@ import {
   buildableNodes,
   canBuildCity as coreCanBuildCity,
   canBuildRoad as coreCanBuildRoad,
-  canBuildSettlement as coreCanBuildSettlement,
-  canPlaceRobber
+  canBuildSettlement as coreCanBuildSettlement
 } from "@settlex/game-core";
 import { getBuildableEdges } from "./moves/buildMoves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { resolveRobberPlacementMotionMode } from "./utils/robberPlacementMotion";
 import { isDocumentHidden } from "./utils/visibility";
-import { tilePixelVector } from "./utils/coordinates";
 import { isPassiveBuildEnabled } from "./utils/passiveBuildMode";
 import { getBuildPickupPieceType } from "./utils/playerAction";
+import {
+  buildLandRobberPreviewTiles,
+  buildMagneticBuildTargets,
+  buildMagneticRobberTargets,
+  getValidRobberTiles
+} from "./utils/boardPreviewTargets";
 
 let robberPlacementPreviewModulePromise = null;
 const loadRobberPlacementPreviewModule = () => {
@@ -67,19 +71,6 @@ const BuildPlacementPreview = React.lazy(() =>
     default: module.BuildPlacementPreview,
   }))
 );
-
-const getValidRobberTiles = (G) => {
-  // Use core function for validation
-  if (!G.core) return [];
-  
-  const tileIdsExceptRobber = G.tiles
-    .filter((tile) => tile.tile.id !== G.core?.robberTileId)
-    .filter((tile) => canPlaceRobber(G.core, G.coreTopology, tile.tile.id))
-    .map((tile) => tile.tile.id);
-  
-  return tileIdsExceptRobber;
-};
-
 
 //this is our board that simply renders the gameState
 /*
@@ -628,84 +619,40 @@ export function CatanBoard({
 
   const magneticRobberTargets = useMemo(
     () =>
-      robberTiles
-        .map((tileId) => ({
-          tileId,
-          element: robberTargetElementsByTileId[tileId]
-        }))
-        .filter((target) => Boolean(target.element)),
+      buildMagneticRobberTargets({
+        robberTiles,
+        robberTargetElementsByTileId
+      }),
     [robberTiles, robberTargetElementsByTileId]
   );
-  const landRobberPreviewTiles = useMemo(() => {
-    if (!size) {
-      return [];
-    }
-
-    return G.tiles.flatMap(({ coordinate, type, tile }) => {
-      if (type !== TileTypes.LAND) {
-        return [];
-      }
-
-      const [tileCenterX, tileCenterY] = tilePixelVector(
-        coordinate,
+  const landRobberPreviewTiles = useMemo(
+    () =>
+      buildLandRobberPreviewTiles({
+        tiles: G.tiles,
         size,
         boardCenterX,
         boardCenterY
-      );
+      }),
+    [G.tiles, size, boardCenterX, boardCenterY]
+  );
 
-      return [
-        {
-          tileId: tile.id,
-          centerX: tileCenterX,
-          centerY: tileCenterY
-        }
-      ];
-    });
-  }, [G.tiles, size, boardCenterX, boardCenterY]);
-
-  const magneticBuildTargets = useMemo(() => {
-    if (!isBuildPickupActive) {
-      return [];
-    }
-
-    if (activeBuildPickupPieceType === "road") {
-      return buildableRoads
-        .map((edgeId) => {
-          const target = buildTargetElementsById[String(edgeId)] ?? null;
-          if (!target?.element) {
-            return null;
-          }
-
-          return {
-            id: edgeId,
-            element: target.element,
-            rotationDegrees: target.rotationDegrees ?? 90
-          };
-        })
-        .filter(Boolean);
-    }
-
-    return mainBuildableNodes
-      .map((nodeId) => {
-        const target = buildTargetElementsById[String(nodeId)] ?? null;
-        if (!target?.element) {
-          return null;
-        }
-
-        return {
-          id: nodeId,
-          element: target.element,
-          rotationDegrees: 0
-        };
-      })
-      .filter(Boolean);
-  }, [
-    activeBuildPickupPieceType,
-    buildTargetElementsById,
-    buildableRoads,
-    isBuildPickupActive,
-    mainBuildableNodes
-  ]);
+  const magneticBuildTargets = useMemo(
+    () =>
+      buildMagneticBuildTargets({
+        isBuildPickupActive,
+        activeBuildPickupPieceType,
+        buildTargetElementsById,
+        buildableRoads,
+        mainBuildableNodes
+      }),
+    [
+      activeBuildPickupPieceType,
+      buildTargetElementsById,
+      buildableRoads,
+      isBuildPickupActive,
+      mainBuildableNodes
+    ]
+  );
 
   if (!size) {
     return null;
