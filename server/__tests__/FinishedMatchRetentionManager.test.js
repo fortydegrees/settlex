@@ -32,9 +32,11 @@ describe("FinishedMatchRetentionManager", () => {
       await loadFinishedMatchRetentionManager();
     const cleanupArchivedMatch = vi.fn().mockResolvedValue(undefined);
     const matchChatStore = { clear: vi.fn() };
+    const onCleanup = vi.fn();
     const manager = new FinishedMatchRetentionManager({
       cleanupArchivedMatch,
       matchChatStore,
+      onCleanup,
       graceMs: 10,
     });
 
@@ -58,6 +60,8 @@ describe("FinishedMatchRetentionManager", () => {
 
     expect(cleanupArchivedMatch).toHaveBeenCalledWith({ matchID: "m1" });
     expect(matchChatStore.clear).toHaveBeenCalledWith("m1");
+    expect(onCleanup).toHaveBeenCalledWith({ matchID: "m1" });
+    expect(manager.matches.has("m1")).toBe(false);
   });
 
   it("cancels cleanup if someone reconnects before the grace timer expires", async () => {
@@ -89,5 +93,32 @@ describe("FinishedMatchRetentionManager", () => {
     await vi.advanceTimersByTimeAsync(10);
 
     expect(cleanupArchivedMatch).not.toHaveBeenCalled();
+  });
+
+  it("deleteMatch clears pending retention timers", async () => {
+    vi.useFakeTimers();
+
+    const FinishedMatchRetentionManager =
+      await loadFinishedMatchRetentionManager();
+    const cleanupArchivedMatch = vi.fn().mockResolvedValue(undefined);
+    const manager = new FinishedMatchRetentionManager({
+      cleanupArchivedMatch,
+      graceMs: 10,
+    });
+
+    manager.onState("m1", {
+      ctx: { gameover: { winner: "0" } },
+    });
+    manager.onArchived("m1");
+    manager.onMatchData("m1", [
+      { id: "0", isConnected: false },
+      { id: "1", isConnected: false },
+    ]);
+
+    manager.deleteMatch("m1");
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(cleanupArchivedMatch).not.toHaveBeenCalled();
+    expect(manager.matches.has("m1")).toBe(false);
   });
 });

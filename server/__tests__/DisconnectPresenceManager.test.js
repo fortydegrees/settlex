@@ -103,6 +103,29 @@ describe("DisconnectPresenceManager", () => {
     vi.useRealTimers();
   });
 
+  it("deleteMatch clears pending disconnect timers and record state", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-01T10:00:00Z"));
+
+    const dispatch = vi.fn();
+    const manager = new DisconnectPresenceManager({
+      dispatch,
+      disconnectTimeoutMs: 60_000
+    });
+
+    manager.onState("match-delete", createLiveState());
+    manager.onMatchData("match-delete", createMatchData());
+    manager.onMatchData("match-delete", createMatchData({ connected1: false }));
+
+    manager.deleteMatch("match-delete");
+    vi.advanceTimersByTime(60_000);
+
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(manager.matches.has("match-delete")).toBe(false);
+
+    vi.useRealTimers();
+  });
+
   it("keeps another seat's reconnect window active when a different player refreshes", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-01T10:00:00Z"));

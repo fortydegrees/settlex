@@ -189,6 +189,11 @@ export function createTimerPubSub(
     },
     unsubscribeAll(channelId) {
       base.unsubscribeAll(channelId);
+    },
+    deleteMatch(matchID) {
+      const key = String(matchID);
+      latestStateByMatch.delete(key);
+      base.unsubscribeAll(`${MATCH_PREFIX}${key}`);
     }
   };
 }

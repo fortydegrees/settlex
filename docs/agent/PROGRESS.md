@@ -5728,3 +5728,11 @@
   - `git diff --check`
   - Desktop in-app browser smoke after reload: title `Settlehex`, 19 `.hex` nodes, 5 dock cards, 3 enabled dock actions, resource counts visible, End Turn enabled, game log visible, browser warning/error logs empty.
   - Mobile viewport smoke at `390x844` after reload: 19 `.hex` nodes, mobile cockpit visible, 5 dock cards, 3 enabled dock actions, resource counts visible, `Hold to end turn` enabled, game log visible, browser warning/error logs empty; viewport reset afterward.
+
+## Status (2026-06-13, performance audit server lifecycle cleanup)
+- Added explicit per-match cleanup APIs for timer, idle/disconnect presence, archive, bot, and timer-pubsub server state.
+- Wired `FinishedMatchRetentionManager` to run cleanup hooks only after a finished archived match is cleaned up, preserving post-game leave/return presence during the retention grace period.
+- Verification:
+  - `pnpm exec vitest run server/__tests__/TimerManager.test.js server/__tests__/IdlePresenceManager.test.js server/__tests__/DisconnectPresenceManager.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/ArchiveManager.test.js server/__tests__/pufferBotManager.test.js server/__tests__/timerPubSub.test.js --exclude '.worktrees/**' --reporter=dot`
+  - `pnpm exec eslint server/timers/TimerManager.js server/presence/IdlePresenceManager.js server/presence/DisconnectPresenceManager.js server/archive/ArchiveManager.js server/bots/pufferBotManager.js server/lifecycle/FinishedMatchRetentionManager.js server/timers/timerPubSub.js server/server.js server/__tests__/TimerManager.test.js server/__tests__/IdlePresenceManager.test.js server/__tests__/DisconnectPresenceManager.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/ArchiveManager.test.js server/__tests__/pufferBotManager.test.js server/__tests__/timerPubSub.test.js`
+  - `git diff --check`

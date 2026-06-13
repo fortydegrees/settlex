@@ -189,6 +189,21 @@ export class TimerManager {
     return this.matches.get(matchID)?.turnRemainingMs ?? null;
   }
 
+  deleteMatch(matchID) {
+    const key = String(matchID);
+    const record = this.matches.get(key);
+    if (!record) return;
+
+    if (record.stageTimeoutId) {
+      clearTimeout(record.stageTimeoutId);
+    }
+    if (record.turnTimeoutId) {
+      clearTimeout(record.turnTimeoutId);
+    }
+    this.clearAllBotDispatches(record);
+    this.matches.delete(key);
+  }
+
   getStageRemainingMs(record) {
     if (!record.stageStartedAtMs || !record.stageDurationMs) return null;
     if (Date.now() < record.stageStartedAtMs) {

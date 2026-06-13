@@ -65,6 +65,7 @@ const finishedMatchCleanupGraceMs = Number.isFinite(
 )
   ? parsedFinishedMatchCleanupGraceMs
   : DEFAULT_FINISHED_MATCH_CLEANUP_GRACE_MS
+let pubSub
 const finishedMatchRetentionManager = new FinishedMatchRetentionManager({
   cleanupArchivedMatch: ({ matchID }) =>
     cleanupArchivedMatch({
@@ -72,6 +73,14 @@ const finishedMatchRetentionManager = new FinishedMatchRetentionManager({
       serverDb: serverInstance?.db
     }),
   matchChatStore,
+  onCleanup: ({ matchID }) => {
+    timerManager.deleteMatch(matchID)
+    disconnectManager.deleteMatch(matchID)
+    idleManager.deleteMatch(matchID)
+    archiveManager.deleteMatch(matchID)
+    botManager.deleteMatch(matchID)
+    pubSub?.deleteMatch?.(matchID)
+  },
   graceMs: finishedMatchCleanupGraceMs
 })
 const archiveManager = new ArchiveManager({
@@ -88,7 +97,7 @@ const archiveManager = new ArchiveManager({
     return result
   }
 })
-const pubSub = createTimerPubSub(timerManager, {
+pubSub = createTimerPubSub(timerManager, {
   botManager,
   disconnectManager,
   idleManager,

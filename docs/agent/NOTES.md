@@ -3613,3 +3613,4 @@
       - The local dock render path is also timer-sensitive. Keep desktop dock action handlers stable, and keep action availability as one memoized object in `useLocalPlayerDockModel` instead of repeated per-action callbacks.
       - Desktop local dock anchor measurement should not run on every render. Let the `ResizeObserver` handle real HUD/rail size changes, with only a bounded fallback effect for resource/dev-card content changes.
       - The early `Puffer adapter/action mask` benchmark value around `107 ms/op` was stale/noisy. A rerun during the dock slice measured about `327 us/op`; do not prioritize Puffer adapter work without fresh evidence.
+      - Server per-match managers now expose `deleteMatch(matchID)` cleanup APIs. Finished-match retention should call those only after archived-match cleanup succeeds, not immediately on game over, because disconnect presence intentionally keeps post-game leave/return events during the retention grace period.

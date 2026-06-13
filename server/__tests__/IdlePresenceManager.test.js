@@ -308,6 +308,39 @@ describe("IdlePresenceManager", () => {
     vi.useRealTimers();
   });
 
+  it("deleteMatch clears pending idle forfeit timers and record state", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-03T09:00:00Z"));
+
+    const dispatch = vi.fn();
+    const manager = new IdlePresenceManager({
+      dispatch,
+      idleStrikeThreshold: 2,
+      idleTimeoutMs: 60_000
+    });
+
+    simulateAutoResolvedTurn({
+      manager,
+      matchID: "match-delete",
+      playerID: "1",
+      startTurn: 4
+    });
+    simulateAutoResolvedTurn({
+      manager,
+      matchID: "match-delete",
+      playerID: "1",
+      startTurn: 6
+    });
+
+    manager.deleteMatch("match-delete");
+    vi.advanceTimersByTime(60_000);
+
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(manager.matches.has("match-delete")).toBe(false);
+
+    vi.useRealTimers();
+  });
+
   it("clears active idle state when the player later disconnects for real", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-03T09:00:00Z"));

@@ -213,6 +213,15 @@ export class DisconnectPresenceManager {
     }
   }
 
+  deleteMatch(matchID) {
+    const key = String(matchID);
+    const record = this.matches.get(key);
+    if (!record) return;
+
+    this.clearTimeout(record);
+    this.matches.delete(key);
+  }
+
   getSnapshot(matchID) {
     const record = this.getRecord(matchID);
     this.refreshActiveDisconnect(record);
