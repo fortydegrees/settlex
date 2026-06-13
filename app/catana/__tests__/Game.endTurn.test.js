@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Catan } from "../Game";
-import { endTurn } from "../Moves";
+import { endTurn } from "../moves/turnMoves";
 
 describe("Catan config", () => {
   it("uses the core-backed endTurn move in postRoll", () => {

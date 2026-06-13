@@ -2,12 +2,6 @@ import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import {
   autoPlaceSettlement,
   autoPlaceRoad,
-  rollDice,
-  autoRoll,
-  endTurn,
-  autoEndTurn,
-  discardResources,
-  autoDiscard,
   maritimeTrade,
   buyDevCard,
   playDevCardStart,
@@ -24,6 +18,14 @@ import {
   updateValids
 } from "./moves/buildMoves.js";
 import { autoMoveRobber, moveRobber } from "./moves/robberMoves.js";
+import {
+  autoDiscard,
+  autoEndTurn,
+  autoRoll,
+  discardResources,
+  endTurn,
+  rollDice
+} from "./moves/turnMoves.js";
 import {
   resign,
   resolveDisconnectForfeit,

@@ -5,7 +5,8 @@ import {
   createEmptyState,
   ResourceType
 } from "@settlex/game-core";
-import { autoDiscard, autoPlaceRoad, autoPlaceSettlement } from "../Moves";
+import { autoPlaceRoad, autoPlaceSettlement } from "../Moves";
+import { autoDiscard } from "../moves/turnMoves";
 
 vi.mock("@settlex/game-core", async () => {
   const actual = await vi.importActual("@settlex/game-core");
