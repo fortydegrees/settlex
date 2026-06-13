@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-06-13, balanced-board diagnostics)
+- Gated balanced-board generation diagnostics behind the existing
+  `logGenerationStats` option so normal board generation and test runs stay
+  quiet by default.
+- Added regression coverage in `game-core/src/board/boardInvariants.test.ts`
+  for both default silence and the opt-in diagnostics path.
+- Focused verification:
+- `pnpm -C game-core test -- src/board/boardInvariants.test.ts`
+- `pnpm run test:server`
+- `pnpm run test:logic`
+- `git diff --check`
+
 ## Status (2026-06-13, verification lanes)
 - Added explicit verification lanes so refactor checks can match the work:
   `pnpm run test:logic` for game-core build/tests,

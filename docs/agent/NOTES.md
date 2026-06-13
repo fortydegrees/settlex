@@ -1,5 +1,11 @@
 # NOTES
 
+- Balanced-board diagnostics note:
+- `BalancedBoard` generation diagnostics are quiet by default; pass
+  `logGenerationStats: true` only for explicit board-tuning/debug sessions.
+- Keep default board generation side-effect-light so focused test lanes remain
+  readable and do not emit generation stats during normal server/app checks.
+
 - Verification lanes note:
 - `pnpm run test:logic` is the default lane for game rules and deterministic
   engine work. It builds `game-core` and runs the game-core test suite.
