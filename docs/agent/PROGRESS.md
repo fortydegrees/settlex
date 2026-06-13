@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-06-13, card-transfer payload helpers)
+- Extracted GameScreen card-transfer payload builders for dev-card purchases,
+  maritime trade, discard, and robber steal animations into
+  `app/catana/utils/cardTransferPayloads.js`.
+- Added focused pure-helper coverage in
+  `app/catana/__tests__/cardTransferPayloads.test.js`.
+- `app/catana/GameScreen.js` now imports the transfer builders instead of
+  owning payload shape inline.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/cardTransferPayloads.test.js --reporter=dot` (red: missing `cardTransferPayloads`)
+- `pnpm exec vitest run app/catana/__tests__/cardTransferPayloads.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/utils/cardTransferPayloads.js app/catana/__tests__/cardTransferPayloads.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, move export surface)
 - Extracted the remaining pre-game readiness/start moves, forced placement
   timeout moves, and maritime trade move from `app/catana/Moves.js` into

@@ -1,5 +1,12 @@
 # NOTES
 
+- Card-transfer payload note:
+- `app/catana/utils/cardTransferPayloads.js` owns payload builders for
+  card/resource transfer animations emitted from `GameScreen.js`.
+- Keep transfer shape details there when adding new card-transfer effects;
+  `GameScreen.js` should decide when to run the effect, not rebuild transfer
+  arrays inline.
+
 - Move export surface note:
 - `app/catana/Moves.js` is now a compatibility export surface, not an
   implementation owner. Product code should import concrete move modules such
