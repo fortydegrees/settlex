@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-06-13, award logging boundary)
+- Extracted award-change logging and longest-road award animation payload
+  selection from `app/catana/Moves.js` into
+  `app/catana/moves/awardLogging.js`.
+- Added direct coverage in `app/catana/__tests__/awardLogging.test.js` for
+  longest-road log/effect payloads and largest-army log behavior.
+- Kept existing `Moves.gameLog.test.js` integration coverage for build/dev-card
+  paths that call the award logger through normal moves.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/awardLogging.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/awardLogging.test.js app/catana/__tests__/Moves.gameLog.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Moves.js app/catana/moves/awardLogging.js app/catana/__tests__/awardLogging.test.js app/catana/__tests__/Moves.gameLog.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, terminal move boundary)
 - Extracted terminal/forfeit moves from `app/catana/Moves.js` into
   `app/catana/moves/terminalMoves.js`.

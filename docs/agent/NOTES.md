@@ -1,5 +1,12 @@
 # NOTES
 
+- Award logging note:
+- `app/catana/moves/awardLogging.js` owns award-change game-log entries and
+  longest-road award animation payload selection.
+- Normal move modules should pass the previous award owner snapshot and effects
+  bag to `logAwardChanges` instead of rebuilding longest-road path or
+  largest-army logging inline.
+
 - Terminal move boundary note:
 - `app/catana/moves/terminalMoves.js` owns resign, disconnect forfeit, and idle
   forfeit move definitions.
