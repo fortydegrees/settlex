@@ -208,6 +208,31 @@ describe("archive manager", () => {
     expect(cleanupArchivedMatch).toHaveBeenCalledTimes(1);
     expect(cleanupArchivedMatch).toHaveBeenCalledWith({ matchID: "m1" });
   });
+
+  it("deleteMatch clears pending cleanup timers and match metadata", async () => {
+    vi.useFakeTimers();
+
+    const { ArchiveManager } = await loadModule("ArchiveManager.js");
+    const archiveFinishedMatch = vi.fn().mockResolvedValue({ archived: true });
+    const cleanupArchivedMatch = vi.fn().mockResolvedValue(undefined);
+    const manager = new ArchiveManager({
+      archiveFinishedMatch,
+      cleanupArchivedMatch,
+      cleanupEnabled: true,
+      graceMs: 10,
+    });
+
+    manager.onMatchData("m1", [{ id: "0", name: "Ada" }]);
+    await manager.onState("m1", { ctx: { gameover: { winner: "0" } } });
+
+    manager.deleteMatch("m1");
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(cleanupArchivedMatch).not.toHaveBeenCalled();
+    expect(manager.cleanupTimers.has("m1")).toBe(false);
+    expect(manager.archivedMatchIDs.has("m1")).toBe(false);
+    expect(manager.matchDataByMatch.has("m1")).toBe(false);
+  });
 });
 
 describe("archiveFinishedMatch", () => {

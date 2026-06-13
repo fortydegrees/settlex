@@ -90,6 +90,20 @@ describe("PufferBotManager", () => {
     expect(moves).toEqual([{ move: "readyUp", args: [] }]);
   });
 
+  it("deleteMatch clears dynamically detected bot seats", () => {
+    const manager = new PufferBotManager();
+
+    manager.syncMatchBotsFromMatchData("m1", [
+      { id: "1", name: "[BOT] Puffer 2", data: { bot: "puffer" } }
+    ]);
+
+    expect(manager.isBotPlayerForMatch("m1", "1")).toBe(true);
+
+    manager.deleteMatch("m1");
+
+    expect(manager.isBotPlayerForMatch("m1", "1")).toBe(false);
+  });
+
   it("chooses a legal mapped move with random fallback when no checkpoint is configured", async () => {
     const manager = new PufferBotManager({ botPlayerIds: ["0"] });
     const state = createState({

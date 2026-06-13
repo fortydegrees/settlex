@@ -27,6 +27,30 @@ it("forwards publish payloads to TimerManager", () => {
   expect(manager.getTimerSnapshot).toHaveBeenCalledWith("1", payload.args[1]);
 });
 
+it("deleteMatch drops cached match state and subscribers", () => {
+  const manager = {
+    onState: vi.fn(),
+    getTimerSnapshot: vi.fn().mockReturnValue(null)
+  };
+  const pubSub = createTimerPubSub(manager);
+  const received = vi.fn();
+
+  pubSub.subscribe("MATCH-1", received);
+  pubSub.publish("MATCH-1", {
+    type: "update",
+    args: ["1", { G: {}, ctx: { phase: "main" } }]
+  });
+  expect(received).toHaveBeenCalledTimes(1);
+
+  pubSub.deleteMatch("1");
+  pubSub.publish("MATCH-1", {
+    type: "update",
+    args: ["1", { G: {}, ctx: { phase: "main" } }]
+  });
+
+  expect(received).toHaveBeenCalledTimes(1);
+});
+
 it("attaches timer snapshot to update payloads", () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-01-15T00:00:00Z"));

@@ -62,4 +62,16 @@ export class ArchiveManager {
 
     this.cleanupTimers.set(matchID, timer);
   }
+
+  deleteMatch(matchID) {
+    const key = String(matchID);
+    const cleanupTimer = this.cleanupTimers.get(key);
+    if (cleanupTimer) {
+      clearTimeout(cleanupTimer);
+    }
+    this.cleanupTimers.delete(key);
+    this.archivingMatchIDs.delete(key);
+    this.archivedMatchIDs.delete(key);
+    this.matchDataByMatch.delete(key);
+  }
 }

@@ -269,6 +269,15 @@ export class IdlePresenceManager {
     return true;
   }
 
+  deleteMatch(matchID) {
+    const key = String(matchID);
+    const record = this.matches.get(key);
+    if (!record) return;
+
+    this.clearTimeout(record);
+    this.matches.delete(key);
+  }
+
   getSnapshot(matchID) {
     const record = this.getRecord(matchID);
     return {

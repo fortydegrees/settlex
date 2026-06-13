@@ -21,10 +21,12 @@ export class FinishedMatchRetentionManager {
   constructor({
     cleanupArchivedMatch,
     matchChatStore,
+    onCleanup,
     graceMs = 300_000,
   } = {}) {
     this.cleanupArchivedMatch = cleanupArchivedMatch;
     this.matchChatStore = matchChatStore;
+    this.onCleanup = onCleanup;
     this.graceMs = graceMs;
     this.matches = new Map();
   }
@@ -63,13 +65,26 @@ export class FinishedMatchRetentionManager {
     record.cleanupTimer = setTimeout(() => {
       record.cleanupTimer = null;
       Promise.resolve(this.cleanupArchivedMatch?.({ matchID }))
-        .then(() => {
+        .then(async () => {
           record.cleanedUp = true;
           this.matchChatStore?.clear?.(matchID);
-          this.matches.delete(String(matchID));
+          try {
+            await Promise.resolve(this.onCleanup?.({ matchID }));
+          } finally {
+            this.matches.delete(String(matchID));
+          }
         })
         .catch(() => {});
     }, this.graceMs);
+  }
+
+  deleteMatch(matchID) {
+    const key = String(matchID);
+    const record = this.matches.get(key);
+    if (!record) return;
+
+    this.clearCleanupTimer(record);
+    this.matches.delete(key);
   }
 
   reevaluate(matchID) {

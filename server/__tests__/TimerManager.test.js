@@ -507,6 +507,34 @@ describe("TimerManager", () => {
     expect(manager.getTimerSnapshot("match-1")).toBe(null);
   });
 
+  it("deleteMatch clears active turn and bot timers", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({
+      dispatch,
+      botMoveDelayMs: 250,
+      isBotPlayer: ({ playerID }) => playerID === "1"
+    });
+
+    manager.onState(
+      "match-cleanup",
+      baseState({
+        _stateID: 7,
+        ctx: {
+          phase: "main",
+          currentPlayer: "1",
+          activePlayers: { "1": "postRoll" },
+          turn: 3
+        }
+      })
+    );
+
+    manager.deleteMatch("match-cleanup");
+    vi.advanceTimersByTime(45_000);
+
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(manager.matches.has("match-cleanup")).toBe(false);
+  });
+
   it("schedules a fast autoBot action for bot-controlled turns", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({

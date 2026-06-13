@@ -103,6 +103,10 @@ export class PufferBotManager {
     this.matchBotPlayerIds.set(String(matchID), detected);
   }
 
+  deleteMatch(matchID) {
+    this.matchBotPlayerIds.delete(String(matchID));
+  }
+
   getFallbackMove(state) {
     return getBotFallbackMove(state);
   }
