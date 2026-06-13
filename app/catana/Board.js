@@ -16,19 +16,17 @@ import {
   useEffectState
 } from "bgio-effects/react";
 import { TileTypes } from "./types";
-import {
-  buildableNodes,
-  canBuildCity as coreCanBuildCity,
-  canBuildRoad as coreCanBuildRoad,
-  canBuildSettlement as coreCanBuildSettlement
-} from "@settlex/game-core";
-import { getBuildableEdges } from "./moves/buildMoves";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
 import { resolveRobberPlacementMotionMode } from "./utils/robberPlacementMotion";
 import { isDocumentHidden } from "./utils/visibility";
-import { isPassiveBuildEnabled } from "./utils/passiveBuildMode";
 import { getBuildPickupPieceType } from "./utils/playerAction";
+import {
+  getBoardInteractionState,
+  getExplicitBuildableRoads,
+  getMainBuildableNodes,
+  getPassiveBuildTargets
+} from "./utils/boardBuildInteraction";
 import {
   buildLandRobberPreviewTiles,
   buildMagneticBuildTargets,
@@ -140,33 +138,25 @@ export function CatanBoard({
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [hasCoarsePointer, setHasCoarsePointer] = useState(false);
 
-  const [buildableRoads, setBuildableRoads] = useState([])
-  const playerStage = ctx.activePlayers?.[playerID] ?? null;
-  const isCurrentPlayerPerspective =
-    playerID != null && String(ctx.currentPlayer) === String(playerID);
-  const isInteractiveStageOwner = isCurrentPlayerPerspective && playerStage != null;
-  const isPlacementSettlementStage =
-    ctx.phase === "placement" && playerStage === "settlement";
-  const isPlacementRoadStage =
-    ctx.phase === "placement" && playerStage === "road";
+  const {
+    playerStage,
+    isCurrentPlayerPerspective,
+    isInteractiveStageOwner,
+    isPlacementSettlementStage,
+    isPlacementRoadStage
+  } = useMemo(
+    () => getBoardInteractionState({ ctx, playerID }),
+    [ctx, playerID]
+  );
   const mainBuildableNodes = useMemo(() => {
-    if (!G.core || !playerID || !isCurrentPlayerPerspective) return [];
-    const isPlacement = ctx.phase === "placement";
-    if (playerAction === "placeSettlement") {
-      return buildableNodes(G.core, G.coreTopology, playerID, {
-        initialPlacement: isPlacement
-      });
-    }
-    if (playerAction === "placeCity") {
-      return Object.entries(G.core.buildingsByNodeId ?? {}).flatMap(
-        ([nodeId, building]) =>
-          building.ownerId === playerID && building.type === "settlement"
-            ? [Number(nodeId)]
-            : []
-      );
-    }
-    return [];
-  }, [G.core, G.coreTopology, ctx.phase, playerAction, playerID, isCurrentPlayerPerspective]);
+    return getMainBuildableNodes({
+      G,
+      ctx,
+      playerID,
+      playerAction,
+      isCurrentPlayerPerspective
+    });
+  }, [G, ctx, playerAction, playerID, isCurrentPlayerPerspective]);
 
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
   const { width, height } = useWindowSize();
@@ -352,66 +342,38 @@ export function CatanBoard({
   //   }
   // }
 
-  const passiveBuildEnabled = useMemo(
+  const {
+    passiveBuildEnabled,
+    passiveBuildableEdges,
+    passiveSettlementNodes,
+    passiveCityNodes
+  } = useMemo(
     () =>
-      isPassiveBuildEnabled({
-        playerAction,
-        playerID,
+      getPassiveBuildTargets({
+        G,
         ctx,
-        corePhase: G.core?.phase,
-        devCardPlay: G.devCardPlay
+        playerID,
+        playerAction
       }),
-    [playerAction, playerID, ctx, G.core?.phase, G.devCardPlay]
+    [G, ctx, playerAction, playerID]
   );
-
-  // Passive hoverable edges - shown when player CAN build but hasn't clicked the button
-  const passiveBuildableEdges = useMemo(() => {
-    if (!passiveBuildEnabled || !playerID) return [];
-    if (!G.core || !G.coreTopology) return [];
-    if (!coreCanBuildRoad(G.core, playerID).ok) return [];
-    return getBuildableEdges(playerID, G, ctx);
-  }, [passiveBuildEnabled, G, ctx, playerID]);
-
-  const passiveSettlementNodes = useMemo(() => {
-    if (!passiveBuildEnabled || !playerID) return [];
-    if (!G.core || !G.coreTopology) return [];
-    if (!coreCanBuildSettlement(G.core, playerID).ok) return [];
-    return buildableNodes(G.core, G.coreTopology, playerID, {
-      initialPlacement: false
-    });
-  }, [passiveBuildEnabled, G.core, G.coreTopology, playerID]);
-
-  const passiveCityNodes = useMemo(() => {
-    if (!passiveBuildEnabled || !playerID || !G.core) return [];
-    if (!coreCanBuildCity(G.core, playerID).ok) return [];
-    return Object.entries(G.core.buildingsByNodeId ?? {}).flatMap(
-      ([nodeId, building]) =>
-        building.ownerId === playerID && building.type === "settlement"
-          ? [Number(nodeId)]
-          : []
-    );
-  }, [passiveBuildEnabled, G.core, playerID]);
 
   const passiveCityNodeSet = useMemo(
     () => new Set(passiveCityNodes),
     [passiveCityNodes]
   );
 
-  useEffect(()=>{
-    if (
-      playerID &&
-      isCurrentPlayerPerspective &&
-      (playerAction === "placeRoad" || playerAction === "roadBuilding") &&
-      G.core &&
-      G.coreTopology
-    ) {
-      const buildable = getBuildableEdges(playerID, G, ctx)
-      setBuildableRoads(buildable)
-    }
-    else{
-      setBuildableRoads([])
-    }
-  }, [playerAction, G, ctx, playerID, isCurrentPlayerPerspective])
+  const buildableRoads = useMemo(
+    () =>
+      getExplicitBuildableRoads({
+        G,
+        ctx,
+        playerID,
+        playerAction,
+        isCurrentPlayerPerspective
+      }),
+    [G, ctx, playerAction, playerID, isCurrentPlayerPerspective]
+  );
 
   const lastBoardStateRef = useRef({
     phase: ctx.phase,
