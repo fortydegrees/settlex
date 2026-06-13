@@ -244,7 +244,12 @@ export const PlayerActionContainer = ({
 
   useEffect(() => {
     updateLocalDockAnchor();
-  });
+  }, [
+    resourceCounts,
+    showDevCardBay,
+    updateLocalDockAnchor,
+    visibleDevCards.length,
+  ]);
 
   useEffect(() => {
     if (typeof window === "undefined") return undefined;

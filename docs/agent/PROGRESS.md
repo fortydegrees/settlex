@@ -5719,3 +5719,12 @@
   - `git diff --check`
   - Desktop in-app browser smoke at `http://127.0.0.1:3000/catana/dev/sandbox?viewportWall=1`: title `Settlehex`, 19 `.hex` nodes, 5 dock cards, enabled dock actions present, resource counts visible, End Turn enabled, game log visible, and browser warning/error logs empty.
   - Mobile viewport smoke at `390x844`: 19 `.hex` nodes, mobile cockpit visible, 5 dock cards, 3 enabled dock actions, resource counts visible, `Hold to end turn` enabled, game log visible, browser warning/error logs empty; viewport reset afterward.
+
+## Status (2026-06-13, performance audit dock anchor measurement)
+- Removed an every-render layout measurement from the desktop local HUD path.
+- `PlayerActionContainer` now remeasures the local dock anchor only when resource/dev-card HUD content changes, while the existing `ResizeObserver` still handles actual element resize/mount changes.
+- Verification:
+  - `pnpm exec eslint app/catana/components/PlayerActionContainer.js`
+  - `git diff --check`
+  - Desktop in-app browser smoke after reload: title `Settlehex`, 19 `.hex` nodes, 5 dock cards, 3 enabled dock actions, resource counts visible, End Turn enabled, game log visible, browser warning/error logs empty.
+  - Mobile viewport smoke at `390x844` after reload: 19 `.hex` nodes, mobile cockpit visible, 5 dock cards, 3 enabled dock actions, resource counts visible, `Hold to end turn` enabled, game log visible, browser warning/error logs empty; viewport reset afterward.
