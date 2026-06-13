@@ -1,5 +1,13 @@
 # NOTES
 
+- Dev-sandbox effect payload note:
+- `app/catana/dev/sandbox/effectPayloads.js` owns payload shaping for
+  dev-sandbox-triggered dev-card play, robber move, and award-claim effect
+  events.
+- Keep `GameScreen.js` responsible for the browser listener lifecycle and
+  effect-bus emits, but put new sandbox payload shape rules in the helper with
+  direct tests.
+
 - GameScreen display model note:
 - `app/catana/utils/gameScreenDisplayModel.js` owns screen-facing player
   identity/model derivation for `GameScreen`: merged name/emoji/color maps,

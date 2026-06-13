@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-06-13, dev-sandbox effect payload helpers)
+- Extracted Catana dev-sandbox effect payload shaping into
+  `app/catana/dev/sandbox/effectPayloads.js`.
+- `GameScreen` still owns the browser event listener lifecycle, but delegates
+  dev-card play, robber-move, and award-claim sandbox payload construction to
+  the helper.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/devSandboxEffectPayloads.test.js --reporter=dot` (red: missing `effectPayloads`)
+- `pnpm exec vitest run app/catana/__tests__/devSandboxEffectPayloads.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js app/catana/__tests__/GameScreen.diceEffects.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/GameScreen.*.test.js app/catana/__tests__/devSandboxEffectPayloads.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/dev/sandbox/effectPayloads.js app/catana/__tests__/devSandboxEffectPayloads.test.js app/catana/__tests__/GameScreen.devCardPlay.test.js app/catana/__tests__/GameScreen.devCardReveal.test.js app/catana/__tests__/GameScreen.diceEffects.test.js`
+- `git diff --check`
+- Live smoke: `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`
+  rendered board tiles and game-feed content; captured console had no errors.
+
 ## Status (2026-06-13, GameScreen display model helper)
 - Extracted `GameScreen` player/display derivation into
   `app/catana/utils/gameScreenDisplayModel.js`.

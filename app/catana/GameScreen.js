@@ -108,6 +108,11 @@ import {
   readLastActiveMatch
 } from "./utils/activeMatchStorage";
 import { shouldAutoReady } from "./utils/preGameReady";
+import {
+  buildSandboxAwardClaimPayload,
+  buildSandboxDevCardPlayPayload,
+  buildSandboxRobberMovePayload
+} from "./dev/sandbox/effectPayloads";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const CATANA_GAME_BACKGROUND =
@@ -1287,62 +1292,6 @@ export function GameScreen(bgioProps) {
     if (typeof window === "undefined") return undefined;
     if (matchID !== "dev-sandbox") return undefined;
 
-    const buildSandboxDevCardPayload = ({ playerId, cardType, phase }) => {
-      const actorId = String(playerId ?? opponents[0]?.id ?? playerID ?? "0");
-      const resolvedCardType = [
-        "roadBuilding",
-        "yearOfPlenty",
-        "monopoly"
-      ].includes(cardType)
-        ? cardType
-        : "knight";
-      const actor = playerViewMap[actorId];
-      const previousKnightsPlayed = actor?.knightsPlayed ?? 0;
-      const basePayload = {
-        effectId: `dev-sandbox:${resolvedCardType}:${actorId}`,
-        playerId: actorId,
-        cardType: resolvedCardType,
-        phase,
-        startedFromStage: "postRoll"
-      };
-      if (resolvedCardType === "roadBuilding") {
-        return {
-          ...basePayload,
-          pendingRoads: phase === "resolve" ? 0 : 2,
-          previousRoadsRemaining: actor?.roadsRemaining ?? null,
-          nextRoadsRemaining: actor?.roadsRemaining ?? null
-        };
-      }
-      if (resolvedCardType === "yearOfPlenty") {
-        return {
-          ...basePayload,
-          resources: ["Wood", "Brick"]
-        };
-      }
-      if (resolvedCardType === "monopoly") {
-        return {
-          ...basePayload,
-          resource: "Wood",
-          transfers: [
-            {
-              fromPlayerId: String(playerID ?? "0"),
-              toPlayerId: actorId,
-              resource: "Wood",
-              count: 2
-            }
-          ],
-          totalTransferred: 2
-        };
-      }
-      return {
-        ...basePayload,
-        previousKnightsPlayed,
-        nextKnightsPlayed: previousKnightsPlayed + 1,
-        previousLargestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? null,
-        nextLargestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? actorId
-      };
-    };
-
     const handleDevSandboxDevCardPlay = (event) => {
       const detail = event?.detail ?? {};
       if (detail.action === "reset") {
@@ -1352,10 +1301,14 @@ export function GameScreen(bgioProps) {
       const phase = detail.phase === "resolve" ? "resolve" : "start";
       effectsBus.emit({
         type: phase === "resolve" ? "devcard:play:resolve" : "devcard:play:start",
-        payload: buildSandboxDevCardPayload({
+        payload: buildSandboxDevCardPlayPayload({
           playerId: detail.playerId,
           cardType: detail.cardType,
-          phase
+          phase,
+          fallbackPlayerId: opponents[0]?.id,
+          viewerPlayerId: playerID,
+          playerViewMap,
+          largestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? null
         })
       });
     };
@@ -1363,31 +1316,21 @@ export function GameScreen(bgioProps) {
       const detail = event?.detail ?? {};
       effectsBus.emit({
         type: "robber:move",
-        payload: {
-          effectId: `dev-sandbox:robber-move:${detail.fromTileId}:${detail.toTileId}`,
-          actorId: detail.actorId ?? opponents[0]?.id ?? playerID ?? "0",
-          fromTileId: detail.fromTileId,
-          toTileId: detail.toTileId,
-          debugReplay: true,
-          forced: true,
-          hideSourceTile: true,
-          hideDestinationTile: false
-        }
+        payload: buildSandboxRobberMovePayload({
+          detail,
+          fallbackActorId: opponents[0]?.id,
+          viewerPlayerId: playerID
+        })
       });
     };
     const handleDevSandboxAwardClaim = (event) => {
       const detail = event?.detail ?? {};
       effectsBus.emit({
         type: "award:claim",
-        payload: {
-          effectId: `dev-sandbox:award:${detail.awardType}:${detail.playerId}`,
-          awardType: detail.awardType ?? "longestRoad",
-          playerId: detail.playerId,
-          previousOwnerId: detail.previousOwnerId ?? null,
-          playerColorId: effectiveColorByPlayerId[detail.playerId],
-          roadIds: detail.roadIds ?? [],
-          debugReplay: true
-        }
+        payload: buildSandboxAwardClaimPayload({
+          detail,
+          effectiveColorByPlayerId
+        })
       });
     };
 
