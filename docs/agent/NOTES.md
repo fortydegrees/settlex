@@ -1,5 +1,13 @@
 # NOTES
 
+- Initial-state setup note:
+- `app/catana/gameSetup/initialState.js` owns mode/rules resolution, snake
+  placement order, deterministic board generation, core state creation,
+  friendly robber defaulting, dev-deck shuffle, and balanced dice-state setup.
+- Keep `Game.js` focused on boardgame.io config, phase/stage wiring, move
+  exposure, and setup orchestration. New setup defaults should usually land in
+  `initialState.js` with focused tests.
+
 - Dev-scenario setup note:
 - `app/catana/gameSetup/devScenarios.js` owns dev-scenario state extraction,
   production/player-count validation, merge-over-generated-state behavior, and

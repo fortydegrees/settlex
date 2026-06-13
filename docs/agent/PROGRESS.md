@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-06-13, initial-state setup boundary)
+- Extracted initial board/rules/dice state creation from `app/catana/Game.js`
+  into `app/catana/gameSetup/initialState.js`.
+- Added focused coverage in `app/catana/__tests__/initialState.test.js` for
+  placement-order generation, mode/rules resolution, deterministic initial
+  state, and the required boardgame.io random source.
+- `Game.js` now re-exports `getPlacementOrder` for existing callers and keeps
+  setup orchestration as `createInitialGameState` followed by
+  `applyDevScenarioSetup`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/initialState.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/initialState.test.js app/catana/__tests__/Game.boardConfig.test.js app/catana/__tests__/Game.placementOrder.test.js app/catana/__tests__/Game.logInit.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Game.js app/catana/gameSetup/initialState.js app/catana/__tests__/initialState.test.js app/catana/__tests__/Game.boardConfig.test.js app/catana/__tests__/Game.placementOrder.test.js app/catana/__tests__/Game.logInit.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, dev-scenario setup boundary)
 - Extracted dev-scenario parsing, validation, setup-state merging, and
   boardgame.io context seeding from `app/catana/Game.js` into
