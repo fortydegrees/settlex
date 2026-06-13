@@ -31,7 +31,8 @@ vi.mock("howler", () => ({
         });
       },
       rate: vi.fn(),
-      volume: vi.fn()
+      volume: vi.fn(),
+      unload: vi.fn()
     };
     howlInstances.push(instance);
     return instance;
@@ -379,5 +380,27 @@ describe("AudioManager", () => {
     const instance = howlInstances[0];
     expect(instance.rate).toHaveBeenCalledWith(1.0, 1);
     expect(instance.volume).toHaveBeenCalledWith(0.475, 1);
+  });
+
+  it("unloads cached Howl instances on destroy", () => {
+    const bus = createEffectBus();
+    const audio = createAudioManager({
+      bus,
+      theme: {
+        "build:settlement": { src: "/sounds/build-settlement.mp3" },
+        "build:road": { src: "/sounds/build-road.mp3" }
+      },
+      settings: { muted: false }
+    });
+
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "build:settlement" } });
+    bus.emit({ type: "cue", payload: { name: "build:road" } });
+
+    audio.destroy();
+
+    expect(howlInstances).toHaveLength(2);
+    expect(howlInstances[0].unload).toHaveBeenCalledTimes(1);
+    expect(howlInstances[1].unload).toHaveBeenCalledTimes(1);
   });
 });
