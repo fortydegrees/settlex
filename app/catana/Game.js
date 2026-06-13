@@ -1,17 +1,15 @@
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import {
-  autoPlaceSettlement,
-  autoPlaceRoad,
-  maritimeTrade,
-  readyUp,
-  autoStartGame
-} from "./Moves.js";
-import {
   placeCity,
   placeRoad,
   placeSettlement,
   updateValids
 } from "./moves/buildMoves.js";
+import {
+  autoPlaceRoad,
+  autoPlaceSettlement
+} from "./moves/forcedPlacementMoves.js";
+import { autoStartGame, readyUp } from "./moves/preGameMoves.js";
 import { autoMoveRobber, moveRobber } from "./moves/robberMoves.js";
 import {
   autoDiscard,
@@ -28,6 +26,7 @@ import {
   placeRoadFromDevCard,
   playDevCardStart
 } from "./moves/devCardMoves.js";
+import { maritimeTrade } from "./moves/tradeMoves.js";
 import {
   resign,
   resolveDisconnectForfeit,

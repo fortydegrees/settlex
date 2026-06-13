@@ -1,5 +1,16 @@
 # NOTES
 
+- Move export surface note:
+- `app/catana/Moves.js` is now a compatibility export surface, not an
+  implementation owner. Product code should import concrete move modules such
+  as `moves/buildMoves.js`, `moves/turnMoves.js`,
+  `moves/forcedPlacementMoves.js`, `moves/preGameMoves.js`, and
+  `moves/tradeMoves.js`.
+- `app/catana/moves/legacyMoves.js` holds compatibility-only exports that are
+  not registered in `Game.js`. Avoid adding new game behavior there.
+- Keep `app/catana/__tests__/Moves.compatExports.test.js` as the narrow guard
+  for legacy `Moves.js` imports.
+
 - Dev-card move boundary note:
 - `app/catana/moves/devCardMoves.js` owns dev-card purchase, play start,
   choice confirmation, forced choice resolution, cancellation, and road-building

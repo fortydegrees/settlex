@@ -5,15 +5,14 @@ import {
   ResourceType,
   TileTypes
 } from "@settlex/game-core";
+import { placeRoad } from "../moves/buildMoves";
 import {
-  autoDiscard,
   buyDevCard,
   confirmDevCardPlay,
-  placeRoad,
-  playDevCardStart,
-  rollDice,
-  moveRobber
-} from "../Moves";
+  playDevCardStart
+} from "../moves/devCardMoves";
+import { moveRobber } from "../moves/robberMoves";
+import { autoDiscard, rollDice } from "../moves/turnMoves";
 import { maybeLogGameOver } from "../moves/gameOver";
 
 vi.mock("@settlex/game-core", async () => {

@@ -1,12 +1,29 @@
 # PROGRESS
 
+## Status (2026-06-13, move export surface)
+- Extracted the remaining pre-game readiness/start moves, forced placement
+  timeout moves, and maritime trade move from `app/catana/Moves.js` into
+  `app/catana/moves/preGameMoves.js`,
+  `app/catana/moves/forcedPlacementMoves.js`, and
+  `app/catana/moves/tradeMoves.js`.
+- Moved unused legacy compatibility exports into
+  `app/catana/moves/legacyMoves.js`.
+- `app/catana/Game.js` no longer imports from the generic `Moves.js`
+  aggregator; `Moves.js` is now only a compatibility export surface for older
+  imports.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/preGameMoves.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Moves.trade.test.js --reporter=dot` (red: missing `preGameMoves`, `forcedPlacementMoves`, and `tradeMoves`)
+- `pnpm exec vitest run app/catana/__tests__/Moves.compatExports.test.js app/catana/__tests__/preGameMoves.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Moves.trade.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Game.readyUpStaleState.test.js app/catana/__tests__/preGameReady.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js server/__tests__/stagePolicy.test.js server/__tests__/TimerManager.test.js server/__tests__/pufferBotManager.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Moves.js app/catana/Game.js app/catana/moves/preGameMoves.js app/catana/moves/forcedPlacementMoves.js app/catana/moves/tradeMoves.js app/catana/moves/legacyMoves.js app/catana/__tests__/Moves.compatExports.test.js app/catana/__tests__/preGameMoves.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Moves.trade.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Game.readyUpStaleState.test.js app/catana/__tests__/preGameReady.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js server/__tests__/stagePolicy.test.js server/__tests__/TimerManager.test.js server/__tests__/pufferBotManager.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, dev-card move boundary)
 - Extracted dev-card buy/start/confirm/auto-resolve/cancel/free-road move
   definitions from `app/catana/Moves.js` into
   `app/catana/moves/devCardMoves.js`.
 - Updated `app/catana/Game.js` and dev-card tests to import the narrower
   dev-card boundary while preserving compatibility re-exports from `Moves.js`.
-- `Moves.js` now retains only preg-game, auto-placement, steal placeholder, and
+- `Moves.js` now retains only pre-game, auto-placement, steal placeholder, and
   maritime-trade move definitions plus compatibility exports for the split move
   modules.
 - Focused verification:

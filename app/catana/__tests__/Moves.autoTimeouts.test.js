@@ -5,7 +5,10 @@ import {
   createEmptyState,
   ResourceType
 } from "@settlex/game-core";
-import { autoPlaceRoad, autoPlaceSettlement } from "../Moves";
+import {
+  autoPlaceRoad,
+  autoPlaceSettlement
+} from "../moves/forcedPlacementMoves";
 import { autoDiscard } from "../moves/turnMoves";
 
 vi.mock("@settlex/game-core", async () => {
