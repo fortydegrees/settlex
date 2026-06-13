@@ -6,10 +6,10 @@ import {
   buyDevCard,
   cancelDevCardPlay,
   confirmDevCardPlay,
-  moveRobber,
   playDevCardStart,
   placeRoadFromDevCard
-} from "../Moves";
+} from "../moves/devCardMoves";
+import { moveRobber } from "../moves/robberMoves";
 
 const tiles = [
   {

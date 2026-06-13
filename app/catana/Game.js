@@ -3,11 +3,6 @@ import {
   autoPlaceSettlement,
   autoPlaceRoad,
   maritimeTrade,
-  buyDevCard,
-  playDevCardStart,
-  confirmDevCardPlay,
-  autoResolveDevCard,
-  placeRoadFromDevCard,
   readyUp,
   autoStartGame
 } from "./Moves.js";
@@ -26,6 +21,13 @@ import {
   endTurn,
   rollDice
 } from "./moves/turnMoves.js";
+import {
+  autoResolveDevCard,
+  buyDevCard,
+  confirmDevCardPlay,
+  placeRoadFromDevCard,
+  playDevCardStart
+} from "./moves/devCardMoves.js";
 import {
   resign,
   resolveDisconnectForfeit,

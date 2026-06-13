@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-06-13, dev-card move boundary)
+- Extracted dev-card buy/start/confirm/auto-resolve/cancel/free-road move
+  definitions from `app/catana/Moves.js` into
+  `app/catana/moves/devCardMoves.js`.
+- Updated `app/catana/Game.js` and dev-card tests to import the narrower
+  dev-card boundary while preserving compatibility re-exports from `Moves.js`.
+- `Moves.js` now retains only preg-game, auto-placement, steal placeholder, and
+  maritime-trade move definitions plus compatibility exports for the split move
+  modules.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js --reporter=dot` (red: missing `devCardMoves`)
+- `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Moves.js app/catana/Game.js app/catana/moves/devCardMoves.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, turn move boundary)
 - Extracted dice rolling, balanced dice draw, resource-distribution effect
   dispatch, end-turn handling, discard handling, and forced turn/discard moves

@@ -1,5 +1,15 @@
 # NOTES
 
+- Dev-card move boundary note:
+- `app/catana/moves/devCardMoves.js` owns dev-card purchase, play start,
+  choice confirmation, forced choice resolution, cancellation, and road-building
+  free-road placement move definitions.
+- `app/catana/Moves.js` re-exports dev-card moves for compatibility, but new
+  direct dev-card consumers should import from `moves/devCardMoves.js`.
+- Keep pure choice-flow helpers in `moves/devCardFlow.js` and presentation
+  payload shaping in `moves/devCardPresentation.js`; `devCardMoves.js` should
+  orchestrate rule application, logging, effects, and stage transitions.
+
 - Turn move boundary note:
 - `app/catana/moves/turnMoves.js` owns dice rolling, balanced dice draw,
   roll-triggered resource logging/effects, end-turn handling, discard handling,
