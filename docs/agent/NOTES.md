@@ -1,5 +1,11 @@
 # NOTES
 
+- Resource logging note:
+- `app/catana/moves/resourceLogging.js` owns game-log entries for resource
+  gains and resource shortages from dice rolls or setup placement rewards.
+- Move modules should call `logResourceDistributions` and
+  `logResourceShortages` instead of grouping resources inline.
+
 - Award logging note:
 - `app/catana/moves/awardLogging.js` owns award-change game-log entries and
   longest-road award animation payload selection.

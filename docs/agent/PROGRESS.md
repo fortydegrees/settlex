@@ -1,5 +1,17 @@
 # PROGRESS
 
+## Status (2026-06-13, resource logging boundary)
+- Extracted resource gain/shortage game-log helpers from `app/catana/Moves.js`
+  into `app/catana/moves/resourceLogging.js`.
+- Added direct coverage in `app/catana/__tests__/resourceLogging.test.js` for
+  grouped resource gains and filtered shortages.
+- Kept existing integration coverage for dice/resource distribution paths.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/resourceLogging.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/resourceLogging.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.resourceDistribution.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Moves.js app/catana/moves/resourceLogging.js app/catana/__tests__/resourceLogging.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.resourceDistribution.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, award logging boundary)
 - Extracted award-change logging and longest-road award animation payload
   selection from `app/catana/Moves.js` into
