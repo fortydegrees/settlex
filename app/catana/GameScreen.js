@@ -39,6 +39,12 @@ import {
   readIdlePresenceSnapshot
 } from "./utils/idlePresence";
 import {
+  getDiscardRequirement,
+  getHasBlockingModal,
+  getTurnCommandState,
+  getVisibleDiceRoll
+} from "./utils/gameScreenCommandState";
+import {
   getTimerRemainingMs,
   normalizeTimerSnapshot
 } from "./utils/timerSnapshot";
@@ -150,12 +156,6 @@ const copyRect = (rect) => {
     right: rect.right,
     bottom: rect.bottom,
   };
-};
-
-const getVisibleDiceRoll = (G) => {
-  if (!G?.core?.turn?.hasRolled) return null;
-  if (!Array.isArray(G.diceRoll) || G.diceRoll.length < 2) return null;
-  return G.diceRoll;
 };
 
 const runAfterNextPaint = (callback) => {
@@ -879,10 +879,12 @@ export function GameScreen(bgioProps) {
   // the client-side derived ctx.phase might lag or differ if the game engine isn't strictly mapping G to ctx phases 1:1.
   // Relying on G.core.turn.pendingDiscards is more robust because that IS the source of truth for "who needs to discard".
   // Also, G.core.turn.phase should be 'robberDiscard' if pendingDiscards > 0, but let's be safe.
-  const needsToDiscard =
-    !isGameOver && (coreTurn?.pendingDiscards?.includes(playerID) ?? false);
-  
-  const discardCount = needsToDiscard ? Math.floor(player.resources.length / 2) : 0;
+  const { needsToDiscard, discardCount } = getDiscardRequirement({
+    isGameOver,
+    coreTurn,
+    playerID,
+    player
+  });
 
   const handleDiscardConfirm = (resourcesToDiscard) => {
     bgioProps.moves.discardResources(resourcesToDiscard);
@@ -959,34 +961,23 @@ export function GameScreen(bgioProps) {
     }
   };
 
-  const canRoll = Boolean(
-    !isGameOver &&
-      playerID &&
-      bgioProps.ctx.currentPlayer === playerID &&
-      bgioProps.ctx.activePlayers?.[playerID] === "preRoll" &&
-      core?.phase === "normal" &&
-      coreTurn?.phase === "preRoll"
-  );
+  const { canRoll, canEnd } = getTurnCommandState({
+    isGameOver,
+    playerID,
+    ctx: bgioProps.ctx,
+    core,
+    coreTurn
+  });
 
-  const canEnd = Boolean(
-    !isGameOver &&
-      playerID &&
-      bgioProps.ctx.currentPlayer === playerID &&
-      bgioProps.ctx.activePlayers?.[playerID] === "postRoll" &&
-      core?.phase === "normal" &&
-      coreTurn?.hasRolled &&
-      coreTurn?.phase === "postRoll" &&
-      (coreTurn?.pendingDiscards?.length ?? 0) === 0
-  );
-
-  const hasModalOpen =
-    tradeModalVisible ||
-    needsToDiscard ||
-    devPlayModalVisible ||
-    showGameOverModal ||
-    showPostgame ||
-    showGameSettings ||
-    showGameRules;
+  const hasModalOpen = getHasBlockingModal({
+    tradeModalVisible,
+    needsToDiscard,
+    devPlayModalVisible,
+    showGameOverModal,
+    showPostgame,
+    showGameSettings,
+    showGameRules
+  });
 
   //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
   //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
