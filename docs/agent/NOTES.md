@@ -3605,4 +3605,5 @@
       - Keep performance fixes evidence-backed: baseline first, focused test or benchmark, live sandbox/browser smoke for UI/runtime changes, then commit.
       - `AudioManager.destroy()` owns Howler teardown; cached Howl instances should be unloaded when the manager is destroyed.
       - `EffectBus` dedupe state must stay bounded; stale effect IDs should be pruned after the dedupe window.
-      - Current static follow-up: `Board.js` effect-event flash timeouts are untracked and should get a small cleanup guard before relying on them in longer leak soaks.
+      - Board flash-clear timers for resource distribution and blocked-tile flashes are tracked through a board-local registry and cleared on unmount.
+      - Next static follow-up: continue the render-count/runtime audit around the 250ms `GameScreen` timer/presence ticker before moving state or adding memoization.

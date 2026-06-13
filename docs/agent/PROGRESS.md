@@ -5678,3 +5678,13 @@
   - Red test run failed first for missing Howl unload and missing effect-bus dedupe-cache visibility.
   - `pnpm vitest run app/catana/__tests__/effects/AudioManager.test.js app/catana/__tests__/effects/EffectBus.test.js --exclude '.worktrees/**'`
   - Live sandbox smoke on an already loaded `/catana/dev/sandbox?viewportWall=1`: dispatched robber, award, and dev-card effect events; board stayed rendered with 19 hexes, no warning/error logs, and no failed requests.
+
+## Status (2026-06-13, performance audit board flash cleanup)
+- Hardened the second lifecycle issue from the performance audit: board resource/robber flash-clear timers are now tracked in a board-local registry and cleared on unmount.
+- Kept flash timing behavior unchanged; the change only routes scheduled clears through a cleanup-aware helper.
+- Verification:
+  - Red guard failed first for missing board flash-timeout tracking.
+  - `pnpm vitest run app/catana/__tests__/renderPerfGuards.test.js --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/Board.js app/catana/__tests__/renderPerfGuards.test.js`
+  - `git diff --check`
+  - Live sandbox state check on loaded `/catana/dev/sandbox?viewportWall=1`: title `Settlehex`, board underlay present, 19 hexes, and game-log text visible.
