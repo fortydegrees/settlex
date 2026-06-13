@@ -5,7 +5,7 @@ import {
   ResourceType,
   TileTypes
 } from "@settlex/game-core";
-import { maritimeTrade } from "../Moves";
+import { maritimeTrade } from "../moves/tradeMoves";
 
 const tiles = [
   {
