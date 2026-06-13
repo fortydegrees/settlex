@@ -9,12 +9,12 @@ import {
   autoDiscard,
   buyDevCard,
   confirmDevCardPlay,
-  maybeLogGameOver,
   placeRoad,
   playDevCardStart,
   rollDice,
   moveRobber
 } from "../Moves";
+import { maybeLogGameOver } from "../moves/gameOver";
 
 vi.mock("@settlex/game-core", async () => {
   const actual = await vi.importActual("@settlex/game-core");
