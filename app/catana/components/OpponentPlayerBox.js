@@ -5,7 +5,7 @@ import { CardStack } from "./CardStack";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { getOpponentResourceBadgeTone } from "./OpponentPlayerBoxUtils";
 
-export const OpponentPlayerBox = ({
+const OpponentPlayerBoxComponent = ({
   player,
   presence,
   core,
@@ -83,3 +83,6 @@ export const OpponentPlayerBox = ({
     </div>
   );
 };
+
+export const OpponentPlayerBox = React.memo(OpponentPlayerBoxComponent);
+OpponentPlayerBox.displayName = "OpponentPlayerBox";

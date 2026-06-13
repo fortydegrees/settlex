@@ -5699,3 +5699,12 @@
   - `SETTLEX_PERF_ONLY=playerView node /tmp/settlex-engine-perf.cjs`
   - `pnpm exec eslint app/catana/gameSetup/playerView.js app/catana/__tests__/playerViewMasking.test.js`
   - `git diff --check`
+
+## Status (2026-06-13, performance audit HUD timer render path)
+- Reduced repeated HUD work on the `GameScreen` 250ms timer/presence tick path.
+- Memoized opponent player derivation in `GameScreen`, memo-wrapped `OpponentPlayerBox`, and memoized longest-road/VP derivations in shared desktop/mobile player stat surfaces.
+- Kept game-rule behavior unchanged; this is a render-waste reduction for unchanged board/player state during countdown updates.
+- Verification:
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/components/OpponentPlayerBox.js app/catana/components/PlayerAvatarStats.js app/catana/components/MobilePlayerCockpit.js`
+  - `git diff --check`
+  - Live in-app browser smoke at `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`: title `Settlehex`, 19 hexes, 3 opponent boxes, turn controls mounted, game-log text visible, and browser warning/error logs empty.
