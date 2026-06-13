@@ -5644,3 +5644,13 @@
   - `pnpm exec eslint app/catana/components/MobilePlayerCockpit.js app/catana/__tests__/MobilePlayerCockpit.source.test.js`
   - `pnpm exec vitest run app/catana/__tests__/MobilePlayerCockpit.source.test.js --reporter=dot`
   - `git diff --check -- app/catana/components/MobilePlayerCockpit.js docs/agent/PROGRESS.md`
+
+## Status (2026-06-13, board build-interaction boundary)
+- Extracted board build-interaction derivation into `app/catana/utils/boardBuildInteraction.js`.
+- `Board.js` now consumes pure helpers for local stage ownership, explicit road targets, main node targets, and passive build targets, leaving render state, DOM target registration, and effect listeners in the component.
+- Replaced mirrored `buildableRoads` state with memoized derived data.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/boardBuildInteraction.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/Board.activePlayers.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Board.robberPlacementUx.test.js app/catana/__tests__/boardPreviewTargets.test.js app/catana/__tests__/renderPerfGuards.test.js --reporter=dot`
+  - `pnpm exec eslint app/catana/Board.js app/catana/utils/boardBuildInteraction.js app/catana/__tests__/boardBuildInteraction.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/Board.activePlayers.test.js app/catana/__tests__/renderPerfGuards.test.js`
+  - `git diff --check`
+  - Live sandbox smoke at `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`: board underlay rendered, 19 hex tiles were present, game-log content was visible, and browser warning/error logs were empty.

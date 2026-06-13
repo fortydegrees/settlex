@@ -28,11 +28,16 @@ afterEach(() => {
 });
 
 describe("render performance guards", () => {
-  it("memoizes effective player colors in GameScreen and passes them into buildPlayerViewMap", () => {
-    const contents = readCatanaFile("GameScreen.js");
-    expect(contents).toContain("const effectiveColorByPlayerId = useMemo(");
-    expect(contents).toMatch(
-      /buildPlayerViewMap\(core, effectiveColorByPlayerId\)/
+  it("derives effective player colors through the GameScreen display model", () => {
+    const screenContents = readCatanaFile("GameScreen.js");
+    const displayModelContents = readCatanaFile(
+      "utils/gameScreenDisplayModel.js"
+    );
+
+    expect(screenContents).toContain("buildGameScreenDisplayModel");
+    expect(displayModelContents).toContain("resolveEffectivePlayerColors");
+    expect(displayModelContents).toContain(
+      "buildPlayerViewMap(core, effectiveColorByPlayerId)"
     );
   });
 

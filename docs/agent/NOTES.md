@@ -3586,3 +3586,9 @@
       - Mobile dev cards are directionally a single inline stack beside resources; later interaction can expand that stack for choosing a playable card.
       - Mobile resource over-limit danger should be obvious, closer to desktop: a stronger rose rail fill/shadow plus a rose avatar ring on `mobile-player-inventory`, not just a faint tint. Avoid making the rail border too heavy; the avatar ring should carry the sharpest warning cue.
       - Opponent over-limit danger should mirror the same language through `OpponentPlayerBox`: danger badge, danger panel chrome, and a rose avatar ring via `PlayerAvatarStats.avatarClassName`.
+    - Board build-interaction note:
+      - `app/catana/utils/boardBuildInteraction.js` owns pure board build-target derivation: local active-player stage ownership, main node targets, explicit road targets, and passive build targets.
+      - `Board.js` should stay focused on rendering, hover/presentation state, DOM target registration, and bgio effect listeners.
+      - Avoid reintroducing mirrored state for values that can be derived from `G`, `ctx`, `playerID`, and `playerAction`; `buildableRoads` is intentionally memoized derived data.
+      - Keep direct helper tests around buildability behavior, because this path is closer to game-rule correctness than ordinary visual tuning.
+      - Next likely architecture slice is `GameScreen.js` effect/command orchestration, not more move splitting.

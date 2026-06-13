@@ -7,31 +7,38 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const boardPath = path.resolve(__dirname, "..", "Board.js");
+const interactionPath = path.resolve(
+  __dirname,
+  "..",
+  "utils",
+  "boardBuildInteraction.js"
+);
 
 describe("Board activePlayers guards", () => {
   it("guards activePlayers before local player stage lookups", () => {
-    const contents = fs.readFileSync(boardPath, "utf8");
-    expect(contents).toContain('ctx.activePlayers?.[playerID] ?? null');
+    const contents = fs.readFileSync(interactionPath, "utf8");
+    expect(contents).toContain("ctx?.activePlayers?.[normalizedPlayerId] ?? null");
   });
 
   it("keys board interaction guards off the local player's stage", () => {
-    const contents = fs.readFileSync(boardPath, "utf8");
-    expect(contents).toContain(
-      'const playerStage = ctx.activePlayers?.[playerID] ?? null'
+    const boardContents = fs.readFileSync(boardPath, "utf8");
+    const helperContents = fs.readFileSync(interactionPath, "utf8");
+
+    expect(boardContents).toContain("getBoardInteractionState");
+    expect(helperContents).toContain("const playerStage =");
+    expect(helperContents).toContain(
+      'ctx?.phase === "placement" && playerStage === "settlement"'
     );
-    expect(contents).toContain(
-      'ctx.phase === "placement" && playerStage === "settlement"'
+    expect(helperContents).toContain(
+      'ctx?.phase === "placement" && playerStage === "road"'
     );
-    expect(contents).toContain(
-      'ctx.phase === "placement" && playerStage === "road"'
-    );
-    expect(contents).toContain('playerStage === "moveRobber"');
+    expect(boardContents).toContain('playerStage === "moveRobber"');
   });
 
   it("declares turn-context guards before the mainBuildableNodes memo uses them", () => {
     const contents = fs.readFileSync(boardPath, "utf8");
     const perspectiveIndex = contents.indexOf(
-      "const isCurrentPlayerPerspective ="
+      "isCurrentPlayerPerspective,"
     );
     const memoIndex = contents.indexOf("const mainBuildableNodes = useMemo");
 
