@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-06-13, turn move boundary)
+- Extracted dice rolling, balanced dice draw, resource-distribution effect
+  dispatch, end-turn handling, discard handling, and forced turn/discard moves
+  from `app/catana/Moves.js` into `app/catana/moves/turnMoves.js`.
+- Added `app/catana/moves/resourceCounts.js` for shared discard/trade resource
+  count logging.
+- Updated `app/catana/Game.js` and direct turn tests to import the narrower
+  turn boundary while preserving compatibility re-exports from `Moves.js`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/resourceCounts.test.js app/catana/__tests__/Moves.endTurn.test.js app/catana/__tests__/Moves.balancedDice.test.js app/catana/__tests__/Game.endTurn.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.autoTimeouts.test.js --reporter=dot` (red: missing `turnMoves` and `resourceCounts`)
+- `pnpm exec vitest run app/catana/__tests__/resourceCounts.test.js app/catana/__tests__/Moves.endTurn.test.js app/catana/__tests__/Moves.balancedDice.test.js app/catana/__tests__/Game.endTurn.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.autoTimeouts.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/resourceCounts.test.js app/catana/__tests__/Moves.endTurn.test.js app/catana/__tests__/Moves.balancedDice.test.js app/catana/__tests__/Game.endTurn.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Moves.js app/catana/Game.js app/catana/moves/turnMoves.js app/catana/moves/resourceCounts.js app/catana/moves/robberMoves.js app/catana/__tests__/resourceCounts.test.js app/catana/__tests__/Moves.endTurn.test.js app/catana/__tests__/Moves.balancedDice.test.js app/catana/__tests__/Game.endTurn.test.js app/catana/__tests__/Moves.robber.test.js app/catana/__tests__/Moves.autoTimeouts.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, robber move boundary)
 - Extracted manual and forced robber movement, robber target candidacy,
   no-valid-tile skip handling, robber return-stage resolution, and shared stage

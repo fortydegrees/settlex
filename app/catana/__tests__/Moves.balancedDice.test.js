@@ -5,7 +5,7 @@ import {
   createEmptyState,
   TileTypes
 } from "@settlex/game-core";
-import { rollDice } from "../Moves";
+import { rollDice } from "../moves/turnMoves";
 
 const sequenceRng = (...values) => {
   let index = 0;

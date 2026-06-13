@@ -1,25 +1,16 @@
 import {
   applyFreeRoad,
-  applyEndTurn,
   applyKnight,
   applyMonopoly,
-  applyRollDice,
   applyYearOfPlenty,
-  applyDiscard,
   applyMaritimeTradeBatch,
   buildableEdges,
   buyDevCard as applyBuyDevCard,
   canPlayDevCard,
-  createBalancedDiceState,
-  drawBalancedDice,
   playDevCard
 } from "@settlex/game-core";
 import { appendGameLog } from "./utils/gameLog.js";
 import { logAwardChanges } from "./moves/awardLogging.js";
-import {
-  logResourceDistributions,
-  logResourceShortages
-} from "./moves/resourceLogging.js";
 import {
   getBuildableEdges,
   getBuildableNodes,
@@ -52,6 +43,7 @@ import {
 } from "./moves/devCardPresentation.js";
 import { maybeLogGameOver } from "./moves/gameOver.js";
 import { pickRandom } from "./moves/randomChoice.js";
+import { countResources } from "./moves/resourceCounts.js";
 import { setCurrentPlayerStage } from "./moves/stageControl.js";
 
 export {
@@ -63,29 +55,14 @@ export {
   updateValids
 } from "./moves/buildMoves.js";
 export { autoMoveRobber, moveRobber } from "./moves/robberMoves.js";
-
-const countResources = (resources = []) =>
-  resources.reduce((acc, resource) => {
-    acc[resource] = (acc[resource] ?? 0) + 1;
-    return acc;
-  }, {});
-
-const drawDiceForRoll = ({ G, ctx, random }) => {
-  if (G.core?.ruleset?.diceMode !== "balanced") {
-    return random.D6(2);
-  }
-
-  const playerIds = G.core?.players ?? ctx?.playOrder ?? [];
-  if (!G.diceState || G.diceState.mode !== "balanced") {
-    G.diceState = createBalancedDiceState(playerIds);
-  }
-
-  return drawBalancedDice(G.diceState, {
-    playerId: String(ctx?.currentPlayer ?? G.core?.turn?.currentPlayerId ?? "0"),
-    playerIds: playerIds.map(String),
-    rng: () => random.Number()
-  });
-};
+export {
+  autoDiscard,
+  autoEndTurn,
+  autoRoll,
+  discardResources,
+  endTurn,
+  rollDice
+} from "./moves/turnMoves.js";
 
 //need to allow arrays for both arguments
 export const takeCardsFromBank = (context, cards, playerID) => {
@@ -147,137 +124,7 @@ export const autoStartGame = {
   }
 };
 
-export const rollDice = {
-  canDo: () => console.log("hi roll dive"),
-  move: (context, options) => {
-    const { G, random, effects, events } = context;
-    const roll = drawDiceForRoll(context);
-    G.diceRoll = roll;
-    effects?.roll?.([roll[0], roll[1]]);
-
-    const diceScore = roll[0] + roll[1];
-    const result = applyRollDice(G.core, G.coreTopology, diceScore);
-    if (!result.ok) {
-      console.log("Invalid dice roll");
-      return;
-    }
-    appendGameLog(G, context.ctx, {
-      type: "roll",
-      actorId: context.ctx?.currentPlayer,
-      data: { dice: roll, total: diceScore },
-      forced: options?.forced
-    });
-    logResourceDistributions(G, context.ctx, result.distributions, options);
-    logResourceShortages(G, context.ctx, result.shortages, options);
-
-    // Trigger resource distribution and blocked tile animations together
-    const hasDistributions = result.distributions?.length > 0;
-    const hasBlocked = result.blockedTiles?.length > 0;
-
-    if (hasDistributions || hasBlocked) {
-      const cardAnims = (result.distributions || []).map(d => {
-        const tile = G.tiles.find(t => t.tile.id === d.tileId);
-        return {
-          tileId: d.tileId,
-          coordinate: tile?.coordinate ? [...tile.coordinate] : null,
-          playerID: d.playerId,
-          resource: d.resource,
-        };
-      });
-
-      // Pass combined payload so both flash simultaneously
-      effects?.distributeCardsFromTile?.({
-        cards: cardAnims,
-        blockedTileIds: result.blockedTiles || [],
-      });
-    }
-
-    if (G.core.turn.phase.startsWith("robber")) {
-      if (G.core.turn.phase === "robberDiscard") {
-        const pendingPlayers = G.core.turn.pendingDiscards;
-        const activePlayersConfig = {};
-
-        pendingPlayers.forEach(pid => {
-          activePlayersConfig[pid] = "robberDiscard";
-        });
-
-        events.setActivePlayers({
-          others: null,
-          value: activePlayersConfig,
-        });
-
-      } else {
-        beginRobberMoveStage(context, options);
-      }
-      return;
-    }
-
-    events.setStage("postRoll");
-  },
-};
-
 export const getAvailableMoves = (context) => {};
-
-export const endTurn = {
-  move: (context, options) => {
-    const { G, ctx, events } = context;
-    if (G.core) {
-      G.core.phase = ctx.phase === "placement" ? "placement" : "normal";
-    }
-    const result = applyEndTurn(G.core);
-    if (!result.ok) {
-      console.log(`Invalid end turn: ${result.error}`);
-      return;
-    }
-
-    if (G.devCardPlay?.playerId === ctx.currentPlayer) {
-      G.devCardPlay = null;
-    }
-    G.robberReturnToStage = null;
-
-    appendGameLog(G, ctx, {
-      type: "turn:end",
-      actorId: ctx.currentPlayer,
-      data: {},
-      forced: options?.forced
-    });
-
-    const nextPlayerId = G.core.turn.currentPlayerId;
-    events.endTurn({ next: nextPlayerId });
-  }
-};
-
-export const discardResources = {
-  move: (context, resources, options) => {
-    const { G, playerID, events, ctx, effects } = context;
-    // Assume core G structure
-    const result = applyDiscard(G.core, playerID, resources);
-    if (!result.ok) {
-      console.log(`Invalid discard: ${result.error}`);
-      return;
-    }
-    appendGameLog(G, context.ctx, {
-      type: "discard",
-      actorId: playerID,
-      data: { resources: countResources(resources) },
-      forced: options?.forced
-    });
-    effects?.discardResources?.({
-      effectId: `discard:${playerID}:turn-${ctx?.turn ?? "unknown"}`,
-      playerId: playerID,
-      resources: [...resources]
-    });
-
-    if (G.core.turn.phase === "robberMove") {
-      beginRobberMoveStage(context, options);
-      return;
-    }
-
-    // After a successful discard, this player is done with this stage.
-    // We remove them from the active players.
-    events.endStage();
-  }
-};
 
 export const autoPlaceSettlement = {
   move: (context) => {
@@ -322,44 +169,6 @@ export const autoPlaceRoad = {
     });
     log.setMetadata({ message: `auto-placing road at ${edgeId}` });
     placeRoad.move(context, edgeId, { forced: true });
-  }
-};
-
-export const autoDiscard = {
-  move: (context) => {
-    const { G, ctx, random, log } = context;
-    const playerID = context.playerID ?? ctx.currentPlayer;
-    const player = G.core?.playerStateById?.[playerID];
-    if (!player) {
-      return;
-    }
-    const requiredCount = Math.floor(player.resources.length / 2);
-    if (requiredCount <= 0) {
-      return;
-    }
-    const shuffled = random?.Shuffle
-      ? random.Shuffle([...player.resources])
-      : [...player.resources];
-    const toDiscard = shuffled.slice(0, requiredCount);
-    appendGameLog(G, ctx, {
-      type: "forced:discardSelection",
-      actorId: "system",
-      data: { playerId: playerID }
-    });
-    log.setMetadata({ message: `auto-discarding ${requiredCount} cards` });
-    discardResources.move(context, toDiscard, { forced: true });
-  }
-};
-
-export const autoRoll = {
-  move: (context) => {
-    rollDice.move(context, { forced: true });
-  }
-};
-
-export const autoEndTurn = {
-  move: (context) => {
-    endTurn.move(context, { forced: true });
   }
 };
 

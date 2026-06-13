@@ -1,5 +1,14 @@
 # NOTES
 
+- Turn move boundary note:
+- `app/catana/moves/turnMoves.js` owns dice rolling, balanced dice draw,
+  roll-triggered resource logging/effects, end-turn handling, discard handling,
+  and forced roll/end/discard moves.
+- `app/catana/moves/resourceCounts.js` owns resource grouping used by discard
+  and trade log entries.
+- `app/catana/Moves.js` re-exports turn moves for compatibility, but new direct
+  turn/dice/discard consumers should import from `moves/turnMoves.js`.
+
 - Robber move boundary note:
 - `app/catana/moves/robberMoves.js` owns robber target candidacy, robber
   movement, forced robber movement, no-valid-tile skip logging, and return-stage

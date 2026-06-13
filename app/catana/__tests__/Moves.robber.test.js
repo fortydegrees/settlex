@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { buildTopology, createEmptyState, TileTypes } from "@settlex/game-core";
 import { Client } from "boardgame.io/dist/cjs/client.js";
 import { Catan } from "../Game";
-import { rollDice } from "../Moves";
 import { autoMoveRobber, moveRobber } from "../moves/robberMoves";
+import { rollDice } from "../moves/turnMoves";
 
 describe("Moves robber flow", () => {
   const seedDiscardClient = ({
