@@ -23,7 +23,7 @@ export function LiveMatchLoadingShell() {
           alt: "",
           "aria-hidden": "true",
           loading: "eager",
-          fetchpriority: "high",
+          fetchPriority: "high",
           draggable: false,
           className:
             "absolute inset-0 h-full w-full select-none object-contain opacity-95",
