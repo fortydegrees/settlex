@@ -5654,3 +5654,12 @@
   - `pnpm exec eslint app/catana/Board.js app/catana/utils/boardBuildInteraction.js app/catana/__tests__/boardBuildInteraction.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/Board.activePlayers.test.js app/catana/__tests__/renderPerfGuards.test.js`
   - `git diff --check`
   - Live sandbox smoke at `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`: board underlay rendered, 19 hex tiles were present, game-log content was visible, and browser warning/error logs were empty.
+
+## Status (2026-06-13, GameScreen command-state boundary)
+- Extracted visible dice, discard requirement, roll/end-turn command availability, and modal-blocking derivation into `app/catana/utils/gameScreenCommandState.js`.
+- `GameScreen.js` now keeps the event handlers and render wiring while delegating pure turn-command state.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/gameScreenCommandState.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/GameScreen.diceEffects.test.js app/catana/__tests__/GameScreen.interactionGuards.test.js app/catana/__tests__/turnUiState.test.js app/catana/__tests__/turnControlMode.test.js app/catana/__tests__/GameScreen.mobileShell.source.test.js app/catana/__tests__/renderPerfGuards.test.js --reporter=dot`
+  - `pnpm exec eslint app/catana/GameScreen.js app/catana/utils/gameScreenCommandState.js app/catana/__tests__/gameScreenCommandState.test.js`
+  - `git diff --check`
+  - Live sandbox smoke at `http://127.0.0.1:3100/catana/dev/sandbox?viewportWall=1`: board underlay rendered, 19 hex tiles were present, game-log and Resign content were visible, and browser warning/error logs were empty.

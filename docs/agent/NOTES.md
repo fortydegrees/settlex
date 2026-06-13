@@ -3592,3 +3592,7 @@
       - Avoid reintroducing mirrored state for values that can be derived from `G`, `ctx`, `playerID`, and `playerAction`; `buildableRoads` is intentionally memoized derived data.
       - Keep direct helper tests around buildability behavior, because this path is closer to game-rule correctness than ordinary visual tuning.
       - Next likely architecture slice is `GameScreen.js` effect/command orchestration, not more move splitting.
+    - GameScreen command-state note:
+      - `app/catana/utils/gameScreenCommandState.js` owns pure turn-command derivation for visible dice, discard requirements, roll/end-turn availability, and modal shortcut blocking.
+      - Keep keyboard/event handlers in `GameScreen.js`, but avoid embedding command eligibility formulas directly in the component.
+      - Command-state tests should stay focused on turn-state combinations rather than broad rendered UI checks.
