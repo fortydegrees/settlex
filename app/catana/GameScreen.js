@@ -44,6 +44,10 @@ import {
   readIdlePresenceSnapshot
 } from "./utils/idlePresence";
 import {
+  getTimerRemainingMs,
+  normalizeTimerSnapshot
+} from "./utils/timerSnapshot";
+import {
   canRenderDevPlayModal,
   shouldResetTradeModal
 } from "./utils/turnUiState";
@@ -677,15 +681,12 @@ export function GameScreen(bgioProps) {
       setTimerSnapshot(null);
       return;
     }
-    const receivedAtMs = Date.now();
-    const serverDelayMs = bgioProps.timerServerTimeMs
-      ? Math.max(0, receivedAtMs - bgioProps.timerServerTimeMs)
-      : 0;
-    setTimerSnapshot({
-      ...bgioProps.timerSnapshot,
-      receivedAtMs,
-      serverDelayMs
-    });
+    setTimerSnapshot(
+      normalizeTimerSnapshot(
+        bgioProps.timerSnapshot,
+        bgioProps.timerServerTimeMs
+      )
+    );
   }, [bgioProps.timerSnapshot, bgioProps.timerServerTimeMs]);
 
   useEffect(() => {
@@ -738,15 +739,9 @@ export function GameScreen(bgioProps) {
           setTimerSeeded(true);
           return;
         }
-        const receivedAtMs = Date.now();
-        const serverDelayMs = data.serverTimeMs
-          ? Math.max(0, receivedAtMs - data.serverTimeMs)
-          : 0;
-        setTimerSnapshot({
-          ...data.timer,
-          receivedAtMs,
-          serverDelayMs
-        });
+        setTimerSnapshot(
+          normalizeTimerSnapshot(data.timer, data.serverTimeMs)
+        );
         setTimerSeeded(true);
       } catch (err) {
         // ignore errors
@@ -809,14 +804,7 @@ export function GameScreen(bgioProps) {
     }
   }, [themeId]);
 
-  const timerMs = timerSnapshot
-    ? Math.max(
-        0,
-        timerSnapshot.remainingMs -
-          (nowMs - timerSnapshot.receivedAtMs) -
-          (timerSnapshot.serverDelayMs ?? 0)
-      )
-    : null;
+  const timerMs = getTimerRemainingMs(timerSnapshot, nowMs);
   const hideTimer =
     isGameOver ||
     !shouldShowGameStatusTimer(rawGameStatus, timerSnapshot);
