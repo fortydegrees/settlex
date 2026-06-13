@@ -159,6 +159,7 @@ export function CatanBoard({
   }, [G, ctx, playerAction, playerID, isCurrentPlayerPerspective]);
 
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
+  const flashTimeoutsRef = useRef(new Set());
   const { width, height } = useWindowSize();
   // TODO: Keep in sync with CSS
   const { containerWidth, containerHeight, center, size } = getBoardLayout({
@@ -407,6 +408,21 @@ export function CatanBoard({
     setBuildPickup(null);
   };
 
+  const clearBoardFlashTimeouts = useCallback(() => {
+    flashTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    flashTimeoutsRef.current.clear();
+  }, []);
+
+  const scheduleBoardFlashClear = useCallback((callback, delayMs) => {
+    const timeoutId = window.setTimeout(() => {
+      flashTimeoutsRef.current.delete(timeoutId);
+      callback();
+    }, delayMs);
+    flashTimeoutsRef.current.add(timeoutId);
+  }, []);
+
+  useEffect(() => clearBoardFlashTimeouts, [clearBoardFlashTimeouts]);
+
   // placePiece effects keep state updates delayed; use active effect to suppress overlaps
 
   
@@ -426,12 +442,12 @@ export function CatanBoard({
       setBlockedFlashingTiles(blockedTileIds);
 
       // Clear flashing after buffer
-      setTimeout(() => {
+      scheduleBoardFlashClear(() => {
         setFlashingTiles([]);
         setBlockedFlashingTiles([]);
       }, cards.length * 10 + 1500);
     },
-    [width, height, size, center]
+    [scheduleBoardFlashClear]
   );
 
   // Keep robberBlocked listener for standalone blocked scenarios (no distributions)
@@ -441,12 +457,12 @@ export function CatanBoard({
       // Only handle if not already handled by distributeCardsFromTile
       if (blockedFlashingTiles.length === 0) {
         setBlockedFlashingTiles(blockedTileIds);
-        setTimeout(() => {
+        scheduleBoardFlashClear(() => {
           setBlockedFlashingTiles([]);
         }, 1500);
       }
     },
-    [blockedFlashingTiles]
+    [blockedFlashingTiles, scheduleBoardFlashClear]
   );
 
   //for displaying actionNodes based on stage the player is in (e.g. moving robber)

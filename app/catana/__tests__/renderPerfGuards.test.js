@@ -239,6 +239,17 @@ describe("render performance guards", () => {
     expect(contents).toContain("<React.Suspense fallback={null}>");
   });
 
+  it("tracks board flash timers so effect callbacks clean up on unmount", () => {
+    const contents = readCatanaFile("Board.js");
+
+    expect(contents).toContain("flashTimeoutsRef");
+    expect(contents).toContain("clearBoardFlashTimeouts");
+    expect(contents).toContain("scheduleBoardFlashClear");
+    expect(contents).toMatch(
+      /useEffect\(\(\) => clearBoardFlashTimeouts,\s*\[clearBoardFlashTimeouts\]\)/
+    );
+  });
+
   it("routes ActionNode building previews through the shared piece asset helper", () => {
     const contents = readCatanaFile("ActionNode.js");
     expect(contents).toContain("getPieceSvgFile");
