@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-06-13, dev-scenario setup boundary)
+- Extracted dev-scenario parsing, validation, setup-state merging, and
+  boardgame.io context seeding from `app/catana/Game.js` into
+  `app/catana/gameSetup/devScenarios.js`.
+- Added focused coverage in `app/catana/__tests__/devScenarios.test.js` for
+  current/legacy scenario wrappers, production/player-count guardrails, and
+  post-roll context seeding.
+- `Game.js` now delegates dev scenario setup through `applyDevScenarioSetup`
+  while keeping normal board/rules setup inline.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/devScenarios.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/devScenarios.test.js app/catana/__tests__/Game.boardConfig.test.js app/catana/__tests__/Game.debugMoves.test.js app/catana/__tests__/DevSandboxBoardShell.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Game.js app/catana/gameSetup/devScenarios.js app/catana/__tests__/devScenarios.test.js app/catana/__tests__/Game.boardConfig.test.js app/catana/__tests__/Game.debugMoves.test.js app/catana/__tests__/DevSandboxBoardShell.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, debug move boundary)
 - Extracted dev-only/debug move definitions from `app/catana/Moves.js` into
   `app/catana/moves/debugMoves.js`.

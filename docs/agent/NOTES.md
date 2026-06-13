@@ -1,5 +1,15 @@
 # NOTES
 
+- Dev-scenario setup note:
+- `app/catana/gameSetup/devScenarios.js` owns dev-scenario state extraction,
+  production/player-count validation, merge-over-generated-state behavior, and
+  boardgame.io context seeding.
+- Keep normal board/rules setup in `Game.js`, but route any new
+  `devScenarioState` shape handling or scenario stage derivation through the
+  dev-scenario setup helper.
+- The helper accepts an explicit `nodeEnv` in tests so production guardrails
+  can be covered without module-cache gymnastics.
+
 - Debug move boundary note:
 - `app/catana/moves/debugMoves.js` owns `DEBUG_*` move definitions and exports
   the grouped `DEBUG_MOVES` map.
