@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-06-13, terminal move boundary)
+- Extracted terminal/forfeit moves from `app/catana/Moves.js` into
+  `app/catana/moves/terminalMoves.js`.
+- Extracted shared game-over logging into `app/catana/moves/gameOver.js` so
+  normal moves and terminal moves use the same `maybeLogGameOver` helper
+  without keeping terminal policy in the normal move module.
+- Updated `Game.js` to import resign/disconnect/idle terminal moves from the
+  terminal module while leaving exposure policy unchanged.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/Moves.gameLog.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Game.js app/catana/Moves.js app/catana/moves/gameOver.js app/catana/moves/terminalMoves.js app/catana/__tests__/Moves.resign.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Game.debugMoves.test.js server/__tests__/serverGameConfig.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, player-view masking boundary)
 - Extracted secret-state masking from `app/catana/Game.js` into
   `app/catana/gameSetup/playerView.js`.

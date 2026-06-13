@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 import { createEmptyState, makeDeterministicRng } from "@settlex/game-core";
 import { Client } from "boardgame.io/dist/cjs/client.js";
 import { Catan } from "../Game";
-import { resign, resolveDisconnectForfeit, resolveIdleForfeit } from "../Moves";
+import {
+  resign,
+  resolveDisconnectForfeit,
+  resolveIdleForfeit
+} from "../moves/terminalMoves";
 import { ServerCatan } from "../../../server/serverGame";
 
 const makeContext = ({ playerID = "0" } = {}) => {

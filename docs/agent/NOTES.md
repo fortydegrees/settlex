@@ -1,5 +1,13 @@
 # NOTES
 
+- Terminal move boundary note:
+- `app/catana/moves/terminalMoves.js` owns resign, disconnect forfeit, and idle
+  forfeit move definitions.
+- `app/catana/moves/gameOver.js` owns shared game-over reason constants and
+  `maybeLogGameOver`; normal moves import the logger from there.
+- Keep terminal exposure policy in `Game.js` via `terminalStageMoves` and
+  `serverMoves`; do not move server-only exposure decisions into `Moves.js`.
+
 - Player-view masking note:
 - `app/catana/gameSetup/playerView.js` owns authoritative-state masking for
   boardgame.io `playerView`: hidden dev deck values, opponent/spectator hand
