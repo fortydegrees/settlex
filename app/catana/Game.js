@@ -4,8 +4,6 @@ import {
   autoPlaceRoad,
   rollDice,
   autoRoll,
-  moveRobber,
-  autoMoveRobber,
   endTurn,
   autoEndTurn,
   discardResources,
@@ -25,6 +23,7 @@ import {
   placeSettlement,
   updateValids
 } from "./moves/buildMoves.js";
+import { autoMoveRobber, moveRobber } from "./moves/robberMoves.js";
 import {
   resign,
   resolveDisconnectForfeit,
