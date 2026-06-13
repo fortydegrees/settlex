@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { placeSettlement, placeRoad, placeCity } from "../Moves";
+import { placeSettlement, placeRoad, placeCity } from "../moves/buildMoves";
 
 vi.mock("@settlex/game-core", async () => {
   const actual = await vi.importActual("@settlex/game-core");

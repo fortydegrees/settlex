@@ -1,5 +1,30 @@
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
-import { placeSettlement, autoPlaceSettlement, placeRoad, autoPlaceRoad, placeCity, updateValids, rollDice, autoRoll, moveRobber, autoMoveRobber, endTurn, autoEndTurn, discardResources, autoDiscard, maritimeTrade, buyDevCard, playDevCardStart, confirmDevCardPlay, autoResolveDevCard, placeRoadFromDevCard, readyUp, autoStartGame } from "./Moves.js";
+import {
+  autoPlaceSettlement,
+  autoPlaceRoad,
+  rollDice,
+  autoRoll,
+  moveRobber,
+  autoMoveRobber,
+  endTurn,
+  autoEndTurn,
+  discardResources,
+  autoDiscard,
+  maritimeTrade,
+  buyDevCard,
+  playDevCardStart,
+  confirmDevCardPlay,
+  autoResolveDevCard,
+  placeRoadFromDevCard,
+  readyUp,
+  autoStartGame
+} from "./Moves.js";
+import {
+  placeCity,
+  placeRoad,
+  placeSettlement,
+  updateValids
+} from "./moves/buildMoves.js";
 import {
   resign,
   resolveDisconnectForfeit,

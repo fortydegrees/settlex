@@ -1,23 +1,17 @@
 
 import { TileTypes } from "./types.js";
 import {
-  applyBuildCity,
-  applyBuildRoad,
-  applyBuildSettlement,
   applyFreeRoad,
   applyEndTurn,
   applyKnight,
   applyMonopoly,
   applyMoveRobber,
   getRobberVictims,
-  applyPlaceRoad,
-  applyPlaceSettlement,
   applyRollDice,
   applyYearOfPlenty,
   applyDiscard,
   applyMaritimeTradeBatch,
   buildableEdges,
-  buildableNodes,
   buyDevCard as applyBuyDevCard,
   canPlaceRobber,
   canPlayDevCard,
@@ -31,6 +25,14 @@ import {
   logResourceDistributions,
   logResourceShortages
 } from "./moves/resourceLogging.js";
+import {
+  getBuildableEdges,
+  getBuildableNodes,
+  placeCity,
+  placeRoad,
+  placeSettlement,
+  updateValids
+} from "./moves/buildMoves.js";
 import {
   DEV_CARD_CHOICE_STAGE,
   STANDARD_RESOURCE_TYPES,
@@ -50,6 +52,15 @@ import {
   storePendingKnightPlayAnimation
 } from "./moves/devCardPresentation.js";
 import { maybeLogGameOver } from "./moves/gameOver.js";
+
+export {
+  getBuildableEdges,
+  getBuildableNodes,
+  placeCity,
+  placeRoad,
+  placeSettlement,
+  updateValids
+} from "./moves/buildMoves.js";
 
 const countResources = (resources = []) =>
   resources.reduce((acc, resource) => {
@@ -112,104 +123,6 @@ export const takeCardsFromBank = (context, cards, playerID) => {
     message: `player ${playerID} received ${cardLog}`,
   });
 };
-
-export const placeSettlement = {
-  move: (context, node, options) => {
-    const { G, playerID, events, ctx, effects } = context;
-    const nodeId = parseInt(node);
-    const isPlacement = ctx.phase === "placement";
-    const previousAwards = getAwardOwners(G.core);
-    if (G.core) {
-      G.core.phase = isPlacement ? "placement" : "normal";
-    }
-
-    const result = isPlacement
-      ? applyPlaceSettlement(G.core, G.coreTopology, nodeId, playerID, {
-          initialPlacement: true
-        })
-      : applyBuildSettlement(G.core, G.coreTopology, nodeId, playerID);
-    if (!result.ok) {
-      console.log(`Invalid settlement placement at node ${node}`);
-      return;
-    }
-    effects?.placePiece?.({
-      pieceType: "settlement",
-      id: nodeId,
-      playerId: playerID,
-      initialPlacement: isPlacement
-    });
-    const distributions = result.distributions ?? [];
-    if (distributions.length > 0) {
-      const cardAnims = distributions.map((d) => {
-        const tile = G.tiles.find((t) => t.tile.id === d.tileId);
-        return {
-          tileId: d.tileId,
-          coordinate: tile?.coordinate ? [...tile.coordinate] : null,
-          playerID: d.playerId,
-          resource: d.resource
-        };
-      });
-      effects?.distributeCardsFromTile?.(cardAnims);
-    }
-    appendGameLog(G, ctx, {
-      type: "build:settlement",
-      actorId: playerID,
-      data: { nodeId, initialPlacement: isPlacement },
-      forced: options?.forced
-    });
-    logAwardChanges(G, ctx, previousAwards, options, effects);
-    logResourceDistributions(G, ctx, distributions, options);
-    maybeLogGameOver(G, ctx);
-
-    if (isPlacement) {
-      updateValids(context, "road", nodeId);
-    }
-
-    //if initial placement
-    if (isPlacement) {
-      events.setStage("road");
-    }
-    //events.endTurn();
-
-    //updateValids(context, stage);
-  },
-  //   redact: ({ G, ctx }) =>
-  //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
-};
-
-
-export const getBuildableEdges = (playerID, G, ctx) =>{
-  const isPlacement = ctx?.phase === "placement";
-  return buildableEdges(G.core, G.coreTopology, playerID, {
-    initialPlacement: Boolean(isPlacement)
-  });
-
-}
-
-`
-def buildable_node_ids(self, color: Color, initial_build_phase=False):
-if initial_build_phase:
-    return sorted(list(self.board_buildable_ids))
-
-subgraphs = self.find_connected_components(color)
-nodes = set().union(*subgraphs)
-return sorted(list(nodes.intersection(self.board_buildable_ids)))
-`
-
-//catanatron stores buildable_ids and then removes neighbours when built
-//that approach does kind of make sense
-//like storing buildable edges/nodes in a cache and only changing when boardState changes
-//but that doesn't seem like data that should stay in _my_ gamestate.
-//should be with client
-export const getBuildableNodes = (playerID, G, ctx) => {
-  const isPlacement = ctx && ctx.phase === "placement";
-  if (G.core) {
-    G.core.phase = isPlacement ? "placement" : "normal";
-  }
-  return buildableNodes(G.core, G.coreTopology, playerID, {
-    initialPlacement: Boolean(isPlacement)
-  });
-}
 
 export const readyUp = {
   ignoreStaleStateID: true,
@@ -308,99 +221,6 @@ const beginRobberMoveStage = (context, options) => {
   setCurrentPlayerStage(context, "moveRobber");
   return true;
 };
-
-
-export const placeRoad = {
-  move: (context, edge, options) => {
-    const { G, playerID, events, ctx, effects } = context;
-    const isPlacement = ctx.phase === "placement";
-    const previousAwards = getAwardOwners(G.core);
-    if (G.core) {
-      G.core.phase = isPlacement ? "placement" : "normal";
-    }
-
-    const result = isPlacement
-      ? applyPlaceRoad(G.core, G.coreTopology, edge, playerID, {
-          initialPlacement: true
-        })
-      : applyBuildRoad(G.core, G.coreTopology, edge, playerID);
-    if (!result.ok) {
-      console.log(`Invalid road placement at edge ${edge}`);
-      return;
-    }
-    effects?.placePiece?.({
-      pieceType: "road",
-      id: edge,
-      playerId: playerID,
-      initialPlacement: isPlacement
-    });
-    appendGameLog(G, ctx, {
-      type: "build:road",
-      actorId: playerID,
-      data: { edgeId: edge, initialPlacement: isPlacement },
-      forced: options?.forced
-    });
-    logAwardChanges(G, ctx, previousAwards, options, effects);
-    maybeLogGameOver(G, ctx);
-
-    //if we're in placement phase, end turn after placing road
-    if (isPlacement) {
-      const ruleset = G.core?.ruleset;
-      const startingSettlements = ruleset?.pieceLimits?.settlements ?? 0;
-      const startingRoads = ruleset?.pieceLimits?.roads ?? 0;
-      const placementComplete = G.core?.players?.every((id) => {
-        const playerState = G.core.playerStateById[id];
-        return (
-          playerState?.settlementsRemaining === startingSettlements - 2 &&
-          playerState?.roadsRemaining === startingRoads - 2
-        );
-      });
-      if (!placementComplete) {
-        appendGameLog(G, ctx, {
-          type: "turn:end",
-          actorId: playerID,
-          data: { phase: "placement" },
-          forced: options?.forced
-        });
-      }
-      events.endTurn();
-    }
-    //updateValids(context, stage);
-  },
-  //   redact: ({ G, ctx }) =>
-  //     G.players[ctx.currentPlayer].charState.hasSecretWorkers,
-}
-
-export const placeCity = {
-  move: (context, node, options) => {
-    const { G, playerID, ctx, effects } = context;
-    if (ctx.phase === "placement") {
-      return;
-    }
-    const previousAwards = getAwardOwners(G.core);
-    const nodeId = parseInt(node);
-    const result = applyBuildCity(G.core, G.coreTopology, nodeId, playerID);
-    if (!result.ok) {
-      console.log(`Invalid city placement at node ${node}`);
-      return;
-    }
-    effects?.placePiece?.({
-      pieceType: "city",
-      id: nodeId,
-      playerId: playerID
-    });
-    appendGameLog(G, ctx, {
-      type: "build:city",
-      actorId: playerID,
-      data: { nodeId },
-      forced: options?.forced
-    });
-    logAwardChanges(G, ctx, previousAwards, options, effects);
-    maybeLogGameOver(G, ctx);
-  }
-};
-
-
 //we need to either return to preRoll (if robber moved from knight played before rolling dice)
 //or postRoll (if played from rolling a 7 or knight mid-turn)
 export const moveRobber = {
@@ -530,33 +350,6 @@ export const rollDice = {
 
     events.setStage("postRoll");
   },
-};
-
-//'meta' is a lil ?hack? (is it?) to pass relevant context for the action,
-//e.g. for road, pass a nodeID to make it super easy for initial settle/road placement
-export const updateValids = (context, stage, meta) => {
-  //get player info. color etc
-  const { G, ctx, playerID } = context;
-  G.valids.nodes = [];
-  G.valids.edges = [];
-  const isPlacement = ctx.phase === "placement";
-  switch (stage) {
-    case "road":
-      G.valids.edges = buildableEdges(G.core, G.coreTopology, playerID, {
-        initialPlacement: isPlacement,
-        fromNodeId: meta ?? undefined
-      });
-      break;
-    case "settlement":
-      G.valids.nodes = buildableNodes(G.core, G.coreTopology, playerID, {
-        initialPlacement: isPlacement
-      });
-      break;
-    default:
-      G.valids.edges = [];
-      G.valids.nodes = [];
-      break;
-  }
 };
 
 export const getAvailableMoves = (context) => {};

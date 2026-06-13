@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-06-13, build move boundary)
+- Extracted settlement/road/city placement moves and buildability helpers from
+  `app/catana/Moves.js` into `app/catana/moves/buildMoves.js`.
+- Updated `app/catana/Game.js`, `app/catana/Board.js`, and focused build tests
+  to depend on the narrower build-move boundary while preserving compatibility
+  re-exports from `Moves.js`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/Moves.placePieceEffects.test.js app/catana/__tests__/Moves.placementLog.test.js app/catana/__tests__/Moves.resourceDistribution.test.js app/catana/__tests__/Game.placementPhase.test.js --reporter=dot` (red: missing `../moves/buildMoves`)
+- `pnpm exec vitest run app/catana/__tests__/Moves.placePieceEffects.test.js app/catana/__tests__/Moves.placementLog.test.js app/catana/__tests__/Moves.resourceDistribution.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.devCards.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Board.activePlayers.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/Moves.js app/catana/moves/buildMoves.js app/catana/Game.js app/catana/Board.js app/catana/__tests__/Moves.placePieceEffects.test.js app/catana/__tests__/Moves.placementLog.test.js app/catana/__tests__/Moves.resourceDistribution.test.js app/catana/__tests__/Game.placementPhase.test.js app/catana/__tests__/Moves.gameLog.test.js app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/Board.buildPickupPreview.test.js app/catana/__tests__/Board.activePlayers.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, resource logging boundary)
 - Extracted resource gain/shortage game-log helpers from `app/catana/Moves.js`
   into `app/catana/moves/resourceLogging.js`.

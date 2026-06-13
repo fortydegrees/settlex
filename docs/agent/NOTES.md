@@ -1,5 +1,13 @@
 # NOTES
 
+- Build move boundary note:
+- `app/catana/moves/buildMoves.js` owns settlement, road, and city placement
+  moves plus buildability helpers used by placement-stage validation and board
+  build-target previews.
+- `app/catana/Moves.js` re-exports build moves for compatibility, but new
+  direct build consumers should import from `moves/buildMoves.js` instead of
+  expanding the generic move aggregator.
+
 - Resource logging note:
 - `app/catana/moves/resourceLogging.js` owns game-log entries for resource
   gains and resource shortages from dice rolls or setup placement rewards.
