@@ -1,5 +1,11 @@
 # NOTES
 
+- Timer snapshot note:
+- `app/catana/utils/timerSnapshot.js` owns normalization of server timer
+  snapshots and countdown remaining-time math.
+- Use `normalizeTimerSnapshot` when accepting bgio or fetched timer payloads,
+  and `getTimerRemainingMs` when deriving visible countdown values.
+
 - Card-transfer payload note:
 - `app/catana/utils/cardTransferPayloads.js` owns payload builders for
   card/resource transfer animations emitted from `GameScreen.js`.

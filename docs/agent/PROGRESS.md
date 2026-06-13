@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-06-13, timer snapshot helpers)
+- Extracted GameScreen timer snapshot normalization and remaining-time math into
+  `app/catana/utils/timerSnapshot.js`.
+- Added focused coverage in `app/catana/__tests__/timerSnapshot.test.js` for
+  server-delay calculation, clock-skew clamping, missing snapshots, and elapsed
+  countdown clamping.
+- `app/catana/GameScreen.js` now uses the helper for both bgio-provided timer
+  snapshots and fetch-seeded timer snapshots.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/timerSnapshot.test.js --reporter=dot` (red: missing `timerSnapshot`)
+- `pnpm exec vitest run app/catana/__tests__/timerSnapshot.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/gameStatus.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/GameScreen.js app/catana/utils/timerSnapshot.js app/catana/__tests__/timerSnapshot.test.js app/catana/__tests__/GameScreen.statusPresentation.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/gameStatus.test.js`
+- `git diff --check`
+
 ## Status (2026-06-13, card-transfer payload helpers)
 - Extracted GameScreen card-transfer payload builders for dev-card purchases,
   maritime trade, discard, and robber steal animations into
