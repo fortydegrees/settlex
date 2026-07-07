@@ -33,6 +33,9 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      NEXT_PUBLIC_SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
+      NEXT_PUBLIC_SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
+      NEXT_PUBLIC_SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
     expose:
       - "3000"
     restart: unless-stopped
