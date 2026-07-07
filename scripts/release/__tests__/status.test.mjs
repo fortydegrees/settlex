@@ -111,7 +111,7 @@ describe("release status", () => {
     expect(checks).toContain("pnpm release:check -- --require-approved");
     expect(checks).toContain("pnpm verify");
     expect(checks).toContain("bash -n infra/scripts/deploy-prod.sh");
-    expect(checks).toContain("docker build -f Dockerfile.web --target deps .");
+    expect(checks).toContain("docker build -f Dockerfile.web .");
     expect(checks).toContain("docker build -f Dockerfile.game .");
     expect(checks).not.toContain(
       "pnpm release:check -- --require-bump-from origin/main"

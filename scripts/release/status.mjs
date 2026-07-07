@@ -84,7 +84,7 @@ export function buildRequiredChecks({
     checks.push(
       "pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js --reporter=dot",
       "bash -n infra/scripts/deploy-prod.sh",
-      "docker build -f Dockerfile.web --target deps .",
+      "docker build -f Dockerfile.web .",
       "docker build -f Dockerfile.game ."
     );
   }
