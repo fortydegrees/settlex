@@ -1,11 +1,13 @@
 import React, { createElement as h } from "react";
+import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
 
 export function LiveMatchLoadingShell() {
   return h(
     "div",
     {
       className:
-        "min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#38bdf8,_#2563eb_60%,_#0f172a)] text-slate-900",
+        "min-h-screen overflow-hidden text-slate-900",
+      style: { background: CATANA_TABLE_BACKGROUND },
     },
     h(
       "div",

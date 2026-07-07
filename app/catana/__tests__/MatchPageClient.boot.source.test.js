@@ -24,4 +24,17 @@ describe("MatchPageClient live boot path", () => {
     expect(source).toContain("LiveMatchLoadingShell");
     expect(source).toContain("loading: LiveMatchLoadingShell");
   });
+
+  it("can enter a no-credential spectator client when all seats are already taken", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "app/catana/lobby/[matchID]/MatchPageClient.js"),
+      "utf8"
+    );
+
+    expect(source).toContain("const isFullMatch");
+    expect(source).toContain("const isSpectating");
+    expect(source).toContain("setSpectatorMode(true)");
+    expect(source).toContain("playerID={null}");
+    expect(source).toContain("Spectate");
+  });
 });

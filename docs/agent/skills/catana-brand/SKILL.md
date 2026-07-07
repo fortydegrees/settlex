@@ -1,6 +1,6 @@
 ---
 name: catana-brand
-description: Use when building UI components, pages, or features for Catana. Provides design philosophy, colors, typography, component patterns, and animation principles for a consistent, joyful aesthetic.
+description: Use when building or reviewing SettleHex/Catana UI. Provides current product direction, brand/taste principles, colors, typography, component patterns, and animation guidance for a consistent game-first aesthetic.
 ---
 
 # Catana Design System
@@ -8,8 +8,19 @@ description: Use when building UI components, pages, or features for Catana. Pro
 Related specs:
 - `docs/agent/skills/catana-brand/RESOURCE_ICON_STYLE_GUIDE.md` (authoritative resource-icon system and handoff contract)
 - `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` (short workflow for adding new shared standard UI primitives)
+- `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md` (audit checklist for one-off visual review passes)
 
 If you are adding or extending a reusable product-surface primitive in `app/ui/*`, also read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` before implementation. That workflow requires checking the existing Settlex primitives first, then reviewing two or three targeted external references before inventing a new shared interaction pattern.
+
+## Current SettleHex Direction
+
+The current game screen is the strongest canonical reference. Preserve its HUD glass, bottom/action dock language, resource rails, player-color identity, compact game log/chat controls, tactile animation, and synthetic sound family unless the task explicitly asks to explore a new direction.
+
+The homepage is weaker historically and should not be treated as proof that generic landing-page styling is correct. Treat it as a title/client surface: actual board/table first, a bottom game-control dock for mode entry, account-first top-right chrome, quiet top links/metadata, and ambient tabletop life. Avoid active-match chrome such as turn timers, resign buttons, resource inventories, chat composers, or full logs on the homepage unless the route is intentionally entering a real match.
+
+Shared product UI lives in `app/ui/*` and is exercised in `/catana/dev/ui`. Use those local primitives and recipes before inventing a new control. External libraries and inspiration sites are references for behavior or proportion, not skins to copy wholesale.
+
+For review-only work, use `DESIGN_REVIEW_CHECKLIST.md` before proposing a redesign. For implementation work, inspect the relevant current surface and pick the smallest verification loop that can prove the visual behavior.
 
 ## Philosophy
 

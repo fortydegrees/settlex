@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import { notFound } from "next/navigation";
 import { getPublicProfile } from "../../../lib/server/profiles/getPublicProfile.js";
+import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
 
 const formatDate = (value) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -112,7 +113,8 @@ export const createProfilePage = ({
       "main",
       {
         className:
-          "min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 via-blue-300 to-blue-600 px-4 py-10 text-slate-800",
+          "min-h-screen px-4 py-10 text-slate-800",
+        style: { background: CATANA_TABLE_BACKGROUND },
       },
       h(
         "div",

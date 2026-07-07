@@ -160,7 +160,7 @@ export function CatanBoard({
 
   const divRef = useRef(null); //ref for whole page (to get x/y for card holders)
   const flashTimeoutsRef = useRef(new Set());
-  const { width, height } = useWindowSize();
+  const { width, height, isMeasured } = useWindowSize();
   // TODO: Keep in sync with CSS
   const { containerWidth, containerHeight, center, size } = getBoardLayout({
     width,
@@ -993,7 +993,11 @@ export function CatanBoard({
   };
 
   return (
-    <div ref={setBoardRefs}>
+    <div
+      ref={setBoardRefs}
+      data-window-size-measured={isMeasured ? "true" : "false"}
+      style={{ visibility: isMeasured ? "visible" : "hidden" }}
+    >
       {" "}
       <div className="relative h-screen w-screen">
         <BoardUnderlay center={center} size={size} themeId={themeId} />

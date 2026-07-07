@@ -8,9 +8,11 @@ describe("Settlex dialog wrappers", () => {
 
     expect(source).toContain("@base-ui/react/dialog");
     expect(source).toContain("settlex-ui-dialog-backdrop");
+    expect(source).toContain("settlex-ui-layer-dialog");
     expect(source).toContain("settlex-ui-dialog-popup");
     expect(source).toContain("rounded-[1.65rem]");
     expect(source).toContain("bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(239,246,255,0.76))]");
+    expect(source).not.toContain("z-40");
   });
 
   it("builds AlertDialog on Base UI with the same promoted overlay shell", () => {
@@ -20,9 +22,11 @@ describe("Settlex dialog wrappers", () => {
     );
 
     expect(source).toContain("@base-ui/react/alert-dialog");
+    expect(source).toContain("settlex-ui-layer-dialog");
     expect(source).toContain("cancelLabel");
     expect(source).toContain("confirmLabel");
     expect(source).toContain("rounded-[1.65rem]");
     expect(source).toContain("bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(239,246,255,0.76))]");
+    expect(source).not.toContain("z-40");
   });
 });

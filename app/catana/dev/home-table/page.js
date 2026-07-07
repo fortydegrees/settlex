@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { HomeTablePrototypeClient } from "./HomeTablePrototypeClient";
+import { HomeTableClient } from "../../home/HomeTableClient";
 
 export default function HomeTablePrototypePage() {
   if (process.env.NODE_ENV !== "development") {
     notFound();
   }
 
-  return <HomeTablePrototypeClient />;
+  return <HomeTableClient />;
 }

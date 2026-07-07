@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { BoardPortChannels } from "../BoardPortChannels";
 import { BoardUnderlay } from "../BoardUnderlay";
 import { Port } from "../Port";
@@ -14,16 +14,21 @@ import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";
 import { HOME_DEMO_PLAYER_COLORS } from "./homeDemoSequence";
 import { HomeDemoPieceLayer } from "./HomeDemoPieceLayer";
 
+const useBrowserLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 export function HomeDemoBoard({
   pieceState,
   reservedHeight,
+  centerYOffset = 0,
   boardRef,
   placementLayerRef,
   placementRoadLayerRef,
+  onBoardMeasuredChange,
   themeId = DEFAULT_THEME_ID
 }) {
   const fallbackBoardRef = useRef(null);
-  const { width, height } = useWindowSize();
+  const { width, height, isMeasured } = useWindowSize();
   const layout = useMemo(
     () =>
       getBoardLayout({
@@ -37,7 +42,15 @@ export function HomeDemoBoard({
     () => buildRenderMaps(HOME_DEMO_BOARD_PRESET.tiles),
     []
   );
-  const { center, size, containerWidth, containerHeight } = layout;
+  const { size, containerWidth, containerHeight } = layout;
+  const center = useMemo(
+    () => [layout.center[0], layout.center[1] + centerYOffset],
+    [centerYOffset, layout.center]
+  );
+
+  useBrowserLayoutEffect(() => {
+    onBoardMeasuredChange?.(isMeasured);
+  }, [isMeasured, onBoardMeasuredChange]);
 
   const setBoardRefs = (node) => {
     fallbackBoardRef.current = node;
@@ -52,7 +65,12 @@ export function HomeDemoBoard({
   if (!width || !height || !size) return null;
 
   return (
-    <div ref={setBoardRefs} data-testid="home-demo-board">
+    <div
+      ref={setBoardRefs}
+      data-testid="home-demo-board"
+      data-window-size-measured={isMeasured ? "true" : "false"}
+      style={{ visibility: isMeasured ? "visible" : "hidden" }}
+    >
       <div className="relative h-screen w-screen">
         <BoardUnderlay center={center} size={size} themeId={themeId} />
         <BoardPortChannels

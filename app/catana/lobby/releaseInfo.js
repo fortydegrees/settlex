@@ -26,12 +26,14 @@ export function buildPublicReleaseInfo({
     releaseNotes.releases?.[0] ??
     {};
   const version = currentRelease.version ?? currentVersion;
+  const releaseLabel =
+    toTrimmedString(currentRelease.label) || `release ${version}`;
   const buildSha = toTrimmedString(env.NEXT_PUBLIC_SETTLEX_BUILD_SHA);
   const buildDate = toTrimmedString(env.NEXT_PUBLIC_SETTLEX_BUILD_DATE);
 
   return {
     version,
-    releaseLabel: `release ${version}`,
+    releaseLabel,
     title: toTrimmedString(currentRelease.title) || "Settlex update",
     date: toTrimmedString(currentRelease.date),
     highlights: normalizeHighlights(currentRelease.highlights),

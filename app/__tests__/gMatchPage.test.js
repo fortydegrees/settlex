@@ -61,6 +61,60 @@ describe("/g match page", () => {
     expect(html).toContain("Live m1 seat 0 credentials secret_0 players 1");
   });
 
+  it("hydrates the viewer seat from match credential cookies without a playerID query", async () => {
+    const { createGMatchPage } = await loadPageModule();
+    const getMatchPageData = vi.fn().mockResolvedValue({
+      kind: "live",
+      matchID: "m1",
+      liveMatch: {
+        matchID: "m1",
+        players: [
+          { id: 0, name: "Ada" },
+          { id: 1, name: "Bren" },
+        ],
+      },
+    });
+    const readSeatCredential = vi.fn(async ({ playerID }) =>
+      String(playerID) === "1" ? "secret_1" : null
+    );
+    const MatchPageClient = ({
+      matchID,
+      initialPlayerID,
+      initialCredentials,
+      initialLiveMatch,
+    }) =>
+      h(
+        "div",
+        null,
+        `Live ${matchID} seat ${initialPlayerID} credentials ${initialCredentials} players ${initialLiveMatch.players.length}`
+      );
+
+    const Page = createGMatchPage({
+      getMatchPageData,
+      readSeatCredential,
+      MatchPageClient,
+      notFoundImpl: () => {
+        throw new Error("not found");
+      },
+    });
+
+    const element = await Page({
+      params: { matchID: "m1" },
+      searchParams: {},
+    });
+    const html = renderToStaticMarkup(element);
+
+    expect(readSeatCredential).toHaveBeenNthCalledWith(1, {
+      matchID: "m1",
+      playerID: "0",
+    });
+    expect(readSeatCredential).toHaveBeenNthCalledWith(2, {
+      matchID: "m1",
+      playerID: "1",
+    });
+    expect(html).toContain("Live m1 seat 1 credentials secret_1 players 2");
+  });
+
   it("renders archived replay mode on the same URL after live cleanup", async () => {
     const { createGMatchPage } = await loadPageModule();
     const getMatchPageData = vi.fn().mockResolvedValue({

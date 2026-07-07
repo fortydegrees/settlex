@@ -27,6 +27,7 @@ const ROBBER_SHADOW_ROTATION_DEG = -8;
 const ROBBER_SHADOW_SKEW_DEG = -7;
 const ROBBER_SHADOW_BLUR_PX = 4;
 const ROBBER_SHADOW_OPACITY = 0.82;
+const HEX_CLIP_PATH = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
 
 const numberToPips = (number) => {
   switch (number) {
@@ -159,11 +160,9 @@ export function Tile({
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    position: "relative",
     width: w,
     height: h,
-    backgroundImage: getBackgroundImageWithFallback(themeId, getTileFile(resource)),
-    backgroundSize: "contain",
-    backgroundRepeat: "no-repeat",
 
     //opacity: resource === "Empty" ? 0.3 : 1,
     opacity:
@@ -172,8 +171,22 @@ export function Tile({
           ? 1
           : 0.8
         : 1,
+  };
+  const tileVisualStyle = {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundImage: getBackgroundImageWithFallback(themeId, getTileFile(resource)),
+    backgroundSize: "contain",
+    backgroundRepeat: "no-repeat",
+    clipPath: HEX_CLIP_PATH,
+    pointerEvents: "none",
     filter:
-      (hasRobber || isHovered) && resource !== "Desert" && `saturate(0.85) brightness(0.85)`,
+      (hasRobber || isHovered) && resource !== "Desert"
+        ? "saturate(0.85) brightness(0.85)"
+        : undefined,
   };
 
   if (draggable) {
@@ -195,52 +208,53 @@ export function Tile({
   return (
     <>
       <div
-        className="hex"
         ref={draggable ? drag : null}
         //key={coordinate}
         style={style}
       >
         {/* {coordinate.join(', ')} */}
-        {(isFlashing || isBlockedFlashing) && (
-          <div
-            style={{
-              content: "",
-              display: "block",
-              position: "absolute",
-              background: isBlockedFlashing
-                ? "rgba(200, 50, 50, 0.5)"
-                : "rgba(255, 255, 255, 0.5)",
-              width: "60px",
-              height: "100%",
-              top: "0",
-              left: "-50%",
-              opacity: 1,
-              filter: "blur(30px)",
-              willChange: "transform",
-              animation: "flash 1s 1",
-            }}
-          />
-        )}
-        {tileResourceIconSrc && (
-          <img
-            src={tileResourceIconSrc}
-            alt=""
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: tileIconTop,
-              transform: "translateX(-50%)",
-              width: size * tileIconScale,
-              height: size * tileIconScale,
-              pointerEvents: "none",
-            }}
-            draggable={false}
-            onError={(event) =>
-              handleThemeImageError(event, tileResourceIconFallbackSrc)
-            }
-          />
-        )}
-        {number && <NumberToken size={size} number={number} />}
+        <div style={tileVisualStyle}>
+          {(isFlashing || isBlockedFlashing) && (
+            <div
+              style={{
+                content: "",
+                display: "block",
+                position: "absolute",
+                background: isBlockedFlashing
+                  ? "rgba(200, 50, 50, 0.5)"
+                  : "rgba(255, 255, 255, 0.5)",
+                width: "60px",
+                height: "100%",
+                top: "0",
+                left: "-50%",
+                opacity: 1,
+                filter: "blur(30px)",
+                willChange: "transform",
+                animation: "flash 1s 1",
+              }}
+            />
+          )}
+          {tileResourceIconSrc && (
+            <img
+              src={tileResourceIconSrc}
+              alt=""
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: tileIconTop,
+                transform: "translateX(-50%)",
+                width: size * tileIconScale,
+                height: size * tileIconScale,
+                pointerEvents: "none",
+              }}
+              draggable={false}
+              onError={(event) =>
+                handleThemeImageError(event, tileResourceIconFallbackSrc)
+              }
+            />
+          )}
+          {number && <NumberToken size={size} number={number} />}
+        </div>
         {hasRobber && (
           <div
             data-catana-robber-tile-id={id}

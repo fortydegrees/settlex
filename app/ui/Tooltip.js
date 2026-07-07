@@ -29,7 +29,7 @@ export function Tooltip({
           side={side}
           sideOffset={sideOffset}
           align={align}
-          className="z-[70]"
+          className="settlex-ui-layer-tooltip"
         >
           <BaseTooltip.Popup
             className={cn(

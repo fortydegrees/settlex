@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("gsap", () => {
@@ -31,6 +34,10 @@ import {
   getRandomizedOffsets,
   scheduleResourceCues
 } from "../../effects/resourceDistribution";
+
+const resourceCardAssetDir = fileURLToPath(
+  new URL("../../../../public/svgs/cards/resource/", import.meta.url)
+);
 
 describe("resourceDistribution cues", () => {
   it("registers pop-start cue", () => {
@@ -235,6 +242,29 @@ describe("resourceDistribution cues", () => {
       } else {
         global.document = previousDocument;
       }
+    }
+  });
+
+  it("keeps resource-card SVG references self-contained for browser rendering", () => {
+    const assetFiles = fs
+      .readdirSync(resourceCardAssetDir)
+      .filter((fileName) => fileName.endsWith(".svg"));
+
+    expect(assetFiles).toContain("card_wood.svg");
+
+    for (const fileName of assetFiles) {
+      const source = fs.readFileSync(path.join(resourceCardAssetDir, fileName), "utf8");
+      const definedIds = new Set(
+        [...source.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1])
+      );
+      const referencedIds = [
+        ...source.matchAll(/url\(#([^)]+)\)/g)
+      ].map((match) => match[1]);
+
+      expect(
+        referencedIds.filter((id) => !definedIds.has(id)),
+        `${fileName} references undefined SVG ids`
+      ).toEqual([]);
     }
   });
 

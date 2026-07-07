@@ -101,7 +101,7 @@ describe("resolveReconnectBannerCandidate", () => {
       matchID: "m1",
       playerID: "0",
       playerName: "Alice",
-      href: "/g/m1?playerID=0"
+      href: "/g/m1"
     });
     expect(fetchImpl).toHaveBeenCalledWith(
       "http://localhost:8080/games/catan/m1",
@@ -112,6 +112,26 @@ describe("resolveReconnectBannerCandidate", () => {
   it("returns null and clears stale state when the lobby match is missing", async () => {
     const storage = seededStorageForMatch("m1", "0");
     const fetchImpl = vi.fn().mockResolvedValue({ ok: false, status: 404 });
+
+    const result = await resolveReconnectBannerCandidate({
+      pathname: "/",
+      storage,
+      fetchImpl
+    });
+
+    expect(result).toBeNull();
+    expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).toBeNull();
+  });
+
+  it("returns null and clears stale state when the retained live match has ended", async () => {
+    const storage = seededStorageForMatch("m1", "0", "Alice");
+    const fetchImpl = vi.fn().mockResolvedValue(
+      okJson({
+        matchID: "m1",
+        players: [{ id: 0, name: "Alice" }, { id: 1, name: "Bren" }],
+        gameover: { winner: "1" }
+      })
+    );
 
     const result = await resolveReconnectBannerCandidate({
       pathname: "/",

@@ -1,0 +1,237 @@
+.poster {
+  --home-poster-reserved-height: 158px;
+  --home-poster-center-y-offset: 0px;
+  --home-poster-size: min(
+    calc((100vh - var(--home-poster-reserved-height)) * 0.09090909091),
+    calc(100vw * 0.08247860988)
+  );
+
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+  contain: layout paint;
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.underlay {
+  position: absolute;
+  z-index: 0;
+  max-width: none;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tile {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.tileIcon {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--home-poster-size) * 0.23664);
+  width: calc(var(--home-poster-size) * 0.578);
+  height: calc(var(--home-poster-size) * 0.578);
+  transform: translateX(-50%);
+  pointer-events: none;
+  user-select: none;
+}
+
+.numberToken {
+  width: calc(var(--home-poster-size) / 1.75);
+  height: calc(var(--home-poster-size) / 1.75);
+  margin-top: calc(var(--home-poster-size) / 1.66);
+  border-radius: 0.125rem;
+  background: rgb(241 245 249);
+  color: #000;
+  filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07))
+    drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));
+  font-weight: 900;
+}
+
+@media (min-width: 760px) and (min-height: 818px) {
+  .numberToken {
+    border-radius: 0.375rem;
+  }
+}
+
+@media (min-width: 728px) and (max-width: 759px) and (min-height: 936px) {
+  .numberToken {
+    border-radius: 0.375rem;
+  }
+}
+
+.numberContent {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+}
+
+.numberValue {
+  margin-top: calc(var(--home-poster-size) * 0.25);
+  font-size: calc(var(--home-poster-size) * 0.4);
+  line-height: 0;
+}
+
+.pips {
+  margin-top: calc(var(--home-poster-size) * 0.22);
+  font-size: calc(var(--home-poster-size) * 0.18);
+  font-weight: 700;
+  line-height: 0;
+}
+
+.numberHot {
+  color: rgb(220 38 38);
+}
+
+.robber {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: calc(var(--home-poster-size) / 1.5);
+  height: calc(var(--home-poster-size) / 1.5);
+  transform: translate(-110%, -50%);
+  pointer-events: none;
+  user-select: none;
+}
+
+.robberShadow {
+  position: absolute;
+  left: 62%;
+  top: 68%;
+  width: 82%;
+  height: 30%;
+  border-radius: 999px;
+  transform: translate(-50%, 0) rotate(-8deg) skewX(-7deg);
+  transform-origin: 50% 50%;
+  background: radial-gradient(
+    ellipse at 42% 50%,
+    rgb(15 23 42 / 0.46) 0%,
+    rgb(15 23 42 / 0.24) 44%,
+    rgb(15 23 42 / 0.1) 70%,
+    rgb(15 23 42 / 0) 100%
+  );
+  filter: blur(4px);
+  opacity: 0.82;
+}
+
+.robberImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.portLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.portChannelLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.portChannel {
+  position: absolute;
+  inset: 0;
+}
+
+.portConnector {
+  position: absolute;
+  border-radius: 4px;
+  background: #e5d08a;
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+.portMarker {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.portMarkerWater {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.82),
+    rgba(103, 216, 255, 0.92)
+  );
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.42);
+}
+
+.portMarkerInner {
+  position: absolute;
+  inset: 12%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #fff4bf 0%, #f2d56b 100%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.52);
+}
+
+.portMarkerIcon {
+  position: relative;
+  z-index: 1;
+  width: 46%;
+  height: 46%;
+  object-fit: contain;
+}
+
+.portBadge {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+  color: #1f2937;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 759px) {
+  .poster {
+    --home-poster-reserved-height: 276px;
+    --home-poster-center-y-offset: -56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster,
+  .hidden {
+    transition: none;
+  }
+}

@@ -30,7 +30,7 @@ export function Popover({
         <BasePopover.Positioner
           sideOffset={sideOffset}
           align={align}
-          className="z-[60]"
+          className="settlex-ui-layer-popover"
         >
           <BasePopover.Popup
             className={cn(

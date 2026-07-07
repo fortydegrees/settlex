@@ -7,6 +7,7 @@ import {
   buildReplayChatMessages,
   clampReplayFrameIndex,
 } from "../replayClientState";
+import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
 
 const formatDate = (value) =>
   new Intl.DateTimeFormat("en-GB", {
@@ -81,8 +82,8 @@ export const createReplayPageClient = ({
   return h(
     "div",
     {
-      className:
-        "min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 via-blue-300 to-blue-600",
+      className: "min-h-screen",
+      style: { background: CATANA_TABLE_BACKGROUND },
     },
     h(
       "div",

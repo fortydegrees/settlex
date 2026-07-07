@@ -9,10 +9,10 @@
       <stop offset="1" stop-color="#e3d3a3"/>
     </linearGradient>
   </defs>
-  <g filter="url(#softShadow)">
+  <g>
     <rect x="24" y="60" width="1208" height="1630" rx="60" fill="url(#a)" style="fill:url(#a)"/>
     <rect x="88" y="124" width="1080" height="1502" rx="54" fill="#5ca1dc" style="display:inline;fill:url(#b)"/>
-    <rect x="140.672" y="187.239" width="974.656" height="1375.523" rx="27.51" fill="url(#topWarm)" style="display:inline;fill:none;stroke:#f2d676;stroke-width:15;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"/>
+    <rect x="140.672" y="187.239" width="974.656" height="1375.523" rx="27.51" fill="none" style="display:inline;fill:none;stroke:#f2d676;stroke-width:15;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"/>
   </g>
   <path d="M409.847 641.074h436.306c23.32 0 42.223 18.902 42.223 42.223v42.224c0 15.545 12.603 28.148 28.148 28.148h42.223c23.322 0 42.224 18.902 42.224 42.223v140.744c0 23.321-18.902 42.223-42.224 42.223h-42.223c-15.545 0-28.148 12.604-28.148 28.149v42.223c0 23.321-18.902 42.223-42.223 42.223H409.847c-23.32 0-42.223-18.902-42.223-42.223v-42.223c0-15.545-12.603-28.149-28.148-28.149h-42.223c-23.322 0-42.224-18.902-42.224-42.223V795.892c0-23.32 18.902-42.223 42.223-42.223h42.224c15.545 0 28.148-12.603 28.148-28.148v-42.224c0-23.32 18.902-42.223 42.223-42.223" fill="#fca" style="stroke-width:7.03718" transform="translate(0 8.736)"/>
   <g transform="translate(255.03 635.736)scale(7.03718)"  fill="#ff6723">

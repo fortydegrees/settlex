@@ -40,31 +40,30 @@ export function GlobalReconnectBanner() {
     : "Return to your latest match.";
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-3 z-[100] flex justify-center px-4">
-      <StatusBanner
-        variant="neutral"
-        title={"You're already in a game"}
-        body={bodyText}
-        className="pointer-events-auto w-full max-w-2xl"
-        actions={
-          <>
-            <GlassPillButton
-              className="w-full justify-center sm:w-auto sm:min-w-[11rem]"
-              onClick={() => router.push(candidate.href)}
-            >
-              Rejoin match
-            </GlassPillButton>
+    <StatusBanner
+      overlay
+      variant="neutral"
+      title={"You're already in a game"}
+      body={bodyText}
+      className="max-w-2xl"
+      actions={
+        <>
+          <GlassPillButton
+            className="w-full justify-center sm:w-auto sm:min-w-[11rem]"
+            onClick={() => router.push(candidate.href)}
+          >
+            Rejoin match
+          </GlassPillButton>
 
-            <Button
-              variant="ghost"
-              className="w-full justify-center sm:w-auto"
-              onClick={() => setDismissed(true)}
-            >
-              Dismiss
-            </Button>
-          </>
-        }
-      />
-    </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-center sm:w-auto"
+            onClick={() => setDismissed(true)}
+          >
+            Dismiss
+          </Button>
+        </>
+      }
+    />
   );
 }

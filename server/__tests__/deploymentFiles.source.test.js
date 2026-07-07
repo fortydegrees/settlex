@@ -10,6 +10,15 @@ const repoRoot = path.resolve(__dirname, "..", "..");
 const readRepoFile = (...segments) =>
   fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
 
+const expectPatchFilesAvailableBeforeInstall = (dockerfile) => {
+  const patchCopyIndex = dockerfile.indexOf("COPY patches patches");
+  const installIndex = dockerfile.indexOf("RUN pnpm install --frozen-lockfile");
+
+  expect(patchCopyIndex).toBeGreaterThanOrEqual(0);
+  expect(installIndex).toBeGreaterThanOrEqual(0);
+  expect(patchCopyIndex).toBeLessThan(installIndex);
+};
+
 describe("deployment file wiring", () => {
   it("keeps local compose limited to postgres", () => {
     const compose = readRepoFile("infra", "docker-compose.local.yml");
@@ -39,6 +48,24 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("../.env.prod");
     expect(compose).toContain("./Caddyfile:/etc/caddy/Caddyfile:ro");
     expect(compose).toContain("settlehex-postgres-prod");
+  });
+
+  it("keeps local AI training artifacts out of the Docker build context", () => {
+    const dockerignore = readRepoFile(".dockerignore");
+
+    expect(dockerignore).toContain("ai/pufferlib/python/.venv/");
+    expect(dockerignore).toContain("ai/pufferlib/runs*/");
+    expect(dockerignore).toContain("ai/pufferlib/**/*.pt");
+    expect(dockerignore).toContain("*.egg-info/");
+  });
+
+  it("keeps local tool caches out of the Docker build context", () => {
+    const dockerignore = readRepoFile(".dockerignore");
+
+    expect(dockerignore).toContain(".pnpm-store/");
+    expect(dockerignore).toContain(".superpowers/");
+    expect(dockerignore).toContain(".playwright-cli/");
+    expect(dockerignore).toContain(".tmp/");
   });
 
   it("routes websocket traffic to the game service through caddy", () => {
@@ -71,7 +98,11 @@ describe("deployment file wiring", () => {
     const packageJson = JSON.parse(readRepoFile("package.json"));
 
     expect(packageJson.packageManager).toBe("pnpm@9.13.2");
+    expect(packageJson.pnpm.patchedDependencies).toHaveProperty(
+      "react-zoom-pan-pinch@3.7.0"
+    );
     expect(dockerfile).toContain("corepack prepare pnpm@9.13.2 --activate");
+    expectPatchFilesAvailableBeforeInstall(dockerfile);
     expect(dockerfile).toContain("ARG SETTLEX_RELEASE_VERSION");
     expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_RELEASE_VERSION");
     expect(dockerfile).toContain("ARG SETTLEX_BUILD_SHA");
@@ -86,7 +117,7 @@ describe("deployment file wiring", () => {
     const dockerfile = readRepoFile("Dockerfile.game");
 
     expect(dockerfile).toContain("corepack prepare pnpm@9.13.2 --activate");
-    expect(dockerfile).toContain("RUN pnpm install --frozen-lockfile");
+    expectPatchFilesAvailableBeforeInstall(dockerfile);
   });
 
   it("verifies before syncing source and triggering a server-side rebuild", () => {

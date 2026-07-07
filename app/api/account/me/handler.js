@@ -3,12 +3,13 @@ import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAcc
 import { getPool } from "../../../../lib/server/db/getPool.js";
 
 export const createAccountMeRoute =
-  ({ pool } = {}) =>
+  ({ pool, auth } = {}) =>
   async (request) => {
     const resolvedPool = pool ?? getPool();
     const sessionAccount = await getSessionAccount({
+      auth,
       pool: resolvedPool,
-      cookieHeader: request.headers.get("cookie") ?? "",
+      headers: request.headers,
     });
 
     return NextResponse.json({

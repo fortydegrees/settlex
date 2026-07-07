@@ -7,10 +7,11 @@ import "./page.css";
 import {
   TransformWrapper,
   TransformComponent,
-} from "../../react-zoom-pan-pinch";
+} from "react-zoom-pan-pinch";
 import { Tile } from "./Tile";
 import { Board } from "./Board";
 import { Piece } from "./Piece"
+import { CATANA_TABLE_BACKGROUND } from "../catana/theme/backgrounds";
 import { STANDARD_RESOURCES, SPECIAL_TILES, PLAYER_COLORS, PIECE_SVGS} from "./utils/types";
 
 import { DndProvider } from 'react-dnd'
@@ -36,7 +37,7 @@ export default function Example() {
     //e.g. can't place settle next to other
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600">
+      <div style={{ background: CATANA_TABLE_BACKGROUND }}>
         <div className="flex">
           {/* White Box for Controls */}
           <div className="w-1/5 bg-gray-300 p-4 bg-opacity-50 flex flex-col items-center">

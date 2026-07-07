@@ -11,6 +11,7 @@ import {
   getPlayerColorOption,
   normalizePlayerColorId
 } from "../theme/playerColors";
+import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
 import {
   clearLastActiveMatch,
   getCredentialsStorageKey,
@@ -259,7 +260,7 @@ export function LobbyPageClient() {
   }, []);
 
   const upsertGuestIdentity = useCallback(
-    async ({ name, emoji, color }) => {
+    async ({ name, emoji, color, usernameSource = "custom" }) => {
       const normalizedColor = normalizePlayerColorId(color);
       const response = await appRequest({
         route: "/api/account/guest",
@@ -268,6 +269,7 @@ export function LobbyPageClient() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username: name,
+            usernameSource,
             avatarEmoji: emoji,
             avatarColor: normalizedColor,
           }),
@@ -311,6 +313,16 @@ export function LobbyPageClient() {
     }
   }, [applyAccountIdentity, upsertGuestIdentity]);
 
+  const createGeneratedGuestAccount = useCallback(async () => {
+    const suggestedIdentity = buildSuggestedGuestIdentity();
+    return upsertGuestIdentity({
+      name: suggestedIdentity.name,
+      usernameSource: "generated",
+      emoji: suggestedIdentity.emoji,
+      color: suggestedIdentity.color,
+    });
+  }, [upsertGuestIdentity]);
+
   const requireIdentity = (action) => {
     if (hasIdentity) {
       action();
@@ -320,9 +332,9 @@ export function LobbyPageClient() {
     setShowIdentity(true);
   };
 
-  const handleIdentitySubmit = async ({ name, emoji, color }) => {
+  const handleIdentitySubmit = async ({ name, emoji, color, usernameSource }) => {
     try {
-      await upsertGuestIdentity({ name, emoji, color });
+      await upsertGuestIdentity({ name, emoji, color, usernameSource });
       setShowIdentity(false);
       if (pendingActionRef.current) {
         const action = pendingActionRef.current;
@@ -440,9 +452,7 @@ export function LobbyPageClient() {
               ? { ...current, phase: "matchFound" }
               : current
           );
-          router.push(
-            `/g/${searchState.matchID}?playerID=${encodeURIComponent(searchState.playerID)}`
-          );
+          router.push(`/g/${searchState.matchID}`);
         }
       } catch (err) {
         /* keep polling */
@@ -464,9 +474,7 @@ export function LobbyPageClient() {
 
         if (challenge?.status === "accepted") {
           clearPendingFriendChallenge(window.localStorage);
-          router.push(
-            `/g/${challengeState.matchID}?playerID=${encodeURIComponent(challengeState.playerID)}`
-          );
+          router.push(`/g/${challengeState.matchID}`);
           return;
         }
 
@@ -546,6 +554,15 @@ export function LobbyPageClient() {
     return restoreOrCreateAccount();
   }, [currentAccount, restoreOrCreateAccount]);
 
+  const ensureGeneratedGuestAccount = useCallback(async () => {
+    const account = await ensureAccountSession();
+    if (account?.id) {
+      return account;
+    }
+
+    return createGeneratedGuestAccount();
+  }, [createGeneratedGuestAccount, ensureAccountSession]);
+
   const joinRoom = async ({ matchID, playerID, onError }) => {
     if (!matchID) return;
 
@@ -580,9 +597,7 @@ export function LobbyPageClient() {
         playerName: account.currentUsername,
       });
 
-      router.push(
-        `/g/${matchID}?playerID=${encodeURIComponent(playerID)}`
-      );
+      router.push(`/g/${matchID}`);
     } catch (err) {
       setError(err?.message || "Failed to join room.");
       await refreshMatches();
@@ -708,7 +723,7 @@ export function LobbyPageClient() {
     setError("");
 
     try {
-      const account = await ensureAccountSession();
+      const account = await ensureGeneratedGuestAccount();
       if (!account?.id) {
         throw new Error("Pick a username first.");
       }
@@ -749,7 +764,7 @@ export function LobbyPageClient() {
         },
       });
 
-      router.push(`/g/${matchID}?playerID=0`);
+      router.push(`/g/${matchID}`);
     } catch (err) {
       setError(err?.message || "Failed to start bot match.");
     }
@@ -865,7 +880,7 @@ export function LobbyPageClient() {
         playerName: account.currentUsername,
       });
       await refreshMatches();
-      router.push(`/g/${matchID}?playerID=0`);
+      router.push(`/g/${matchID}`);
     } catch (err) {
       setError(err?.message || "Failed to create room.");
     } finally {
@@ -921,7 +936,7 @@ export function LobbyPageClient() {
         playerName: account.currentUsername,
       });
       await refreshMatches();
-      router.push(`/g/${matchID}?playerID=0`);
+      router.push(`/g/${matchID}`);
     } catch (err) {
       setError(err?.message || "Failed to start scenario room.");
     } finally {
@@ -943,7 +958,10 @@ export function LobbyPageClient() {
   );
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600">
+    <div
+      className="min-h-screen"
+      style={{ background: CATANA_TABLE_BACKGROUND }}
+    >
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-4 py-10 sm:px-6 sm:py-12">
         {/* ── Hero ── */}
         <div className="mb-8 w-full text-center">
@@ -1039,7 +1057,7 @@ export function LobbyPageClient() {
 
             <div>
               <Button
-                onClick={() => requireIdentity(playAgainstBot)}
+                onClick={playAgainstBot}
                 variant="accent"
                 size="lg"
                 disabled={!!searchState || !!challengeState}

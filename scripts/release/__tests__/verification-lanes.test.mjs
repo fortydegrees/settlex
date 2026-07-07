@@ -21,7 +21,7 @@ describe("verification lanes", () => {
 
     expect(scripts["test:logic"]).toBe("pnpm -C game-core build && pnpm -C game-core test");
     expect(scripts["test:server"]).toBe(
-      "pnpm exec vitest run server lib ai react-zoom-pan-pinch --reporter=dot"
+      "pnpm exec vitest run server lib ai --reporter=dot"
     );
     expect(scripts["test:catana"]).toBe(
       "pnpm exec vitest run app/catana --reporter=dot"

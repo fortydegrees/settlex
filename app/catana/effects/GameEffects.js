@@ -16,12 +16,16 @@ export function GameEffects({
   playerID,
   phase,
   gameOverState,
-  isWinner
+  isWinner,
+  audioSettings
 }) {
   const localBus = useMemo(() => createEffectBus(), []);
   const bus = providedBus ?? localBus;
   const layerRef = useRef(null);
-  const audio = useMemo(() => createAudioManager({ bus }), [bus]);
+  const audio = useMemo(
+    () => createAudioManager({ bus, settings: audioSettings }),
+    [audioSettings, bus]
+  );
   const haptics = useMemo(() => createHapticManager({ bus }), [bus]);
   const turnStartRef = useRef({ ...DEFAULT_TURN_START_STATE });
   const gameOverCueRef = useRef(false);

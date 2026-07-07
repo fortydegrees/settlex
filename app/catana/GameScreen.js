@@ -3,7 +3,7 @@ import { MemoizedCatanBoard } from "./Board";
 import {
   TransformWrapper,
   TransformComponent,
-} from "../../react-zoom-pan-pinch";
+} from "react-zoom-pan-pinch";
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Cog6ToothIcon,
@@ -109,6 +109,7 @@ import {
   CATANA_THEME_STORAGE_KEY,
   resolveThemeId,
 } from "./theme/themes";
+import { CATANA_TABLE_BACKGROUND } from "./theme/backgrounds";
 import {
   clearLastActiveMatch,
   readLastActiveMatch
@@ -121,8 +122,6 @@ import {
 } from "./dev/sandbox/effectPayloads";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
-const CATANA_GAME_BACKGROUND =
-  "radial-gradient(circle at 22% 14%, rgba(255,255,255,0.245), transparent 19rem), linear-gradient(135deg, #86d0fb 0%, #55b6ef 36%, #2f75cc 100%)";
 const topUtilityButtonClassName =
   "h-10 w-10 border-white/[0.32] bg-white/[0.24] text-slate-700/90 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.38)] backdrop-blur-md hover:border-white/[0.42] hover:bg-white/[0.34] hover:text-slate-800 sm:h-12 sm:w-12 [&_svg]:opacity-[0.85] hover:[&_svg]:opacity-100";
 
@@ -1397,7 +1396,7 @@ export function GameScreen(bgioProps) {
     <div
       className="catana-game-screen select-none"
       style={{
-        background: CATANA_GAME_BACKGROUND,
+        background: CATANA_TABLE_BACKGROUND,
         width: "100vw", // Use viewport width to take the full screen width
         height: "100vh", // Use viewport height to take the full screen height
         overflow: "hidden", // Prevent scrollbars on the page
