@@ -22,82 +22,35 @@ afterEach(() => {
 });
 
 describe("account claim routes", () => {
-  it("requires a current session for claim requests and returns a preview link in dev", async () => {
+  it("returns a legacy-gone response for email claim requests", async () => {
     const { createAccountClaimRequestRoute } = await loadRoute("request", "handler.js");
-    const getSessionAccount = vi.fn();
-    const requestMagicLink = vi.fn();
-    const POST = createAccountClaimRequestRoute({
-      getSessionAccount,
-      requestMagicLink,
-    });
+    const POST = createAccountClaimRequestRoute();
 
-    const unauthorized = await POST(
+    const response = await POST(
       new Request("http://localhost/api/account/claim/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: "ada@example.com" }),
       })
     );
-    expect(unauthorized.status).toBe(401);
+    const json = await response.json();
 
-    getSessionAccount.mockResolvedValue({
-      account: {
-        id: "acct_1",
-        currentUsername: "Ada",
-      },
-    });
-    requestMagicLink.mockResolvedValue({
-      email: "ada@example.com",
-      previewUrl: "http://localhost:3000/api/account/claim/consume?token=preview",
-    });
-
-    const authorized = await POST(
-      new Request("http://localhost/api/account/claim/request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          cookie: "settlehex_session=a.b",
-        },
-        body: JSON.stringify({ email: "ada@example.com" }),
-      })
-    );
-    const json = await authorized.json();
-
-    expect(authorized.status).toBe(200);
-    expect(requestMagicLink).toHaveBeenCalledWith(
-      expect.objectContaining({
-        accountId: "acct_1",
-        email: "ada@example.com",
-      })
-    );
-    expect(json.previewUrl).toContain("/api/account/claim/consume?token=");
+    expect(response.status).toBe(410);
+    expect(json.error).toMatch(/provider sign in/i);
   });
 
-  it("consumes the token and redirects back to account state", async () => {
+  it("redirects old magic-link consumes back to account sign in", async () => {
     const { createAccountClaimConsumeRoute } = await loadRoute("consume", "handler.js");
-    const consumeMagicLink = vi.fn().mockResolvedValue({
-      account: {
-        id: "acct_1",
-        status: "claimed",
-      },
-      redirectTo: "/account",
-    });
-    const GET = createAccountClaimConsumeRoute({
-      consumeMagicLink,
-    });
+    const GET = createAccountClaimConsumeRoute();
 
     const response = await GET(
       new Request("http://localhost/api/account/claim/consume?token=abc123")
     );
 
-    expect(consumeMagicLink).toHaveBeenCalledWith(
-      expect.objectContaining({
-        token: "abc123",
-      })
-    );
     expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe(
-      "http://localhost/account?claimed=1"
+    expect(response.headers.get("location")).toContain(
+      "http://localhost/account?authError="
     );
+    expect(response.headers.get("location")).toContain("provider+sign+in");
   });
 });

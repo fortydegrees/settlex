@@ -14,6 +14,7 @@ import { Input } from "../../../ui/Input";
 import { Panel } from "../../../ui/Panel";
 import { Select } from "../../../ui/Select";
 import { LiveMatchLoadingShell } from "./LiveMatchLoadingShell";
+import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import {
   getCredentialsStorageKey,
   writeLastActiveMatch
@@ -83,6 +84,7 @@ export function MatchPageClient({
   const [credentials, setCredentials] = useState(initialCredentials ?? null);
   const [joinPending, setJoinPending] = useState(false);
   const [botFillPending, setBotFillPending] = useState(false);
+  const [spectatorMode, setSpectatorMode] = useState(false);
 
   const gameServer = useMemo(() => getGameServerOrigin(), []);
   const CatanClient = useMemo(() => {
@@ -206,18 +208,26 @@ export function MatchPageClient({
     if (!match?.players) return [];
     return match.players.filter((p) => !p?.name && p?.id != null);
   }, [match]);
+  const hasTakenSeats = useMemo(
+    () => Boolean(match?.players?.some((seat) => seat?.name)),
+    [match]
+  );
+  const isFullMatch = Boolean(match?.players?.length) && openSeats.length === 0;
+  const isSpectating = !credentials && (spectatorMode || isFullMatch);
 
   useEffect(() => {
+    if (spectatorMode) return;
     if (openSeats.length === 0) return;
     const openSeatIds = new Set(openSeats.map((seat) => String(seat.id)));
     const current = String(playerID || "");
     if (!current || !openSeatIds.has(current)) {
       setPlayerID(String(openSeats[0].id));
     }
-  }, [playerID, openSeats]);
+  }, [playerID, openSeats, spectatorMode]);
 
   const joinSeat = async (event) => {
     event.preventDefault();
+    setSpectatorMode(false);
     if (!playerName || !playerName.trim()) {
       setError("Pick a player name first.");
       return;
@@ -259,7 +269,7 @@ export function MatchPageClient({
       if (account?.account?.currentUsername) {
         setPlayerName(account.account.currentUsername);
       }
-      router.replace(`/g/${matchID}?playerID=${encodeURIComponent(playerID)}`);
+      router.replace(`/g/${matchID}`);
       await refreshMatch();
     } catch (err) {
       setError(err?.message || "Failed to join.");
@@ -268,6 +278,14 @@ export function MatchPageClient({
       setJoinPending(false);
     }
   };
+
+  const spectateMatch = useCallback(() => {
+    setError("");
+    setCredentials(null);
+    setPlayerID("");
+    setSpectatorMode(true);
+    router.replace(`/g/${matchID}`);
+  }, [matchID, router]);
 
   const fillOpenSeatsWithBots = async () => {
     if (openSeats.length === 0) return;
@@ -314,8 +332,21 @@ export function MatchPageClient({
     );
   }
 
+  if (isSpectating) {
+    return (
+      <CatanClient
+        matchID={matchID}
+        playerID={null}
+        matchMetadata={match?.players ?? []}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600">
+    <div
+      className="min-h-screen"
+      style={{ background: CATANA_TABLE_BACKGROUND }}
+    >
       <div className="mx-auto w-full max-w-4xl px-4 py-10">
         <Panel bodyClassName="p-6 md:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -343,6 +374,11 @@ export function MatchPageClient({
             </div>
 
             <div className="flex flex-wrap gap-2">
+              {hasTakenSeats ? (
+                <GlassPillButton onClick={spectateMatch}>
+                  Spectate
+                </GlassPillButton>
+              ) : null}
               <GlassPillButton onClick={refreshMatch} disabled={isLoadingMatch}>
                 {isLoadingMatch ? "Refreshing…" : "Refresh"}
               </GlassPillButton>
@@ -382,7 +418,10 @@ export function MatchPageClient({
                   <div className="mt-2">
                     <Select
                       value={playerID}
-                      onChange={(e) => setPlayerID(e.target.value)}
+                      onChange={(e) => {
+                        setSpectatorMode(false);
+                        setPlayerID(e.target.value);
+                      }}
                       disabled={openSeats.length === 0}
                     >
                       {openSeats.length === 0 ? (

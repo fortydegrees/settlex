@@ -103,7 +103,7 @@ describe("board generation invariants", () => {
     }
   });
 
-  it("places official numbers in spiral order", () => {
+  it("places the standard official config numbers in spiral order", () => {
     const rng = makeDeterministicRng(42);
     const baseConfig = resolveBoardConfig("standard-official");
     const config = {

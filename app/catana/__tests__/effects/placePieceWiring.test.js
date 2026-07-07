@@ -41,6 +41,18 @@ describe("placePiece wiring", () => {
     expect(source).toContain("build:city");
   });
 
+  it("supports optional viewport-top placement starts without changing the default drop", () => {
+    const source = read("../../effects/placePiece.js");
+
+    expect(source).toContain("function getPlacementStartYOffset");
+    expect(source).toContain('payload?.startFrom === "viewport-top"');
+    expect(source).toContain("layerEl.getBoundingClientRect?.()");
+    expect(source).toContain("Math.min(-dropPx,");
+    expect(source).toContain("const startYOffset = getPlacementStartYOffset({");
+    expect(source).toContain("startYOffset");
+    expect(source).toContain("y: startYOffset");
+  });
+
   it("uses a remote-only lift/drop animation for city upgrades", () => {
     const source = read("../../effects/placePiece.js");
     const screen = read("../../GameScreen.js");

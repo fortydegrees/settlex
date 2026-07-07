@@ -49,11 +49,10 @@ Ship small, correct changes with a stable, testable game engine.
 - UI: `app/`
 - Game server: `server/`
 - Engine (shared): `game-core/`
-- Legacy/experimental: `spec/`, `strategy/`, `utils/`
 - Agent docs: `docs/agent/`
 - Catana dev sandbox: `app/catana/dev/sandbox/` — dev-only local board sandbox for real board UI, animation, and audio iteration without the live server
 - Catana effects lab: `app/catana/dev/effects/` — dev-only isolated effect/audio replay and tuning surface
-- **Design system**: `docs/agent/skills/catana-brand/SKILL.md` — Read this before building any UI. If adding shared product-surface primitives, also read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` and review targeted external references before inventing a new common interaction pattern.
+- **Design system**: `.agents/skills/catana-design/SKILL.md` is the active native skill for Catana/SettleHex design routing. Also use `docs/agent/UI_CONTEXT.md` and `docs/agent/skills/catana-brand/SKILL.md` before building or restyling UI. If adding shared product-surface primitives, read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` and review targeted external references before inventing a new common interaction pattern.
 
 ## Effects + audio (GSAP + cue bus)
 - Entry point: `app/catana/effects/GameEffects.js` (EffectBus + AudioManager + cue emit)
@@ -71,4 +70,4 @@ Ship small, correct changes with a stable, testable game engine.
 - Engine logic must be deterministic; no `Math.random` or time-based logic.
 - Game rules are server-authoritative; UI should be a thin client.
 - Ask before adding dependencies or changing build tooling.
-- Before building UI components, read `docs/agent/skills/catana-brand/SKILL.md` and follow its design patterns. If the work adds a reusable standard UI primitive, also follow `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`, which requires checking the existing kit first and then reviewing targeted external references before inventing a new shared pattern.
+- Before building, restyling, or reviewing UI, use `.agents/skills/catana-design/SKILL.md`, then read `docs/agent/UI_CONTEXT.md` and `docs/agent/skills/catana-brand/SKILL.md`. For one-off visual audits, also use `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md`. If the work adds a reusable standard UI primitive, follow `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`, which requires checking the existing kit first and then reviewing targeted external references before inventing a new shared pattern.

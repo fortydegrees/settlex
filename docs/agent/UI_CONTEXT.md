@@ -4,7 +4,10 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 
 ## Entry Points
 
-- `docs/agent/skills/catana-brand/SKILL.md`: brand, component, color, typography, and motion rules. Read this before building or restyling Catana UI.
+- `.agents/skills/catana-design/SKILL.md`: active routing skill for SettleHex/Catana design, restyling, and visual review work.
+- `docs/agent/skills/catana-brand/SKILL.md`: current product direction plus brand, component, color, typography, and motion rules. Read this before building or restyling Catana UI.
+- `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md`: checklist for one-off visual audits and pre-redesign critique.
+- `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`: extra workflow only when adding or extending reusable `app/ui/*` primitives.
 - `app/catana/dev/sandbox/README.md`: real board UI sandbox. Use for gameplay HUD, board, opponent box, turn controls, dev-card, award, robber, and card-transfer presentation.
 - `app/catana/dev/effects/README.md`: isolated effects lab. Use for tuning deterministic animation/audio runners without needing a live game state.
 - `app/catana/components/README.md`: component and HUD context. Use before editing shared Catana components.
@@ -15,7 +18,11 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 
 ## Agent Reminders
 
+- Pick the surface role first: gameplay HUD, title surface, standard product control, status, or quiet metadata.
+- Treat the current game screen as the strongest canonical reference for Catana feel. The homepage has useful decisions, but it is not proof that generic landing-page or stock component styling is correct.
 - Preserve existing visual language before introducing a new treatment. For Catana, prefer the current glass/HUD language, player-color identity, and existing motion families.
+- For homepage work, use the title/client direction: actual table first, bottom mode dock, account-first top-right chrome, quiet metadata, and ambient board life. Avoid active-match HUD chrome unless entering a real match.
+- For shared product UI, inspect `app/ui/*` and `/catana/dev/ui` before adding local one-off controls or external-library patterns.
 - Check the relevant dev surface for the exact UI state being changed. Do not generalize from one viewport, one player perspective, or one preset.
 - For presentation-only UI, animation, audio, copy, timing, or CSS tuning, prefer focused manual/dev-surface verification. Add tests only when changing shared logic, reusable helpers, event wiring, state flow, or locking a regression.
 - For game rules, state transitions, sync/race fixes, and server-authoritative behavior, use test-first or focused regression tests.

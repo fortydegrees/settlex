@@ -134,16 +134,32 @@ function resolveEdgePlacement({ edgeId, edgeRenderById, size, center }) {
   };
 }
 
+function getPlacementStartYOffset({
+  payload,
+  layerEl,
+  finalElementTop,
+  elementSize,
+  dropPx
+}) {
+  if (payload?.startFrom === "viewport-top") {
+    const layerRect = layerEl.getBoundingClientRect?.();
+    const layerTop = layerRect?.top ?? 0;
+    return Math.min(-dropPx, -elementSize - layerTop - finalElementTop);
+  }
+
+  return -dropPx;
+}
+
 function runNodePlacementAnimation({
   pieceEl,
   shadowEl,
   dustEl,
   tuning,
-  dropPx,
+  startYOffset,
   emitCue,
   cueName
 }) {
-  gsap.set(pieceEl, { y: -dropPx, scale: 1.04, opacity: 0 });
+  gsap.set(pieceEl, { y: startYOffset, scale: 1.04, opacity: 0 });
   gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
   gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 
@@ -358,6 +374,13 @@ export function createPiecePlacementRunner({
       const pieceSize = size * PIECE_SCALE * scale;
       const x = offsetLeft + placement.x * scale;
       const y = offsetTop + placement.y * scale;
+      const startYOffset = getPlacementStartYOffset({
+        payload,
+        layerEl,
+        finalElementTop: y - pieceSize * PIECE_OFFSET_Y,
+        elementSize: pieceSize,
+        dropPx
+      });
 
       const pieceEl = createSettlementEl({
         size: pieceSize,
@@ -390,7 +413,7 @@ export function createPiecePlacementRunner({
         shadowEl,
         dustEl,
         tuning,
-        dropPx,
+        startYOffset,
         emitCue,
         cueName: "build:settlement"
       });
@@ -409,6 +432,13 @@ export function createPiecePlacementRunner({
       const pieceSize = size * PIECE_SCALE * scale;
       const x = offsetLeft + placement.x * scale;
       const y = offsetTop + placement.y * scale;
+      const startYOffset = getPlacementStartYOffset({
+        payload,
+        layerEl,
+        finalElementTop: y - pieceSize * PIECE_OFFSET_Y,
+        elementSize: pieceSize,
+        dropPx
+      });
       const viewerPlayerId = getViewerPlayerId?.();
       const isRemoteCityUpgrade =
         viewerPlayerId != null &&
@@ -487,7 +517,7 @@ export function createPiecePlacementRunner({
         shadowEl,
         dustEl,
         tuning,
-        dropPx,
+        startYOffset,
         emitCue,
         cueName: "build:city"
       });
@@ -508,6 +538,13 @@ export function createPiecePlacementRunner({
       const y = offsetTop + placement.tileY * scale;
       const dustX = offsetLeft + placement.dustX * scale;
       const dustY = offsetTop + placement.dustY * scale;
+      const startYOffset = getPlacementStartYOffset({
+        payload,
+        layerEl,
+        finalElementTop: y,
+        elementSize: roadSize,
+        dropPx
+      });
 
       const roadWrapperEl = createRoadWrapper({
         size: roadSize,
@@ -543,7 +580,7 @@ export function createPiecePlacementRunner({
       layerEl.appendChild(dustEl);
       layerEl.appendChild(roadWrapperEl);
 
-      gsap.set(roadWrapperEl, { y: -dropPx, scale: 1.03, opacity: 0 });
+      gsap.set(roadWrapperEl, { y: startYOffset, scale: 1.03, opacity: 0 });
       gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
       gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 

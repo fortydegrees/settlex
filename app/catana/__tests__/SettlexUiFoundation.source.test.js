@@ -18,8 +18,14 @@ describe("Settlex UI foundation", () => {
     expect(css).toContain("--settlex-ui-radius-panel");
     expect(css).toContain("--settlex-ui-duration-fast");
     expect(css).toContain("--settlex-ui-duration-dialog");
+    expect(css).toContain("--settlex-ui-z-dialog");
+    expect(css).toContain("--settlex-ui-z-popover");
+    expect(css).toContain("--settlex-ui-z-tooltip");
+    expect(css).toContain("--settlex-ui-z-status");
     expect(css).toContain(".settlex-ui-root");
     expect(css).toContain("isolation: isolate");
+    expect(css).toContain(".settlex-ui-layer-dialog");
+    expect(css).toContain(".settlex-ui-layer-status");
     expect(css).toContain(".settlex-ui-dialog-backdrop");
     expect(css).toContain(".settlex-ui-dialog-popup");
   });

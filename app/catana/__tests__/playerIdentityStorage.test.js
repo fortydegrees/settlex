@@ -24,12 +24,12 @@ describe("playerIdentityStorage", () => {
   it("builds a suggested guest identity from deterministic generators", () => {
     expect(
       buildSuggestedGuestIdentity({
-        randomInt: () => 4821,
+        buildUsername: () => "GoldenPort7K",
         pickEmoji: () => "🥳",
         pickColor: () => "white",
       })
     ).toEqual({
-      name: "Guest 4821",
+      name: "GoldenPort7K",
       emoji: "🥳",
       color: "white",
     });

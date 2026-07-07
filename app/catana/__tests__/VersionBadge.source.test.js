@@ -26,4 +26,18 @@ describe("homepage release badge", () => {
     expect(source).not.toContain("rounded-full border");
     expect(source).not.toContain("triggerClassName");
   });
+
+  it("uses the public release label in release panel headings", () => {
+    const badgeSource = readRepoFile("app/catana/lobby/VersionBadge.js");
+    const homeSource = readRepoFile("app/catana/home/HomeTableClient.js");
+
+    expect(badgeSource).toContain(
+      "{releaseInfo.releaseLabel} · {releaseInfo.title}"
+    );
+    expect(homeSource).toContain(
+      "{releaseInfo.releaseLabel} · {releaseInfo.title}"
+    );
+    expect(badgeSource).not.toContain("Release {releaseInfo.version}");
+    expect(homeSource).not.toContain("Release {releaseInfo.version}");
+  });
 });

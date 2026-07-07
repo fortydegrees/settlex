@@ -20,4 +20,17 @@ describe("account page source", () => {
     expect(pageContents).toContain("export default function AccountPage({ searchParams })");
     expect(clientContents).toContain('"use client"');
   });
+
+  it("offers first-pass email and password auth without reviving magic links", () => {
+    const clientContents = readRepoFile("app", "account", "AccountPageClient.js");
+
+    expect(clientContents).toContain("authClient.signIn.email");
+    expect(clientContents).toContain("authClient.signUp.email");
+    expect(clientContents).toContain('type="email"');
+    expect(clientContents).toContain('type="password"');
+    expect(clientContents).toContain("Sign in");
+    expect(clientContents).toContain("Create account");
+    expect(clientContents).not.toContain("claim/request");
+    expect(clientContents).not.toContain("magic");
+  });
 });

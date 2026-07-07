@@ -17,7 +17,7 @@ import {
   buildSuggestedGuestIdentity,
 } from "./playerIdentityStorage";
 
-function EmojiPicker({ value, onChange, colorGradient }) {
+export function EmojiPicker({ value, onChange, colorGradient }) {
   const [isOpen, setIsOpen] = useState(false);
   const [slideDir, setSlideDir] = useState(0);
   const [slideKey, setSlideKey] = useState(0);
@@ -125,7 +125,7 @@ export function IdentityModal({
   initialColor,
 }) {
   const suggestedIdentity = useRef(buildSuggestedGuestIdentity()).current;
-  const [name, setName] = useState(initialName || "");
+  const [name, setName] = useState(initialName || suggestedIdentity.name);
   const [emoji, setEmoji] = useState(() => initialEmoji || suggestedIdentity.emoji);
   const [color, setColor] = useState(
     () =>
@@ -143,6 +143,8 @@ export function IdentityModal({
     if (!name.trim()) return;
     onSubmit({
       name: name.trim(),
+      usernameSource:
+        name.trim() === suggestedIdentity.name ? "generated" : "custom",
       emoji,
       color: normalizePlayerColorId(color),
     });

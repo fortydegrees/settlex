@@ -1,7 +1,7 @@
 
 // https://github.com/bcollazo/catanatron/blob/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3/ui/src/utils/useWindowSize.js
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 export const DEFAULT_WINDOW_SIZE = Object.freeze({
   width: 1280,
@@ -19,18 +19,36 @@ export function getInitialWindowSize() {
   };
 }
 
+export function getUnmeasuredWindowSize() {
+  return {
+    ...DEFAULT_WINDOW_SIZE,
+    isMeasured: false,
+  };
+}
+
+export function getMeasuredWindowSize() {
+  return {
+    ...getInitialWindowSize(),
+    isMeasured: typeof window !== "undefined",
+  };
+}
+
+const useBrowserLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 // Hook
 export default function useWindowSize() {
-  // Keep the initial render deterministic so the board is present in SSR HTML
-  // without introducing a server/client hydration mismatch.
-  const [windowSize, setWindowSize] = useState(DEFAULT_WINDOW_SIZE);
+  // Keep fallback geometry in SSR HTML for eager image discovery, but let
+  // callers hide it until the browser viewport has been measured.
+  const [windowSize, setWindowSize] = useState(getUnmeasuredWindowSize);
 
-  useEffect(() => {
+  useBrowserLayoutEffect(() => {
     function handleResize() {
-      const nextWindowSize = getInitialWindowSize();
+      const nextWindowSize = getMeasuredWindowSize();
       setWindowSize((currentWindowSize) =>
         currentWindowSize.width === nextWindowSize.width &&
-        currentWindowSize.height === nextWindowSize.height
+        currentWindowSize.height === nextWindowSize.height &&
+        currentWindowSize.isMeasured === nextWindowSize.isMeasured
           ? currentWindowSize
           : nextWindowSize
       );

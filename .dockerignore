@@ -3,8 +3,20 @@ node_modules
 .git
 .worktrees
 .logs
+.pnpm-store/
+.superpowers/
+.claude/
+.factory/
+.playwright-cli/
+.tmp/
+.codex/
 coverage
 tmp
 output
 *.pem
 
+# AI training artifacts
+ai/pufferlib/python/.venv/
+ai/pufferlib/runs*/
+ai/pufferlib/**/*.pt
+*.egg-info/

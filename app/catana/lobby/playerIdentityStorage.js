@@ -2,6 +2,7 @@ import {
   PLAYER_COLOR_PICKER_OPTIONS,
   normalizePlayerColorId,
 } from "../theme/playerColors";
+import { buildGeneratedGuestUsername } from "../../../lib/shared/guestUsername";
 
 export const STORAGE_KEY_NAME = "catana:lobby:playerName";
 export const STORAGE_KEY_EMOJI = "catana:lobby:playerEmoji";
@@ -61,9 +62,6 @@ export const writeStoredPlayerIdentity = (
   }
 };
 
-const randomIntInRange = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
-
 const pickRandom = (values) =>
   values[Math.floor(Math.random() * values.length)];
 
@@ -72,11 +70,11 @@ const pickRandomColor = () =>
   pickRandom(PLAYER_COLOR_PICKER_OPTIONS.map((option) => option.id));
 
 export const buildSuggestedGuestIdentity = ({
-  randomInt = randomIntInRange,
+  buildUsername = buildGeneratedGuestUsername,
   pickEmoji = pickRandomEmoji,
   pickColor = pickRandomColor,
 } = {}) => ({
-  name: `Guest ${randomInt(1000, 9999)}`,
+  name: buildUsername(),
   emoji: pickEmoji(),
   color: normalizePlayerColorId(pickColor()),
 });

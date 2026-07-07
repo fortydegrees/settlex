@@ -8,6 +8,7 @@ import {
   getCredentialsStorageKey,
   writeLastActiveMatch,
 } from "../../catana/utils/activeMatchStorage";
+import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
 
 const safeJson = async (response) => {
   try {
@@ -74,7 +75,7 @@ export function ChallengePageClient({ matchID }) {
         playerName,
       });
 
-      router.push(`/g/${matchID}?playerID=${encodeURIComponent(joined.playerID)}`);
+      router.push(`/g/${matchID}`);
     },
     [matchID, router]
   );
@@ -158,7 +159,10 @@ export function ChallengePageClient({ matchID }) {
   );
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600">
+    <div
+      className="min-h-screen"
+      style={{ background: CATANA_TABLE_BACKGROUND }}
+    >
       <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center px-4 py-12">
         <div className="w-full rounded-xl bg-white/25 p-6 shadow-lg ring-1 ring-white/30 backdrop-blur-sm">
           <h1 className="text-center text-2xl font-bold text-slate-800">

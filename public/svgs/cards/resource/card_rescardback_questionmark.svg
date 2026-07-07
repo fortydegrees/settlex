@@ -62,7 +62,6 @@
     </radialGradient>
   </defs>
   <g
-     filter="url(#softShadow)"
      id="g10">
     <rect
        x="24"
@@ -88,7 +87,7 @@
        width="974.65601"
        height="1375.5229"
        rx="27.51"
-       fill="url(#topWarm)"
+       fill="none"
        style="display:inline;fill:none;stroke:#f2d676;stroke-width:15;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"
        id="rect8" />
     <rect
@@ -111,7 +110,6 @@
        id="rect10" />
   </g>
   <g
-     filter="url(#hexShadow)"
      style="display:inline"
      transform="translate(0,33.25)"
      id="g12">

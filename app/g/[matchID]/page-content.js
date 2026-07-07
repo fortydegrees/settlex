@@ -4,6 +4,51 @@ import { getMatchPageData } from "../../../lib/server/matches/getMatchPageData.j
 import { buildReplayFrames } from "../../../lib/server/replays/buildReplayFrames.js";
 import { readMatchCredentialCookie } from "../../../lib/server/session/matchCredentialCookie.js";
 
+const readLivePlayerIDs = (liveMatch) => {
+  const players = liveMatch?.players;
+  if (Array.isArray(players)) {
+    return players
+      .map((player) => player?.id)
+      .filter((playerID) => playerID != null)
+      .map(String);
+  }
+  if (players && typeof players === "object") {
+    return Object.values(players)
+      .map((player) => player?.id)
+      .filter((playerID) => playerID != null)
+      .map(String);
+  }
+  return [];
+};
+
+const resolveInitialSeatCredential = async ({
+  matchID,
+  requestedPlayerID,
+  liveMatch,
+  readSeatCredential,
+}) => {
+  const playerIDs =
+    requestedPlayerID != null
+      ? [String(requestedPlayerID)]
+      : readLivePlayerIDs(liveMatch);
+
+  for (const playerID of playerIDs) {
+    const credentials = await readSeatCredential({
+      matchID,
+      playerID,
+    });
+
+    if (credentials) {
+      return { playerID, credentials };
+    }
+  }
+
+  return {
+    playerID: requestedPlayerID ?? null,
+    credentials: null,
+  };
+};
+
 export const createGMatchPage = ({
   getMatchPageData: getMatchPageDataImpl = getMatchPageData,
   buildReplayFrames: buildReplayFramesImpl = buildReplayFrames,
@@ -16,10 +61,12 @@ export const createGMatchPage = ({
     const pageData = await getMatchPageDataImpl(params?.matchID);
 
     if (pageData?.kind === "live") {
-      const initialPlayerID = searchParams?.playerID ?? null;
-      const initialCredentials = await readSeatCredentialImpl({
+      const requestedPlayerID = searchParams?.playerID ?? null;
+      const initialSeat = await resolveInitialSeatCredential({
         matchID: params?.matchID,
-        playerID: initialPlayerID,
+        requestedPlayerID,
+        liveMatch: pageData.liveMatch ?? null,
+        readSeatCredential: readSeatCredentialImpl,
       });
       const MatchPageClientResolved =
         MatchPageClientImpl ??
@@ -28,8 +75,8 @@ export const createGMatchPage = ({
 
       return h(MatchPageClientResolved, {
         matchID: params?.matchID,
-        initialPlayerID,
-        initialCredentials,
+        initialPlayerID: initialSeat.playerID,
+        initialCredentials: initialSeat.credentials,
         initialLiveMatch: pageData.liveMatch ?? null,
       });
     }

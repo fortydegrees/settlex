@@ -21,7 +21,7 @@ export function VersionBadge({ releaseInfo = publicReleaseInfo }) {
           What changed
         </div>
         <h2 className="mt-1 text-sm font-bold text-slate-900">
-          Release {releaseInfo.version} · {releaseInfo.title}
+          {releaseInfo.releaseLabel} · {releaseInfo.title}
         </h2>
         <ul className="mt-3 space-y-2 text-xs font-medium leading-relaxed text-slate-700">
           {releaseInfo.highlights.map((highlight) => (

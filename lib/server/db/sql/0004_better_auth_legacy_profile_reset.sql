@@ -1,0 +1,169 @@
+CREATE TABLE IF NOT EXISTS auth_users (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  "emailVerified" BOOLEAN NOT NULL DEFAULT FALSE,
+  image TEXT,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "isAnonymous" BOOLEAN
+);
+
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  id TEXT PRIMARY KEY,
+  "expiresAt" TIMESTAMPTZ NOT NULL,
+  token TEXT NOT NULL UNIQUE,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "ipAddress" TEXT,
+  "userAgent" TEXT,
+  "userId" TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS auth_sessions_user_id_idx
+  ON auth_sessions ("userId");
+
+CREATE TABLE IF NOT EXISTS auth_accounts (
+  id TEXT PRIMARY KEY,
+  "accountId" TEXT NOT NULL,
+  "providerId" TEXT NOT NULL,
+  "userId" TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  "accessToken" TEXT,
+  "refreshToken" TEXT,
+  "idToken" TEXT,
+  "accessTokenExpiresAt" TIMESTAMPTZ,
+  "refreshTokenExpiresAt" TIMESTAMPTZ,
+  scope TEXT,
+  password TEXT,
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE ("providerId", "accountId")
+);
+
+CREATE INDEX IF NOT EXISTS auth_accounts_user_id_idx
+  ON auth_accounts ("userId");
+
+CREATE TABLE IF NOT EXISTS auth_verifications (
+  id TEXT PRIMARY KEY,
+  identifier TEXT NOT NULL,
+  value TEXT NOT NULL,
+  "expiresAt" TIMESTAMPTZ NOT NULL,
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+  "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS auth_verifications_identifier_idx
+  ON auth_verifications (identifier);
+
+DO $$
+DECLARE
+  account_id_type TEXT;
+BEGIN
+  SELECT data_type
+    INTO account_id_type
+    FROM information_schema.columns
+   WHERE table_schema = 'public'
+     AND table_name = 'accounts'
+     AND column_name = 'id';
+
+  IF account_id_type = 'uuid' THEN
+    DROP TABLE IF EXISTS magic_link_tokens CASCADE;
+    DROP TABLE IF EXISTS guest_sessions CASCADE;
+    DROP TABLE IF EXISTS account_emails CASCADE;
+    DROP TABLE IF EXISTS auth_identities CASCADE;
+    DROP TABLE IF EXISTS username_history CASCADE;
+    DROP TABLE IF EXISTS accounts CASCADE;
+
+    IF EXISTS (
+      SELECT 1
+        FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = 'archived_matches'
+         AND column_name = 'winner_account_id'
+    ) THEN
+      ALTER TABLE archived_matches
+        ALTER COLUMN winner_account_id TYPE TEXT USING winner_account_id::TEXT;
+      UPDATE archived_matches
+         SET winner_account_id = NULL
+       WHERE winner_account_id IS NOT NULL;
+    END IF;
+
+    IF EXISTS (
+      SELECT 1
+        FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = 'archived_match_players'
+         AND column_name = 'account_id'
+    ) THEN
+      ALTER TABLE archived_match_players
+        ALTER COLUMN account_id TYPE TEXT USING account_id::TEXT;
+      UPDATE archived_match_players
+         SET account_id = NULL
+       WHERE account_id IS NOT NULL;
+    END IF;
+  END IF;
+END $$;
+
+CREATE TABLE IF NOT EXISTS accounts (
+  id TEXT PRIMARY KEY REFERENCES auth_users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  status TEXT NOT NULL CHECK (status IN ('guest', 'claimed')),
+  current_username TEXT NOT NULL UNIQUE,
+  avatar_emoji TEXT NOT NULL,
+  avatar_color TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  claimed_at TIMESTAMPTZ,
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  username_changed_at TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS username_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  username TEXT NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ended_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS username_history_account_id_idx
+  ON username_history (account_id, started_at DESC);
+
+CREATE UNIQUE INDEX IF NOT EXISTS username_history_open_username_unique_idx
+  ON username_history (LOWER(username))
+  WHERE ended_at IS NULL;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+      FROM information_schema.columns
+     WHERE table_schema = 'public'
+       AND table_name = 'archived_matches'
+       AND column_name = 'winner_account_id'
+  ) THEN
+    ALTER TABLE archived_matches
+      DROP CONSTRAINT IF EXISTS archived_matches_winner_account_id_fkey;
+    ALTER TABLE archived_matches
+      ADD CONSTRAINT archived_matches_winner_account_id_fkey
+      FOREIGN KEY (winner_account_id)
+      REFERENCES accounts(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+      FROM information_schema.columns
+     WHERE table_schema = 'public'
+       AND table_name = 'archived_match_players'
+       AND column_name = 'account_id'
+  ) THEN
+    ALTER TABLE archived_match_players
+      DROP CONSTRAINT IF EXISTS archived_match_players_account_id_fkey;
+    ALTER TABLE archived_match_players
+      ADD CONSTRAINT archived_match_players_account_id_fkey
+      FOREIGN KEY (account_id)
+      REFERENCES accounts(id)
+      ON DELETE SET NULL
+      ON UPDATE CASCADE;
+  END IF;
+END $$;

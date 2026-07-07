@@ -125,7 +125,7 @@ export async function restorePendingFriendChallenge({
   if (challenge?.status === "accepted") {
     return {
       status: "accepted",
-      href: `/g/${record.matchID}?playerID=${encodeURIComponent(record.playerID)}`
+      href: `/g/${record.matchID}`
     };
   }
 

@@ -26,6 +26,16 @@ const isPendingFriendChallengeMatch = (match, players) => {
   return players.some((player) => player?.id != null && !isOccupiedSeat(player));
 };
 
+const isResolvedMatch = (match) =>
+  Boolean(
+    match?.gameover ||
+      match?.metadata?.gameover ||
+      match?.ctx?.gameover ||
+      match?.G?.core?.gameOver ||
+      match?.state?.ctx?.gameover ||
+      match?.state?.G?.core?.gameOver
+  );
+
 export const isSameMatchPath = (pathname, matchID) =>
   pathname === `/g/${matchID}`;
 
@@ -69,6 +79,11 @@ export async function resolveReconnectBannerCandidate({
     return null;
   }
 
+  if (isResolvedMatch(match)) {
+    clearLastActiveMatch(storage);
+    return null;
+  }
+
   const players = readPlayers(match);
   if (!Array.isArray(players)) {
     clearLastActiveMatch(storage);
@@ -91,8 +106,6 @@ export async function resolveReconnectBannerCandidate({
     matchID: activeMatch.matchID,
     playerID: activeMatch.playerID,
     playerName: activeMatch.playerName,
-    href: `/g/${activeMatch.matchID}?playerID=${encodeURIComponent(
-      activeMatch.playerID
-    )}`
+    href: `/g/${activeMatch.matchID}`
   };
 }

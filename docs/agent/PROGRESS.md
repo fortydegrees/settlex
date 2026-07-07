@@ -1,5 +1,389 @@
 # PROGRESS
 
+## Status (2026-06-25, home demo normal duel openings)
+- Added `normal-duel-openings`, a blue/red two-player homepage attract scene
+  with two starting settlements and two roads each. Blue starts on the
+  high-value 5/8/11 and 6/8/10-style nodes the user called out.
+- Added `ridge-duel-openings`, a second blue/red two-settlement opening variant
+  using different legal starting regions so the two-player scenes are not just
+  a single repeated layout.
+- Added sequence guards that initial settlements are not adjacent and each
+  initial road touches one of that player's starting settlements.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/effects/placePieceWiring.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint app/catana/homeDemo/homeDemoSequence.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js`
+
+## Status (2026-06-25, home demo scene variety and balance)
+- Added two more homepage Catana attract-loop scenes:
+  `coastal-duel`, a red/blue two-player procedural scene with a different
+  left/right starting layout, and `four-corner-spread`, a four-player
+  procedural scene with starts spread around the board.
+- Corrected `quiet-expansion` to use only its three active setup players
+  (blue, red, green) instead of including orange with no initial pieces.
+- Softened procedural move imbalance by preferring underrepresented players
+  while still allowing occasional streaks when the previous player is not
+  ahead; mandatory city moves now follow the same preferred player order.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/effects/placePieceWiring.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/homeDemoProceduralScene.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js`
+
+## Status (2026-06-25, home demo longer ambient scenes)
+- Lengthened the homepage Catana attract-loop scenes from roughly 30 seconds to
+  roughly one minute each: `quiet-expansion` now runs for 64s and `gentle-city`
+  now runs for 60s.
+- Doubled the procedural `quiet-expansion` move budget from 24 to 48 and
+  allowed up to two rare city upgrades so the longer scene contains more actual
+  placements instead of just a longer hold.
+- Added late `gentle-city` authored beats for orange and green expansion plus a
+  blue city upgrade, bringing the authored scene to 14 placement events across
+  the longer runtime.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/effects/placePieceWiring.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/homeDemoProceduralScene.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js`
+
+## Status (2026-06-25, home demo opening scene removal)
+- Removed the short `opening-table` scene from the homepage Catana attract-loop
+  rotation, so the loop now starts with the procedural `quiet-expansion` scene.
+- Kept the scene-start setup-drop behavior: the initial `quiet-expansion`
+  settlements and roads now drop in from the viewport top before its procedural
+  moves begin.
+- Removed the bridge's obsolete `opening-table` placement special case; slower
+  top-drop tuning is now driven only by setup events.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/effects/placePieceWiring.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+
+## Status (2026-06-25, canonical live game URLs)
+- Removed generated `?playerID=...` query strings from live game navigation.
+  The canonical live game URL is now `/g/:matchID`.
+- `/g/:matchID` now resolves the viewer's seat by scanning the live match's
+  seat credential cookies when no player ID query is present. Old
+  `?playerID=` links still work as a compatibility fallback, but new app links
+  no longer expose the seat ID in the URL.
+- Updated reconnect and pending-challenge resumes to point at the canonical
+  live game URL while keeping their internal stored `playerID` for credential
+  lookup and cleanup.
+- Verification:
+  - `pnpm exec vitest run app/__tests__/gMatchPage.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: `/g/:matchID` read `playerID: null` instead of scanning seat cookies)
+  - `pnpm exec vitest run app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/pendingFriendChallenge.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: generated URLs still included `?playerID=0`)
+  - `pnpm exec vitest run app/__tests__/gMatchPage.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/pendingFriendChallenge.test.js app/catana/__tests__/MatchPageClient.boot.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint 'app/g/[matchID]/page-content.js' 'app/challenge/[matchID]/ChallengePageClient.js' app/catana/lobby/LobbyPageClient.js app/catana/lobby/useLobbyHomeActions.js 'app/catana/lobby/[matchID]/MatchPageClient.js' app/catana/utils/reconnectBanner.js app/catana/utils/pendingFriendChallenge.js app/__tests__/gMatchPage.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/pendingFriendChallenge.test.js`
+  - `rg -n '\?playerID=' app lib server -g '!node_modules'` (no matches)
+  - `git diff --check -- 'app/g/[matchID]/page-content.js' 'app/challenge/[matchID]/ChallengePageClient.js' app/catana/lobby/LobbyPageClient.js app/catana/lobby/useLobbyHomeActions.js 'app/catana/lobby/[matchID]/MatchPageClient.js' app/catana/utils/reconnectBanner.js app/catana/utils/pendingFriendChallenge.js app/__tests__/gMatchPage.test.js app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/pendingFriendChallenge.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-06-25, Safari resource-card SVG frames)
+- Fixed Safari rendering of resource distribution card fronts by removing
+  undefined internal SVG `filter` references from `public/svgs/cards/resource/`
+  card assets and replacing the undefined `topWarm` fill reference with
+  `fill="none"`.
+- Root cause: Chrome tolerated missing `url(#softShadow)` / `url(#hexShadow)`
+  definitions, but Safari could drop the filtered card-frame group and leave
+  only the resource artwork visible.
+- Added a focused resource-card asset regression check so future SVGs cannot
+  reference undefined local `url(#...)` ids.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/effects/resourceDistribution.test.js --reporter=dot`
+  - `rg -n "filter=\"url\\(#softShadow\\)|filter=\"url\\(#hexShadow\\)|url\\(#topWarm\\)|id=\"softShadow\"|id=\"hexShadow\"|id=\"topWarm\"" public/svgs/cards/resource/*.svg` (no matches)
+
+## Status (2026-06-25, live spectator entry and shared page background)
+- Added a live spectator entry path for occupied matches: a no-credential full
+  room now renders the boardgame.io client with `playerID={null}`, and occupied
+  room lobbies expose a `Spectate` action without claiming a seat.
+- Centralized the current light home/game table background in
+  `app/catana/theme/backgrounds.js` and moved the stale saturated blue product
+  shells to that shared background.
+- Left dev-only blue comparison/lab surfaces unchanged.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/MatchPageClient.boot.source.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: missing spectator entry wiring)
+  - `pnpm exec vitest run app/catana/__tests__/CatanaProductBackgrounds.source.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: missing shared background module)
+  - `pnpm exec vitest run app/catana/__tests__/MatchPageClient.boot.source.test.js app/catana/__tests__/CatanaProductBackgrounds.source.test.js app/catana/__tests__/stateMasking.test.js app/catana/__tests__/ChatPanel.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/theme/backgrounds.js 'app/catana/lobby/[matchID]/MatchPageClient.js' 'app/catana/lobby/[matchID]/LiveMatchLoadingShell.js' app/catana/lobby/LobbyPageClient.js app/catana/GameScreen.js app/catana/home/HomeTableClient.js app/account/AccountPageClient.js app/board-editor/page.js 'app/challenge/[matchID]/ChallengePageClient.js' 'app/replays/[replayId]/ReplayPageClient.js' 'app/u/[username]/page-content.js' app/catana/__tests__/MatchPageClient.boot.source.test.js app/catana/__tests__/CatanaProductBackgrounds.source.test.js`
+  - `git diff --check -- app/catana/theme/backgrounds.js 'app/catana/lobby/[matchID]/MatchPageClient.js' 'app/catana/lobby/[matchID]/LiveMatchLoadingShell.js' app/catana/lobby/LobbyPageClient.js app/catana/GameScreen.js app/catana/home/HomeTableClient.js app/account/AccountPageClient.js app/board-editor/page.js 'app/challenge/[matchID]/ChallengePageClient.js' 'app/replays/[replayId]/ReplayPageClient.js' 'app/u/[username]/page-content.js' app/catana/__tests__/MatchPageClient.boot.source.test.js app/catana/__tests__/CatanaProductBackgrounds.source.test.js`
+
+## Status (2026-06-25, finished-match rejoin banner)
+- Fixed the global reconnect banner so retained finished matches are no longer
+  offered as rejoinable active games.
+- `resolveReconnectBannerCandidate` now treats boardgame.io metadata
+  `gameover`, plus the existing state-shaped `ctx.gameover` and
+  `G.core.gameOver` forms, as terminal and clears the stale local active-match
+  pointer before returning `null`.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/reconnectBanner.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: retained finished match still returned a candidate)
+  - `pnpm exec vitest run app/catana/__tests__/reconnectBanner.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec vitest run app/catana/__tests__/reconnectBanner.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/utils/reconnectBanner.js app/catana/__tests__/reconnectBanner.test.js`
+
+## Status (2026-06-25, home demo scene setup drops)
+- Changed the homepage Catana attract loop so every scene starts from an empty
+  board, animates that scene's initial pieces in via `build:place` with the
+  viewport-top start, and only then begins the scene's authored/procedural
+  moves.
+- Kept the existing post-scene reset hold at about two seconds; after the hold,
+  the board clears and the next scene setup drops in instead of appearing
+  instantly.
+- Scoped the slower/top-start placement tuning to scene-start drops: the
+  in-scene procedural and authored moves in later scenes keep the normal
+  placement speed.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/effects/placePieceWiring.test.js --reporter=dot --exclude '.worktrees/**'`
+- `pnpm exec eslint app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+
+## Status (2026-06-25, homepage static board poster)
+- Seeded the promoted homepage with the current account from the server render:
+  `app/page.js` now resolves the Better Auth session/profile and passes
+  `initialAccount` into `HomeTableClient`, so logged-in account chrome does not
+  first paint as `Sign in` while `/api/account/me` catches up.
+- Updated `useLobbyHomeActions` to initialize from that server account and sync
+  local profile storage on mount instead of overwriting the visible state with
+  stale localStorage.
+- Cookie-backed dev-server smoke: a temporary Better Auth guest session rendered
+  the root HTML with the guest username present and no `Sign in` text; the
+  temporary account and auth user were removed afterward.
+- Matched the static poster number-token radius to live `NumberToken` on small
+  mobile board sizes, where the live token uses the smaller `rounded-sm`
+  treatment.
+- Removed the mobile one-frame double-board glitch by reporting measured board
+  readiness from a layout effect and hiding the poster instantly instead of
+  fading it over the newly visible board.
+- Mobile Chrome smoke at `390x844`: live and poster token radius both computed
+  to `2px`, and a frame sampler recorded zero frames with both the measured
+  board and poster visible.
+- Fixed a remaining mobile one-frame position glitch by gating the live
+  `HomeDemoBoard` and `HomeDemoEffectBridge` until the homepage has a real
+  client viewport width. This prevents the real board from mounting with the
+  temporary desktop `reservedHeight`/`centerYOffset` before switching to compact
+  mobile layout.
+- Mobile Chrome frame sampler after the gate: early frames showed only the
+  poster, the first visible live board frame already matched the poster tile top
+  at `430.33px`, and all visible live-board frames kept that same top value.
+- Added a homepage-only static board poster that is rendered in the initial
+  server HTML while the real measured `HomeDemoBoard` hydrates.
+- Kept the poster reversible and isolated: it reuses the committed home demo
+  board preset and SVG assets, but it does not import `bgio-effects` or
+  `useWindowSize`.
+- Wired `HomeDemoBoard` to report measured viewport readiness back to
+  `HomeTableClient`; the poster fades out once the real board reports
+  `data-window-size-measured="true"`.
+- Confirmed the SSR HTML includes `data-testid="home-demo-board-poster"` and
+  preloads `/svgs/board_underlay_standard.svg` plus the board resource/port
+  icons before the dev JS chunks.
+- Browser smoke at `http://localhost:3000/`: hydrated state has the poster
+  present but hidden, and the measured board visible.
+- Tightened the poster/live-board switch by adding poster port connector bars
+  with the same ratios as `BoardPortChannels` and matching the number-token
+  shadow/weight more closely to `NumberToken`.
+- Browser smoke after polish: forced the poster visible in an isolated Chrome
+  context and confirmed 18 connector bars render with live-board thickness.
+- Restored the static poster number-token shell and glyph ratios to the live
+  `NumberToken` math, and corrected the poster robber offset to match the live
+  tile-relative placement so the slow-network poster handoff better matches the
+  hydrated board.
+- Browser smoke after token/robber polish: forced the poster visible in an
+  isolated Chrome context and confirmed the larger numbers and robber placement
+  visually align with the live board.
+- Added a source guard so the poster keeps the live number-token shell and glyph
+  ratios if the poster is tuned later.
+- Added the live robber's separate blurred contact shadow to the static poster
+  so the slow-network robber reads like the hydrated piece.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot -t "static homepage board poster"`
+- `pnpm exec eslint app/catana/home/HomeTableClient.js app/catana/homeDemo/HomeDemoBoard.js app/catana/homeDemo/HomeDemoBoardPoster.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+
+## Status (2026-06-25, guest auth entry flow implementation)
+- Added `AccountEntryModal` as the homepage account/play-entry surface, built
+  from existing Settlex primitives (`Dialog`, `Button`, `Input`, `Popover`,
+  `SwatchPicker`) instead of introducing a new shared primitive or external UI
+  library.
+- Changed logged-out top-right homepage chrome into a direct `Sign in` trigger;
+  auth choices now live in the modal instead of a small account popover.
+- Changed `Play Online` and `Play a Friend` with no profile to open a
+  username-first guest profile checkpoint. The checkpoint pre-fills a generated
+  username, shows a generated avatar/color preview, and keeps avatar/color
+  picking hidden behind the preview.
+- Kept `Play vs Bot` on the silent generated guest path, and changed guest
+  account menus to offer `Save profile`, `Edit profile`, and `Sign out`.
+- Preserved the pending online/friend play action when a user switches from the
+  username checkpoint to sign-in.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/LobbyPageClient.identity.test.js -t "account entry|logged-out account chrome|routes online|promotes the home table" --reporter=dot`
+- `pnpm exec eslint app/catana/lobby/AccountEntryModal.js app/catana/lobby/IdentityModal.js app/catana/lobby/useLobbyHomeActions.js app/catana/home/HomeTableClient.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/LobbyPageClient.identity.test.js`
+- `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/__tests__/accountPage.source.test.js app/__tests__/api/authOptionsRoute.test.js app/__tests__/api/accountGuestRoute.test.js --reporter=dot`
+
+## Status (2026-06-25, guest auth and play-entry flow spec)
+- Documented the agreed guest/auth/play-entry product flow in
+  `docs/superpowers/specs/2026-06-25-guest-auth-and-play-entry-flow-design.md`.
+- Locked the UX direction: bot play stays silent, online/friend play use a
+  username-first guest profile checkpoint when no profile exists, and sign-in
+  remains a save/recovery/account-continuity path rather than an online-play
+  registration wall.
+- Added the durable rule that the quick online checkpoint only defaults a
+  generated avatar/color preview; full avatar/color picking stays hidden unless
+  the player explicitly opens it.
+
+## Status (2026-06-25, board first-load size jump)
+- Fixed the first-load board jump on the homepage and shared game board path:
+  fallback `1280x720` board geometry still renders for SSR/image discovery, but
+  it stays hidden until `useWindowSize` has measured the real browser viewport.
+- Added measured/unmeasured viewport state to `app/catana/utils/useWindowSize.js`
+  and used it in both `app/catana/homeDemo/HomeDemoBoard.js` and
+  `app/catana/Board.js`.
+- Delayed the home-table placement effect loop until the measured layout is
+  available, so demo pieces do not sample fallback board geometry.
+- Browser evidence at `2048x1524`: before the fix the homepage underlay painted
+  visible at `496x470` and then jumped to `1205x1143`; after the fix the
+  `496x470` fallback is hidden and the first visible homepage board is
+  `1205x1143` with `data-window-size-measured="true"`. The dev sandbox
+  GameScreen path first sampled visible with `data-window-size-measured="true"`.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/useWindowSize.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+- `pnpm exec vitest run app/catana/__tests__/BoardUnderlay.render.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/useWindowSize.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot` (passes; existing `fetchPriority` server-render warning remains)
+- `pnpm exec eslint app/catana/utils/useWindowSize.js app/catana/Board.js app/catana/homeDemo/HomeDemoBoard.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/__tests__/useWindowSize.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+
+## Status (2026-06-25, home release mark placement)
+- Moved the home-table `release N` metadata disclosure back to the true
+  bottom-left screen edge instead of offsetting it above the central action
+  dock.
+- Kept the existing `MetaDisclosure` release-note behavior and desktop-only
+  visibility; this is a placement-only homepage chrome fix.
+- Focused verification:
+- `pnpm exec eslint app/catana/home/HomeTableClient.js`
+- User visual check: desktop root render shows `release 2` anchored at the
+  bottom-left edge while the action dock remains centered and unobstructed.
+
+## Status (2026-06-24, logged-out home account chrome)
+- Changed the logged-out home-table account chrome from an avatar plus
+  `Choose username` text into an icon-only profile button.
+- Clicking that icon now opens the same identity setup flow directly; once a
+  guest account exists, the top-right chrome expands back to the normal
+  avatar/name account menu.
+- Kept the existing split where Play Online and Play a Friend use the identity
+  confirmation gate, while Play vs Bot can use the silent generated-guest path.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+- `pnpm exec eslint app/catana/home/HomeTableClient.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+- `git diff --check -- app/catana/home/HomeTableClient.js app/catana/__tests__/HomeDemoBoard.source.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-06-23, home-table homepage promotion)
+- Promoted the reviewed home-table title screen to the root `/` route via
+  `app/catana/home/HomeTableClient.js`.
+- Added `useLobbyHomeActions` so the new homepage uses the real lobby identity,
+  matchmaking, bot-game, friend-challenge, search, and challenge overlays rather
+  than the old prototype-only modal.
+- Kept `/catana/dev/home-table` dev-gated and pointed it at the same promoted
+  client; the old prototype module is now only a compatibility re-export.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+- `pnpm exec eslint app/page.js app/catana/home/HomeTableClient.js app/catana/lobby/useLobbyHomeActions.js app/catana/dev/home-table/page.js app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+- `git diff --check -- app/page.js app/catana/home/HomeTableClient.js app/catana/lobby/useLobbyHomeActions.js app/catana/dev/home-table/page.js app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/__tests__/HomeDemoBoard.source.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+- `pnpm build`
+- Browser smoke at `http://localhost:3002/`: desktop root render, account
+  popover/Profile identity modal, Play Online identity gate, release
+  disclosure, and 390px mobile layout. Screenshots saved under
+  `output/playwright/home-table-promoted-*.png`.
+
+## Status (2026-06-18, home-table hex brand mark)
+- Replaced the `/catana/dev/home-table` rounded-square `Sx` placeholder with a
+  Catana tile-shell hex mark derived from the current `emoji` theme rounded
+  tile geometry: rounded pointy-hex path, lime/green fill, subtle lift/shade,
+  live tile-style stroke, and white `Sx` glyph.
+- Added dev-only URL-switchable glyph variants for comparison:
+  `?logo=sx` (homepage default), `?logo=s` (simpler favicon candidate), and
+  `?logo=cluster` (resource/board-cluster exploration).
+- Switched the badge lighting to the current emoji-tile diagonal fill +
+  vignette model, moved the `Sx` glyph upward into visual center, and added
+  tone variants: `?logoTone=brand` (default), `lime`, `emerald`, and `gold`.
+- Increased the `Sx` glyph size inside the default badge after visual review so
+  the mark feels less underfilled at both desktop and mobile title-screen sizes.
+- Bumped the `Sx` glyph one step larger again (`166` in the SVG artboard) after
+  comparison; it now fills the badge more confidently without crowding the
+  rounded tile shell.
+- Lightened the title lockup typography from `font-black` to `font-extrabold`
+  and made the tagline/status weights less heavy so the top-left chrome reads
+  more like the in-game UI system.
+- Focused verification:
+- `pnpm lint -- --file app/catana/dev/home-table/HomeTablePrototypeClient.js`
+- Playwright screenshots:
+  `/tmp/settlehex-logo-tone-brand.png`,
+  `/tmp/settlehex-logo-tone-brand-mobile.png`,
+  `/tmp/settlehex-logo-tone-contact-v2.png`,
+  `/tmp/settlehex-logo-text-size-before-after.png`,
+  `/tmp/settlehex-logo-bigger-text-mobile.png`,
+  `/tmp/settlehex-logo-bigger-vs-larger.png`,
+  `/tmp/settlehex-logo-larger-text-mobile.png`
+
+## Status (2026-06-18, home-table meta chrome polish)
+- Refined `/catana/dev/home-table` meta chrome after visual review: the
+  bottom-left update affordance now reads only `release N`, Feedback moved into
+  the quiet top-right text links, and the top About/Blog/Discord/account text
+  uses a lighter white treatment with small hover motion.
+- Lightened the account username weight and removed the chevron from the
+  account pill so it reads as cleaner identity chrome.
+- Kept the existing `MetaDisclosure`, `Popover`, HUD glass, and release-info
+  paths rather than adding new homepage-only primitives.
+- Focused verification:
+- `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/effects/GameEffects.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+- `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+- `git diff --check -- app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/effects/GameEffects.js app/catana/__tests__/HomeDemoBoard.source.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+- `curl -I -s 'http://localhost:3000/catana/dev/home-table' | head`
+- Playwright screenshots: `output/playwright/home-table-meta-links-hover-polish-v2-desktop.png`,
+  `output/playwright/home-table-meta-links-hover-polish-v2-nav-hover.png`,
+  `output/playwright/home-table-meta-links-hover-polish-v2-feedback-hover.png`,
+  `output/playwright/home-table-meta-links-hover-polish-v2-release-open.png`,
+  `output/playwright/home-table-meta-links-hover-polish-v2-small-desktop.png`,
+  `output/playwright/home-table-meta-links-hover-polish-v2-mobile.png`;
+  browser console reported no warnings/errors.
+- Follow-up screenshots for the text-labelled Feedback control:
+  `output/playwright/home-table-feedback-existing-hud-style-desktop.png`,
+  `output/playwright/home-table-feedback-existing-hud-style-hover.png`, and
+  `output/playwright/home-table-feedback-existing-hud-style-small-desktop.png`;
+  browser console reported no warnings/errors.
+- Follow-up screenshots after moving Feedback into the top-link row and
+  lightening account typography:
+  `output/playwright/home-table-top-feedback-account-light-desktop.png`,
+  `output/playwright/home-table-top-feedback-account-light-feedback-hover.png`,
+  `output/playwright/home-table-top-feedback-account-light-small-desktop.png`,
+  and `output/playwright/home-table-top-feedback-account-light-mobile.png`;
+  browser console reported no warnings/errors.
+
+## Status (2026-06-18, home-table account/status polish)
+- Refined the `/catana/dev/home-table` system-chrome title screen so global
+  table metadata lives beside the Settlehex brand instead of inside the account
+  control.
+- Reworked the top-right account affordance into identity-only chrome with a
+  compact `Popover` menu, and removed the mobile avatar double-border by using
+  a single trigger outline.
+- Removed the extra `Pre-game table` label and simplified the account dropdown
+  so it no longer repeats the avatar/name/ready-state block already present in
+  the trigger.
+- Process note: this pass intentionally used the existing Settlex UI primitive
+  workflow (`app/ui/Popover`, `docs/agent/skills/catana-brand/*`) rather than
+  page-local menu styling or importing an external visual system. References
+  checked for structure: shadcn avatar/dropdown patterns, lichess account menu
+  screenshot, and AICanvas Glass User Menu.
+- Focused verification:
+- `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js`
+- `git diff --check`
+- Playwright screenshots against
+  `http://localhost:3000/catana/dev/home-table?capture=system-chrome-account-menu-compact`
+  at desktop `2048x1152` and mobile `390x844`, with the account menu closed and
+  open; browser console reported no warnings/errors.
+
+## Status (2026-06-16, guest identity MVP)
+- Added themed generated guest usernames shared by the lobby suggestion helper
+  and server guest-account creation.
+- `/api/account/guest` now accepts a `usernameSource` flag. Generated
+  usernames silently reroll on collision; custom usernames keep returning the
+  existing username-taken error.
+- The identity modal pre-fills the generated suggestion and submits whether the
+  user kept it or edited it. Bot play can create a generated guest account
+  without opening the modal, while online/friend flows still use the identity
+  gate.
+- Focused verification:
+- `pnpm exec vitest run app/catana/__tests__/playerIdentityStorage.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/accountGuestRoute.test.js app/catana/__tests__/LobbyPageClient.identity.test.js --reporter=dot` (red: generated identity flow missing)
+- `pnpm exec vitest run app/catana/__tests__/playerIdentityStorage.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/accountGuestRoute.test.js app/catana/__tests__/LobbyPageClient.identity.test.js --reporter=dot`
+- `pnpm exec eslint lib/shared/guestUsername.js lib/server/accounts/generateGuestUsername.js lib/server/accounts/createGuestAccount.js lib/server/accounts/updateGuestIdentity.js app/api/account/guest/handler.js app/catana/lobby/playerIdentityStorage.js app/catana/lobby/IdentityModal.js app/catana/lobby/LobbyPageClient.js app/catana/__tests__/playerIdentityStorage.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/accountGuestRoute.test.js app/catana/__tests__/LobbyPageClient.identity.test.js`
+- `git diff --check -- app/catana/lobby/playerIdentityStorage.js app/catana/lobby/IdentityModal.js app/catana/lobby/LobbyPageClient.js app/api/account/guest/handler.js lib/server/accounts/createGuestAccount.js lib/server/accounts/updateGuestIdentity.js lib/server/accounts/generateGuestUsername.js lib/shared/guestUsername.js app/catana/__tests__/playerIdentityStorage.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/accountGuestRoute.test.js app/catana/__tests__/LobbyPageClient.identity.test.js`
+
 ## Status (2026-06-13, dev-sandbox effect payload helpers)
 - Extracted Catana dev-sandbox effect payload shaping into
   `app/catana/dev/sandbox/effectPayloads.js`.
@@ -5736,3 +6120,284 @@
   - `pnpm exec vitest run server/__tests__/TimerManager.test.js server/__tests__/IdlePresenceManager.test.js server/__tests__/DisconnectPresenceManager.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/ArchiveManager.test.js server/__tests__/pufferBotManager.test.js server/__tests__/timerPubSub.test.js --exclude '.worktrees/**' --reporter=dot`
   - `pnpm exec eslint server/timers/TimerManager.js server/presence/IdlePresenceManager.js server/presence/DisconnectPresenceManager.js server/archive/ArchiveManager.js server/bots/pufferBotManager.js server/lifecycle/FinishedMatchRetentionManager.js server/timers/timerPubSub.js server/server.js server/__tests__/TimerManager.test.js server/__tests__/IdlePresenceManager.test.js server/__tests__/DisconnectPresenceManager.test.js server/__tests__/FinishedMatchRetentionManager.test.js server/__tests__/ArchiveManager.test.js server/__tests__/pufferBotManager.test.js server/__tests__/timerPubSub.test.js`
   - `git diff --check`
+
+## Status (2026-06-14, piece placement stutter check)
+- Investigated reported stutter on `/catana/dev/home-table?variant=ready`.
+- Frame sampling showed no long tasks or dropped-frame spikes during placement, and the issue did not reproduce after the user restored the original placement timing values.
+- No placement tuning change is retained; `PLACE_PIECE_DEFAULT_TUNING` remains at the prior `dropDistance: 1.5`, `dropDuration: 0.22`, and `easeDrop: "power2.in"` values.
+- Verification:
+  - Playwright frame-position sample on the home-table ready route showed steady frame cadence during placement.
+
+## Status (2026-06-16, public repo cleanup pass)
+- Removed the unused root-level legacy board-generation experiment folders: `spec/`, `strategy/`, and `utils/`.
+- Updated `AGENTS.md` so the project map no longer advertises those removed legacy directories.
+- Removed the tiny standalone `game-core/src/board/boardConfigs.test.ts` registry smoke test; the official config remains covered by the behavioral board-generation invariant test.
+- Verification:
+  - `rg -n "from ['\"](?:\\.\\./)+(?:spec/board|utils/(?:assert|collections|generateBoard)|strategy/)|require\\(['\"](?:\\.\\./)+(?:spec/board|utils/(?:assert|collections|generateBoard)|strategy/)" --glob '!docs/**' --glob '!node_modules/**' --glob '!game-core/dist/**'`
+  - `pnpm run test:logic`
+  - `git diff --check`
+
+## Status (2026-06-16, react-zoom-pan-pinch patch cleanup)
+- Replaced the vendored `react-zoom-pan-pinch/` source tree with the pinned npm package `react-zoom-pan-pinch@3.7.0` plus `patches/react-zoom-pan-pinch@3.7.0.patch`.
+- Moved Catana and board-editor imports to the package entry point while preserving the existing pan-room bounds and double-click toggle behavior in the patch.
+- Added `app/catana/__tests__/reactZoomPanPinchPatch.test.js` to lock the package patch behavior after removing the vendored fork tests.
+- Updated stale release/build-input tests and removed the obsolete `react-zoom-pan-pinch/stories` TypeScript exclude.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/reactZoomPanPinchPatch.test.js --reporter=dot` (red before patch: ignored pan room, missing `getDoubleClickMode`, missing ESM patch markers)
+  - `pnpm exec vitest run app/catana/__tests__/reactZoomPanPinchPatch.test.js --reporter=dot`
+  - `pnpm exec vitest run app/catana/__tests__/reactZoomPanPinchPatch.test.js server/__tests__/buildInputs.source.test.js scripts/release/__tests__/verification-lanes.test.mjs --reporter=dot`
+  - `pnpm run test:server`
+  - `pnpm run test:logic`
+  - `pnpm build`
+  - `pnpm verify`
+  - `git diff --check`
+
+## Status (2026-06-16, home-table staged title prototype)
+- Tuned `/catana/dev/home-table?variant=ready` toward a staged pre-game table: real demo board first, lightweight presence/status chrome, clearer mode CTAs, and no marketing hero copy.
+- Added `capture=` support to hide prototype-only variant controls for screenshots.
+- Added a local demo-board vertical offset so phone layouts can frame the board higher while keeping the placement-effect coordinates aligned.
+- Verification:
+  - `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/homeDemo/HomeDemoBoard.js app/catana/homeDemo/HomeDemoEffectBridge.js` (passes with the existing prototype `<img>` warnings)
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/homeDemoSequence.test.js`
+  - In-app browser screenshots: `output/playwright/home-table-staged-desktop.png`, `output/playwright/home-table-staged-mobile.png`
+
+## Status (2026-06-16, home-table standard chrome variant)
+- Added `/catana/dev/home-table?variant=system` as a comparison pass for the staged title-screen direction.
+- Kept the real demo board and placement loop unchanged while moving the surrounding chrome toward existing Settlex primitives: shared `Button` CTAs, a `Panel`-based table pulse, quieter presence/status chrome, and no separate bot-ready card.
+- Refined the top-right chrome to be account-first: compact status chips on desktop plus an avatar/name profile popover stub, collapsing to a compact avatar menu on mobile.
+- Verification:
+  - `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js` (passes with the existing prototype `<img>` warnings)
+  - `curl -I -s 'http://localhost:3000/catana/dev/home-table?variant=system' | head`
+  - Playwright screenshots: `output/playwright/home-table-system-desktop.png`, `output/playwright/home-table-system-mobile.png`, `output/playwright/home-table-staged-current-desktop.png`
+  - Playwright screenshots: `output/playwright/home-table-system-account-desktop.png`, `output/playwright/home-table-system-account-mobile.png`
+
+## Status (2026-06-18, home-table system chrome lock-in)
+- Locked `/catana/dev/home-table` to the system-chrome title table direction and removed the old staged-table, three-islands, and hybrid prototype switcher branches.
+- Removed the standalone `Table pulse` widget so the title screen leans on the real demo-board attract loop, account/status chrome, and CTA dock rather than a detached activity panel.
+- Kept this as a dev/prototype route change only; production homepage routing is unchanged.
+- Verification:
+  - `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js`
+  - `git diff --check -- app/catana/dev/home-table/HomeTablePrototypeClient.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `curl -I -s 'http://localhost:3000/catana/dev/home-table' | head`
+  - Playwright screenshots: `output/playwright/home-table-system-locked-desktop.png`, `output/playwright/home-table-system-locked-mobile.png`
+
+## Status (2026-06-18, home-table locked chrome polish)
+- Polished the locked `/catana/dev/home-table` title screen without adding new growth widgets.
+- Reduced mobile brand/account competition by making the account trigger avatar-only on phone widths and slightly tightening the mobile brand mark.
+- Kept the main CTA sizes stable while tightening icon/badge proportions for a cleaner button read.
+- Verification:
+  - `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js`
+  - `git diff --check -- app/catana/dev/home-table/HomeTablePrototypeClient.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `curl -I -s 'http://localhost:3000/catana/dev/home-table' | head`
+  - Playwright screenshots: `output/playwright/home-table-polish-pass-1-desktop.png`, `output/playwright/home-table-polish-pass-1-mobile.png`
+
+## Status (2026-06-18, home-table HUD chrome alignment)
+- Reworked the locked home-table title chrome to follow the in-game HUD glass language more closely.
+- Removed the separate top-right `4 online` and `Beta` outline pills; account/status now sits in one `catana-hud-glass` rail with an avatar tile and quiet inline metadata.
+- Replaced the three standalone CTA cards with a single `catana-hud-glass` action dock containing three game-control-style action surfaces.
+- Verification:
+  - `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js`
+  - `git diff --check -- app/catana/dev/home-table/HomeTablePrototypeClient.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `curl -I -s 'http://localhost:3000/catana/dev/home-table' | head`
+  - Playwright screenshots: `output/playwright/home-table-chrome-polish-pass-1-desktop.png`, `output/playwright/home-table-chrome-polish-pass-1-mobile.png`
+
+## Status (2026-06-18, home-table meta chrome spike)
+- Added optional desktop-only bottom-left meta chrome to `/catana/dev/home-table`: a `What changed` release disclosure plus low-priority Feedback, Discord, and Blog link placeholders.
+- Reused the existing `MetaDisclosure` and release-note data path so the release/dev-log affordance can be enabled or removed without adding a new shared primitive.
+- Kept the links out of the mobile layout for now so the board, account trigger, and mode dock remain the only first-screen phone chrome.
+- Restyled the meta chrome to avoid the heavy black-card look: the release affordance is now a compact bottom-left update chip, while Feedback/Discord/Blog live as quieter game-utility links on the bottom-right edge.
+- Refined the chrome again so release notes are only a tiny bottom-left text disclosure, About/Blog/Discord sit as quiet top-right nav links beside the account control, and Feedback is the only bottom-right utility affordance.
+- Added a concise top-left product line under the Settlehex wordmark and default-muted the home-table demo audio while keeping the placement animation loop active.
+- Verification:
+  - `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js`
+  - `pnpm exec eslint app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/effects/GameEffects.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+  - `git diff --check -- app/catana/dev/home-table/HomeTablePrototypeClient.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `git diff --check -- app/catana/dev/home-table/HomeTablePrototypeClient.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/effects/GameEffects.js app/catana/__tests__/HomeDemoBoard.source.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `curl -I -s 'http://localhost:3000/catana/dev/home-table' | head`
+  - Playwright screenshots: `output/playwright/home-table-meta-chrome-desktop.png`, `output/playwright/home-table-meta-chrome-release-open.png`, `output/playwright/home-table-meta-chrome-mobile.png`
+  - Playwright screenshots: `output/playwright/home-table-meta-chrome-restyled-desktop.png`, `output/playwright/home-table-meta-chrome-restyled-release-open.png`, `output/playwright/home-table-meta-chrome-restyled-small-desktop.png`, `output/playwright/home-table-meta-chrome-restyled-mobile.png`
+  - Playwright screenshots: `output/playwright/home-table-meta-toplinks-muted-desktop.png`, `output/playwright/home-table-meta-toplinks-muted-release-open.png`, `output/playwright/home-table-meta-toplinks-muted-small-desktop.png`, `output/playwright/home-table-meta-toplinks-muted-mobile.png`
+
+## Status (2026-06-24, homepage account chrome reset)
+- Tightened the promoted homepage signed-in account trigger so short names size to their content instead of leaving a wide empty HUD-glass pill.
+- Replaced the logged-out generated-avatar trigger with a shadcn-style sign-in action using a user icon plus `Sign in` text, and simplified the signed-in avatar to a round account dropdown trigger with a chevron/menu header.
+- Added a signed-in account popover `Sign out` command wired through the home lobby action hook.
+- Added `/api/account/logout` to expire the guest session cookie, then clear the homepage identity, pending challenge, and active-match local state after a successful sign-out.
+- Added named shared overlay z-layers for dialogs, popovers, tooltips, and status banners; `StatusBanner overlay` now portals top-of-page alerts above modal/backdrop blur instead of leaving them in page-local stacking contexts.
+- Moved the promoted homepage lobby error banner onto the shared status overlay layer so the identity modal no longer blurs/obscures it.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/SettlexUiFoundation.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js app/__tests__/api/accountGuestRoute.test.js --reporter=dot`
+  - `pnpm exec eslint app/ui/Dialog.js app/ui/AlertDialog.js app/ui/Popover.js app/ui/Tooltip.js app/catana/components/StatusBanner.js app/catana/components/GlobalReconnectBanner.js app/catana/home/HomeTableClient.js app/catana/__tests__/SettlexUiFoundation.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+  - `pnpm exec eslint app/catana/home/HomeTableClient.js app/catana/lobby/useLobbyHomeActions.js app/catana/__tests__/HomeDemoBoard.source.test.js app/__tests__/api/accountGuestRoute.test.js app/api/account/logout/handler.js app/api/account/logout/route.js lib/server/session/writeSessionCookie.js`
+  - `git diff --check -- app/globals.css app/ui/Dialog.js app/ui/AlertDialog.js app/ui/Popover.js app/ui/Tooltip.js app/catana/components/StatusBanner.js app/catana/components/GlobalReconnectBanner.js app/catana/home/HomeTableClient.js app/catana/__tests__/SettlexUiFoundation.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/StatusBanner.source.test.js app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+  - `git diff --check -- app/catana/home/HomeTableClient.js app/catana/lobby/useLobbyHomeActions.js app/catana/__tests__/HomeDemoBoard.source.test.js app/__tests__/api/accountGuestRoute.test.js app/api/account/logout/handler.js app/api/account/logout/route.js lib/server/session/writeSessionCookie.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-06-25, Better Auth account migration)
+- Replaced the custom guest-session and magic-link account model with Better Auth as the auth boundary.
+- Pinned `better-auth@1.3.4` because the latest Better Auth release declares Next 14+ peer compatibility while Settlex is still on Next 13.5.
+- Added `/api/auth/[...all]`, server auth config, client auth helper, anonymous sessions, and Google/Discord social provider wiring.
+- Recast `accounts` as the game-profile table keyed by Better Auth user id; username/avatar/color still live in Settlex and are created or updated through `/api/account/guest`.
+- Preserved the homepage/account API surface where practical: `/api/account/me`, `/api/account/guest`, match routes, challenge routes, and logout now resolve through Better Auth sessions.
+- Retired the old email claim route behavior: request returns 410 and consume redirects back to `/account` with a provider-sign-in error instead of touching removed magic-link tables.
+- Updated the promoted homepage logged-out account control into a sign-in menu with Discord, Google, and guest entry points; provider sign-in is handled from `authClient.signIn.social`.
+- Updated `/account` to show provider sign-in actions rather than custom email magic-link claiming.
+- Verification:
+  - `pnpm exec vitest run lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/currentPlayer.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/betterAuthRoute.source.test.js app/__tests__/api/accountGuestRoute.test.js app/__tests__/api/accountClaimRoute.test.js app/__tests__/api/routeModuleExports.source.test.js --reporter=dot`
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/SettlexDialogs.source.test.js app/catana/__tests__/SettlexUiFoundation.source.test.js app/__tests__/accountPage.source.test.js app/__tests__/publicBranding.source.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js --reporter=dot`
+  - `pnpm exec eslint lib/server/auth/betterAuth.js lib/client/authClient.js 'app/api/auth/[...all]/route.js' lib/server/players/getCurrentPlayer.js lib/server/accounts/transferAccountProfile.js lib/server/accounts/getSessionAccount.js lib/server/accounts/createGuestAccount.js lib/server/accounts/updateGuestIdentity.js app/api/account/guest/handler.js app/api/account/me/handler.js app/api/account/logout/handler.js app/api/account/claim/request/handler.js app/api/account/claim/consume/handler.js app/catana/lobby/useLobbyHomeActions.js app/catana/home/HomeTableClient.js app/account/AccountPageClient.js app/account/page.js app/__tests__/api/betterAuthRoute.source.test.js lib/server/__tests__/currentPlayer.test.js lib/server/__tests__/dbMigrations.test.js app/__tests__/api/accountGuestRoute.test.js app/__tests__/api/accountClaimRoute.test.js lib/server/__tests__/guestAccounts.test.js lib/server/__tests__/helpers/fakeAccountsPool.js app/catana/__tests__/HomeDemoBoard.source.test.js app/__tests__/api/routeModuleExports.source.test.js app/__tests__/accountPage.source.test.js`
+
+## Status (2026-06-25, email/password first-pass auth)
+- Enabled Better Auth email/password auth for the first pass.
+- Added `/api/auth/options` so the client can see whether email/password is enabled and which social providers are actually configured in the server environment.
+- Updated the homepage sign-in menu to always show email and guest entry, but only show Discord/Google when their OAuth credentials are configured; this prevents local `provider not found` errors.
+- Reworked `/account` to provide an email/password sign-in/create-account form while keeping provider buttons conditional on `/api/auth/options`.
+- Kept password reset and email verification out of this pass because there is no production email delivery wired yet.
+- Verification:
+  - `pnpm exec vitest run app/__tests__/api/betterAuthRoute.source.test.js app/__tests__/api/authOptionsRoute.test.js app/__tests__/api/routeModuleExports.source.test.js app/__tests__/accountPage.source.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+  - `pnpm exec eslint lib/server/auth/betterAuth.js app/api/auth/options/handler.js app/api/auth/options/route.js app/catana/lobby/useLobbyHomeActions.js app/catana/home/HomeTableClient.js app/account/AccountPageClient.js app/__tests__/api/betterAuthRoute.source.test.js app/__tests__/api/authOptionsRoute.test.js app/__tests__/api/routeModuleExports.source.test.js app/__tests__/accountPage.source.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+  - `pnpm exec vitest run lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/currentPlayer.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/betterAuthRoute.source.test.js app/__tests__/api/authOptionsRoute.test.js app/__tests__/api/accountGuestRoute.test.js app/__tests__/api/accountClaimRoute.test.js app/__tests__/api/routeModuleExports.source.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/__tests__/accountPage.source.test.js app/__tests__/publicBranding.source.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js --reporter=dot`
+  - `node --input-type=module -e "import { getSocialProviders, EMAIL_PASSWORD_AUTH_ENABLED } from './lib/server/auth/betterAuth.js'; console.log(JSON.stringify({ emailPassword: EMAIL_PASSWORD_AUTH_ENABLED, socialProviders: Object.keys(getSocialProviders()).sort() }));"`
+
+## Status (2026-06-25, Better Auth migration repair)
+- Fixed the local `Play vs Bot` guest-session failure caused by the existing dev database having old account migrations recorded before `auth_users` existed.
+- Added `0004_better_auth_legacy_profile_reset.sql` as a forward repair migration. It creates Better Auth tables and only resets the old UUID-based account/profile tables when it detects the legacy `accounts.id` schema.
+- Applied the migration locally with `pnpm db:migrate`; it applied `0004_better_auth_legacy_profile_reset.sql`.
+- Verified the local database now has `auth_users`, `auth_sessions`, `auth_accounts`, `auth_verifications`, `accounts`, and `username_history`, with `accounts.id` and `username_history.account_id` as `text`.
+- Verification:
+  - `pnpm exec vitest run lib/server/__tests__/dbMigrations.test.js --reporter=dot`
+  - `pnpm exec vitest run lib/server/__tests__/dbMigrations.test.js lib/server/__tests__/currentPlayer.test.js lib/server/__tests__/guestAccounts.test.js app/__tests__/api/betterAuthRoute.source.test.js app/__tests__/api/authOptionsRoute.test.js app/__tests__/api/accountGuestRoute.test.js app/__tests__/api/routeModuleExports.source.test.js --reporter=dot`
+  - `pnpm exec eslint lib/server/__tests__/dbMigrations.test.js`
+  - `git diff --check -- lib/server/db/sql/0004_better_auth_legacy_profile_reset.sql lib/server/__tests__/dbMigrations.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `curl http://localhost:3000/api/auth/options` returned `{"emailPassword":true,"socialProviders":[]}`
+  - `POST /api/auth/sign-in/anonymous` followed by `POST /api/account/guest` returned 200; the smoke user was deleted afterward.
+
+## Status (2026-06-25, homepage ambient scene player)
+- Replaced the single jittered homepage demo event loop with three curated ambient scenes in `app/catana/homeDemo/homeDemoSequence.js`.
+- Each scene now has its own starting pieces, absolute timing beats, and sparse believable placements so settlements lead adjacent roads and city upgrades have an existing settlement.
+- Updated `HomeDemoEffectBridge` to rotate through scenes on the promoted homepage while keeping the existing shared `createPiecePlacementRunner`/`build:place` effect path.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: missing `HOME_DEMO_SCENES`)
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - Chrome DevTools live homepage smoke on `http://localhost:3000/`; screenshots saved in `.logs/home-scene-player-0s.png`, `.logs/home-scene-player-4s.png`, and `.logs/home-scene-player-13s.png`; browser console had no messages.
+
+## Status (2026-06-25, homepage procedural ambient expansion)
+- Added a seeded procedural scene generator for homepage demo moves in `app/catana/homeDemo/homeDemoProceduralScene.js`.
+- Converted `quiet-expansion` into a procedural scene family: it starts from curated pieces, then emits legal road/settlement/city placement events with 1-4s seeded delays, player streaks, and one rare city accent.
+- Kept the animation path unchanged by resolving procedural scenes into the same semantic placement events consumed by `HomeDemoEffectBridge`.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoProceduralScene.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: missing generator module)
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoProceduralScene.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/homeDemo/homeDemoProceduralScene.js app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/homeDemoSequence.test.js`
+  - `git diff --check -- app/catana/homeDemo/homeDemoProceduralScene.js app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/homeDemoSequence.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `curl -I -s http://localhost:3000/ | head`
+  - `pnpm exec playwright screenshot --viewport-size=1440,1000 --wait-for-timeout=38000 http://localhost:3000/ output/playwright/homepage-procedural-ambient-scene.png`
+  - Chrome DevTools console check on `http://localhost:3000/`: no warnings/errors found.
+
+## Status (2026-06-25, homepage opening scene tuning)
+- Tuned the first `opening-table` scene so all four settlement/road pairs arrive in a tight ~100ms hand-authored stagger near the start of the cycle.
+- Moved the isolated top-edge opening pair into a more central legal placement, and kept the procedural expansion scene unchanged.
+- Verification:
+  - One-off topology check confirmed opening settlements at nodes 32, 20, 34, and 42 are not adjacent, and roads `29,32`, `11,20`, `34,43`, and `42,47` exist.
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/homeDemo/homeDemoProceduralScene.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js`
+  - `git diff --check -- app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/homeDemo/homeDemoProceduralScene.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+  - `pnpm exec playwright screenshot --viewport-size=1440,1000 --wait-for-timeout=4200 http://localhost:3000/ output/playwright/homepage-opening-compressed-scene-v2.png`
+
+## Status (2026-06-25, homepage placement float tuning)
+- Added homepage-only placement tuning in `HomeDemoEffectBridge` so the title-table demo pieces float down more slowly without changing the shared in-game placement defaults.
+- Scoped the local `tuning` payload to the `opening-table` scene only; later procedural/demo placements omit custom tuning and use the normal placement speed.
+- Verification:
+  - `pnpm exec eslint app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/homeDemoProceduralScene.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js`
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `git diff --check -- app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/homeDemo/homeDemoSequence.js app/catana/homeDemo/homeDemoProceduralScene.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-06-25, homepage opening-only float scope)
+- Fixed the homepage demo placement tuning scope after confirming the previous bridge change attached slow float tuning to every demo event payload.
+- Added a source regression check that `HomeDemoEffectBridge` only adds the slower placement tuning for the `opening-table` scene and uses default duration/tuning for later scenes.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'` (red before fix: missing opening-only tuning guard)
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+
+## Status (2026-06-25, homepage opening handoff fix)
+- Fixed the apparent post-opening stall caused by `opening-table` still lasting 28s even though all opening placements now finish inside the first two seconds.
+- Shortened `opening-table.durationMs` to 2600ms so the attract loop hands off to the procedural expansion scene quickly instead of holding a static board for most of the cycle.
+- Added a sequence test guard so the opening scene stays a short setup beat while longer ambient/procedural scenes can still run for 24-36s.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js --reporter=dot --exclude '.worktrees/**'` (red before fix: opening duration 28000ms exceeded short setup range)
+  - `pnpm exec vitest run app/catana/__tests__/homeDemoSequence.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/homeDemo/homeDemoSequence.js app/catana/__tests__/homeDemoSequence.test.js`
+
+## Status (2026-06-25, homepage opening viewport drop)
+- Added an optional `startFrom: "viewport-top"` placement payload mode to `placePiece`, preserving the default short board-relative drop when the flag is absent.
+- Scoped that mode to the homepage `opening-table` scene only, alongside the opening-only placement tuning; later procedural/demo moves and in-game moves still use the normal placement path.
+- Tuned the opening drop to travel from the browser top with a faster falling ease instead of a slow local drift.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/effects/placePieceWiring.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'` (red before implementation: missing viewport-top helper/payload)
+  - `pnpm exec vitest run app/catana/__tests__/effects/placePieceWiring.test.js app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec vitest run app/catana/__tests__/effects/placePieceWiring.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/homeDemoSequence.test.js app/catana/__tests__/homeDemoProceduralScene.test.js --reporter=dot --exclude '.worktrees/**'`
+  - `pnpm exec eslint app/catana/effects/placePiece.js app/catana/homeDemo/HomeDemoEffectBridge.js app/catana/__tests__/effects/placePieceWiring.test.js app/catana/__tests__/HomeDemoBoard.source.test.js`
+  - `curl -I -s http://localhost:3000/ | head`
+  - Opening still frames: `output/playwright/homepage-opening-viewport-drop-1150ms.png`, `output/playwright/homepage-opening-viewport-drop-1900ms.png`
+
+## Status (2026-06-25, robber tile compositing isolation)
+- Moved the robber tile dimming filter and hex clip-path off the outer tile container and onto a tile-visual child layer in `app/catana/Tile.js`, so Safari should no longer composite the robber image into a filtered/clipped tile subtree during board zoom.
+- Kept the flash sweep, resource icon, number token, and tile background in the clipped/filtered layer; the robber, robber shadow, hover ghost, and click target remain unfiltered, unclipped siblings.
+- Verification:
+  - `pnpm exec eslint app/catana/Tile.js`
+
+## Status (2026-06-25, homepage wordmark typography)
+- Scoped a homepage-only typography pass to `app/catana/home/HomeTableClient.js`; the root Outfit font remains unchanged for the game screen, HUD, log, timers, and shared UI.
+- Added Fredoka for the `Settlehex` homepage wordmark and green-hex `Sx` glyph only, moved the wordmark/status copy from slate-black to a deep ocean blue, reduced the `Sx` glyph to weight 600, fixed top-link opacity classes so they render white, and reduced the heaviest homepage action/nav/account label weights.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/HomeDemoBoard.source.test.js --reporter=dot`
+  - `pnpm exec next lint --file app/catana/home/HomeTableClient.js`
+  - `playwright screenshot --channel chrome --viewport-size=2048,1280 --wait-for-timeout=1600 http://localhost:3001/ output/playwright/home-wordmark-fredoka-refined-desktop.png`
+  - `playwright screenshot --channel chrome --viewport-size=390,844 --wait-for-timeout=1600 http://localhost:3001/ output/playwright/home-wordmark-fredoka-refined-mobile.png`
+  - `playwright screenshot --channel chrome --viewport-size=2048,1280 --wait-for-timeout=1600 http://localhost:3001/ output/playwright/home-wordmark-fredoka-glyph-chrome-desktop.png`
+  - `playwright screenshot --channel chrome --viewport-size=390,844 --wait-for-timeout=1600 http://localhost:3001/ output/playwright/home-wordmark-fredoka-glyph-chrome-mobile.png`
+  - `playwright screenshot --channel chrome --viewport-size=1276,1000 --wait-for-timeout=2000 file:///Users/david/coding/settlex/output/playwright/brand-colour-options.html output/playwright/brand-colour-options.png`
+  - `playwright screenshot --channel chrome --viewport-size=2048,1280 --wait-for-timeout=1600 http://localhost:3001/ output/playwright/home-wordmark-ocean-sx600-desktop.png`
+  - `playwright screenshot --channel chrome --viewport-size=390,844 --wait-for-timeout=1600 http://localhost:3001/ output/playwright/home-wordmark-ocean-sx600-mobile.png`
+
+## Status (2026-06-26, site favicon)
+- Replaced `app/favicon.ico` with a multi-size ICO generated from the green `Sx` hex badge so the App Router serves the mark as the site-wide favicon.
+- Verification:
+  - `file app/favicon.ico`
+  - `magick identify app/favicon.ico`
+  - `curl -sS -I http://127.0.0.1:3000/favicon.ico`
+  - `curl -sS http://127.0.0.1:3000/favicon.ico -o /tmp/settlex-served-favicon.ico && file /tmp/settlex-served-favicon.ico && magick identify /tmp/settlex-served-favicon.ico`
+  - `git diff --check -- app/favicon.ico docs/agent/PROGRESS.md docs/agent/NOTES.md`
+
+## Status (2026-06-27, Catana design skill routing)
+- Added `.agents/skills/catana-design/SKILL.md` as the native active routing skill for SettleHex/Catana design, restyling, homepage/HUD chrome, shared product UI, and one-off visual review work.
+- Updated the Catana brand/UI docs to make the current game screen the strongest canonical style reference, frame the homepage as a title/client surface, and point visual audits at a new `DESIGN_REVIEW_CHECKLIST.md`.
+- Updated `AGENTS.md` and `docs/agent/UI_CONTEXT.md` so future UI work loads the active design router before falling back to the broader brand reference or shared-primitive workflow.
+- Verification:
+  - `python3 /Users/david/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/catana-design`
+  - `git diff --check -- .agents/skills/catana-design docs/agent/skills/catana-brand docs/agent/UI_CONTEXT.md AGENTS.md docs/agent/NOTES.md docs/agent/PROGRESS.md`
+  - `ls -ld ~/.agents ~/.agents/skills ~/.agents/skills/superpowers && readlink ~/.agents/skills/superpowers`
+
+## Status (2026-07-07, release Docker packaging check)
+- Fixed a production Docker install blocker after the `react-zoom-pan-pinch` pnpm patch migration: both web and game images now copy `patches/` before `pnpm install --frozen-lockfile`.
+- Added deployment wiring regressions so patched dependency files must be available before Docker installs dependencies.
+- Tightened `.dockerignore` for local-only AI training artifacts and tool caches; the local game image build context dropped from roughly 2.12GB to about 111KB.
+- Verification:
+  - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js --reporter=dot` (red before fix: Dockerfiles did not copy `patches/`; red before ignore update: Docker context ignore rules were missing)
+  - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js --reporter=dot`
+  - `docker build -f Dockerfile.web --target deps .`
+  - `docker build -f Dockerfile.game .`
+
+## Status (2026-07-07, beta release label)
+- Kept the deployment release as internal version 3 but added a public `release 0.8` label for the badge/panels so the release guard can still enforce integer bumps.
+- Simplified the pending release copy to the beta bug-report message requested for friend testing.
+- Verification:
+  - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot` (red before fix: custom labels were ignored and panel headings still used the internal version)
+  - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot`

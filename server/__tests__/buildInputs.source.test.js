@@ -33,44 +33,27 @@ describe("production build inputs", () => {
     expect(stats.isSymbolicLink()).toBe(false);
   });
 
-  it("uses explicit cleanup guards in the vendored zoom-pan-pinch hooks", () => {
-    const effectHook = readRepoFile(
-      "react-zoom-pan-pinch",
-      "hooks",
-      "use-transform-effect.tsx"
+  it("uses a pnpm patch instead of vendored zoom-pan-pinch source", () => {
+    const packageJson = JSON.parse(readRepoFile("package.json"));
+
+    expect(packageJson.dependencies["react-zoom-pan-pinch"]).toBe("3.7.0");
+    expect(
+      packageJson.pnpm?.patchedDependencies?.["react-zoom-pan-pinch@3.7.0"]
+    ).toBe("patches/react-zoom-pan-pinch@3.7.0.patch");
+    expect(
+      fs.existsSync(
+        path.join(repoRoot, "patches", "react-zoom-pan-pinch@3.7.0.patch")
+      )
+    ).toBe(true);
+    expect(fs.existsSync(path.join(repoRoot, "react-zoom-pan-pinch"))).toBe(
+      false
     );
-    const initHook = readRepoFile(
-      "react-zoom-pan-pinch",
-      "hooks",
-      "use-transform-init.tsx"
-    );
-
-    expect(effectHook).toContain('typeof unmountCallback === "function"');
-    expect(initHook).toContain('typeof unmount === "function"');
-    expect(initHook).toContain('typeof unmountCallback === "function"');
-  });
-
-  it("excludes vendored zoom-pan-pinch story files from app typechecking", () => {
-    const tsconfig = readRepoFile("tsconfig.json");
-
-    expect(tsconfig).toContain('"react-zoom-pan-pinch/stories"');
   });
 
   it("excludes misc experiments from app typechecking", () => {
     const tsconfig = readRepoFile("tsconfig.json");
 
     expect(tsconfig).toContain('"misc"');
-  });
-
-  it("uses relative model imports inside vendored zoom-pan-pinch build files", () => {
-    const stylesUtils = readRepoFile(
-      "react-zoom-pan-pinch",
-      "utils",
-      "styles.utils.ts"
-    );
-
-    expect(stylesUtils).toContain('from "../models"');
-    expect(stylesUtils).not.toContain('from "models"');
   });
 
   it("disables optional ws native addons in the Next webpack config", () => {

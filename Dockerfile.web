@@ -11,6 +11,7 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY next.config.js ./
 COPY game-core/package.json game-core/package.json
+COPY patches patches
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build

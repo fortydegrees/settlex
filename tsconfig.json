@@ -33,7 +33,6 @@
   "exclude": [
     "node_modules",
     "game-core",
-    "react-zoom-pan-pinch/stories",
     "misc"
   ]
 }

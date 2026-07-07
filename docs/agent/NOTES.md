@@ -1,5 +1,208 @@
 # NOTES
 
+- Homepage attract-loop note:
+- The current scene rotation starts with `quiet-expansion`; the older
+  `opening-table` setup scene was removed after the setup-drop transition made
+  the procedural scene a better first impression.
+- Current ambient scene lengths are intentionally around one minute:
+  `quiet-expansion` runs for 64s with a 48-move procedural budget, while
+  `gentle-city` runs for 60s with 14 authored placement beats. Keep future
+  tuning in this rough range unless the homepage starts to feel too busy or too
+  repetitive.
+- Maintain variation in starting player counts and starting board regions:
+  `quiet-expansion` is a three-player scene, `coastal-duel` is the red/blue
+  one-on-one scene, and `four-corner-spread` is the four-player spread scene.
+  Avoid adding new scenes that reuse only the 20/32/38 starting cluster.
+- For more realistic two-player homepage scenes, prefer the
+  `normal-duel-openings` shape: red/blue only, two starting settlements and two
+  roads each, with starts chosen from plausible high-value intersections rather
+  than edge-only visual spread. `ridge-duel-openings` is the alternate layout
+  for that same pattern.
+- Procedural scenes should list only active setup players in
+  `procedural.playerIds`; including a color with no starting road/settlement
+  makes the balance checks misleading and can make the scene look dominated by
+  the players who can legally move.
+- Scene-start top-drop motion should remain event-driven through setup events.
+  Do not reintroduce scene-id-specific placement tuning unless a scene has a
+  distinct visual requirement beyond normal setup drops.
+
+- Canonical live game URL note:
+- Treat `/g/:matchID` as the canonical user-facing live-game URL. Do not
+  include `?playerID=` in new navigation, reconnect, invite, or resume links.
+- The live page may still tolerate old `?playerID=` links as a compatibility
+  hint, but the normal path should recover the seated viewer from match
+  credential cookies by checking the live match's seats.
+- Keep `playerID` in internal storage/state where it is needed for credential
+  lookup, cleanup, active match banners, and challenge recovery; just do not
+  expose it in the game URL.
+
+- Live spectator entry note:
+- boardgame.io already supports unauthenticated spectators by syncing with
+  `playerID: null`; the server skips credential auth and connection-presence
+  updates for null/undefined player IDs.
+- The Settlehex live `/g/:matchID` route should not force a fresh browser
+  session into seat-join UI once all seats are taken. Treat no-credential full
+  rooms as spectator views, and keep explicit `Spectate` entry available on
+  occupied room lobbies.
+- Spectators must stay read-only: rely on `playerView` masking for hidden hands
+  and on existing spectator-aware UI such as read-only chat/effect perspective.
+
+- Catana page background note:
+- Product page shells should import `CATANA_TABLE_BACKGROUND` from
+  `app/catana/theme/backgrounds.js` instead of restating Tailwind saturated blue
+  gradients or one-off inline game/home gradients.
+- Dev-only comparison, lab, and viewport-wall surfaces can keep local blue
+  backgrounds when the color is part of the dev tool being inspected.
+
+- Global reconnect banner note:
+- The `/games/catan/:matchID` lobby response is boardgame.io match metadata, not
+  full game state. Finished live matches are exposed there with top-level
+  `gameover` while they are retained before cleanup.
+- Treat top-level `gameover` as the production terminal signal for suppressing
+  "Rejoin match" banners. Keep `ctx.gameover`, `G.core.gameOver`, and nested
+  `state` checks as compatibility guards for state-shaped payloads in tests and
+  helper code.
+- When the resolver suppresses a terminal retained match, clear
+  `catana:last-active-match` so the stale global alert does not reappear on
+  later page visits.
+
+- Homepage attract-loop note:
+- Scene `initialPieces` are now setup pieces, not an instantly committed board
+  snapshot. `HomeDemoEffectBridge` clears the board at cycle start, animates
+  `getHomeDemoSceneSetupEvents(scene)` through `build:place`, waits briefly,
+  and then offsets that scene's normal events.
+- Keep the viewport-top/slower placement profile scoped to scene-start drops.
+  Later authored/procedural moves should stay at normal placement speed unless
+  the scene explicitly opts into a special start style.
+- The existing `resetHoldMs` is the end-of-scene pause before the next clear;
+  tune that value if the final board should linger longer or shorter between
+  scenes.
+
+- Guest/auth entry implementation note:
+- The homepage entry flow now uses `app/catana/lobby/AccountEntryModal.js` for
+  auth-first, save-profile, and play-username modes. It is a product component
+  composed from existing Settlex primitives, not a new shared primitive.
+- The modal design was reference-informed by the approved inspiration pool, but
+  keeps Settlex styling: AICanvas for glass/account-menu composition, SmoothUI
+  for overlay/reduced-motion discipline, EinUI for compact avatar-preview
+  thinking, and ScrollX mainly as a caution against over-decorating simple
+  card/modal structures.
+- Keep the quick play-username path username-first. A generated avatar/color
+  preview may open optional customization, but avatar and color grids should not
+  be visible by default.
+- Top-right logged-out chrome should stay a direct `Sign in` trigger that opens
+  the modal. Do not put email/provider/guest actions back into the tiny account
+  popover.
+- Switching from the play-username checkpoint to sign-in must preserve the
+  pending online/friend action so successful auth continues the original play
+  intent.
+- Guest profile menus should lead with `Save profile`, then `Edit profile`, then
+  `Sign out`. Saved profiles can keep the fuller account/profile menu.
+
+- Guest/auth play-entry flow note:
+- Keep auth accounts, game profiles, and live match seats conceptually
+  separate. Auth is for sign-in/recovery; the game profile is username,
+  avatar, and color; match seats remain live-game credentials.
+- `Play vs Bot` should keep the silent generated guest path. `Play Online` and
+  `Play a Friend` should show a username-first guest profile checkpoint when no
+  profile exists because other players will see that identity.
+- The online/friend checkpoint should prefill a generated username and show a
+  generated avatar/color preview, but it should not expose full avatar/color
+  selection by default. The username input is the default decision; clicking
+  the preview may reveal optional avatar/color picking.
+- Untouched generated usernames may reroll silently on server collision.
+  Edited/custom usernames should surface normal validation and taken-name
+  errors. A generated suggestion should never read as an existing account before
+  the player accepts it.
+- Saving a guest profile should attach auth to the existing guest profile. When
+  signing into an existing saved account from a guest state, do not silently
+  overwrite the saved account profile with guest data.
+
+- Homepage promotion note:
+- The root `/` homepage now uses `app/catana/home/HomeTableClient.js` as the
+  source of truth for the reviewed home-table title screen.
+- Keep the root homepage server-seeded with the current account profile. The
+  page should pass `initialAccount` into `HomeTableClient` so logged-in users do
+  not see a first-paint `Sign in` flash before the client `/api/account/me`
+  restore path completes.
+- `/catana/dev/home-table` remains development-only but renders the same client
+  so visual checks exercise the production homepage implementation.
+- The homepage may render `HomeDemoBoardPoster` as a static first-paint
+  placeholder while the measured animated board hydrates. Keep this poster
+  homepage-only, CSS-sized from viewport units, and free of `bgio-effects` or
+  `useWindowSize`; the live `HomeDemoBoard` remains the source of truth.
+- Keep the poster's tiny visual details aligned with the live board. In
+  particular, mirror `BoardPortChannels` connector ratios and the live
+  `NumberToken` shell/glyph ratio, shadow, and weight choices; changing the
+  token box or text scale makes the handoff obvious. Keep the poster robber
+  offset aligned with the live board's desert tile placement; live `Tile.js`
+  uses absolute static positioning plus `translateX(-60%)`, which corresponds
+  to a poster transform of `translate(-110%, -50%)` from the tile center.
+  Mirror the live robber's separate blurred contact shadow rather than baking a
+  shadow into the SVG.
+- Keep the poster hide instant. The live board becomes visible as soon as
+  measured layout is available; fading the poster out over that state creates a
+  visible double-board frame on mobile.
+- Do not mount the live homepage board before the homepage knows the client
+  viewport width. On mobile, the server/default width path is desktop-shaped,
+  so mounting early can briefly use desktop board offsets before compact layout
+  takes over.
+- The home-table CTA wiring should stay attached to `useLobbyHomeActions` so
+  Play Online, Play vs Bot, Play a Friend, identity, search, and invite flows
+  keep using the same account/session API behavior as the lobby.
+- When logged out, the top-right homepage profile control should be icon-only
+  and open identity setup directly. Do not show setup copy such as `Choose
+  username` inside account chrome; it reads like a fake profile. Once a guest
+  account exists, show the actual emoji/name account menu.
+- Keep generated usernames as identity-modal suggestions for human-facing
+  online/friend flows, not as a visible pretend account before confirmation.
+  Bot play may still silently create/use a generated guest account.
+
+- Home-table brand mark note:
+- The current homepage logo direction is a Settlehex-native hex badge derived
+  from the current `emoji` theme rounded board tile shell, not a rounded-square
+  app tile and not the older sharp-corner Palette B shell. Keep the rounded
+  pointy-hex path, green/lime inset, live tile-style stroke, and subtle tile
+  lift/shade so the mark feels tied to the actual board.
+- Use `Sx` as the default title-screen mark while iterating. A single `S`
+  variant is the cleaner small-size/favicon fallback; the five-hex cluster
+  variant is currently more abstract and weaker as a main homepage mark.
+- Keep the default `Sx` glyph large enough to fill the badge confidently; the
+  smaller earlier version felt underfilled next to the wordmark and on mobile.
+- Use the `brand` green tone as the default badge color while iterating. It
+  blends the friendly lime identity with deeper green contrast so the mark
+  feels Settlehex-specific rather than exactly matching wool/lumber/grain
+  resource tiles.
+- `app/favicon.ico` is the site-wide favicon source for the Next App Router.
+  Keep it aligned with the green `Sx` hex badge while that mark remains the
+  homepage default, and regenerate it as a multi-size ICO rather than adding
+  route-specific favicon links.
+
+- Home-table title-screen chrome note:
+- Keep global/homepage metadata such as online count, beta state, release
+  labels, and build/change notes out of the account control. Place it near the
+  brand/status area or use quiet metadata disclosure depending on emphasis.
+- On the home-table title screen, the desktop `release N` disclosure belongs at
+  the true bottom-left screen edge. Do not raise it to clear the centered action
+  dock; the dock does not overlap that corner.
+- Account chrome should mean identity and account actions only: avatar,
+  username/profile state, and a compact popover for profile/account/settings.
+- For future title-screen/menu polish, start with `app/ui/*` primitives and the
+  Catana brand/shared-primitive workflow, then use external component libraries
+  only as interaction references to restyle into Settlex.
+
+- Guest identity MVP note:
+- Guest accounts are the durable anonymous identity shape; future sign-in flows
+  should claim/link the same account rather than creating a parallel temporary
+  player concept.
+- `lib/shared/guestUsername.js` owns the themed username suggestion vocabulary.
+  The client may suggest a name, but `/api/account/guest` is authoritative and
+  may return a different `account.currentUsername` after generated-name
+  collision retry.
+- Only `usernameSource: "generated"` should silently reroll on collision.
+  Edited/custom names should surface the existing username-taken error so users
+  know the chosen name is unavailable.
+
 - Dev-sandbox effect payload note:
 - `app/catana/dev/sandbox/effectPayloads.js` owns payload shaping for
   dev-sandbox-triggered dev-card play, robber move, and award-claim effect
@@ -621,7 +824,14 @@
 - The Catana UI still uses plain `<img>` in a few spots for asset simplicity and SVG handling, so the targeted `@next/next/no-img-element` disables are intentional rather than accidental lint drift.
 
 - Board render perf note:
-- keep `app/catana/utils/useWindowSize.js` deterministic on the first render; returning `undefined` viewport dimensions hides the whole board subtree from SSR HTML and delays discovery of the board underlay image.
+- keep `app/catana/utils/useWindowSize.js` deterministic on the first render,
+  but treat that deterministic fallback as unmeasured. Board renderers should
+  keep the fallback DOM mounted for SSR/eager underlay image discovery while
+  hiding fallback-sized geometry until `isMeasured` is true.
+- do not return `undefined` viewport dimensions from `useWindowSize`; that hides
+  the whole board subtree from SSR HTML and delays discovery of the board
+  underlay image. Do not show the fallback board either; it causes a visible
+  small/offset board jump on large viewports.
 - `app/catana/GameScreen.js` should keep mounting `MemoizedCatanBoard` rather than the raw board component so the local `nowMs` ticker for timers/disconnect/idle state does not force a full board rerender every `250ms`.
 - keep `app/catana/Board.js` preview animations behind `React.lazy` boundaries; eagerly importing `RobberPlacementPreview` / `BuildPlacementPreview` pulls `gsap` into initial game-route startup even when no preview is active.
 - prewarm those preview chunks during browser idle time after mount so the first robber/build preview does not pay the lazy-load cost at interaction time.
@@ -1304,6 +1514,8 @@
 - specific resource-row targets use the legacy lifted Y offset,
 - generic opponent stack targets use vertical centering from the target rect height,
 - existing pop/travel timing logic.
+- Safari compatibility: resource-card SVG `url(#...)` references must be self-contained.
+- Do not reference undefined filters/gradients such as `softShadow`, `hexShadow`, or `topWarm`; Safari can drop the affected card frame while Chrome still paints it.
 
 - Moved card asset folders now in live use:
 - resource card back/fronts under `public/svgs/cards/resource/`,
@@ -2869,9 +3081,9 @@
     - until the accounts/database slice lands, the deploy script must tolerate the absence of `pnpm db:migrate`.
   - GitHub Actions web-build notes:
     - the first failing `Dockerfile.web` run was blocked by a tracked repo-root `resources` symlink pointing at a local `/tmp/.../pufferlib/resources` path; Next's production build scans the repo root and crashes on that broken symlink in CI.
-    - after removing that symlink, two older vendored `react-zoom-pan-pinch` build issues surfaced:
+    - after removing that symlink, two older vendored `react-zoom-pan-pinch` build issues surfaced before the fork was removed:
       - `use-transform-effect.tsx` / `use-transform-init.tsx` needed explicit `typeof ... === "function"` cleanup guards for Next's TypeScript check.
-      - `react-zoom-pan-pinch/stories` should stay excluded from app TS checking, and `react-zoom-pan-pinch/utils/styles.utils.ts` must import `../models`, not bare `models`.
+      - the vendored `react-zoom-pan-pinch/stories` TypeScript exclude and `styles.utils.ts` import workaround were deleted when the local fork was replaced by the pinned npm package plus pnpm patch.
     - the `bufferutil` / `utf-8-validate` messages from `ws` appear as warnings during `next build` here and did not block the final successful build.
   - Production matchmaking/origin notes:
     - OCI now fronts the app through Caddy on `80/443`; browser code must not keep constructing direct `http://<host>:8080` lobby URLs or `<host>:8000` Socket.IO URLs in production.
@@ -3614,3 +3826,75 @@
       - Desktop local dock anchor measurement should not run on every render. Let the `ResizeObserver` handle real HUD/rail size changes, with only a bounded fallback effect for resource/dev-card content changes.
       - The early `Puffer adapter/action mask` benchmark value around `107 ms/op` was stale/noisy. A rerun during the dock slice measured about `327 us/op`; do not prioritize Puffer adapter work without fresh evidence.
       - Server per-match managers now expose `deleteMatch(matchID)` cleanup APIs. Finished-match retention should call those only after archived-match cleanup succeeds, not immediately on game over, because disconnect presence intentionally keeps post-game leave/return events during the retention grace period.
+    - Piece placement motion note:
+      - If settlement/road/city placement looks stuttery while CSS-only action-node animations stay smooth, first check the shared `placePiece` path before blaming the `GameScreen` timer path.
+      - The home-table ready route and live game both use `createPiecePlacementRunner`.
+      - The 2026-06-14 stutter report did not end with a retained tuning change; keep the current `PLACE_PIECE_DEFAULT_TUNING` values unless a fresh reproduction shows otherwise.
+    - Repo cleanup note:
+      - The old root-level `spec/`, `strategy/`, and `utils/` board-generation experiment folders were removed after a reference scan showed no live imports outside those folders. Current board logic lives under `game-core/src/board/` and app helpers under `app/catana/utils/`.
+      - The standalone `game-core/src/board/boardConfigs.test.ts` registry smoke test was removed because `boardInvariants.test.ts` already exercises the standard official board config through actual board generation.
+      - The old vendored `react-zoom-pan-pinch/` source tree was replaced with the pinned npm package `react-zoom-pan-pinch@3.7.0` plus `patches/react-zoom-pan-pinch@3.7.0.patch`.
+      - That patch intentionally preserves Settlex pan-room bounds and double-click toggle semantics. Do not restore the vendored source tree; use `pnpm patch react-zoom-pan-pinch@3.7.0` and `pnpm patch-commit` for future edits.
+      - `app/catana/__tests__/reactZoomPanPinchPatch.test.js` is the behavior guard for the package patch.
+    - Home-table homepage direction:
+      - Treat the homepage prototype as a staged title/client surface, not a standard marketing landing page.
+      - The first impression should show the actual Settlehex table and product texture: board, presence/status chips, ambient pulse/feed, bot readiness, and quick mode buttons.
+      - Avoid active-match chrome on the homepage: no resign, turn timer, resource inventory, chat composer, or full game log unless the route is intentionally entering a real match.
+      - `/catana/dev/home-table` is now locked to the system-chrome title-table direction; the old staged-table, three-islands, hybrid, and variant-switcher comparison paths were removed after review.
+      - Do not reintroduce a standalone `Table pulse` panel by default. If the locked screen feels too empty, prefer more life in the board attract loop or a tiny dock/status detail over a detached activity widget.
+      - The locked system-chrome direction keeps the same staged board but uses standard Settlex product chrome around it: shared `Button` CTAs, quieter status presence, and bot readiness folded into the bot CTA.
+      - Top-right homepage chrome should be account-first, not decorative-badge-first: show the player avatar/name/menu as the stable anchor, with online/build/status chips as quieter supporting metadata on desktop and hidden or collapsed on mobile.
+      - On mobile, keep the account trigger as compact avatar-only chrome so it does not compete with the Settlehex title. Preserve the larger account/name treatment for desktop.
+      - Account/status should be one cohesive HUD-glass rail, not separate outlined pills. Keep beta/online as quiet inline metadata inside the account rail or popover.
+      - Homepage mode actions should read as a bottom game-control dock. Prefer one shared HUD-glass dock containing three action surfaces over three unrelated standalone cards.
+      - Optional homepage growth/dev chrome should stay lower priority than the board and mode dock. Desktop can carry a tiny bottom-left `release N` disclosure plus quiet top-right About/Blog/Discord/Feedback links beside account chrome; mobile should hide that link cluster until there are real destinations and a clear mobile placement.
+      - Avoid heavy black text or big card treatment for homepage meta chrome. It should borrow from the in-game utility/log-chat language: compact frosted controls, icon-first structure, lighter text hierarchy, and small hover motion.
+      - Top-right homepage links and account text should read light/white-ish over the blue board field; use motion/underline feedback on hover instead of static dark labels.
+      - Logged-out homepage account chrome should read as a standard sign-in/profile action, not a generated avatar. Use a simple user icon plus `Sign in`; avoid `Choose username` copy or generated emoji/color fallback in the top-right trigger.
+      - Signed-in homepage account chrome should size to the avatar plus username content. Avoid fixed desktop min widths that leave empty glass for short names.
+      - Homepage sign-out must clear the guest session cookie as well as local identity state; clearing only local storage allows `/api/account/me` to restore the previous guest on refresh.
+      - Overlay layering should use the named Settlex CSS z-layer tokens in `app/globals.css`: dialogs, popovers, tooltips, and status banners should not invent page-local `z-*` values when they need to sit above standard chrome.
+      - Top-of-page alert/status banners that must stay visible over modal blur should use `StatusBanner overlay`, which portals to the shared status layer. Avoid putting important errors in page-local absolute wrappers under dialog/backdrop layers.
+      - Feedback should not be a standalone bottom-right widget by default. Keep it as a quiet top-right text link unless it becomes a primary support workflow with a real destination and stronger product need.
+      - Use the existing release-note `MetaDisclosure` path for homepage update/dev-log affordances rather than inventing another release panel style.
+      - Home-table attract/demo audio should default to muted; the animation loop can show liveliness without making repeated placement sounds on the title screen.
+      - Homepage board animation should read as an ambient tabletop diorama, not a tactical replay or tutorial. Prefer a few curated sparse scenes with absolute timing beats and plausible Catan grammar over random event jitter or full match playback.
+      - Procedural homepage scenes should stay inside a curated envelope: fixed starting pieces, seeded generated road/settlement/city events, game-core buildability for roads/settlements, local same-player settlement checks for city upgrades, and taste weights that keep cities rare while allowing player streaks.
+      - The opening homepage scene should read as an initial table-set moment: all settlement/road pairs arrive in a tight hand-authored stagger, and no single first settlement should sit isolated at the top port edge.
+      - Keep the opening homepage scene short after the initial table-set. If all opening pieces land in the first couple of seconds, do not leave `opening-table` with a 20-30s duration; it makes the attract loop appear stuck before procedural expansion begins.
+      - Homepage demo piece placement can use a local payload `tuning` in `HomeDemoEffectBridge`; keep the slower float tuning scoped to the `opening-table` scene so later procedural/demo placements keep the normal in-game placement speed.
+      - The opening homepage scene may request `startFrom: "viewport-top"` on placement payloads. `placePiece` must treat this as an optional payload mode only; default in-game and later procedural placements should keep the normal short board-relative drop.
+      - Homepage typography can diverge from global Outfit for brand polish. The first scoped pass uses Fredoka only on the `Settlehex` wordmark and green-hex `Sx` glyph, while game-screen text, HUD, logs, timers, top links, account chrome, action buttons, and shared UI continue to inherit Outfit.
+      - The homepage wordmark should use deep ocean blue (`#143f60`) rather than slate/black; large rounded Fredoka text in slate reads like black ink against the sky background.
+      - Keep the green-hex `Sx` glyph at Fredoka 600 unless the badge becomes too quiet at a future smaller size. Weight 700 looked overstuffed inside the compact hex mark.
+      - Keep homepage title/action/account copy below `font-black` unless a specific element needs hard CTA emphasis; the title screen should feel rounded and cohesive with the board art rather than angular or compressed.
+      - Top-right homepage links should render light over the blue field. Use valid Tailwind opacity steps such as `text-white/90`; invalid custom-looking steps can silently leave the links inheriting dark text.
+    - Robber tile rendering note:
+      - Keep the placed robber outside any filtered or clipped tile subtree. Safari can rasterize filtered/clipped transformed descendants under board zoom, making the SVG robber look blurry even when the raw SVG is crisp in a standalone tab.
+      - The dimming effect and hex clip-path for robber-blocked/hovered resource tiles should live on the tile visual layer only: tile background, flash sweep, resource icon, and number token. The robber, robber shadow, hover ghost, and action target should remain unfiltered, unclipped siblings.
+    - Better Auth account direction:
+      - Better Auth now owns browser auth sessions, anonymous users, and provider identities. Keep future auth work under `lib/server/auth/betterAuth.js`, `lib/client/authClient.js`, and `/api/auth/[...all]`.
+      - Settlex `accounts` now acts as the game-profile table keyed by Better Auth user id; it should continue to own game username, avatar emoji, avatar color, and game-facing account status.
+      - Keep board usernames separate from provider display names. Social sign-in should not overwrite the user's chosen game handle unless a later explicit profile-edit flow does so.
+      - Anonymous guest entry starts a Better Auth anonymous session first, then creates or updates the Settlex profile through `/api/account/guest`.
+      - Provider sign-in should link the anonymous profile to the provider user through Better Auth's anonymous `onLinkAccount` hook and `transferAccountProfile`, so a guest's current board identity survives the upgrade.
+      - Do not revive the custom email magic-link flow unless there is a deliberate product decision to add email auth outside Better Auth. The legacy `/api/account/claim/*` routes are compatibility exits only.
+      - Email/password is part of the first Better Auth pass. Password reset and email verification should wait until production email delivery is configured.
+      - Google and Discord provider sign-in require `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, and `DISCORD_CLIENT_SECRET`; production also requires `BETTER_AUTH_SECRET` and the correct public base URL.
+      - Client auth UI should use `/api/auth/options` before rendering social-provider actions. If OAuth env vars are absent, do not show Discord/Google buttons; otherwise Better Auth correctly returns `provider not found`.
+      - Because the migration rewrites the disposable test account schema, existing local Postgres databases with already-applied old account migrations should be dropped/recreated rather than migrated in place.
+      - Rewriting an already-applied migration is not enough for existing dev DBs. `0004_better_auth_legacy_profile_reset.sql` is the forward repair path for databases that recorded the old `0001` before Better Auth tables existed.
+
+- Catana design skill routing note:
+- Use `.agents/skills/catana-design/SKILL.md` as the active native routing skill for SettleHex/Catana design, restyling, homepage, HUD/meta chrome, shared product UI, and one-off visual review work.
+- The current game screen is the strongest canonical style reference: HUD glass, action dock/resource rails, player-color identity, compact log/chat affordances, tactile motion, and the synthetic sound family should anchor future visual decisions unless the task explicitly explores a new direction.
+- Treat the homepage as a title/client surface, not a generic marketing page. The actual table should lead, mode actions should read as a bottom game-control dock, top-right chrome should be account-first, metadata should stay quiet, and ambient board life should not become active-match UI.
+- For shared product-surface controls, inspect `app/ui/*` and `/catana/dev/ui` before inventing local controls. External systems can inform behavior and proportion, but should not be copied wholesale into the product.
+- Use `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md` for one-off audit passes before proposing a redesign, especially when the concern is visual taste or "AI slop" rather than a concrete bug.
+
+- Release Docker packaging note:
+- Docker dependency stages must copy `patches/` before `pnpm install --frozen-lockfile`; the `react-zoom-pan-pinch@3.7.0` pnpm patch is required during install, not only during the later source copy.
+- Keep `.dockerignore` in sync with local-only generated output. In particular, do not send `ai/pufferlib/python/.venv/`, `ai/pufferlib/runs*/`, generated `*.pt` checkpoints, `.pnpm-store/`, `.superpowers/`, `.playwright-cli/`, or `.tmp/` into production Docker build contexts.
+
+- Release label note:
+- Release tooling currently requires positive integer internal versions. For fractional/public labels such as `release 0.8`, keep `currentVersion` and `version` as the next integer and set the release entry `label` for badge/panel display.

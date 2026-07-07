@@ -8,6 +8,7 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY game-core/package.json game-core/package.json
+COPY patches patches
 RUN pnpm install --frozen-lockfile
 
 COPY . .

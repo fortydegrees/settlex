@@ -128,7 +128,7 @@ describe("pendingFriendChallenge", () => {
 
     expect(result).toEqual({
       status: "accepted",
-      href: "/g/m1?playerID=0"
+      href: "/g/m1"
     });
     expect(readPendingFriendChallenge(storage)).toBeNull();
   });

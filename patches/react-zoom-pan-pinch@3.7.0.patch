@@ -1,0 +1,154 @@
+diff --git a/dist/index.cjs.js b/dist/index.cjs.js
+index 45033d275b9d8716391216972b67852cde393fb8..1bbe07df740d973d94cf659f2f7c1d1f1b76bcb2 100644
+--- a/dist/index.cjs.js
++++ b/dist/index.cjs.js
+@@ -201,17 +201,21 @@ function getComponentsSizes(wrapperComponent, contentComponent, newScale) {
+         newDiffHeight: newDiffHeight,
+     };
+ }
+-var getBounds = function (wrapperWidth, newContentWidth, diffWidth, wrapperHeight, newContentHeight, diffHeight, centerZoomedOut) {
++var getBounds = function (wrapperWidth, newContentWidth, diffWidth, wrapperHeight, newContentHeight, diffHeight, props, centerZoomedOut) {
+     var scaleWidthFactor = wrapperWidth > newContentWidth
+         ? diffWidth * (centerZoomedOut ? 1 : 0.5)
+         : 0;
+     var scaleHeightFactor = wrapperHeight > newContentHeight
+         ? diffHeight * (centerZoomedOut ? 1 : 0.5)
+         : 0;
+-    var minPositionX = wrapperWidth - newContentWidth - scaleWidthFactor;
+-    var maxPositionX = scaleWidthFactor;
+-    var minPositionY = wrapperHeight - newContentHeight - scaleHeightFactor;
+-    var maxPositionY = scaleHeightFactor;
++    var extraMinX = props.minPositionX !== null && props.minPositionX !== void 0 ? props.minPositionX : 0;
++    var extraMaxX = props.maxPositionX !== null && props.maxPositionX !== void 0 ? props.maxPositionX : 0;
++    var extraMinY = props.minPositionY !== null && props.minPositionY !== void 0 ? props.minPositionY : 0;
++    var extraMaxY = props.maxPositionY !== null && props.maxPositionY !== void 0 ? props.maxPositionY : 0;
++    var minPositionX = wrapperWidth - newContentWidth - scaleWidthFactor + extraMinX;
++    var maxPositionX = scaleWidthFactor + extraMaxX;
++    var minPositionY = wrapperHeight - newContentHeight - scaleHeightFactor + extraMinY;
++    var maxPositionY = scaleHeightFactor + extraMaxY;
+     return { minPositionX: minPositionX, maxPositionX: maxPositionX, minPositionY: minPositionY, maxPositionY: maxPositionY };
+ };
+ var calculateBounds = function (contextInstance, newScale) {
+@@ -221,7 +225,7 @@ var calculateBounds = function (contextInstance, newScale) {
+         throw new Error("Components are not mounted");
+     }
+     var _a = getComponentsSizes(wrapperComponent, contentComponent, newScale), wrapperWidth = _a.wrapperWidth, wrapperHeight = _a.wrapperHeight, newContentWidth = _a.newContentWidth, newDiffWidth = _a.newDiffWidth, newContentHeight = _a.newContentHeight, newDiffHeight = _a.newDiffHeight;
+-    var bounds = getBounds(wrapperWidth, newContentWidth, newDiffWidth, wrapperHeight, newContentHeight, newDiffHeight, Boolean(centerZoomedOut));
++    var bounds = getBounds(wrapperWidth, newContentWidth, newDiffWidth, wrapperHeight, newContentHeight, newDiffHeight, contextInstance.props, Boolean(centerZoomedOut));
+     return bounds;
+ };
+ /**
+@@ -1301,27 +1305,30 @@ var handleDoubleClickResetMode = function (contextInstance, event) {
+     });
+     handleDoubleClickStop(contextInstance, event);
+ };
+-function getDoubleClickScale(mode, scale) {
+-    if (mode === "toggle") {
+-        return scale === 1 ? 1 : -1;
++var SCALE_EPSILON = 1e-10;
++function getDoubleClickMode(mode, currentScale, initialScale) {
++    if (mode !== "toggle") {
++        return mode;
+     }
+-    return mode === "zoomOut" ? -1 : 1;
++    return currentScale > initialScale + SCALE_EPSILON ? "reset" : "zoomIn";
+ }
+ function handleDoubleClick(contextInstance, event) {
+     var setup = contextInstance.setup, doubleClickStopEventTimer = contextInstance.doubleClickStopEventTimer, transformState = contextInstance.transformState, contentComponent = contextInstance.contentComponent;
+     var scale = transformState.scale;
+     var _a = contextInstance.props, onZoomStart = _a.onZoomStart, onZoom = _a.onZoom;
+     var _b = setup.doubleClick, disabled = _b.disabled, mode = _b.mode, step = _b.step, animationTime = _b.animationTime, animationType = _b.animationType;
++    var initialScale = contextInstance.props.initialScale !== null && contextInstance.props.initialScale !== void 0 ? contextInstance.props.initialScale : 1;
++    var doubleClickMode = getDoubleClickMode(mode, scale, initialScale);
+     if (disabled)
+         return;
+     if (doubleClickStopEventTimer)
+         return;
+-    if (mode === "reset") {
++    if (doubleClickMode === "reset") {
+         return handleDoubleClickResetMode(contextInstance, event);
+     }
+     if (!contentComponent)
+         return console.error("No ContentComponent found");
+-    var delta = getDoubleClickScale(mode, contextInstance.transformState.scale);
++    var delta = doubleClickMode === "zoomOut" ? -1 : 1;
+     var newScale = handleCalculateButtonZoom(contextInstance, delta, step);
+     // stop execution when scale didn't change
+     if (scale === newScale)
+diff --git a/dist/index.esm.js b/dist/index.esm.js
+index 364837c14f62a3e21beab56fe19d3ac87b9fdbc2..5f41ef2d9e8d64ee6e2d19a980af39747cc625b5 100644
+--- a/dist/index.esm.js
++++ b/dist/index.esm.js
+@@ -193,17 +193,21 @@ function getComponentsSizes(wrapperComponent, contentComponent, newScale) {
+         newDiffHeight: newDiffHeight,
+     };
+ }
+-var getBounds = function (wrapperWidth, newContentWidth, diffWidth, wrapperHeight, newContentHeight, diffHeight, centerZoomedOut) {
++var getBounds = function (wrapperWidth, newContentWidth, diffWidth, wrapperHeight, newContentHeight, diffHeight, props, centerZoomedOut) {
+     var scaleWidthFactor = wrapperWidth > newContentWidth
+         ? diffWidth * (centerZoomedOut ? 1 : 0.5)
+         : 0;
+     var scaleHeightFactor = wrapperHeight > newContentHeight
+         ? diffHeight * (centerZoomedOut ? 1 : 0.5)
+         : 0;
+-    var minPositionX = wrapperWidth - newContentWidth - scaleWidthFactor;
+-    var maxPositionX = scaleWidthFactor;
+-    var minPositionY = wrapperHeight - newContentHeight - scaleHeightFactor;
+-    var maxPositionY = scaleHeightFactor;
++    var extraMinX = props.minPositionX !== null && props.minPositionX !== void 0 ? props.minPositionX : 0;
++    var extraMaxX = props.maxPositionX !== null && props.maxPositionX !== void 0 ? props.maxPositionX : 0;
++    var extraMinY = props.minPositionY !== null && props.minPositionY !== void 0 ? props.minPositionY : 0;
++    var extraMaxY = props.maxPositionY !== null && props.maxPositionY !== void 0 ? props.maxPositionY : 0;
++    var minPositionX = wrapperWidth - newContentWidth - scaleWidthFactor + extraMinX;
++    var maxPositionX = scaleWidthFactor + extraMaxX;
++    var minPositionY = wrapperHeight - newContentHeight - scaleHeightFactor + extraMinY;
++    var maxPositionY = scaleHeightFactor + extraMaxY;
+     return { minPositionX: minPositionX, maxPositionX: maxPositionX, minPositionY: minPositionY, maxPositionY: maxPositionY };
+ };
+ var calculateBounds = function (contextInstance, newScale) {
+@@ -213,7 +217,7 @@ var calculateBounds = function (contextInstance, newScale) {
+         throw new Error("Components are not mounted");
+     }
+     var _a = getComponentsSizes(wrapperComponent, contentComponent, newScale), wrapperWidth = _a.wrapperWidth, wrapperHeight = _a.wrapperHeight, newContentWidth = _a.newContentWidth, newDiffWidth = _a.newDiffWidth, newContentHeight = _a.newContentHeight, newDiffHeight = _a.newDiffHeight;
+-    var bounds = getBounds(wrapperWidth, newContentWidth, newDiffWidth, wrapperHeight, newContentHeight, newDiffHeight, Boolean(centerZoomedOut));
++    var bounds = getBounds(wrapperWidth, newContentWidth, newDiffWidth, wrapperHeight, newContentHeight, newDiffHeight, contextInstance.props, Boolean(centerZoomedOut));
+     return bounds;
+ };
+ /**
+@@ -1293,27 +1297,30 @@ var handleDoubleClickResetMode = function (contextInstance, event) {
+     });
+     handleDoubleClickStop(contextInstance, event);
+ };
+-function getDoubleClickScale(mode, scale) {
+-    if (mode === "toggle") {
+-        return scale === 1 ? 1 : -1;
++var SCALE_EPSILON = 1e-10;
++function getDoubleClickMode(mode, currentScale, initialScale) {
++    if (mode !== "toggle") {
++        return mode;
+     }
+-    return mode === "zoomOut" ? -1 : 1;
++    return currentScale > initialScale + SCALE_EPSILON ? "reset" : "zoomIn";
+ }
+ function handleDoubleClick(contextInstance, event) {
+     var setup = contextInstance.setup, doubleClickStopEventTimer = contextInstance.doubleClickStopEventTimer, transformState = contextInstance.transformState, contentComponent = contextInstance.contentComponent;
+     var scale = transformState.scale;
+     var _a = contextInstance.props, onZoomStart = _a.onZoomStart, onZoom = _a.onZoom;
+     var _b = setup.doubleClick, disabled = _b.disabled, mode = _b.mode, step = _b.step, animationTime = _b.animationTime, animationType = _b.animationType;
++    var initialScale = contextInstance.props.initialScale !== null && contextInstance.props.initialScale !== void 0 ? contextInstance.props.initialScale : 1;
++    var doubleClickMode = getDoubleClickMode(mode, scale, initialScale);
+     if (disabled)
+         return;
+     if (doubleClickStopEventTimer)
+         return;
+-    if (mode === "reset") {
++    if (doubleClickMode === "reset") {
+         return handleDoubleClickResetMode(contextInstance, event);
+     }
+     if (!contentComponent)
+         return console.error("No ContentComponent found");
+-    var delta = getDoubleClickScale(mode, contextInstance.transformState.scale);
++    var delta = doubleClickMode === "zoomOut" ? -1 : 1;
+     var newScale = handleCalculateButtonZoom(contextInstance, delta, step);
+     // stop execution when scale didn't change
+     if (scale === newScale)

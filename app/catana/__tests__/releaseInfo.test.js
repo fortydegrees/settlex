@@ -41,4 +41,28 @@ describe("buildPublicReleaseInfo", () => {
     expect(info.buildShaShort).toBe("local");
     expect(info.buildDate).toBe("");
   });
+
+  it("uses a public release label without changing the internal version", () => {
+    const info = buildPublicReleaseInfo({
+      releaseNotes: {
+        currentVersion: 7,
+        releases: [
+          {
+            version: 7,
+            label: "release 0.8",
+            title: "Beta version",
+            highlights: ["beta version! please report any bugs you find!"]
+          }
+        ]
+      },
+      env: {}
+    });
+
+    expect(info.version).toBe(7);
+    expect(info.releaseLabel).toBe("release 0.8");
+    expect(info.title).toBe("Beta version");
+    expect(info.highlights).toEqual([
+      "beta version! please report any bugs you find!"
+    ]);
+  });
 });
