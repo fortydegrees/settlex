@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { buildPublicReleaseInfo } from "../lobby/releaseInfo";
@@ -64,5 +66,17 @@ describe("buildPublicReleaseInfo", () => {
     expect(info.highlights).toEqual([
       "beta version! please report any bugs you find!"
     ]);
+  });
+
+  it("reads public build metadata through direct env keys for client bundling", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "app/catana/lobby/releaseInfo.js"),
+      "utf8"
+    );
+
+    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEX_RELEASE_VERSION");
+    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEX_BUILD_SHA");
+    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEX_BUILD_DATE");
+    expect(source).not.toContain("env = process.env");
   });
 });
