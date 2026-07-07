@@ -154,5 +154,8 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("SETTLEX_RELEASE_VERSION:");
     expect(compose).toContain("SETTLEX_BUILD_SHA:");
     expect(compose).toContain("SETTLEX_BUILD_DATE:");
+    expect(compose).toContain("NEXT_PUBLIC_SETTLEX_RELEASE_VERSION:");
+    expect(compose).toContain("NEXT_PUBLIC_SETTLEX_BUILD_SHA:");
+    expect(compose).toContain("NEXT_PUBLIC_SETTLEX_BUILD_DATE:");
   });
 });
