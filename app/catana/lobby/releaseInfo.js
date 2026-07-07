@@ -15,9 +15,16 @@ const normalizeHighlights = (highlights) =>
         .filter(Boolean)
     : [];
 
+const publicBuildEnv = {
+  NEXT_PUBLIC_SETTLEX_RELEASE_VERSION:
+    process.env.NEXT_PUBLIC_SETTLEX_RELEASE_VERSION,
+  NEXT_PUBLIC_SETTLEX_BUILD_SHA: process.env.NEXT_PUBLIC_SETTLEX_BUILD_SHA,
+  NEXT_PUBLIC_SETTLEX_BUILD_DATE: process.env.NEXT_PUBLIC_SETTLEX_BUILD_DATE
+};
+
 export function buildPublicReleaseInfo({
   releaseNotes = releaseNotesData,
-  env = process.env
+  env = publicBuildEnv
 } = {}) {
   const envVersion = toVersion(env.NEXT_PUBLIC_SETTLEX_RELEASE_VERSION);
   const currentVersion = envVersion ?? releaseNotes.currentVersion;
