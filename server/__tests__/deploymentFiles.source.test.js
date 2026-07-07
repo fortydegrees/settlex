@@ -109,6 +109,11 @@ describe("deployment file wiring", () => {
     expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_BUILD_SHA");
     expect(dockerfile).toContain("ARG SETTLEX_BUILD_DATE");
     expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_BUILD_DATE");
+    expect(dockerfile).toContain(
+      "ENV SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1"
+    );
+    expect(dockerfile).not.toContain("ARG BETTER_AUTH_SECRET");
+    expect(dockerfile).not.toContain("ARG DATABASE_URL");
     expect(dockerfile).toContain("COPY --from=build /app/scripts ./scripts");
     expect(dockerfile).toContain("COPY --from=build /app/lib/server/db ./lib/server/db");
   });
