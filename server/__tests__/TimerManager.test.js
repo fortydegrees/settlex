@@ -111,7 +111,7 @@ describe("TimerManager", () => {
     });
   });
 
-  it("auto-places road during roadBuilding dev card play", () => {
+  it("auto-places a free road during roadBuilding dev card play", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({ dispatch });
 
@@ -129,7 +129,41 @@ describe("TimerManager", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       matchID: "match-1",
-      move: "autoPlaceRoad",
+      move: "autoPlaceRoadFromDevCard",
+      playerID: "0"
+    });
+  });
+
+  it("restarts the Road Building timeout after the first road is placed", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({ dispatch });
+    const roadBuildingState = (pendingRoads) => ({
+      G: {
+        devCardPlay: {
+          type: "roadBuilding",
+          playerId: "0",
+          pendingRoads
+        }
+      },
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "0": "roadBuilding" },
+        turn: 1
+      }
+    });
+
+    manager.onState("match-1", roadBuildingState(2));
+    vi.advanceTimersByTime(9000);
+    manager.onState("match-1", roadBuildingState(1));
+
+    vi.advanceTimersByTime(1000);
+    expect(dispatch).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(9000);
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoPlaceRoadFromDevCard",
       playerID: "0"
     });
   });
@@ -376,7 +410,7 @@ describe("TimerManager", () => {
     });
     expect(dispatch).toHaveBeenCalledWith({
       matchID: "match-1",
-      move: "autoPlaceRoad",
+      move: "autoPlaceRoadFromDevCard",
       playerID: "0"
     });
   });

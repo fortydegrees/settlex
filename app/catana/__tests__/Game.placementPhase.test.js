@@ -102,6 +102,20 @@ describe("main phase configuration", () => {
     expect(devCardChoiceMoves.rollDice).toBeUndefined();
     expect(devCardChoiceMoves.endTurn).toBeUndefined();
   });
+
+  it("isolates Road Building to free-road resolution and turn-ending moves", () => {
+    const roadBuildingMoves = Catan.phases.main.turn.stages.roadBuilding.moves;
+
+    expect(roadBuildingMoves.placeRoadFromDevCard).toBeDefined();
+    expect(roadBuildingMoves.autoPlaceRoadFromDevCard).toBeDefined();
+    expect(roadBuildingMoves.cancelDevCardPlay).toBeDefined();
+    expect(roadBuildingMoves.endTurn).toBeDefined();
+    expect(roadBuildingMoves.placeRoad).toBeUndefined();
+    expect(roadBuildingMoves.placeSettlement).toBeUndefined();
+    expect(roadBuildingMoves.placeCity).toBeUndefined();
+    expect(roadBuildingMoves.maritimeTrade).toBeUndefined();
+    expect(roadBuildingMoves.buyDevCard).toBeUndefined();
+  });
 });
 
 describe("placement phase turn order", () => {

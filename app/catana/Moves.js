@@ -17,6 +17,7 @@ export {
 } from "./moves/turnMoves.js";
 export {
   autoResolveDevCard,
+  autoPlaceRoadFromDevCard,
   buyDevCard,
   cancelDevCardPlay,
   confirmDevCardPlay,

@@ -23,6 +23,13 @@ const TURN_BONUS_MOVES = new Set([
 const isResolvedState = (state) =>
   Boolean(state?.ctx?.gameover || state?.G?.core?.gameOver);
 
+const getStageProgressKey = (state, stageKey) => {
+  if (stageKey === "main:roadBuilding") {
+    return `${stageKey}:${state?.G?.devCardPlay?.pendingRoads ?? 0}`;
+  }
+  return stageKey;
+};
+
 export class TimerManager {
   constructor({ dispatch, isBotPlayer, botMoveDelayMs = 400 }) {
     this.dispatch = dispatch;
@@ -33,6 +40,7 @@ export class TimerManager {
 
   onState(matchID, state, deltalog) {
     const stageKey = this.getStageKey(state);
+    const stageProgressKey = getStageProgressKey(state, stageKey);
     const prev = this.matches.get(matchID) ?? {};
     const turnNumber = state.ctx.turn;
     const bonusMs = this.getTurnBonusMs(deltalog);
@@ -53,6 +61,7 @@ export class TimerManager {
       prev.turnRemainingMs = null;
       prev.turnBonusMs = 0;
       prev.stageKey = stageKey;
+      prev.stageProgressKey = stageProgressKey;
       prev.turnNumber = turnNumber;
       this.matches.set(matchID, prev);
       return;
@@ -60,7 +69,10 @@ export class TimerManager {
 
     this.scheduleBotAction(matchID, state, prev, stageKey);
 
-    if (prev.stageKey === stageKey && prev.turnNumber === turnNumber) {
+    if (
+      prev.stageProgressKey === stageProgressKey &&
+      prev.turnNumber === turnNumber
+    ) {
       if (bonusMs > 0 && prev.turnRemainingMs != null) {
         if (prev.turnTimeoutId) {
           this.pauseTurnTimer(prev);
@@ -130,6 +142,7 @@ export class TimerManager {
     }
 
     prev.stageKey = stageKey;
+    prev.stageProgressKey = stageProgressKey;
     prev.turnNumber = turnNumber;
     this.matches.set(matchID, prev);
   }

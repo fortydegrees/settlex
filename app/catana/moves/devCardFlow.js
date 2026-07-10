@@ -1,6 +1,7 @@
 import { ResourceType } from "../types.js";
 
 export const DEV_CARD_CHOICE_STAGE = "devCardChoice";
+export const ROAD_BUILDING_STAGE = "roadBuilding";
 
 export const STANDARD_RESOURCE_TYPES = [
   ResourceType.WOOD,
@@ -17,6 +18,9 @@ export const isChoiceDevCardType = (cardType) =>
 
 export const isDevCardChoiceStage = (ctx, playerID) =>
   ctx.activePlayers?.[playerID] === DEV_CARD_CHOICE_STAGE;
+
+export const isRoadBuildingStage = (ctx, playerID) =>
+  ctx.activePlayers?.[playerID] === ROAD_BUILDING_STAGE;
 
 export const getDevCardReturnStage = (devPlay) =>
   devPlay?.startedFromStage === "preRoll" ? "preRoll" : "postRoll";

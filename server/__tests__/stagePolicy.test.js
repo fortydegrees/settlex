@@ -62,6 +62,9 @@ describe("server stage policy", () => {
 
   it("keeps timeout moves and bot fallbacks on the same stage keys", () => {
     expect(getStageTimeoutMove("main:devCardChoice")).toBe("autoResolveDevCard");
+    expect(getStageTimeoutMove("main:roadBuilding")).toBe(
+      "autoPlaceRoadFromDevCard"
+    );
     expect(
       getBotFallbackMove(
         baseState({
@@ -82,6 +85,27 @@ describe("server stage policy", () => {
       )
     ).toBe("autoResolveDevCard");
 
+    expect(
+      getBotFallbackMove(
+        baseState({
+          G: {
+            devCardPlay: {
+              type: "roadBuilding",
+              playerId: "0",
+              pendingRoads: 1
+            }
+          },
+          ctx: {
+            phase: "main",
+            currentPlayer: "0",
+            activePlayers: { "0": "roadBuilding" },
+            turn: 6
+          }
+        })
+      )
+    ).toBe("autoPlaceRoadFromDevCard");
+
     expect(isBotActionStage("main:devCardChoice")).toBe(true);
+    expect(isBotActionStage("main:roadBuilding")).toBe(true);
   });
 });
