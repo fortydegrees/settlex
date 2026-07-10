@@ -40,6 +40,10 @@ export function spendResources(
   bankResources: Resource[],
   finite: boolean
 ): { ok: true } | { ok: false; error: string } {
+  if (!canAfford(cost, playerResources)) {
+    return { ok: false, error: "missing-resource" };
+  }
+
   for (const [resource, amount] of Object.entries(cost)) {
     const required = amount ?? 0;
     for (let i = 0; i < required; i += 1) {
