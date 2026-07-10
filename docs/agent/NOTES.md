@@ -1,5 +1,56 @@
 # NOTES
 
+- Core rule transaction note:
+- A returned `{ ok: false }` must leave `GameState` unchanged. New or repaired
+  game-rule moves should validate all inputs before mutating player resources,
+  bank contents, awards, or pending-turn state. Use temporary arrays or shallow
+  state overlays for multi-step validation; do not use mutation-and-rollback as
+  validation.
+- `spendResources` owns its complete affordability preflight even though build
+  and dev-card purchase callers also check affordability. Keep this defensive
+  boundary so future direct callers cannot partially spend a cost.
+- Discard is the reference resource-transfer example: test the full resource
+  multiset against a copied hand, then commit both player and finite-bank
+  changes together.
+- Development-card effects with an irreversible first action should consume
+  the card at commitment, not at asynchronous resolution. Road Building may
+  retain a pending placement UI after consumption, but it must not retain the
+  card after an end turn or timeout.
+- A pending Road Building effect owns its own boardgame.io stage. Keep ordinary
+  build, trade, purchase, and other dev-card moves out of that stage; return to
+  the stage where the card began only after its free-road sequence resolves or
+  is cancelled.
+- Stage timer and bot fallback moves must be native to their stage. Road
+  Building therefore uses the dedicated free-road auto move, not the standard
+  paid-road auto-placement helper.
+- A multi-placement stage needs a progress key for its timer. Road Building's
+  pending-road count is part of that key so placing road one cancels and
+  restarts the timeout for road two.
+- Bot hydration must use `devCardPlay.startedFromStage` as the Road Building
+  return mode; the active boardgame.io stage is `roadBuilding` while the effect
+  is pending and cannot reveal whether play began before or after the roll.
+- Longest Road traversal may start at an opponent-occupied junction to count
+  the terminating edge, but it may not continue through that junction.
+- App-test runner note:
+- `scripts/run-vitest-app-tests.mjs` intentionally keeps one Vitest subprocess
+  per app test file and a 120-second per-file timeout, but schedules them through
+  the bounded pool in `scripts/lib/bounded-worker-pool.mjs`.
+- On timeout, terminate the entire spawned process tree and wait for the child
+  to close before releasing the worker. A direct `pnpm` kill can leave its
+  Vitest descendant alive. Keep PASS summaries in sorted input order so
+  concurrent completion timing does not reorder CI output.
+- Default app-test concurrency is the smaller of four and the available CPU
+  count. Set `SETTLEX_APP_TEST_CONCURRENCY=1` for deterministic serial
+  diagnosis, or an integer from 1 through 8 for an explicit bounded override.
+- The 2026-07-10 same-machine measurement was 188.35 seconds serial versus
+  121.72 seconds at concurrency four. Treat this as local evidence, not a
+  universal speedup promise.
+- Dependency-cleanup note:
+- `jsnetworkx` and `next-images` were unused and removed. Do not restore
+  `next-images`; current Next.js handles project image assets without that
+  legacy webpack plugin. Better Auth, Next.js, and remaining production audit
+  findings require separate upgrade work.
+
 - Homepage attract-loop note:
 - The current scene rotation starts with `quiet-expansion`; the older
   `opening-table` setup scene was removed after the setup-drop transition made

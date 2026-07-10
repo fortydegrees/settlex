@@ -110,4 +110,3 @@ Expected: no output and exit 0.
 git add docs/agent/PROGRESS.md docs/agent/NOTES.md
 git commit -m "docs: record dependency cleanup verification"
 ```
-

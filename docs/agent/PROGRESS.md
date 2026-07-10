@@ -1,5 +1,68 @@
 # PROGRESS
 
+## Status (2026-07-10, engine transactions and verification efficiency)
+- Hardened the core mutation contract: rejected resource spends and malformed
+  robber calls now leave match state unchanged.
+- `spendResources` preflights the complete cost before moving any cards, so a
+  future caller cannot accidentally pay only the valid prefix of a cost.
+- Core Road Building validates its second road against a shallow staged road
+  map, then commits both roads together. It no longer mutates and rolls back
+  the real board while checking the chain.
+- Added rejection snapshots for maritime and player trades. The existing batch
+  trade preflight already made its commit path infallible, so no unnecessary
+  production refactor was made there.
+- Added finite-bank conservation contracts across discarding, paid builds,
+  development-card purchases, maritime trades, and production.
+- Replaced the 228-file sequential app-test loop with a bounded asynchronous
+  pool while preserving one Vitest subprocess per file, the 120-second timeout,
+  nested-worktree exclusion, attributable failure output, and serial mode.
+- App-test timeouts now terminate the complete Vitest process tree and wait for
+  child closure; successful file summaries are emitted in deterministic input
+  order after the bounded run completes.
+- Same-machine app-suite measurement:
+  - concurrency 1: all 228 files passed in 188.35 seconds;
+  - default concurrency 4: all 228 files passed in 121.72 seconds;
+  - measured reduction: 66.63 seconds (35.4%).
+- Removed unused `jsnetworkx` and `next-images` dependency trees without
+  upgrading unrelated packages. `pnpm audit --prod` changed from 94 findings
+  (`13 low | 39 moderate | 39 high | 3 critical`) to 80 findings
+  (`11 low | 34 moderate | 33 high | 2 critical`).
+- Focused verification:
+  - `pnpm -C game-core test` (153 tests)
+  - `pnpm -C game-core build`
+  - `SETTLEX_APP_TEST_CONCURRENCY=1 pnpm run test:app`
+  - `pnpm run test:app`
+  - `pnpm exec vitest run scripts/release/__tests__/bounded-worker-pool.test.mjs scripts/release/__tests__/run-vitest-app-tests.test.mjs --reporter=dot`
+- Full verification:
+  - `pnpm verify` (engine: 153 tests; server/lib/AI: 177 tests; app: all
+    228 files; lint: no warnings or errors)
+  - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`
+
+## Status (2026-07-10, core gameplay rule hardening)
+- Fixed Longest Road traversal so an opponent settlement ends a road segment
+  without excluding the road that terminates at that settlement.
+- Made robber discards transactional: validate the full requested resource
+  multiset before mutating the hand, then return valid discards to a finite
+  bank.
+- Made Road Building commit when play starts rather than after its final free
+  road. This prevents keeping the card after an early end turn and preserves
+  the one-development-card-per-turn rule.
+- Road Building now permits its second free road to extend the first; it still
+  resolves early when no legal first or subsequent road remains.
+- Isolated a pending Road Building sequence in its own server-authoritative
+  stage, so players can only place its free roads, forfeit the remaining road,
+  or end their turn; paid builds, trades, and dev-card purchases cannot
+  interleave with the effect.
+- Timed-out players and bots use the same free-road move within that stage,
+  never the paid-road placement helper.
+- The Road Building stage timeout restarts after road one, giving road two its
+  own bounded choice window; bot search returns to the stage where the card was
+  actually started.
+- Focused verification:
+  - `pnpm -C game-core test -- victory.test.ts`
+  - `pnpm -C game-core test -- turnFlow.test.ts`
+  - `pnpm exec vitest run app/catana/__tests__/Moves.devCards.test.js app/catana/__tests__/Game.placementPhase.test.js --reporter=dot`
+
 ## Status (2026-06-25, home demo normal duel openings)
 - Added `normal-duel-openings`, a blue/red two-player homepage attract scene
   with two starting settlements and two roads each. Blue starts on the
