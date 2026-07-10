@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createEmptyState } from "../core/state";
+import { ResourceType } from "../types";
+import { spendResources } from "./buildActions";
 
 describe("build costs - state init", () => {
   it("initializes piece counts from ruleset", () => {
@@ -7,6 +9,26 @@ describe("build costs - state init", () => {
     expect(state.playerStateById["0"].roadsRemaining).toBeGreaterThan(0);
     expect(state.playerStateById["0"].settlementsRemaining).toBeGreaterThan(0);
     expect(state.playerStateById["0"].citiesRemaining).toBeGreaterThan(0);
+  });
+});
+
+describe("resource spending", () => {
+  it("leaves hand and bank unchanged when the full cost is unavailable", () => {
+    const hand = [ResourceType.WOOD];
+    const bank = [ResourceType.ORE];
+    const handBefore = [...hand];
+    const bankBefore = [...bank];
+
+    const result = spendResources(
+      { [ResourceType.WOOD]: 1, [ResourceType.BRICK]: 1 },
+      hand,
+      bank,
+      true
+    );
+
+    expect(result).toEqual({ ok: false, error: "missing-resource" });
+    expect(hand).toEqual(handBefore);
+    expect(bank).toEqual(bankBefore);
   });
 });
 
