@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import { createEmptyState } from "../core/state";
-import { ResourceType } from "../types";
 import { spendResources } from "./buildActions";
 
 describe("build costs - state init", () => {
