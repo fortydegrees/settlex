@@ -63,9 +63,11 @@ removing temporary mutation-and-rollback from validation.
 
 ### Atomic maritime trade batches
 
-A batch trade will calculate the final player hand and finite-bank contents
-once, then assign both together. It will not repeatedly call a smaller mutating
-trade operation after preflight.
+A batch trade will first be locked down with failure-state contract tests. If
+those tests confirm that its existing complete preflight makes every subsequent
+sub-trade infallible, the implementation will remain unchanged. If a reachable
+partial-failure path is exposed, it will instead calculate the final player
+hand and finite-bank contents once, then assign both together.
 
 Single maritime trades and player-to-player trades will retain their current
 behavior, with failure-state tests confirming their existing validation is
