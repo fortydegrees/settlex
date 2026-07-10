@@ -348,14 +348,16 @@ export function applyMoveRobber(
       return p && p.resources.length > 0;
   });
 
+  if (
+    targetVictimId !== undefined &&
+    !potentialVictims.includes(targetVictimId)
+  ) {
+    return { ok: false, error: "invalid-victim" };
+  }
+
   let victimId = targetVictimId;
   if (potentialVictims.length > 0) {
-    // If target specified, validate it
-    if (victimId) {
-      if (!potentialVictims.includes(victimId)) {
-        return { ok: false, error: "invalid-victim" };
-      }
-    } else {
+    if (!victimId) {
       // If only one victim, auto-select
       if (potentialVictims.length === 1) {
         victimId = potentialVictims[0];

@@ -375,6 +375,17 @@ it("rejects robber move when target victim is invalid", () => {
   expect(result).toEqual({ ok: false, error: "invalid-victim" });
 });
 
+it("rejects a supplied robber victim when no victim is eligible", () => {
+  const state = createEmptyState(["0", "1"]);
+  state.playerStateById["1"].resources = [ResourceType.WOOD];
+  const before = structuredClone(state);
+
+  const result = applyMoveRobber(state, board, 1, "0", 0.2, "1");
+
+  expect(result).toEqual({ ok: false, error: "invalid-victim" });
+  expect(state).toEqual(before);
+});
+
 it("rejects an unknown robber actor without moving the robber", () => {
   const state = createEmptyState(["0", "1"]);
   const before = structuredClone(state);
