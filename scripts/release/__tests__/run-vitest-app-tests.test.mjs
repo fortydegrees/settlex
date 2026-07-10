@@ -16,6 +16,8 @@ describe("run-vitest-app-tests", () => {
     expect(source).toContain('import { availableParallelism } from "node:os"');
     expect(source).toContain("resolveConcurrency");
     expect(source).toContain("runBounded");
+    expect(source).toContain("killProcessTree");
+    expect(source).toContain('detached: process.platform !== "win32"');
     expect(source).toContain("SETTLEX_APP_TEST_CONCURRENCY");
     expect(source).not.toContain("spawnSync");
   });

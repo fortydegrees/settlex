@@ -8,6 +8,7 @@ import {
   resolveConcurrency,
   runBounded
 } from "./lib/bounded-worker-pool.mjs";
+import { killProcessTree } from "./lib/child-process-tree.mjs";
 
 const rootDir = path.resolve(new URL("..", import.meta.url).pathname);
 const appDir = path.join(rootDir, "app");
@@ -40,6 +41,7 @@ function runTestFile(file) {
   return new Promise((resolve, reject) => {
     let settled = false;
     let timeout;
+    let timeoutError = null;
     const output = [];
     const child = spawn(
       "pnpm",
@@ -54,6 +56,7 @@ function runTestFile(file) {
       ],
       {
         cwd: rootDir,
+        detached: process.platform !== "win32",
         shell: process.platform === "win32",
         stdio: ["ignore", "pipe", "pipe"]
       }
@@ -71,23 +74,27 @@ function runTestFile(file) {
     };
 
     timeout = setTimeout(() => {
-      child.kill();
-      const error = new Error(
+      timeoutError = new Error(
         `[vitest:app] ${file} exceeded ${perFileTimeoutMs / 1000}s timeout`
       );
-      error.exitCode = 124;
-      fail(error);
+      timeoutError.exitCode = 124;
+      killProcessTree(child);
     }, perFileTimeoutMs);
 
-    child.on("error", fail);
+    child.on("error", (error) => fail(timeoutError ?? error));
     child.on("close", (code) => {
       if (settled) return;
+
+      if (timeoutError) {
+        fail(timeoutError);
+        return;
+      }
+
       settled = true;
       clearTimeout(timeout);
 
       if (code === 0) {
         const durationMs = Date.now() - startedAt;
-        console.log(`[vitest:app] PASS ${file} (${durationMs}ms)`);
         resolve({ file, durationMs });
         return;
       }
@@ -110,7 +117,10 @@ try {
   console.log(
     `[vitest:app] Running ${files.length} files with concurrency ${concurrency}`
   );
-  await runBounded(files, concurrency, runTestFile);
+  const results = await runBounded(files, concurrency, runTestFile);
+  for (const { file, durationMs } of results) {
+    console.log(`[vitest:app] PASS ${file} (${durationMs}ms)`);
+  }
 } catch (error) {
   if (error.output) {
     console.error(error.output);
