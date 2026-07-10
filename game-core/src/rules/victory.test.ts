@@ -170,6 +170,32 @@ describe("longest road", () => {
 
     expect(state.awards.longestRoadOwnerId).toBe(null);
   });
+
+  it("does not count a road beyond an opponent settlement", () => {
+    const board = makeBoard([
+      [1, 2],
+      [2, 3],
+      [3, 4],
+      [4, 5],
+      [5, 6],
+      [6, 7]
+    ]);
+    const state = createEmptyState(["0", "1"]);
+    state.roadsByEdgeId = {
+      "1,2": "0",
+      "2,3": "0",
+      "3,4": "0",
+      "4,5": "0",
+      "5,6": "0",
+      "6,7": "0"
+    };
+    state.buildingsByNodeId[3] = { ownerId: "1", type: "settlement" };
+
+    expect(getLongestRoadResult(state, board, "0")).toEqual({
+      length: 4,
+      edgeIds: ["3,4", "4,5", "5,6", "6,7"]
+    });
+  });
 });
 
 describe("victory points", () => {
