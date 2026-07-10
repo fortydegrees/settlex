@@ -223,16 +223,25 @@ export function applyRoadBuilding(
     return { ok: false, error: "illegal-road" };
   }
 
-  state.roadsByEdgeId[first] = playerId;
-  const legalAfterFirst = buildableEdges(state, board, playerId, {
+  const roadsAfterFirst = {
+    ...state.roadsByEdgeId,
+    [first]: playerId
+  };
+  const stateAfterFirst: GameState = {
+    ...state,
+    roadsByEdgeId: roadsAfterFirst
+  };
+  const legalAfterFirst = buildableEdges(stateAfterFirst, board, playerId, {
     initialPlacement: false
   });
   if (!legalAfterFirst.includes(second)) {
-    delete state.roadsByEdgeId[first];
     return { ok: false, error: "illegal-road" };
   }
 
-  state.roadsByEdgeId[second] = playerId;
+  state.roadsByEdgeId = {
+    ...roadsAfterFirst,
+    [second]: playerId
+  };
   player.roadsRemaining -= 2;
   recomputeCaches(state, board);
   recomputeLongestRoad(state, board);

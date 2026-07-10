@@ -280,6 +280,28 @@ it("road building allows chaining the second road", () => {
   expect(state.roadsByEdgeId["2,3"]).toBe("0");
 });
 
+it("road building leaves state unchanged when the second road is illegal", () => {
+  const state = createEmptyState(["0"]);
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+  const before = structuredClone(state);
+
+  const result = applyRoadBuilding(state, chainBoard, "0", ["1,2", "1,3"]);
+
+  expect(result).toEqual({ ok: false, error: "illegal-road" });
+  expect(state).toEqual(before);
+});
+
+it("road building validates against a staged road map", () => {
+  const state = createEmptyState(["0"]);
+  state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
+  Object.freeze(state.roadsByEdgeId);
+
+  const result = applyRoadBuilding(state, chainBoard, "0", ["1,2", "2,3"]);
+
+  expect(result).toEqual({ ok: true });
+  expect(state.roadsByEdgeId).toEqual({ "1,2": "0", "2,3": "0" });
+});
+
 it("year of plenty fails when bank lacks a requested resource", () => {
   const state = createEmptyState(["0"]);
   state.bank.resources = [ResourceType.WOOD];
