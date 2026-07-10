@@ -36,11 +36,19 @@ describe("turnFlow - discard", () => {
     state.turn.phase = "robberDiscard";
     state.turn.pendingDiscards = ["0"];
     state.playerStateById["0"].resources = Array(8).fill(ResourceType.WOOD);
+    const bankResourcesBefore = [...state.bank.resources];
 
     const result = applyDiscard(state, "0", Array(4).fill(ResourceType.WOOD));
 
     expect(result.ok).toBe(true);
     expect(state.playerStateById["0"].resources).toHaveLength(4);
+    expect(state.bank.resources).toHaveLength(bankResourcesBefore.length + 4);
+    expect(
+      state.bank.resources.filter((resource) => resource === ResourceType.WOOD)
+    ).toHaveLength(
+      bankResourcesBefore.filter((resource) => resource === ResourceType.WOOD)
+        .length + 4
+    );
     expect(state.turn.pendingDiscards).toEqual([]);
     expect(state.turn.phase).toBe("robberMove");
   });
@@ -79,6 +87,8 @@ describe("turnFlow - discard", () => {
       ResourceType.WOOD,
       ResourceType.WOOD
     ];
+    const resourcesBefore = [...state.playerStateById["0"].resources];
+    const bankResourcesBefore = [...state.bank.resources];
 
     const result = applyDiscard(state, "0", [
       ResourceType.WOOD,
@@ -87,6 +97,10 @@ describe("turnFlow - discard", () => {
       ResourceType.WOOD
     ]);
     expect(result).toEqual({ ok: false, error: "missing-resource" });
+    expect(state.playerStateById["0"].resources).toEqual(resourcesBefore);
+    expect(state.bank.resources).toEqual(bankResourcesBefore);
+    expect(state.turn.pendingDiscards).toEqual(["0"]);
+    expect(state.turn.phase).toBe("robberDiscard");
   });
 
   it("rejects discard for unknown pending player", () => {
@@ -360,6 +374,34 @@ it("rejects robber move when target victim is invalid", () => {
   const result = applyMoveRobber(state, board, 1, "0", 0.2, "9");
   expect(result).toEqual({ ok: false, error: "invalid-victim" });
 });
+
+it("rejects an unknown robber actor without moving the robber", () => {
+  const state = createEmptyState(["0", "1"]);
+  const before = structuredClone(state);
+
+  const result = applyMoveRobber(state, board, 1, "9", 0);
+
+  expect(result).toEqual({ ok: false, error: "unknown-player" });
+  expect(state).toEqual(before);
+});
+
+it.each([Number.NaN, Number.POSITIVE_INFINITY, -0.1, 1])(
+  "rejects invalid robber selector %s without changing state",
+  (selector) => {
+    const state = createEmptyState(["0", "1"]);
+    state.buildingsByNodeId[1] = { ownerId: "1", type: "settlement" };
+    state.playerStateById["1"].resources = [ResourceType.WOOD];
+    const before = structuredClone(state);
+
+    const result = applyMoveRobber(state, board, 1, "0", selector, "1");
+
+    expect(result).toEqual({
+      ok: false,
+      error: "invalid-random-selector"
+    });
+    expect(state).toEqual(before);
+  }
+);
 
 it("rejects robber move on illegal tiles", () => {
   const portTiles = [

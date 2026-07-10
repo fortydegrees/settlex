@@ -88,6 +88,7 @@ describe("trading", () => {
     state.bank.resources = [ResourceType.WOOD, ResourceType.WOOD];
     state.buildingsByNodeId[1] = { ownerId: "0", type: "settlement" };
     state.playerStateById["0"].resources = [ResourceType.WOOD, ResourceType.WOOD];
+    const before = structuredClone(state);
 
     const result = applyMaritimeTrade(state, board, "0", {
       give: ResourceType.WOOD,
@@ -95,6 +96,7 @@ describe("trading", () => {
     });
 
     expect(result).toEqual({ ok: false, error: "bank-empty" });
+    expect(state).toEqual(before);
   });
 
   it("counts mixed maritime give selections using each resource's own rate", () => {
@@ -236,6 +238,7 @@ describe("trading", () => {
       ResourceType.WHEAT,
       ResourceType.WHEAT
     ];
+    const before = structuredClone(state);
 
     const result = applyMaritimeTradeBatch(state, board, "0", {
       give: [
@@ -252,6 +255,24 @@ describe("trading", () => {
     });
 
     expect(result).toEqual({ ok: false, error: "invalid-receive-count" });
+    expect(state).toEqual(before);
+  });
+
+  it("rejects a finite-bank batch shortage without transferring earlier cards", () => {
+    const state = createEmptyState(["0"]);
+    state.ruleset.tradeRates.bank = 4;
+    state.ruleset.bank.finite = true;
+    state.playerStateById["0"].resources = Array(8).fill(ResourceType.ORE);
+    state.bank.resources = [ResourceType.BRICK];
+    const before = structuredClone(state);
+
+    const result = applyMaritimeTradeBatch(state, board, "0", {
+      give: Array(8).fill(ResourceType.ORE),
+      receive: [ResourceType.BRICK, ResourceType.WOOD]
+    });
+
+    expect(result).toEqual({ ok: false, error: "bank-empty" });
+    expect(state).toEqual(before);
   });
 
   it("rejects player trade when ruleset disallows it", () => {
@@ -294,6 +315,7 @@ describe("trading", () => {
     const state = createEmptyState(["0", "1"]);
     state.playerStateById["0"].resources = [ResourceType.WOOD];
     state.playerStateById["1"].resources = [];
+    const before = structuredClone(state);
 
     const result = applyPlayerTrade(state, "0", "1", {
       give: [ResourceType.WOOD],
@@ -301,6 +323,7 @@ describe("trading", () => {
     });
 
     expect(result).toEqual({ ok: false, error: "insufficient-resources" });
+    expect(state).toEqual(before);
   });
 
   it("applies player trades by swapping the offered resources", () => {

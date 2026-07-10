@@ -40,10 +40,16 @@ export function applyDiscard(
     return { ok: false, error: "invalid-discard-count" };
   }
 
+  const remainingResources = [...player.resources];
   for (const resource of resources) {
-    if (!removeCardOnce(player.resources, resource)) {
+    if (!removeCardOnce(remainingResources, resource)) {
       return { ok: false, error: "missing-resource" };
     }
+  }
+
+  player.resources = remainingResources;
+  if (state.ruleset.bank.finite) {
+    state.bank.resources.push(...resources);
   }
 
   state.turn.pendingDiscards = state.turn.pendingDiscards.filter(
@@ -327,6 +333,9 @@ export function applyMoveRobber(
   stolenCardIndex?: number,
   targetVictimId?: string
 ): { ok: true } | { ok: false; error: string } {
+  if (!state.playerStateById[actingPlayerId]) {
+    return { ok: false, error: "unknown-player" };
+  }
   if (!canPlaceRobber(state, board, tileId)) {
     return { ok: false, error: "illegal-robber" };
   }
@@ -355,6 +364,16 @@ export function applyMoveRobber(
         return { ok: false, error: "ambiguous-victim" };
       }
     }
+  }
+
+  if (
+    victimId &&
+    stolenCardIndex !== undefined &&
+    (!Number.isFinite(stolenCardIndex) ||
+      stolenCardIndex < 0 ||
+      stolenCardIndex >= 1)
+  ) {
+    return { ok: false, error: "invalid-random-selector" };
   }
 
   state.robberTileId = tileId;
