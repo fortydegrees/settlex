@@ -44,8 +44,10 @@ function dfsLongestFromNode(
   nodeId: NodeId,
   visited: Set<EdgeId>
 ): number {
+  if (blockedNodes.has(nodeId) && visited.size > 0) {
+    return 0;
+  }
   const edges = board.nodeEdges[nodeId] ?? [];
-  const isBlocked = blockedNodes.has(nodeId);
   let max = 0;
 
   for (const edgeId of edges) {
@@ -58,14 +60,14 @@ function dfsLongestFromNode(
     visited.add(edgeId);
     const [a, b] = board.edgeNodes[edgeId];
     const nextNode = a === nodeId ? b : a;
-    const length = 1 + (isBlocked ? 0 : dfsLongestFromNode(
+    const length = 1 + dfsLongestFromNode(
       board,
       roadsByEdgeId,
       playerId,
       blockedNodes,
       nextNode,
       visited
-    ));
+    );
     visited.delete(edgeId);
     if (length > max) {
       max = length;
@@ -83,8 +85,10 @@ function dfsLongestResultFromNode(
   nodeId: NodeId,
   visited: Set<EdgeId>
 ): LongestRoadResult {
+  if (blockedNodes.has(nodeId) && visited.size > 0) {
+    return { length: 0, edgeIds: [] };
+  }
   const edges = board.nodeEdges[nodeId] ?? [];
-  const isBlocked = blockedNodes.has(nodeId);
   let best: LongestRoadResult = { length: 0, edgeIds: [] };
 
   for (const edgeId of edges) {
@@ -97,16 +101,14 @@ function dfsLongestResultFromNode(
     visited.add(edgeId);
     const [a, b] = board.edgeNodes[edgeId];
     const nextNode = a === nodeId ? b : a;
-    const tail = isBlocked
-      ? { length: 0, edgeIds: [] }
-      : dfsLongestResultFromNode(
-          board,
-          roadsByEdgeId,
-          playerId,
-          blockedNodes,
-          nextNode,
-          visited
-        );
+    const tail = dfsLongestResultFromNode(
+      board,
+      roadsByEdgeId,
+      playerId,
+      blockedNodes,
+      nextNode,
+      visited
+    );
     visited.delete(edgeId);
     const candidate = {
       length: 1 + tail.length,
