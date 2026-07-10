@@ -18,7 +18,7 @@ const STAGE_TIMEOUT_MOVES = {
   "placement:settlement": "autoPlaceSettlement",
   "placement:road": "autoPlaceRoad",
   "main:moveRobber": "autoMoveRobber",
-  "main:roadBuilding": "autoPlaceRoad",
+  "main:roadBuilding": "autoPlaceRoadFromDevCard",
   "main:devCardChoice": "autoResolveDevCard"
 };
 

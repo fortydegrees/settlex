@@ -100,6 +100,31 @@ describe("createPufferStateAdapter", () => {
     expect(planned[0].move).toBe("placeRoadFromDevCard");
   });
 
+  it("preserves the stage a pending Road Building play started from", () => {
+    const state = createBaseState({
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "0": "roadBuilding" },
+      turn: 6
+    });
+    state.G.core.phase = "normal";
+    state.G.core.turn.currentPlayerId = "0";
+    state.G.core.turn.phase = "preRoll";
+    state.G.core.turn.hasRolled = false;
+    state.G.devCardPlay = {
+      type: "roadBuilding",
+      playerId: "0",
+      pendingRoads: 1,
+      startedFromStage: "preRoll"
+    };
+
+    const adapter = createPufferStateAdapter(state);
+
+    expect(adapter.env.pendingRoadBuilding).toMatchObject({
+      returnToMode: "preRoll"
+    });
+  });
+
   it("treats moveRobber stage as robberMove mode even if core turn phase is preRoll", () => {
     const state = createBaseState({
       phase: "main",

@@ -12,11 +12,13 @@ import { appendGameLog } from "../utils/gameLog.js";
 import { logAwardChanges } from "./awardLogging.js";
 import {
   DEV_CARD_CHOICE_STAGE,
+  ROAD_BUILDING_STAGE,
   STANDARD_RESOURCE_TYPES,
   buildAutoYearOfPlentyPayload,
   getDevCardReturnStage,
   isChoiceDevCardType,
-  isDevCardChoiceStage
+  isDevCardChoiceStage,
+  isRoadBuildingStage
 } from "./devCardFlow.js";
 import {
   buildChoiceDevCardPlayPayload,
@@ -119,8 +121,19 @@ export const playDevCardStart = {
       const legalEdges = buildableEdges(G.core, G.coreTopology, playerID, {
         initialPlacement: false
       });
-      const pendingRoads = Math.min(2, player.roadsRemaining, legalEdges.length);
-      if (pendingRoads <= 0) return;
+      const pendingRoads = Math.min(2, player.roadsRemaining);
+      if (legalEdges.length === 0 || pendingRoads <= 0) return;
+      const played = playDevCard(G.core, playerID, "roadBuilding");
+      if (!played.ok) {
+        console.log(`Invalid play dev card: ${played.error}`);
+        return;
+      }
+      appendGameLog(G, ctx, {
+        type: "dev:play",
+        actorId: playerID,
+        data: { cardType: "roadBuilding" },
+        forced: options?.forced
+      });
       const startPayload = buildRoadBuildingPlayPayload({
         ctx,
         playerId: playerID,
@@ -139,6 +152,7 @@ export const playDevCardStart = {
         previousRoadsRemaining
       };
       effects?.devCardPlayStarted?.(startPayload);
+      setCurrentPlayerStage(context, ROAD_BUILDING_STAGE);
       return;
     }
 
@@ -274,7 +288,11 @@ export const cancelDevCardPlay = {
     const { G, playerID } = context;
     if (!G.devCardPlay || G.devCardPlay.playerId !== playerID) return;
     if (isChoiceDevCardType(G.devCardPlay.type)) return;
+    const devPlay = G.devCardPlay;
     G.devCardPlay = null;
+    if (devPlay.type === "roadBuilding") {
+      setCurrentPlayerStage(context, getDevCardReturnStage(devPlay));
+    }
   }
 };
 
@@ -284,7 +302,7 @@ export const placeRoadFromDevCard = {
     const devPlay = G.devCardPlay;
     if (!devPlay || devPlay.type !== "roadBuilding") return;
     if (devPlay.playerId !== playerID) return;
-    if (!isDevCardStage(ctx, playerID)) return;
+    if (!isRoadBuildingStage(ctx, playerID)) return;
 
     const previousAwards = getAwardOwners(G.core);
     const result = applyFreeRoad(G.core, G.coreTopology, edge, playerID);
@@ -312,17 +330,6 @@ export const placeRoadFromDevCard = {
       initialPlacement: false
     });
     if (devPlay.pendingRoads <= 0 || remainingLegalEdges.length === 0) {
-      const played = playDevCard(G.core, playerID, "roadBuilding");
-      if (!played.ok) {
-        console.log(`Invalid play dev card: ${played.error}`);
-        return;
-      }
-      appendGameLog(G, ctx, {
-        type: "dev:play",
-        actorId: playerID,
-        data: { cardType: "roadBuilding" },
-        forced: options?.forced
-      });
       effects?.devCardPlayResolved?.(
         buildRoadBuildingPlayPayload({
           ctx,
@@ -337,6 +344,34 @@ export const placeRoadFromDevCard = {
         })
       );
       G.devCardPlay = null;
+      setCurrentPlayerStage(context, getDevCardReturnStage(devPlay));
     }
+  }
+};
+
+export const autoPlaceRoadFromDevCard = {
+  move: (context) => {
+    const { G, ctx, random, log } = context;
+    const playerID = context.playerID ?? ctx.currentPlayer;
+    const devPlay = G.devCardPlay;
+    if (!devPlay || devPlay.type !== "roadBuilding") return;
+    if (devPlay.playerId !== playerID) return;
+    if (!isRoadBuildingStage(ctx, playerID)) return;
+
+    const edgeId = pickRandom(
+      buildableEdges(G.core, G.coreTopology, playerID, {
+        initialPlacement: false
+      }),
+      random
+    );
+    if (!edgeId) return;
+
+    appendGameLog(G, ctx, {
+      type: "forced:placeRoad",
+      actorId: "system",
+      data: { playerId: playerID, via: "devCard" }
+    });
+    log?.setMetadata?.({ message: `auto-placing free road at ${edgeId}` });
+    placeRoadFromDevCard.move(context, edgeId, { forced: true });
   }
 };

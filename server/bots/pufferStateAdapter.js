@@ -64,7 +64,10 @@ function buildPendingRoadBuilding(G, ctx) {
   if (!devPlay || devPlay.type !== "roadBuilding" || devPlay.pendingRoads <= 0) {
     return null;
   }
-  const stage = ctx?.activePlayers?.[ctx?.currentPlayer] ?? "postRoll";
+  const stage =
+    devPlay.startedFromStage ??
+    ctx?.activePlayers?.[ctx?.currentPlayer] ??
+    "postRoll";
   return {
     playerId: devPlay.playerId,
     roadsToPlace: devPlay.pendingRoads,

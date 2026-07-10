@@ -21,7 +21,9 @@ import {
 } from "./moves/turnMoves.js";
 import {
   autoResolveDevCard,
+  autoPlaceRoadFromDevCard,
   buyDevCard,
+  cancelDevCardPlay,
   confirmDevCardPlay,
   placeRoadFromDevCard,
   playDevCardStart
@@ -349,6 +351,17 @@ export const createCatanGame = ({
             moves: {
               confirmDevCardPlay,
               autoResolveDevCard,
+              ...terminalStageMoves,
+              ...debugMoves
+            }
+          },
+          roadBuilding: {
+            moves: {
+              placeRoadFromDevCard,
+              autoPlaceRoadFromDevCard,
+              cancelDevCardPlay,
+              endTurn,
+              autoEndTurn,
               ...terminalStageMoves,
               ...debugMoves
             }
