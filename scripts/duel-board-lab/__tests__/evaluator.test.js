@@ -1,9 +1,32 @@
+import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { BOARD_FAMILIES, generateCandidate } from "../generators/generateCandidate.mjs";
 import { evaluateDuelBoard } from "../analysis/evaluateDuelBoard.mjs";
 import { measureOpeningRoutes } from "../analysis/openingRoutes.mjs";
 
+const readFixture = (name) => JSON.parse(readFileSync(new URL(`../fixtures/${name}.json`, import.meta.url), "utf8"));
+
+const FIXTURE_FILES = [
+  "scarce-but-fair.json",
+  "wheat-monopoly.json",
+  "dominant-settlement.json",
+  "varied-openings.json",
+  "first-pick-sensitive.json",
+  "second-pick-sensitive.json"
+];
+
 describe("duel-fair-v1 evaluator", () => {
+  it("pins reviewed scarce and monopoly boards as full payloads", () => {
+    const scarce = readFixture("scarce-but-fair");
+    const monopoly = readFixture("wheat-monopoly");
+    expect(scarce.family).toBe("official-spiral");
+    expect(scarce.seed).toBe(1503);
+    expect(scarce.tiles).toHaveLength(28);
+    expect(monopoly.seed).toBe(223);
+    expect(monopoly.tiles).toHaveLength(28);
+  });
+
   it("emits stable named metrics and a bounded sortable score", () => {
     const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 1 });
     const report = evaluateDuelBoard(candidate.tiles);
@@ -49,4 +72,17 @@ describe("duel-fair-v1 evaluator", () => {
     expect(metrics.distinctCompetitiveRouteCount).toBe(1);
     expect(metrics.hasCompatibleCompetitiveRouteSet).toBe(false);
   });
+
+  for (const filename of FIXTURE_FILES) {
+    it(`records the initial evaluator output for ${filename}`, async () => {
+      const fixture = JSON.parse(await readFile(new URL(`../fixtures/${filename}`, import.meta.url), "utf8"));
+      const report = evaluateDuelBoard(fixture.tiles, { includeOrderAudit: true });
+      expect({
+        verdict: report.verdict,
+        rejectionReasons: report.rejectionReasons,
+        overallScore: Number(report.overallScore.toFixed(4)),
+        orderRatio: Number(report.metrics.orderSensitivityAudit.secondToFirstRatio.toFixed(4))
+      }).toMatchSnapshot();
+    });
+  }
 });
