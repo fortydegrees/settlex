@@ -15,14 +15,15 @@ const STANDARD_RESOURCES = Object.freeze([
 ]);
 
 export const CUBE_DIRECTIONS = Object.freeze([
-  [1, 0, -1], [-1, 0, 1], [0, 1, -1],
-  [0, -1, 1], [1, -1, 0], [-1, 1, 0]
+  Object.freeze([1, 0, -1]), Object.freeze([-1, 0, 1]), Object.freeze([0, 1, -1]),
+  Object.freeze([0, -1, 1]), Object.freeze([1, -1, 0]), Object.freeze([-1, 1, 0])
 ]);
 
 export function buildBoardFacts(tiles) {
-  const topology = buildTopology(tiles);
-  const landTiles = tiles.filter((tile) => tile.type === TileTypes.LAND);
-  const portTiles = tiles.filter((tile) => tile.type === TileTypes.PORT);
+  const tileSnapshot = snapshotAndFreeze(tiles);
+  const topology = deepFreeze(buildTopology(tileSnapshot));
+  const landTiles = tileSnapshot.filter((tile) => tile.type === TileTypes.LAND);
+  const portTiles = tileSnapshot.filter((tile) => tile.type === TileTypes.PORT);
   const nodeMap = new Map(topology.landNodeIds.map((nodeId) => [nodeId, {
     nodeId,
     totalPips: 0,
@@ -63,7 +64,7 @@ export function buildBoardFacts(tiles) {
   }
 
   return Object.freeze({
-    tiles,
+    tiles: tileSnapshot,
     topology,
     nodes: Object.freeze(nodes),
     legalPairs: Object.freeze(legalPairs.map((pair) => Object.freeze(pair))),
@@ -71,6 +72,25 @@ export function buildBoardFacts(tiles) {
     redAdjacencyPairs: Object.freeze(findRedAdjacencyPairs(landTiles).map((pair) => Object.freeze(pair))),
     validityErrors: Object.freeze(validateStandardCounts({ landTiles, portTiles }))
   });
+}
+
+function snapshotAndFreeze(value) {
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map(snapshotAndFreeze));
+  }
+  if (value !== null && typeof value === "object") {
+    return Object.freeze(Object.fromEntries(
+      Object.entries(value).map(([key, nested]) => [key, snapshotAndFreeze(nested)])
+    ));
+  }
+  return value;
+}
+
+function deepFreeze(value, seen = new WeakSet()) {
+  if (value === null || typeof value !== "object" || seen.has(value)) return value;
+  seen.add(value);
+  for (const nested of Object.values(value)) deepFreeze(nested, seen);
+  return Object.freeze(value);
 }
 
 function sumResourcePips(nodes) {
