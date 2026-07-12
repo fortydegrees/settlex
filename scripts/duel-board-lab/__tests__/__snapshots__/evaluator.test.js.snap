@@ -1,0 +1,67 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`duel-fair-v1 evaluator > records the initial evaluator output for dominant-settlement.json 1`] = `
+{
+  "orderRatio": 0.8804,
+  "overallScore": 60.625,
+  "rejectionReasons": [
+    "dominant-top-spot",
+  ],
+  "verdict": "reject",
+}
+`;
+
+exports[`duel-fair-v1 evaluator > records the initial evaluator output for first-pick-sensitive.json 1`] = `
+{
+  "orderRatio": 0.9921,
+  "overallScore": 60.428,
+  "rejectionReasons": [
+    "insufficient-resource-routes",
+    "pick-sensitive",
+    "resource-monopoly",
+  ],
+  "verdict": "reject",
+}
+`;
+
+exports[`duel-fair-v1 evaluator > records the initial evaluator output for scarce-but-fair.json 1`] = `
+{
+  "orderRatio": 1.003,
+  "overallScore": 70.6207,
+  "rejectionReasons": [],
+  "verdict": "pass",
+}
+`;
+
+exports[`duel-fair-v1 evaluator > records the initial evaluator output for second-pick-sensitive.json 1`] = `
+{
+  "orderRatio": 1.0855,
+  "overallScore": 76.1583,
+  "rejectionReasons": [
+    "insufficient-opening-routes",
+  ],
+  "verdict": "reject",
+}
+`;
+
+exports[`duel-fair-v1 evaluator > records the initial evaluator output for varied-openings.json 1`] = `
+{
+  "orderRatio": 0.9582,
+  "overallScore": 69.7527,
+  "rejectionReasons": [],
+  "verdict": "pass",
+}
+`;
+
+exports[`duel-fair-v1 evaluator > records the initial evaluator output for wheat-monopoly.json 1`] = `
+{
+  "orderRatio": 1.0117,
+  "overallScore": 66.1535,
+  "rejectionReasons": [
+    "insufficient-resource-routes",
+    "pick-sensitive",
+    "resource-monopoly",
+  ],
+  "verdict": "reject",
+}
+`;
