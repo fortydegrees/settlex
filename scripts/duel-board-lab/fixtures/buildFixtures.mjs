@@ -10,7 +10,9 @@ const descriptors = [
   ["dominant-settlement", "large quality cliff after the best node", "freeform-random", 6414],
   ["varied-openings", "many competitive opening locations", "official-spiral", 109],
   ["first-pick-sensitive", "early pick removes disproportionate resource access", "freeform-random", 7036],
-  ["second-pick-sensitive", "diagnostic snake audit favours consecutive P2 picks", "freeform-random", 4300]
+  ["second-pick-sensitive", "diagnostic snake audit favours consecutive P2 picks", "freeform-random", 4300],
+  ["official-seed-47-p1-dominance", "P1 takes the premium ore/wood/sheep spot and retains a viable all-resource response", "official-spiral", 47],
+  ["official-seed-2604-strategic-denial", "P1 may need a lower raw-value brick/sheep/wood denial opening", "official-spiral", 2604]
 ];
 
 const directory = dirname(fileURLToPath(import.meta.url));
