@@ -2,6 +2,8 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { DUEL_FAIR_V2_PROFILE } from "../analysis/duelFairV2Profile.mjs";
+import { evaluateDuelBoardV2 } from "../analysis/evaluateDuelBoardV2.mjs";
 import { hashBoard } from "../analysis/symmetry.mjs";
 import { BOARD_FAMILIES, generateCandidate } from "../generators/generateCandidate.mjs";
 import { buildReport, inspectCandidate } from "../reports/buildReport.mjs";
@@ -48,6 +50,20 @@ describe("duel board reports", () => {
     expect(svg).toContain("&lt;official&gt;");
     expect(svg).not.toContain("<official>");
     expect(svg.match(/<polygon/g)).toHaveLength(19);
+  });
+
+  it("renders geographic ports and solved placement markers", () => {
+    const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 47 });
+    const diagnosticV2 = evaluateDuelBoardV2(candidate.tiles);
+    const svg = renderBoardSvg({
+      tiles: candidate.tiles,
+      record: { seed: 47, generatorFamily: "official-spiral", overallScore: 80, verdict: "pass" },
+      diagnosticV2
+    });
+
+    expect(svg.match(/data-port-resource=/g)).toHaveLength(9);
+    expect(svg.match(/data-placement-pick=/g)).toHaveLength(4);
+    expect(svg).not.toContain("Ports:");
   });
 
   it("builds grouped selected-board HTML without rendering unselected records", async () => {
@@ -104,6 +120,80 @@ describe("duel board reports", () => {
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).toContain("reason&lt;&amp;&quot;");
     expect(html).not.toContain("<script>alert(1)</script>");
+  });
+
+  it("renders escaped structured v2 explanations and bounded material alternatives", async () => {
+    const runDir = await temporaryRunDir();
+    const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 47 });
+    const evaluated = evaluateDuelBoardV2(candidate.tiles, { includeDiagnosticLenses: true });
+    const diagnosticV2 = {
+      ...evaluated,
+      fairness: {
+        ...evaluated.fairness,
+        diagnosticLensResults: evaluated.fairness.diagnosticLensResults.map((lens, index) => (
+          index === 0 ? { ...lens, name: '<lens&">' } : lens
+        ))
+      },
+      tags: [...evaluated.tags, '<tag&">']
+    };
+    const record = {
+      candidateIndex: 0,
+      seed: 47,
+      generatorFamily: BOARD_FAMILIES.OFFICIAL_SPIRAL,
+      verdict: "pass",
+      rejectionCodes: [],
+      overallScore: 80,
+      boardHash: hashBoard(candidate.tiles)
+    };
+    await writeFile(join(runDir, "candidates.jsonl"), `${JSON.stringify(record)}\n`);
+    await writeFile(join(runDir, "boards", "selected-v2.json"), JSON.stringify({
+      selectionGroups: ["top"],
+      record,
+      diagnosticV2,
+      tiles: candidate.tiles
+    }));
+
+    const { reportPath } = await buildReport(runDir);
+    const html = await readFile(reportPath, "utf8");
+
+    expect(html).toContain("V1 screen verdict");
+    expect(html).toContain("V2 audit verdict");
+    expect(html).toContain("Starting hand");
+    expect(html).toContain("Direct recipe capacity");
+    expect(html).toContain("Trade-adjusted capacity");
+    expect(html).toContain("Immediate recipe readiness");
+    expect(html).toContain("Placement depth");
+    expect(html).toContain("Official seat advantage");
+    expect(html).toContain("Diagnostic lenses");
+    expect(html).toContain("Material alternative lines");
+    expect(html).toContain("Full v2 diagnostic");
+    expect(html).toContain("&lt;lens&amp;&quot;&gt;");
+    expect(html).toContain("&lt;tag&amp;&quot;&gt;");
+    expect(html).not.toContain('<lens&">');
+    expect(html).not.toContain('<tag&">');
+
+    const alternatives = [...html.matchAll(
+      /data-alternative-line="[^"]+" data-outcome-change="([^"]+)" data-node-ids="([^"]+)"/g
+    )].map((match) => ({
+      outcomeChange: Number(match[1]),
+      nodeIds: match[2].split(",").map(Number)
+    }));
+    const compareNodeIds = (left, right) => {
+      for (let index = 0; index < Math.min(left.length, right.length); index += 1) {
+        if (left[index] !== right[index]) return left[index] - right[index];
+      }
+      return left.length - right.length;
+    };
+    const expectedOrder = [...alternatives].sort((left, right) => (
+      right.outcomeChange - left.outcomeChange
+        || compareNodeIds(left.nodeIds, right.nodeIds)
+    ));
+
+    expect(alternatives).toHaveLength(8);
+    expect(alternatives.every(({ outcomeChange }) => (
+      outcomeChange >= DUEL_FAIR_V2_PROFILE.meaningfulLineTolerance
+    ))).toBe(true);
+    expect(alternatives).toEqual(expectedOrder);
   });
 
   it("rejects inspection hash drift before writing an inspection", async () => {
