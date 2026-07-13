@@ -51,6 +51,9 @@ function hasCompletePortTopology(facts) {
   if (portTiles.length !== 9) return false;
 
   const landNodeIds = new Set(facts.topology.landNodeIds);
+  const landEdges = facts.tiles
+    .filter((tile) => tile.type === TileTypes.LAND)
+    .flatMap((tile) => Object.values(tile.tile.edges ?? {}));
   const seenEndpointIds = new Set();
   for (const tile of portTiles) {
     const resource = tile.tile.resource;
@@ -60,7 +63,10 @@ function hasCompletePortTopology(facts) {
     if (leftNodeId === rightNodeId) return false;
     if (!landNodeIds.has(leftNodeId) || !landNodeIds.has(rightNodeId)) return false;
     if (seenEndpointIds.has(leftNodeId) || seenEndpointIds.has(rightNodeId)) return false;
-    if (!(facts.topology.nodeNeighbors[leftNodeId] ?? []).includes(rightNodeId)) return false;
+    if (!landEdges.some(([left, right]) => (
+      (left === leftNodeId && right === rightNodeId)
+      || (left === rightNodeId && right === leftNodeId)
+    ))) return false;
     if (
       facts.topology.portsByNodeId[leftNodeId] !== resource
       || facts.topology.portsByNodeId[rightNodeId] !== resource
