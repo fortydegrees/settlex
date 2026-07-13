@@ -16,13 +16,19 @@ const MANIFEST_KEYS = [
   "v2AuditSelections",
   "v2FeatureVersion",
   "v2PolicyVersion",
-  "v2ProfileHash"
+  "v2ProfileHash",
+  "v3FeatureVersion",
+  "v3PolicyVersion",
+  "v3ProfileHash"
 ];
 const MANIFEST_DEFAULTS = Object.freeze({
   v2AuditSelections: false,
   v2FeatureVersion: null,
   v2PolicyVersion: null,
-  v2ProfileHash: null
+  v2ProfileHash: null,
+  v3FeatureVersion: null,
+  v3PolicyVersion: null,
+  v3ProfileHash: null
 });
 
 async function readJsonIfPresent(path) {
@@ -119,6 +125,16 @@ async function truncatePartialLine(candidatesPath) {
 }
 
 function selectionRanks(record) {
+  if (record.status === "invalid") return { invalid: record.candidateIndex };
+  if (record.status === "ranked" && Number.isFinite(record.overallScore)) {
+    return {
+      "overall-high": -record.overallScore,
+      "overall-low": record.overallScore,
+      "fairness-high": -record.scores.fairness,
+      "quality-high": -record.scores.quality,
+      "interest-high": -record.scores.interest
+    };
+  }
   if (!record.metrics || !Number.isFinite(record.overallScore)) {
     return record.verdict === "invalid" ? { invalid: record.candidateIndex } : {};
   }
@@ -181,7 +197,7 @@ export async function scanRun(runDir, { shortlistSize = 20 } = {}) {
   const state = {
     nextCandidateIndex: 0,
     lastRecord: null,
-    counts: { pass: 0, reject: 0, invalid: 0 },
+    counts: { ranked: 0, pass: 0, review: 0, reject: 0, invalid: 0 },
     selections: createEmptySelections(),
     seenCanonicalHashes: new Set()
   };
@@ -204,7 +220,8 @@ export async function scanRun(runDir, { shortlistSize = 20 } = {}) {
     }
     state.nextCandidateIndex += 1;
     state.lastRecord = record;
-    state.counts[record.verdict] += 1;
+    const countKey = record.status ?? record.verdict;
+    state.counts[countKey] = (state.counts[countKey] ?? 0) + 1;
     if (record.canonicalSymmetryHash) state.seenCanonicalHashes.add(record.canonicalSymmetryHash);
     updateBoundedRecordSelections(state.selections, record, shortlistSize);
   }

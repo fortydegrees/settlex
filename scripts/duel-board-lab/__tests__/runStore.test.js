@@ -114,6 +114,7 @@ describe("duel board batch runner", () => {
     const secondRunDir = await temporaryRunDir();
     const options = {
       family: BOARD_FAMILIES.OFFICIAL_SPIRAL,
+      evaluatorVersion: "duel-fair-v1",
       startSeed: 20,
       count: 5,
       shortlistSize: 2,
@@ -195,6 +196,7 @@ describe("duel board batch runner", () => {
     const v2RunDir = await temporaryRunDir();
     const options = {
       family: BOARD_FAMILIES.OFFICIAL_SPIRAL,
+      evaluatorVersion: "duel-fair-v1",
       startSeed: 45,
       count: 4,
       shortlistSize: 1,
@@ -256,6 +258,7 @@ describe("duel board batch runner", () => {
     const runDir = await temporaryRunDir();
     const options = {
       family: BOARD_FAMILIES.OFFICIAL_SPIRAL,
+      evaluatorVersion: "duel-fair-v1",
       startSeed: 30,
       count: 5,
       shortlistSize: 1,
@@ -312,5 +315,92 @@ describe("duel board batch runner", () => {
       expect(new Set(bucket.map((entry) => entry.identity)).size).toBe(bucket.length);
     }
     expect(selections.top.map((entry) => entry.record.candidateIndex)).toEqual([2, 0]);
+  });
+
+  it("streams compact v3 records and materialises bounded v3 diagnostics", async () => {
+    const runDir = await temporaryRunDir();
+    const summary = await runBatch({
+      runDir,
+      family: BOARD_FAMILIES.OFFICIAL_SPIRAL,
+      startSeed: 45,
+      count: 5,
+      shortlistSize: 1
+    });
+    const records = await readRecords(runDir);
+    const manifestV3 = JSON.parse(await readFile(join(runDir, "manifest.json"), "utf8"));
+    const boardFiles = (await readdir(join(runDir, "boards")))
+      .filter((name) => name.endsWith(".json"));
+
+    expect(summary.counts).toEqual(expect.objectContaining({ total: 5, ranked: 5, invalid: 0 }));
+    expect(summary.throughput.boardsPerSecond).toBeGreaterThan(0);
+    expect(manifestV3).toEqual(expect.objectContaining({
+      evaluatorVersion: "duel-fair-v3",
+      v3FeatureVersion: "duel-fair-v3-features-1",
+      v3PolicyVersion: "duel-fair-v3",
+      v3ProfileHash: expect.stringMatching(/^[a-f0-9]{64}$/)
+    }));
+    for (const record of records) {
+      expect(record).toEqual(expect.objectContaining({
+        status: "ranked",
+        overallScore: expect.any(Number),
+        scores: {
+          fairness: expect.any(Number),
+          quality: expect.any(Number),
+          interest: expect.any(Number)
+        },
+        tags: expect.any(Array)
+      }));
+      expect(record).not.toHaveProperty("choiceDiagnostics");
+      expect(record).not.toHaveProperty("selectedPortfolios");
+    }
+    for (const name of boardFiles) {
+      const payload = JSON.parse(await readFile(join(runDir, "boards", name), "utf8"));
+      expect(payload.selectionReasons).toEqual([...payload.selectionReasons].sort());
+      expect(payload.diagnosticV3.status).toBe("ranked");
+      expect(payload.diagnostic).toBeNull();
+      expect(payload.diagnosticV2).toBeNull();
+    }
+  });
+
+  it("keeps separate bounded v3 score ranks without duplicate symmetries", () => {
+    const selections = {};
+    const record = (candidateIndex, hash, scores) => ({
+      candidateIndex,
+      canonicalSymmetryHash: hash,
+      status: "ranked",
+      overallScore: scores.overall,
+      scores: {
+        fairness: scores.fairness,
+        quality: scores.quality,
+        interest: scores.interest
+      }
+    });
+
+    updateBoundedRecordSelections(selections, record(0, "same", {
+      overall: 80, fairness: 70, quality: 90, interest: 50
+    }), 2);
+    updateBoundedRecordSelections(selections, record(1, "same", {
+      overall: 99, fairness: 99, quality: 99, interest: 99
+    }), 2);
+    updateBoundedRecordSelections(selections, record(2, "other", {
+      overall: 85, fairness: 60, quality: 95, interest: 40
+    }), 2);
+    updateBoundedRecordSelections(selections, record(3, "third", {
+      overall: 40, fairness: 95, quality: 30, interest: 90
+    }), 2);
+
+    expect(Object.keys(selections).sort()).toEqual([
+      "fairness-high",
+      "interest-high",
+      "overall-high",
+      "overall-low",
+      "quality-high"
+    ]);
+    expect(selections["overall-high"].map((entry) => entry.record.candidateIndex)).toEqual([2, 0]);
+    expect(selections["overall-low"].map((entry) => entry.record.candidateIndex)).toEqual([3, 0]);
+    for (const bucket of Object.values(selections)) {
+      expect(bucket.length).toBeLessThanOrEqual(2);
+      expect(new Set(bucket.map((entry) => entry.identity)).size).toBe(bucket.length);
+    }
   });
 });
