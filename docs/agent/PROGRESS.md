@@ -1,5 +1,26 @@
 # PROGRESS
 
+## Status (2026-07-13, duel fair v2 opening-evaluator design)
+- Drafted the human-reviewed successor to the `duel-fair-v1` evaluator while
+  retaining the existing facts, generators, streaming pipeline, and
+  `game-core` ownership boundary.
+- Specified an exact `P1, P2, P2, P1` opening solver that evaluates ordered
+  two-settlement portfolios, denial, second-settlement starting cards, direct
+  build-cost bottlenecks, port-adjusted capacity, and expansion geography.
+- Separated fairness, board quality, and placement depth so unusual or scarce
+  boards may remain fair without allowing equal-but-nonviable production to
+  rank highly.
+- Split stable feature extraction from versioned tunable policy parameters so
+  later expert-game data can calibrate values without silently changing the
+  feature contract.
+- Promoted official-spiral seeds 47 and 2604 into proposed durable calibration
+  cases: seed 47 must not remain a top automatic pass, while seed 2604 must
+  surface its defensive first-pick line and starting-development-card tempo for
+  review.
+- No evaluator or production code changed in this design slice. The written
+  specification remains at the explicit user-review gate before implementation
+  planning.
+
 ## Status (2026-07-10, engine transactions and verification efficiency)
 - Hardened the core mutation contract: rejected resource spends and malformed
   robber calls now leave match state unchanged.

@@ -1,5 +1,29 @@
 # NOTES
 
+- Duel fair v2 evaluator design note:
+- Keep the candidate generators comparatively broad and deterministic. The
+  evaluator, not the generator, owns the claim that a board is fair for 1v1.
+- Treat the setup as the bounded perfect-information sequence
+  `P1, P2, P2, P1`. Evaluate ordered two-settlement portfolios so denial and
+  second-settlement starting cards affect the result.
+- Preserve full production vectors until rule-derived recipe capacities are
+  calculated. High wood without brick, or sheep/wheat without ore, must not
+  receive the same direct viability as a functional portfolio.
+- Keep stable opening features separate from subjective policy parameters.
+  Routine calibration may change versioned weights; missing concepts require a
+  new feature version.
+- Fairness, weaker-player board quality, and placement depth are separate
+  outputs. Resource scarcity, clumping, and strategic asymmetry are descriptive
+  properties rather than automatic failures.
+- A structural screen pass is not a final fair-board pass. Only candidates with
+  a completed exact v2 draft audit are eligible for catalog ranking.
+- Keep adjacent red-number rejection as a default-profile guardrail rather than
+  a universal statement about strategic quality.
+- Calibration reports need geographic ports, the solved placement sequence,
+  starting hands, complete production portfolios, recipe viability, and
+  alternative material lines. A text-only port legend is insufficient for
+  human judgment.
+
 - Core rule transaction note:
 - A returned `{ ok: false }` must leave `GameState` unchanged. New or repaired
   game-rule moves should validate all inputs before mutating player resources,
