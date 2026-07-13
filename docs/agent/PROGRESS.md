@@ -1,5 +1,25 @@
 # PROGRESS
 
+## Status (2026-07-13, duel fair v3 fast-ranking design)
+- Approved and recorded
+  `docs/superpowers/specs/2026-07-13-duel-fair-v3-fast-ranking-design.md`.
+  This is a design-only checkpoint; no evaluator, generator, report, or
+  production behavior changed.
+- The proposed default is now a cheap contextual portfolio scorer plus a
+  strategically covered 16-node `P1, P2, P2, P1` comparison, with an upper
+  bound of 43,680 raw sequences before distance-rule pruning.
+- Every structurally valid board receives numeric overall, fairness, quality,
+  and interest scores. Interest is initially independently sortable but has
+  zero influence on overall ranking.
+- Exact v2 is demoted to named-board inspection and a fixed 12-board pruning
+  oracle. It is not part of normal batch ranking or report rendering.
+- The proposed report is one score-ordered gallery with score sort controls,
+  unique cards, geographic ports, collapsed diagnostics, and placement
+  suggestions hidden by default.
+- The proposed development-machine target is at least 100 complete v3
+  generate-and-evaluate operations per second. No large corpus is authorised
+  by this design checkpoint.
+
 ## Status (2026-07-13, duel fair v2 bounded calibration gate)
 - Completed the eight-task `duel-fair-v2` opening-audit slice without changing
   the production generator or `game-core`. The stable identity is feature

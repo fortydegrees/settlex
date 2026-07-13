@@ -1,5 +1,27 @@
 # NOTES
 
+- Duel fair v3 design note:
+- Treat v1 and exact v2 as historical research paths once v3 is implemented.
+  The normal ranking contract is one v3 score for every structurally valid
+  board; do not mix a v1 shortlist with v2/v3 verdicts in the primary report.
+- Keep contextual scoring cheap and layered: board context, settlement
+  features, ordered portfolio value, strategically covered candidate pool,
+  then pruned `P1, P2, P2, P1` comparison.
+- The initial candidate pool is 16 nodes and must include lens champions for
+  recipes, resource access, ports, expansion, and denial rather than simply
+  the highest-production nodes. If that pool cannot complete a legal draft,
+  add the missing nodes from a cheap stable full-board legality scan; do not
+  restore a 54-node exhaustive ranking search.
+- Scarcity, city potential, robber resilience, starting tempo, and expansion
+  are tunable portfolio components. Normalise and cap related signals so one
+  resource shortage is not counted repeatedly without bound.
+- Keep `interestScore` secondary. V3 starts with choice depth and response
+  freedom, stores the score for sorting, and gives it zero initial influence
+  on `overallScore`.
+- Exact search is a bounded oracle, not the normal evaluator. Reports must not
+  invoke it during rendering. Stop before large-corpus generation if the v3
+  path misses its 100 boards/second development-machine target.
+
 - Duel fair v2 implemented calibration note:
 - Ordered portfolio identity is semantic. Keep each seat's
   `settlementNodeIds` in draft order, not numeric order, and derive
