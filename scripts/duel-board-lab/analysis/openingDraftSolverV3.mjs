@@ -48,16 +48,20 @@ function compilePairIndex({ facts, context, featuresByNodeId, profile, candidate
     for (let rightIndex = leftIndex + 1; rightIndex < candidateNodeIds.length; rightIndex += 1) {
       const rightNodeId = candidateNodeIds[rightIndex];
       if (leftNode.blockedNodeIds.includes(rightNodeId)) continue;
+      let sharedPair;
       const addEntry = (firstNodeId, secondNodeId) => {
         pairIndex[firstNodeId] ??= [];
-        pairIndex[firstNodeId][secondNodeId] = Object.freeze({
-          ...compileOpeningPairV3({
+        const compiled = compileOpeningPairV3({
             facts,
             context,
             featuresByNodeId,
             orderedNodeIds: [firstNodeId, secondNodeId],
-            profile
-          }),
+            profile,
+            sharedPair
+          });
+        sharedPair ??= compiled.sharedPair;
+        pairIndex[firstNodeId][secondNodeId] = Object.freeze({
+          ...compiled,
           unorderedPairId: pairCount
         });
       };
