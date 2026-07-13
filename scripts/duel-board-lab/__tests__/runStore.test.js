@@ -2,6 +2,8 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { DUEL_FAIR_V2_PROFILE } from "../analysis/duelFairV2Profile.mjs";
+import { hashOpeningProfile } from "../analysis/openingPolicy.mjs";
 import { BOARD_FAMILIES } from "../generators/generateCandidate.mjs";
 import { runBatch, updateBoundedRecordSelections } from "../lib/runBatch.mjs";
 import { createRunStore, scanRun } from "../lib/runStore.mjs";
@@ -45,6 +47,13 @@ describe("duel board run store", () => {
     expect(scanned.nextCandidateIndex).toBe(2);
     expect(scanned.lastRecord.seed).toBe(11);
     expect(await readFile(join(runDir, "candidates.jsonl"), "utf8")).toMatch(/\n$/);
+    expect(JSON.parse(await readFile(join(runDir, "manifest.json"), "utf8")))
+      .toEqual(expect.objectContaining({
+        v2AuditSelections: false,
+        v2FeatureVersion: null,
+        v2PolicyVersion: null,
+        v2ProfileHash: null
+      }));
   });
 
   it("truncates a partial final JSON line before resuming", async () => {
@@ -64,6 +73,31 @@ describe("duel board run store", () => {
 
     await expect(createRunStore({ runDir, manifest: manifest({ count: 3, shortlistSize: 2 }) }))
       .rejects.toThrow("Run manifest mismatch for count: existing=2 requested=3");
+  });
+
+  it("accepts historical v1 manifests without rewriting missing v2 defaults", async () => {
+    const runDir = await temporaryRunDir();
+    const historicalManifest = {
+      ...manifest({ shortlistSize: 2 }),
+      startedAt: "2026-07-11T00:00:00.000Z",
+      status: "running"
+    };
+    const manifestPath = join(runDir, "manifest.json");
+    await writeFile(manifestPath, `${JSON.stringify(historicalManifest, null, 2)}\n`);
+    const before = await readFile(manifestPath, "utf8");
+
+    await createRunStore({
+      runDir,
+      manifest: {
+        ...manifest({ shortlistSize: 2 }),
+        v2AuditSelections: false,
+        v2FeatureVersion: null,
+        v2PolicyVersion: null,
+        v2ProfileHash: null
+      }
+    });
+
+    expect(await readFile(manifestPath, "utf8")).toBe(before);
   });
 
   it("rejects non-contiguous persisted candidate indices", async () => {
@@ -129,6 +163,19 @@ describe("duel board batch runner", () => {
     ]);
     expect(firstManifest.status).toBe("complete");
     expect(firstManifest.summary.peakRssMiB).toEqual(expect.any(Number));
+    expect(firstManifest).toEqual(expect.objectContaining({
+      v2AuditSelections: false,
+      v2FeatureVersion: null,
+      v2PolicyVersion: null,
+      v2ProfileHash: null
+    }));
+    expect(firstSummary.v2Audited).toEqual({
+      total: 0,
+      pass: 0,
+      review: 0,
+      reject: 0,
+      screenReject: 0
+    });
 
     for (const record of firstRecords) {
       expect(record.metrics.orderSensitivityAudit).toBeNull();
@@ -139,8 +186,70 @@ describe("duel board batch runner", () => {
       const payload = JSON.parse(await readFile(join(firstRunDir, "boards", name), "utf8"));
       expect(payload.selectionGroups).toEqual([...payload.selectionGroups].sort());
       expect(payload.diagnostic.metrics.orderSensitivityAudit).not.toBeNull();
+      expect(payload.diagnosticV2).toBeNull();
     }
   });
+
+  it("audits only bounded selected boards with v2 without relabelling v1 rows", async () => {
+    const v1RunDir = await temporaryRunDir();
+    const v2RunDir = await temporaryRunDir();
+    const options = {
+      family: BOARD_FAMILIES.OFFICIAL_SPIRAL,
+      startSeed: 45,
+      count: 4,
+      shortlistSize: 1,
+      auditSelections: true
+    };
+
+    const v1Summary = await runBatch({ runDir: v1RunDir, ...options });
+    const summary = await runBatch({
+      runDir: v2RunDir,
+      ...options,
+      v2AuditSelections: true
+    });
+    const v1Records = await readRecords(v1RunDir);
+    const v2Records = await readRecords(v2RunDir);
+    const boardFiles = (await readdir(join(v2RunDir, "boards")))
+      .filter((name) => name.endsWith(".json"));
+    const payloads = await Promise.all(boardFiles.map(async (name) => (
+      JSON.parse(await readFile(join(v2RunDir, "boards", name), "utf8"))
+    )));
+    const manifestV2 = JSON.parse(await readFile(join(v2RunDir, "manifest.json"), "utf8"));
+
+    expect(v2Records).toEqual(v1Records);
+    expect(summary.selectedCandidates).toEqual(v1Summary.selectedCandidates);
+    expect(summary.v2Audited.total).toBeGreaterThan(0);
+    expect(summary.v2Audited).toEqual(expect.objectContaining({
+      pass: expect.any(Number),
+      review: expect.any(Number),
+      reject: expect.any(Number),
+      screenReject: expect.any(Number)
+    }));
+    expect(summary.v2Audited.total).toBe(payloads.length);
+    expect(summary.v2Audited.total).toBe(
+      summary.v2Audited.pass + summary.v2Audited.review + summary.v2Audited.reject
+    );
+    expect(summary.v2Audited.screenReject).toBeLessThanOrEqual(summary.v2Audited.reject);
+    for (const payload of payloads) {
+      expect(payload.record).toEqual(v1Records[payload.record.candidateIndex]);
+      expect(payload.diagnosticV2.evaluatorIdentity.policyVersion).toBe("duel-fair-v2");
+      if (payload.diagnosticV2.screenVerdict === "pass") {
+        expect(payload.diagnosticV2.fairness.solvedLine).toHaveLength(4);
+        expect(payload.diagnosticV2.fairness.diagnosticLensResults).toHaveLength(2);
+      } else {
+        expect(payload.diagnosticV2.fairness).toBeNull();
+      }
+    }
+    expect(payloads.some(({ diagnosticV2 }) => diagnosticV2.fairness?.solvedLine.length === 4))
+      .toBe(true);
+    expect(manifestV2).toEqual(expect.objectContaining({
+      v2AuditSelections: true,
+      v2FeatureVersion: DUEL_FAIR_V2_PROFILE.featureVersion,
+      v2PolicyVersion: DUEL_FAIR_V2_PROFILE.policyVersion,
+      v2ProfileHash: hashOpeningProfile(DUEL_FAIR_V2_PROFILE)
+    }));
+    expect(manifestV2.v2ProfileHash).toMatch(/^[a-f0-9]{64}$/);
+  }, 20_000);
 
   it("continues an interrupted run at the first missing candidate index", async () => {
     const sourceRunDir = await temporaryRunDir();
@@ -171,6 +280,7 @@ describe("duel board batch runner", () => {
     for (const name of boardFiles) {
       const payload = JSON.parse(await readFile(join(runDir, "boards", name), "utf8"));
       expect(payload.diagnostic).toBeNull();
+      expect(payload.diagnosticV2).toBeNull();
     }
   });
 

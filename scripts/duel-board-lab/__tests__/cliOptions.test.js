@@ -24,7 +24,20 @@ describe("duel board lab CLI", () => {
       startSeed: 20,
       runId: "smoke",
       shortlistSize: 20,
+      v2AuditSelections: false,
     });
+  });
+
+  it("enables exact v2 audits for generated selections", () => {
+    expect(parseGenerateOptions([
+      "--family",
+      "official-spiral",
+      "--count",
+      "10",
+      "--run-id",
+      "v2-smoke",
+      "--v2-audit-selections",
+    ])).toEqual(expect.objectContaining({ v2AuditSelections: true }));
   });
 
   it("rejects invalid count and family values", () => {
@@ -82,7 +95,18 @@ describe("duel board lab CLI", () => {
       startSeed: 5,
       runId: "comparison-smoke",
       shortlistSize: 20,
+      v2AuditSelections: false,
     });
+  });
+
+  it("enables exact v2 audits for compared selections", () => {
+    expect(parseCompareOptions([
+      "--count",
+      "10",
+      "--run-id",
+      "v2-comparison-smoke",
+      "--v2-audit-selections",
+    ])).toEqual(expect.objectContaining({ v2AuditSelections: true }));
   });
 
   it("rejects path traversal in run identity", () => {

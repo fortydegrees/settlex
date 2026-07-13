@@ -1,4 +1,6 @@
 import { ResourceType } from "@settlex/game-core";
+import { DUEL_FAIR_V2_PROFILE } from "./analysis/duelFairV2Profile.mjs";
+import { hashOpeningProfile } from "./analysis/openingPolicy.mjs";
 
 export const BOARD_FAMILIES = Object.freeze({
   OFFICIAL_SPIRAL: "official-spiral",
@@ -24,3 +26,9 @@ export const EVALUATOR_VERSIONS = Object.freeze({
 });
 
 export const EVALUATOR_VERSION = EVALUATOR_VERSIONS.V1;
+
+export const DUEL_FAIR_V2_IDENTITY = Object.freeze({
+  featureVersion: DUEL_FAIR_V2_PROFILE.featureVersion,
+  policyVersion: DUEL_FAIR_V2_PROFILE.policyVersion,
+  profileHash: hashOpeningProfile(DUEL_FAIR_V2_PROFILE)
+});

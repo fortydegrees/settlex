@@ -5,6 +5,7 @@ import { createInterface } from "node:readline";
 import { buildBoardFacts } from "../analysis/boardFacts.mjs";
 import { DUEL_FAIR_V2_PROFILE } from "../analysis/duelFairV2Profile.mjs";
 import { evaluateDuelBoard } from "../analysis/evaluateDuelBoard.mjs";
+import { evaluateDuelBoardV2 } from "../analysis/evaluateDuelBoardV2.mjs";
 import { solveOpeningDraft } from "../analysis/openingDraftSolver.mjs";
 import { hashBoard } from "../analysis/symmetry.mjs";
 import { generateCandidate } from "../generators/generateCandidate.mjs";
@@ -20,6 +21,15 @@ async function* readJsonLines(path) {
   const lines = createInterface({ input, crlfDelay: Infinity });
   for await (const line of lines) {
     if (line.trim()) yield JSON.parse(line);
+  }
+}
+
+async function readJsonIfPresent(path) {
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
   }
 }
 
@@ -283,6 +293,23 @@ function renderSummary(summary) {
     + "</section>";
 }
 
+function renderV2AuditSummary(v2Audited) {
+  const count = (value) => Number.isInteger(value) && value >= 0 ? String(value) : "None";
+  const body = v2Audited === null
+    ? "<p>Not recorded for this run.</p>"
+    : '<dl class="counts">'
+      + `<div><dt>Total</dt><dd>${escapeHtml(count(v2Audited.total))}</dd></div>`
+      + `<div><dt>Pass</dt><dd>${escapeHtml(count(v2Audited.pass))}</dd></div>`
+      + `<div><dt>Review</dt><dd>${escapeHtml(count(v2Audited.review))}</dd></div>`
+      + `<div><dt>Reject</dt><dd>${escapeHtml(count(v2Audited.reject))}</dd></div>`
+      + `<div><dt>Screen reject</dt><dd>${escapeHtml(count(v2Audited.screenReject))}</dd></div>`
+      + "</dl>";
+  return '<section aria-labelledby="v2-audit-summary">'
+    + '<h2 id="v2-audit-summary">Exact v2 selected-board audits</h2>'
+    + body
+    + "</section>";
+}
+
 function renderBoardCard(board) {
   const { record, tiles, diagnosticV2 } = board;
   const reasons = record.rejectionCodes?.length > 0
@@ -350,6 +377,7 @@ function renderReportDocument({ summary, sections }) {
     title: "Duel board run report",
     body: "<h1>Duel board run report</h1>"
       + renderSummary(summary)
+      + renderV2AuditSummary(summary.v2Audited)
       + renderSection("top-candidates", "Top candidates", sections.top, cardByBoard)
       + renderSection("bottom-candidates", "Bottom candidates", sections.bottom, cardByBoard)
       + renderSection("threshold-candidates", "Threshold candidates", sections.threshold, cardByBoard)
@@ -358,12 +386,12 @@ function renderReportDocument({ summary, sections }) {
   });
 }
 
-function renderInspectionDocument({ record, diagnostic, tiles }) {
+function renderInspectionDocument({ record, diagnostic, diagnosticV2, tiles }) {
   const orderAudit = diagnostic.metrics.orderSensitivityAudit;
   return renderDocument({
     title: `Candidate ${record.candidateIndex} inspection`,
     body: "<h1>Candidate inspection</h1>"
-      + renderBoardCard({ selectionGroups: ["inspection"], record, diagnostic, tiles })
+      + renderBoardCard({ selectionGroups: ["inspection"], record, diagnostic, diagnosticV2, tiles })
       + "<h2>Order sensitivity audit</h2>"
       + `<pre>${escapeHtml(JSON.stringify(orderAudit, null, 2))}</pre>`
       + "<h2>Full diagnostic</h2>"
@@ -377,6 +405,12 @@ export async function buildReport(runDir) {
     addRecordToSummary(summary, record);
   }
   finaliseSummary(summary);
+  const manifest = await readJsonIfPresent(join(runDir, "manifest.json"));
+  summary.v2Audited = manifest?.status === "complete"
+    && typeof manifest.summary?.v2Audited === "object"
+    && manifest.summary.v2Audited !== null
+    ? manifest.summary.v2Audited
+    : null;
   await writeFile(join(runDir, "summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
 
   const boardFiles = (await readdir(join(runDir, "boards")))
@@ -407,7 +441,13 @@ export async function inspectCandidate({ runDir, candidateIndex }) {
     throw new Error(`Candidate hash mismatch for index ${candidateIndex}`);
   }
   const diagnostic = evaluateDuelBoard(generated.tiles, { includeOrderAudit: true });
+  const diagnosticV2 = evaluateDuelBoardV2(generated.tiles, { includeDiagnosticLenses: true });
   const outputPath = join(runDir, "boards", `inspect-${candidateIndex}.html`);
-  await writeFile(outputPath, renderInspectionDocument({ record, diagnostic, tiles: generated.tiles }));
+  await writeFile(outputPath, renderInspectionDocument({
+    record,
+    diagnostic,
+    diagnosticV2,
+    tiles: generated.tiles
+  }));
   return outputPath;
 }
