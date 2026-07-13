@@ -311,6 +311,9 @@ describe("duel board reports", () => {
 
     expect(summary).toEqual(persistedSummary);
     expect(summary.verdicts).toEqual({ pass: 1, reject: 0, invalid: 1 });
+    expect(summary.v2Audited).toBeNull();
+    expect(html).toContain("Exact v2 selected-board audits");
+    expect(html).toContain("Not recorded for this run.");
     expect(html).toContain("Top candidates");
     expect(html).toContain("Bottom candidates");
     expect(html).toContain("Threshold candidates");
@@ -336,6 +339,44 @@ describe("duel board reports", () => {
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).toContain("reason&lt;&amp;&quot;");
     expect(html).not.toContain("<script>alert(1)</script>");
+  });
+
+  it("persists and separately renders completed-manifest v2 audit counts", async () => {
+    const runDir = await temporaryRunDir();
+    const v2Audited = {
+      total: 7,
+      pass: 2,
+      review: 1,
+      reject: 4,
+      screenReject: 3
+    };
+    await writeFile(join(runDir, "candidates.jsonl"), `${JSON.stringify({
+      candidateIndex: 0,
+      verdict: "pass",
+      rejectionCodes: [],
+      overallScore: 80
+    })}\n`);
+    await writeFile(join(runDir, "manifest.json"), JSON.stringify({
+      status: "complete",
+      summary: { counts: { total: 1, pass: 1, reject: 0, invalid: 0 }, v2Audited }
+    }));
+
+    const { reportPath, summary } = await buildReport(runDir);
+    const html = await readFile(reportPath, "utf8");
+    const persistedSummary = JSON.parse(await readFile(join(runDir, "summary.json"), "utf8"));
+
+    expect(summary).toEqual(persistedSummary);
+    expect(summary.verdicts).toEqual({ pass: 1, reject: 0, invalid: 0 });
+    expect(summary.v2Audited).toEqual(v2Audited);
+    const v2Block = html.match(
+      /<section aria-labelledby="v2-audit-summary">([\s\S]*?)<\/section>/
+    )?.[1];
+    expect(v2Block).toContain("Exact v2 selected-board audits");
+    expect(v2Block).toContain("<dt>Total</dt><dd>7</dd>");
+    expect(v2Block).toContain("<dt>Pass</dt><dd>2</dd>");
+    expect(v2Block).toContain("<dt>Review</dt><dd>1</dd>");
+    expect(v2Block).toContain("<dt>Reject</dt><dd>4</dd>");
+    expect(v2Block).toContain("<dt>Screen reject</dt><dd>3</dd>");
   });
 
   it("renders escaped structured v2 explanations and bounded material alternatives", async () => {
@@ -517,6 +558,9 @@ describe("duel board reports", () => {
     expect(outputPath).toBe(join(runDir, "boards", "inspect-4.html"));
     expect(html).toContain("Candidate inspection");
     expect(html).toContain("Order sensitivity audit");
+    expect(html).toContain("V2 opening audit");
+    expect(html).toContain("Diagnostic lenses");
+    expect(html).toContain("duel-fair-v2");
     expect(html).toContain("Seed 3");
-  });
+  }, 10_000);
 });

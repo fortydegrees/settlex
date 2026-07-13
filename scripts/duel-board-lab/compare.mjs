@@ -36,14 +36,20 @@ function renderComparisonHtml(comparison) {
     + `</tr></thead><tbody>${rows}</tbody></table></body></html>`;
 }
 
-const options = parseCompareOptions(process.argv.slice(2));
-const rootDir = resolve("tmp", "duel-board-lab", "runs", options.runId);
+const { runId, v2AuditSelections, ...options } = parseCompareOptions(process.argv.slice(2));
+const rootDir = resolve("tmp", "duel-board-lab", "runs", runId);
 await mkdir(rootDir, { recursive: true });
 
 const comparison = {};
 for (const family of Object.values(BOARD_FAMILIES)) {
   const runDir = join(rootDir, family);
-  const summary = await runBatch({ runDir, family, ...options, auditSelections: true });
+  const summary = await runBatch({
+    runDir,
+    family,
+    ...options,
+    auditSelections: true,
+    v2AuditSelections
+  });
   const { reportPath, summary: reportSummary } = await buildReport(runDir);
   comparison[family] = {
     ...summary,

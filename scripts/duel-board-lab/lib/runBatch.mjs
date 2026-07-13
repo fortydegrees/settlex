@@ -1,6 +1,11 @@
 import { evaluateDuelBoard } from "../analysis/evaluateDuelBoard.mjs";
+import { evaluateDuelBoardV2 } from "../analysis/evaluateDuelBoardV2.mjs";
 import { canonicalBoardHash, hashBoard } from "../analysis/symmetry.mjs";
-import { EVALUATOR_VERSION, GENERATOR_VERSIONS } from "../constants.mjs";
+import {
+  DUEL_FAIR_V2_IDENTITY,
+  EVALUATOR_VERSION,
+  GENERATOR_VERSIONS
+} from "../constants.mjs";
 import { generateCandidate } from "../generators/generateCandidate.mjs";
 import {
   createRunStore,
@@ -47,21 +52,41 @@ function recordCount(counts) {
   return counts.pass + counts.reject + counts.invalid;
 }
 
+function createEmptyV2AuditCounts() {
+  return { total: 0, pass: 0, review: 0, reject: 0, screenReject: 0 };
+}
+
+function countV2Audit(counts, diagnostic) {
+  counts.total += 1;
+  if (diagnostic.screenVerdict === "reject") {
+    counts.reject += 1;
+    counts.screenReject += 1;
+    return;
+  }
+  counts[diagnostic.fairness.verdict] += 1;
+}
+
 export async function runBatch({
   runDir,
   family,
   startSeed,
   count,
   shortlistSize = 20,
-  auditSelections = true
+  auditSelections = true,
+  v2AuditSelections = false
 }) {
+  const v2Identity = v2AuditSelections ? DUEL_FAIR_V2_IDENTITY : null;
   const manifest = {
     family,
     generatorVersion: GENERATOR_VERSIONS[family],
     evaluatorVersion: EVALUATOR_VERSION,
     startSeed,
     count,
-    shortlistSize
+    shortlistSize,
+    v2AuditSelections,
+    v2FeatureVersion: v2Identity?.featureVersion ?? null,
+    v2PolicyVersion: v2Identity?.policyVersion ?? null,
+    v2ProfileHash: v2Identity?.profileHash ?? null
   };
   const store = await createRunStore({ runDir, manifest });
   const resume = await scanRun(runDir, { shortlistSize });
@@ -114,6 +139,7 @@ export async function runBatch({
 
   peakRss = Math.max(peakRss, process.memoryUsage().rss);
   const selected = mergeSelectionGroups(selections);
+  const v2Audited = createEmptyV2AuditCounts();
   for (const selectedCandidate of selected) {
     if (selectedCandidate.record.boardHash == null) continue;
     const candidate = generateCandidate({ family, seed: selectedCandidate.record.seed });
@@ -123,10 +149,15 @@ export async function runBatch({
     const diagnostic = auditSelections
       ? evaluateDuelBoard(candidate.tiles, { includeOrderAudit: true })
       : null;
+    const diagnosticV2 = v2AuditSelections
+      ? evaluateDuelBoardV2(candidate.tiles, { includeDiagnosticLenses: true })
+      : null;
+    if (diagnosticV2) countV2Audit(v2Audited, diagnosticV2);
     await store.writeBoard(`candidate-${selectedCandidate.record.candidateIndex}`, {
       selectionGroups: selectedCandidate.selectionGroups,
       record: selectedCandidate.record,
       diagnostic,
+      diagnosticV2,
       tiles: candidate.tiles
     });
   }
@@ -137,6 +168,7 @@ export async function runBatch({
       ...counts
     },
     selectedCandidates: selected.map(compactSelectedCandidate),
+    v2Audited,
     peakRssMiB: peakRss / 1024 / 1024
   };
   await store.complete(summary);

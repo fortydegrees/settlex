@@ -44,6 +44,7 @@ export function parseGenerateOptions(args) {
       "start-seed": { type: "string", default: "1" },
       "run-id": { type: "string" },
       "shortlist-size": { type: "string", default: "20" },
+      "v2-audit-selections": { type: "boolean", default: false },
     },
   });
   return {
@@ -52,6 +53,7 @@ export function parseGenerateOptions(args) {
     startSeed: nonNegativeInteger(values["start-seed"], "start-seed"),
     runId: validRunId(values["run-id"]),
     shortlistSize: positiveInteger(values["shortlist-size"], "shortlist-size"),
+    v2AuditSelections: values["v2-audit-selections"],
   };
 }
 
@@ -64,6 +66,7 @@ export function parseCompareOptions(args) {
       "start-seed": { type: "string", default: "1" },
       "run-id": { type: "string" },
       "shortlist-size": { type: "string", default: "20" },
+      "v2-audit-selections": { type: "boolean", default: false },
     },
   });
   return {
@@ -71,6 +74,7 @@ export function parseCompareOptions(args) {
     startSeed: nonNegativeInteger(values["start-seed"], "start-seed"),
     runId: validRunId(values["run-id"]),
     shortlistSize: positiveInteger(values["shortlist-size"], "shortlist-size"),
+    v2AuditSelections: values["v2-audit-selections"],
   };
 }
 

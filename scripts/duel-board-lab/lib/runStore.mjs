@@ -6,7 +6,24 @@ import { createInterface } from "node:readline";
 import { DUEL_FAIR_V1_PROFILE } from "../analysis/duelFairV1Profile.mjs";
 
 const TAIL_BYTES = 64 * 1024;
-const MANIFEST_KEYS = ["family", "generatorVersion", "evaluatorVersion", "startSeed", "count", "shortlistSize"];
+const MANIFEST_KEYS = [
+  "family",
+  "generatorVersion",
+  "evaluatorVersion",
+  "startSeed",
+  "count",
+  "shortlistSize",
+  "v2AuditSelections",
+  "v2FeatureVersion",
+  "v2PolicyVersion",
+  "v2ProfileHash"
+];
+const MANIFEST_DEFAULTS = Object.freeze({
+  v2AuditSelections: false,
+  v2FeatureVersion: null,
+  v2PolicyVersion: null,
+  v2ProfileHash: null
+});
 
 async function readJsonIfPresent(path) {
   try {
@@ -17,10 +34,27 @@ async function readJsonIfPresent(path) {
   }
 }
 
+function manifestValue(manifest, key) {
+  return manifest[key] === undefined && Object.hasOwn(MANIFEST_DEFAULTS, key)
+    ? MANIFEST_DEFAULTS[key]
+    : manifest[key];
+}
+
+function withManifestDefaults(manifest) {
+  return {
+    ...manifest,
+    ...Object.fromEntries(
+      Object.keys(MANIFEST_DEFAULTS).map((key) => [key, manifestValue(manifest, key)])
+    )
+  };
+}
+
 function assertCompatibleManifest(existing, requested) {
   for (const key of MANIFEST_KEYS) {
-    if (existing[key] !== requested[key]) {
-      throw new Error(`Run manifest mismatch for ${key}: existing=${existing[key]} requested=${requested[key]}`);
+    const existingValue = manifestValue(existing, key);
+    const requestedValue = manifestValue(requested, key);
+    if (existingValue !== requestedValue) {
+      throw new Error(`Run manifest mismatch for ${key}: existing=${existingValue} requested=${requestedValue}`);
     }
   }
 }
@@ -29,8 +63,9 @@ export async function createRunStore({ runDir, manifest }) {
   await mkdir(join(runDir, "boards"), { recursive: true });
   const manifestPath = join(runDir, "manifest.json");
   const existing = await readJsonIfPresent(manifestPath);
-  if (existing) assertCompatibleManifest(existing, manifest);
-  const baseManifest = existing ?? { ...manifest, startedAt: new Date().toISOString() };
+  const requestedManifest = withManifestDefaults(manifest);
+  if (existing) assertCompatibleManifest(existing, requestedManifest);
+  const baseManifest = existing ?? { ...requestedManifest, startedAt: new Date().toISOString() };
   if (!existing) {
     await writeFile(manifestPath, `${JSON.stringify({ ...baseManifest, status: "running" }, null, 2)}\n`);
   }
