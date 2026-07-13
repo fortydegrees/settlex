@@ -18,4 +18,9 @@ export const STANDARD_RESOURCES = Object.freeze([
   ResourceType.ORE
 ]);
 
-export const EVALUATOR_VERSION = "duel-fair-v1";
+export const EVALUATOR_VERSIONS = Object.freeze({
+  V1: "duel-fair-v1",
+  V2: "duel-fair-v2"
+});
+
+export const EVALUATOR_VERSION = EVALUATOR_VERSIONS.V1;
