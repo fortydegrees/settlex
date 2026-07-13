@@ -86,8 +86,8 @@ function renderPorts(ports, nodePositions) {
   }).join("");
 }
 
-function renderPlacements(diagnosticV2, nodePositions) {
-  return (diagnosticV2?.fairness?.solvedLine ?? []).map((pick, index) => {
+function renderPlacements(selectedLine, nodePositions) {
+  return (selectedLine ?? []).map((pick, index) => {
     const point = nodePositions.get(pick.nodeId);
     if (!point) return "";
     const number = index + 1;
@@ -104,7 +104,7 @@ function formatScore(value) {
   return Number.isFinite(value) ? value.toFixed(2) : "n/a";
 }
 
-export function renderBoardSvg({ tiles, record, diagnosticV2 }) {
+export function renderBoardSvg({ tiles, record, diagnosticV2, diagnosticV3 }) {
   const land = tiles.filter((tile) => tile.type === TileTypes.LAND);
   const ports = tiles.filter((tile) => tile.type === TileTypes.PORT);
   const nodePositions = nodePixelPositions(land);
@@ -122,9 +122,12 @@ export function renderBoardSvg({ tiles, record, diagnosticV2 }) {
     return `<g><polygon points="${escapeHtml(hexPoints(point))}" fill="${fill}" stroke="#20242b" stroke-width="2"/>${token}</g>`;
   }).join("");
   const portMarkers = renderPorts(ports, nodePositions);
-  const placementMarkers = renderPlacements(diagnosticV2, nodePositions);
+  const selectedLine = diagnosticV3?.selectedLine
+    ?? diagnosticV2?.fairness?.solvedLine
+    ?? null;
+  const placementMarkers = renderPlacements(selectedLine, nodePositions);
   const family = record.generatorFamily ?? record.family ?? "candidate";
-  const title = `${family} · Seed ${record.seed} · ${record.verdict} · ${formatScore(record.overallScore)}`;
+  const title = `${family} · Seed ${record.seed} · ${record.status ?? record.verdict} · ${formatScore(record.overallScore)}`;
   const escapedTitle = escapeHtml(title);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-label="${escapedTitle}">`
@@ -132,6 +135,8 @@ export function renderBoardSvg({ tiles, record, diagnosticV2 }) {
     + `<rect width="500" height="500" fill="#eff6ff"/>`
     + hexes
     + portMarkers
-    + placementMarkers
+    + (placementMarkers
+      ? `<g class="placement-overlay" aria-hidden="true">${placementMarkers}</g>`
+      : "")
     + "</svg>";
 }
