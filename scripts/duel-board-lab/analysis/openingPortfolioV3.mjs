@@ -1,11 +1,13 @@
 import { ResourceType } from "@settlex/game-core";
 import { STANDARD_RESOURCES } from "../constants.mjs";
+import { buildOpeningPortfolio } from "./openingPortfolio.mjs";
 import {
-  buildOpeningPortfolio,
-  compileExpansionPaths,
-  measureExpansionReach
-} from "./openingPortfolio.mjs";
-import { DIRECT_RECIPES } from "./recipeCapacity.mjs";
+  DIRECT_RECIPES,
+  directRecipeCapacities,
+  directRecipeSurpluses,
+  tradeAdjustedRecipeCapacities
+} from "./recipeCapacity.mjs";
+import { startingResourcesForNode } from "./startingResources.mjs";
 
 const RECIPE_NAMES = Object.freeze({
   road: "road",
@@ -100,42 +102,31 @@ function scoreResilience(orderedNodeIds, featuresByNodeId, profile) {
 }
 
 function compileReachMasks(facts, orderedNodeIds) {
-  const compiled = compileExpansionPaths(facts, orderedNodeIds);
-  const destinationsByTransit = new Map();
-  for (const path of compiled.twoRoadPaths) {
-    destinationsByTransit.set(
-      path.transitNodeId,
-      (destinationsByTransit.get(path.transitNodeId) ?? 0n) | path.destinationMask
-    );
+  const destinationNodeIds = new Set();
+  for (const sourceNodeId of orderedNodeIds) {
+    for (const transitNodeId of facts.topology.nodeNeighbors[sourceNodeId] ?? []) {
+      for (const destinationNodeId of facts.topology.nodeNeighbors[transitNodeId] ?? []) {
+        if (destinationNodeId !== sourceNodeId) destinationNodeIds.add(destinationNodeId);
+      }
+    }
   }
   return Object.freeze({
-    ownedNodeMask: compiled.ownedNodeMask,
-    twoRoadTransitGroups: Object.freeze([...destinationsByTransit.entries()]
-      .sort(([left], [right]) => left - right)
-      .map(([transitNodeId, destinationMask]) => Object.freeze({
-        transitMask: nodeMask(transitNodeId),
-        destinationMask
-      })))
+    ownedNodeMask: idsMask(orderedNodeIds),
+    destinationNodeIds: Object.freeze([...destinationNodeIds].sort((left, right) => left - right))
   });
 }
 
 export function scoreOpeningPairExpansionV3({
   entry,
-  occupiedMask,
   settlementBlockedMask,
   featuresByNodeId,
   profile
 }) {
-  const opponentMask = occupiedMask & ~entry.reachMasks.ownedNodeMask;
-  let destinationMask = 0n;
-  for (const group of entry.reachMasks.twoRoadTransitGroups) {
-    if ((group.transitMask & opponentMask) === 0n) destinationMask |= group.destinationMask;
-  }
-  destinationMask &= ~occupiedMask & ~settlementBlockedMask;
   let best = 0;
   let second = 0;
-  for (const [nodeId, feature] of featuresByNodeId) {
-    if ((destinationMask & nodeMask(nodeId)) === 0n) continue;
+  for (const nodeId of entry.reachMasks.destinationNodeIds) {
+    if ((settlementBlockedMask & nodeMask(nodeId)) !== 0n) continue;
+    const feature = featuresByNodeId.get(nodeId);
     const value = feature.scarcityWeightedProduction;
     if (value > best) {
       second = best;
@@ -149,25 +140,101 @@ export function scoreOpeningPairExpansionV3({
   );
 }
 
+function readinessByRecipe(cards) {
+  return Object.freeze(Object.fromEntries(Object.entries(DIRECT_RECIPES).map(([name, recipe]) => {
+    const remainingCards = [...cards];
+    const missingResources = [];
+    for (const resource of STANDARD_RESOURCES) {
+      for (let amount = 0; amount < (recipe[resource] ?? 0); amount += 1) {
+        const cardIndex = remainingCards.indexOf(resource);
+        if (cardIndex === -1) missingResources.push(resource);
+        else remainingCards.splice(cardIndex, 1);
+      }
+    }
+    return [name, Object.freeze({
+      canBuyNow: missingResources.length === 0,
+      missingCardCount: missingResources.length,
+      missingResources: Object.freeze(missingResources),
+      remainingCards: Object.freeze(missingResources.length === 0 ? remainingCards : [...cards])
+    })];
+  })));
+}
+
+function buildSharedPair({ facts, context, featuresByNodeId, orderedNodeIds, profile }) {
+  const nodesById = new Map(facts.nodes.map((node) => [node.nodeId, node]));
+  const nodes = orderedNodeIds.map((nodeId) => nodesById.get(nodeId));
+  const productionPips = Object.freeze(Object.fromEntries(STANDARD_RESOURCES.map((resource) => [
+    resource,
+    nodes[0].resourcePips[resource] + nodes[1].resourcePips[resource]
+  ])));
+  const ownedPorts = Object.freeze([...new Set(nodes.map((node) => node.port).filter(Boolean))].sort());
+  const directRecipeCapacity = Object.freeze(directRecipeCapacities(productionPips));
+  const tradeAdjustedRecipeCapacity = Object.freeze(tradeAdjustedRecipeCapacities(
+    productionPips,
+    ownedPorts,
+    { precision: 10 ** -profile.serializationPrecision }
+  ));
+  const basePortfolio = Object.freeze({
+    productionPips,
+    totalProductionPips: Object.values(productionPips).reduce((sum, value) => sum + value, 0),
+    producedResourceCount: Object.values(productionPips).filter((value) => value > 0).length,
+    missingProducedResources: Object.freeze(STANDARD_RESOURCES.filter(
+      (resource) => productionPips[resource] === 0
+    )),
+    ownedPorts,
+    directRecipeCapacity,
+    directRecipeSurplus: Object.freeze(directRecipeSurpluses(productionPips)),
+    tradeAdjustedRecipeCapacity
+  });
+  const staticWithoutTempo = Object.freeze({
+    production: scoreProduction(basePortfolio, context, profile),
+    recipeReadiness: scoreRecipes(basePortfolio, profile),
+    scarcityAccess: scoreScarcity(basePortfolio, context, profile),
+    tradeAndPorts: scoreTradeGain(basePortfolio, profile),
+    cityPotential: scoreCityPotential({
+      ...basePortfolio,
+      settlementNodeIds: orderedNodeIds
+    }, featuresByNodeId, profile),
+    resilience: scoreResilience(orderedNodeIds, featuresByNodeId, profile)
+  });
+  return Object.freeze({
+    basePortfolio,
+    staticWithoutTempo,
+    reachMasks: compileReachMasks(facts, orderedNodeIds)
+  });
+}
+
 export function compileOpeningPairV3({
   facts,
   context,
   featuresByNodeId,
   orderedNodeIds,
-  profile
+  profile,
+  sharedPair
 }) {
-  const portfolio = buildOpeningPortfolio(facts, orderedNodeIds, {
-    occupiedNodeIds: orderedNodeIds,
-    precision: 10 ** -profile.serializationPrecision
+  const shared = sharedPair ?? buildSharedPair({
+    facts,
+    context,
+    featuresByNodeId,
+    orderedNodeIds,
+    profile
+  });
+  const startingCards = Object.freeze(startingResourcesForNode(facts, orderedNodeIds[1]));
+  const portfolio = Object.freeze({
+    settlementNodeIds: Object.freeze([...orderedNodeIds]),
+    ...shared.basePortfolio,
+    startingCards,
+    startingReadiness: readinessByRecipe(startingCards),
+    expansion: Object.freeze({ oneRoadNodeIds: Object.freeze([]), twoRoadNodeIds: Object.freeze([]) })
   });
   const staticComponents = Object.freeze({
-    production: scoreProduction(portfolio, context, profile),
-    recipeReadiness: scoreRecipes(portfolio, profile),
-    scarcityAccess: scoreScarcity(portfolio, context, profile),
+    production: shared.staticWithoutTempo.production,
+    recipeReadiness: shared.staticWithoutTempo.recipeReadiness,
+    scarcityAccess: shared.staticWithoutTempo.scarcityAccess,
     startingTempo: scoreStartingTempo(portfolio, profile),
-    tradeAndPorts: scoreTradeGain(portfolio, profile),
-    cityPotential: scoreCityPotential(portfolio, featuresByNodeId, profile),
-    resilience: scoreResilience(orderedNodeIds, featuresByNodeId, profile)
+    tradeAndPorts: shared.staticWithoutTempo.tradeAndPorts,
+    cityPotential: shared.staticWithoutTempo.cityPotential,
+    resilience: shared.staticWithoutTempo.resilience
   });
   const staticValue = Object.entries(staticComponents).reduce(
     (sum, [name, amount]) => sum + amount * profile.portfolioWeights[name],
@@ -178,7 +245,8 @@ export function compileOpeningPairV3({
     portfolio,
     staticComponents,
     staticValue,
-    reachMasks: compileReachMasks(facts, orderedNodeIds)
+    reachMasks: shared.reachMasks,
+    sharedPair: shared
   });
 }
 
@@ -197,7 +265,6 @@ export function materialiseOpeningPairV3({
     occupiedNodeIds,
     precision: 10 ** -profile.serializationPrecision
   });
-  const occupiedMask = idsMask(occupiedNodeIds);
   const nodesById = new Map(facts.nodes.map((node) => [node.nodeId, node]));
   const settlementBlockedMask = occupiedNodeIds.reduce(
     (mask, nodeId) => mask | idsMask(nodesById.get(nodeId).blockedNodeIds),
@@ -205,7 +272,6 @@ export function materialiseOpeningPairV3({
   );
   const expansion = scoreOpeningPairExpansionV3({
     entry,
-    occupiedMask,
     settlementBlockedMask,
     featuresByNodeId,
     profile
@@ -216,8 +282,4 @@ export function materialiseOpeningPairV3({
     0
   );
   return Object.freeze({ ...portfolio, components, value });
-}
-
-export function measureOpeningExpansionV3(facts, orderedNodeIds, occupiedNodeIds) {
-  return measureExpansionReach(facts, orderedNodeIds, occupiedNodeIds);
 }
