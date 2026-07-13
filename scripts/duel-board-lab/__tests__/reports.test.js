@@ -147,6 +147,45 @@ describe("duel board reports", () => {
     });
   });
 
+  it("summarises all four v3 scores and tags", () => {
+    const summary = summariseRecords([
+      {
+        status: "ranked",
+        invalidCodes: [],
+        overallScore: 80,
+        scores: { fairness: 90, quality: 40, interest: 70 },
+        tags: ["scarce:Ore"]
+      },
+      {
+        status: "ranked",
+        invalidCodes: [],
+        overallScore: 60,
+        scores: { fairness: 50, quality: 100, interest: 30 },
+        tags: ["scarce:Ore", "robber-fragile"]
+      },
+      {
+        status: "invalid",
+        invalidCodes: ["port-topology"],
+        overallScore: null,
+        scores: null,
+        tags: []
+      }
+    ]);
+
+    expect(summary).toEqual({
+      count: 3,
+      statuses: { ranked: 2, invalid: 1 },
+      invalidCodes: { "port-topology": 1 },
+      tags: { "scarce:Ore": 2, "robber-fragile": 1 },
+      scores: {
+        overall: { min: 60, median: 70, max: 80 },
+        fairness: { min: 50, median: 70, max: 90 },
+        quality: { min: 40, median: 70, max: 100 },
+        interest: { min: 30, median: 50, max: 70 }
+      }
+    });
+  });
+
   it("renders a self-contained accessible SVG for one candidate", () => {
     const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 1 });
     const svg = renderBoardSvg({

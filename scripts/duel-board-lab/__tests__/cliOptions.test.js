@@ -24,6 +24,7 @@ describe("duel board lab CLI", () => {
       startSeed: 20,
       runId: "smoke",
       shortlistSize: 20,
+      evaluatorVersion: "duel-fair-v3",
       v2AuditSelections: false,
     });
   });
@@ -36,6 +37,8 @@ describe("duel board lab CLI", () => {
       "10",
       "--run-id",
       "v2-smoke",
+      "--evaluator",
+      "duel-fair-v1",
       "--v2-audit-selections",
     ])).toEqual(expect.objectContaining({ v2AuditSelections: true }));
   });
@@ -77,6 +80,8 @@ describe("duel board lab CLI", () => {
       runId: "smoke",
       family: "official-spiral",
       candidateIndex: 7,
+      evaluatorVersion: "duel-fair-v3",
+      exactV3: false,
     });
   });
 
@@ -95,6 +100,7 @@ describe("duel board lab CLI", () => {
       startSeed: 5,
       runId: "comparison-smoke",
       shortlistSize: 20,
+      evaluatorVersion: "duel-fair-v3",
       v2AuditSelections: false,
     });
   });
@@ -105,6 +111,8 @@ describe("duel board lab CLI", () => {
       "10",
       "--run-id",
       "v2-comparison-smoke",
+      "--evaluator",
+      "duel-fair-v1",
       "--v2-audit-selections",
     ])).toEqual(expect.objectContaining({ v2AuditSelections: true }));
   });
@@ -120,5 +128,30 @@ describe("duel board lab CLI", () => {
         "0",
       ]),
     ).toThrow("run-id must be 1-64 lowercase letters, numbers, or hyphens");
+  });
+
+  it("rejects historical audit flags on the v3 ranking path", () => {
+    expect(() => parseGenerateOptions([
+      "--family", "official-spiral",
+      "--count", "10",
+      "--run-id", "bad-audit",
+      "--v2-audit-selections"
+    ])).toThrow("v2-audit-selections requires duel-fair-v1 or duel-fair-v2");
+  });
+
+  it("allows exact v3 only for explicit single-board inspection", () => {
+    expect(parseInspectOptions([
+      "--run-id", "smoke",
+      "--family", "official-spiral",
+      "--candidate-index", "7",
+      "--exact-v3"
+    ])).toEqual(expect.objectContaining({ evaluatorVersion: "duel-fair-v3", exactV3: true }));
+    expect(() => parseInspectOptions([
+      "--run-id", "smoke",
+      "--family", "official-spiral",
+      "--candidate-index", "7",
+      "--evaluator", "duel-fair-v1",
+      "--exact-v3"
+    ])).toThrow("exact-v3 requires duel-fair-v3");
   });
 });
