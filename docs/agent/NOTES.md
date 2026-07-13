@@ -1,5 +1,47 @@
 # NOTES
 
+- Duel fair v3 implemented model:
+- `overall = 0.80 * fairness + 0.20 * quality`. Interest remains independently
+  sortable and has zero weight in overall. Quality is `0.80` weaker selected
+  portfolio plus `0.20` mean selected portfolio.
+- Portfolio component weights are production `0.30`, recipe readiness `0.25`,
+  scarcity access `0.10`, second-settlement starting tempo `0.10`, trade and
+  ports `0.05`, city potential `0.05`, expansion `0.10`, and resilience
+  `0.05`. Base resource weights are wheat `1.15`, ore `1.10`, wood `1.00`,
+  brick `1.00`, and sheep `0.90`; recipe bottlenecks and trade capacity matter
+  in addition to those base weights.
+- Current calibration targets are `tradeCapacityGain 2.50` and recipe capacity
+  `road 4 / settlement 3 / dev 3 / city 1.5`. These replace the plan's initial
+  `1.25` and `2 / 1.5 / 1.25 / 0.8` values because the original scales
+  saturated and failed to distinguish stranded resources from complementary
+  or port-supported portfolios.
+- Candidate champions are selected in this deterministic order: broad, road,
+  settlement, city, development card, Wood, Brick, Sheep, Wheat, Ore, port,
+  expansion, denial. Duplicate champions collapse, broad score fills to 16,
+  and a stable legality fallback may expand only to 20.
+- The all-node v3 oracle uses official-spiral seeds
+  `1, 47, 109, 248, 310, 409, 548, 651, 725, 820, 907, 2604`. It is
+  calibration-only. Normal generation, run resumption, shortlist
+  materialisation, and HTML rendering must never call the 54-node solve.
+- Useful commands:
+  - benchmark: `pnpm board:lab:benchmark`;
+  - fixed oracle: `pnpm board:lab:oracle-v3`;
+  - bounded generation: `pnpm board:lab:generate --family official-spiral --count 1000 --run-id v3-review --shortlist-size 20`;
+  - stored fast inspection: `pnpm board:lab:inspect --family official-spiral --run-id v3-review --candidate-index 46`;
+  - explicit all-node inspection: append `--exact-v3` to that command;
+  - historical v1: append `--evaluator duel-fair-v1` to a bounded generate or
+    compare command;
+  - historical exact v2: append `--evaluator duel-fair-v2` and keep the count
+    deliberately small. `--v2-audit-selections` is opt-in and is rejected on
+    v3.
+- The primary v3 report reads only stored selected diagnostics. It renders one
+  deduplicated gallery sorted numerically by overall descending, exposes all
+  four score sorts in both directions, keeps ports visible, and hides one SVG
+  placement layer by default.
+- Non-goals for this slice remain: no constructive generator, no production
+  catalog or live-match integration, no multiplayer fairness model, no learned
+  policy, and no corpus larger than the bounded 1,000 official boards.
+
 - Duel fair v3 design note:
 - Treat v1 and exact v2 as historical research paths once v3 is implemented.
   The normal ranking contract is one v3 score for every structurally valid

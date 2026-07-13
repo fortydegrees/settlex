@@ -1,5 +1,55 @@
 # PROGRESS
 
+## Status (2026-07-13, duel fair v3 fast ranker implemented)
+- Implemented `duel-fair-v3` as the default offline board-lab evaluator without
+  changing `game-core` or any production board-selection path. The stable
+  identity is feature version `duel-fair-v3-features-1`, policy version
+  `duel-fair-v3`, profile hash
+  `fefc1c6af6b4ba66c00db3b853feda73d3836ced33b1d9fc43467d17baf3cc05`.
+- The normal path builds board context and all 54 settlement feature vectors,
+  selects a strategically covered 16-node pool (20 maximum only for legal-line
+  fallback), and solves the bounded `P1, P2, P2, P1` opening over that pool.
+  Structurally valid unusual boards remain ranked; warning tags are descriptive
+  rather than reject rules.
+- Task 5 same-machine evidence measured approximately `111.00` v3
+  evaluations/second and `110.943` complete generate-and-evaluate operations/
+  second, above the explicit 100 boards/second development target. The fixed
+  12-board all-node v3 oracle achieved `12/12` seat-direction agreement,
+  `0.000000` median absolute normalised-advantage error, and `1.000000`
+  fairness Spearman correlation. These timings are machine/process specific.
+- Calibration changed two initial plan scales after focused bottleneck tests
+  showed saturation: `tradeCapacityGain` increased from `1.25` to `2.50`, and
+  recipe-capacity targets changed from `road 2 / settlement 1.5 / dev 1.25 /
+  city 0.8` to `road 4 / settlement 3 / dev 3 / city 1.5`. The feature model
+  and overall formula did not change.
+- Generated only the approved bounded 1,000-board official-spiral review run.
+  All 1,000 boards ranked, and the five 20-board selection buckets deduplicated
+  to 85 rendered cards. The streamed run plus bounded diagnostic
+  materialisation measured `94.454` boards/second and `153.5 MiB` peak RSS;
+  this broader run-store measurement is deliberately distinct from the pure
+  generate-and-evaluate benchmark gate.
+- The single ranked gallery is at
+  `tmp/duel-board-lab/runs/v3-review/official-spiral/report.html`. It defaults
+  to numeric overall descending, supports both directions for overall,
+  fairness, quality, and interest, shows all nine geographic ports, and hides
+  suggested placements until its one report-level toggle is enabled. Browser
+  checks passed at 1440x900 and 390x844 with no horizontal overflow, duplicate
+  cards, or console errors.
+- Seed 47 is now the lowest-overall card in that bounded review gallery:
+  `46.661190` overall, `39.407130` fairness, `75.677432` quality, and
+  `100.000000` interest. Explicit exact inspection compared the stored fast
+  advantage `0.121186` with all-node v3 `0.108092`; exact search remains an
+  inspection/calibration tool, never a report-render or normal-batch step.
+- Fresh final verification:
+  - `pnpm test:board-lab`: 19 files and 152 tests passed;
+  - immediate benchmark rerun: `107.104916` evaluation-only and `108.848574`
+    generate-and-evaluate boards/second, `220.640625 MiB` peak RSS;
+  - `pnpm board:lab:oracle-v3`: `12/12` direction agreement, `0.000000`
+    median absolute advantage error, `1.000000` fairness Spearman;
+  - `pnpm lint`: no warnings or errors;
+  - `pnpm -C game-core test`: 14 files and 153 tests passed;
+  - `pnpm -C game-core build`: exit 0.
+
 ## Status (2026-07-13, duel fair v3 fast-ranking design)
 - Approved and recorded
   `docs/superpowers/specs/2026-07-13-duel-fair-v3-fast-ranking-design.md`.
@@ -11,8 +61,9 @@
 - Every structurally valid board receives numeric overall, fairness, quality,
   and interest scores. Interest is initially independently sortable but has
   zero influence on overall ranking.
-- Exact v2 is demoted to named-board inspection and a fixed 12-board pruning
-  oracle. It is not part of normal batch ranking or report rendering.
+- The proposed all-node v3 solve is limited to named-board inspection and a
+  fixed 12-board pruning oracle. It is not part of normal batch ranking or
+  report rendering; exact v2 remains an explicitly selected historical path.
 - The proposed report is one score-ordered gallery with score sort controls,
   unique cards, geographic ports, collapsed diagnostics, and placement
   suggestions hidden by default.

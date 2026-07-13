@@ -507,7 +507,9 @@ Once verification passes:
 - the batch command writes v3 as the default ranking record;
 - the normal report reads only v3 scores;
 - v1/v2 comparison becomes explicit opt-in research output;
-- exact-v2 remains callable for inspection and the bounded oracle corpus;
+- historical exact v2 remains explicitly callable for research;
+- the all-node v3 solve remains callable only for named-board inspection and
+  the fixed bounded oracle corpus;
 - old stored runs remain readable and are never relabelled as v3.
 
 ## Stop Boundary
