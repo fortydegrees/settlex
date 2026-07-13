@@ -1,5 +1,89 @@
 # PROGRESS
 
+## Status (2026-07-13, duel fair v2 bounded calibration gate)
+- Completed the eight-task `duel-fair-v2` opening-audit slice without changing
+  the production generator or `game-core`. The stable identity is feature
+  version `duel-opening-features-v1`, policy version `duel-fair-v2`, profile
+  hash `115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496`.
+- Extended `board:lab:benchmark` with a separate exact-v2 row over 100
+  pre-generated, structurally valid, non-adjacent-red official-spiral boards.
+  Diagnostic lenses are enabled for that row. The existing v1 sample sizes
+  and 500 evaluation-only / 200 generate-and-evaluate boards-per-second gates
+  are unchanged, and there is no unmeasured v2 pass/fail gate.
+- RSS sampling now takes approximately 100 periodic samples for every timed
+  row and an unconditional final sample. This preserves every-100 sampling for
+  the 10,000-board v1 rows while sampling every board in the 100-board v2 row.
+- Corrected same-machine benchmark evidence from this worktree:
+  - evaluation-only: `662.402959` boards/second, `695.171875 MiB` peak RSS;
+  - generate-and-evaluate: `638.013858` boards/second, `695.1875 MiB` peak RSS;
+  - exact-v2-audit: `0.496638` boards/second, `709.609375 MiB` peak RSS.
+  These are machine- and process-shape-specific measurements, not universal
+  promises. In particular, this benchmark retains the 10,000 v1 candidates;
+  it is not the streamed 100,000-candidate acceptance shape.
+- Focused verification before documentation:
+  - `pnpm test:board-lab`: 12 files and 118 tests passed;
+  - `pnpm -C game-core test`: 14 files and 153 tests passed;
+  - `pnpm -C game-core build`: exit 0;
+  - `pnpm exec eslint 'scripts/duel-board-lab/**/*.{js,mjs}'`: exit 0,
+    no output;
+  - `git diff --check`: exit 0, no output.
+- Generated bounded run `duel-fair-v2-calibration-smoke` at exactly 1,000 v1
+  candidates per family, start seed 1, shortlist size 20, with v2 audits only
+  on selected boards:
+  - official-spiral: v1 `854 pass / 146 reject / 0 invalid`; 146 selected v2
+    audits `0 pass / 116 review / 30 reject / 0 screen reject`;
+  - freeform-random: v1 `111 pass / 889 reject / 0 invalid`; 172 selected v2
+    audits `0 pass / 20 review / 152 reject / 143 screen reject`.
+- The run reports are:
+  - comparison:
+    `tmp/duel-board-lab/runs/duel-fair-v2-calibration-smoke/comparison.html`;
+  - official:
+    `tmp/duel-board-lab/runs/duel-fair-v2-calibration-smoke/official-spiral/report.html`;
+  - freeform:
+    `tmp/duel-board-lab/runs/duel-fair-v2-calibration-smoke/freeform-random/report.html`.
+  Their manifest `peakRssMiB` values (`110.171875` official and `316.5`
+  freeform in the sequential process) measure the streamed v1 `runBatch`
+  corpus loop only. Sampling stops before selected exact-v2 audits and report
+  rendering, so these values are not total compare-process or exact-audit
+  peaks; the separate benchmark is the exact-v2 RSS evidence.
+- Seed 47 (`official-seed-47-p1-dominance`) passes the structural screen but is
+  a v2 `reject`, with P1 favoured (`0.086886` normalised advantage). The exact
+  line is `P1 0 -> P2 6 -> P2 14 -> P1 44`; rejection is
+  `seat-advantage`, with the additional `port-dependent` review condition.
+  P1's ordered portfolio is nodes `[0, 44]`, production
+  `Wood 5 / Brick 3 / Sheep 7 / Wheat 4 / Ore 4`, starting hand
+  `[Wheat, Brick, Sheep]`, no owned port, and direct capacities
+  `road 3 / settlement 3 / devCard 4 / city 1.333333`. P2's portfolio is
+  `[6, 14]`, production `Wood 5 / Brick 5 / Sheep 4 / Wheat 4 / Ore 2`,
+  starting hand `[Sheep, Wood, Ore]`, no owned port, and direct capacities
+  `road 5 / settlement 4 / devCard 2 / city 0.666667`.
+- Seed 2604 (`official-seed-2604-strategic-denial`) passes the structural screen
+  and is a v2 `review`, with P2 favoured (`-0.075936` normalised advantage).
+  The exact defensive line is `P1 31 -> P2 43 -> P2 0 -> P1 50`; review codes
+  are `forced-defence` and `port-dependent`. P1's ordered portfolio is
+  `[31, 50]`, production `Wood 4 / Brick 2 / Sheep 5 / Wheat 3 / Ore 4`,
+  starting hand `[Wheat, Ore]`, owned port `[Any]`, and direct capacities
+  `road 2 / settlement 2 / devCard 3 / city 1.333333`. P2's portfolio is
+  `[43, 0]`, production `Wood 4 / Brick 1 / Sheep 3 / Wheat 4 / Ore 8`,
+  starting hand `[Ore, Sheep, Wheat]`, no owned port, and direct capacities
+  `road 1 / settlement 1 / devCard 3 / city 2`; the node-0 second placement
+  makes a development card immediately ready.
+- Seed 2604's diagnostic lenses disagree in direction but not at the material
+  policy threshold: official is `-0.075936` for P2, expansion is `+0.025576`
+  for P1, and development is `-0.096628` for P2. Because the opposite-sign
+  expansion result and official result do not both reach the profile's `0.08`
+  threshold, `diagnostic-lens-disagreement` is not a review code.
+- Fresh evaluator output, stored selected-board diagnostics, fixture tiles,
+  raw/canonical hashes, and report output agree for seeds 47 and 2604. Each
+  generated report embeds the exact fresh SVG, renders all four solved picks,
+  and renders all nine geographic ports on endpoints that match both land-edge
+  topology and `portsByNodeId`; no rendered-port/topology mismatch was found.
+  Seed 2604's bounded inspection report is
+  `tmp/duel-board-lab/runs/duel-fair-v2-fixture-2604-inspection/official-spiral/report.html`.
+- Stopped at the explicit human calibration gate. No 100,000-per-family or
+  larger corpus was started, no profile/generator tuning was performed, and no
+  production board-generation path was changed.
+
 ## Status (2026-07-13, duel fair v2 opening-evaluator design)
 - The written v2 design was approved and converted into an eight-task,
   test-first implementation plan covering opening features, ordered portfolios,

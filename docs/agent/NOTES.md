@@ -1,5 +1,37 @@
 # NOTES
 
+- Duel fair v2 implemented calibration note:
+- Ordered portfolio identity is semantic. Keep each seat's
+  `settlementNodeIds` in draft order, not numeric order, and derive
+  `startingCards` only from that seat's second settlement in the exact
+  `P1, P2, P2, P1` sequence. Preserve resource multiplicity and deterministic
+  resource order; seed 2604's P2 hand is exactly `[Ore, Sheep, Wheat]` and is
+  immediately development-card ready.
+- Keep `directRecipeCapacity` and `tradeAdjustedRecipeCapacity` as separate
+  evidence. Direct capacity exposes production bottlenecks without trading;
+  trade-adjusted capacity may use the portfolio's owned ports and fallback
+  trades. Do not substitute the trade-adjusted value for the direct value in
+  dominance, quality, or explanatory output.
+- Exact-audit eligibility is stricter than the structural screen. A candidate
+  is eligible for automatic catalog ranking only after a completed exact v2
+  audit with fairness verdict `pass`; `review`, `reject`, and screen-rejected
+  audits keep `overallScore: null`. A v1 pass or v2 structural-screen pass is
+  not, by itself, a fair-board acceptance.
+- Preserve the two-tier run file contract. `candidates.jsonl` remains the
+  streamed `duel-fair-v1` screen/ranking corpus. Opt-in v2 identity lives in
+  the manifest, `diagnosticV2` exists only in bounded selected
+  `boards/*.json`, and `summary.v2Audited` counts only those selections.
+  Unselected corpus rows must not be exact-audited or rendered.
+- A run manifest's `peakRssMiB` is sampled by `runBatch` during the streamed v1
+  corpus loop and does not include the later selected exact-v2 audits or report
+  rendering. Use the separate bounded benchmark for exact-v2 throughput/RSS
+  evidence and keep those measurements machine-specific.
+- The 1,000-per-family `duel-fair-v2-calibration-smoke` output is a human
+  calibration artifact, not evidence-corpus approval. Stop before any
+  100,000-per-family run, policy/profile freeze, generator tuning, or
+  Settlers-Setup-inspired production work until a human reviews the galleries
+  and explicitly approves the next phase.
+
 - Duel fair v2 evaluator design note:
 - Keep the candidate generators comparatively broad and deterministic. The
   evaluator, not the generator, owns the claim that a board is fair for 1v1.
