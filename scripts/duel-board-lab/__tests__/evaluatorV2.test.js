@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ResourceType, TileTypes } from "@settlex/game-core";
+import { readFileSync } from "node:fs";
 import { buildBoardFacts } from "../analysis/boardFacts.mjs";
 import { DUEL_FAIR_V2_PROFILE } from "../analysis/duelFairV2Profile.mjs";
 import {
@@ -8,7 +9,13 @@ import {
   evaluateDuelBoardV2
 } from "../analysis/evaluateDuelBoardV2.mjs";
 import { measurePlacementDepth } from "../analysis/placementDepth.mjs";
+import { transformTiles } from "../analysis/symmetry.mjs";
 import { generateCandidate, BOARD_FAMILIES } from "../generators/generateCandidate.mjs";
+
+const readFixture = (name) => JSON.parse(readFileSync(
+  new URL(`../fixtures/${name}.json`, import.meta.url),
+  "utf8"
+));
 
 const RECIPES = Object.freeze(["road", "settlement", "devCard", "city"]);
 const RESOURCES = Object.freeze([
@@ -18,6 +25,82 @@ const RESOURCES = Object.freeze([
   ResourceType.WHEAT,
   ResourceType.ORE
 ]);
+const CALIBRATION_FIXTURES = Object.freeze([
+  "scarce-but-fair",
+  "wheat-monopoly",
+  "dominant-settlement",
+  "varied-openings",
+  "first-pick-sensitive",
+  "second-pick-sensitive",
+  "official-seed-47-p1-dominance",
+  "official-seed-2604-strategic-denial"
+]);
+
+function stableCalibrationSummary(report) {
+  return {
+    evaluatorIdentity: report.evaluatorIdentity,
+    screenVerdict: report.screenVerdict,
+    fairness: {
+      verdict: report.fairness.verdict,
+      favouredSeat: report.fairness.favouredSeat,
+      normalisedSeatAdvantage: Number(report.fairness.normalisedSeatAdvantage.toFixed(6)),
+      solvedLine: report.fairness.solvedLine,
+      portfolios: report.fairness.portfolios
+    },
+    quality: report.quality,
+    placementDepth: report.placementDepth,
+    rankingComponents: report.rankingComponents,
+    tags: report.tags,
+    overallScore: report.overallScore == null ? null : Number(report.overallScore.toFixed(4))
+  };
+}
+
+function symmetryScalars(report) {
+  const {
+    greedySeatAdvantage,
+    greedyNormalisedSeatAdvantage,
+    greedyRegret,
+    meaningfulFirstPickCount,
+    meaningfulResponseCount,
+    forcedDefence,
+    lineSensitivity
+  } = report.placementDepth;
+  return {
+    evaluatorIdentity: report.evaluatorIdentity,
+    screenVerdict: report.screenVerdict,
+    fairnessVerdict: report.fairness.verdict,
+    favouredSeat: report.fairness.favouredSeat,
+    normalisedSeatAdvantage: Number(report.fairness.normalisedSeatAdvantage.toFixed(6)),
+    quality: report.quality,
+    placementDepth: {
+      greedySeatAdvantage,
+      greedyNormalisedSeatAdvantage,
+      greedyRegret,
+      meaningfulFirstPickCount,
+      meaningfulResponseCount,
+      forcedDefence,
+      lineSensitivity
+    },
+    tags: report.tags,
+    overallScore: report.overallScore == null ? null : Number(report.overallScore.toFixed(4))
+  };
+}
+
+function expectLegalSolvedLine(tiles, solvedLine) {
+  const nodesById = new Map(buildBoardFacts(tiles).nodes.map((node) => [node.nodeId, node]));
+  expect(solvedLine.map((pick) => pick.player)).toEqual(["P1", "P2", "P2", "P1"]);
+  expect(new Set(solvedLine.map((pick) => pick.nodeId))).toHaveProperty("size", 4);
+  for (let leftIndex = 0; leftIndex < solvedLine.length; leftIndex += 1) {
+    const left = nodesById.get(solvedLine[leftIndex].nodeId);
+    expect(left).toBeDefined();
+    for (let rightIndex = leftIndex + 1; rightIndex < solvedLine.length; rightIndex += 1) {
+      const right = nodesById.get(solvedLine[rightIndex].nodeId);
+      expect(right).toBeDefined();
+      expect(left.blockedNodeIds).not.toContain(right.nodeId);
+      expect(right.blockedNodeIds).not.toContain(left.nodeId);
+    }
+  }
+}
 
 const capacities = (value) => Object.fromEntries(RECIPES.map((recipe) => [recipe, value]));
 
@@ -310,6 +393,36 @@ describe("duel-fair-v2 evaluator", () => {
       .toEqual(["expansion", "development"]);
   });
 
+  it("does not allow seed 47 to remain a top automatic pass", () => {
+    const report = evaluateDuelBoardV2(readFixture("official-seed-47-p1-dominance").tiles);
+    expect(report.fairness.verdict).not.toBe("pass");
+    expect(report.fairness.favouredSeat).toBe("P1");
+    expect(report.fairness.solvedLine).toHaveLength(4);
+    expect(report.placementDepth.greedyLine.map((pick) => pick.nodeId)).toEqual([0, 6, 44, 23]);
+    expect(report.placementDepth.greedyPortfolios.P1.producedResourceCount).toBe(5);
+    expect(report.placementDepth.greedyPortfolios.P1.startingReadiness.road.canBuyNow).toBe(true);
+    expect(report.placementDepth.greedyPortfolios.P2.missingProducedResources)
+      .toEqual([ResourceType.WOOD, ResourceType.ORE]);
+  });
+
+  it("sends seed 2604 to review and exposes starting dev-card tempo", () => {
+    const report = evaluateDuelBoardV2(
+      readFixture("official-seed-2604-strategic-denial").tiles,
+      { includeDiagnosticLenses: true }
+    );
+    expect(report.fairness.verdict).toBe("review");
+    expect(report.fairness.solvedLine[0]).toEqual({ player: "P1", nodeId: 31 });
+    const p2 = report.fairness.portfolios.P2;
+    expect(p2.settlementNodeIds[1]).toBe(0);
+    expect(p2.startingCards).toEqual([
+      ResourceType.ORE,
+      ResourceType.SHEEP,
+      ResourceType.WHEAT
+    ]);
+    expect(p2.startingReadiness.devCard.canBuyNow).toBe(true);
+    expect(report.tags).toContain("strategic");
+  });
+
   it("keeps completed review audits out of automatic ranking", () => {
     const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 47 });
     const report = evaluateDuelBoardV2(candidate.tiles, {
@@ -404,6 +517,29 @@ describe("placement depth", () => {
     expect(depth.meaningfulResponseCount).toBe(2);
     expect(depth.forcedDefence).toBe(true);
     expect(depth.lineSensitivity).toBeCloseTo(0.11, 10);
+  });
+});
+
+describe("v2 calibration fixtures", () => {
+  it.each(CALIBRATION_FIXTURES)("locks the complete stable summary for %s", (name) => {
+    const report = evaluateDuelBoardV2(readFixture(name).tiles, {
+      includeDiagnosticLenses: true
+    });
+    expect(report.overallScore === null).toBe(report.fairness.verdict !== "pass");
+    expect(stableCalibrationSummary(report)).toMatchSnapshot();
+  });
+
+  it.each([
+    ["rotation", 1],
+    ["reflection", 6]
+  ])("preserves scalar results under a %s", (_name, transformIndex) => {
+    const tiles = readFixture("official-seed-2604-strategic-denial").tiles;
+    const transformedTiles = transformTiles(tiles, transformIndex);
+    const baseline = evaluateDuelBoardV2(tiles, { includeDiagnosticLenses: true });
+    const transformed = evaluateDuelBoardV2(transformedTiles, { includeDiagnosticLenses: true });
+
+    expect(symmetryScalars(transformed)).toEqual(symmetryScalars(baseline));
+    expectLegalSolvedLine(transformedTiles, transformed.fairness.solvedLine);
   });
 });
 

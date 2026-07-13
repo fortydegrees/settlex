@@ -1,0 +1,4865 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`v2 calibration fixtures > locks the complete stable summary for dominant-settlement 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P1",
+    "normalisedSeatAdvantage": 0.008737,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1,
+          "devCard": 3,
+          "road": 4,
+          "settlement": 3,
+        },
+        "directRecipeSurplus": {
+          "city": 1,
+          "devCard": 0,
+          "road": 0,
+          "settlement": 2,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            14,
+            16,
+            25,
+            29,
+            31,
+            41,
+          ],
+          "twoRoadNodeIds": [
+            1,
+            17,
+            19,
+            26,
+            28,
+            30,
+            34,
+            42,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1,
+          "directDevCard": 3,
+          "directRoad": 4,
+          "directSettlement": 3,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.23529411764705882,
+          "surplusCity": 1,
+          "surplusDevCard": 0,
+          "surplusRoad": 0,
+          "surplusSettlement": 2,
+          "totalProductionPips": 17,
+          "tradeCity": 1.7499992370605466,
+          "tradeDevCard": 3.666666110356649,
+          "tradeRoad": 5.124999821186066,
+          "tradeSettlement": 3.4999997913837433,
+          "twoRoadExpansionCount": 8,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 4,
+          "Ore": 3,
+          "Sheep": 3,
+          "Wheat": 3,
+          "Wood": 4,
+        },
+        "settlementNodeIds": [
+          15,
+          32,
+        ],
+        "startingCards": [
+          "Ore",
+          "Wheat",
+          "Wood",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Brick",
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+        },
+        "totalProductionPips": 17,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.7499992370605466,
+          "devCard": 3.666666110356649,
+          "road": 5.124999821186066,
+          "settlement": 3.4999997913837433,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1,
+          "devCard": 3,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 5,
+          "devCard": 4,
+          "road": 8,
+          "settlement": 18,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            18,
+            20,
+            31,
+            41,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            7,
+            11,
+            19,
+            23,
+            34,
+            42,
+            46,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Brick",
+        ],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1,
+          "directDevCard": 3,
+          "directRoad": 0,
+          "directSettlement": 0,
+          "immediateCity": 0,
+          "immediateDevCard": 1,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 1,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 4,
+          "productionConcentration": 0.38095238095238093,
+          "surplusCity": 5,
+          "surplusDevCard": 4,
+          "surplusRoad": 8,
+          "surplusSettlement": 18,
+          "totalProductionPips": 21,
+          "tradeCity": 2.1428571224212654,
+          "tradeDevCard": 4.333332657814026,
+          "tradeRoad": 4.199999749660492,
+          "tradeSettlement": 2.9999998211860657,
+          "twoRoadExpansionCount": 9,
+        },
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 0,
+          "Ore": 3,
+          "Sheep": 3,
+          "Wheat": 7,
+          "Wood": 8,
+        },
+        "settlementNodeIds": [
+          44,
+          21,
+        ],
+        "startingCards": [
+          "Sheep",
+          "Ore",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Ore",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Ore",
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Ore",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 21,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.1428571224212654,
+          "devCard": 4.333332657814026,
+          "road": 4.199999749660492,
+          "settlement": 2.9999998211860657,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 15,
+        "player": "P1",
+      },
+      {
+        "nodeId": 44,
+        "player": "P2",
+      },
+      {
+        "nodeId": 21,
+        "player": "P2",
+      },
+      {
+        "nodeId": 32,
+        "player": "P1",
+      },
+    ],
+    "verdict": "review",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": false,
+    "greedyLine": [
+      {
+        "nodeId": 44,
+        "player": "P1",
+      },
+      {
+        "nodeId": 6,
+        "player": "P2",
+      },
+      {
+        "nodeId": 25,
+        "player": "P2",
+      },
+      {
+        "nodeId": 31,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": 0.12052713527641803,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1,
+          "devCard": 0,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 5,
+          "devCard": 10,
+          "road": 12,
+          "settlement": 19,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            21,
+            32,
+            34,
+            41,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            18,
+            20,
+            29,
+            33,
+            42,
+            46,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Brick",
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 0,
+          "Ore": 3,
+          "Sheep": 0,
+          "Wheat": 7,
+          "Wood": 12,
+        },
+        "settlementNodeIds": [
+          44,
+          31,
+        ],
+        "startingCards": [
+          "Ore",
+          "Wheat",
+          "Wood",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Brick",
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wheat",
+              "Wood",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.2142853260040285,
+          "devCard": 3.4444437821706133,
+          "road": 4.399999737739563,
+          "settlement": 2.1999998688697815,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 0,
+          "devCard": 0,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 2,
+          "devCard": 18,
+          "road": 2,
+          "settlement": 20,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            7,
+            9,
+            11,
+            15,
+            26,
+            30,
+          ],
+          "twoRoadNodeIds": [
+            0,
+            8,
+            10,
+            12,
+            14,
+            16,
+            18,
+            20,
+            27,
+            29,
+            38,
+            40,
+          ],
+        },
+        "missingProducedResources": [
+          "Wood",
+          "Ore",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 2,
+          "Ore": 0,
+          "Sheep": 16,
+          "Wheat": 2,
+          "Wood": 0,
+        },
+        "settlementNodeIds": [
+          6,
+          25,
+        ],
+        "startingCards": [
+          "Wheat",
+          "Sheep",
+          "Sheep",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+        },
+        "totalProductionPips": 20,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.2999992370605469,
+          "devCard": 2.888888518015544,
+          "road": 3.2499998807907104,
+          "settlement": 2.461538314819336,
+        },
+      },
+    },
+    "greedyRegret": 0.11179044578803687,
+    "greedySeatAdvantage": 3.0473339790430956,
+    "lineSensitivity": 0.528427392553706,
+    "meaningfulFirstPickCount": 2,
+    "meaningfulResponseCount": 9,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [],
+      "P2": [
+        "road",
+        "settlement",
+      ],
+    },
+    "portDependence": {
+      "P1": 0.42857117944823314,
+      "P2": 1,
+      "maximum": 1,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 4,
+      "P2": 2,
+    },
+    "weakerPortfolioValue": 30.49971415151868,
+    "weakerSeat": "P2",
+  },
+  "rankingComponents": {
+    "depthScore": 50,
+    "fairnessScore": 89.07913813952355,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "brick-scarce",
+    "port-dependent",
+    "starting-tempo-asymmetry",
+    "strategic",
+  ],
+}
+`;
+
+exports[`v2 calibration fixtures > locks the complete stable summary for first-pick-sensitive 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P1",
+    "normalisedSeatAdvantage": 0.013589,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 3.5,
+          "devCard": 5,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 1.5,
+          "devCard": 9,
+          "road": 0,
+          "settlement": 12,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            30,
+            39,
+            41,
+            42,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            34,
+            40,
+            46,
+            47,
+            49,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Wood",
+          "Brick",
+        ],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 3.5,
+          "directDevCard": 5,
+          "directRoad": 0,
+          "directSettlement": 0,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 2,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 3,
+          "productionConcentration": 0.5,
+          "surplusCity": 1.5,
+          "surplusDevCard": 9,
+          "surplusRoad": 0,
+          "surplusSettlement": 12,
+          "totalProductionPips": 24,
+          "tradeCity": 4.049999999999999,
+          "tradeDevCard": 6.5,
+          "tradeRoad": 3,
+          "tradeSettlement": 2.3999998569488525,
+          "twoRoadExpansionCount": 7,
+        },
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 0,
+          "Ore": 12,
+          "Sheep": 5,
+          "Wheat": 7,
+          "Wood": 0,
+        },
+        "settlementNodeIds": [
+          44,
+          38,
+        ],
+        "startingCards": [
+          "Wheat",
+          "Wheat",
+          "Ore",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wood",
+              "Brick",
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+            ],
+          },
+        },
+        "totalProductionPips": 24,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 4.049999999999999,
+          "devCard": 6.5,
+          "road": 3,
+          "settlement": 2.3999998569488525,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 0,
+          "road": 3,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 5.333333333333334,
+          "devCard": 12,
+          "road": 5,
+          "settlement": 19,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            14,
+            16,
+            25,
+            29,
+            31,
+            41,
+          ],
+          "twoRoadNodeIds": [
+            1,
+            17,
+            19,
+            21,
+            26,
+            28,
+            34,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1.3333333333333333,
+          "directDevCard": 0,
+          "directRoad": 3,
+          "directSettlement": 0,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 1,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 1,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 4,
+          "productionConcentration": 0.34782608695652173,
+          "surplusCity": 5.333333333333334,
+          "surplusDevCard": 12,
+          "surplusRoad": 5,
+          "surplusSettlement": 19,
+          "totalProductionPips": 23,
+          "tradeCity": 2.499999952316284,
+          "tradeDevCard": 3.8333324193954468,
+          "tradeRoad": 6.399999707937241,
+          "tradeSettlement": 3.199999511241913,
+          "twoRoadExpansionCount": 7,
+        },
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 3,
+          "Ore": 4,
+          "Sheep": 0,
+          "Wheat": 8,
+          "Wood": 8,
+        },
+        "settlementNodeIds": [
+          32,
+          15,
+        ],
+        "startingCards": [
+          "Brick",
+          "Wood",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 23,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.499999952316284,
+          "devCard": 3.8333324193954468,
+          "road": 6.399999707937241,
+          "settlement": 3.199999511241913,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 44,
+        "player": "P1",
+      },
+      {
+        "nodeId": 32,
+        "player": "P2",
+      },
+      {
+        "nodeId": 15,
+        "player": "P2",
+      },
+      {
+        "nodeId": 38,
+        "player": "P1",
+      },
+    ],
+    "verdict": "review",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": false,
+    "greedyLine": [
+      {
+        "nodeId": 32,
+        "player": "P1",
+      },
+      {
+        "nodeId": 38,
+        "player": "P2",
+      },
+      {
+        "nodeId": 44,
+        "player": "P2",
+      },
+      {
+        "nodeId": 15,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": -0.013589475231807188,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 0,
+          "road": 3,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 5.333333333333334,
+          "devCard": 12,
+          "road": 5,
+          "settlement": 19,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            14,
+            16,
+            25,
+            29,
+            31,
+            41,
+          ],
+          "twoRoadNodeIds": [
+            1,
+            17,
+            19,
+            21,
+            26,
+            28,
+            34,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 3,
+          "Ore": 4,
+          "Sheep": 0,
+          "Wheat": 8,
+          "Wood": 8,
+        },
+        "settlementNodeIds": [
+          32,
+          15,
+        ],
+        "startingCards": [
+          "Brick",
+          "Wood",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 23,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.499999952316284,
+          "devCard": 3.8333324193954468,
+          "road": 6.399999707937241,
+          "settlement": 3.199999511241913,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 3.5,
+          "devCard": 5,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 1.5,
+          "devCard": 9,
+          "road": 0,
+          "settlement": 12,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            30,
+            39,
+            41,
+            42,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            34,
+            40,
+            46,
+            47,
+            49,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Wood",
+          "Brick",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 0,
+          "Ore": 12,
+          "Sheep": 5,
+          "Wheat": 7,
+          "Wood": 0,
+        },
+        "settlementNodeIds": [
+          38,
+          44,
+        ],
+        "startingCards": [
+          "Ore",
+          "Ore",
+          "Sheep",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Ore",
+              "Sheep",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Ore",
+              "Sheep",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Ore",
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Ore",
+              "Sheep",
+            ],
+          },
+        },
+        "totalProductionPips": 24,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 4.049999999999999,
+          "devCard": 6.5,
+          "road": 3,
+          "settlement": 2.3999998569488525,
+        },
+      },
+    },
+    "greedyRegret": 0.027178950463614376,
+    "greedySeatAdvantage": -0.44086975523701,
+    "lineSensitivity": 0.5746523038246552,
+    "meaningfulFirstPickCount": 2,
+    "meaningfulResponseCount": 3,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [
+        "road",
+        "settlement",
+      ],
+      "P2": [
+        "devCard",
+        "settlement",
+      ],
+    },
+    "portDependence": {
+      "P1": 1,
+      "P2": 1,
+      "maximum": 1,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 2,
+      "P2": 2,
+    },
+    "weakerPortfolioValue": 32.00113022759685,
+    "weakerSeat": "P2",
+  },
+  "rankingComponents": {
+    "depthScore": 50,
+    "fairnessScore": 83.01315596024101,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "development-leaning",
+    "port-dependent",
+    "resource-clustered",
+    "starting-tempo-asymmetry",
+    "strategic",
+  ],
+}
+`;
+
+exports[`v2 calibration fixtures > locks the complete stable summary for official-seed-47-p1-dominance 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P1",
+    "normalisedSeatAdvantage": 0.086886,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 4,
+          "road": 3,
+          "settlement": 3,
+        },
+        "directRecipeSurplus": {
+          "city": 1.3333333333333335,
+          "devCard": 3,
+          "road": 2,
+          "settlement": 7,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            5,
+            7,
+            41,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            2,
+            4,
+            8,
+            18,
+            32,
+            34,
+            42,
+            46,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1.3333333333333333,
+          "directDevCard": 4,
+          "directRoad": 3,
+          "directSettlement": 3,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.30434782608695654,
+          "surplusCity": 1.3333333333333335,
+          "surplusDevCard": 3,
+          "surplusRoad": 2,
+          "surplusSettlement": 7,
+          "totalProductionPips": 23,
+          "tradeCity": 2.349999713897705,
+          "tradeDevCard": 5.222221891085307,
+          "tradeRoad": 5.874999970197678,
+          "tradeSettlement": 4.399999499320984,
+          "twoRoadExpansionCount": 10,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 3,
+          "Ore": 4,
+          "Sheep": 7,
+          "Wheat": 4,
+          "Wood": 5,
+        },
+        "settlementNodeIds": [
+          0,
+          44,
+        ],
+        "startingCards": [
+          "Wheat",
+          "Brick",
+          "Sheep",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wood",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wood",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+        },
+        "totalProductionPips": 23,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.349999713897705,
+          "devCard": 5.222221891085307,
+          "road": 5.874999970197678,
+          "settlement": 4.399999499320984,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 0.6666666666666666,
+          "devCard": 2,
+          "road": 5,
+          "settlement": 4,
+        },
+        "directRecipeSurplus": {
+          "city": 2.666666666666667,
+          "devCard": 4,
+          "road": 0,
+          "settlement": 2,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            7,
+            9,
+            11,
+            15,
+            19,
+          ],
+          "twoRoadNodeIds": [
+            2,
+            8,
+            10,
+            12,
+            16,
+            18,
+            20,
+            25,
+            29,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 0.6666666666666666,
+          "directDevCard": 2,
+          "directRoad": 5,
+          "directSettlement": 4,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.25,
+          "surplusCity": 2.666666666666667,
+          "surplusDevCard": 4,
+          "surplusRoad": 0,
+          "surplusSettlement": 2,
+          "totalProductionPips": 20,
+          "tradeCity": 1.857142448425293,
+          "tradeDevCard": 4.16666587193807,
+          "tradeRoad": 6.25,
+          "tradeSettlement": 4.399999976158142,
+          "twoRoadExpansionCount": 9,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 5,
+          "Ore": 2,
+          "Sheep": 4,
+          "Wheat": 4,
+          "Wood": 5,
+        },
+        "settlementNodeIds": [
+          6,
+          14,
+        ],
+        "startingCards": [
+          "Sheep",
+          "Wood",
+          "Ore",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Ore",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Ore",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Brick",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Ore",
+            ],
+          },
+        },
+        "totalProductionPips": 20,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.857142448425293,
+          "devCard": 4.16666587193807,
+          "road": 6.25,
+          "settlement": 4.399999976158142,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 0,
+        "player": "P1",
+      },
+      {
+        "nodeId": 6,
+        "player": "P2",
+      },
+      {
+        "nodeId": 14,
+        "player": "P2",
+      },
+      {
+        "nodeId": 44,
+        "player": "P1",
+      },
+    ],
+    "verdict": "reject",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": false,
+    "greedyLine": [
+      {
+        "nodeId": 0,
+        "player": "P1",
+      },
+      {
+        "nodeId": 6,
+        "player": "P2",
+      },
+      {
+        "nodeId": 44,
+        "player": "P2",
+      },
+      {
+        "nodeId": 23,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": 0.3020563664402432,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 3,
+          "road": 3,
+          "settlement": 3,
+        },
+        "directRecipeSurplus": {
+          "city": 2.3333333333333335,
+          "devCard": 3,
+          "road": 4,
+          "settlement": 6,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            5,
+            7,
+            20,
+            22,
+            33,
+          ],
+          "twoRoadNodeIds": [
+            2,
+            4,
+            8,
+            14,
+            18,
+            21,
+            24,
+            34,
+            36,
+            37,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 3,
+          "Ore": 4,
+          "Sheep": 3,
+          "Wheat": 5,
+          "Wood": 7,
+        },
+        "settlementNodeIds": [
+          0,
+          23,
+        ],
+        "startingCards": [
+          "Wood",
+          "Brick",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.4285709857940674,
+          "devCard": 4.7777775923411046,
+          "road": 6.199999988079071,
+          "settlement": 3.999999463558197,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 0,
+          "devCard": 0,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 8,
+          "devCard": 15,
+          "road": 8,
+          "settlement": 23,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            7,
+            9,
+            11,
+            41,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            8,
+            10,
+            12,
+            18,
+            32,
+            34,
+            42,
+            46,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Wood",
+          "Ore",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 8,
+          "Ore": 0,
+          "Sheep": 7,
+          "Wheat": 8,
+          "Wood": 0,
+        },
+        "settlementNodeIds": [
+          6,
+          44,
+        ],
+        "startingCards": [
+          "Wheat",
+          "Brick",
+          "Sheep",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wood",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wood",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Sheep",
+            ],
+          },
+        },
+        "totalProductionPips": 23,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.6428569078445432,
+          "devCard": 3.8333324193954468,
+          "road": 4.599999725818634,
+          "settlement": 3.285714089870453,
+        },
+      },
+    },
+    "greedyRegret": 0.21517001808360858,
+    "greedySeatAdvantage": 11.346138024884226,
+    "lineSensitivity": 0.6494392416207866,
+    "meaningfulFirstPickCount": 1,
+    "meaningfulResponseCount": 4,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [],
+      "P2": [
+        "city",
+      ],
+    },
+    "portDependence": {
+      "P1": 0.48936169953732644,
+      "P2": 0.6410255620230176,
+      "maximum": 0.6410255620230176,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 4,
+      "P2": 3,
+    },
+    "weakerPortfolioValue": 34.57907129764557,
+    "weakerSeat": "P2",
+  },
+  "rankingComponents": {
+    "depthScore": 25,
+    "fairnessScore": 0,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "expansion-leaning",
+    "knife-edge",
+    "ore-scarce",
+    "port-dependent",
+  ],
+}
+`;
+
+exports[`v2 calibration fixtures > locks the complete stable summary for official-seed-2604-strategic-denial 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P2",
+    "normalisedSeatAdvantage": -0.075936,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 3,
+          "road": 2,
+          "settlement": 2,
+        },
+        "directRecipeSurplus": {
+          "city": 0.3333333333333335,
+          "devCard": 3,
+          "road": 2,
+          "settlement": 6,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            21,
+            32,
+            34,
+            44,
+            51,
+            53,
+          ],
+          "twoRoadNodeIds": [
+            18,
+            20,
+            29,
+            33,
+            41,
+            47,
+            52,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [
+          "Any",
+        ],
+        "policyFeatures": {
+          "directCity": 1.3333333333333333,
+          "directDevCard": 3,
+          "directRoad": 2,
+          "directSettlement": 2,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 1,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.2777777777777778,
+          "surplusCity": 0.3333333333333335,
+          "surplusDevCard": 3,
+          "surplusRoad": 2,
+          "surplusSettlement": 6,
+          "totalProductionPips": 18,
+          "tradeCity": 2.1333329200744626,
+          "tradeDevCard": 4.571428298950195,
+          "tradeRoad": 4.999999701976776,
+          "tradeSettlement": 3.499999523162842,
+          "twoRoadExpansionCount": 7,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 2,
+          "Ore": 4,
+          "Sheep": 5,
+          "Wheat": 3,
+          "Wood": 4,
+        },
+        "settlementNodeIds": [
+          31,
+          50,
+        ],
+        "startingCards": [
+          "Wheat",
+          "Ore",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Ore",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Ore",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wood",
+              "Brick",
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Ore",
+            ],
+          },
+        },
+        "totalProductionPips": 18,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.1333329200744626,
+          "devCard": 4.571428298950195,
+          "road": 4.999999701976776,
+          "settlement": 3.499999523162842,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 2,
+          "devCard": 3,
+          "road": 1,
+          "settlement": 1,
+        },
+        "directRecipeSurplus": {
+          "city": 2,
+          "devCard": 6,
+          "road": 3,
+          "settlement": 8,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            5,
+            7,
+            34,
+            44,
+            46,
+          ],
+          "twoRoadNodeIds": [
+            2,
+            4,
+            6,
+            8,
+            14,
+            18,
+            33,
+            41,
+            45,
+            52,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 2,
+          "directDevCard": 3,
+          "directRoad": 1,
+          "directSettlement": 1,
+          "immediateCity": 0,
+          "immediateDevCard": 1,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.4,
+          "surplusCity": 2,
+          "surplusDevCard": 6,
+          "surplusRoad": 3,
+          "surplusSettlement": 8,
+          "totalProductionPips": 20,
+          "tradeCity": 2.799999237060547,
+          "tradeDevCard": 4.555555184682211,
+          "tradeRoad": 4.375,
+          "tradeSettlement": 3.1999999284744263,
+          "twoRoadExpansionCount": 10,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 1,
+          "Ore": 8,
+          "Sheep": 3,
+          "Wheat": 4,
+          "Wood": 4,
+        },
+        "settlementNodeIds": [
+          43,
+          0,
+        ],
+        "startingCards": [
+          "Ore",
+          "Sheep",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Sheep",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Sheep",
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Sheep",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 20,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.799999237060547,
+          "devCard": 4.555555184682211,
+          "road": 4.375,
+          "settlement": 3.1999999284744263,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 31,
+        "player": "P1",
+      },
+      {
+        "nodeId": 43,
+        "player": "P2",
+      },
+      {
+        "nodeId": 0,
+        "player": "P2",
+      },
+      {
+        "nodeId": 50,
+        "player": "P1",
+      },
+    ],
+    "verdict": "review",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": true,
+    "greedyLine": [
+      {
+        "nodeId": 0,
+        "player": "P1",
+      },
+      {
+        "nodeId": 44,
+        "player": "P2",
+      },
+      {
+        "nodeId": 31,
+        "player": "P2",
+      },
+      {
+        "nodeId": 42,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": -0.14165311507669537,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 4,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 4.333333333333334,
+          "devCard": 5,
+          "road": 5,
+          "settlement": 18,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            5,
+            7,
+            38,
+            41,
+            47,
+          ],
+          "twoRoadNodeIds": [
+            2,
+            4,
+            6,
+            8,
+            14,
+            18,
+            30,
+            39,
+            48,
+            51,
+          ],
+        },
+        "missingProducedResources": [
+          "Brick",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 0,
+          "Ore": 4,
+          "Sheep": 6,
+          "Wheat": 7,
+          "Wood": 5,
+        },
+        "settlementNodeIds": [
+          0,
+          42,
+        ],
+        "startingCards": [
+          "Sheep",
+          "Wood",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.4285709857940674,
+          "devCard": 5.666666507720947,
+          "road": 4.399999737739563,
+          "settlement": 3.1428569555282593,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 3,
+          "road": 2,
+          "settlement": 2,
+        },
+        "directRecipeSurplus": {
+          "city": 0.3333333333333335,
+          "devCard": 3,
+          "road": 6,
+          "settlement": 10,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            21,
+            32,
+            34,
+            41,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            18,
+            20,
+            29,
+            33,
+            46,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 2,
+          "Ore": 4,
+          "Sheep": 5,
+          "Wheat": 3,
+          "Wood": 8,
+        },
+        "settlementNodeIds": [
+          44,
+          31,
+        ],
+        "startingCards": [
+          "Brick",
+          "Sheep",
+          "Wood",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 5,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Sheep",
+              "Wood",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Sheep",
+              "Wood",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Sheep",
+              "Wood",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.1499995231628417,
+          "devCard": 4.7777775923411046,
+          "road": 5.599999904632568,
+          "settlement": 3.699999749660492,
+        },
+      },
+    },
+    "greedyRegret": 0.06571741203336531,
+    "greedySeatAdvantage": -5.107813859376041,
+    "lineSensitivity": 0.4658578045070502,
+    "meaningfulFirstPickCount": 2,
+    "meaningfulResponseCount": 4,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [],
+      "P2": [],
+    },
+    "portDependence": {
+      "P1": 0.5999999761581407,
+      "P2": 0.7714285714285715,
+      "maximum": 0.7714285714285715,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "weakerPortfolioValue": 30.650904603163408,
+    "weakerSeat": "P1",
+  },
+  "rankingComponents": {
+    "depthScore": 50,
+    "fairnessScore": 5.080371195837429,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "brick-scarce",
+    "development-leaning",
+    "knife-edge",
+    "port-dependent",
+    "starting-tempo-asymmetry",
+    "strategic",
+  ],
+}
+`;
+
+exports[`v2 calibration fixtures > locks the complete stable summary for scarce-but-fair 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P1",
+    "normalisedSeatAdvantage": 0.026284,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1,
+          "devCard": 2,
+          "road": 3,
+          "settlement": 2,
+        },
+        "directRecipeSurplus": {
+          "city": 2,
+          "devCard": 6,
+          "road": 5,
+          "settlement": 10,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            14,
+            16,
+            19,
+            25,
+            30,
+            32,
+          ],
+          "twoRoadNodeIds": [
+            17,
+            18,
+            26,
+            28,
+            31,
+            38,
+            41,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1,
+          "directDevCard": 2,
+          "directRoad": 3,
+          "directSettlement": 2,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 1,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.34782608695652173,
+          "surplusCity": 2,
+          "surplusDevCard": 6,
+          "surplusRoad": 5,
+          "surplusSettlement": 10,
+          "totalProductionPips": 23,
+          "tradeCity": 2.199999475479126,
+          "tradeDevCard": 4.833333094914755,
+          "tradeRoad": 6.399999707937241,
+          "tradeSettlement": 3.7999995052814484,
+          "twoRoadExpansionCount": 7,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 8,
+          "Ore": 5,
+          "Sheep": 5,
+          "Wheat": 2,
+          "Wood": 3,
+        },
+        "settlementNodeIds": [
+          29,
+          15,
+        ],
+        "startingCards": [
+          "Ore",
+          "Wood",
+          "Brick",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wood",
+              "Brick",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wood",
+              "Brick",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Ore",
+              "Wood",
+              "Brick",
+            ],
+          },
+        },
+        "totalProductionPips": 23,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.199999475479126,
+          "devCard": 4.833333094914755,
+          "road": 6.399999707937241,
+          "settlement": 3.7999995052814484,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1,
+          "devCard": 2,
+          "road": 3,
+          "settlement": 2,
+        },
+        "directRecipeSurplus": {
+          "city": 2,
+          "devCard": 6,
+          "road": 4,
+          "settlement": 9,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            5,
+            7,
+            23,
+            34,
+            36,
+          ],
+          "twoRoadNodeIds": [
+            2,
+            4,
+            6,
+            8,
+            18,
+            20,
+            22,
+            31,
+            35,
+            43,
+            45,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1,
+          "directDevCard": 2,
+          "directRoad": 3,
+          "directSettlement": 2,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 1,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.3181818181818182,
+          "surplusCity": 2,
+          "surplusDevCard": 6,
+          "surplusRoad": 4,
+          "surplusSettlement": 9,
+          "totalProductionPips": 22,
+          "tradeCity": 2.1499995231628417,
+          "tradeDevCard": 4.666666587193807,
+          "tradeRoad": 6.199999988079071,
+          "tradeSettlement": 3.699999749660492,
+          "twoRoadExpansionCount": 11,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 7,
+          "Ore": 5,
+          "Sheep": 5,
+          "Wheat": 2,
+          "Wood": 3,
+        },
+        "settlementNodeIds": [
+          0,
+          33,
+        ],
+        "startingCards": [
+          "Wood",
+          "Brick",
+          "Ore",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Ore",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Ore",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Ore",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.1499995231628417,
+          "devCard": 4.666666587193807,
+          "road": 6.199999988079071,
+          "settlement": 3.699999749660492,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 29,
+        "player": "P1",
+      },
+      {
+        "nodeId": 0,
+        "player": "P2",
+      },
+      {
+        "nodeId": 33,
+        "player": "P2",
+      },
+      {
+        "nodeId": 15,
+        "player": "P1",
+      },
+    ],
+    "verdict": "review",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": false,
+    "greedyLine": [
+      {
+        "nodeId": 30,
+        "player": "P1",
+      },
+      {
+        "nodeId": 15,
+        "player": "P2",
+      },
+      {
+        "nodeId": 33,
+        "player": "P2",
+      },
+      {
+        "nodeId": 7,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": -0.0518119569746793,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 0,
+          "devCard": 0,
+          "road": 4,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 0,
+          "devCard": 14,
+          "road": 3,
+          "settlement": 25,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            0,
+            6,
+            18,
+            25,
+            29,
+            38,
+          ],
+          "twoRoadNodeIds": [
+            1,
+            5,
+            9,
+            11,
+            19,
+            21,
+            26,
+            32,
+            39,
+            42,
+          ],
+        },
+        "missingProducedResources": [
+          "Wheat",
+          "Ore",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 7,
+          "Ore": 0,
+          "Sheep": 14,
+          "Wheat": 0,
+          "Wood": 4,
+        },
+        "settlementNodeIds": [
+          30,
+          7,
+        ],
+        "startingCards": [
+          "Sheep",
+          "Brick",
+          "Sheep",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 5,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wood",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Brick",
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Brick",
+              "Sheep",
+            ],
+          },
+        },
+        "totalProductionPips": 25,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.25,
+          "devCard": 2.7777771155039472,
+          "road": 7.249999791383743,
+          "settlement": 3.57142835855484,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 0,
+          "devCard": 0,
+          "road": 6,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 10,
+          "devCard": 10,
+          "road": 2,
+          "settlement": 14,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            14,
+            16,
+            23,
+            25,
+            34,
+            36,
+          ],
+          "twoRoadNodeIds": [
+            1,
+            17,
+            19,
+            20,
+            22,
+            26,
+            28,
+            31,
+            35,
+            43,
+            45,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+          "Wheat",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 8,
+          "Ore": 10,
+          "Sheep": 0,
+          "Wheat": 0,
+          "Wood": 6,
+        },
+        "settlementNodeIds": [
+          15,
+          33,
+        ],
+        "startingCards": [
+          "Wood",
+          "Brick",
+          "Ore",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Ore",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Ore",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Ore",
+            ],
+          },
+        },
+        "totalProductionPips": 24,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.1818178176879877,
+          "devCard": 2.666666030883789,
+          "road": 8.25,
+          "settlement": 2.3999998569488525,
+        },
+      },
+    },
+    "greedyRegret": 0.0780963017024567,
+    "greedySeatAdvantage": -1.6481407001018482,
+    "lineSensitivity": 0.5658001281923767,
+    "meaningfulFirstPickCount": 2,
+    "meaningfulResponseCount": 14,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [],
+      "P2": [],
+    },
+    "portDependence": {
+      "P1": 0.5862068761401444,
+      "P2": 0.5714285641300434,
+      "maximum": 0.5862068761401444,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "weakerPortfolioValue": 35.85136355720866,
+    "weakerSeat": "P2",
+  },
+  "rankingComponents": {
+    "depthScore": 50,
+    "fairnessScore": 67.14456909027827,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "expansion-leaning",
+    "port-dependent",
+    "strategic",
+    "wheat-scarce",
+  ],
+}
+`;
+
+exports[`v2 calibration fixtures > locks the complete stable summary for second-pick-sensitive 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P1",
+    "normalisedSeatAdvantage": 0.01556,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.6666666666666667,
+          "devCard": 5,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 2.6666666666666665,
+          "devCard": 2,
+          "road": 4,
+          "settlement": 16,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            29,
+            31,
+            41,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            19,
+            21,
+            34,
+            46,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Brick",
+        ],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1.6666666666666667,
+          "directDevCard": 5,
+          "directRoad": 0,
+          "directSettlement": 0,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 1,
+          "oneRoadExpansionCount": 5,
+          "ownedPortCount": 0,
+          "producedResourceCount": 4,
+          "productionConcentration": 0.2857142857142857,
+          "surplusCity": 2.6666666666666665,
+          "surplusDevCard": 2,
+          "surplusRoad": 4,
+          "surplusSettlement": 16,
+          "totalProductionPips": 21,
+          "tradeCity": 2.571428346633912,
+          "tradeDevCard": 5.999999642372131,
+          "tradeRoad": 4.124999910593033,
+          "tradeSettlement": 2.9999998211860657,
+          "twoRoadExpansionCount": 6,
+        },
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 0,
+          "Ore": 5,
+          "Sheep": 6,
+          "Wheat": 6,
+          "Wood": 4,
+        },
+        "settlementNodeIds": [
+          44,
+          32,
+        ],
+        "startingCards": [
+          "Sheep",
+          "Wood",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Wood",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 21,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.571428346633912,
+          "devCard": 5.999999642372131,
+          "road": 4.124999910593033,
+          "settlement": 2.9999998211860657,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 0,
+          "devCard": 0,
+          "road": 7,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 4,
+          "devCard": 4,
+          "road": 4,
+          "settlement": 18,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            6,
+            10,
+            20,
+            30,
+            39,
+            42,
+          ],
+          "twoRoadNodeIds": [
+            7,
+            9,
+            13,
+            21,
+            23,
+            24,
+            25,
+            40,
+            47,
+            49,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+          "Wheat",
+        ],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 0,
+          "directDevCard": 0,
+          "directRoad": 7,
+          "directSettlement": 0,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 1,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 2,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 3,
+          "productionConcentration": 0.5,
+          "surplusCity": 4,
+          "surplusDevCard": 4,
+          "surplusRoad": 4,
+          "surplusSettlement": 18,
+          "totalProductionPips": 22,
+          "tradeCity": 1.699999952316284,
+          "tradeDevCard": 2.444443861643473,
+          "tradeRoad": 8.59999966621399,
+          "tradeSettlement": 2.1999998688697815,
+          "twoRoadExpansionCount": 10,
+        },
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 7,
+          "Ore": 4,
+          "Sheep": 0,
+          "Wheat": 0,
+          "Wood": 11,
+        },
+        "settlementNodeIds": [
+          11,
+          38,
+        ],
+        "startingCards": [
+          "Brick",
+          "Wood",
+          "Ore",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Ore",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Ore",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Ore",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.699999952316284,
+          "devCard": 2.444443861643473,
+          "road": 8.59999966621399,
+          "settlement": 2.1999998688697815,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 44,
+        "player": "P1",
+      },
+      {
+        "nodeId": 11,
+        "player": "P2",
+      },
+      {
+        "nodeId": 38,
+        "player": "P2",
+      },
+      {
+        "nodeId": 32,
+        "player": "P1",
+      },
+    ],
+    "verdict": "review",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": false,
+    "greedyLine": [
+      {
+        "nodeId": 6,
+        "player": "P1",
+      },
+      {
+        "nodeId": 44,
+        "player": "P2",
+      },
+      {
+        "nodeId": 42,
+        "player": "P2",
+      },
+      {
+        "nodeId": 30,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": -0.011680623822617024,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1,
+          "devCard": 0,
+          "road": 7,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 0,
+          "devCard": 5,
+          "road": 2,
+          "settlement": 18,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            7,
+            9,
+            11,
+            25,
+            29,
+            38,
+          ],
+          "twoRoadNodeIds": [
+            0,
+            8,
+            10,
+            12,
+            15,
+            18,
+            19,
+            20,
+            26,
+            32,
+            39,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 7,
+          "Ore": 3,
+          "Sheep": 0,
+          "Wheat": 2,
+          "Wood": 9,
+        },
+        "settlementNodeIds": [
+          6,
+          30,
+        ],
+        "startingCards": [
+          "Wheat",
+          "Brick",
+          "Wood",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Wood",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Wood",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Brick",
+              "Wood",
+            ],
+          },
+        },
+        "totalProductionPips": 21,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.7999996423721312,
+          "devCard": 2.9999994039535522,
+          "road": 8.399999499320984,
+          "settlement": 2.699999839067459,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1.5,
+          "devCard": 3,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 4.5,
+          "devCard": 11,
+          "road": 4,
+          "settlement": 15,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            38,
+            41,
+            43,
+            47,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            32,
+            34,
+            39,
+            46,
+            48,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Brick",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 0,
+          "Ore": 9,
+          "Sheep": 8,
+          "Wheat": 3,
+          "Wood": 4,
+        },
+        "settlementNodeIds": [
+          44,
+          42,
+        ],
+        "startingCards": [
+          "Wood",
+          "Ore",
+          "Sheep",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Ore",
+              "Sheep",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Ore",
+              "Sheep",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Brick",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Ore",
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Brick",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Ore",
+              "Sheep",
+            ],
+          },
+        },
+        "totalProductionPips": 24,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 3,
+          "devCard": 5.5,
+          "road": 4.5,
+          "settlement": 3.299999713897705,
+        },
+      },
+    },
+    "greedyRegret": 0.027241109089306503,
+    "greedySeatAdvantage": -0.37517871662548075,
+    "lineSensitivity": 0.5865100788106821,
+    "meaningfulFirstPickCount": 2,
+    "meaningfulResponseCount": 6,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [
+        "road",
+        "settlement",
+      ],
+      "P2": [
+        "city",
+        "devCard",
+        "settlement",
+      ],
+    },
+    "portDependence": {
+      "P1": 1,
+      "P2": 1,
+      "maximum": 1,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 2,
+      "P2": 1,
+    },
+    "weakerPortfolioValue": 30.12033320379257,
+    "weakerSeat": "P2",
+  },
+  "rankingComponents": {
+    "depthScore": 50,
+    "fairnessScore": 80.54939341663815,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "port-dependent",
+    "resource-clustered",
+    "starting-tempo-asymmetry",
+    "strategic",
+  ],
+}
+`;
+
+exports[`v2 calibration fixtures > locks the complete stable summary for varied-openings 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P1",
+    "normalisedSeatAdvantage": 0.056736,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1,
+          "devCard": 3,
+          "road": 1,
+          "settlement": 1,
+        },
+        "directRecipeSurplus": {
+          "city": 3,
+          "devCard": 6,
+          "road": 3,
+          "settlement": 13,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            15,
+            19,
+            20,
+            22,
+            33,
+          ],
+          "twoRoadNodeIds": [
+            0,
+            2,
+            11,
+            16,
+            18,
+            21,
+            24,
+            29,
+            36,
+            37,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1,
+          "directDevCard": 3,
+          "directRoad": 1,
+          "directSettlement": 1,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 1,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.35,
+          "surplusCity": 3,
+          "surplusDevCard": 6,
+          "surplusRoad": 3,
+          "surplusSettlement": 13,
+          "totalProductionPips": 20,
+          "tradeCity": 2.0714282989501953,
+          "tradeDevCard": 4.833332697550456,
+          "tradeRoad": 4.375,
+          "tradeSettlement": 3.285713791847229,
+          "twoRoadExpansionCount": 10,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 4,
+          "Ore": 3,
+          "Sheep": 7,
+          "Wheat": 5,
+          "Wood": 1,
+        },
+        "settlementNodeIds": [
+          23,
+          14,
+        ],
+        "startingCards": [
+          "Wood",
+          "Brick",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 20,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.0714282989501953,
+          "devCard": 4.833332697550456,
+          "road": 4.375,
+          "settlement": 3.285713791847229,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 1,
+          "road": 2,
+          "settlement": 1,
+        },
+        "directRecipeSurplus": {
+          "city": 6.333333333333334,
+          "devCard": 11,
+          "road": 1,
+          "settlement": 11,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            15,
+            26,
+            30,
+            34,
+            44,
+            46,
+          ],
+          "twoRoadNodeIds": [
+            16,
+            27,
+            29,
+            31,
+            38,
+            40,
+            41,
+            45,
+            50,
+            52,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1.3333333333333333,
+          "directDevCard": 1,
+          "directRoad": 2,
+          "directSettlement": 1,
+          "immediateCity": 0,
+          "immediateDevCard": 1,
+          "immediateRoad": 0,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.47368421052631576,
+          "surplusCity": 6.333333333333334,
+          "surplusDevCard": 11,
+          "surplusRoad": 1,
+          "surplusSettlement": 11,
+          "totalProductionPips": 19,
+          "tradeCity": 2.2142854213714607,
+          "tradeDevCard": 3.666666269302368,
+          "tradeRoad": 4.249999642372131,
+          "tradeSettlement": 2.799999624490738,
+          "twoRoadExpansionCount": 10,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 3,
+          "Ore": 4,
+          "Sheep": 1,
+          "Wheat": 9,
+          "Wood": 2,
+        },
+        "settlementNodeIds": [
+          25,
+          43,
+        ],
+        "startingCards": [
+          "Wheat",
+          "Sheep",
+          "Ore",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Sheep",
+              "Ore",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Sheep",
+              "Ore",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Wheat",
+              "Sheep",
+              "Ore",
+            ],
+          },
+        },
+        "totalProductionPips": 19,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.2142854213714607,
+          "devCard": 3.666666269302368,
+          "road": 4.249999642372131,
+          "settlement": 2.799999624490738,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 23,
+        "player": "P1",
+      },
+      {
+        "nodeId": 25,
+        "player": "P2",
+      },
+      {
+        "nodeId": 43,
+        "player": "P2",
+      },
+      {
+        "nodeId": 14,
+        "player": "P1",
+      },
+    ],
+    "verdict": "review",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": false,
+    "greedyLine": [
+      {
+        "nodeId": 44,
+        "player": "P1",
+      },
+      {
+        "nodeId": 0,
+        "player": "P2",
+      },
+      {
+        "nodeId": 19,
+        "player": "P2",
+      },
+      {
+        "nodeId": 25,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": 0.12374162411731209,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 0,
+          "road": 2,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 9.333333333333334,
+          "devCard": 16,
+          "road": 1,
+          "settlement": 17,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            15,
+            26,
+            30,
+            41,
+            43,
+            50,
+          ],
+          "twoRoadNodeIds": [
+            16,
+            27,
+            32,
+            34,
+            38,
+            40,
+            42,
+            46,
+            51,
+            53,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 3,
+          "Ore": 4,
+          "Sheep": 0,
+          "Wheat": 12,
+          "Wood": 2,
+        },
+        "settlementNodeIds": [
+          44,
+          25,
+        ],
+        "startingCards": [
+          "Wood",
+          "Wheat",
+          "Brick",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 4,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Wheat",
+              "Brick",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Wheat",
+              "Brick",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Wheat",
+              "Brick",
+            ],
+          },
+        },
+        "totalProductionPips": 21,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.357142734527588,
+          "devCard": 3.5,
+          "road": 4.4999997317790985,
+          "settlement": 2.699999839067459,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1.3333333333333333,
+          "devCard": 0,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 4.333333333333334,
+          "devCard": 11,
+          "road": 11,
+          "settlement": 18,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            1,
+            5,
+            7,
+            14,
+            18,
+            29,
+          ],
+          "twoRoadNodeIds": [
+            2,
+            4,
+            6,
+            8,
+            21,
+            32,
+          ],
+        },
+        "missingProducedResources": [
+          "Wood",
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 3,
+        "productionPips": {
+          "Brick": 11,
+          "Ore": 4,
+          "Sheep": 0,
+          "Wheat": 7,
+          "Wood": 0,
+        },
+        "settlementNodeIds": [
+          0,
+          19,
+        ],
+        "startingCards": [
+          "Brick",
+          "Wheat",
+          "Wheat",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wheat",
+              "Wheat",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wheat",
+              "Wheat",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 1,
+            "missingResources": [
+              "Wood",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wheat",
+              "Wheat",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Sheep",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wheat",
+              "Wheat",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.4285709857940674,
+          "devCard": 3.6666666666666665,
+          "road": 4.399999737739563,
+          "settlement": 2.1999998688697815,
+        },
+      },
+    },
+    "greedyRegret": 0.06700589750703463,
+    "greedySeatAdvantage": 3.5927143070357346,
+    "lineSensitivity": 0.5530525868215161,
+    "meaningfulFirstPickCount": 2,
+    "meaningfulResponseCount": 18,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [],
+      "P2": [],
+    },
+    "portDependence": {
+      "P1": 0.7714285714285715,
+      "P2": 0.7272726977167019,
+      "maximum": 0.7714285714285715,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "weakerPortfolioValue": 30.66787954015481,
+    "weakerSeat": "P2",
+  },
+  "rankingComponents": {
+    "depthScore": 50,
+    "fairnessScore": 29.08034173715318,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "development-leaning",
+    "port-dependent",
+    "resource-clustered",
+    "strategic",
+  ],
+}
+`;
+
+exports[`v2 calibration fixtures > locks the complete stable summary for wheat-monopoly 1`] = `
+{
+  "evaluatorIdentity": {
+    "featureVersion": "duel-opening-features-v1",
+    "policyVersion": "duel-fair-v2",
+    "profileHash": "115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496",
+  },
+  "fairness": {
+    "favouredSeat": "P1",
+    "normalisedSeatAdvantage": 0.010485,
+    "portfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 0.6666666666666666,
+          "devCard": 2,
+          "road": 3,
+          "settlement": 3,
+        },
+        "directRecipeSurplus": {
+          "city": 1.6666666666666667,
+          "devCard": 3,
+          "road": 2,
+          "settlement": 3,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            18,
+            20,
+            31,
+            44,
+            51,
+            53,
+          ],
+          "twoRoadNodeIds": [
+            7,
+            11,
+            19,
+            23,
+            34,
+            43,
+            47,
+            52,
+          ],
+        },
+        "missingProducedResources": [],
+        "ownedPorts": [
+          "Any",
+        ],
+        "policyFeatures": {
+          "directCity": 0.6666666666666666,
+          "directDevCard": 2,
+          "directRoad": 3,
+          "directSettlement": 3,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 1,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 0,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 1,
+          "producedResourceCount": 5,
+          "productionConcentration": 0.29411764705882354,
+          "surplusCity": 1.6666666666666667,
+          "surplusDevCard": 3,
+          "surplusRoad": 2,
+          "surplusSettlement": 3,
+          "totalProductionPips": 17,
+          "tradeCity": 1.7999992847442625,
+          "tradeDevCard": 3.8571422894795737,
+          "tradeRoad": 5.499999672174454,
+          "tradeSettlement": 3.624999910593033,
+          "twoRoadExpansionCount": 8,
+        },
+        "producedResourceCount": 5,
+        "productionPips": {
+          "Brick": 5,
+          "Ore": 2,
+          "Sheep": 4,
+          "Wheat": 3,
+          "Wood": 3,
+        },
+        "settlementNodeIds": [
+          21,
+          50,
+        ],
+        "startingCards": [
+          "Wood",
+          "Brick",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 5,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Wood",
+              "Brick",
+            ],
+          },
+        },
+        "totalProductionPips": 17,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.7999992847442625,
+          "devCard": 3.8571422894795737,
+          "road": 5.499999672174454,
+          "settlement": 3.624999910593033,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 1.5,
+          "devCard": 0,
+          "road": 5,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 0.5,
+          "devCard": 8,
+          "road": 3,
+          "settlement": 16,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            0,
+            2,
+            14,
+            32,
+            42,
+            44,
+          ],
+          "twoRoadNodeIds": [
+            3,
+            5,
+            7,
+            15,
+            17,
+            19,
+            29,
+            38,
+            43,
+            47,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "policyFeatures": {
+          "directCity": 1.5,
+          "directDevCard": 0,
+          "directRoad": 5,
+          "directSettlement": 0,
+          "immediateCity": 0,
+          "immediateDevCard": 0,
+          "immediateRoad": 1,
+          "immediateSettlement": 0,
+          "missingProducedResourceCount": 1,
+          "oneRoadExpansionCount": 6,
+          "ownedPortCount": 0,
+          "producedResourceCount": 4,
+          "productionConcentration": 0.38095238095238093,
+          "surplusCity": 0.5,
+          "surplusDevCard": 8,
+          "surplusRoad": 3,
+          "surplusSettlement": 16,
+          "totalProductionPips": 21,
+          "tradeCity": 2.2499999284744265,
+          "tradeDevCard": 3.333333134651184,
+          "tradeRoad": 7.199999570846558,
+          "tradeSettlement": 2.9999998211860657,
+          "twoRoadExpansionCount": 10,
+        },
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 8,
+          "Ore": 5,
+          "Sheep": 0,
+          "Wheat": 3,
+          "Wood": 5,
+        },
+        "settlementNodeIds": [
+          1,
+          41,
+        ],
+        "startingCards": [
+          "Brick",
+          "Wood",
+          "Wood",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 5,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wood",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wood",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wood",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wood",
+            ],
+          },
+        },
+        "totalProductionPips": 21,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.2499999284744265,
+          "devCard": 3.333333134651184,
+          "road": 7.199999570846558,
+          "settlement": 2.9999998211860657,
+        },
+      },
+    },
+    "solvedLine": [
+      {
+        "nodeId": 21,
+        "player": "P1",
+      },
+      {
+        "nodeId": 1,
+        "player": "P2",
+      },
+      {
+        "nodeId": 41,
+        "player": "P2",
+      },
+      {
+        "nodeId": 50,
+        "player": "P1",
+      },
+    ],
+    "verdict": "review",
+  },
+  "overallScore": null,
+  "placementDepth": {
+    "forcedDefence": false,
+    "greedyLine": [
+      {
+        "nodeId": 1,
+        "player": "P1",
+      },
+      {
+        "nodeId": 29,
+        "player": "P2",
+      },
+      {
+        "nodeId": 41,
+        "player": "P2",
+      },
+      {
+        "nodeId": 6,
+        "player": "P1",
+      },
+    ],
+    "greedyNormalisedSeatAdvantage": -0.014502215993555601,
+    "greedyPortfolios": {
+      "P1": {
+        "directRecipeCapacity": {
+          "city": 1.5,
+          "devCard": 3,
+          "road": 0,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 0.5,
+          "devCard": 10,
+          "road": 3,
+          "settlement": 17,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            0,
+            2,
+            7,
+            9,
+            11,
+            14,
+          ],
+          "twoRoadNodeIds": [
+            3,
+            5,
+            8,
+            10,
+            12,
+            15,
+            17,
+            18,
+            20,
+          ],
+        },
+        "missingProducedResources": [
+          "Wood",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 3,
+          "Ore": 5,
+          "Sheep": 11,
+          "Wheat": 3,
+          "Wood": 0,
+        },
+        "settlementNodeIds": [
+          1,
+          6,
+        ],
+        "startingCards": [
+          "Sheep",
+          "Sheep",
+          "Sheep",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 5,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wheat",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+          "road": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Wood",
+              "Brick",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Wood",
+              "Brick",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Sheep",
+              "Sheep",
+              "Sheep",
+            ],
+          },
+        },
+        "totalProductionPips": 22,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 2.2999999046325685,
+          "devCard": 5.111110607782999,
+          "road": 3.8749995827674866,
+          "settlement": 3.0769227147102356,
+        },
+      },
+      "P2": {
+        "directRecipeCapacity": {
+          "city": 0.6666666666666666,
+          "devCard": 0,
+          "road": 5,
+          "settlement": 0,
+        },
+        "directRecipeSurplus": {
+          "city": 2.666666666666667,
+          "devCard": 6,
+          "road": 5,
+          "settlement": 19,
+        },
+        "expansion": {
+          "oneRoadNodeIds": [
+            19,
+            30,
+            32,
+            42,
+            44,
+          ],
+          "twoRoadNodeIds": [
+            18,
+            25,
+            31,
+            38,
+            43,
+            47,
+            50,
+          ],
+        },
+        "missingProducedResources": [
+          "Sheep",
+        ],
+        "ownedPorts": [],
+        "producedResourceCount": 4,
+        "productionPips": {
+          "Brick": 10,
+          "Ore": 2,
+          "Sheep": 0,
+          "Wheat": 4,
+          "Wood": 5,
+        },
+        "settlementNodeIds": [
+          29,
+          41,
+        ],
+        "startingCards": [
+          "Brick",
+          "Wood",
+          "Wood",
+        ],
+        "startingReadiness": {
+          "city": {
+            "canBuyNow": false,
+            "missingCardCount": 5,
+            "missingResources": [
+              "Wheat",
+              "Wheat",
+              "Ore",
+              "Ore",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wood",
+            ],
+          },
+          "devCard": {
+            "canBuyNow": false,
+            "missingCardCount": 3,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+              "Ore",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wood",
+            ],
+          },
+          "road": {
+            "canBuyNow": true,
+            "missingCardCount": 0,
+            "missingResources": [],
+            "remainingCards": [
+              "Wood",
+            ],
+          },
+          "settlement": {
+            "canBuyNow": false,
+            "missingCardCount": 2,
+            "missingResources": [
+              "Sheep",
+              "Wheat",
+            ],
+            "remainingCards": [
+              "Brick",
+              "Wood",
+              "Wood",
+            ],
+          },
+        },
+        "totalProductionPips": 21,
+        "tradeAdjustedRecipeCapacity": {
+          "city": 1.9285710096359252,
+          "devCard": 2.9999994039535522,
+          "road": 7.199999570846558,
+          "settlement": 2.9999998211860657,
+        },
+      },
+    },
+    "greedyRegret": 0.024987184592421795,
+    "greedySeatAdvantage": -0.439578738144462,
+    "lineSensitivity": 0.6103679136769671,
+    "meaningfulFirstPickCount": 1,
+    "meaningfulResponseCount": 6,
+  },
+  "quality": {
+    "noCredibleRecipes": {
+      "P1": [
+        "city",
+      ],
+      "P2": [
+        "devCard",
+        "settlement",
+      ],
+    },
+    "portDependence": {
+      "P1": 0.6296294824576087,
+      "P2": 1,
+      "maximum": 1,
+    },
+    "tradeAdjustedViableRecipeCounts": {
+      "P1": 4,
+      "P2": 4,
+    },
+    "viableRecipeCounts": {
+      "P1": 3,
+      "P2": 2,
+    },
+    "weakerPortfolioValue": 30.953285611765725,
+    "weakerSeat": "P2",
+  },
+  "rankingComponents": {
+    "depthScore": 25,
+    "fairnessScore": 86.89378925141725,
+    "qualityScore": 100,
+  },
+  "screenVerdict": "pass",
+  "tags": [
+    "expansion-leaning",
+    "port-dependent",
+    "resource-clustered",
+  ],
+}
+`;
