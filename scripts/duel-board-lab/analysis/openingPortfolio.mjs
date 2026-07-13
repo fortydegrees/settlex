@@ -28,8 +28,11 @@ function freezePath(path) {
 
 export function compileExpansionPaths(facts, orderedNodeIds) {
   const nodeIds = Object.freeze([...orderedNodeIds]);
-  const knownNodeIds = new Set(facts.nodes.map((node) => node.nodeId));
-  if (nodeIds.some((nodeId) => !knownNodeIds.has(nodeId))) throw new Error("unknown opening node");
+  const nodesById = new Map(facts.nodes.map((node) => [node.nodeId, node]));
+  if (nodeIds.some((nodeId) => !nodesById.has(nodeId))) throw new Error("unknown opening node");
+  if (nodesById.get(nodeIds[0]).blockedNodeIds.includes(nodeIds[1])) {
+    throw new Error("illegal opening pair");
+  }
 
   const blockedNodeMasks = [];
   for (const node of facts.nodes) blockedNodeMasks[node.nodeId] = idsMask(node.blockedNodeIds);
@@ -78,6 +81,12 @@ function sortedNodeIdsFromMask(facts, mask) {
 
 export function measureExpansionReach(facts, orderedNodeIds, occupiedNodeIds, compiledPaths) {
   const compiled = compiledPaths ?? compileExpansionPaths(facts, orderedNodeIds);
+  if (
+    compiled.orderedNodeIds.length !== orderedNodeIds.length ||
+    compiled.orderedNodeIds.some((nodeId, index) => nodeId !== orderedNodeIds[index])
+  ) {
+    throw new Error("compiled expansion paths do not match opening pair");
+  }
   const occupiedMask = idsMask(occupiedNodeIds);
   const opponentMask = occupiedMask & ~compiled.ownedNodeMask;
   const settlementBlockedMask = occupiedNodeIds.reduce((mask, nodeId) => {
