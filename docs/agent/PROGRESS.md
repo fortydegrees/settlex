@@ -1,6 +1,10 @@
 # PROGRESS
 
 ## Status (2026-07-13, duel fair v2 opening-evaluator design)
+- The written v2 design was approved and converted into an eight-task,
+  test-first implementation plan covering opening features, ordered portfolios,
+  exact draft search, evaluator outputs, calibration fixtures, reports, bounded
+  run integration, benchmarks, and the final human-review stop.
 - Drafted the human-reviewed successor to the `duel-fair-v1` evaluator while
   retaining the existing facts, generators, streaming pipeline, and
   `game-core` ownership boundary.

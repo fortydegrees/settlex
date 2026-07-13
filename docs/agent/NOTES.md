@@ -23,6 +23,10 @@
   starting hands, complete production portfolios, recipe viability, and
   alternative material lines. A text-only port legend is insufficient for
   human judgment.
+- Execute v2 in eight reviewable commits and retain the two-tier calibration
+  contract: stream cheap v1 records for the full bounded corpus, exact-audit
+  only selected candidates with v2, then stop for human review before any
+  100,000-per-family evidence run.
 
 - Core rule transaction note:
 - A returned `{ ok: false }` must leave `GameState` unchanged. New or repaired
