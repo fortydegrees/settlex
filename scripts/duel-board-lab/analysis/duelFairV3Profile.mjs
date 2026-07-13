@@ -55,12 +55,12 @@ export const DUEL_FAIR_V3_PROFILE = Object.freeze({
   componentTargets: freezeRecord({
     weightedProduction: 25,
     scarcityAccess: 10,
-    tradeCapacityGain: 1.25,
+    tradeCapacityGain: 2.50,
     cityUplift: 12,
     expansionGain: 10,
     robberLoss: 8
   }),
-  recipeCapacityTargets: freezeRecord({ road: 2, settlement: 1.5, dev: 1.25, city: 0.8 }),
+  recipeCapacityTargets: freezeRecord({ road: 4, settlement: 3, dev: 3, city: 1.5 }),
   overallWeights: freezeRecord({ fairness: 0.80, quality: 0.20 }),
   qualityWeights: freezeRecord({ weakerPortfolio: 0.80, meanPortfolio: 0.20 }),
   interestWeights: freezeRecord({ choiceDepth: 0.50, responseFreedom: 0.50 }),
