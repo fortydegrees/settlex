@@ -90,6 +90,18 @@ const BASE_FACTS = Object.freeze({
   )
 });
 
+const COMPLETED_PASS_PROFILE = Object.freeze({
+  ...DUEL_FAIR_V2_PROFILE,
+  maxNormalisedSeatAdvantage: 1,
+  dominanceMargin: 2,
+  portDependenceThreshold: 2
+});
+
+const COMPLETED_REVIEW_PROFILE = Object.freeze({
+  ...COMPLETED_PASS_PROFILE,
+  portDependenceThreshold: 0.6
+});
+
 function fairnessFrom(solved, classification) {
   return {
     ...classification,
@@ -124,7 +136,10 @@ function classifyAndTag({
 describe("duel-fair-v2 evaluator", () => {
   it("returns separate exact-audit fairness, quality, and placement-depth results", () => {
     const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 47 });
-    const report = evaluateDuelBoardV2(candidate.tiles, { includeDiagnosticLenses: false });
+    const report = evaluateDuelBoardV2(candidate.tiles, {
+      profile: COMPLETED_PASS_PROFILE,
+      includeDiagnosticLenses: false
+    });
     expect(report).toEqual(expect.objectContaining({
       evaluatorIdentity: {
         featureVersion: "duel-opening-features-v1",
@@ -134,7 +149,7 @@ describe("duel-fair-v2 evaluator", () => {
       screenVerdict: "pass",
       screenRejectionCodes: [],
       fairness: expect.objectContaining({
-        verdict: expect.stringMatching(/pass|reject|review/),
+        verdict: "pass",
         favouredSeat: expect.stringMatching(/P1|P2/),
         solvedLine: expect.arrayContaining([
           expect.objectContaining({ player: "P1", nodeId: expect.any(Number) })
@@ -161,7 +176,34 @@ describe("duel-fair-v2 evaluator", () => {
       }),
       tags: expect.any(Array)
     }));
-    expect(report.overallScore === null || Number.isFinite(report.overallScore)).toBe(true);
+    expect(report.quality.viableRecipeCounts).toEqual({ P1: 4, P2: 3 });
+    expect(report.quality.tradeAdjustedViableRecipeCounts).toEqual({ P1: 4, P2: 4 });
+    expect(report.quality.noCredibleRecipes).toEqual({ P1: [], P2: ["city"] });
+
+    const expectedFairnessScore = 100 * (1 - Math.min(
+      Math.abs(report.fairness.normalisedSeatAdvantage)
+        / COMPLETED_PASS_PROFILE.maxNormalisedSeatAdvantage,
+      1
+    ));
+    const expectedQualityScore = 100 * Math.min(Math.max(
+      report.quality.weakerPortfolioValue / COMPLETED_PASS_PROFILE.qualityTarget,
+      0
+    ), 1);
+    const expectedDepthScore = 100 * Math.min(
+      report.placementDepth.meaningfulFirstPickCount / 4,
+      1
+    );
+    expect(report.rankingComponents).toEqual({
+      fairnessScore: expectedFairnessScore,
+      qualityScore: expectedQualityScore,
+      depthScore: expectedDepthScore
+    });
+    expect(report.overallScore).toBe(
+      expectedFairnessScore * COMPLETED_PASS_PROFILE.rankWeights.fairness
+        + expectedQualityScore * COMPLETED_PASS_PROFILE.rankWeights.quality
+        + expectedDepthScore * COMPLETED_PASS_PROFILE.rankWeights.placementDepth
+    );
+    expect(Number.isFinite(report.overallScore)).toBe(true);
   });
 
   it("returns sorted structural rejection codes before exact solving", () => {
@@ -186,6 +228,24 @@ describe("duel-fair-v2 evaluator", () => {
 
     expect(evaluateDuelBoardV2(tiles).screenRejectionCodes)
       .toEqual(["incomplete-port-topology"]);
+  });
+
+  it("rejects a port that declares its own fake endpoint edge", () => {
+    const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 47 });
+    const tiles = structuredClone(candidate.tiles);
+    const port = tiles.find((tile) => tile.type === TileTypes.PORT);
+    port.tile.nodes = [0, 2];
+    port.tile.edges = { fake: [0, 2] };
+
+    expect(evaluateDuelBoardV2(tiles)).toEqual(expect.objectContaining({
+      screenVerdict: "reject",
+      screenRejectionCodes: ["incomplete-port-topology"],
+      fairness: null,
+      quality: null,
+      placementDepth: null,
+      rankingComponents: null,
+      overallScore: null
+    }));
   });
 
   it("rejects non-finite node features with a stable code", () => {
@@ -241,9 +301,28 @@ describe("duel-fair-v2 evaluator", () => {
     const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 47 });
     const withoutLenses = evaluateDuelBoardV2(candidate.tiles, { includeDiagnosticLenses: false });
     const withLenses = evaluateDuelBoardV2(candidate.tiles, { includeDiagnosticLenses: true });
+    expect(withoutLenses.fairness.verdict).toBe("reject");
+    expect(withoutLenses.overallScore).toBeNull();
+    expect(withLenses.fairness.verdict).toBe("reject");
+    expect(withLenses.overallScore).toBeNull();
     expect(withLenses.fairness.solvedLine).toEqual(withoutLenses.fairness.solvedLine);
     expect(withLenses.fairness.diagnosticLensResults.map((entry) => entry.name))
       .toEqual(["expansion", "development"]);
+  });
+
+  it("keeps completed review audits out of automatic ranking", () => {
+    const candidate = generateCandidate({ family: BOARD_FAMILIES.OFFICIAL_SPIRAL, seed: 47 });
+    const report = evaluateDuelBoardV2(candidate.tiles, {
+      profile: COMPLETED_REVIEW_PROFILE,
+      includeDiagnosticLenses: false
+    });
+
+    expect(report.screenVerdict).toBe("pass");
+    expect(report.fairness.verdict).toBe("review");
+    expect(report.fairness.rejectionCodes).toEqual([]);
+    expect(report.fairness.reviewCodes).toEqual(["port-dependent"]);
+    expect(Object.values(report.rankingComponents).every(Number.isFinite)).toBe(true);
+    expect(report.overallScore).toBeNull();
   });
 
   it("uses null for a policy-value tie instead of inventing a favoured seat", () => {
