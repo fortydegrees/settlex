@@ -4120,3 +4120,7 @@
 
 - Release label note:
 - Release tooling currently requires positive integer internal versions. For fractional/public labels such as `release 0.8`, keep `currentVersion` and `version` as the next integer and set the release entry `label` for badge/panel display.
+
+- Catana board-source architecture note:
+- Product modes and board-source ids belong in `lib/shared/catanaGameModes.js`, not `game-core`. Runtime setup should resolve `boardSourceId` through `app/catana/gameSetup/boardSources.js` and persist truthful `boardSourceId`, actual `boardConfigId`, and `boardProvenance` fields.
+- Duel uses the ranked `duel-fair-official-v1` catalog source; standard 3-player and 4-player modes use `generated-official-spiral-v1`. Keep custom board configs mutually exclusive with explicit source ids, and do not reintroduce `setupData.boardConfigId` as an input.

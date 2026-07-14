@@ -6702,3 +6702,11 @@
 - Verification:
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot` (red before fix: custom labels were ignored and panel headings still used the internal version)
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot`
+
+## Status (2026-07-14, explicit Catana board sources)
+- Moved Catana product modes out of `game-core` into a shared product registry with explicit board-source ids for duel, standard official-spiral, and generated-random setup.
+- Replaced duel-specific setup interception with board-source materialisation that stores the selected source, actual engine config, and catalog/generated/custom provenance in game state.
+- Migrated match creation and friend challenges to send `boardSourceId`; obsolete `setupData.boardConfigId` is now rejected by game setup.
+- Verification:
+  - `pnpm -C game-core build`
+  - `pnpm exec vitest run lib/shared/catanaGameModes.test.js app/catana/__tests__/boardSources.test.js app/catana/__tests__/initialState.test.js app/catana/__tests__/Game.boardConfig.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js --reporter=dot`

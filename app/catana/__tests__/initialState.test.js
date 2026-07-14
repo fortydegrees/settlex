@@ -5,8 +5,6 @@ import {
   getPlacementOrder,
   resolveModeSetup
 } from "../gameSetup/initialState";
-import { DUEL_FAIR_BOARD_CATALOG } from "../gameSetup/catalogs/duelFairOfficialV1.generated";
-import { generateDuelFairBoard } from "../gameSetup/duelFairBoardCatalog";
 
 const createRandom = (seed = 123) => ({
   Number: makeDeterministicRng(seed),
@@ -33,7 +31,7 @@ describe("initial game setup helpers", () => {
     expect(resolveModeSetup({ numPlayers: 2, setupData: {} })).toMatchObject({
       modeId: "duel",
       rulesetId: "duel",
-      boardConfigId: "standard-balanced"
+      boardSourceId: "duel-fair-official-v1"
     });
     expect(
       resolveModeSetup({
@@ -43,8 +41,23 @@ describe("initial game setup helpers", () => {
     ).toMatchObject({
       modeId: "standard-3p",
       rulesetId: "standard",
-      boardConfigId: "custom"
+      boardSourceId: "custom"
     });
+  });
+
+  it("rejects conflicting and obsolete board setup inputs", () => {
+    expect(() => resolveModeSetup({
+      numPlayers: 2,
+      setupData: {
+        boardSourceId: "generated-random-v1",
+        boardConfig: { specId: "standard-4p" }
+      }
+    })).toThrow("boardConfig and boardSourceId are mutually exclusive");
+
+    expect(() => resolveModeSetup({
+      numPlayers: 2,
+      setupData: { boardConfigId: "standard-random" }
+    })).toThrow("setupData.boardConfigId is not supported; use boardSourceId");
   });
 
   it("creates deterministic initial game state for the selected mode", () => {
@@ -60,17 +73,14 @@ describe("initial game setup helpers", () => {
 
     expect(G.modeId).toBe("duel");
     expect(G.rulesetId).toBe("duel");
-    expect(G.boardConfigId).toBe("standard-balanced");
-    expect(G.boardCatalog).toEqual({
+    expect(G.boardSourceId).toBe("duel-fair-official-v1");
+    expect(G.boardConfigId).toBe("standard-official-spiral");
+    expect(G.boardProvenance).toMatchObject({
+      sourceKind: "catalog",
       catalogId: "duel-fair-official-v1",
-      rank: 1,
-      seed: DUEL_FAIR_BOARD_CATALOG.seeds[0],
-      generatorFamily: "official-spiral",
+      catalogRank: 1,
       generatorVersion: "official-spiral-v1",
-      evaluatorVersion: "duel-fair-v3",
-      evaluatorIdentity: DUEL_FAIR_BOARD_CATALOG.evaluatorIdentity
     });
-    expect(G.tiles).toEqual(generateDuelFairBoard(G.boardCatalog));
     expect(G.core.phase).toBe("placement");
     expect(G.core.ruleset.friendlyRobber).toEqual({
       enabled: true,
@@ -84,7 +94,7 @@ describe("initial game setup helpers", () => {
     const explicitRandom = createInitialGameState({
       ctx: { numPlayers: 2, phase: "placement" },
       random: createRandom(),
-      setupData: { boardConfigId: "standard-random" }
+      setupData: { boardSourceId: "generated-random-v1" }
     });
     const standardThreePlayer = createInitialGameState({
       ctx: { numPlayers: 3, phase: "placement" },
@@ -92,10 +102,15 @@ describe("initial game setup helpers", () => {
       setupData: {}
     });
 
+    expect(explicitRandom.boardSourceId).toBe("generated-random-v1");
     expect(explicitRandom.boardConfigId).toBe("standard-random");
-    expect(explicitRandom.boardCatalog).toBeNull();
+    expect(explicitRandom.boardProvenance).toEqual({
+      sourceKind: "generated",
+      generatorFamily: "freeform-random",
+      generatorVersion: "freeform-random-v1"
+    });
+    expect(standardThreePlayer.boardSourceId).toBe("generated-official-spiral-v1");
     expect(standardThreePlayer.boardConfigId).toBe("standard-official-spiral");
-    expect(standardThreePlayer.boardCatalog).toBeNull();
   });
 
   it("requires board generation to use boardgame.io random", () => {
