@@ -30,15 +30,19 @@ export const replayActivationReducer = (state, action) => {
       replayActive: action.replayActive,
     });
   }
-  if (action.identityKey !== state.identityKey) return state;
   if (action.type === "requestReplay") {
-    if (state.replayActive) return state;
+    const requestState =
+      action.identityKey === state.identityKey
+        ? state
+        : createReplayActivationState({ identityKey: action.identityKey });
+    if (requestState.replayActive) return requestState;
     if (action.payloadStatus === "ready") {
-      return { ...state, intentPending: false, replayActive: true };
+      return { ...requestState, intentPending: false, replayActive: true };
     }
-    if (state.intentPending) return state;
-    return { ...state, intentPending: true, replayActive: false };
+    if (requestState.intentPending) return requestState;
+    return { ...requestState, intentPending: true, replayActive: false };
   }
+  if (action.identityKey !== state.identityKey) return state;
   if (action.type === "payloadReady") {
     if (!state.intentPending || state.replayActive) return state;
     return { ...state, intentPending: false, replayActive: true };
