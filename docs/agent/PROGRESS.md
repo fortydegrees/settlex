@@ -1,5 +1,46 @@
 # PROGRESS
 
+## Status (2026-07-14, duel fair live catalog v1 implemented)
+- Published `duel-fair-official-v1`, the top 1,000 symmetry-distinct boards by
+  `duel-fair-v3` overall score from fixed official-spiral seeds `1..65000`.
+  The source run ranked all 65,000 boards with zero invalid records in
+  `754.488118` seconds (`86.151124` persisted boards/second) and peaked at
+  `150.578125 MiB` RSS. This end-to-end run includes JSONL/report work and is
+  deliberately slower than the evaluation-only benchmark.
+- The selected catalog's overall scores span `96.095340` through `97.245891`.
+  Rank 1 is seed `30861`; rank 1,000 is seed `39724`. Every selected seed,
+  raw board hash, and port-aware canonical symmetry hash is unique.
+- Added a deterministic catalog publisher and reproducible command:
+  `pnpm board:lab:catalog --run-id duel-fair-official-v1-source --family official-spiral --catalog-id duel-fair-official-v1 --size 1000 --data-output data/board-catalogs/duel-fair-official-v1.json --runtime-output app/catana/gameSetup/catalogs/duelFairOfficialV1.generated.js`.
+  Republishing produces byte-identical files with SHA-256 hashes
+  `cee3040f4bc37bf9604d3ecd2449c2f0c9aa9ebee06126b938ad25f943056daa`
+  for the full catalog and
+  `3ac1b3d17fa263d1da3f01778049402aedca7e6821d0ade114900fd6f129d18d`
+  for the runtime module.
+- The full 576 KiB catalog preserves scores, tags, hashes, and evaluator
+  identity under `data/board-catalogs/`. The game imports only an 8 KiB ranked
+  seed module. A default `duel` plus `standard-balanced` setup now chooses one
+  seed uniformly with boardgame.io's injected RNG, regenerates it with the
+  neutral `standard-official` engine path, and records catalog id, rank, seed,
+  generator identity, and evaluator identity in `G.boardCatalog`.
+- Explicit custom/random boards and non-duel modes retain their existing board
+  generation. The old `standard-balanced` generator remains available outside
+  the default duel catalog condition. No fairness policy, weights, catalog, or
+  product selection logic moved into `game-core`.
+- Verification completed before handoff:
+  - catalog artifact test regenerated and hash-checked all 1,000 entries;
+  - `pnpm test:board-lab`: 21 files and 164 tests passed;
+  - `pnpm test:catana`: 214 files and 814 tests passed;
+  - `pnpm -C game-core test`: 14 files and 153 tests passed;
+  - `pnpm -C game-core build`: exit 0;
+  - focused ESLint over board-lab and changed Catana setup/tests: exit 0;
+  - `pnpm verify`: engine 153 tests, server/lib/AI 189 tests, all 229
+    isolated app test files, and repository lint passed;
+  - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`: exit 0.
+- Production has not been deployed. The implementation remains isolated on
+  `codex/duel-fair-board-lab` pending branch integration and explicit release
+  approval.
+
 ## Status (2026-07-13, duel fair v3 fast ranker implemented)
 - Implemented `duel-fair-v3` as the default offline board-lab evaluator without
   changing `game-core` or any production board-selection path. The stable

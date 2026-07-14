@@ -1,5 +1,31 @@
 # NOTES
 
+- Duel fair live catalog v1 note:
+- `duel-fair-official-v1` is a versioned product artifact, not a live
+  evaluator. Match setup must select uniformly from its fixed seed list and
+  must never call `evaluateDuelBoardV3`.
+- The full catalog at
+  `data/board-catalogs/duel-fair-official-v1.json` owns offline provenance:
+  generator/evaluator identity, source seed range, rank, hashes, scores, and
+  tags. The generated runtime module intentionally contains only catalog
+  identity and ranked seeds; do not import the 576 KiB provenance file into
+  Catana.
+- Default catalog eligibility is exactly resolved mode `duel`, requested board
+  config `standard-balanced`, and no explicit custom `boardConfig`. Keep
+  explicit random/custom and non-duel paths outside this condition.
+- `G.boardConfigId` remains `standard-balanced` because it describes the fair
+  product policy. `G.boardCatalog` records the concrete catalog id, rank, seed,
+  and generator/evaluator identities needed by archives and future replay UI.
+- Catalog generation is reproducible with the fixed source run
+  `duel-fair-official-v1-source`, official-spiral seeds `1..65000`, and
+  `duel-fair-v3`. Publication sorts overall descending, resolves score ties by
+  lower seed, collapses canonical symmetry duplicates by keeping the better
+  record, and omits timestamps.
+- To publish a successor, use a new catalog id and generated runtime module;
+  do not silently mutate v1 identity or reinterpret its existing seeds. Player
+  placement/seat-preference data can inform later evaluator or catalog
+  versions without changing historical game states.
+
 - Duel fair v3 implemented model:
 - `overall = 0.80 * fairness + 0.20 * quality`. Interest remains independently
   sortable and has zero weight in overall. Quality is `0.80` weaker selected
@@ -38,9 +64,10 @@
   deduplicated gallery sorted numerically by overall descending, exposes all
   four score sorts in both directions, keeps ports visible, and hides one SVG
   placement layer by default.
-- Non-goals for this slice remain: no constructive generator, no production
-  catalog or live-match integration, no multiplayer fairness model, no learned
-  policy, and no corpus larger than the bounded 1,000 official boards.
+- Historical v3 evaluator implementation did not itself include a constructive
+  generator, production catalog, live-match integration, multiplayer fairness
+  model, or learned policy. The separately versioned 2026-07-14 live catalog
+  slice now owns production 1v1 selection without moving policy into v3.
 
 - Duel fair v3 design note:
 - Treat v1 and exact v2 as historical research paths once v3 is implemented.
