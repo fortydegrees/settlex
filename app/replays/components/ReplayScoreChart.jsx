@@ -35,24 +35,44 @@ export const getReplayEventIndexAtChartX = ({
   return Math.round(ratio * finalEventIndex);
 };
 
+export const getVisibleReplayScoreData = ({
+  scoreSeries = [],
+  turnStarts = [],
+  currentEventIndex = 0,
+}) => ({
+  visibleScoreSeries: scoreSeries.filter(
+    (sample) => sample.eventIndex <= currentEventIndex
+  ),
+  visibleTurnStarts: turnStarts.filter(
+    (marker) => marker.eventIndex <= currentEventIndex
+  ),
+});
+
 export function ReplayScoreChart({
   players = [],
   scoreSeries = [],
   turnStarts = [],
   currentEventIndex = 0,
+  eventCount = scoreSeries.length,
   victoryTarget = 10,
   onSeek,
 }) {
+  const { visibleScoreSeries, visibleTurnStarts } =
+    getVisibleReplayScoreData({
+      scoreSeries,
+      turnStarts,
+      currentEventIndex,
+    });
   const currentScores =
-    scoreSeries[currentEventIndex]?.scoresByPlayerId ?? {};
+    visibleScoreSeries.at(-1)?.scoresByPlayerId ?? {};
   const turnByEventIndex = useMemo(
     () =>
       Object.fromEntries(
-        turnStarts.map((item) => [item.eventIndex, item.turn])
+        visibleTurnStarts.map((item) => [item.eventIndex, item.turn])
       ),
-    [turnStarts]
+    [visibleTurnStarts]
   );
-  const numericScores = scoreSeries.flatMap((sample) =>
+  const numericScores = visibleScoreSeries.flatMap((sample) =>
     Object.values(sample.scoresByPlayerId ?? {}).filter(Number.isFinite)
   );
   const maxScore = Math.max(victoryTarget, ...numericScores);
@@ -69,7 +89,7 @@ export function ReplayScoreChart({
         clientX: event.clientX,
         rectLeft: rect.left,
         rectWidth: rect.width,
-        eventCount: scoreSeries.length,
+        eventCount,
       })
     );
   };
@@ -91,7 +111,7 @@ export function ReplayScoreChart({
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={scoreSeries}
+            data={visibleScoreSeries}
             margin={{ top: 8, right: 8, bottom: 4, left: 0 }}
             accessibilityLayer
           >
@@ -102,8 +122,9 @@ export function ReplayScoreChart({
             <XAxis
               type="number"
               dataKey="eventIndex"
-              domain={[0, Math.max(scoreSeries.length - 1, 0)]}
-              ticks={turnStarts.map((item) => item.eventIndex)}
+              domain={[0, Math.max(eventCount - 1, 0)]}
+              ticks={visibleTurnStarts.map((item) => item.eventIndex)}
+              allowDataOverflow
               tickFormatter={(eventIndex) =>
                 `T${turnByEventIndex[eventIndex] ?? ""}`
               }
