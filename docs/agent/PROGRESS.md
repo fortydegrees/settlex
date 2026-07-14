@@ -6490,3 +6490,14 @@
   - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertBrowser.test.js app/catana/matchAlerts/__tests__/matchAlertState.test.js app/catana/matchAlerts/__tests__/matchAlertProviderActions.test.js app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js --reporter=dot`
   - `pnpm exec vitest run app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/SettlexUiFoundation.source.test.js app/__tests__/publicBranding.source.test.js app/__tests__/api/matchAlertRoutes.test.js lib/server/__tests__/matchAlertAnnouncement.test.js lib/server/__tests__/matchAlertStore.test.js --reporter=dot`
   - `pnpm lint`
+
+## Status (2026-07-14, confirmed match-alert joins)
+- Added an authoritative client resolver for alert targets: only a live public two-seat duel with one human seeker and one open seat reaches confirmation; deleted, filled, private, bot, cancelled, wrong-mode, and finished tables become a friendly stale state.
+- Routed both `?matchAlert=` deep links and `match-alert-click` worker messages into one root-owned dialog. Click sources only re-fetch and open the secondary confirmation; neither path can autojoin.
+- Added a second live verification immediately before the confirmed join, with disabled pending controls, 409/deleted race handling, existing active-match credential persistence, and existing `/api/matches/leave` handling before abandoning a Puffer game.
+- Registered credential-free current-game context from `GameScreen`, and made the stale dialog's `Keep looking` action enter the homepage's ordinary online-play action through a one-shot `?playOnline=1` query.
+- Verification:
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertJoin.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js --reporter=dot` (red before implementation: resolver/dialog missing and provider/game/home wiring absent)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertJoin.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js --reporter=dot` (27 tests passed; includes executable join/leave ordering, 409 race, pending-lock, and storage-failure regressions added after review)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__ app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js app/catana/__tests__/activeMatchStorage.test.js app/catana/__tests__/gameScreenDisplayModel.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/GameScreen.idleGrace.test.js --reporter=dot` (82 tests passed)
+  - `pnpm lint`

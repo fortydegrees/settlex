@@ -120,6 +120,7 @@ import {
   buildSandboxDevCardPlayPayload,
   buildSandboxRobberMovePayload
 } from "./dev/sandbox/effectPayloads";
+import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const topUtilityButtonClassName =
@@ -170,6 +171,7 @@ const runAfterNextPaint = (callback) => {
 };
 
 export function GameScreen(bgioProps) {
+  const { registerCurrentGame } = useMatchAlerts();
   //playerAction is things that appear to the user (not spectator)
   //e.g. placeRoad, placeSettle, placeCity, moveRobber, trading
   //but i think we want this controlled by server/gameState
@@ -269,6 +271,7 @@ export function GameScreen(bgioProps) {
       isGameOver
     });
   const {
+    mergedMatchData,
     nameMap,
     emojiMap,
     effectiveColorByPlayerId,
@@ -300,6 +303,45 @@ export function GameScreen(bgioProps) {
       bgioProps.matchMetadata
     ]
   );
+  const hasBotOpponent = useMemo(
+    () =>
+      mergedMatchData.some(
+        (seat) =>
+          String(seat?.id) !== String(playerID) &&
+          (seat?.data?.participantType === "bot" ||
+            seat?.data?.isBot === true ||
+            Boolean(seat?.data?.bot))
+      ),
+    [mergedMatchData, playerID]
+  );
+
+  useEffect(() => {
+    if (
+      isReplay ||
+      isGameOver ||
+      !bgioProps.credentials ||
+      playerID == null ||
+      playerID === "" ||
+      !matchID ||
+      matchID === "default" ||
+      matchID === "dev-sandbox"
+    ) {
+      return undefined;
+    }
+
+    return registerCurrentGame({
+      matchID,
+      opponentType: hasBotOpponent ? "bot" : "human"
+    });
+  }, [
+    bgioProps.credentials,
+    hasBotOpponent,
+    isGameOver,
+    isReplay,
+    matchID,
+    playerID,
+    registerCurrentGame
+  ]);
   const rawGameStatus = getGameStatus(core, bgioProps.ctx, {
     playerAction,
     viewerPlayerId: playerID,

@@ -925,8 +925,26 @@ function HomeTableBoard({ initialAccount = null }) {
   const placementRoadLayerRef = useRef(null);
   const effectsBus = useMemo(() => createEffectBus(), []);
   const lobby = useLobbyHomeActions({ initialAccount });
+  const handledPlayOnlineQueryRef = useRef(false);
   const boardReservedHeight = isCompact ? 276 : 158;
   const boardCenterYOffset = isCompact ? -56 : 0;
+
+  useEffect(() => {
+    if (handledPlayOnlineQueryRef.current) return;
+    handledPlayOnlineQueryRef.current = true;
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("playOnline") === "1") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("playOnline");
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${url.pathname}${url.search}${url.hash}`
+      );
+      lobby.actions.playOnline();
+    }
+  }, [lobby.actions]);
+
   const handleSelectMode = (mode) => {
     if (mode === "queue") {
       lobby.actions.playOnline();

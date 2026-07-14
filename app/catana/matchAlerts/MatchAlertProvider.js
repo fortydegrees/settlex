@@ -16,6 +16,8 @@ import {
   runEnableTransaction,
   runPreferenceAction,
 } from "./matchAlertProviderActions.js";
+import { MatchAlertDialog } from "./MatchAlertDialog.js";
+import { resolveAlertMatch } from "./matchAlertJoin.js";
 import { getMatchAlertDisplayState } from "./matchAlertState.js";
 
 const OFF_PREFERENCE = Object.freeze({
@@ -43,6 +45,10 @@ export function MatchAlertProvider({ children }) {
   const [signedIn, setSignedIn] = useState(false);
   const [enableAttempted, setEnableAttempted] = useState(false);
   const [error, setError] = useState(null);
+  const [currentGame, setCurrentGame] = useState(null);
+  const [alert, setAlert] = useState(null);
+  const alertRequestRef = useRef(0);
+  const alertJoinPendingRef = useRef(false);
   const refreshGuardRef = useRef(null);
   if (!refreshGuardRef.current) {
     refreshGuardRef.current = createLatestRefreshGuard();
@@ -79,6 +85,70 @@ export function MatchAlertProvider({ children }) {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const openMatchAlert = useCallback(async (matchID) => {
+    if (!matchID) return;
+    if (alertJoinPendingRef.current) return;
+
+    const request = alertRequestRef.current + 1;
+    alertRequestRef.current = request;
+    setAlert({ status: "checking", matchID, match: null, seekerName: null });
+
+    const result = await resolveAlertMatch({ matchID });
+    if (alertRequestRef.current !== request) return;
+    setAlert({ ...result, matchID });
+  }, []);
+
+  const closeMatchAlert = useCallback(() => {
+    alertRequestRef.current += 1;
+    setAlert(null);
+  }, []);
+
+  const setAlertJoinPending = useCallback((pending) => {
+    alertJoinPendingRef.current = Boolean(pending);
+  }, []);
+
+  const registerCurrentGame = useCallback((game) => {
+    if (!game?.matchID) return () => {};
+    const registered = {
+      matchID: String(game.matchID),
+      opponentType: game.opponentType === "bot" ? "bot" : "human",
+    };
+    setCurrentGame(registered);
+    return () => {
+      setCurrentGame((current) =>
+        current?.matchID === registered.matchID ? null : current
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const matchID = searchParams.get("matchAlert");
+    if (matchID) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("matchAlert");
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${url.pathname}${url.search}${url.hash}`
+      );
+      void openMatchAlert(matchID);
+    }
+
+    const handleServiceWorkerMessage = (event) => {
+      if (event?.data?.type !== "match-alert-click") return;
+      const clickedMatchID = event.data.matchID;
+      if (typeof clickedMatchID !== "string" || !clickedMatchID) return;
+      void openMatchAlert(clickedMatchID);
+    };
+
+    const serviceWorker = window.navigator?.serviceWorker;
+    serviceWorker?.addEventListener?.("message", handleServiceWorkerMessage);
+    return () => {
+      serviceWorker?.removeEventListener?.("message", handleServiceWorkerMessage);
+    };
+  }, [openMatchAlert]);
 
   const enable = useCallback(async () => {
     setEnableAttempted(true);
@@ -191,6 +261,8 @@ export function MatchAlertProvider({ children }) {
       resume,
       detachCurrentBrowser,
       requestAnnouncement,
+      registerCurrentGame,
+      currentGame,
     }),
     [
       capability,
@@ -207,14 +279,22 @@ export function MatchAlertProvider({ children }) {
       preference,
       refresh,
       requestAnnouncement,
+      registerCurrentGame,
       resume,
       signedIn,
+      currentGame,
     ]
   );
 
   return (
     <MatchAlertContext.Provider value={value}>
       {children}
+      <MatchAlertDialog
+        alert={alert}
+        currentGame={currentGame}
+        onClose={closeMatchAlert}
+        onJoiningChange={setAlertJoinPending}
+      />
     </MatchAlertContext.Provider>
   );
 }
