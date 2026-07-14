@@ -347,6 +347,27 @@ describe("match alert subscription routes", () => {
         keys: { p256dh: "public-key", auth: "x".repeat(4097) },
       },
     ],
+    [
+      "IPv4 loopback endpoint",
+      {
+        endpoint: "https://127.0.0.1/internal",
+        keys: { p256dh: "public-key", auth: "auth-secret" },
+      },
+    ],
+    [
+      "IPv6 loopback endpoint",
+      {
+        endpoint: "https://[::1]/internal",
+        keys: { p256dh: "public-key", auth: "auth-secret" },
+      },
+    ],
+    [
+      "localhost endpoint",
+      {
+        endpoint: "https://localhost/internal",
+        keys: { p256dh: "public-key", auth: "auth-secret" },
+      },
+    ],
   ])("rejects a subscription with %s", async (_label, body) => {
     const { createMatchAlertSubscriptionPostRoute } = await loadModule(
       "app",

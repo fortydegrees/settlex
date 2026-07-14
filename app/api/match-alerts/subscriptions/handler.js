@@ -4,6 +4,7 @@ import {
   deleteMatchAlertSubscription,
   upsertMatchAlertSubscription,
 } from "../../../../lib/server/matchAlerts/matchAlertStore.js";
+import { isSafePushEndpoint } from "../../../../lib/server/matchAlerts/pushEndpointSecurity.js";
 
 const MAX_INPUT_LENGTH = 4096;
 
@@ -27,14 +28,8 @@ const validInput = (value) =>
   value.trim().length > 0 &&
   value.length <= MAX_INPUT_LENGTH;
 
-const validHttpsEndpoint = (endpoint) => {
-  if (!validInput(endpoint)) return false;
-  try {
-    return new URL(endpoint).protocol === "https:";
-  } catch {
-    return false;
-  }
-};
+const validHttpsEndpoint = (endpoint) =>
+  validInput(endpoint) && isSafePushEndpoint(endpoint);
 
 const getAccount = async (request, getSessionAccountImpl) => {
   const sessionAccount = await getSessionAccountImpl({
