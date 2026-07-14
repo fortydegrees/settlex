@@ -13,7 +13,6 @@
     padding-bottom: 16px;
     gap: 24px;
     /* background-color: rgba(0, 0, 0, 0.92); */
-    will-change: contents;
     box-sizing: content-box;
     border-radius: 12px;
     transform-origin: center bottom;

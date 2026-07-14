@@ -6746,3 +6746,53 @@
 - Verification:
   - `pnpm -C game-core build`
   - `pnpm exec vitest run lib/shared/catanaGameModes.test.js app/catana/__tests__/boardSources.test.js app/catana/__tests__/initialState.test.js app/catana/__tests__/Game.boardConfig.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js --reporter=dot`
+
+## Status (2026-07-14, Catana continuous-animation quick wins)
+- Preserved the placement action-node pulse while removing animated `box-shadow`; all 54 settlement-placement nodes now animate `transform` only.
+- Moved the active-player avatar glow onto a statically painted pseudo-element whose two-second pulse animates only `transform` and `opacity`; reduced-motion keeps the static white ring and hides the pulse layer.
+- Removed the action dock's persistent `will-change: contents` hint without changing dock layout or spring interactions.
+- Added `HudMotionPerformance.source.test.js` to lock the placement/avatar compositor-property boundaries and dock hint cleanup.
+- Verification:
+  - Red: `pnpm exec vitest run app/catana/__tests__/HudMotionPerformance.source.test.js --exclude '.worktrees/**'` failed in the three intended places before the CSS changes.
+  - Green: the same focused command passed 3 tests.
+  - `pnpm exec eslint app/catana/__tests__/HudMotionPerformance.source.test.js`
+  - Playwright CLI on `/catana/dev/sandbox`: desktop `1440x900`, mobile `390x844`, settlement-placement preset with 54 action nodes, runtime keyframe inspection, reduced-motion emulation, and zero browser console warnings/errors.
+
+## Status (2026-07-14, Catana runtime quick-wins design)
+- Approved a separate, bounded runtime slice after the animation work: move the normal turn-timer clock into the desktop/mobile timer leaf and remove per-edge `useWindowSize` listener fan-out by passing `Board`'s measured width.
+- Kept broad `GameScreen` decomposition, presence-clock extraction, effect changes, performance certification, memory soak work, and network analysis out of this slice.
+- Added `docs/superpowers/specs/2026-07-14-catana-runtime-quick-wins-design.md` with ownership, data-flow, regression, manual-verification, and acceptance boundaries.
+- Baseline verification: `pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/timerSnapshot.test.js app/catana/__tests__/useLocalPlayerDockModel.test.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/useWindowSize.test.js --exclude '.worktrees/**' --reporter=dot` (5 files, 34 tests passed).
+
+## Status (2026-07-14, Catana runtime quick-wins implementation plan)
+- Added `docs/superpowers/plans/2026-07-14-catana-runtime-quick-wins.md` after approval of the written design.
+- Split execution into four reviewable tasks: shared live-timer clock, HUD/root timer rewiring with a render-profile gate, edge viewport-width plumbing, and combined browser verification/evidence.
+- The plan uses red/green focused tests and separate commits for timer ownership and edge listeners, and stops before the broader performance certification or network work.
+
+## Status (2026-07-14, Catana timer render ownership)
+- Moved the regular 250ms turn-countdown clock from `GameScreen` into the desktop and mobile timer leaves while leaving disconnect/idle presence countdowns on the existing screen clock.
+- Preserved the current desktop/mobile timer classes, timer visibility semantics, low-time suppression, and inline end-turn behavior.
+- Removed timer formatting and urgency derivation from `useLocalPlayerDockModel`; both HUD parents now pass the normalized timer snapshot through to their timer leaf.
+- Verification:
+  - Red: the four focused ownership/component suites failed 6 tests before implementation because `GameScreen` still owned the regular clock and the HUD leaves could not render timer snapshots.
+  - Green: the six focused timer/ownership suites passed 40 tests.
+  - Focused ESLint and `git diff --check` exited 0.
+  - React DevTools component profiling was unavailable through the current automation surface, so the desktop/mobile three-second profiler gate remains for manual follow-up.
+
+## Status (2026-07-14, Catana runtime quick wins)
+- Moved the normal 250ms turn-timer clock below `GameScreen` into the mounted desktop/mobile timer leaf while preserving server-delay correction, formatting, visibility, and low-time behaviour.
+- Kept the root `GameScreen` clock only for active disconnect/idle presence countdowns.
+- Removed edge-local `useWindowSize` subscriptions by forwarding `Board`'s existing viewport measurement through its four gameplay `Edge` render paths. `getEdgeTransform` currently does not consume the width value, and non-`Board` `Edge` consumers were outside this slice.
+- Local development render counters confirmed that normal timer ticks rerendered only the active timer leaf during sampled desktop/mobile three-second windows; React DevTools commit profiling was not available, so this is ownership evidence rather than production performance certification.
+- Combined verification passed 12 focused files and 58 tests. A deterministic sandbox timer fixture confirmed desktop/mobile countdown presentation, the mobile `--:--` fallback, hidden desktop timer state, five-second urgency styling, and pre-roll urgency suppression at `1440x900` and `390x844`; ticker cleanup remains covered by the focused unit test.
+- Browser road evidence confirmed placed-road rendering and a dock-launched road pickup with five registered hit targets; the pickup preview and targets survived a desktop-to-mobile resize. The stock road-placement sandbox preset recomputed to zero valid edges, and automation did not produce a reliable post-resize magnetic-lock measurement, so full placement/passive-hover alignment remains a manual follow-up rather than a claimed result.
+
+## Status (2026-07-14, Catana pointer-frame batching)
+- Coalesced build and robber placement-preview pointer synchronization to one live target-geometry pass per browser frame while preserving the existing spring loops and magnetic selection.
+- Coalesced development-card dock hover measurement and React pointer state to one update per browser frame, with pending work cancelled on leave and unmount.
+- Kept board geometry live rather than caching target rectangles, so pan, zoom, and responsive movement cannot leave stale snapping coordinates.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/PointerFrameBatching.source.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/RobberPlacementPreview.springMotion.test.js app/catana/__tests__/RobberPlacementPreview.test.js app/catana/__tests__/DevCardDisplayLayout.source.test.js app/catana/__tests__/PlayerActionBadges.test.js --exclude '.worktrees/**' --reporter=dot`
+  - `pnpm exec eslint app/catana/BuildPlacementPreview.js app/catana/RobberPlacementPreview.js app/catana/components/DevCardDisplay.js app/catana/__tests__/PointerFrameBatching.source.test.js`
+  - `pnpm verify`
+  - Playwright CLI on `/catana/dev/sandbox` at `1440x900`: 48-point rapid pointer sweeps kept road and robber previews aligned to the latest pointer; dev-card hover preserved the existing 1.28x scale/15px lift, reset to identity on leave, and retained keyboard-focus magnification; zero browser console warnings/errors.

@@ -4116,3 +4116,30 @@
   custom `boardConfig` payloads independently of dev-scenario presence. If a
   dev scenario supplies replacement tiles, archive/runtime identity must be
   `custom`; do not retain catalog provenance for those tiles.
+
+- Catana continuous-animation performance note:
+- Treat multiplier and animated property as separate risk dimensions. A subtle paint-heavy pulse can become a board-wide bottleneck when dozens of placement targets run it concurrently.
+- Keep the placement action-node pulse on `transform` only. The settlement sandbox currently mounts 54 simultaneous action nodes, so do not reintroduce animated `box-shadow`, `filter`, text shadow, or layout properties into `board-pulse`.
+- Keep the active-player avatar's white ring static and render its glow on the existing pseudo-element. The infinite avatar keyframes should remain limited to `transform` and `opacity`; reduced-motion should retain the ring without running the glow animation.
+- Do not restore `will-change: contents` on the action dock. Its card-level transform hints already cover the spring-driven motion that benefits from compositor preparation.
+- Use `HudMotionPerformance.source.test.js` as the narrow regression guard. Broader rail, award, count, dice, timer, and mobile inventory changes still require targeted browser evidence before changing their visible effects.
+
+- Catana runtime quick-wins boundary:
+- Moving timer markup alone is not a performance boundary. The 250ms `nowMs` state must live inside the smallest desktop/mobile timer leaf so the regular turn countdown does not rerun `GameScreen` or the complete player HUD.
+- Preserve the current normalized server snapshot, server-delay correction, 250ms cadence, timer formatting, five-second urgency rule, and roll-status suppression. `GameScreen` may keep its clock temporarily for the rarer disconnect and idle countdowns.
+- The desktop leaf is `TurnTimerSegment` inside `TurnControlCluster`; the mobile leaf is `MobileCommandTimerBox`. Keep timer text/urgency derivation in those leaves and pass `timerSnapshot` through the HUD parents without converting it to `timerMs`.
+- `Board` already has the viewport measurement used by its gameplay layout. Forward that existing value through each `Board`-rendered `Edge` path and its placeable/hoverable variants so those components do not add edge-local `useWindowSize` subscriptions. `getEdgeTransform` currently does not consume the width value, and non-`Board` `Edge` consumers are outside this slice.
+- Keep the runtime quick-wins slice separate from a broad `GameScreen` refactor and from the later production performance certification, long-session, and network-measurement work.
+- Execute the timer clock, timer ownership rewiring/profile gate, edge-width plumbing, and combined verification as separate plan tasks; do not bundle speculative animation or network changes into those commits.
+
+- Catana timer/edge runtime ownership note:
+- Keep the regular turn timer's 250ms clock inside the smallest mounted timer leaf. Do not move `nowMs` back into `GameScreen` or the full HUD.
+- `GameScreen` retains a presence-only clock for active disconnect/idle countdowns; future presence extraction is a separate measured slice.
+- Forward `Board`'s existing viewport measurement through the gameplay `Edge` paths that `Board` renders, rather than adding edge-local `useWindowSize` subscriptions. This is subscription ownership plumbing, not a claim that viewport width currently changes `getEdgeTransform` semantics or that every non-`Board` `Edge` consumer is covered.
+- The current `Road placement` dev-sandbox preset can enter the road stage with `G.valids.edges` empty after the placement phase initializes. Do not treat that preset alone as proof of placement-road geometry until its deterministic valid-edge fixture is repaired; keep the focused placement-path tests and use a real valid placement state for visual evidence.
+
+- Catana pointer-frame batching note:
+- Keep placement target geometry live, but coalesce raw pointer events so build and robber previews measure magnetic targets at most once per browser frame.
+- Keep each pointer batching frame separate from the preview's continuous spring animation frame and cancel both independently during cleanup.
+- Keep development-card hover measurement and pointer state batched to one frame; cancel pending work on mouse leave and unmount so stale hover state cannot arrive afterward.
+- This is intentionally not a target-rectangle cache, idle spring-loop rewrite, shared scheduler abstraction, or visual timing change.

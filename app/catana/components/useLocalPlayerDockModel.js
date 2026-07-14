@@ -20,45 +20,6 @@ import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 export const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
 export const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
-export const LOW_TIMER_THRESHOLD_SECONDS = 5;
-export const LOW_TIMER_ALERT_SUPPRESSED_STATUS_KINDS = new Set([
-  "waiting_for_roll",
-  "waiting_for_roll_other",
-]);
-export const LOW_TIMER_ALERT_SUPPRESSED_STATUS_TYPES = new Set(["rolling"]);
-
-export const getTimerSeconds = (ms) => {
-  if (ms == null) return Number.POSITIVE_INFINITY;
-  return Math.max(0, Math.floor(ms / 1000));
-};
-
-export const formatTimer = (ms) => {
-  if (ms == null) return null;
-  const total = getTimerSeconds(ms);
-  const minutes = Math.floor(total / 60);
-  const seconds = String(total % 60).padStart(2, "0");
-  return `${minutes}:${seconds}`;
-};
-
-export const getLowTimerAlertState = ({
-  timerMs,
-  statusType,
-  gameStatus,
-}) => {
-  const timerText = formatTimer(timerMs);
-  const showStatusTimer = gameStatus?.showTimer !== false && Boolean(timerText);
-  const isLowTimerAlertSuppressed =
-    LOW_TIMER_ALERT_SUPPRESSED_STATUS_TYPES.has(statusType) ||
-    LOW_TIMER_ALERT_SUPPRESSED_STATUS_KINDS.has(gameStatus?.kind);
-
-  return {
-    showStatusTimer,
-    isLowTimerAlertActive:
-      showStatusTimer &&
-      !isLowTimerAlertSuppressed &&
-      getTimerSeconds(timerMs) <= LOW_TIMER_THRESHOLD_SECONDS,
-  };
-};
 
 export function useLocalPlayerDockModel({
   G,
@@ -73,9 +34,6 @@ export function useLocalPlayerDockModel({
   onDevCardPurchase,
   canRoll,
   canEnd,
-  timerMs,
-  statusType,
-  gameStatus,
   themeId,
 }) {
   const activePickupPieceType = buildPickup?.pieceType ?? null;
@@ -289,12 +247,6 @@ export function useLocalPlayerDockModel({
   const visibleDevCards = displayDevCards ?? player.devCards ?? [];
   const showDevCardBay =
     visibleDevCards.length > 0 || Boolean(keepDevCardShellMounted);
-  const timerText = formatTimer(timerMs);
-  const { showStatusTimer, isLowTimerAlertActive } = getLowTimerAlertState({
-    timerMs,
-    statusType,
-    gameStatus,
-  });
   const rollEnabled = Boolean(canRoll);
   const endTurnEnabled = Boolean(canEnd);
   const turnControlMode = getTurnControlMode({
@@ -310,13 +262,10 @@ export function useLocalPlayerDockModel({
     dynamicActions,
     endTurnEnabled,
     handleResourceClick,
-    isLowTimerAlertActive,
     isOverLimit,
     resourceCounts,
     rollEnabled,
     showDevCardBay,
-    showStatusTimer,
-    timerText,
     totalResources,
     turnControlMode,
     visibleDevCards,

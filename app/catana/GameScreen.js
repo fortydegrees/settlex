@@ -44,10 +44,7 @@ import {
   getTurnCommandState,
   getVisibleDiceRoll
 } from "./utils/gameScreenCommandState";
-import {
-  getTimerRemainingMs,
-  normalizeTimerSnapshot
-} from "./utils/timerSnapshot";
+import { normalizeTimerSnapshot } from "./utils/timerSnapshot";
 import {
   canRenderDevPlayModal,
   shouldResetTradeModal
@@ -729,11 +726,10 @@ export function GameScreen(bgioProps) {
     }
   }, [themeId]);
 
-  const timerMs = getTimerRemainingMs(timerSnapshot, nowMs);
   const hideTimer =
     isGameOver ||
     !shouldShowGameStatusTimer(rawGameStatus, timerSnapshot);
-  const visibleTimerMs = hideTimer ? null : timerMs;
+  const visibleTimerSnapshot = hideTimer ? null : timerSnapshot;
   const gameStatus = isGameOver
     ? {
         ...rawGameStatus,
@@ -752,12 +748,10 @@ export function GameScreen(bgioProps) {
   const hasIdleCountdown = Boolean(activeIdlePlayerId);
 
   useEffect(() => {
-    if (!timerSnapshot || hideTimer) {
-      if (!hasDisconnectCountdown && !hasIdleCountdown) return;
-    }
+    if (!hasDisconnectCountdown && !hasIdleCountdown) return;
     const interval = setInterval(() => setNowMs(Date.now()), 250);
     return () => clearInterval(interval);
-  }, [timerSnapshot, hideTimer, hasDisconnectCountdown, hasIdleCountdown]);
+  }, [hasDisconnectCountdown, hasIdleCountdown]);
 
   useEffect(() => {
     if (isGameOver || activeIdlePlayerId == null) {
@@ -1666,7 +1660,7 @@ TODO: accurately colour it
             activePlayerName={activePlayerName}
             canRoll={canRoll}
             canEnd={canEnd}
-            timerMs={visibleTimerMs}
+            timerSnapshot={visibleTimerSnapshot}
             themeId={themeId}
             activeMobileMetaPanel={mobileMetaPanel}
             onMobileMetaPanelOpen={setMobileMetaPanel}
@@ -1699,7 +1693,7 @@ TODO: accurately colour it
             gameStatus={gameStatus}
             canRoll={canRoll}
             canEnd={canEnd}
-            timerMs={visibleTimerMs}
+            timerSnapshot={visibleTimerSnapshot}
             themeId={themeId}
             layoutOffsetX={playfieldCenterOffsetX}
             showTurnControls={!isReplay && !isGameOver}
