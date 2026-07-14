@@ -181,8 +181,11 @@ describe("challenge API routes", () => {
       order.push("reserve");
       return reservation;
     });
+    const finalizeAlertsAfterHumanJoin = vi
+      .fn()
+      .mockResolvedValue(["acct_inviter", "acct_friend"]);
     const restoreAlertsAfterFailedHumanJoin = vi.fn().mockResolvedValue([]);
-    const logger = { error: vi.fn() };
+    const logger = { error: vi.fn(), warn: vi.fn() };
     const leaveMatchForAccount = vi.fn();
 
     const pendingMatch = {
@@ -209,6 +212,7 @@ describe("challenge API routes", () => {
       getLiveMatch,
       joinMatchForAccount,
       reserveAlertsBeforeHumanJoin,
+      finalizeAlertsAfterHumanJoin,
       restoreAlertsAfterFailedHumanJoin,
       logger,
       now: () => new Date("2026-04-09T08:02:00.000Z"),
@@ -276,6 +280,7 @@ describe("challenge API routes", () => {
       matchID: "match_1",
     });
     expect(order).toEqual(["reserve", "join"]);
+    expect(finalizeAlertsAfterHumanJoin).toHaveBeenCalledWith({ reservation });
     expect(restoreAlertsAfterFailedHumanJoin).not.toHaveBeenCalled();
 
     getSessionAccount.mockResolvedValueOnce({
@@ -310,6 +315,13 @@ describe("challenge API routes", () => {
     });
     expect(restoreAlertsAfterFailedHumanJoin).toHaveBeenCalledWith({
       reservation: failedReservation,
+      joiningAccountId: "acct_friend_2",
+      joiningPlayerId: "0",
+      matchID: "match_1",
+      joinError: expect.objectContaining({
+        message: "seat already filled",
+        status: 409,
+      }),
     });
 
     getSessionAccount.mockResolvedValueOnce({
