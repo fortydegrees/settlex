@@ -21,8 +21,16 @@
 - The reviewer's nested-failure and competing-winner reproductions are now real
   Postgres regressions; different-match overlap is covered there too. Migration,
   store, reconciliation, public/friend routes, and the earlier signed-out Cancel
-  path passed 73/73 focused tests; full repository, production-build, and final
-  independent review remain the next gate.
+  path passed 73/73 focused tests.
+- Final repository verification passed: all 153 engine tests, all 252
+  server/lib/AI tests (including five real-Postgres store regressions), all 241
+  isolated app test files, and lint with no warnings or errors. The approved
+  release check, 16-test deployment contract, deploy-script syntax check, and
+  fresh production builds for both Dockerfiles also passed.
+- Final independent re-review reproduced the same-match lease, competing-winner,
+  and different-match guard orderings against Postgres and reported no Critical,
+  Important, or Minor findings. The branch is ready for an integration choice;
+  it has not been pushed, merged, or deployed.
 
 ## Status (2026-07-14, Match alerts final route closure)
 - Friend-challenge acceptance now uses the same reserve-before-join contract as
@@ -37,8 +45,7 @@
   rejection proof.
 - Both issues were reproduced with failing-first tests. The wider affected
   matchmaking, challenge, route, lifecycle, store, real-Postgres, and
-  game-server credential suite passed 81/81; full repository and production
-  build verification remain the next gate.
+  game-server credential suite passed 81/81; the later final gate above passed.
 
 ## Status (2026-07-14, Match alerts concurrency closure)
 - Replaced the subscription-cap CTE with an account-row-locked transaction:
@@ -59,12 +66,11 @@
   enables the concurrent subscription-cap regression in the thorough lane.
 - Focused verification passed 124/124 across the changed matchmaking, API,
   store, lifecycle, server-wiring, and deployment contracts. Final repository
-  verification also passed: all 153 engine tests, all 246 server/lib/AI tests,
+  verification also passed: all 153 engine tests, all 252 server/lib/AI tests,
   all 241 isolated app test files, and lint with no warnings or errors.
 - The approved-release check, 16-test deployment contract, deploy-script syntax
   check, and fresh production builds for both Dockerfiles passed against the
-  concurrency-safe implementation. Final independent re-review remains the
-  next gate.
+  concurrency-safe implementation. The later final re-review above is clean.
 
 ## Status (2026-07-14, Match alerts final review corrections)
 - Closed all five Important findings from the whole-feature review:
@@ -84,7 +90,7 @@
 - Focused correction regression: 180 tests passed across 14 files, with each
   correction first reproduced by a failing test.
 - Final repository verification passed after the corrections: all 153 engine
-  tests, all 246 server/lib/AI tests, all 241 isolated app test files, and lint
+  tests, all 252 server/lib/AI tests, all 241 isolated app test files, and lint
   with no warnings or errors. The approved-release check, deploy-script syntax
   check, and fresh production builds for both Dockerfiles also passed.
 
@@ -103,7 +109,7 @@
   - review-driven feature/service-worker regression pass: 163 tests passed
     across 12 files;
   - engine build and all 153 engine tests passed;
-  - full `pnpm verify`: 153 engine tests, 246 server/lib/AI tests, all 241
+  - full `pnpm verify`: 153 engine tests, 252 server/lib/AI tests, all 241
     isolated app test files, and lint with no warnings or errors;
   - `pnpm release:check -- --require-approved` passed for approved release 3;
   - `bash -n infra/scripts/deploy-prod.sh` passed;
