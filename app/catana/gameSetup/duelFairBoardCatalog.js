@@ -27,6 +27,6 @@ export const selectDuelFairBoard = (randomValue) => {
 
 export const generateDuelFairBoard = (selection) =>
   generateBoard(
-    resolveBoardConfig("standard-official"),
+    resolveBoardConfig("standard-official-spiral"),
     makeDeterministicRng(selection.seed)
   );

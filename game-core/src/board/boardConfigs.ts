@@ -19,12 +19,12 @@ export type BoardConfig = {
 };
 
 export type BoardConfigId =
-  | "standard-official"
+  | "standard-official-spiral"
   | "standard-random"
   | "standard-balanced";
 
 export const BOARD_CONFIGS: Record<BoardConfigId, BoardConfig> = {
-  "standard-official": {
+  "standard-official-spiral": {
     specId: "standard-4p",
     generation: {
       terrain: "random",

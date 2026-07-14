@@ -11,7 +11,7 @@ export function generateOfficialSpiral(seed) {
     generatorVersion: GENERATOR_VERSIONS[BOARD_FAMILIES.OFFICIAL_SPIRAL],
     seed,
     tiles: generateBoard(
-      resolveBoardConfig("standard-official"),
+      resolveBoardConfig("standard-official-spiral"),
       makeDeterministicRng(seed)
     )
   };

@@ -21,13 +21,13 @@ export const GAME_MODES: Record<GameModeId, GameMode> = {
     id: "standard-3p",
     numPlayers: 3,
     rulesetId: "standard",
-    boardConfigId: "standard-official"
+    boardConfigId: "standard-official-spiral"
   },
   "standard-4p": {
     id: "standard-4p",
     numPlayers: 4,
     rulesetId: "standard",
-    boardConfigId: "standard-official"
+    boardConfigId: "standard-official-spiral"
   }
 };
 

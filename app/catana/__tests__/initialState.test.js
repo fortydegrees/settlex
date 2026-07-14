@@ -94,7 +94,7 @@ describe("initial game setup helpers", () => {
 
     expect(explicitRandom.boardConfigId).toBe("standard-random");
     expect(explicitRandom.boardCatalog).toBeNull();
-    expect(standardThreePlayer.boardConfigId).toBe("standard-official");
+    expect(standardThreePlayer.boardConfigId).toBe("standard-official-spiral");
     expect(standardThreePlayer.boardCatalog).toBeNull();
   });
 
