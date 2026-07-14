@@ -57,13 +57,27 @@ const selectCatalogIndex = (randomValue, size) => {
   return Math.floor(randomValue * size);
 };
 
+export const selectCatalogEntry = ({ randomValue, seeds }) => {
+  if (!Array.isArray(seeds) || seeds.length === 0) {
+    throw new Error("catalog seeds must not be empty");
+  }
+  const index = selectCatalogIndex(randomValue, seeds.length);
+  const seed = seeds[index];
+  if (!Number.isInteger(seed)) {
+    throw new Error("catalog seed must be an integer");
+  }
+  return { index, seed };
+};
+
 export const materializeBoardSource = ({ boardSourceId, rng }) => {
   assertRng(rng);
   const source = resolveBoardSource(boardSourceId);
 
   if (source.kind === "catalog") {
-    const index = selectCatalogIndex(rng(), source.catalog.seeds.length);
-    const seed = source.catalog.seeds[index];
+    const { index, seed } = selectCatalogEntry({
+      randomValue: rng(),
+      seeds: source.catalog.seeds
+    });
     return {
       boardSourceId: source.id,
       boardConfigId: source.boardConfigId,

@@ -12,13 +12,18 @@
   archive resolved initial-state values.
 - Catalog seed/rank/score/hash entries remain unchanged; only explicit
   generator-configuration metadata changed.
-- Fresh focused verification:
-  - `pnpm test:board-lab`: 21 files and 164 tests passed;
-  - `pnpm test:catana`: 214 files and 816 tests passed;
-  - `pnpm test:server`: 47 files and 189 tests passed;
-  - `pnpm -C game-core test`: 14 files and 148 tests passed;
+- Final review hardened the boundary: production rejects custom board configs
+  even without a dev-scenario payload; scenario-replaced tiles use custom
+  provenance; built-in configs are deeply immutable; catalog selection rejects
+  empty catalogs and non-integer selected seeds; archive legacy fallback and
+  rollback behavior have direct regression coverage.
+- Final-review focused verification:
+  - `pnpm test:catana`: 214 files and 825 tests passed;
+  - `pnpm test:server`: 47 files and 191 tests passed;
+  - `pnpm -C game-core test`: 14 files and 149 tests passed;
   - `pnpm -C game-core build`: exit 0.
-- Fresh repository verification:
+- Pre-final-review repository verification (the controller will rerun it after
+  review fixes):
   - `pnpm verify`: engine 14 files / 148 tests, server/lib/AI 47 files /
     189 tests, all 229 isolated app test files, and repository lint passed;
   - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`: exit 0;
@@ -44,7 +49,11 @@
   complete replay initial state. No production behavior or database schema has
   changed yet.
 
-## Status (2026-07-14, duel fair live catalog v1 implemented)
+## Historical status (2026-07-14, superseded duel fair live-catalog implementation)
+- This snapshot predates the explicit board-source migration above. Its hashes,
+  `standard-balanced`/`standard-official` identifiers, and `G.boardCatalog`
+  field describe the superseded provisional representation, not current
+  runtime guidance.
 - Published `duel-fair-official-v1`, the top 1,000 symmetry-distinct boards by
   `duel-fair-v3` overall score from fixed official-spiral seeds `1..65000`.
   The source run ranked all 65,000 boards with zero invalid records in

@@ -4111,3 +4111,8 @@
 - Catana board-source architecture note:
 - Product modes and board-source ids belong in `lib/shared/catanaGameModes.js`, not `game-core`. Runtime setup should resolve `boardSourceId` through `app/catana/gameSetup/boardSources.js` and persist truthful `boardSourceId`, actual `boardConfigId`, and `boardProvenance` fields.
 - Duel uses the ranked `duel-fair-official-v1` catalog source; standard 3-player and 4-player modes use `generated-official-spiral-v1`. Keep custom board configs mutually exclusive with explicit source ids, and do not reintroduce `setupData.boardConfigId` as an input.
+- Explicit board-source safety note (2026-07-14): built-in engine board configs
+  are deeply immutable process-wide. Production setup must reject explicit
+  custom `boardConfig` payloads independently of dev-scenario presence. If a
+  dev scenario supplies replacement tiles, archive/runtime identity must be
+  `custom`; do not retain catalog provenance for those tiles.

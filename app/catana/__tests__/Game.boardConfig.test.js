@@ -8,6 +8,25 @@ const createRandom = (seed = 123) => ({
 });
 
 describe("Catan setup board config", () => {
+  it("rejects a custom board config through production setup validation", async () => {
+    const previousEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    vi.resetModules();
+
+    try {
+      const { Catan: ProductionCatan } = await import("../Game");
+      expect(
+        ProductionCatan.validateSetupData(
+          { boardConfig: { specId: "standard-4p" } },
+          2
+        )
+      ).toBe("Custom board configurations are disabled in production.");
+    } finally {
+      process.env.NODE_ENV = previousEnv;
+      vi.resetModules();
+    }
+  });
+
   it("keeps non-current seats Stage.NULL-active so they can use global moves", () => {
     expect(Catan.phases.placement.turn.activePlayers).toEqual({
       currentPlayer: "settlement",

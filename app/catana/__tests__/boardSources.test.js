@@ -5,7 +5,8 @@ import { DUEL_FAIR_BOARD_CATALOG } from "../gameSetup/catalogs/duelFairOfficialV
 import {
   materializeBoardSource,
   materializeCustomBoard,
-  resolveBoardSource
+  resolveBoardSource,
+  selectCatalogEntry
 } from "../gameSetup/boardSources.js";
 
 describe("Catana board sources", () => {
@@ -47,6 +48,20 @@ describe("Catana board sources", () => {
         boardSourceId: BOARD_SOURCE_IDS.DUEL_FAIR_OFFICIAL_V1,
         rng: () => randomValue
       })).toThrow("catalog random value");
+    }
+  );
+
+  it("rejects an empty catalog before selecting an entry", () => {
+    expect(() => selectCatalogEntry({ randomValue: 0, seeds: [] })).toThrow(
+      "catalog seeds must not be empty"
+    );
+  });
+
+  it.each([1.5, Number.NaN, "47", undefined])(
+    "rejects invalid catalog seed %s",
+    (seed) => {
+      expect(() => selectCatalogEntry({ randomValue: 0, seeds: [seed] }))
+        .toThrow("catalog seed must be an integer");
     }
   );
 
