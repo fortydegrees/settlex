@@ -17,4 +17,14 @@ describe("ReplayScoreChart", () => {
     expect(source).toContain("onSeek");
     expect(source).not.toContain("Tooltip");
   });
+
+  it("renders only visible scores within the full replay seek domain", () => {
+    expect(source).toContain("data={visibleScoreSeries}");
+    expect(source).toContain(
+      "ticks={visibleTurnStarts.map((item) => item.eventIndex)}"
+    );
+    expect(source).toContain("domain={[0, Math.max(eventCount - 1, 0)]}");
+    expect(source).toContain("allowDataOverflow");
+    expect(source).toContain("eventCount = scoreSeries.length");
+  });
 });
