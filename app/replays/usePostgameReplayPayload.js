@@ -30,6 +30,13 @@ const defaultWait = (delayMs, { signal } = {}) =>
     );
   });
 
+export const createPostgameReplayPayloadState = ({
+  identityKey,
+  status,
+  payload = null,
+  error = null,
+}) => ({ identityKey, status, payload, error });
+
 export const loadPostgameReplayPayload = async ({
   matchID,
   fetchImpl = fetch,
@@ -83,35 +90,60 @@ export const startPostgameReplayRequest = ({
 
 export function usePostgameReplayPayload({
   matchID,
+  identityKey,
   enabled,
   initialPayload = null,
 }) {
-  const [request, setRequest] = useState(() => ({
-    status: initialPayload ? "ready" : "idle",
-    payload: initialPayload,
-    error: null,
-  }));
+  const [request, setRequest] = useState(() =>
+    createPostgameReplayPayloadState({
+      identityKey,
+      status: initialPayload ? "ready" : "idle",
+      payload: initialPayload,
+    })
+  );
   const [retryCounter, setRetryCounter] = useState(0);
 
   useEffect(() => {
     if (initialPayload) {
-      setRequest({ status: "ready", payload: initialPayload, error: null });
+      setRequest(
+        createPostgameReplayPayloadState({
+          identityKey,
+          status: "ready",
+          payload: initialPayload,
+        })
+      );
       return undefined;
     }
     if (!enabled) {
-      setRequest({ status: "idle", payload: null, error: null });
+      setRequest(
+        createPostgameReplayPayloadState({ identityKey, status: "idle" })
+      );
       return undefined;
     }
 
-    setRequest({ status: "loading", payload: null, error: null });
+    setRequest(
+      createPostgameReplayPayloadState({ identityKey, status: "loading" })
+    );
     return startPostgameReplayRequest({
       matchID,
       onReady: (payload) =>
-        setRequest({ status: "ready", payload, error: null }),
+        setRequest(
+          createPostgameReplayPayloadState({
+            identityKey,
+            status: "ready",
+            payload,
+          })
+        ),
       onError: (error) =>
-        setRequest({ status: "error", payload: null, error }),
+        setRequest(
+          createPostgameReplayPayloadState({
+            identityKey,
+            status: "error",
+            error,
+          })
+        ),
     });
-  }, [enabled, initialPayload, matchID, retryCounter]);
+  }, [enabled, identityKey, initialPayload, matchID, retryCounter]);
 
   const retry = useCallback(() => {
     setRetryCounter((count) => count + 1);

@@ -22,6 +22,8 @@ import {
 import {
   createReplayActivationState,
   createReplaySessionState,
+  getReplayPayloadStatusForIdentity,
+  isReplayReadyForIdentity,
   replayActivationReducer,
   replaySessionReducer,
 } from "./replaySessionState";
@@ -89,13 +91,23 @@ export function PostgameGameBoard(props) {
   );
   const replayPayload = usePostgameReplayPayload({
     matchID: bgioProps.matchID,
+    identityKey: replayIdentityKey,
     enabled: !archivedMode && liveGameOver,
     initialPayload: initialReplayPayload,
   });
   const {
-    status: replayPayloadStatus,
+    identityKey: hookPayloadIdentityKey,
+    status: hookPayloadStatus,
     retry: retryReplayPayload,
   } = replayPayload;
+  const payloadIdentityKey = initialReplayPayload
+    ? replayIdentityKey
+    : hookPayloadIdentityKey;
+  const replayPayloadStatus = getReplayPayloadStatusForIdentity({
+    identityKey: replayIdentityKey,
+    payloadIdentityKey,
+    payloadStatus: initialReplayPayload ? "ready" : hookPayloadStatus,
+  });
   const hydratedPayload = initialReplayPayload ?? replayPayload.payload;
   const replay = hydratedPayload?.replay ?? null;
   const safeFrames = useMemo(() => {
@@ -156,8 +168,15 @@ export function PostgameGameBoard(props) {
       };
   const activationReady =
     activation.identityKey === replayIdentityKey && activation.replayActive;
-  const replayActive =
-    archivedMode || (activationReady && sessionIdentityMatches);
+  const payloadReadyForIdentity =
+    payloadIdentityKey === replayIdentityKey && replayPayloadStatus === "ready";
+  const replayActive = isReplayReadyForIdentity({
+    identityKey: replayIdentityKey,
+    activation,
+    sessionIdentityKey: session.identityKey,
+    payloadIdentityKey,
+    payloadStatus: replayPayloadStatus,
+  });
   const [mobileReplayOpen, setMobileReplayOpen] = useState(false);
 
   const seekReplayEvent = useCallback(
@@ -222,15 +241,21 @@ export function PostgameGameBoard(props) {
   }, [archivedMode, replayIdentityKey]);
 
   useEffect(() => {
-    if (replayPayloadStatus !== "ready") return;
+    if (hookPayloadStatus !== "ready") return;
     dispatchActivation({
       type: "payloadReady",
-      identityKey: replayIdentityKey,
+      identityKey: hookPayloadIdentityKey,
     });
-  }, [replayIdentityKey, replayPayloadStatus]);
+  }, [hookPayloadIdentityKey, hookPayloadStatus]);
 
   useEffect(() => {
-    if (!activationReady || sessionIdentityMatches) return;
+    if (
+      !activationReady ||
+      !payloadReadyForIdentity ||
+      sessionIdentityMatches
+    ) {
+      return;
+    }
     dispatch({
       type: "startReplay",
       identityKey: replayIdentityKey,
@@ -246,6 +271,7 @@ export function PostgameGameBoard(props) {
     archivedMode,
     bgioProps.playerID,
     initialPerspectivePlayerID,
+    payloadReadyForIdentity,
     replayIdentityKey,
     sessionIdentityMatches,
     timeline.events.length,
@@ -302,6 +328,14 @@ export function PostgameGameBoard(props) {
       };
   const victoryTarget =
     currentEvent?.state?.G?.core?.ruleset?.victoryPointsToWin ?? 10;
+
+  if (archivedMode && !replayActive) {
+    return h(
+      "div",
+      { className: "replay-status-page", role: "status" },
+      "Loading replay…"
+    );
+  }
 
   return h(
     Fragment,

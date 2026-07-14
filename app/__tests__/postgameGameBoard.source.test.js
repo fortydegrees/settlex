@@ -36,6 +36,13 @@ describe("PostgameGameBoard", () => {
     expect(source).toContain("bgioProps.playerID");
   });
 
+  it("keeps payload readiness scoped to the identity that produced it", () => {
+    expect(source).toContain("identityKey: hookPayloadIdentityKey");
+    expect(source).toContain("getReplayPayloadStatusForIdentity");
+    expect(source).toContain("isReplayReadyForIdentity");
+    expect(source).toContain("payloadIdentityKey,");
+  });
+
   it("owns the boardgame.io live board slot", () => {
     expect(matchPageSource).toContain(
       'import { PostgameGameBoard } from "../../../replays/PostgameGameBoard"'
