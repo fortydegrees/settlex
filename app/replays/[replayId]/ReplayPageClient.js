@@ -1,21 +1,25 @@
 "use client";
 
-import { createElement as h, useMemo, useState } from "react";
-import { GameScreen } from "../../catana/GameScreen";
-import { ReplayControls } from "../components/ReplayControls";
+import {
+  createElement as h,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { GameScreenWithEffects } from "../../catana/GameScreen";
+import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
+import { ReplayConsole } from "../components/ReplayConsole";
 import {
   buildReplayChatMessages,
-  clampReplayFrameIndex,
+  getReplayKeyboardAction,
 } from "../replayClientState";
-import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
-
-const formatDate = (value) =>
-  new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(value));
+import {
+  buildReplayTimeline,
+  getNextTurnEventIndex,
+  getPreviousTurnEventIndex,
+} from "../replayTimeline";
+import { useReplayNavigation } from "../useReplayNavigation";
 
 const buildReplayMatchData = (participants) =>
   participants.map((participant) => ({
@@ -30,130 +34,167 @@ const buildReplayMatchData = (participants) =>
     },
   }));
 
-const getFrameLabel = (frame) => {
-  const moveType =
-    frame?.logEntry?.action?.payload?.type ?? frame?.logEntry?.action?.type ?? null;
-  if (!moveType) {
-    return "Initial setup";
-  }
-  return String(moveType);
-};
-
 export const createReplayPageClient = ({
-  GameScreen: GameScreenImpl = GameScreen,
-  ReplayControls: ReplayControlsImpl = ReplayControls,
+  GameScreen: GameScreenImpl = GameScreenWithEffects,
+  ReplayConsole: ReplayConsoleImpl = ReplayConsole,
 } = {}) =>
   function ReplayPageClient({
     replay,
-    frames,
+    frames = [],
     initialFrameIndex = 0,
   }) {
-    const [frameIndex, setFrameIndex] = useState(() =>
-      clampReplayFrameIndex(initialFrameIndex, frames.length)
-    );
-  const safeFrameIndex = clampReplayFrameIndex(frameIndex, frames.length);
-  const currentFrame = frames[safeFrameIndex] ?? null;
-  const currentState = currentFrame?.state ?? replay.initialState;
-  const matchData = useMemo(
-    () => buildReplayMatchData(replay.participants ?? []),
-    [replay.participants]
-  );
-  const chatMessages = useMemo(
-    () => buildReplayChatMessages(replay.chatMessages ?? []),
-    [replay.chatMessages]
-  );
-
-  const replayProps = {
-    ...currentState,
-    matchData,
-    matchMetadata: matchData,
-    matchID: replay.match.bgioMatchId ?? replay.match.replayId,
-    playerID: null,
-    credentials: null,
-    moves: {},
-    events: {},
-    plugins: currentState?.plugins ?? {},
-    isConnected: true,
-    isMultiplayer: false,
-    isReplay: true,
-    chatMessages,
-  };
-
-  return h(
-    "div",
-    {
-      className: "min-h-screen",
-      style: { background: CATANA_TABLE_BACKGROUND },
-    },
-    h(
-      "div",
-      {
-        className: "pointer-events-none fixed inset-x-0 top-0 z-50 p-4",
-      },
-      h(
-        "div",
-        {
-          className: "pointer-events-auto mx-auto flex max-w-5xl flex-col gap-3",
-        },
-        h(
-          "section",
-          {
-            className:
-              "rounded-2xl bg-blue-200/90 p-4 shadow-xl ring-1 ring-white/60 backdrop-blur-sm",
-          },
-          h(
-            "div",
-            {
-              className: "flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between",
-            },
-            h(
-              "div",
-              null,
-              h(
-                "p",
-                {
-                  className:
-                    "text-xs font-semibold uppercase tracking-[0.22em] text-slate-600",
-                },
-                "Archived replay"
-              ),
-              h(
-                "h1",
-                {
-                  className: "mt-1 text-2xl font-bold text-slate-900",
-                },
-                replay.match.gameName
-              ),
-              h(
-                "p",
-                {
-                  className: "text-sm text-slate-700",
-                },
-                `Finished ${formatDate(replay.match.finishedAt)} · ${replay.match.playerCount} players`
-              )
-            ),
-            h(
-              "p",
+    const safeFrames = useMemo(
+      () =>
+        frames.length > 0
+          ? frames
+          : [
               {
-                className:
-                  "rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/70",
+                index: 0,
+                state: replay.initialState,
+                logEntry: null,
               },
-              getFrameLabel(currentFrame)
-            )
+            ],
+      [frames, replay.initialState]
+    );
+    const timeline = useMemo(
+      () =>
+        buildReplayTimeline({
+          frames: safeFrames,
+          participants: replay.participants ?? [],
+        }),
+      [safeFrames, replay.participants]
+    );
+    const navigation = useReplayNavigation({
+      eventCount: timeline.events.length,
+      initialEventIndex:
+        initialFrameIndex > 0 ? timeline.events.length - 1 : 0,
+    });
+    const currentEvent =
+      timeline.events[navigation.eventIndex] ?? timeline.events[0];
+    const currentFrame =
+      safeFrames[currentEvent?.frameIndex ?? 0] ?? safeFrames[0];
+    const currentState = currentFrame?.state ?? replay.initialState;
+    const [mobileReplayOpen, setMobileReplayOpen] = useState(false);
+    const matchData = useMemo(
+      () => buildReplayMatchData(replay.participants ?? []),
+      [replay.participants]
+    );
+    const chatMessages = useMemo(
+      () => buildReplayChatMessages(replay.chatMessages ?? []),
+      [replay.chatMessages]
+    );
+    const replayEventIndex = navigation.eventIndex;
+    const seekReplayEvent = navigation.seek;
+
+    const seekPreviousTurn = useCallback(
+      () =>
+        seekReplayEvent(
+          getPreviousTurnEventIndex(
+            replayEventIndex,
+            timeline.turnStarts
           )
         ),
-        h(ReplayControlsImpl, {
-          frameIndex: safeFrameIndex,
-          frameCount: frames.length,
-          onFrameChange: setFrameIndex,
-          onPrevious: () => setFrameIndex((current) => Math.max(0, current - 1)),
-          onNext: () =>
-            setFrameIndex((current) => Math.min(frames.length - 1, current + 1)),
-        })
-      )
-    ),
-    h(GameScreenImpl, replayProps)
-  );
+      [replayEventIndex, seekReplayEvent, timeline.turnStarts]
+    );
+    const seekNextTurn = useCallback(
+      () =>
+        seekReplayEvent(
+          getNextTurnEventIndex(
+            replayEventIndex,
+            timeline.turnStarts,
+            timeline.events.length - 1
+          )
+        ),
+      [
+        replayEventIndex,
+        seekReplayEvent,
+        timeline.events.length,
+        timeline.turnStarts,
+      ]
+    );
+    const handleReplayLogEntrySelect = useCallback(
+      (entryKey) => {
+        const nextIndex = timeline.logEventIndexByKey[String(entryKey)];
+        if (Number.isInteger(nextIndex)) seekReplayEvent(nextIndex);
+      },
+      [seekReplayEvent, timeline.logEventIndexByKey]
+    );
+
+    useEffect(() => {
+      const handleKeyDown = (event) => {
+        const target = event.target;
+        if (
+          target?.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(
+            target?.tagName
+          )
+        ) {
+          return;
+        }
+
+        const keyboardAction = getReplayKeyboardAction(event);
+        if (!keyboardAction) return;
+        event.preventDefault();
+
+        if (keyboardAction === "previousEvent") navigation.previous();
+        if (keyboardAction === "nextEvent") navigation.next();
+        if (keyboardAction === "previousTurn") seekPreviousTurn();
+        if (keyboardAction === "nextTurn") seekNextTurn();
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [
+      navigation.next,
+      navigation.previous,
+      seekNextTurn,
+      seekPreviousTurn,
+    ]);
+
+    const replayProps = {
+      ...currentState,
+      matchData,
+      matchMetadata: matchData,
+      matchID: replay.match.bgioMatchId ?? replay.match.replayId,
+      playerID: null,
+      credentials: null,
+      moves: {},
+      events: {},
+      plugins: currentState?.plugins ?? {},
+      isConnected: true,
+      isMultiplayer: false,
+      isReplay: true,
+      chatMessages,
+      replayLogEntries: currentEvent?.visibleLogEntries ?? [],
+      replayActiveLogEntryKey: currentEvent?.logEntryKey ?? null,
+      onReplayLogEntrySelect: handleReplayLogEntrySelect,
+      replayConsoleMobileOpen: mobileReplayOpen,
+      onReplayMobileMetaPanelOpen: () => setMobileReplayOpen(false),
+    };
+    const victoryTarget =
+      currentState?.G?.core?.ruleset?.victoryPointsToWin ?? 10;
+
+    return h(
+      "div",
+      {
+        className: "min-h-screen",
+        style: { background: CATANA_TABLE_BACKGROUND },
+      },
+      h(GameScreenImpl, replayProps),
+      h(ReplayConsoleImpl, {
+        timeline,
+        currentEvent,
+        currentEventIndex: navigation.eventIndex,
+        victoryTarget,
+        mobileOpen: mobileReplayOpen,
+        onMobileOpenChange: setMobileReplayOpen,
+        onPreviousEvent: navigation.previous,
+        onNextEvent: navigation.next,
+        onPreviousTurn: seekPreviousTurn,
+        onNextTurn: seekNextTurn,
+        onSeek: navigation.seek,
+      })
+    );
   };
 
 export const ReplayPageClient = createReplayPageClient();

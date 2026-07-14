@@ -9,25 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 const replayPagePath = path.join(repoRoot, "app", "replays", "[replayId]", "page-content.js");
-const replayControlsPath = path.join(
-  repoRoot,
-  "app",
-  "replays",
-  "components",
-  "ReplayControls.js"
-);
 
 const loadReplayPageModule = async () => {
   expect(fs.existsSync(replayPagePath)).toBe(true);
   const href = pathToFileURL(replayPagePath).href
     .replaceAll("%5B", "[")
     .replaceAll("%5D", "]");
-  return import(`${href}?t=${Date.now()}`);
-};
-
-const loadReplayControls = async () => {
-  expect(fs.existsSync(replayControlsPath)).toBe(true);
-  const href = pathToFileURL(replayControlsPath).href;
   return import(`${href}?t=${Date.now()}`);
 };
 
@@ -84,25 +71,35 @@ describe("replay page", () => {
         ctx: { gameover: null },
       },
       log: [{ action: { type: "score", payload: { increment: 5 } } }],
+      finalState: {
+        G: { score: 5 },
+        ctx: { gameover: { winner: "0" } },
+      },
     });
     expect(html).toContain("Replay rpl_3 has 2 frame(s)");
   });
 
-  it("renders replay controls with prev-next buttons and a scrubber", async () => {
-    const { ReplayControls } = await loadReplayControls();
-    const html = renderToStaticMarkup(
-      h(ReplayControls, {
-        frameIndex: 2,
-        frameCount: 5,
-        onFrameChange: () => {},
-        onPrevious: () => {},
-        onNext: () => {},
-      })
-    );
+  it("renders an invalid status when archived frames cannot be rebuilt", async () => {
+    const { createReplayPage } = await loadReplayPageModule();
+    const replay = {
+      match: { replayId: "rpl_bad", bgioMatchId: "m_bad" },
+      participants: [],
+      initialState: { G: {}, ctx: {} },
+      log: [],
+    };
+    const ReplayStatusPage = ({ matchID, status }) =>
+      h("div", null, `Replay status ${status} for ${matchID}`);
+    const Page = createReplayPage({
+      getArchivedReplay: vi.fn().mockResolvedValue(replay),
+      buildReplayFrames: vi.fn().mockImplementation(() => {
+        throw new Error("invalid archive");
+      }),
+      ReplayStatusPage,
+    });
 
-    expect(html).toContain("Previous");
-    expect(html).toContain("Next");
-    expect(html).toContain('type="range"');
-    expect(html).toContain("Step 3 of 5");
+    const element = await Page({ params: { replayId: "rpl_bad" } });
+    const html = renderToStaticMarkup(element);
+
+    expect(html).toContain("Replay status invalid for m_bad");
   });
 });

@@ -7,6 +7,7 @@ export const createReplayPage = ({
   getArchivedReplay: getArchivedReplayImpl = getArchivedReplay,
   buildReplayFrames: buildReplayFramesImpl = buildReplayFrames,
   ReplayPageClient: ReplayPageClientImpl = null,
+  ReplayStatusPage: ReplayStatusPageImpl = null,
   notFoundImpl = notFound,
 } = {}) =>
   async function ReplayPage({ params }) {
@@ -16,10 +17,26 @@ export const createReplayPage = ({
       return notFoundImpl();
     }
 
-    const frames = buildReplayFramesImpl({
-      initialState: replay.initialState,
-      log: replay.log,
-    });
+    let frames;
+    try {
+      frames = buildReplayFramesImpl({
+        initialState: replay.initialState,
+        log: replay.log,
+        finalState: replay.finalState,
+      });
+      if (frames.length === 0) {
+        throw new Error("Replay has no valid frames");
+      }
+    } catch (error) {
+      const ReplayStatusPageResolved =
+        ReplayStatusPageImpl ??
+        (await import("../components/ReplayStatusPage.jsx"))
+          .ReplayStatusPage;
+      return h(ReplayStatusPageResolved, {
+        matchID: replay.match.bgioMatchId ?? replay.match.replayId,
+        status: "invalid",
+      });
+    }
     const ReplayPageClientResolved =
       ReplayPageClientImpl ??
       (await import("./ReplayPageClient.js")).ReplayPageClient;

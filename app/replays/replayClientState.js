@@ -1,3 +1,5 @@
+import { clampReplayEventIndex } from "./replayTimeline";
+
 export const buildReplayChatMessages = (chatMessages = []) =>
   chatMessages.map((message) => ({
     id: message.id,
@@ -8,4 +10,21 @@ export const buildReplayChatMessages = (chatMessages = []) =>
   }));
 
 export const clampReplayFrameIndex = (frameIndex, frameCount) =>
-  Math.min(Math.max(frameIndex, 0), Math.max(frameCount - 1, 0));
+  clampReplayEventIndex(frameIndex, frameCount);
+
+export const getReplayKeyboardAction = ({
+  key,
+  shiftKey = false,
+  altKey = false,
+  ctrlKey = false,
+  metaKey = false,
+} = {}) => {
+  if (altKey || ctrlKey || metaKey) return null;
+  if (key === "ArrowLeft") {
+    return shiftKey ? "previousTurn" : "previousEvent";
+  }
+  if (key === "ArrowRight") {
+    return shiftKey ? "nextTurn" : "nextEvent";
+  }
+  return null;
+};
