@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameLogPanel } from "./GameLogPanel";
 import { ChatPanel } from "./ChatPanel";
+import {
+  META_PANEL_FRAME_CLASS_NAME,
+  META_PANEL_GLASS_STYLE,
+} from "./metaPanelChrome";
 import { MobileMetaDrawer } from "./MobileMetaDrawer";
 import {
   normalizeLeftMetaRailDesktopPrefs,
@@ -26,17 +30,8 @@ const desktopFeedCollapsedHeight = "3.5rem";
 const desktopFeedStackGap = "0.5rem";
 const desktopFeedSlotClassName =
   "transition-[width,height,opacity,transform,border-radius] [will-change:width,height,opacity,transform] motion-reduce:transition-none";
-const desktopFeedFrameClassName = joinClassNames(
-  "relative flex h-full flex-col overflow-hidden rounded-[1.15rem] border border-white/[0.38] shadow-[0_18px_42px_-28px_rgba(37,99,235,0.28),inset_0_1px_0_rgba(255,255,255,0.28)] ring-1 ring-white/35 select-none"
-);
 const desktopFeedRestoreFrameClassName =
   "border-white/50 shadow-[0_20px_44px_-28px_rgba(15,23,42,0.44),inset_0_1px_0_rgba(255,255,255,0.42)] ring-white/45";
-const desktopFeedGlassLayerStyle = {
-  background:
-    "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06)), linear-gradient(90deg, rgba(255,255,255,0.24), rgba(191,219,254,0.14), rgba(147,197,253,0.1))",
-  backdropFilter: "blur(18px) saturate(1.1)",
-  WebkitBackdropFilter: "blur(18px) saturate(1.1)",
-};
 const desktopFeedRestoreGlassLayerStyle = {
   background:
     "linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.1)), linear-gradient(90deg, rgba(255,255,255,0.28), rgba(191,219,254,0.18), rgba(147,197,253,0.12))",
@@ -296,7 +291,7 @@ function DesktopFeedFrame({
       "div",
       {
         className: joinClassNames(
-          desktopFeedFrameClassName,
+          META_PANEL_FRAME_CLASS_NAME,
           "transition-[border-color,box-shadow] duration-150 ease-out motion-reduce:transition-none",
           isRestoreButton ? desktopFeedRestoreFrameClassName : null,
           isRestoreButton
@@ -308,7 +303,7 @@ function DesktopFeedFrame({
         className: "pointer-events-none absolute inset-0 rounded-[inherit]",
         style: isRestoreButton
           ? desktopFeedRestoreGlassLayerStyle
-          : desktopFeedGlassLayerStyle,
+          : META_PANEL_GLASS_STYLE,
         "aria-hidden": "true",
       }),
       React.createElement("div", {

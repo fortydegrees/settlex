@@ -5,8 +5,7 @@ import { BackwardIcon, ForwardIcon } from "@heroicons/react/24/solid";
 import { Button } from "../../ui/Button";
 import { IconButton } from "../../ui/IconButton";
 
-export function ReplayTransportControls({
-  currentEvent,
+export function ReplayStepControls({
   currentEventIndex,
   eventCount,
   turnStarts = [],
@@ -16,32 +15,16 @@ export function ReplayTransportControls({
   onNextTurn,
   onSeek,
   compact = false,
-  rail = false,
 }) {
   const atStart = currentEventIndex <= 0;
   const atEnd = currentEventIndex >= Math.max(eventCount - 1, 0);
 
   return (
-    <div className="space-y-3" data-replay-transport="true">
-      {!compact ? (
-        <div>
-          <div className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-500">
-            Turn {currentEvent?.turn ?? "—"}
-          </div>
-          <div
-            className="mt-1 min-h-10 text-sm font-bold leading-5 text-slate-900"
-            aria-live="polite"
-          >
-            {currentEvent?.label ?? "Initial setup"}
-          </div>
-        </div>
-      ) : null}
-
-      <div
-        className={`flex items-center justify-center gap-2 ${
-          rail ? "flex-col" : "flex-row"
-        }`}
-      >
+    <div
+      className={compact ? "flex items-center gap-2" : "space-y-3"}
+      data-replay-step-controls="true"
+    >
+      <div className="flex items-center justify-center gap-2">
         <IconButton
           size="sm"
           variant="secondary"
