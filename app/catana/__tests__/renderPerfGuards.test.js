@@ -231,6 +231,23 @@ describe("render performance guards", () => {
     expect(boardContents).not.toContain('console.log("board render ');
   });
 
+  it("passes Board viewport width through every Edge", () => {
+    const boardContents = readCatanaFile("Board.js");
+    const edgeContents = readCatanaFile("Edge.js");
+    const edgeRenderCount = (boardContents.match(/<Edge\b/g) ?? []).length;
+    const viewportPropCount = (
+      boardContents.match(/viewportWidth=\{width\}/g) ?? []
+    ).length;
+
+    expect(edgeRenderCount).toBeGreaterThan(0);
+    expect(viewportPropCount).toBe(edgeRenderCount);
+    expect(edgeContents).not.toContain("useWindowSize");
+    expect(edgeContents).toContain("viewportWidth");
+    expect(edgeContents).toContain(
+      "getEdgeTransform(direction, size, viewportWidth)"
+    );
+  });
+
   it("lazy-loads preview components so GSAP is not part of the initial board bundle", () => {
     const contents = readCatanaFile("Board.js");
 
