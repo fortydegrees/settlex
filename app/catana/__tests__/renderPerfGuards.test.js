@@ -41,13 +41,21 @@ describe("render performance guards", () => {
     );
   });
 
-  it("only starts the ticker when a visible timer, disconnect countdown, or idle countdown is active", () => {
-    const contents = readCatanaFile("GameScreen.js");
-    expect(contents).toContain("hasDisconnectCountdown");
-    expect(contents).toContain("hasIdleCountdown");
-    expect(contents).toMatch(
-      /if \(!timerSnapshot \|\| hideTimer\) \{\s+if \(!hasDisconnectCountdown && !hasIdleCountdown\) return;\s+\}/
+  it("keeps the regular timer clock below GameScreen", () => {
+    const screenContents = readCatanaFile("GameScreen.js");
+    const desktopContents = readCatanaFile("components/TurnControlCluster.js");
+    const mobileContents = readCatanaFile("components/MobilePlayerCockpit.js");
+
+    expect(screenContents).toContain(
+      "if (!hasDisconnectCountdown && !hasIdleCountdown) return;"
     );
+    expect(screenContents).not.toContain(
+      "[timerSnapshot, hideTimer, hasDisconnectCountdown, hasIdleCountdown]"
+    );
+    expect(screenContents).not.toContain("const timerMs = getTimerRemainingMs");
+    expect(screenContents).toContain("timerSnapshot={visibleTimerSnapshot}");
+    expect(desktopContents).toContain("useLiveTurnTimer");
+    expect(mobileContents).toContain("useLiveTurnTimer");
   });
 
   it("precomputes resource counts in PlayerActionContainer", () => {

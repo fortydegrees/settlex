@@ -100,7 +100,7 @@ export const PlayerActionContainer = ({
   gameStatus,
   canRoll,
   canEnd,
-  timerMs,
+  timerSnapshot,
   themeId,
   showTurnControls = true,
   layoutOffsetX = 0,
@@ -162,13 +162,10 @@ export const PlayerActionContainer = ({
     dynamicActions,
     endTurnEnabled,
     handleResourceClick,
-    isLowTimerAlertActive,
     isOverLimit,
     resourceCounts,
     rollEnabled,
     showDevCardBay,
-    showStatusTimer,
-    timerText,
     totalResources,
     turnControlMode,
     visibleDevCards,
@@ -185,9 +182,6 @@ export const PlayerActionContainer = ({
     onDevCardPurchase: startDevCardPurchaseReveal,
     canRoll,
     canEnd,
-    timerMs,
-    statusType,
-    gameStatus,
     themeId,
   });
   const isSeatWarning =
@@ -419,9 +413,10 @@ export const PlayerActionContainer = ({
             <TurnControlCluster
               mode={turnControlMode}
               statusText={gameStatus ? gameStatus.title : null}
-              timerText={timerText}
-              showTimer={showStatusTimer}
-              isTimerLow={isLowTimerAlertActive}
+              timerSnapshot={timerSnapshot}
+              showTimer={gameStatus?.showTimer !== false}
+              timerStatusType={statusType}
+              timerStatusKind={gameStatus?.kind}
               rollContent={rollContent}
               onRoll={rollEnabled ? () => moves.rollDice() : undefined}
               onEndTurn={
