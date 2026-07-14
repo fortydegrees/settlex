@@ -1,13 +1,17 @@
 # NOTES
 
 - Match-alert pause reservation note:
-- Give every pre-join pause a unique database reservation ID. Restore or
-  finalize only rows that still carry that exact reservation and match ID; this
-  prevents an older failed join from undoing a newer overlapping attempt.
+- Give each account's provisional pre-join pause a database lease. Overlapping
+  attempts for the same match share the lease UUID and increment its reference
+  count; capture the committed root state only once. A failure releases one
+  claim, the last failure restores the root, and any success finalizes the
+  lease. This prevents both obsolete-token resurrection and cross-attempt undo.
 - A lost join response is not proof that the join failed. Compensate only a
   definite 4xx rejection, then re-check the live target seat before restoring.
   Keep the pause for network, 5xx, timeout, or unavailable-reconciliation
-  outcomes. Finalize rather than restore when the target seat is occupied.
+  outcomes. When the target seat is occupied, compare its account ID: finalize
+  if it is this joining account, but release the losing attempt when a different
+  account won the seat.
 
 - Match-alert human-entry and leave-auth note:
 - Every route that can fill a human match, including friend-challenge accept,

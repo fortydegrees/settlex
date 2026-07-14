@@ -1,19 +1,24 @@
 # PROGRESS
 
 ## Status (2026-07-14, Match alert pause reservation closure)
-- Added migration `0006_match_alert_pause_reservations.sql` and a unique UUID
-  owner for each pre-join alert-pause reservation. Restore and finalize writes
-  now require the exact still-current match/reservation pair, so an earlier
-  failed request cannot undo a later reservation for the same duel.
+- Added migrations `0006_match_alert_pause_reservations.sql` and
+  `0007_match_alert_pause_reservation_leases.sql`. Each account now has a
+  database-owned provisional-pause lease: overlapping attempts for the same
+  duel share its UUID and increment a reference count, while the root prior
+  state is captured once. A failed attempt releases one claim; only the last
+  failed claim restores the root state. Any success finalizes the lease.
 - Successful joins finalize their reservation without unpausing either player.
   A definite 4xx join rejection checks the live target seat before restoring:
   an occupied seat finalizes the pause, while a confirmed open or gone match
-  restores the captured prior state. Network, 5xx, timeout, and other ambiguous
-  outcomes stay paused rather than risking alerts during a committed game.
-- The reviewer's overlapping same-match reproduction is now a real Postgres
-  regression. Migration, store, reconciliation, public/friend routes, and the
-  earlier signed-out Cancel path passed 70/70 focused tests; full repository,
-  production-build, and final independent review remain the next gate.
+  restores the captured prior state. If a competing account occupies the seat,
+  only the losing attempt is released; the shared participant and winner stay
+  paused. Network, 5xx, timeout, and other ambiguous outcomes stay paused rather
+  than risking alerts during a committed game.
+- The reviewer's nested-failure and competing-winner reproductions are now real
+  Postgres regressions. Migration, store, reconciliation, public/friend routes,
+  and the earlier signed-out Cancel path passed 71/71 focused tests; full
+  repository, production-build, and final independent review remain the next
+  gate.
 
 ## Status (2026-07-14, Match alerts final route closure)
 - Friend-challenge acceptance now uses the same reserve-before-join contract as
