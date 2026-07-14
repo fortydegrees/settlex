@@ -18,7 +18,9 @@
   - full `pnpm verify`: 153 engine tests, 226 server/lib/AI tests, all 241
     isolated app test files, and lint with no warnings or errors;
   - `pnpm release:check -- --require-approved` passed for approved release 3;
-  - `bash -n infra/scripts/deploy-prod.sh` passed.
+  - `bash -n infra/scripts/deploy-prod.sh` passed;
+  - production builds completed for both `Dockerfile.web` and
+    `Dockerfile.game`.
 - The in-app browser verified the local homepage on desktop and a 390x844
   mobile viewport: the compact search state, 12-second beta/liquidity rescue,
   primary Keep waiting action, 30-second quiet Play Puffer action, collapsed
@@ -36,10 +38,9 @@
   lane on this branch remains `.github/workflows/deploy-prod.yml` calling the
   tracked `infra/scripts/deploy-prod.sh`; a future fast-lane integration must
   add its own matching VAPID preflight deliberately.
-- Docker image builds were not run because they mutate local Docker cache/image
-  state and were outside the authorized non-mutating checks. No deployment,
-  push, release-note approval/edit, production-secret edit, or key generation
-  was performed.
+- Docker builds only changed this machine's local image/cache state. No
+  deployment, push, release-note approval/edit, production-secret edit, or key
+  generation was performed.
 
 ## Status (2026-07-14, match-alert postgame and sign-out lifecycle)
 - Finished human matches now offer a checked-by-default `Turn match alerts back
