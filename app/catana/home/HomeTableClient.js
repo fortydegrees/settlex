@@ -2,7 +2,14 @@
 
 import { Fredoka } from "next/font/google";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import {
   ArrowRightOnRectangleIcon,
   BellAlertIcon,
@@ -113,6 +120,25 @@ const MATCH_ALERT_STATUS_LABELS = Object.freeze({
 
 const useBrowserLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+const useMatchFoundSound = () => {
+  const matchFoundSoundPlayedRef = useRef(false);
+
+  return useCallback(() => {
+    if (matchFoundSoundPlayedRef.current) return;
+    matchFoundSoundPlayedRef.current = true;
+    if (typeof window === "undefined") return;
+
+    try {
+      if (window.localStorage.getItem("catana:audioMuted") === "true") return;
+      const audio = new window.Audio("/sounds/turn-start.mp3");
+      const playback = audio.play();
+      void playback?.catch?.(() => {});
+    } catch (err) {
+      /* Match-found sound must never block navigation. */
+    }
+  }, []);
+};
 
 const BRAND_LOGO_TILE_PATH =
   "M162.6 21 Q173 15 183.4 21 L322.8 101.5 Q333.2 107.5 333.2 119.5 L333.2 280.5 Q333.2 292.5 322.8 298.5 L183.4 379 Q173 385 162.6 379 L23.2 298.5 Q12.8 292.5 12.8 280.5 L12.8 119.5 Q12.8 107.5 23.2 101.5 Z";
@@ -1039,6 +1065,7 @@ function HomeErrorBanner({ error, onDismiss }) {
 
 function HomeTableBoard({ initialAccount = null }) {
   const router = useRouter();
+  const playMatchFoundSound = useMatchFoundSound();
   const viewportWidth = useViewportWidth();
   const { variant: logoVariant, tone: logoTone } = useBrandLogoOptions();
   const isBoardLayoutReady = viewportWidth > 0;
@@ -1049,7 +1076,10 @@ function HomeTableBoard({ initialAccount = null }) {
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
   const effectsBus = useMemo(() => createEffectBus(), []);
-  const lobby = useLobbyHomeActions({ initialAccount });
+  const lobby = useLobbyHomeActions({
+    initialAccount,
+    onMatchFound: playMatchFoundSound
+  });
   const matchAlerts = useMatchAlerts();
   const handledPlayOnlineQueryRef = useRef(false);
   const boardReservedHeight = isCompact ? 276 : 158;

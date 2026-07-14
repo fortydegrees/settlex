@@ -121,6 +121,7 @@ import {
   buildSandboxRobberMovePayload
 } from "./dev/sandbox/effectPayloads";
 import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
+import { tabAttention } from "./utils/tabAttention";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const topUtilityButtonClassName =
@@ -347,6 +348,33 @@ export function GameScreen(bgioProps) {
     viewerPlayerId: playerID,
     playerMap: nameMap
   });
+  const localMatchSeat = mergedMatchData.find(
+    (seat) => String(seat?.id) === String(playerID)
+  );
+  const shouldRequestYourTurnAttention =
+    !isReplay &&
+    !isGameOver &&
+    Boolean(bgioProps.credentials) &&
+    playerID != null &&
+    playerID !== "" &&
+    localMatchSeat?.data?.participantType !== "bot" &&
+    localMatchSeat?.data?.isBot !== true &&
+    !Boolean(localMatchSeat?.data?.bot) &&
+    String(bgioProps.ctx?.currentPlayer) === String(playerID) &&
+    rawGameStatus.kind !== "pregame" &&
+    String(rawGameStatus.activePlayerId) === String(playerID);
+
+  useEffect(() => {
+    if (shouldRequestYourTurnAttention) {
+      tabAttention.request("your-turn");
+    } else {
+      tabAttention.release("your-turn");
+    }
+
+    return () => {
+      tabAttention.release("your-turn");
+    };
+  }, [shouldRequestYourTurnAttention]);
   latestPlayerViewMapRef.current = playerViewMap;
 
   useEffect(() => {
