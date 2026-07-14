@@ -17,6 +17,10 @@
   - stale alert prompts now say that Match alerts remain enabled.
 - Focused correction regression: 180 tests passed across 14 files, with each
   correction first reproduced by a failing test.
+- Final repository verification passed after the corrections: all 153 engine
+  tests, all 236 server/lib/AI tests, all 241 isolated app test files, and lint
+  with no warnings or errors. The approved-release check, deploy-script syntax
+  check, and fresh production builds for both Dockerfiles also passed.
 
 ## Status (2026-07-14, Match alerts release readiness)
 - Declared the opt-in Match alerts Web Push runtime contract in `.env.example`:
@@ -33,7 +37,7 @@
   - review-driven feature/service-worker regression pass: 163 tests passed
     across 12 files;
   - engine build and all 153 engine tests passed;
-  - full `pnpm verify`: 153 engine tests, 226 server/lib/AI tests, all 241
+  - full `pnpm verify`: 153 engine tests, 236 server/lib/AI tests, all 241
     isolated app test files, and lint with no warnings or errors;
   - `pnpm release:check -- --require-approved` passed for approved release 3;
   - `bash -n infra/scripts/deploy-prod.sh` passed;
