@@ -11,6 +11,7 @@ import {
 import {
   createLatestRefreshGuard,
   detachMatchAlertBrowser,
+  getSignedOutMatchAlertState,
   loadMatchAlertSnapshot,
   requestMatchAnnouncement,
   runEnableTransaction,
@@ -201,7 +202,9 @@ export function MatchAlertProvider({ children }) {
     [updatePreference]
   );
 
-  const detachCurrentBrowser = useCallback(async () => {
+  const detachCurrentBrowser = useCallback(async ({
+    refreshAfterDetach = true,
+  } = {}) => {
     setError(null);
     const result = await detachMatchAlertBrowser();
     if (result.error) {
@@ -214,9 +217,19 @@ export function MatchAlertProvider({ children }) {
         )
       );
     }
-    if (result.reason === "detached") await refresh();
+    if (result.reason === "detached" && refreshAfterDetach) await refresh();
     return result;
   }, [refresh]);
+
+  const completeMatchAlertSignOut = useCallback((detachResult) => {
+    const signedOutState = getSignedOutMatchAlertState(detachResult);
+    setSignedIn(signedOutState.signedIn);
+    setConfigured(signedOutState.configured);
+    setVapidPublicKey(signedOutState.vapidPublicKey);
+    setPreference(signedOutState.preference);
+    setHasSubscription(signedOutState.hasSubscription);
+    setError(null);
+  }, []);
 
   const requestAnnouncement = useCallback(
     (matchID) => requestMatchAnnouncement({ matchID }),
@@ -260,12 +273,14 @@ export function MatchAlertProvider({ children }) {
       disable,
       resume,
       detachCurrentBrowser,
+      completeMatchAlertSignOut,
       requestAnnouncement,
       registerCurrentGame,
       currentGame,
     }),
     [
       capability,
+      completeMatchAlertSignOut,
       configured,
       detachCurrentBrowser,
       disable,

@@ -67,6 +67,11 @@ import { IdlePromptModal } from "./components/IdlePromptModal";
 import { ResignConfirmDialog } from "./components/ResignConfirmDialog";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
+import {
+  runGameOverLobbyAction,
+  shouldResumeMatchAlertsForAction,
+  shouldOfferMatchAlertResume,
+} from "./components/gameOverAlertLifecycle.js";
 import { PostgameOverlay } from "./components/PostgameOverlay";
 import { DevCardPurchaseReveal } from "./DevCardPurchaseReveal";
 import { GameEffects } from "./effects/GameEffects";
@@ -172,7 +177,8 @@ const runAfterNextPaint = (callback) => {
 };
 
 export function GameScreen(bgioProps) {
-  const { registerCurrentGame } = useMatchAlerts();
+  const matchAlerts = useMatchAlerts();
+  const { registerCurrentGame } = matchAlerts;
   //playerAction is things that appear to the user (not spectator)
   //e.g. placeRoad, placeSettle, placeCity, moveRobber, trading
   //but i think we want this controlled by server/gameState
@@ -195,6 +201,9 @@ export function GameScreen(bgioProps) {
   const [themeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
+  const [matchAlertResumeChecked, setMatchAlertResumeChecked] = useState(true);
+  const [matchAlertResumeError, setMatchAlertResumeError] = useState("");
+  const [matchAlertResumePending, setMatchAlertResumePending] = useState(false);
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showGameSettings, setShowGameSettings] = useState(false);
   const [showGameRules, setShowGameRules] = useState(false);
@@ -314,6 +323,58 @@ export function GameScreen(bgioProps) {
             Boolean(seat?.data?.bot))
       ),
     [mergedMatchData, playerID]
+  );
+  const opponentType = hasBotOpponent ? "bot" : "human";
+  const canOfferAlertResume = shouldOfferMatchAlertResume({
+    preference: matchAlerts.preference,
+    matchID,
+    opponentType,
+  });
+
+  useEffect(() => {
+    if (!showGameOverModal || !canOfferAlertResume) return;
+    setMatchAlertResumeChecked(true);
+    setMatchAlertResumeError("");
+    setMatchAlertResumePending(false);
+  }, [canOfferAlertResume, showGameOverModal]);
+
+  const returnToLobby = useCallback(() => {
+    window.location.href = "/";
+  }, []);
+
+  const attemptReturnToLobby = useCallback(async (action) => {
+    if (matchAlertResumePending) return;
+    setMatchAlertResumePending(true);
+    setMatchAlertResumeError("");
+
+    const result = await runGameOverLobbyAction({
+      shouldResume: shouldResumeMatchAlertsForAction({
+        action,
+        eligible: canOfferAlertResume,
+        checked: matchAlertResumeChecked,
+      }),
+      resumeMatchAlerts: matchAlerts.resume,
+      onLobby: returnToLobby,
+    });
+
+    if (!result.returnedToLobby) {
+      setMatchAlertResumeError(result.error);
+      setMatchAlertResumePending(false);
+    }
+  }, [
+    canOfferAlertResume,
+    matchAlertResumeChecked,
+    matchAlertResumePending,
+    matchAlerts.resume,
+    returnToLobby,
+  ]);
+  const handleReturnToLobby = useCallback(
+    () => attemptReturnToLobby("return"),
+    [attemptReturnToLobby]
+  );
+  const handleRetryMatchAlertResume = useCallback(
+    () => attemptReturnToLobby("retry"),
+    [attemptReturnToLobby]
   );
 
   useEffect(() => {
@@ -1898,10 +1959,19 @@ TODO: accurately colour it
               setShowGameOverModal(false);
             }}
             onRematch={() => {}}
-            onLobby={() => {
-              window.location.href = "/";
-            }}
+            onLobby={handleReturnToLobby}
             onClose={() => setShowGameOverModal(false)}
+            showMatchAlertResume={canOfferAlertResume}
+            matchAlertResumeChecked={matchAlertResumeChecked}
+            matchAlertResumeError={
+              matchAlertResumeError
+                ? matchAlerts.error || matchAlertResumeError
+                : ""
+            }
+            matchAlertResumePending={matchAlertResumePending}
+            onMatchAlertResumeCheckedChange={setMatchAlertResumeChecked}
+            onRetryMatchAlertResume={handleRetryMatchAlertResume}
+            onContinueWithoutMatchAlerts={returnToLobby}
           />
         </GameOverOverlay>
       )}
