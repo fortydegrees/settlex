@@ -7,10 +7,12 @@
 - Keep the order fetch, validate, claim, list, send. A claimed event is the
   at-most-once boundary: individual Push failures are counted and swallowed,
   and must not undo the event or affect the seeker's waiting table.
-- Collapse private, friend-challenge, forged, wrong-owner, wrong-mode, and
-  non-human cases to `not_eligible`; the API exposes one generic 404 for all of
-  them. Public filled, cancelled, duplicate, and rate-limited attempts are
-  harmless 200 no-ops and never fan out.
+- Collapse missing, ownerless, private, friend-challenge, forged, wrong-owner,
+  wrong-mode, and non-human cases to `not_eligible`; the API exposes one generic
+  404 for all of them. Public filled, duplicate, and rate-limited attempts are
+  harmless 200 no-ops and never fan out. Boardgame.io wipes a match after its
+  final named player leaves, so a legitimate final-seat cancellation reaches
+  this boundary as missing rather than as an ownerless live match.
 - Keep VAPID lookup lazy inside the server-only delivery call. An unconfigured
   deployment records each attempted delivery as failed without invoking
   `web-push`; 404 and 410 Push responses remove their stored endpoints.

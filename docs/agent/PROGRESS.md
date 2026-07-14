@@ -7,8 +7,8 @@
   duplicates and seeker rate limits harmless no-ops without repeated pushes.
 - Added fixed Web Push payloads, lazy VAPID use, delivery accounting, and
   automatic removal of endpoints returning 404 or 410.
-- Kept private, friend, forged, non-owner, wrong-mode, and non-human tables
-  behind the same generic 404 response; public filled and cancelled tables
+- Kept missing, ownerless, private, friend, forged, non-owner, wrong-mode, and
+  non-human tables behind the same generic 404 response; public filled tables
   return non-revealing successful no-ops.
 - Focused verification:
   - `pnpm exec vitest run lib/server/__tests__/matchAlertAnnouncement.test.js lib/server/__tests__/matchAlertStore.test.js lib/server/__tests__/humanMatchAlertPause.test.js app/__tests__/api/matchAlertRoutes.test.js app/__tests__/api/routeModuleExports.source.test.js --reporter=dot` (80 tests)
