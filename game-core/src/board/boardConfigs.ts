@@ -1,8 +1,8 @@
 import type { BoardSpecId } from "./boardSpecs";
 
 export type BoardGenerationConfig = {
-  terrain: "random" | "balanced" | "official";
-  numbers: "random" | "balanced" | "official";
+  terrain: "random" | "official";
+  numbers: "random" | "official";
   ports: "random";
   options?: { official?: { startCorner?: "random" | "fixed" } };
 };
@@ -20,8 +20,7 @@ export type BoardConfig = {
 
 export type BoardConfigId =
   | "standard-official-spiral"
-  | "standard-random"
-  | "standard-balanced";
+  | "standard-random";
 
 export const BOARD_CONFIGS: Record<BoardConfigId, BoardConfig> = {
   "standard-official-spiral": {
@@ -36,10 +35,6 @@ export const BOARD_CONFIGS: Record<BoardConfigId, BoardConfig> = {
   "standard-random": {
     specId: "standard-4p",
     generation: { terrain: "random", numbers: "random", ports: "random" }
-  },
-  "standard-balanced": {
-    specId: "standard-4p",
-    generation: { terrain: "balanced", numbers: "balanced", ports: "random" }
   }
 };
 

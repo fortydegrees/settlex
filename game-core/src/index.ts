@@ -25,5 +25,3 @@ export * from "./board/boardUtils";
 export * from "./board/boardSpecs";
 export * from "./board/boardConfigs";
 export * from "./board/generateBoard";
-export * from "./board/generateBoardClass";
-export * from "./board/generateBalancedBoard";
