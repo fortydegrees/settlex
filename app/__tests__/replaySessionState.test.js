@@ -209,4 +209,71 @@ describe("postgame replay activation", () => {
       })
     ).toBe(readyB);
   });
+
+  it("queues B while the payload hook still exposes ready state for A", () => {
+    expect(replaySessionState.getReplayPayloadStatusForIdentity).toBeTypeOf(
+      "function"
+    );
+    expect(replaySessionState.isReplayReadyForIdentity).toBeTypeOf("function");
+    if (
+      !replaySessionState.getReplayPayloadStatusForIdentity ||
+      !replaySessionState.isReplayReadyForIdentity
+    ) {
+      return;
+    }
+
+    const stateA = replaySessionState.createReplayActivationState({
+      identityKey: "A",
+    });
+    const payloadStatusForB =
+      replaySessionState.getReplayPayloadStatusForIdentity({
+        identityKey: "B",
+        payloadIdentityKey: "A",
+        payloadStatus: "ready",
+      });
+    expect(payloadStatusForB).toBe("loading");
+
+    const requestedB = replaySessionState.replayActivationReducer(stateA, {
+      type: "requestReplay",
+      payloadStatus: payloadStatusForB,
+      identityKey: "B",
+    });
+    expect(requestedB).toEqual({
+      identityKey: "B",
+      intentPending: true,
+      replayActive: false,
+    });
+    expect(
+      replaySessionState.isReplayReadyForIdentity({
+        identityKey: "B",
+        activation: requestedB,
+        sessionIdentityKey: "B",
+        payloadIdentityKey: "A",
+      })
+    ).toBe(false);
+
+    const staleReadyA = replaySessionState.replayActivationReducer(
+      requestedB,
+      { type: "payloadReady", identityKey: "A" }
+    );
+    expect(staleReadyA).toBe(requestedB);
+
+    const readyB = replaySessionState.replayActivationReducer(staleReadyA, {
+      type: "payloadReady",
+      identityKey: "B",
+    });
+    expect(readyB).toEqual({
+      identityKey: "B",
+      intentPending: false,
+      replayActive: true,
+    });
+    expect(
+      replaySessionState.isReplayReadyForIdentity({
+        identityKey: "B",
+        activation: readyB,
+        sessionIdentityKey: "B",
+        payloadIdentityKey: "B",
+      })
+    ).toBe(true);
+  });
 });

@@ -2,6 +2,26 @@ import { expect, it, vi } from "vitest";
 import { loadPostgameReplayPayload } from "../replays/usePostgameReplayPayload";
 import * as postgameReplayPayload from "../replays/usePostgameReplayPayload";
 
+it("tags every payload state with the identity that produced it", () => {
+  expect(postgameReplayPayload.createPostgameReplayPayloadState).toBeTypeOf(
+    "function"
+  );
+  if (!postgameReplayPayload.createPostgameReplayPayloadState) return;
+
+  expect(
+    postgameReplayPayload.createPostgameReplayPayloadState({
+      identityKey: "A",
+      status: "ready",
+      payload: { replay: { id: "replay-a" } },
+    })
+  ).toEqual({
+    identityKey: "A",
+    status: "ready",
+    payload: { replay: { id: "replay-a" } },
+    error: null,
+  });
+});
+
 it("retries preparing archives and returns the ready payload", async () => {
   const responses = [
     new Response(JSON.stringify({ status: "preparing" }), { status: 202 }),

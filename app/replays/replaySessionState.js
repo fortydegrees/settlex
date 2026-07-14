@@ -22,6 +22,25 @@ export const createReplayActivationState = ({
   replayActive,
 });
 
+export const getReplayPayloadStatusForIdentity = ({
+  identityKey,
+  payloadIdentityKey,
+  payloadStatus,
+}) => (payloadIdentityKey === identityKey ? payloadStatus : "loading");
+
+export const isReplayReadyForIdentity = ({
+  identityKey,
+  activation,
+  sessionIdentityKey,
+  payloadIdentityKey,
+  payloadStatus = "ready",
+}) =>
+  activation.identityKey === identityKey &&
+  activation.replayActive &&
+  sessionIdentityKey === identityKey &&
+  payloadIdentityKey === identityKey &&
+  payloadStatus === "ready";
+
 export const replayActivationReducer = (state, action) => {
   if (action.type === "resetIdentity") {
     if (action.identityKey === state.identityKey) return state;
