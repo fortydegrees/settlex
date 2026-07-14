@@ -90,7 +90,7 @@ const renderRecentMatch = (match) =>
       {
         className:
           "inline-flex items-center justify-center rounded-full bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors hover:bg-lime-600",
-        href: `/replays/${match.replayId}`,
+        href: `/g/${encodeURIComponent(match.bgioMatchId)}`,
       },
       "Watch replay"
     )
