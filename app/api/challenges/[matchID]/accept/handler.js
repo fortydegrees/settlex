@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../../lib/server/accounts/getSessionAccount.js";
-import { pauseAlertsAfterHumanJoin } from "../../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
+import {
+  reserveAlertsBeforeHumanJoin,
+  restoreAlertsAfterFailedHumanJoin,
+} from "../../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
 import {
   FRIEND_CHALLENGE_EXPIRED_MESSAGE,
   resolveFriendChallengeState,
@@ -29,7 +32,10 @@ export const createChallengeAcceptRoute =
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
     getLiveMatch: getLiveMatchImpl = getLiveMatch,
     joinMatchForAccount: joinMatchForAccountImpl = joinMatchForAccount,
-    pauseAlertsAfterHumanJoin: pauseAlertsAfterHumanJoinImpl = pauseAlertsAfterHumanJoin,
+    reserveAlertsBeforeHumanJoin:
+      reserveAlertsBeforeHumanJoinImpl = reserveAlertsBeforeHumanJoin,
+    restoreAlertsAfterFailedHumanJoin:
+      restoreAlertsAfterFailedHumanJoinImpl = restoreAlertsAfterFailedHumanJoin,
     logger = console,
     now = () => new Date(),
   } = {}) =>
@@ -58,26 +64,34 @@ export const createChallengeAcceptRoute =
         );
       }
 
-      const joined = await joinMatchForAccountImpl({
-        account: sessionAccount.account,
+      const reservation = await reserveAlertsBeforeHumanJoinImpl({
+        liveMatch,
+        joiningAccountId: sessionAccount.account.id,
+        joiningPlayerId: challengeState.inviteeSeatId,
+        participantType: "human",
         matchID,
-        playerID: challengeState.inviteeSeatId,
       });
 
+      let joined;
       try {
-        await pauseAlertsAfterHumanJoinImpl({
-          liveMatch,
-          joiningAccountId: sessionAccount.account.id,
-          joiningPlayerId: challengeState.inviteeSeatId,
-          participantType: "human",
+        joined = await joinMatchForAccountImpl({
+          account: sessionAccount.account,
           matchID,
+          playerID: challengeState.inviteeSeatId,
         });
       } catch (error) {
-        logger.warn("Failed to pause match alerts after human join", {
-          matchID,
-          accountId: sessionAccount.account.id,
-          error,
-        });
+        if (reservation) {
+          try {
+            await restoreAlertsAfterFailedHumanJoinImpl({ reservation });
+          } catch (restoreError) {
+            logger.error("Failed to restore match alerts after rejected friend challenge", {
+              matchID,
+              accountId: sessionAccount.account.id,
+              error: restoreError,
+            });
+          }
+        }
+        throw error;
       }
 
       const response = NextResponse.json({
