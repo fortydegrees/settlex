@@ -64,8 +64,16 @@ describe("GameScreen game over", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
 
     expect(contents).toContain("bgioProps.onWatchReplay");
+    expect(contents).toContain("bgioProps.replayResultsOpen");
+    expect(contents).toContain("onReplayResultsClose");
     expect(contents).not.toContain("?view=replay");
     expect(contents).not.toContain("window.location.assign");
     expect(contents).not.toContain("onRematch={() => {}}");
+  });
+
+  it("keeps the selected player HUD visible but read-only in replay", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+
+    expect(contents).toContain("readOnly={isReplay}");
   });
 });

@@ -17,6 +17,7 @@ describe("GameScreen mobile shell source", () => {
     expect(source).toContain("width > 0 && width < 640");
     expect(source).toContain("const boardLayoutReservedHeight = isPhoneLayout ? 0 : undefined");
     expect(source).toContain("isPhoneLayout ? (");
+    expect(source).toContain("readOnly={isReplay}");
   });
 
   it("coordinates mobile log/chat bottom-sheet state between the cockpit and meta rail", () => {

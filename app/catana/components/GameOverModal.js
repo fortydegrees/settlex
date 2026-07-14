@@ -3,6 +3,10 @@ import confetti from "canvas-confetti";
 import { getPlayerNameHex } from "../theme/playerColors.js";
 
 const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
+const replayReadyClassName =
+  "rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-lime-600";
+const replayDisabledClassName =
+  "cursor-not-allowed rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm";
 
 export function GameOverModal({
   title,
@@ -12,6 +16,7 @@ export function GameOverModal({
   shouldFireConfetti = false,
   onConfettiFired,
   onWatchReplay,
+  replayStatus = "ready",
   onViewSummary,
   onLobby,
   onClose
@@ -100,10 +105,15 @@ export function GameOverModal({
       <div className="mt-6 grid gap-2 sm:grid-cols-2">
         {onWatchReplay ? (
           <button
-            className="rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-lime-600"
+            disabled={replayStatus !== "ready"}
             onClick={onWatchReplay}
+            className={
+              replayStatus === "ready"
+                ? replayReadyClassName
+                : replayDisabledClassName
+            }
           >
-            Watch replay
+            {replayStatus === "ready" ? "Replay" : "Preparing replay..."}
           </button>
         ) : null}
         {onViewSummary ? (

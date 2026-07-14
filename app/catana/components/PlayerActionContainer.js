@@ -104,12 +104,15 @@ export const PlayerActionContainer = ({
   themeId,
   showTurnControls = true,
   layoutOffsetX = 0,
+  readOnly = false,
+  replayStatusText = null,
 }) => {
   const { G, ctx, moves } = bgioProps;
   const SHOW_PLAYER_HAND_BADGES = false;
 
   const startBuildPickup = useCallback(
     (playerAction, triggerRect, preLaunchDelayMs = 0) => {
+      if (readOnly) return;
       const pieceType = getBuildPickupPieceType(playerAction);
       if (!pieceType) return;
 
@@ -121,7 +124,7 @@ export const PlayerActionContainer = ({
         launchDelayMs: preLaunchDelayMs
       });
     },
-    [setBuildPickup, setPlayerAction]
+    [readOnly, setBuildPickup, setPlayerAction]
   );
 
   const startDevCardPurchaseReveal = useCallback(
@@ -129,6 +132,7 @@ export const PlayerActionContainer = ({
       triggerRect,
       preLaunchDelayMs = 0,
     } = {}) => {
+      if (readOnly) return;
       const totalPoints = G.core ? getVictoryPoints(G.core, player.id) : 0;
       const publicPoints = G.core ? getPublicVictoryPoints(G.core, player.id) : 0;
 
@@ -145,7 +149,7 @@ export const PlayerActionContainer = ({
       });
       moves.buyDevCard();
     },
-    [G.core, moves, onDevCardPurchaseStart, player.devCards, player.id]
+    [G.core, moves, onDevCardPurchaseStart, player.devCards, player.id, readOnly]
   );
 
   const [Die, rollTo] = useDie(G.diceRoll[0]);
@@ -183,6 +187,7 @@ export const PlayerActionContainer = ({
     canRoll,
     canEnd,
     themeId,
+    readOnly,
   });
   const isSeatWarning =
     presence?.status === "disconnected" || presence?.status === "idle";
@@ -300,6 +305,12 @@ export const PlayerActionContainer = ({
       <Die2 dieSize="3.15rem" />
     </>
   );
+  const handleEndTurn = useCallback(() => {
+    if (readOnly || !endTurnEnabled) return;
+    setPlayerAction(null);
+    setBuildPickup(null);
+    moves.endTurn();
+  }, [endTurnEnabled, moves, readOnly, setBuildPickup, setPlayerAction]);
 
   return (
     <div className="fixed bottom-4 left-0 right-0 pointer-events-none px-4">
@@ -379,7 +390,12 @@ export const PlayerActionContainer = ({
                         cards={visibleDevCards}
                         playerId={player.id}
                         playableCountsByType={devPlayableCountsByType}
-                        onPlayCard={(card) => moves.playDevCardStart(card)}
+                        readOnly={readOnly}
+                        onPlayCard={
+                          readOnly
+                            ? undefined
+                            : (card) => moves.playDevCardStart(card)
+                        }
                         activeCardType={activeDevCardType}
                         showCountBadge={SHOW_PLAYER_HAND_BADGES}
                         containerRef={devCardDisplayRef}
@@ -411,23 +427,15 @@ export const PlayerActionContainer = ({
         <div className="pointer-events-none flex-1 flex items-end justify-end self-end pr-0">
           {showTurnControls ? (
             <TurnControlCluster
-              mode={turnControlMode}
-              statusText={gameStatus ? gameStatus.title : null}
-              timerSnapshot={timerSnapshot}
-              showTimer={gameStatus?.showTimer !== false}
+              mode={readOnly ? "inactive" : turnControlMode}
+              statusText={readOnly ? replayStatusText : gameStatus?.title}
+              timerSnapshot={readOnly ? null : timerSnapshot}
+              showTimer={readOnly ? false : gameStatus?.showTimer !== false}
               timerStatusType={statusType}
               timerStatusKind={gameStatus?.kind}
               rollContent={rollContent}
-              onRoll={rollEnabled ? () => moves.rollDice() : undefined}
-              onEndTurn={
-                endTurnEnabled
-                  ? () => {
-                      setPlayerAction(null);
-                      setBuildPickup(null);
-                      moves.endTurn();
-                    }
-                  : undefined
-              }
+              onRoll={!readOnly && rollEnabled ? () => moves.rollDice() : undefined}
+              onEndTurn={!readOnly && endTurnEnabled ? handleEndTurn : undefined}
             />
           ) : null}
         </div>

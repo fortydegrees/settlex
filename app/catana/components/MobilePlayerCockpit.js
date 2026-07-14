@@ -254,6 +254,7 @@ export function MobilePlayerCockpit({
   onMobileMetaPanelOpen,
   showTurnControls = true,
   diceRoll = null,
+  readOnly = false,
 }) {
   const { G, ctx, moves } = bgioProps;
   const clientPlayerID = bgioProps.playerID;
@@ -269,6 +270,7 @@ export function MobilePlayerCockpit({
 
   const startBuildPickup = useCallback(
     (playerAction, triggerRect, preLaunchDelayMs = 0) => {
+      if (readOnly) return;
       const pieceType = getBuildPickupPieceType(playerAction);
       if (!pieceType) return;
 
@@ -280,11 +282,12 @@ export function MobilePlayerCockpit({
         launchDelayMs: preLaunchDelayMs,
       });
     },
-    [setBuildPickup, setPlayerAction]
+    [readOnly, setBuildPickup, setPlayerAction]
   );
 
   const startDevCardPurchaseReveal = useCallback(
     ({ triggerRect, preLaunchDelayMs = 0 } = {}) => {
+      if (readOnly) return;
       const totalPoints = G.core ? getVictoryPoints(G.core, player.id) : 0;
       const publicPoints = G.core ? getPublicVictoryPoints(G.core, player.id) : 0;
 
@@ -301,7 +304,7 @@ export function MobilePlayerCockpit({
       });
       moves.buyDevCard();
     },
-    [G.core, moves, onDevCardPurchaseStart, player.devCards, player.id]
+    [G.core, moves, onDevCardPurchaseStart, player.devCards, player.id, readOnly]
   );
 
   const {
@@ -330,6 +333,7 @@ export function MobilePlayerCockpit({
     canRoll,
     canEnd,
     themeId,
+    readOnly,
   });
 
   const showPrimaryAction = turnControlMode !== "inactive";
@@ -401,11 +405,12 @@ export function MobilePlayerCockpit({
 
   const handleMobileDevCardPlay = useCallback(
     (cardType) => {
+      if (readOnly) return;
       emitHaptic({ name: "ui:action:press" });
       moves.playDevCardStart(cardType);
       setIsDevTrayOpen(false);
     },
-    [emitHaptic, moves]
+    [emitHaptic, moves, readOnly]
   );
 
   const handleMobileResourceClick = useCallback(
@@ -461,7 +466,8 @@ export function MobilePlayerCockpit({
                     cards={visibleDevCards}
                     playableCountsByType={devPlayableCountsByType}
                     activeCardType={activeDevCardType}
-                    onPlayCard={handleMobileDevCardPlay}
+                    readOnly={readOnly}
+                    onPlayCard={readOnly ? undefined : handleMobileDevCardPlay}
                     onClose={handleDevTrayClose}
                   />
                 </div>
@@ -571,9 +577,11 @@ export function MobilePlayerCockpit({
                 canRoll={rollEnabled}
                 canEnd={endTurnEnabled}
                 onHaptic={emitHaptic}
-                onRoll={rollEnabled ? () => moves.rollDice() : undefined}
+                onRoll={
+                  !readOnly && rollEnabled ? () => moves.rollDice() : undefined
+                }
                 onEndTurn={
-                  endTurnEnabled
+                  !readOnly && endTurnEnabled
                     ? () => {
                         setPlayerAction(null);
                         setBuildPickup(null);

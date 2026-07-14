@@ -21,6 +21,8 @@ describe("MobilePlayerCockpit source", () => {
     expect(source).toContain("MobileStatChip");
     expect(source).toContain("mobile-player-inventory");
     expect(source).toContain("DockCard");
+    expect(source).toContain("readOnly");
+    expect(source).toContain("readOnly={readOnly}");
   });
 
   it("puts a compact mobile feed trigger beside the contextual primary action", () => {
