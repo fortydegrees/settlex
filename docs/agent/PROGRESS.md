@@ -17,9 +17,14 @@
   assuming the in-flight request did nothing.
 - GitHub Actions now migrates a real Postgres service before verification and
   enables the concurrent subscription-cap regression in the thorough lane.
-- Focused verification passed across the changed matchmaking, API, store,
-  lifecycle, server-wiring, and deployment contracts; full repository
-  verification and final independent re-review remain the next gate.
+- Focused verification passed 124/124 across the changed matchmaking, API,
+  store, lifecycle, server-wiring, and deployment contracts. Final repository
+  verification also passed: all 153 engine tests, all 246 server/lib/AI tests,
+  all 241 isolated app test files, and lint with no warnings or errors.
+- The approved-release check, 16-test deployment contract, deploy-script syntax
+  check, and fresh production builds for both Dockerfiles passed against the
+  concurrency-safe implementation. Final independent re-review remains the
+  next gate.
 
 ## Status (2026-07-14, Match alerts final review corrections)
 - Closed all five Important findings from the whole-feature review:
@@ -39,7 +44,7 @@
 - Focused correction regression: 180 tests passed across 14 files, with each
   correction first reproduced by a failing test.
 - Final repository verification passed after the corrections: all 153 engine
-  tests, all 236 server/lib/AI tests, all 241 isolated app test files, and lint
+  tests, all 246 server/lib/AI tests, all 241 isolated app test files, and lint
   with no warnings or errors. The approved-release check, deploy-script syntax
   check, and fresh production builds for both Dockerfiles also passed.
 
@@ -58,7 +63,7 @@
   - review-driven feature/service-worker regression pass: 163 tests passed
     across 12 files;
   - engine build and all 153 engine tests passed;
-  - full `pnpm verify`: 153 engine tests, 236 server/lib/AI tests, all 241
+  - full `pnpm verify`: 153 engine tests, 246 server/lib/AI tests, all 241
     isolated app test files, and lint with no warnings or errors;
   - `pnpm release:check -- --require-approved` passed for approved release 3;
   - `bash -n infra/scripts/deploy-prod.sh` passed;
