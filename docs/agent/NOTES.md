@@ -541,9 +541,10 @@
 - `app/catana/gameSetup/devScenarios.js` owns dev-scenario state extraction,
   production/player-count validation, merge-over-generated-state behavior, and
   boardgame.io context seeding.
-- Keep normal board/rules setup in `Game.js`, but route any new
-  `devScenarioState` shape handling or scenario stage derivation through the
-  dev-scenario setup helper.
+- Keep normal board/rules setup in
+  `app/catana/gameSetup/initialState.js`, but route any new `devScenarioState`
+  shape handling or scenario stage derivation through the dev-scenario setup
+  helper.
 - The helper accepts an explicit `nodeEnv` in tests so production guardrails
   can be covered without module-cache gymnastics.
 
@@ -556,12 +557,6 @@
 - Do not add new dev tooling moves back to `app/catana/Moves.js`; put them in
   the debug module and cover exposure with `Game.debugMoves.test.js` or
   `serverGameConfig.test.js`.
-
-- Balanced-board diagnostics note:
-- `BalancedBoard` generation diagnostics are quiet by default; pass
-  `logGenerationStats: true` only for explicit board-tuning/debug sessions.
-- Keep default board generation side-effect-light so focused test lanes remain
-  readable and do not emit generation stats during normal server/app checks.
 
 - Verification lanes note:
 - `pnpm run test:logic` is the default lane for game rules and deterministic
@@ -775,7 +770,9 @@
 - `infra/scripts/deploy-prod.sh` restarts/rebuilds the Docker Compose `postgres`, `web`, `game`, and `proxy` services, then runs `pnpm db:migrate` inside `web` if that script exists.
 - If `deploy-prod` appears to run for hours, inspect the `verify` job before the deploy job. A stuck Vitest process means production has not been updated yet.
 - App Vitest files now run one file per subprocess via `scripts/run-vitest-app-tests.mjs`; keep the per-file timeout so future hangs fail with a concrete file name instead of waiting on the GitHub job timeout.
-- Catan setup tests must use a moving deterministic RNG such as `makeDeterministicRng(...)`. A constant `random.Number` can trap balanced board generation indefinitely.
+- Catan setup tests that exercise generated board sources should use a moving
+  deterministic RNG such as `makeDeterministicRng(...)` so generation follows
+  a reproducible sequence.
 
 - Agent workflow note:
 - repo-root `AGENTS.md` now has a `Fast iteration` carveout for UI/audio/animation/copy/timing tuning. For Catana sandbox/effects work, prefer direct edits plus manual verification and skip test churn unless the change affects shared logic, wiring, state flow, or a deliberate regression lock.
@@ -3599,13 +3596,17 @@
     - follow-up correction: the desired `bottom` behavior is not "lift the whole chat panel." The chat panel body should stay on the old desktop baseline, and only the lower connector seam should sit above the message/composer band, analogous to how the top anchor joins below the title bar instead of at the panel edge.
   - Catana game mode note:
     - matchmaking should pass `modeId` as product intent rather than raw ruleset objects.
-    - current modes live in `game-core/src/gameModes.ts`:
-      - `duel` -> 2 players, `rulesetId: "duel"`, `boardConfigId: "standard-balanced"`
-      - `standard-3p` -> 3 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
-      - `standard-4p` -> 4 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
-  - `app/catana/Game.js` still falls back from `ctx.numPlayers` for old callers, scenarios, and custom/dev creation flows.
-  - app-owned create routes should resolve/stamp `modeId`, `rulesetId`, and `boardConfigId` into `setupData` so match metadata, archives, and future queue filters stay self-describing.
-  - tests that run 1v1 setup now need a sequence RNG such as `makeDeterministicRng`; a constant `Number: () => 0.5` can make balanced generation retry the same failed placement indefinitely.
+    - current modes live in `lib/shared/catanaGameModes.js` and declare
+      `numPlayers`, `rulesetId`, and `boardSourceId`:
+      - `duel` -> 2 players, duel rules, `duel-fair-official-v1`
+      - `standard-3p` -> 3 players, standard rules, `generated-official-spiral-v1`
+      - `standard-4p` -> 4 players, standard rules, `generated-official-spiral-v1`
+  - `app/catana/gameSetup/initialState.js` resolves the default mode from
+    `ctx.numPlayers`, materialises the selected source, and stores its actual
+    `boardConfigId` plus `boardProvenance` in game state.
+  - app-owned create routes should resolve/stamp `modeId`, `rulesetId`, and
+    `boardSourceId` into `setupData`; `setupData.boardConfigId` is obsolete and
+    rejected as an input.
   - Settlex standard UI phase 1 note:
     - the standard layer is now concrete enough to review in-browser at `/catana/dev/ui`; use that page as the visual proving ground before spreading new recipes across more product surfaces.
     - the first migration target should stay "normal product UI" rather than bespoke board controls:
