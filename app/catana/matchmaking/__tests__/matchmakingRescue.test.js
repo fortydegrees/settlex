@@ -4,10 +4,12 @@ import {
   advanceSearchGeneration,
   clearScheduledMatchAnnouncement,
   commitSearchSeat,
+  createMatchmakingMutationIdentity,
   finishSearchPoll,
   getMatchmakingRescueStage,
   getSearchElapsedSeconds,
   playPufferAfterLeavingSearch,
+  reconcileUnknownSearchMutation,
   scheduleMatchAnnouncement,
 } from "../matchmakingRescue.js";
 import * as matchmakingRescue from "../matchmakingRescue.js";
@@ -197,6 +199,97 @@ describe("Puffer rescue ordering", () => {
 });
 
 describe("search lifecycle ownership", () => {
+  it("creates independent secure request and credential tokens", () => {
+    let next = 0;
+    const cryptoImpl = {
+      getRandomValues(bytes) {
+        bytes.fill(next);
+        next += 1;
+        return bytes;
+      },
+    };
+
+    expect(createMatchmakingMutationIdentity({ cryptoImpl })).toEqual({
+      requestId: "00".repeat(24),
+      credentials: "01".repeat(24),
+    });
+  });
+
+  it("recovers and leaves a created seat after its response is lost", async () => {
+    const credentials = "c".repeat(48);
+    const recoverSeats = vi
+      .fn()
+      .mockResolvedValue([{ matchID: "created-duel", playerID: "0" }]);
+    const leaveSeat = vi.fn().mockResolvedValue(true);
+
+    await expect(
+      reconcileUnknownSearchMutation({
+        mutation: {
+          requestId: "r".repeat(48),
+          credentials,
+          matchID: null,
+          playerID: "0",
+        },
+        accountId: "acct_1",
+        recoverSeats,
+        leaveSeat,
+        loadMatch: vi.fn(),
+      })
+    ).resolves.toEqual({
+      released: true,
+      reason: "recovered_and_left",
+      seats: [{ matchID: "created-duel", playerID: "0", credentials }],
+    });
+    expect(recoverSeats).toHaveBeenCalledWith("r".repeat(48));
+    expect(leaveSeat).toHaveBeenCalledWith({
+      matchID: "created-duel",
+      playerID: "0",
+      credentials,
+    });
+  });
+
+  it("keeps an unknown mutation sticky when recovery cannot establish an outcome", async () => {
+    await expect(
+      reconcileUnknownSearchMutation({
+        mutation: {
+          requestId: "r".repeat(48),
+          credentials: "c".repeat(48),
+          matchID: null,
+          playerID: "0",
+        },
+        accountId: "acct_1",
+        recoverSeats: vi.fn().mockRejectedValue(new Error("unavailable")),
+        leaveSeat: vi.fn(),
+        loadMatch: vi.fn(),
+      })
+    ).resolves.toEqual({
+      released: false,
+      reason: "recovery_failed",
+      seats: [],
+    });
+  });
+
+  it("does not treat an empty recovery scan as proof that an in-flight create is finished", async () => {
+    await expect(
+      reconcileUnknownSearchMutation({
+        mutation: {
+          requestId: "r".repeat(48),
+          credentials: "c".repeat(48),
+          matchID: null,
+          playerID: "0",
+        },
+        accountId: "acct_1",
+        recoverSeats: vi.fn().mockResolvedValue([]),
+        leaveSeat: vi.fn(),
+        loadMatch: vi.fn(),
+      })
+    ).resolves.toEqual({
+      released: false,
+      reason: "outcome_pending",
+      seats: [],
+    });
+  });
+
   it("reconciles an uncertain leave against authoritative match ownership", async () => {
     expect(matchmakingRescue.reconcileSearchDeparture).toBeTypeOf("function");
     const seat = {
@@ -259,6 +352,28 @@ describe("search lifecycle ownership", () => {
     }
   );
 
+  it.each([401, 403])(
+    "treats rejected pre-generated credentials as proof the seat is not owned (%s)",
+    async (status) => {
+      const loadMatch = vi.fn();
+      await expect(
+        matchmakingRescue.reconcileSearchDeparture({
+          seat: {
+            matchID: "target-duel",
+            playerID: "1",
+            credentials: "requested-secret",
+          },
+          accountId: "acct_1",
+          leaveSeat: vi
+            .fn()
+            .mockRejectedValue(Object.assign(new Error("rejected"), { status })),
+          loadMatch,
+        })
+      ).resolves.toEqual({ released: true, reason: "credentials_rejected" });
+      expect(loadMatch).not.toHaveBeenCalled();
+    }
+  );
+
   it("suppresses a stale poll result after ownership is invalidated", () => {
     const searchGenerationRef = { current: 0 };
     const generation = advanceSearchGeneration(searchGenerationRef);
@@ -299,6 +414,30 @@ describe("search lifecycle ownership", () => {
 
     expect(leaveSeat).toHaveBeenCalledWith(seat);
     expect(commit).not.toHaveBeenCalled();
+  });
+
+  it("preserves a late seat when cleanup throws", async () => {
+    const searchGenerationRef = { current: 0 };
+    const generation = advanceSearchGeneration(searchGenerationRef);
+    const preserve = vi.fn();
+    const seat = {
+      matchID: "late-duel",
+      playerID: "0",
+      credentials: "late-creds",
+    };
+    advanceSearchGeneration(searchGenerationRef);
+
+    await expect(
+      commitSearchSeat({
+        searchGenerationRef,
+        generation,
+        seat,
+        leaveSeat: vi.fn().mockRejectedValue(new Error("network down")),
+        preserve,
+        commit: vi.fn(),
+      })
+    ).resolves.toEqual({ committed: false, cleaned: false });
+    expect(preserve).toHaveBeenCalledWith(seat);
   });
 
   it("makes a create response harmless when unmount wins the race", async () => {

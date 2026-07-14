@@ -96,6 +96,7 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     expect(source).toContain("mountedRef.current = true");
     expect(source).toContain("advanceSearchGeneration(searchGenerationRef)");
     expect(pollingSource).toContain("finishSearchPoll({");
+    expect(pollingSource).toContain("unresolvedSearchMutationRef.current");
     expect(source).toContain("commitSearchSeat({");
   });
 
@@ -167,6 +168,11 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     expect(unsafeIndex).toBeGreaterThan(-1);
     expect(unsafeIndex).toBeLessThan(requestIndex);
     expect(joinSource).toContain("return !seatRequestStarted");
+    expect(joinSource).toContain("createMatchmakingMutationIdentity");
+    expect(joinSource).toContain("unresolvedSearchMutationRef.current = mutation");
+    expect(joinSource).toContain("requestedCredentials: mutation.credentials");
+    expect(joinSource).toContain("matchmakingRequestId: mutation.requestId");
+    expect(joinSource.indexOf("setSearchState((current)")).toBeLessThan(requestIndex);
   });
 
   it("marks create unsafe before the server mutation can outlive cancellation", () => {
@@ -181,6 +187,25 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
 
     expect(unsafeIndex).toBeGreaterThan(-1);
     expect(unsafeIndex).toBeLessThan(createRequestIndex);
+    expect(playSource).toContain("createMatchmakingMutationIdentity");
+    expect(playSource).toContain("unresolvedSearchMutationRef.current = mutation");
+    expect(playSource).toContain("requestedCredentials: mutation.credentials");
+    expect(playSource).toContain("matchmakingRequestId: mutation.requestId");
+  });
+
+  it("authoritatively reconciles an unresolved mutation on every later cancel", () => {
+    const source = readHook();
+    const cancelSource = between(
+      source,
+      "const cancelSearch = useCallback",
+      "const playPufferFromSearch"
+    );
+
+    expect(source).toContain("const unresolvedSearchMutationRef = useRef(null)");
+    expect(source).toContain('route: "/api/matches/recover"');
+    expect(cancelSource).toContain("reconcileUnresolvedSearchMutation");
+    expect(cancelSource).toContain("unresolvedSearchMutationRef.current");
+    expect(cancelSource).toContain("return false");
   });
 
   it("keeps the lobby busy for the full Puffer transition", () => {

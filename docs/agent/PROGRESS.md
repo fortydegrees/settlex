@@ -1,5 +1,26 @@
 # PROGRESS
 
+## Status (2026-07-14, Match alerts concurrency closure)
+- Replaced the subscription-cap CTE with an account-row-locked transaction:
+  upsert and overflow deletion now run as separate statements with fresh
+  Postgres snapshots. Real Postgres regressions prove both the sixth sequential
+  insert and twelve simultaneous inserts retain at most five endpoints.
+- Human match joins now reserve both accounts' alert pauses before exposing the
+  filled game-server seat. A rejected join restores each account's exact prior
+  pause only while the failed match still owns it; interrupted pre-join pauses
+  can be resumed because an unfilled table is not treated as a live human game.
+- Online create/join requests now carry browser-generated 192-bit correlation
+  and credential tokens. The game server installs the requested credential,
+  and an authenticated recovery route can find matching public human seats
+  after a lost response. Cancel verifies and leaves every recovered seat before
+  Puffer can start; an empty or unavailable recovery remains sticky rather than
+  assuming the in-flight request did nothing.
+- GitHub Actions now migrates a real Postgres service before verification and
+  enables the concurrent subscription-cap regression in the thorough lane.
+- Focused verification passed across the changed matchmaking, API, store,
+  lifecycle, server-wiring, and deployment contracts; full repository
+  verification and final independent re-review remain the next gate.
+
 ## Status (2026-07-14, Match alerts final review corrections)
 - Closed all five Important findings from the whole-feature review:
   - Push endpoints now reject literal private/loopback targets, use a

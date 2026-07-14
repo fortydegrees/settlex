@@ -26,6 +26,24 @@ export function isSearchGenerationCurrent({
   return searchGenerationRef.current === generation;
 }
 
+const secureHexToken = (cryptoImpl) => {
+  if (!cryptoImpl?.getRandomValues) {
+    throw new Error("Secure browser randomness is required for matchmaking.");
+  }
+  const bytes = new Uint8Array(24);
+  cryptoImpl.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
+export function createMatchmakingMutationIdentity({
+  cryptoImpl = globalThis.crypto,
+} = {}) {
+  return {
+    requestId: secureHexToken(cryptoImpl),
+    credentials: secureHexToken(cryptoImpl),
+  };
+}
+
 export function finishSearchPoll({
   searchGenerationRef,
   generation,
@@ -47,7 +65,12 @@ export async function commitSearchSeat({
   commit,
 }) {
   if (!isSearchGenerationCurrent({ searchGenerationRef, generation })) {
-    const cleaned = await leaveSeat(seat);
+    let cleaned = false;
+    try {
+      cleaned = await leaveSeat(seat);
+    } catch {
+      cleaned = false;
+    }
     if (!cleaned) preserve?.(seat);
     return { committed: false, cleaned };
   }
@@ -72,7 +95,13 @@ export async function reconcileSearchDeparture({
     if (await leaveSeat?.(seat)) {
       return { released: true, reason: "left" };
     }
-  } catch {
+  } catch (error) {
+    if (error?.status === 401 || error?.status === 403) {
+      return { released: true, reason: "credentials_rejected" };
+    }
+    if (error?.status === 404 || error?.status === 410) {
+      return { released: true, reason: "match_gone" };
+    }
     /* Reconcile the ambiguous mutation against authoritative match state. */
   }
 
@@ -91,6 +120,65 @@ export async function reconcileSearchDeparture({
     }
     return { released: false, reason: "reconcile_failed" };
   }
+}
+
+export async function reconcileUnknownSearchMutation({
+  mutation,
+  accountId,
+  recoverSeats,
+  leaveSeat,
+  loadMatch,
+} = {}) {
+  if (!mutation?.credentials) {
+    return { released: false, reason: "credentials_unknown", seats: [] };
+  }
+
+  let recovered = false;
+  let targets;
+  try {
+    if (mutation.matchID && mutation.playerID != null) {
+      targets = [
+        {
+          matchID: mutation.matchID,
+          playerID: String(mutation.playerID),
+        },
+      ];
+    } else {
+      recovered = true;
+      targets = await recoverSeats?.(mutation.requestId);
+    }
+  } catch {
+    return { released: false, reason: "recovery_failed", seats: [] };
+  }
+
+  const seats = (Array.isArray(targets) ? targets : [])
+    .filter((seat) => seat?.matchID && seat?.playerID != null)
+    .map((seat) => ({
+      matchID: seat.matchID,
+      playerID: String(seat.playerID),
+      credentials: mutation.credentials,
+    }));
+  if (seats.length === 0) {
+    return { released: false, reason: "outcome_pending", seats: [] };
+  }
+
+  for (const seat of seats) {
+    const result = await reconcileSearchDeparture({
+      seat,
+      accountId,
+      leaveSeat,
+      loadMatch,
+    });
+    if (!result.released) {
+      return { released: false, reason: result.reason, seats };
+    }
+  }
+
+  return {
+    released: true,
+    reason: recovered ? "recovered_and_left" : "known_seat_released",
+    seats,
+  };
 }
 
 export function clearScheduledMatchAnnouncement({

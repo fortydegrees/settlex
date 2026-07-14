@@ -1,5 +1,20 @@
 # NOTES
 
+- Match-alert concurrency and ambiguous-mutation note:
+- Enforce per-account Push-subscription caps in a real transaction. Lock the
+  account row, upsert the endpoint, then delete overflow in a later statement;
+  sibling data-modifying CTEs share a snapshot and cannot safely trim the row
+  they just inserted.
+- A human game must not become observable before its alert pause. Reserve the
+  pause for both accounts first, retain their prior pause snapshots, and restore
+  only rows still owned by the rejected match if the game-server join fails.
+- Browser matchmaking mutations use independent secure request and credential
+  tokens. Put the request token in human-seat metadata and install the requested
+  credential at the game server so an authenticated recovery scan can identify
+  and prove ownership of seats whose HTTP response was lost. Never let an empty
+  recovery scan prove safety while the original mutation outcome is unknown;
+  keep Cancel/Puffer blocked and let the user retry reconciliation.
+
 - Match-alert security and failure-atomicity note:
 - A browser Push endpoint is untrusted input. Reject non-HTTPS, credentialed,
   non-443, localhost, and literal private/reserved endpoints at subscription

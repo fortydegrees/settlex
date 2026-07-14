@@ -5,6 +5,7 @@ import {
   createMatchForAccount,
 } from "../../../../lib/server/matches/createMatchForAccount.js";
 import { resolveMatchCreationMode } from "../../../../lib/server/matches/gameModeSetupData.js";
+import { readOptionalMatchmakingMutationToken } from "../../../../lib/server/matches/matchmakingMutation.js";
 import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
 
 const unauthorizedResponse = () =>
@@ -43,10 +44,24 @@ export const createMatchCreateRoute =
         payload?.opponentType === "bot"
           ? createBotMatchForAccountImpl
           : createMatchForAccountImpl;
+      const mutationIdentity =
+        payload?.opponentType === "bot"
+          ? {}
+          : {
+              matchmakingRequestId: readOptionalMatchmakingMutationToken(
+                payload?.matchmakingRequestId,
+                "matchmakingRequestId"
+              ),
+              requestedCredentials: readOptionalMatchmakingMutationToken(
+                payload?.requestedCredentials,
+                "requestedCredentials"
+              ),
+            };
       const result = await createMatch({
         account: sessionAccount.account,
         numPlayers: creationMode.numPlayers,
         setupData: creationMode.setupData,
+        ...mutationIdentity,
       });
 
       const response = NextResponse.json(result);

@@ -16,6 +16,7 @@ import { cleanupArchivedMatch } from "./archive/cleanupArchivedMatch.js"
 import { MatchChatStore } from "./chat/MatchChatStore.js"
 import { FinishedMatchRetentionManager } from "./lifecycle/FinishedMatchRetentionManager.js"
 import { resolveServerPorts } from "./runtimeConfig.js"
+import { generateMatchPlayerCredentials } from "../lib/server/matches/matchmakingMutation.js"
 const DEFAULT_BOT_MOVE_DELAY_MS = 450
 const DEFAULT_FINISHED_MATCH_CLEANUP_GRACE_MS = 300_000
 
@@ -113,6 +114,8 @@ const transport = new SocketIO({ pubSub })
 
 const server = Server({
   games: [ServerCatan],
+  generateCredentials: (context) =>
+    generateMatchPlayerCredentials({ context }),
   origins: [Origins.LOCALHOST_IN_DEVELOPMENT],
   transport,
 })
