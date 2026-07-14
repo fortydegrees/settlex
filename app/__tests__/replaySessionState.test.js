@@ -57,10 +57,13 @@ describe("postgame replay activation", () => {
       return;
     }
 
-    const start = replaySessionState.createReplayActivationState();
+    const start = replaySessionState.createReplayActivationState({
+      identityKey: "A",
+    });
     expect(
       replaySessionState.replayActivationReducer(start, {
         type: "payloadReady",
+        identityKey: "A",
       })
     ).toEqual(start);
   });
@@ -77,21 +80,94 @@ describe("postgame replay activation", () => {
       return;
     }
 
-    const start = replaySessionState.createReplayActivationState();
+    const start = replaySessionState.createReplayActivationState({
+      identityKey: "A",
+    });
     const requested = replaySessionState.replayActivationReducer(start, {
       type: "requestReplay",
       payloadStatus: "loading",
+      identityKey: "A",
     });
-    expect(requested).toEqual({ intentPending: true, replayActive: false });
+    expect(requested).toEqual({
+      identityKey: "A",
+      intentPending: true,
+      replayActive: false,
+    });
 
     const ready = replaySessionState.replayActivationReducer(requested, {
       type: "payloadReady",
+      identityKey: "A",
     });
-    expect(ready).toEqual({ intentPending: false, replayActive: true });
+    expect(ready).toEqual({
+      identityKey: "A",
+      intentPending: false,
+      replayActive: true,
+    });
     expect(
       replaySessionState.replayActivationReducer(ready, {
         type: "payloadReady",
+        identityKey: "A",
       })
     ).toBe(ready);
+  });
+
+  it("drops queued intent when the replay identity changes", () => {
+    const start = replaySessionState.createReplayActivationState({
+      identityKey: "A",
+    });
+    const requestedA = replaySessionState.replayActivationReducer(start, {
+      type: "requestReplay",
+      payloadStatus: "loading",
+      identityKey: "A",
+    });
+    const resetB = replaySessionState.replayActivationReducer(requestedA, {
+      type: "resetIdentity",
+      identityKey: "B",
+    });
+    expect(resetB).toEqual({
+      identityKey: "B",
+      intentPending: false,
+      replayActive: false,
+    });
+
+    const readyB = replaySessionState.replayActivationReducer(resetB, {
+      type: "payloadReady",
+      identityKey: "B",
+    });
+    expect(readyB).toBe(resetB);
+
+    const requestedB = replaySessionState.replayActivationReducer(readyB, {
+      type: "requestReplay",
+      payloadStatus: "ready",
+      identityKey: "B",
+    });
+    expect(requestedB).toEqual({
+      identityKey: "B",
+      intentPending: false,
+      replayActive: true,
+    });
+    expect(
+      replaySessionState.replayActivationReducer(requestedB, {
+        type: "payloadReady",
+        identityKey: "B",
+      })
+    ).toBe(requestedB);
+  });
+
+  it("deactivates an already-started replay when identity changes", () => {
+    const activeA = replaySessionState.createReplayActivationState({
+      identityKey: "A",
+      replayActive: true,
+    });
+    expect(
+      replaySessionState.replayActivationReducer(activeA, {
+        type: "resetIdentity",
+        identityKey: "B",
+      })
+    ).toEqual({
+      identityKey: "B",
+      intentPending: false,
+      replayActive: false,
+    });
   });
 });
