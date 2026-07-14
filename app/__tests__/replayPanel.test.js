@@ -5,13 +5,13 @@ describe("replay mobile dock placement", () => {
   it("stays at the bottom for Board perspective", () => {
     const className = getReplayMobileDockClassName(null);
     expect(className).toContain("bottom-3");
-    expect(className).not.toContain("12.75rem");
+    expect(className).not.toContain("17.375rem");
   });
 
-  it("clears the seated player cockpit and command row", () => {
+  it("clears the maximum expanded seated cockpit and dev-card tray", () => {
     const className = getReplayMobileDockClassName("1");
-    expect(className).toContain("12.75rem");
-    expect(className).toContain("12.15rem");
+    expect(className).toContain("17.375rem");
+    expect(className).toContain("16.775rem");
     expect(className).not.toContain("bottom-3");
   });
 });

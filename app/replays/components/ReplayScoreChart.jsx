@@ -40,11 +40,16 @@ export const getReplayChartKeyboardSeekIndex = ({
   currentEventIndex,
   eventCount,
 }) => {
-  if (key !== "ArrowLeft" && key !== "ArrowRight") return null;
-  const direction = key === "ArrowLeft" ? -1 : 1;
+  const finalEventIndex = Math.max(eventCount - 1, 0);
+  if (key === "Home") return 0;
+  if (key === "End") return finalEventIndex;
+  const isDecrement = key === "ArrowLeft" || key === "ArrowDown";
+  const isIncrement = key === "ArrowRight" || key === "ArrowUp";
+  if (!isDecrement && !isIncrement) return null;
+  const direction = isDecrement ? -1 : 1;
   return Math.min(
     Math.max(currentEventIndex + direction, 0),
-    Math.max(eventCount - 1, 0)
+    finalEventIndex
   );
 };
 
