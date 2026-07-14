@@ -27,6 +27,9 @@ describe("GameScreen status presentation source", () => {
   it("passes replay and game-over visibility into the turn controls", () => {
     const source = fs.readFileSync(screenPath, "utf8");
 
-    expect(source).toContain("showTurnControls={!isReplay && !isGameOver}");
+    expect(source).toContain("showTurnControls={isReplay || !isGameOver}");
+    expect(source).toContain("readOnly={isReplay}");
+    expect(source).toContain("bgioProps.replayTurn");
+    expect(source).not.toContain("bgioProps.G?.core?.turn ??");
   });
 });

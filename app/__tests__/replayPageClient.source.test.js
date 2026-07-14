@@ -13,7 +13,11 @@ const source = fs.readFileSync(
 describe("ReplayPageClient", () => {
   it("delegates archived replay state to the shared postgame board", () => {
     expect(source).toContain("PostgameGameBoard");
-    expect(source).toContain("initialReplayPayload: { replay, frames }");
+    expect(source).toContain("useMemo");
+    expect(source).toContain("const initialReplayPayload = useMemo(");
+    expect(source).toContain("[replay, frames]");
+    expect(source).toContain("initialReplayPayload,");
+    expect(source).not.toContain("initialReplayPayload: { replay, frames }");
     expect(source).not.toContain("buildReplayTimeline");
     expect(source).not.toContain("useReplayNavigation");
     expect(source).not.toContain("ReplayConsole");

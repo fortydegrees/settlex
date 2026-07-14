@@ -38,6 +38,7 @@ export const buildReplayGameScreenProps = ({
   isConnected: true,
   isMultiplayer: false,
   isReplay: true,
+  replayTurn: event?.turn ?? null,
   replayResultsOpen: resultsOpen,
   replayLogEntries: event?.visibleLogEntries ?? [],
   replayActiveLogEntryKey: event?.logEntryKey ?? null,

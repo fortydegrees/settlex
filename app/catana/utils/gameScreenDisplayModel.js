@@ -76,6 +76,11 @@ export function getGameOverReasonCopy(reason) {
   return String(reason);
 }
 
+export function getGameOverTitle({ isWinner, winnerId, winnerName } = {}) {
+  if (winnerId == null) return "Game ended";
+  return isWinner ? "You win!" : `${winnerName} wins!`;
+}
+
 export function buildPostgameSummary({
   isGameOver,
   winnerName,

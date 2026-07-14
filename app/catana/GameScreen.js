@@ -18,7 +18,10 @@ import {
   getBuildPickupPieceType,
   shouldResetPlayerAction
 } from "./utils/playerAction";
-import { buildGameScreenDisplayModel } from "./utils/gameScreenDisplayModel";
+import {
+  buildGameScreenDisplayModel,
+  getGameOverTitle
+} from "./utils/gameScreenDisplayModel";
 import {
   getActiveDisconnectStateByPlayerId,
   mergeVisibleLogEntries,
@@ -225,11 +228,28 @@ export function GameScreen(bgioProps) {
   const moves = bgioProps.moves;
   const isReplay = bgioProps.isReplay === true;
   const onWatchReplay = bgioProps.onWatchReplay;
+  const onReplayMobileMetaPanelOpen =
+    bgioProps.onReplayMobileMetaPanelOpen;
 
   useEffect(() => {
     if (isPhoneLayout) return;
     setMobileMetaPanel(null);
   }, [isPhoneLayout]);
+
+  useEffect(() => {
+    if (!isReplay || !bgioProps.replayConsoleMobileOpen) return;
+    setMobileMetaPanel(null);
+  }, [isReplay, bgioProps.replayConsoleMobileOpen]);
+
+  const handleMobileMetaPanelChange = useCallback(
+    (panelId) => {
+      setMobileMetaPanel(panelId);
+      if (isReplay && panelId) {
+        onReplayMobileMetaPanelOpen?.();
+      }
+    },
+    [isReplay, onReplayMobileMetaPanelOpen]
+  );
 
   //get the active playerID of who's watching
   //can be null for spectator?
@@ -272,6 +292,7 @@ export function GameScreen(bgioProps) {
     effectiveColorByPlayerId,
     playerViewMap,
     player,
+    winnerId,
     winnerName,
     isWinner,
     winnerVP,
@@ -322,16 +343,24 @@ export function GameScreen(bgioProps) {
     typeof window === "undefined" || typeof window.matchMedia !== "function"
       ? true
       : !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const replayLogEntries = Array.isArray(bgioProps.replayLogEntries)
+    ? bgioProps.replayLogEntries
+    : canonicalGameLogEntries;
   const visibleLogEntries = useMemo(
     () =>
-      mergeVisibleLogEntries(
-        presentedGameLogEntries,
-        [
-          ...(disconnectPresence?.events ?? []),
-          ...(idlePresence?.events ?? [])
-        ]
-      ),
-    [presentedGameLogEntries, disconnectPresence, idlePresence]
+      isReplay
+        ? replayLogEntries
+        : mergeVisibleLogEntries(presentedGameLogEntries, [
+            ...(disconnectPresence?.events ?? []),
+            ...(idlePresence?.events ?? [])
+          ]),
+    [
+      isReplay,
+      replayLogEntries,
+      presentedGameLogEntries,
+      disconnectPresence,
+      idlePresence
+    ]
   );
   const activeIdlePlayerId = idlePresence?.activeIdlePlayerId ?? null;
   const disconnectStateByPlayerId = useMemo(() => {
@@ -444,6 +473,12 @@ export function GameScreen(bgioProps) {
   }, [emitLargestArmyAwardFromPayload, releaseKnightDisplayFromPayload]);
 
   useEffect(() => {
+    if (isReplay) {
+      gameOverSeenRef.current = isGameOver;
+      setShowGameOverModal(false);
+      setShowPostgame(false);
+      return;
+    }
     if (!isGameOver) {
       gameOverSeenRef.current = false;
       winnerConfettiSeenRef.current = false;
@@ -464,7 +499,7 @@ export function GameScreen(bgioProps) {
       setShowTradeModal(false);
       setTradePresetResource(null);
     }
-  }, [clearBuildPickup, clearDevCardPlayActors, isGameOver]);
+  }, [clearBuildPickup, clearDevCardPlayActors, isGameOver, isReplay]);
 
   useEffect(() => {
     if (!isGameOver || !matchID || typeof window === "undefined") return;
@@ -553,6 +588,7 @@ export function GameScreen(bgioProps) {
   }, [bgioProps.isConnected]);
 
   useEffect(() => {
+    if (isReplay) return;
     const isInitialBackfill =
       lastSeenGameLogId === 0 &&
       presentedGameLogEntries.length === 0 &&
@@ -591,6 +627,7 @@ export function GameScreen(bgioProps) {
     }
   }, [
     canonicalGameLogEntries,
+    isReplay,
     lastSeenGameLogId,
     canDelayGameLogPresentation,
     presentedGameLogEntries.length,
@@ -1540,12 +1577,19 @@ export function GameScreen(bgioProps) {
 
       <LeftMetaRail
         entries={visibleLogEntries}
+        activeEntryKey={
+          isReplay ? bgioProps.replayActiveLogEntryKey : null
+        }
+        onEntrySelect={
+          isReplay ? bgioProps.onReplayLogEntrySelect : null
+        }
         logPlayerMap={logPlayerMap}
         themeId={themeId}
         playerID={playerID}
         bgioProps={bgioProps}
         mobileActivePanel={mobileMetaPanel}
-        onMobileActivePanelChange={setMobileMetaPanel}
+        onMobileActivePanelChange={handleMobileMetaPanelChange}
+        isPhoneLayout={isPhoneLayout}
       />
 
       <Dialog
@@ -1672,7 +1716,7 @@ TODO: accurately colour it
             timerSnapshot={visibleTimerSnapshot}
             themeId={themeId}
             activeMobileMetaPanel={mobileMetaPanel}
-            onMobileMetaPanelOpen={setMobileMetaPanel}
+            onMobileMetaPanelOpen={handleMobileMetaPanelChange}
             showTurnControls={isReplay || !isGameOver}
             diceRoll={mobileCommandDiceRoll}
             readOnly={isReplay}
@@ -1709,7 +1753,7 @@ TODO: accurately colour it
             showTurnControls={isReplay || !isGameOver}
             readOnly={isReplay}
             replayStatusText={
-              isReplay ? `Replay · Turn ${bgioProps.G?.core?.turn ?? "—"}` : null
+              isReplay ? `Replay · Turn ${bgioProps.replayTurn ?? "—"}` : null
             }
           />
         ))}
@@ -1818,7 +1862,7 @@ TODO: accurately colour it
         (!isReplay && showGameOverModal)) && (
         <GameOverOverlay>
           <GameOverModal
-            title={isWinner ? "You win!" : `${winnerName} wins!`}
+            title={getGameOverTitle({ isWinner, winnerId, winnerName })}
             subtitle={
               gameOverState?.reason === "victoryPoints"
                 ? winnerVP != null

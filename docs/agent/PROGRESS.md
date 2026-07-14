@@ -6810,11 +6810,13 @@
 - GREEN evidence: the three-file discovery run passes `5/5`; `pnpm lint`
   reports no warnings or errors; the production `pnpm build` completes with the
   local replay verification environment; and `git diff --check` is silent.
-- The full focused replay command passes `151/152`. Its sole failure is the
-  existing dirty-worktree source assertion in
-  `GameScreen.logPresentation.test.js`, which still expects the removed literal
-  `!isReplay && isGameOver` although `GameScreen` now protects live presentation
-  through an explicit replay early-return.
-- `pnpm verify` confirms game-core `153/153` and server/lib/AI `189/189`, then
-  stops at that same app source assertion. Real-archive desktop/mobile and
-  completed-live-game browser QA remains pending the main agent.
+- Browser QA follow-up now projects the numeric replay event turn into the
+  read-only HUD, memoizes direct-page replay payload identity across parent
+  rerenders, and labels winnerless/aborted archives `Game ended` while
+  preserving the existing winner titles.
+- Updated the replay source assertions to the current visible-but-read-only HUD
+  contract. The complete focused replay suite passes `158/158`; `pnpm lint` and
+  `git diff --check` pass.
+- Broad `pnpm verify` passes game-core `153/153` and server/lib/AI `189/189`, then
+  reaches the app lane and encounters the concurrent 3D worktree's stale
+  `GameScreen.themeSwitcher.test.js` expectation for `MemoizedCatanBoard`.
