@@ -44,6 +44,16 @@ export function createLatestRefreshGuard() {
   };
 }
 
+export function getSignedOutMatchAlertState(detachResult = {}) {
+  return {
+    signedIn: false,
+    configured: false,
+    vapidPublicKey: null,
+    preference: offPreference(),
+    hasSubscription: detachResult.reason === "local_unsubscribe_failed",
+  };
+}
+
 export async function loadMatchAlertSnapshot({
   fetchImpl = globalThis.fetch,
   getCapability = getMatchAlertCapability,

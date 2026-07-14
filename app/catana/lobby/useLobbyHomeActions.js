@@ -68,6 +68,33 @@ const appRequest = async ({ route, init }) => {
   throw new Error(message);
 };
 
+export async function runAccountSignOutLifecycle({
+  detachCurrentBrowser,
+  logout,
+  completeMatchAlertSignOut,
+  refreshMatchAlerts,
+  reportDetachWarning = (message, error) => console.warn(message, error),
+} = {}) {
+  const detachResult = await detachCurrentBrowser({ refreshAfterDetach: false });
+  if (!detachResult?.safeToSignOut) {
+    throw (
+      detachResult?.error ??
+      new Error("Failed to detach this browser from your account.")
+    );
+  }
+
+  if (detachResult.reason === "local_unsubscribe_failed") {
+    const message =
+      detachResult.error?.message ??
+      "The account was detached, but the browser kept its local subscription.";
+    reportDetachWarning(message, detachResult.error);
+  }
+
+  await logout();
+  completeMatchAlertSignOut?.(detachResult);
+  await refreshMatchAlerts?.();
+}
+
 function normalizeMatch(raw) {
   const playersObj = raw?.players || {};
   const players = Object.values(playersObj).sort(
@@ -85,7 +112,12 @@ export function useLobbyHomeActions({
   onMatchFound = null
 } = {}) {
   const router = useRouter();
-  const { requestAnnouncement } = useMatchAlerts();
+  const {
+    requestAnnouncement,
+    detachCurrentBrowser,
+    completeMatchAlertSignOut,
+    refresh: refreshMatchAlerts,
+  } = useMatchAlerts();
   const initialIdentity = getAccountIdentity(initialAccount);
 
   const [playerName, setPlayerName] = useState(initialIdentity.name);
@@ -1084,9 +1116,15 @@ export function useLobbyHomeActions({
     setError("");
 
     try {
-      await appRequest({
-        route: "/api/account/logout",
-        init: { method: "POST" }
+      await runAccountSignOutLifecycle({
+        detachCurrentBrowser,
+        logout: () =>
+          appRequest({
+            route: "/api/account/logout",
+            init: { method: "POST" }
+          }),
+        completeMatchAlertSignOut,
+        refreshMatchAlerts,
       });
     } catch (err) {
       setError(err?.message || "Failed to sign out.");
@@ -1108,7 +1146,11 @@ export function useLobbyHomeActions({
     setSearchState(null);
     setChallengeState(null);
     playerNameRef.current = "";
-  }, []);
+  }, [
+    completeMatchAlertSignOut,
+    detachCurrentBrowser,
+    refreshMatchAlerts,
+  ]);
 
   const signInWithProvider = useCallback(
     async (provider) => {

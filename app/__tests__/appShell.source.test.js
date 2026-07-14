@@ -48,6 +48,7 @@ describe("match-alert app shell", () => {
       "disable",
       "resume",
       "detachCurrentBrowser",
+      "completeMatchAlertSignOut",
       "requestAnnouncement",
     ]) {
       expect(provider).toContain(action);

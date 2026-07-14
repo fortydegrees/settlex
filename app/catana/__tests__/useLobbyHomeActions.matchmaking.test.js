@@ -1,6 +1,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { runAccountSignOutLifecycle } from "../lobby/useLobbyHomeActions.js";
+
+vi.mock("../matchAlerts/useMatchAlerts.js", () => ({
+  useMatchAlerts: vi.fn(),
+}));
 
 const readHook = () =>
   readFileSync(
@@ -188,5 +193,125 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     );
     expect(pufferSource).not.toContain("setSearchState");
     expect(source).toContain('setError(err?.message || "Failed to start bot match.")');
+  });
+});
+
+describe("useLobbyHomeActions sign-out lifecycle", () => {
+  it("detaches the authenticated browser before logout and refreshes after logout", async () => {
+    const order = [];
+    const detachResult = {
+      detached: true,
+      safeToSignOut: true,
+      reason: "detached",
+    };
+
+    await runAccountSignOutLifecycle({
+      detachCurrentBrowser: async (options) => {
+        order.push("detach");
+        expect(options).toEqual({ refreshAfterDetach: false });
+        return detachResult;
+      },
+      logout: async () => order.push("logout"),
+      completeMatchAlertSignOut: (result) => {
+        order.push("complete");
+        expect(result).toBe(detachResult);
+      },
+      refreshMatchAlerts: async () => order.push("refresh"),
+    });
+
+    expect(order).toEqual(["detach", "logout", "complete", "refresh"]);
+  });
+
+  it("blocks logout when the server association cannot be detached", async () => {
+    const logout = vi.fn();
+    const completeMatchAlertSignOut = vi.fn();
+
+    await expect(
+      runAccountSignOutLifecycle({
+        detachCurrentBrowser: vi.fn().mockResolvedValue({
+          detached: false,
+          safeToSignOut: false,
+          reason: "server_detach_failed",
+          error: new Error("Detach unavailable"),
+        }),
+        logout,
+        completeMatchAlertSignOut,
+        refreshMatchAlerts: vi.fn(),
+      })
+    ).rejects.toThrow("Detach unavailable");
+
+    expect(logout).not.toHaveBeenCalled();
+    expect(completeMatchAlertSignOut).not.toHaveBeenCalled();
+  });
+
+  it("continues sign-out when only local unsubscribe fails after server detach", async () => {
+    const order = [];
+    const reportDetachWarning = vi.fn();
+
+    await runAccountSignOutLifecycle({
+      detachCurrentBrowser: async () => {
+        order.push("detach");
+        return {
+          detached: false,
+          safeToSignOut: true,
+          reason: "local_unsubscribe_failed",
+          error: new Error("Browser kept subscription"),
+        };
+      },
+      logout: async () => order.push("logout"),
+      completeMatchAlertSignOut: () => order.push("complete"),
+      refreshMatchAlerts: async () => order.push("refresh"),
+      reportDetachWarning,
+    });
+
+    expect(order).toEqual(["detach", "logout", "complete", "refresh"]);
+    expect(reportDetachWarning).toHaveBeenCalledWith(
+      "Browser kept subscription",
+      expect.any(Error)
+    );
+  });
+
+  it("uses the browser check instead of a possibly stale subscription snapshot", async () => {
+    const detachCurrentBrowser = vi.fn().mockResolvedValue({
+      detached: true,
+      safeToSignOut: true,
+      reason: "not_subscribed",
+    });
+    const logout = vi.fn().mockResolvedValue(undefined);
+    const completeMatchAlertSignOut = vi.fn();
+
+    await runAccountSignOutLifecycle({
+      detachCurrentBrowser,
+      logout,
+      completeMatchAlertSignOut,
+      refreshMatchAlerts: vi.fn(),
+    });
+
+    expect(detachCurrentBrowser).toHaveBeenCalledOnce();
+    expect(logout).toHaveBeenCalledOnce();
+    expect(completeMatchAlertSignOut).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: "not_subscribed" })
+    );
+  });
+
+  it("does not clear provider state when logout fails", async () => {
+    const refreshMatchAlerts = vi.fn();
+    const completeMatchAlertSignOut = vi.fn();
+
+    await expect(
+      runAccountSignOutLifecycle({
+        detachCurrentBrowser: vi.fn().mockResolvedValue({
+          detached: true,
+          safeToSignOut: true,
+          reason: "not_subscribed",
+        }),
+        logout: vi.fn().mockRejectedValue(new Error("Logout unavailable")),
+        completeMatchAlertSignOut,
+        refreshMatchAlerts,
+      })
+    ).rejects.toThrow("Logout unavailable");
+
+    expect(completeMatchAlertSignOut).not.toHaveBeenCalled();
+    expect(refreshMatchAlerts).not.toHaveBeenCalled();
   });
 });

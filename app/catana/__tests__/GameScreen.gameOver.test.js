@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { shouldOfferMatchAlertResume } from "../components/gameOverAlertLifecycle.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +16,42 @@ const displayModelPath = path.resolve(
 );
 
 describe("GameScreen game over", () => {
+  it("offers resume only for the exact human match that paused alerts", () => {
+    const preference = {
+      state: "paused",
+      pausedMatchId: "human-match",
+    };
+
+    expect(
+      shouldOfferMatchAlertResume({
+        preference,
+        matchID: "human-match",
+        opponentType: "human",
+      })
+    ).toBe(true);
+    expect(
+      shouldOfferMatchAlertResume({
+        preference,
+        matchID: "another-match",
+        opponentType: "human",
+      })
+    ).toBe(false);
+    expect(
+      shouldOfferMatchAlertResume({
+        preference,
+        matchID: "human-match",
+        opponentType: "bot",
+      })
+    ).toBe(false);
+    expect(
+      shouldOfferMatchAlertResume({
+        preference: { ...preference, state: "on" },
+        matchID: "human-match",
+        opponentType: "human",
+      })
+    ).toBe(false);
+  });
+
   it("checks for game over state", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
     const displayModelContents = fs.readFileSync(displayModelPath, "utf8");

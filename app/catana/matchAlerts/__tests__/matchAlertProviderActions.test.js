@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createLatestRefreshGuard,
   detachMatchAlertBrowser,
+  getSignedOutMatchAlertState,
   loadMatchAlertSnapshot,
   requestMatchAnnouncement,
   runEnableTransaction,
@@ -56,6 +57,36 @@ describe("loadMatchAlertSnapshot", () => {
       },
       capability,
       permission: "granted",
+      hasSubscription: true,
+    });
+  });
+});
+
+describe("getSignedOutMatchAlertState", () => {
+  it("clears account state after a complete browser detach", () => {
+    expect(
+      getSignedOutMatchAlertState({ reason: "detached" })
+    ).toEqual({
+      signedIn: false,
+      configured: false,
+      vapidPublicKey: null,
+      preference: {
+        enabled: false,
+        state: "off",
+        pausedReason: null,
+        pausedMatchId: null,
+        pausedAt: null,
+      },
+      hasSubscription: false,
+    });
+  });
+
+  it("retains only the unaffiliated local subscription after unsubscribe failure", () => {
+    expect(
+      getSignedOutMatchAlertState({ reason: "local_unsubscribe_failed" })
+    ).toMatchObject({
+      signedIn: false,
+      preference: { state: "off" },
       hasSubscription: true,
     });
   });

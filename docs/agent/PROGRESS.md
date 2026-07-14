@@ -1,5 +1,25 @@
 # PROGRESS
 
+## Status (2026-07-14, match-alert postgame and sign-out lifecycle)
+- Finished human matches now offer a checked-by-default `Turn match alerts back
+  on` control only when that exact match paused the account preference.
+- Return to Lobby awaits the provider resume action when selected. Resume
+  failures keep the results modal open with explicit Retry and Continue without
+  alerts choices; close, postgame review, rematch, and unchecked return paths do
+  not resume implicitly.
+- Homepage sign-out now detaches an authenticated browser endpoint before
+  logout. Unsafe server-detach failures stop logout, while a local unsubscribe
+  failure after successful server detach is reported and allowed to continue.
+- Match-alert provider state refreshes only after logout succeeds. Sign-out
+  asks the provider to inspect the actual browser subscription instead of
+  trusting a potentially stale render snapshot; the no-subscription result is
+  a local no-op before the existing logout path.
+- Verification:
+  - focused lifecycle suite: 33 tests across game-over and lobby actions;
+  - match-alert/postgame/matchmaking/provider regressions: 108 tests across 12 files;
+  - targeted ESLint for touched production and test files;
+  - full `pnpm lint` with no warnings or errors.
+
 ## Status (2026-07-14, verified waiting-duel Web Push)
 - Added an authenticated announcement boundary that re-fetches live match
   metadata and accepts only an open public duel owned by the lone seated human.
