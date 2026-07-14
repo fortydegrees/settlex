@@ -9,6 +9,10 @@ import {
   resolveRuleset,
   ResourceType
 } from "@settlex/game-core";
+import {
+  generateDuelFairBoard,
+  selectDuelFairBoard
+} from "./duelFairBoardCatalog";
 
 export const getPlacementOrder = (numPlayers) => {
   const ids = Array.from({ length: numPlayers }, (_, i) => i.toString());
@@ -56,8 +60,17 @@ export const createInitialGameState = ({ ctx, random, setupData = {} }) => {
     setupData
   });
   const selectedBoardConfigId = setupData?.boardConfigId ?? boardConfigId;
+  const usesDuelFairCatalog =
+    modeId === "duel" &&
+    selectedBoardConfigId === "standard-balanced" &&
+    setupData?.boardConfig == null;
+  const boardCatalog = usesDuelFairCatalog
+    ? selectDuelFairBoard(rng())
+    : null;
   const boardConfig = setupData?.boardConfig ?? resolveBoardConfig(selectedBoardConfigId);
-  const tiles = generateBoard(boardConfig, rng);
+  const tiles = boardCatalog
+    ? generateDuelFairBoard(boardCatalog)
+    : generateBoard(boardConfig, rng);
   const valids = { nodes: [], edges: [], tiles: [] };
   const diceRoll = [3, 4];
   const robberTile =
@@ -87,6 +100,7 @@ export const createInitialGameState = ({ ctx, random, setupData = {} }) => {
     rulesetId,
     gameSettings: resolveGameSettings(setupData),
     boardConfigId,
+    boardCatalog,
     tiles,
     valids,
     diceRoll,

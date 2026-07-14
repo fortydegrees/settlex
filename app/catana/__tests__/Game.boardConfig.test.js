@@ -27,6 +27,7 @@ describe("Catan setup board config", () => {
     const G = Catan.setup({ ctx, random }, setupData);
 
     expect(G.boardConfigId).toBe("standard-random");
+    expect(G.boardCatalog).toBeNull();
   });
 
   it("resolves duel mode to duel rules and balanced board generation", () => {
@@ -38,6 +39,7 @@ describe("Catan setup board config", () => {
     expect(G.modeId).toBe("duel");
     expect(G.rulesetId).toBe("duel");
     expect(G.boardConfigId).toBe("standard-balanced");
+    expect(G.boardCatalog?.catalogId).toBe("duel-fair-official-v1");
     expect(G.core.ruleset.victoryPointsToWin).toBe(15);
     expect(G.core.ruleset.diceMode).toBe("balanced");
     expect(G.diceState?.mode).toBe("balanced");
@@ -65,6 +67,7 @@ describe("Catan setup board config", () => {
 
     expect(G.modeId).toBe("standard-3p");
     expect(G.boardConfigId).toBe("standard-official");
+    expect(G.boardCatalog).toBeNull();
     expect(G.core.ruleset.victoryPointsToWin).toBe(10);
     expect(G.core.ruleset.discardLimit).toBe(7);
     expect(G.core.ruleset.diceMode).toBe("random");

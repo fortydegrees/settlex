@@ -5,6 +5,8 @@ import {
   getPlacementOrder,
   resolveModeSetup
 } from "../gameSetup/initialState";
+import { DUEL_FAIR_BOARD_CATALOG } from "../gameSetup/catalogs/duelFairOfficialV1.generated";
+import { generateDuelFairBoard } from "../gameSetup/duelFairBoardCatalog";
 
 const createRandom = (seed = 123) => ({
   Number: makeDeterministicRng(seed),
@@ -49,13 +51,26 @@ describe("initial game setup helpers", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
     const G = createInitialGameState({
       ctx,
-      random: createRandom(),
+      random: {
+        Number: () => 0,
+        Shuffle: (items) => items
+      },
       setupData: {}
     });
 
     expect(G.modeId).toBe("duel");
     expect(G.rulesetId).toBe("duel");
     expect(G.boardConfigId).toBe("standard-balanced");
+    expect(G.boardCatalog).toEqual({
+      catalogId: "duel-fair-official-v1",
+      rank: 1,
+      seed: DUEL_FAIR_BOARD_CATALOG.seeds[0],
+      generatorFamily: "official-spiral",
+      generatorVersion: "official-spiral-v1",
+      evaluatorVersion: "duel-fair-v3",
+      evaluatorIdentity: DUEL_FAIR_BOARD_CATALOG.evaluatorIdentity
+    });
+    expect(G.tiles).toEqual(generateDuelFairBoard(G.boardCatalog));
     expect(G.core.phase).toBe("placement");
     expect(G.core.ruleset.friendlyRobber).toEqual({
       enabled: true,
@@ -63,6 +78,24 @@ describe("initial game setup helpers", () => {
     });
     expect(G.diceState?.mode).toBe("balanced");
     expect(G.placementOrder).toEqual(["0", "1", "1", "0"]);
+  });
+
+  it("keeps explicit and non-duel board generation outside the duel catalog", () => {
+    const explicitRandom = createInitialGameState({
+      ctx: { numPlayers: 2, phase: "placement" },
+      random: createRandom(),
+      setupData: { boardConfigId: "standard-random" }
+    });
+    const standardThreePlayer = createInitialGameState({
+      ctx: { numPlayers: 3, phase: "placement" },
+      random: createRandom(),
+      setupData: {}
+    });
+
+    expect(explicitRandom.boardConfigId).toBe("standard-random");
+    expect(explicitRandom.boardCatalog).toBeNull();
+    expect(standardThreePlayer.boardConfigId).toBe("standard-official");
+    expect(standardThreePlayer.boardCatalog).toBeNull();
   });
 
   it("requires board generation to use boardgame.io random", () => {
