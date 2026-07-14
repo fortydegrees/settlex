@@ -1,5 +1,40 @@
 # PROGRESS
 
+## Status (2026-07-14, Match alerts release readiness)
+- Declared the opt-in Match alerts Web Push runtime contract in `.env.example`:
+  `VAPID_SUBJECT=mailto:hello@settlehex.com` plus blank public/private key
+  placeholders. No VAPID key pair was generated, printed, or committed.
+- Added a production preflight to the tracked thorough deploy script so all
+  three VAPID values must be populated with non-whitespace content in
+  `.env.prod` before any rebuild. Added `.env.prod` to `.dockerignore` so the
+  runtime-only private key cannot enter a Docker build context or cached layer.
+- Verification:
+  - deployment contract: 16 tests passed after the initial expected two-test
+    RED and a review-driven whitespace/build-context two-test RED;
+  - focused Match alerts: 160 tests passed across 11 files;
+  - review-driven feature/service-worker regression pass: 163 tests passed
+    across 12 files;
+  - engine build and all 153 engine tests passed;
+  - full `pnpm verify`: 153 engine tests, 226 server/lib/AI tests, all 241
+    isolated app test files, and lint with no warnings or errors;
+  - `pnpm release:check -- --require-approved` passed for approved release 3;
+  - `bash -n infra/scripts/deploy-prod.sh` passed.
+- Real two-profile Web Push, notification-click, iOS Home Screen, and browser
+  acceptance was not executable here: this task environment has no browser
+  backend and no production VAPID environment. No manual Push delivery is
+  claimed.
+- The plan's second preflight target,
+  `infra/scripts/deploy-prod-from-git.sh`, does not exist at base `366706d` or
+  on `origin/main` or this clean branch, so its syntax check returned `No such
+  file or directory` and no contract was added. The actual thorough production
+  lane on this branch remains `.github/workflows/deploy-prod.yml` calling the
+  tracked `infra/scripts/deploy-prod.sh`; a future fast-lane integration must
+  add its own matching VAPID preflight deliberately.
+- Docker image builds were not run because they mutate local Docker cache/image
+  state and were outside the authorized non-mutating checks. No deployment,
+  push, release-note approval/edit, production-secret edit, or key generation
+  was performed.
+
 ## Status (2026-07-14, match-alert postgame and sign-out lifecycle)
 - Finished human matches now offer a checked-by-default `Turn match alerts back
   on` control only when that exact match paused the account preference.

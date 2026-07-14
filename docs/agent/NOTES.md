@@ -17,6 +17,53 @@
   deployment records each attempted delivery as failed without invoking
   `web-push`; 404 and 410 Push responses remove their stored endpoints.
 
+- Match-alert release architecture note:
+- Migration `0005_match_alerts.sql` owns three tables:
+  `match_alert_preferences` for account opt-in/pause state,
+  `match_alert_subscriptions` for account-bound Push endpoints and browser key
+  material, and `match_alert_events` for the one claimed announcement per
+  match plus delivery counts.
+- Keep the authenticated route boundaries separate. `GET/PATCH
+  /api/match-alerts` exposes configuration and mutates preference state;
+  `POST/DELETE /api/match-alerts/subscriptions` owns endpoint association; and
+  `POST /api/match-alerts/announce` accepts a match ID from the seeker but
+  re-fetches the live game-server match before claiming or sending. Only
+  `VAPID_PUBLIC_KEY` is returned by the authenticated configuration route;
+  the private key stays server-only.
+- The homepage waits two seconds before requesting an announcement for a newly
+  created public duel. Cancelling, filling, unmounting, or switching to Puffer
+  clears that timer. The delay is not authority: the announcement route still
+  verifies the live match ID, public duel setup, lone seated human, open seat,
+  and authenticated seeker ownership immediately before the event claim.
+- There is no recipient-wide cooldown. Every eligible active recipient except
+  the seeker is considered. Seeker rate limits remain one announcement per
+  minute and ten per hour, while `match_alert_events.match_id` is the
+  at-most-once boundary for one event per match.
+- A successful human-versus-human join pauses enabled preferences for both
+  accounts with `paused_reason = 'human_game'` and the match ID. Resume stays
+  explicit after the human game has ended; Puffer games do not pause alerts.
+- The browser worker is rooted at `/match-alerts-sw.js`. It shows valid Push
+  payloads and, on notification click, focuses/messages an existing window or
+  opens the payload URL; the page then re-checks eligibility and asks for
+  confirmation before joining.
+- Runtime Web Push configuration is `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, and
+  `VAPID_PRIVATE_KEY`. Keep the example keys blank, install real production
+  values only in `.env.prod`, and require all three in every production deploy
+  preflight before rebuild. Keep `.env.prod` in `.dockerignore` so a
+  repository-root Docker build cannot copy the private key into a builder
+  layer or cache. Never pass the private key through Docker build arguments,
+  client bundles, logs, documentation, tests, or chat.
+- Delivery is direct request-time `web-push` fanout, not a worker queue. An
+  event remains claimed when an individual delivery fails; counts are recorded
+  and expired endpoints are removed, but transient failures are not retried.
+  This avoids queue/cron infrastructure at the cost of possible lost alerts
+  during transient Push-provider or process failures.
+- On the `366706d` release-readiness base and `origin/main`, only
+  `infra/scripts/deploy-prod.sh` is tracked. If
+  `infra/scripts/deploy-prod-from-git.sh` is deliberately integrated later,
+  add the same three-key preflight there rather than importing uncommitted
+  deployment plumbing as part of the Match alerts slice.
+
 - Core rule transaction note:
 - A returned `{ ok: false }` must leave `GameState` unchanged. New or repaired
   game-rule moves should validate all inputs before mutating player resources,
