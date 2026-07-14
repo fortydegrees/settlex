@@ -3,7 +3,9 @@
 ## Status (2026-07-14, explicit board-source architecture designed)
 - Approved and recorded
   `docs/superpowers/specs/2026-07-14-explicit-board-source-architecture-design.md`.
-  This is a design-only checkpoint; implementation remains gated on review.
+  The reviewed implementation plan is recorded at
+  `docs/superpowers/plans/2026-07-14-explicit-board-source-architecture.md`.
+  No runtime or database implementation has started yet.
 - The design removes the provisional `standard-balanced` duel sentinel and old
   runtime balanced generator, moves SettleHex game-mode presets out of
   `game-core`, and separates `boardSourceId`, actual `boardConfigId`, and
