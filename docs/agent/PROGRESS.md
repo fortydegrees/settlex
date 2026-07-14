@@ -6478,3 +6478,15 @@
 - Verification:
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot` (red before fix: custom labels were ignored and panel headings still used the internal version)
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot`
+
+## Status (2026-07-14, browser match-alert foundation)
+- Added DOM-free browser capability, URL-safe VAPID decoding, root service-worker registration, and local PushSubscription lifecycle helpers for opt-in match alerts.
+- Added the root `MatchAlertProvider` and `useMatchAlerts`, with explicit-click permission/subscription enablement, server preference actions, safe server-first browser detachment, signed-out refresh handling, and no-throw announcement requests. Executable provider-action tests cover those browser/API transactions instead of relying on source-token order.
+- Guarded provider refresh commits by request generation so a slow mount-time response cannot overwrite a newer refresh after account creation or restoration.
+- Added a defensive root notification worker, installable App Router manifest, and a static Catana blue/white bell icon; notification clicks focus/message an existing SettleHex client or open the alert URL only when none exists.
+- Verification:
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertBrowser.test.js app/catana/matchAlerts/__tests__/matchAlertState.test.js app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js --reporter=dot` (red before implementation: browser modules, provider, worker, icon, and manifest missing)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertProviderActions.test.js --reporter=dot` (red before the review fix: provider action module and refresh-generation guard missing)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertBrowser.test.js app/catana/matchAlerts/__tests__/matchAlertState.test.js app/catana/matchAlerts/__tests__/matchAlertProviderActions.test.js app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js --reporter=dot`
+  - `pnpm exec vitest run app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/SettlexUiFoundation.source.test.js app/__tests__/publicBranding.source.test.js app/__tests__/api/matchAlertRoutes.test.js lib/server/__tests__/matchAlertAnnouncement.test.js lib/server/__tests__/matchAlertStore.test.js --reporter=dot`
+  - `pnpm lint`

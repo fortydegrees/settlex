@@ -1,6 +1,7 @@
 import './globals.css'
 import { Outfit } from 'next/font/google'
 import { GlobalReconnectBanner } from './catana/components/GlobalReconnectBanner'
+import { MatchAlertProvider } from './catana/matchAlerts/MatchAlertProvider'
 
 const outfit = Outfit({ subsets: ['latin'] })
 
@@ -14,8 +15,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={outfit.className}>
         <div className="settlex-ui-root">
-          {children}
-          <GlobalReconnectBanner />
+          <MatchAlertProvider>
+            {children}
+            <GlobalReconnectBanner />
+          </MatchAlertProvider>
         </div>
       </body>
     </html>

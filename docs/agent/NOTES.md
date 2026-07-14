@@ -3966,3 +3966,11 @@
 
 - Release label note:
 - Release tooling currently requires positive integer internal versions. For fractional/public labels such as `release 0.8`, keep `currentVersion` and `version` as the next integer and set the release entry `label` for badge/panel display.
+
+- Browser match-alert foundation note:
+- `app/catana/matchAlerts/MatchAlertProvider.js` is the root owner of local browser subscription state and account alert preference state; homepage and game consumers should use `useMatchAlerts()` instead of registering service workers or calling the alert routes independently.
+- Provider browser/API transactions are implemented in `matchAlertProviderActions.js` so their order and failure boundaries stay executable without a DOM. `MatchAlertProvider` uses a latest-request guard and only commits the newest refresh snapshot; preserve that guard when adding post-account refresh calls.
+- Notification permission belongs only to the provider's explicit `enable()` action. Mount, refresh, queue start, and delayed announcement timers must never call `Notification.requestPermission()`.
+- Disabling alerts keeps the local PushSubscription for cheap re-enable. Sign-out/browser detachment must delete the authenticated server association before local `unsubscribe()`; a server failure is unsafe to sign out, while a later local unsubscribe failure is safe because the server association is already gone.
+- The root worker always shows valid match-alert pushes, even when a SettleHex page is visible. Notification clicks only focus/message an existing client or open the payload URL; the confirmation and race-safe join flow belongs to the later match-alert dialog slice, not the worker.
+- iPhone/iPad Safari outside a Home Screen install initially retains the normal Enable affordance. Only the first explicit enable attempt reveals installation guidance, without invoking notification permission.
