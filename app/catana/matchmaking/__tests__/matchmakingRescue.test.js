@@ -352,9 +352,9 @@ describe("search lifecycle ownership", () => {
     }
   );
 
-  it.each([401, 403])(
-    "treats rejected pre-generated credentials as proof the seat is not owned (%s)",
-    async (status) => {
+  it(
+    "treats rejected pre-generated credentials as proof the seat is not owned",
+    async () => {
       const loadMatch = vi.fn();
       await expect(
         matchmakingRescue.reconcileSearchDeparture({
@@ -366,13 +366,42 @@ describe("search lifecycle ownership", () => {
           accountId: "acct_1",
           leaveSeat: vi
             .fn()
-            .mockRejectedValue(Object.assign(new Error("rejected"), { status })),
+            .mockRejectedValue(Object.assign(new Error("rejected"), { status: 403 })),
           loadMatch,
         })
       ).resolves.toEqual({ released: true, reason: "credentials_rejected" });
       expect(loadMatch).not.toHaveBeenCalled();
     }
   );
+
+  it("reconciles a signed-out 401 instead of treating it as credential rejection", async () => {
+    const loadMatch = vi.fn().mockResolvedValue({
+      players: {
+        0: {
+          id: 0,
+          name: "Ada",
+          data: { participantType: "human", accountId: "acct_1" },
+        },
+        1: { id: 1, name: "" },
+      },
+    });
+
+    await expect(
+      matchmakingRescue.reconcileSearchDeparture({
+        seat: {
+          matchID: "target-duel",
+          playerID: "0",
+          credentials: "requested-secret",
+        },
+        accountId: "acct_1",
+        leaveSeat: vi
+          .fn()
+          .mockRejectedValue(Object.assign(new Error("signed out"), { status: 401 })),
+        loadMatch,
+      })
+    ).resolves.toEqual({ released: false, reason: "still_owned" });
+    expect(loadMatch).toHaveBeenCalledWith("target-duel");
+  });
 
   it("suppresses a stale poll result after ownership is invalidated", () => {
     const searchGenerationRef = { current: 0 };

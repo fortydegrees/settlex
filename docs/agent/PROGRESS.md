@@ -1,5 +1,21 @@
 # PROGRESS
 
+## Status (2026-07-14, Match alerts final route closure)
+- Friend-challenge acceptance now uses the same reserve-before-join contract as
+  public matchmaking. Both human participants' alert pauses commit before the
+  game-server seat can become visible, and a rejected join restores the exact
+  reservation only while that match still owns it.
+- A `401` from the app-owned leave route is no longer treated as proof that the
+  supplied seat credential was rejected: it can mean the account session
+  expired before the game server was contacted. The client now reconciles that
+  case against the live match and keeps Cancel/Puffer blocked while ownership
+  remains or cannot be established. A game-server `403` remains credential
+  rejection proof.
+- Both issues were reproduced with failing-first tests. The wider affected
+  matchmaking, challenge, route, lifecycle, store, real-Postgres, and
+  game-server credential suite passed 81/81; full repository and production
+  build verification remain the next gate.
+
 ## Status (2026-07-14, Match alerts concurrency closure)
 - Replaced the subscription-cap CTE with an account-row-locked transaction:
   upsert and overflow deletion now run as separate statements with fresh

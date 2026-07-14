@@ -1,5 +1,15 @@
 # NOTES
 
+- Match-alert human-entry and leave-auth note:
+- Every route that can fill a human match, including friend-challenge accept,
+  must reserve both accounts' alert pauses before joining the game-server seat
+  and conditionally restore the reservation when that join is rejected.
+- Do not interpret an app-route `401` as a game-server credential rejection.
+  The account session can expire before the leave request reaches the game
+  server, so reconcile `401` against live match ownership and stay sticky when
+  ownership cannot be cleared. The authenticated leave path's `403` is the
+  credential-specific proof that the supplied seat token does not own the seat.
+
 - Match-alert concurrency and ambiguous-mutation note:
 - Enforce per-account Push-subscription caps in a real transaction. Lock the
   account row, upsert the endpoint, then delete overflow in a later statement;
