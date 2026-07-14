@@ -3960,6 +3960,7 @@
 - Catana runtime quick-wins boundary:
 - Moving timer markup alone is not a performance boundary. The 250ms `nowMs` state must live inside the smallest desktop/mobile timer leaf so the regular turn countdown does not rerun `GameScreen` or the complete player HUD.
 - Preserve the current normalized server snapshot, server-delay correction, 250ms cadence, timer formatting, five-second urgency rule, and roll-status suppression. `GameScreen` may keep its clock temporarily for the rarer disconnect and idle countdowns.
+- The desktop leaf is `TurnTimerSegment` inside `TurnControlCluster`; the mobile leaf is `MobileCommandTimerBox`. Keep timer text/urgency derivation in those leaves and pass `timerSnapshot` through the HUD parents without converting it to `timerMs`.
 - `Board` already owns the measured viewport width used for layout. Pass that width to every `Edge` render path and forward it to placeable/hoverable variants; do not add a second viewport store or keep edge-local `useWindowSize` subscriptions.
 - Keep the runtime quick-wins slice separate from a broad `GameScreen` refactor and from the later production performance certification, long-session, and network-measurement work.
 - Execute the timer clock, timer ownership rewiring/profile gate, edge-width plumbing, and combined verification as separate plan tasks; do not bundle speculative animation or network changes into those commits.

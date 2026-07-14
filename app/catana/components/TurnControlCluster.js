@@ -1,5 +1,6 @@
 import React from "react";
 import { ForwardIcon } from "@heroicons/react/24/outline";
+import { useLiveTurnTimer } from "./LiveTurnTimer";
 import "./TurnControlCluster.css";
 
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
@@ -86,12 +87,45 @@ const DICE_TRAY_STYLE = {
   boxShadow: "none",
 };
 
+function TurnTimerSegment({
+  timerSnapshot,
+  statusType,
+  statusKind,
+  stripTextStyle,
+}) {
+  const { timerText, isLowTimerAlertActive } = useLiveTurnTimer({
+    timerSnapshot,
+    enabled: true,
+    statusType,
+    statusKind,
+  });
+  const showLowTimer = Boolean(timerText) && isLowTimerAlertActive;
+
+  return React.createElement(
+    "div",
+    {
+      className: joinClassNames(
+        "turn-control-strip__timer flex min-w-[4.9rem] items-center justify-center px-3 text-[0.95rem] font-semibold tracking-[0.01em] tabular-nums",
+        showLowTimer &&
+          "turn-control-strip__timer--low turn-control-timer-low-pulse"
+      ),
+      style: {
+        ...(showLowTimer ? TIMER_SEGMENT_LOW_STYLE : TIMER_SEGMENT_STYLE),
+        ...stripTextStyle,
+        ...(showLowTimer ? LOW_TIMER_TEXT_STYLE : null),
+      },
+    },
+    timerText
+  );
+}
+
 export function TurnControlCluster({
   mode = "inactive",
   statusText = null,
-  timerText = null,
+  timerSnapshot = null,
   showTimer = false,
-  isTimerLow = false,
+  timerStatusType,
+  timerStatusKind,
   rollContent = null,
   onRoll,
   onEndTurn,
@@ -125,9 +159,10 @@ export function TurnControlCluster({
     React.createElement(TurnStatusStrip, {
       mode,
       statusText,
-      timerText,
+      timerSnapshot,
       showTimer,
-      isTimerLow,
+      timerStatusType,
+      timerStatusKind,
     }),
     React.createElement(
       "div",
@@ -198,12 +233,12 @@ export function TurnControlCluster({
 export function TurnStatusStrip({
   mode = "inactive",
   statusText = null,
-  timerText = null,
+  timerSnapshot = null,
   showTimer = false,
-  isTimerLow = false,
+  timerStatusType,
+  timerStatusKind,
 }) {
-  const showTimerChip = showTimer && Boolean(timerText);
-  const showLowTimer = showTimerChip && isTimerLow;
+  const showTimerChip = showTimer && Boolean(timerSnapshot);
   const isInactive = mode === "inactive";
 
   if (!statusText && !showTimerChip) return null;
@@ -239,22 +274,12 @@ export function TurnStatusStrip({
         )
       : null,
     showTimerChip
-      ? React.createElement(
-          "div",
-          {
-            className: joinClassNames(
-              "turn-control-strip__timer flex min-w-[4.9rem] items-center justify-center px-3 text-[0.95rem] font-semibold tracking-[0.01em] tabular-nums",
-              showLowTimer &&
-                "turn-control-strip__timer--low turn-control-timer-low-pulse"
-            ),
-            style: {
-              ...(showLowTimer ? TIMER_SEGMENT_LOW_STYLE : TIMER_SEGMENT_STYLE),
-              ...stripTextStyle,
-              ...(showLowTimer ? LOW_TIMER_TEXT_STYLE : null),
-            },
-          },
-          timerText
-        )
+      ? React.createElement(TurnTimerSegment, {
+          timerSnapshot,
+          statusType: timerStatusType,
+          statusKind: timerStatusKind,
+          stripTextStyle,
+        })
       : null
   );
 }

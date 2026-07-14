@@ -12,6 +12,7 @@ import { MobileDevCardTray } from "./MobileDevCardTray";
 import { MobileInventoryBorderGlide } from "./MobileInventoryBorderGlide";
 import { MiniDiceFace } from "./MiniDiceFace";
 import { MobilePrimaryTurnButton } from "./MobilePrimaryTurnButton";
+import { useLiveTurnTimer } from "./LiveTurnTimer";
 import { useLocalPlayerDockModel } from "./useLocalPlayerDockModel";
 import { getBuildPickupPieceType } from "../utils/playerAction";
 import { getPlayerColorOption } from "../theme/playerColors";
@@ -103,7 +104,18 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
   </div>
 );
 
-const MobileCommandTimerBox = ({ timerText, showTimer, isLow }) => {
+const MobileCommandTimerBox = ({
+  timerSnapshot,
+  showTimer,
+  statusType,
+  statusKind,
+}) => {
+  const { timerText, isLowTimerAlertActive } = useLiveTurnTimer({
+    timerSnapshot,
+    enabled: showTimer,
+    statusType,
+    statusKind,
+  });
   const hasTimerText = showTimer && Boolean(timerText);
   const displayTimerText = hasTimerText ? timerText : "--:--";
 
@@ -114,7 +126,7 @@ const MobileCommandTimerBox = ({ timerText, showTimer, isLow }) => {
         hasTimerText
           ? "border-white/[0.38] bg-white/[0.22] text-white"
           : "border-white/[0.22] bg-white/[0.1] text-white/55",
-        hasTimerText && isLow
+        hasTimerText && isLowTimerAlertActive
           ? "border-rose-200/75 bg-rose-400/[0.32] text-white ring-1 ring-rose-200/60"
           : null
       )}
@@ -236,7 +248,7 @@ export function MobilePlayerCockpit({
   activePlayerName,
   canRoll,
   canEnd,
-  timerMs,
+  timerSnapshot,
   themeId,
   activeMobileMetaPanel = null,
   onMobileMetaPanelOpen,
@@ -299,12 +311,9 @@ export function MobilePlayerCockpit({
     dynamicActions,
     endTurnEnabled,
     handleResourceClick,
-    isLowTimerAlertActive,
     isOverLimit,
     resourceCounts,
     rollEnabled,
-    showStatusTimer,
-    timerText,
     turnControlMode,
     visibleDevCards,
   } = useLocalPlayerDockModel({
@@ -320,9 +329,6 @@ export function MobilePlayerCockpit({
     onDevCardPurchase: startDevCardPurchaseReveal,
     canRoll,
     canEnd,
-    timerMs,
-    statusType,
-    gameStatus,
     themeId,
   });
 
@@ -610,9 +616,10 @@ export function MobilePlayerCockpit({
               </div>
             )}
             <MobileCommandTimerBox
-              timerText={timerText}
-              showTimer={showStatusTimer}
-              isLow={isLowTimerAlertActive}
+              timerSnapshot={timerSnapshot}
+              showTimer={gameStatus?.showTimer !== false}
+              statusType={statusType}
+              statusKind={gameStatus?.kind}
             />
           </div>
         ) : null}

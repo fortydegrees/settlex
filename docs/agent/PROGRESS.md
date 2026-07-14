@@ -6486,3 +6486,13 @@
 - Added `docs/superpowers/plans/2026-07-14-catana-runtime-quick-wins.md` after approval of the written design.
 - Split execution into four reviewable tasks: shared live-timer clock, HUD/root timer rewiring with a render-profile gate, edge viewport-width plumbing, and combined browser verification/evidence.
 - The plan uses red/green focused tests and separate commits for timer ownership and edge listeners, and stops before the broader performance certification or network work.
+
+## Status (2026-07-14, Catana timer render ownership)
+- Moved the regular 250ms turn-countdown clock from `GameScreen` into the desktop and mobile timer leaves while leaving disconnect/idle presence countdowns on the existing screen clock.
+- Preserved the current desktop/mobile timer classes, timer visibility semantics, low-time suppression, and inline end-turn behavior.
+- Removed timer formatting and urgency derivation from `useLocalPlayerDockModel`; both HUD parents now pass the normalized timer snapshot through to their timer leaf.
+- Verification:
+  - Red: the four focused ownership/component suites failed 6 tests before implementation because `GameScreen` still owned the regular clock and the HUD leaves could not render timer snapshots.
+  - Green: the six focused timer/ownership suites passed 40 tests.
+  - Focused ESLint and `git diff --check` exited 0.
+  - React DevTools component profiling was unavailable through the current automation surface, so the desktop/mobile three-second profiler gate remains for manual follow-up.
