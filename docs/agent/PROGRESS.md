@@ -6464,3 +6464,14 @@
 - Verification:
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot` (red before fix: custom labels were ignored and panel headings still used the internal version)
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot`
+
+## Status (2026-07-14, Catana continuous-animation quick wins)
+- Preserved the placement action-node pulse while removing animated `box-shadow`; all 54 settlement-placement nodes now animate `transform` only.
+- Moved the active-player avatar glow onto a statically painted pseudo-element whose two-second pulse animates only `transform` and `opacity`; reduced-motion keeps the static white ring and hides the pulse layer.
+- Removed the action dock's persistent `will-change: contents` hint without changing dock layout or spring interactions.
+- Added `HudMotionPerformance.source.test.js` to lock the placement/avatar compositor-property boundaries and dock hint cleanup.
+- Verification:
+  - Red: `pnpm exec vitest run app/catana/__tests__/HudMotionPerformance.source.test.js --exclude '.worktrees/**'` failed in the three intended places before the CSS changes.
+  - Green: the same focused command passed 3 tests.
+  - `pnpm exec eslint app/catana/__tests__/HudMotionPerformance.source.test.js`
+  - Playwright CLI on `/catana/dev/sandbox`: desktop `1440x900`, mobile `390x844`, settlement-placement preset with 54 action nodes, runtime keyframe inspection, reduced-motion emulation, and zero browser console warnings/errors.

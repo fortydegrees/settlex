@@ -3949,3 +3949,10 @@
 
 - Release label note:
 - Release tooling currently requires positive integer internal versions. For fractional/public labels such as `release 0.8`, keep `currentVersion` and `version` as the next integer and set the release entry `label` for badge/panel display.
+
+- Catana continuous-animation performance note:
+- Treat multiplier and animated property as separate risk dimensions. A subtle paint-heavy pulse can become a board-wide bottleneck when dozens of placement targets run it concurrently.
+- Keep the placement action-node pulse on `transform` only. The settlement sandbox currently mounts 54 simultaneous action nodes, so do not reintroduce animated `box-shadow`, `filter`, text shadow, or layout properties into `board-pulse`.
+- Keep the active-player avatar's white ring static and render its glow on the existing pseudo-element. The infinite avatar keyframes should remain limited to `transform` and `opacity`; reduced-motion should retain the ring without running the glow animation.
+- Do not restore `will-change: contents` on the action dock. Its card-level transform hints already cover the spring-driven motion that benefits from compositor preparation.
+- Use `HudMotionPerformance.source.test.js` as the narrow regression guard. Broader rail, award, count, dice, timer, and mobile inventory changes still require targeted browser evidence before changing their visible effects.

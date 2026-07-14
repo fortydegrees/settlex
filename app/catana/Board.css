@@ -107,9 +107,8 @@
 }
 
 .animation-pulse {
-  /*box-shadow: 0 0 0 20px rgba(229,62,62, 0.5);
-  transform: scale(0.8);*/
   animation: board-pulse 2s infinite;
+  will-change: transform;
 }
 
 @keyframes pieceFlash {
@@ -129,18 +128,13 @@
 }
 
 @keyframes board-pulse {
-  0% {
-      transform: scale(0.80);
-      box-shadow: 0 0 0 0 rgb(255, 255, 255);
+  0%,
+  100% {
+    transform: scale(0.8);
   }
 
   50% {
-      transform: scale(1.1);
-      box-shadow: 0 0 0 3px rgba(229, 62, 62, 0);
-  }
-
-  100% {
-      transform: scale(0.80);
+    transform: scale(1.1);
   }
 }
 

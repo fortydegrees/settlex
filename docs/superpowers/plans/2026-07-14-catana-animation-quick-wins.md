@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Remove two sources of unnecessary continuous HUD rendering work without changing the perceived active-player pulse or dock behaviour.
+**Goal:** Preserve the approved action-node pulse fix and remove two additional sources of unnecessary continuous HUD rendering work without changing the perceived active-player pulse or dock behaviour.
 
 **Architecture:** Keep the active-player ring on its existing avatar element and move the glow onto a pseudo-element with a statically painted shadow. Animate only that layer's `transform` and `opacity`, and remove the dock's persistent content invalidation hint. Protect both decisions with a narrow source-level regression test.
 
@@ -11,6 +11,7 @@
 ## Global Constraints
 
 - Preserve the active-avatar white ring, two-second pulse rhythm, and reduced-motion behaviour.
+- Preserve the approved transform-only action-node pulse from the current checkout.
 - Do not modify the left meta rail, award, counter, dice, timer, mobile inventory, or board-transform paths.
 - Add no dependencies and change no game rules or state flow.
 - Keep the diff isolated from unrelated dirty-worktree changes.
@@ -26,7 +27,7 @@
 - Consumes: CSS source files under `app/catana/components/`.
 - Produces: regression checks for compositor-only avatar keyframes and removal of `will-change: contents`.
 
-- [ ] **Step 1: Write the failing source-level tests**
+- [x] **Step 1: Write the failing source-level tests**
 
 ```js
 import fs from "node:fs";
@@ -58,6 +59,18 @@ const extractCssBlock = (contents, marker) => {
 };
 
 describe("Catana HUD motion performance", () => {
+  it("keeps the placement-node pulse on compositor-friendly properties", () => {
+    const contents = readCatanaFile("Board.css");
+    const keyframes = extractCssBlock(contents, "@keyframes board-pulse");
+
+    expect(keyframes).not.toBe("");
+    expect(keyframes).toContain("transform:");
+    expect(keyframes).not.toMatch(
+      /(?:box-shadow|text-shadow|filter|width|height|top|left|margin|padding)\s*:/
+    );
+    expect(contents).toContain("will-change: transform");
+  });
+
   it("keeps the active-avatar pulse on compositor-friendly properties", () => {
     const contents = readCatanaFile("components/PlayerAvatarStats.css");
     const keyframes = extractCssBlock(
@@ -87,7 +100,7 @@ describe("Catana HUD motion performance", () => {
 });
 ```
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -95,22 +108,27 @@ Run:
 pnpm exec vitest run app/catana/__tests__/HudMotionPerformance.source.test.js --exclude '.worktrees/**'
 ```
 
-Expected: two assertion failures because the new avatar keyframe/pseudo-element do not exist and the dock still contains `will-change: contents`.
+Expected: three assertion failures because the board keyframes still animate `box-shadow`, the new avatar keyframe/pseudo-element do not exist, and the dock still contains `will-change: contents`.
 
 ---
 
 ### Task 2: Make the two continuous HUD paths cheaper
 
 **Files:**
+- Modify: `app/catana/Board.css:107-141`
 - Modify: `app/catana/components/PlayerAvatarStats.css:1-18,52-59`
 - Modify: `app/catana/components/ActionsDock/dockStyles.css:1-20`
 - Test: `app/catana/__tests__/HudMotionPerformance.source.test.js`
 
 **Interfaces:**
-- Consumes: the existing `.avatar-active-glow` class applied by `PlayerAvatarStats.js`.
-- Produces: the same active-player cue with compositor-only keyframes and unchanged dock layout.
+- Consumes: the existing `.animation-pulse` action-node class and `.avatar-active-glow` class applied by `PlayerAvatarStats.js`.
+- Produces: compositor-only placement and avatar pulses with unchanged dock layout.
 
-- [ ] **Step 1: Replace the animated avatar shadow with a static glow layer**
+- [x] **Step 1: Carry over the approved transform-only action-node pulse**
+
+Add `will-change: transform` to `.animation-pulse` and remove every `box-shadow` declaration from `@keyframes board-pulse`, leaving the existing `scale(0.8) -> scale(1.1) -> scale(0.8)` rhythm intact.
+
+- [x] **Step 2: Replace the animated avatar shadow with a static glow layer**
 
 Replace the existing `pulse-glow` keyframes and `.avatar-active-glow` animation with:
 
@@ -148,7 +166,7 @@ Replace the existing `pulse-glow` keyframes and `.avatar-active-glow` animation 
 
 Change the reduced-motion rule to target `.avatar-active-glow::before`, disable its animation, and hide the glow layer so the static white ring remains the active-player cue.
 
-- [ ] **Step 2: Remove the dock content invalidation hint**
+- [x] **Step 3: Remove the dock content invalidation hint**
 
 Delete this declaration and make no other dock-style changes:
 
@@ -156,7 +174,7 @@ Delete this declaration and make no other dock-style changes:
 will-change: contents;
 ```
 
-- [ ] **Step 3: Run the focused test and verify GREEN**
+- [x] **Step 4: Run the focused test and verify GREEN**
 
 Run:
 
@@ -164,15 +182,15 @@ Run:
 pnpm exec vitest run app/catana/__tests__/HudMotionPerformance.source.test.js --exclude '.worktrees/**'
 ```
 
-Expected: 2 tests pass, 0 fail.
+Expected: 3 tests pass, 0 fail.
 
-- [ ] **Step 4: Run focused static checks**
+- [x] **Step 5: Run focused static checks**
 
 Run:
 
 ```bash
 pnpm exec eslint app/catana/__tests__/HudMotionPerformance.source.test.js
-git diff --check -- app/catana/components/PlayerAvatarStats.css app/catana/components/ActionsDock/dockStyles.css app/catana/__tests__/HudMotionPerformance.source.test.js
+git diff --check -- app/catana/Board.css app/catana/components/PlayerAvatarStats.css app/catana/components/ActionsDock/dockStyles.css app/catana/__tests__/HudMotionPerformance.source.test.js
 ```
 
 Expected: both commands exit 0.
@@ -189,7 +207,7 @@ Expected: both commands exit 0.
 - Consumes: `/catana/dev/sandbox` at the canonical desktop and mobile viewports.
 - Produces: browser evidence that the visual cue and dock behaviour remain intact.
 
-- [ ] **Step 1: Verify Playwright CLI prerequisites and open the sandbox**
+- [x] **Step 1: Verify Playwright CLI prerequisites and open the sandbox**
 
 Run:
 
@@ -203,7 +221,7 @@ export PWCLI="$CODEX_HOME/skills/playwright/scripts/playwright_cli.sh"
 
 If port 3000 is not serving the sandbox, start `pnpm dev:log`, wait for readiness, and repeat.
 
-- [ ] **Step 2: Verify desktop at 1440x900**
+- [x] **Step 2: Verify desktop at 1440x900**
 
 Run:
 
@@ -214,7 +232,7 @@ Run:
 
 Inspect the screenshot and live page: active avatar ring/glow present, no clipping or content obstruction, dock layout intact, and hover/press motion unchanged.
 
-- [ ] **Step 3: Verify mobile at 390x844**
+- [x] **Step 3: Verify mobile at 390x844**
 
 Run:
 
@@ -225,7 +243,7 @@ Run:
 
 Inspect the screenshot and live page: active player indication remains present and the mobile dock/inventory layout is intact.
 
-- [ ] **Step 4: Verify runtime animation properties**
+- [x] **Step 4: Verify runtime animation properties**
 
 Run:
 
@@ -235,11 +253,11 @@ Run:
 
 Expected: the active-avatar animation keyframes expose only `transform`, `opacity`, `offset`, `easing`, `computedOffset`, and `composite` metadata—never `boxShadow` or `filter`.
 
-- [ ] **Step 5: Record the meaningful change**
+- [x] **Step 5: Record the meaningful change**
 
 Append concise entries to `docs/agent/PROGRESS.md` and `docs/agent/NOTES.md` describing the compositor-only avatar pulse, dock hint removal, focused test output, and desktop/mobile sandbox result. Preserve all existing dirty-file content.
 
-- [ ] **Step 6: Run final verification**
+- [x] **Step 6: Run final verification**
 
 Run:
 
@@ -249,4 +267,4 @@ pnpm exec eslint app/catana/__tests__/HudMotionPerformance.source.test.js
 git diff --check
 ```
 
-Expected: 2 tests pass, ESLint exits 0, and `git diff --check` exits 0.
+Expected: 3 tests pass, ESLint exits 0, and `git diff --check` exits 0.
