@@ -44,6 +44,27 @@ export function createLatestRefreshGuard() {
   };
 }
 
+export function registerCurrentMatchAlertGame({
+  game,
+  setCurrentGame,
+  refresh,
+} = {}) {
+  if (!game?.matchID) return () => {};
+  const registered = {
+    matchID: String(game.matchID),
+    opponentType: game.opponentType === "bot" ? "bot" : "human",
+  };
+  setCurrentGame?.(registered);
+  if (registered.opponentType === "human") {
+    void Promise.resolve(refresh?.()).catch(() => {});
+  }
+  return () => {
+    setCurrentGame?.((current) =>
+      current?.matchID === registered.matchID ? null : current
+    );
+  };
+}
+
 export function getSignedOutMatchAlertState(detachResult = {}) {
   return {
     signedIn: false,

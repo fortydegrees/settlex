@@ -21,6 +21,7 @@ export function getMatchAlertDisplayState({
   preference,
   hasSubscription,
   enableAttempted = false,
+  currentGame = null,
 } = {}) {
   if (!configured) {
     return state({
@@ -57,10 +58,13 @@ export function getMatchAlertDisplayState({
   }
 
   if (preference?.state === "paused") {
+    const humanGameActive = currentGame?.opponentType === "human";
     return state({
       status: "paused",
       label: "Match alerts paused during your game",
       detail: "They can resume after your human game ends.",
+      action: humanGameActive ? null : "resume",
+      actionLabel: humanGameActive ? null : "Resume",
     });
   }
 

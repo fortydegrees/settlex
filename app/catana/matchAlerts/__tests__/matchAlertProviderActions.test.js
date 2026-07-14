@@ -9,6 +9,7 @@ import {
   runEnableTransaction,
   runPreferenceAction,
 } from "../matchAlertProviderActions.js";
+import * as matchAlertActions from "../matchAlertProviderActions.js";
 
 const response = ({ status = 200, body = {} } = {}) => ({
   status,
@@ -26,6 +27,46 @@ describe("latest refresh wins", () => {
     expect(guard.commit(newer, () => committed.push("newer"))).toBe(true);
     expect(guard.commit(older, () => committed.push("older"))).toBe(false);
     expect(committed).toEqual(["newer"]);
+  });
+});
+
+describe("current-game registration", () => {
+  it("refreshes authoritative alert state when a human game is registered", async () => {
+    expect(matchAlertActions.registerCurrentMatchAlertGame).toBeTypeOf("function");
+    let currentGame = null;
+    const setCurrentGame = (next) => {
+      currentGame = typeof next === "function" ? next(currentGame) : next;
+    };
+    const refresh = vi.fn().mockResolvedValue(undefined);
+
+    const unregister = matchAlertActions.registerCurrentMatchAlertGame({
+      game: { matchID: "human_1", opponentType: "human" },
+      setCurrentGame,
+      refresh,
+    });
+
+    expect(currentGame).toEqual({ matchID: "human_1", opponentType: "human" });
+    expect(refresh).toHaveBeenCalledOnce();
+    unregister();
+    expect(currentGame).toBeNull();
+  });
+
+  it("does not refresh or pause alerts for a Puffer game registration", () => {
+    expect(matchAlertActions.registerCurrentMatchAlertGame).toBeTypeOf("function");
+    const setCurrentGame = vi.fn();
+    const refresh = vi.fn();
+
+    matchAlertActions.registerCurrentMatchAlertGame({
+      game: { matchID: "bot_1", opponentType: "bot" },
+      setCurrentGame,
+      refresh,
+    });
+
+    expect(setCurrentGame).toHaveBeenCalledWith({
+      matchID: "bot_1",
+      opponentType: "bot",
+    });
+    expect(refresh).not.toHaveBeenCalled();
   });
 });
 

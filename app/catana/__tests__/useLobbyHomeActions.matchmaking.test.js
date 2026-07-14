@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { runAccountSignOutLifecycle } from "../lobby/useLobbyHomeActions.js";
+import * as lobbyActions from "../lobby/useLobbyHomeActions.js";
 
 vi.mock("../matchAlerts/useMatchAlerts.js", () => ({
   useMatchAlerts: vi.fn(),
@@ -313,5 +314,26 @@ describe("useLobbyHomeActions sign-out lifecycle", () => {
 
     expect(completeMatchAlertSignOut).not.toHaveBeenCalled();
     expect(refreshMatchAlerts).not.toHaveBeenCalled();
+  });
+});
+
+describe("useLobbyHomeActions account establishment", () => {
+  it("refreshes match alerts after the account becomes available", async () => {
+    expect(lobbyActions.runAccountEstablishedLifecycle).toBeTypeOf("function");
+    const order = [];
+    const account = { id: "acct_1", currentUsername: "Ada" };
+
+    await expect(
+      lobbyActions.runAccountEstablishedLifecycle({
+        account,
+        applyAccountIdentity: (value) => order.push(["account", value]),
+        refreshMatchAlerts: async () => order.push(["alerts"]),
+      })
+    ).resolves.toBe(account);
+
+    expect(order).toEqual([
+      ["account", account],
+      ["alerts"],
+    ]);
   });
 });

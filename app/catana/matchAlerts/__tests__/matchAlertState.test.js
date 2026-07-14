@@ -59,7 +59,7 @@ describe("getMatchAlertDisplayState", () => {
     });
   });
 
-  it("does not offer an in-game resume action while paused", () => {
+  it("offers an authoritative manual resume for a paused human-game preference", () => {
     expect(
       displayState({
         preference: {
@@ -72,7 +72,26 @@ describe("getMatchAlertDisplayState", () => {
     ).toMatchObject({
       status: "paused",
       label: "Match alerts paused during your game",
+      action: "resume",
+      actionLabel: "Resume",
+    });
+  });
+
+  it("keeps resume hidden while this tab has a human game registered", () => {
+    expect(
+      displayState({
+        preference: {
+          enabled: true,
+          state: "paused",
+          pausedReason: "human_game",
+        },
+        hasSubscription: true,
+        currentGame: { matchID: "match_1", opponentType: "human" },
+      })
+    ).toMatchObject({
+      status: "paused",
       action: null,
+      actionLabel: null,
     });
   });
 
