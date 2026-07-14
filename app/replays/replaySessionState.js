@@ -16,7 +16,10 @@ export const createReplaySessionState = ({
   terminalResultsSeen: false,
 });
 
-const openReplayResults = (state, { eventIndex, returnEventIndex }) => ({
+const openReplayResults = (
+  state,
+  { eventIndex, returnEventIndex, markTerminalSeen = false }
+) => ({
   ...state,
   eventIndex,
   panelOpen: false,
@@ -25,7 +28,7 @@ const openReplayResults = (state, { eventIndex, returnEventIndex }) => ({
   resultsReturnEventIndex: returnEventIndex,
   resultsReturnPanelOpen: state.panelOpen,
   resultsReturnMobilePanelOpen: state.mobilePanelOpen,
-  terminalResultsSeen: true,
+  terminalResultsSeen: state.terminalResultsSeen || markTerminalSeen,
 });
 
 export const createReplayActivationState = ({
@@ -97,6 +100,7 @@ export const replaySessionReducer = (state, action) => {
       return openReplayResults(state, {
         eventIndex,
         returnEventIndex: null,
+        markTerminalSeen: true,
       });
     }
     return { ...state, eventIndex };

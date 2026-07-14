@@ -1,4 +1,4 @@
-import { getVictoryPoints } from "@settlex/game-core";
+import { getPublicVictoryPoints } from "@settlex/game-core";
 import {
   formatLogEntryText,
   getGameLogEntryKey,
@@ -97,7 +97,7 @@ export const buildReplayTimeline = ({
   frames = [],
   participants = [],
   getVictoryPointsForState = (state, playerId) =>
-    getVictoryPoints(state?.G?.core, playerId),
+    getPublicVictoryPoints(state?.G?.core, playerId),
 } = {}) => {
   const safeFrames = Array.isArray(frames) ? frames : [];
   const { players, playerMap } = buildPlayerData(participants);

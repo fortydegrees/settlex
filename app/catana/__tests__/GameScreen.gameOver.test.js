@@ -76,4 +76,18 @@ describe("GameScreen game over", () => {
 
     expect(contents).toContain("readOnly={isReplay}");
   });
+
+  it("suppresses live forced-action UI and road-building transitions in replay", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+
+    expect(contents).toMatch(
+      /if \(isReplay\) \{\s*if \(playerAction === "roadBuilding"\) \{\s*setPlayerAction\(null\);\s*\}\s*return;\s*\}/
+    );
+    expect(contents).toContain(
+      "!!player && !isReplay && needsToDiscard && !isGameOver"
+    );
+    expect(contents).toContain(
+      "!!player && !isReplay && devPlayModalVisible && !needsToDiscard && !isGameOver"
+    );
+  });
 });

@@ -6825,3 +6825,22 @@
 - Broad `pnpm verify` passes game-core `153/153` and server/lib/AI `189/189`, then
   reaches the app lane and encounters the concurrent 3D worktree's stale
   `GameScreen.themeSwitcher.test.js` expectation for `MemoizedCatanBoard`.
+
+## Status (2026-07-14, replay v1 final review fixes)
+- Made the replay VP graph public-only for every perspective, so archived core
+  state cannot reveal hidden victory-point development cards through analytics.
+- Suppressed discard, Year of Plenty, Monopoly, and Road Building forced-action
+  state while projecting replay frames; live match behavior is unchanged.
+- Split replay preparation from failure in Results: loading remains disabled,
+  while an archive failure now exposes an enabled `Retry replay` action through
+  the existing in-place replay handler.
+- Kept manual early Results reveals separate from terminal arrival, so closing an
+  early reveal restores the cursor and the first later terminal step still
+  auto-opens Results once.
+- Brought the legacy `/replays/:replayId` reader in line with canonical replay
+  perspective defaults by resolving the current account first and seat cookies
+  second.
+- RED evidence: five focused regressions failed on the prior implementation.
+  GREEN evidence: the focused five-file set passes `30/30`; the wider replay,
+  postgame, game-over, and forced-action compatibility set passes after updating
+  its replay-aware dialog matcher; focused ESLint and `git diff --check` pass.

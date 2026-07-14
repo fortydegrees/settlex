@@ -22,12 +22,21 @@ describe("replay session state", () => {
       resultsReturnPanelOpen: true,
       resultsReturnMobilePanelOpen: true,
     });
-    expect(replaySessionReducer(open, { type: "closeResults" })).toMatchObject({
+    const closed = replaySessionReducer(open, { type: "closeResults" });
+    expect(closed).toMatchObject({
       eventIndex: 3,
       perspectiveId: "1",
       panelOpen: true,
       mobilePanelOpen: true,
       resultsOpen: false,
+      terminalResultsSeen: false,
+    });
+    expect(
+      replaySessionReducer(closed, { type: "seek", eventIndex: 7 })
+    ).toMatchObject({
+      eventIndex: 7,
+      resultsOpen: true,
+      terminalResultsSeen: true,
     });
   });
 

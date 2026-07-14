@@ -4161,14 +4161,27 @@
   End Turn stay disabled. A Board/null perspective remains hand-free.
 - The stepped VP graph is spoiler-safe: render samples and turn markers only
   through the current event, keep the cursor synchronized, and allow pointer or
-  keyboard seeking without exposing future values.
+  keyboard seeking without exposing future values. Graph samples always use
+  public victory points; selecting a player's private hand perspective does not
+  reveal hidden VP development cards in another surface.
+- Historical replay state can legitimately contain pending discard or choice
+  dev-card phases. Never mount their forced live dialogs or transition the board
+  into Road Building placement while `isReplay`; the historical HUD remains
+  visible but read-only.
 - Live postgame replay and archived entry converge in `PostgameGameBoard` on one
   mounted `GameScreenWithEffects`. The Results/Postgame replay actions call the
   supplied callback, archive preparation happens in place, and entering replay
   must not navigate, key, blank, or remount the board.
 - Results are a replay-session surface: manual reveal may seek to the terminal
   frame and closing early restores the prior cursor/panel state; first arrival
-  at the terminal frame opens Results automatically.
+  at the terminal frame opens Results automatically. A manual reveal must not
+  consume that one-time terminal auto-open marker.
+- Results replay preparation distinguishes loading from failure: loading is a
+  disabled `Preparing replay...` control, while failure is an enabled
+  `Retry replay` control wired through the same in-place handler.
+- The legacy `/replays/:replayId` route should preserve participant perspective
+  defaults for old links: current account match first, then a matching seat
+  credential, otherwise Board/null.
 - boardgame.io archive logs may contain transition entries already applied by
   an earlier reducer action. `buildReplayFrames` must skip entries whose
   `_stateID` is behind the reconstructed state's `_stateID` or setup replay
