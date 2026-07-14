@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
 } from "react";
 import { GameScreenWithEffects } from "../catana/GameScreen";
@@ -19,7 +20,9 @@ import {
   buildReplayGameScreenProps,
 } from "./replayGameScreenProps";
 import {
+  createReplayActivationState,
   createReplaySessionState,
+  replayActivationReducer,
   replaySessionReducer,
 } from "./replaySessionState";
 import {
@@ -71,6 +74,10 @@ export function PostgameGameBoard(props) {
     enabled: !archivedMode && liveGameOver,
     initialPayload: initialReplayPayload,
   });
+  const {
+    status: replayPayloadStatus,
+    retry: retryReplayPayload,
+  } = replayPayload;
   const replay = replayPayload.payload?.replay ?? null;
   const safeFrames = useMemo(() => {
     const frames = replayPayload.payload?.frames ?? [];
@@ -109,7 +116,13 @@ export function PostgameGameBoard(props) {
       eventIndex: archivedInitialEventIndex,
     })
   );
-  const [replayActive, setReplayActive] = useState(archivedMode);
+  const [activation, dispatchActivation] = useReducer(
+    replayActivationReducer,
+    { replayActive: archivedMode },
+    createReplayActivationState
+  );
+  const replayActive = activation.replayActive;
+  const liveReplayStartedRef = useRef(archivedMode);
   const [mobileReplayOpen, setMobileReplayOpen] = useState(false);
 
   const seekReplayEvent = useCallback(
@@ -155,19 +168,30 @@ export function PostgameGameBoard(props) {
     [seekReplayEvent, timeline.logEventIndexByKey]
   );
   const handleOpenReplay = useCallback(() => {
-    if (replayPayload.status === "error") {
-      replayPayload.retry();
-      return;
+    dispatchActivation({
+      type: "requestReplay",
+      payloadStatus: replayPayloadStatus,
+    });
+    if (replayPayloadStatus === "error") {
+      retryReplayPayload();
     }
-    if (replayPayload.status !== "ready") return;
+  }, [replayPayloadStatus, retryReplayPayload]);
+
+  useEffect(() => {
+    if (replayPayloadStatus !== "ready") return;
+    dispatchActivation({ type: "payloadReady" });
+  }, [replayPayloadStatus]);
+
+  useEffect(() => {
+    if (!replayActive || liveReplayStartedRef.current) return;
+    liveReplayStartedRef.current = true;
     dispatch({
       type: "startReplay",
       eventCount: timeline.events.length,
       perspectiveId: bgioProps.playerID,
       eventIndex: 0,
     });
-    setReplayActive(true);
-  }, [bgioProps.playerID, replayPayload, timeline.events.length]);
+  }, [bgioProps.playerID, replayActive, timeline.events.length]);
 
   useEffect(() => {
     if (!replayActive) return undefined;
@@ -215,7 +239,7 @@ export function PostgameGameBoard(props) {
       }
     : {
         ...bgioProps,
-        postgameReplayStatus: replayPayload.status,
+        postgameReplayStatus: replayPayloadStatus,
         onWatchReplay: handleOpenReplay,
       };
   const victoryTarget =

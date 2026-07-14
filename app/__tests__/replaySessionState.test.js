@@ -3,6 +3,7 @@ import {
   createReplaySessionState,
   replaySessionReducer,
 } from "../replays/replaySessionState";
+import * as replaySessionState from "../replays/replaySessionState";
 
 describe("replay session state", () => {
   it("restores the cursor after an early Results reveal", () => {
@@ -40,5 +41,57 @@ describe("replay session state", () => {
     expect(
       replaySessionReducer(closed, { type: "seek", eventIndex: 2 }).resultsOpen
     ).toBe(false);
+  });
+});
+
+describe("postgame replay activation", () => {
+  it("does not activate when hydration becomes ready without user intent", () => {
+    expect(replaySessionState.createReplayActivationState).toBeTypeOf(
+      "function"
+    );
+    expect(replaySessionState.replayActivationReducer).toBeTypeOf("function");
+    if (
+      !replaySessionState.createReplayActivationState ||
+      !replaySessionState.replayActivationReducer
+    ) {
+      return;
+    }
+
+    const start = replaySessionState.createReplayActivationState();
+    expect(
+      replaySessionState.replayActivationReducer(start, {
+        type: "payloadReady",
+      })
+    ).toEqual(start);
+  });
+
+  it("queues one replay activation until a requested payload becomes ready", () => {
+    expect(replaySessionState.createReplayActivationState).toBeTypeOf(
+      "function"
+    );
+    expect(replaySessionState.replayActivationReducer).toBeTypeOf("function");
+    if (
+      !replaySessionState.createReplayActivationState ||
+      !replaySessionState.replayActivationReducer
+    ) {
+      return;
+    }
+
+    const start = replaySessionState.createReplayActivationState();
+    const requested = replaySessionState.replayActivationReducer(start, {
+      type: "requestReplay",
+      payloadStatus: "loading",
+    });
+    expect(requested).toEqual({ intentPending: true, replayActive: false });
+
+    const ready = replaySessionState.replayActivationReducer(requested, {
+      type: "payloadReady",
+    });
+    expect(ready).toEqual({ intentPending: false, replayActive: true });
+    expect(
+      replaySessionState.replayActivationReducer(ready, {
+        type: "payloadReady",
+      })
+    ).toBe(ready);
   });
 });
