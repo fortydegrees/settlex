@@ -127,13 +127,6 @@ importers:
         version: 1.6.1(@types/node@20.19.27)(terser@5.39.0)
 
   game-core:
-    dependencies:
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
-      react-hexgrid:
-        specifier: ^2.0.1
-        version: 2.0.1(react@18.3.1)
     devDependencies:
       '@types/node':
         specifier: ^20.11.30
