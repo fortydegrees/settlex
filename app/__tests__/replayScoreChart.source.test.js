@@ -21,6 +21,7 @@ describe("ReplayScoreChart", () => {
     expect(source).toContain("aria-valuemax");
     expect(source).toContain("aria-valuenow");
     expect(source).toContain("onKeyDown");
+    expect(source).toContain("event.preventDefault()");
     expect(source).not.toContain("Tooltip");
   });
 

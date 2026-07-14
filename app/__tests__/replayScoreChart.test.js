@@ -43,7 +43,7 @@ describe("ReplayScoreChart seeking", () => {
     expect(getReplayEventIndexAtChartX({ ...input, clientX: 500 })).toBe(10);
   });
 
-  it("steps the chart seek cursor with horizontal arrow keys", () => {
+  it("implements horizontal slider keyboard seeking", () => {
     const input = { currentEventIndex: 5, eventCount: 8 };
     expect(
       getReplayChartKeyboardSeekIndex({ ...input, key: "ArrowLeft" })
@@ -52,13 +52,30 @@ describe("ReplayScoreChart seeking", () => {
       getReplayChartKeyboardSeekIndex({ ...input, key: "ArrowRight" })
     ).toBe(6);
     expect(
+      getReplayChartKeyboardSeekIndex({ ...input, key: "ArrowDown" })
+    ).toBe(4);
+    expect(
+      getReplayChartKeyboardSeekIndex({ ...input, key: "ArrowUp" })
+    ).toBe(6);
+    expect(getReplayChartKeyboardSeekIndex({ ...input, key: "Home" })).toBe(
+      0
+    );
+    expect(getReplayChartKeyboardSeekIndex({ ...input, key: "End" })).toBe(7);
+    expect(
       getReplayChartKeyboardSeekIndex({ ...input, key: "Enter" })
     ).toBeNull();
     expect(
       getReplayChartKeyboardSeekIndex({
+        currentEventIndex: 7,
+        eventCount: 8,
+        key: "ArrowUp",
+      })
+    ).toBe(7);
+    expect(
+      getReplayChartKeyboardSeekIndex({
         currentEventIndex: 0,
         eventCount: 8,
-        key: "ArrowLeft",
+        key: "ArrowDown",
       })
     ).toBe(0);
   });
