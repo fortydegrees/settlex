@@ -154,11 +154,17 @@ The original seeker and any account already seated at the target table are not
 recipients. Only accounts with an enabled, unpaused preference and at least one
 valid subscription are eligible.
 
-When a recipient already has a visible SettleHex page, the service worker
-suppresses the operating-system notification and forwards the event to that
-page for a lightweight in-app join prompt. If the player is already in the
-live queue, normal matchmaking remains authoritative and will match them
-directly; the alert path does not create a second queue or second tab.
+Web Push subscriptions use `userVisibleOnly: true`, so every delivered push
+produces an operating-system notification even if SettleHex happens to be
+visible. V1 does not add presence heartbeats or a second realtime channel just
+to suppress that occasional redundant presentation. A player already in the
+live queue will normally be matched directly when the newcomer joins their
+existing table, so no new seeker announcement is created for that case.
+
+Clicking a notification focuses an existing SettleHex page when possible and
+shows the in-app join prompt there. It opens a new page only when no SettleHex
+client exists; the alert path never intentionally creates a second live game
+tab.
 
 ## Announcement Lifecycle
 
@@ -321,6 +327,8 @@ One row per game account:
 - account ID primary/foreign key;
 - enabled boolean;
 - nullable pause reason, initially `human_game` only;
+- nullable paused match ID so resume can be rejected while that human game is
+  still active;
 - paused-at timestamp;
 - created-at and updated-at timestamps.
 
@@ -367,6 +375,7 @@ notification inbox.
 - send Web Push messages without failing matchmaking;
 - remove subscriptions rejected as expired or gone;
 - pause accounts when a human game becomes fully seated;
+- verify the recorded paused match has ended before accepting a resume;
 - atomically validate/join a table after confirmation;
 - emit structured delivery and cleanup logs.
 
@@ -385,8 +394,6 @@ notification inbox.
 ### Service worker responsibilities
 
 - display validated push payloads;
-- suppress the operating-system notification when a visible SettleHex client
-  can show the alert in-app;
 - deduplicate the same match with a match-derived notification tag;
 - focus an existing SettleHex window or open the alert deep link;
 - pass the alert payload to a live client so it can show confirmation without
@@ -470,7 +477,8 @@ Add focused tests for:
 - state-aware 12-second rescue and 30-second Puffer reveal;
 - enabling alerts without leaving or recreating the current search;
 - notification-click confirmation, atomic join races, and stale handling;
-- visible-client notification suppression and in-app delivery;
+- notification clicks focusing an existing client without opening a second
+  live-game tab;
 - postgame checkbox visibility/default and resume behavior;
 - shared hidden-tab attention priority and exact title/favicon restoration.
 
@@ -496,8 +504,9 @@ Use two browser profiles and, where available, a second device:
     bot game requires confirmation.
 11. Hide the tab and verify static bell titles, shared favicon, sound behavior,
     and exact restoration for both Match found and Your turn.
-12. Keep SettleHex visible, trigger another seeker, and verify an in-app prompt
-    appears without an operating-system notification or a second tab.
+12. Keep SettleHex visible, trigger another seeker, click the resulting system
+    notification, and verify the existing page is focused with an in-app prompt
+    rather than opening a second live-game tab.
 
 Before production deployment, verify VAPID configuration in the target
 environment and exercise notification permission on at least one Chromium
@@ -520,8 +529,8 @@ browser plus the supported Safari/iOS install path.
   seeker alert.
 - Clicking an alert never joins automatically and handles filled-table races
   without disabling alerts.
-- A visible SettleHex page receives an in-app prompt instead of a redundant
-  operating-system notification.
+- Every delivered Web Push has a user-visible system notification; clicking it
+  reuses an existing SettleHex page when one is available.
 - Previously enabled alerts can be restored from postgame through a
   checked-by-default option.
 - Hidden tabs use static `🔔 Match found · Settlehex` and
