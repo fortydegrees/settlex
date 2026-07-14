@@ -81,6 +81,15 @@ export const archiveFinishedMatch = async ({
     throw new Error(`Match ${matchID} is missing live metadata/state`);
   }
 
+  const initialGameState = liveRecord.initialState?.G ?? {};
+  const resolvedRulesetId =
+    initialGameState.rulesetId ?? liveRecord.metadata.setupData?.rulesetId ?? null;
+  const resolvedBoardSourceId = initialGameState.boardSourceId ?? null;
+  const resolvedBoardConfigId =
+    initialGameState.boardConfigId ??
+    liveRecord.metadata.setupData?.boardConfigId ??
+    null;
+  const resolvedBoardProvenance = initialGameState.boardProvenance ?? null;
   const metadataPlayers = liveRecord.metadata.players ?? {};
   const winnerSeatId = liveRecord.state?.ctx?.gameover?.winner ?? null;
   const participantRows = toParticipantRows(metadataPlayers, winnerSeatId);
@@ -127,7 +136,9 @@ export const archiveFinishedMatch = async ({
           replay_id,
           game_name,
           ruleset_id,
+          board_source_id,
           board_config_id,
+          board_provenance_json,
           started_at,
           finished_at,
           winner_account_id,
@@ -135,15 +146,17 @@ export const archiveFinishedMatch = async ({
           player_count,
           summary_json
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       `,
       [
         archivedMatchId,
         matchID,
         replayId,
         liveRecord.metadata.gameName ?? "catan",
-        liveRecord.metadata.setupData?.rulesetId ?? null,
-        liveRecord.metadata.setupData?.boardConfigId ?? null,
+        resolvedRulesetId,
+        resolvedBoardSourceId,
+        resolvedBoardConfigId,
+        toJsonbParam(resolvedBoardProvenance),
         startedAt,
         finishedAt,
         winnerParticipant?.accountId ?? null,
