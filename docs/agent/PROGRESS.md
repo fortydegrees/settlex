@@ -1,5 +1,279 @@
 # PROGRESS
 
+## Status (2026-07-14, explicit board sources implemented)
+- Replaced the provisional duel `standard-balanced` sentinel with explicit
+  product-owned board sources and truthful generator provenance.
+- Default duel remains `duel-fair-official-v1`; changing the shared mode preset
+  to `generated-official-spiral-v1` switches it to direct generation without
+  changing setup code.
+- Removed the legacy elapsed-time-dependent balanced generator from runtime
+  `game-core` and moved product game modes out of the engine.
+- Added nullable archive source/provenance fields through migration 0005 and
+  archive resolved initial-state values.
+- Catalog seed/rank/score/hash entries remain unchanged; only explicit
+  generator-configuration metadata changed.
+- Final review hardened the boundary: production rejects custom board configs
+  even without a dev-scenario payload; scenario-replaced tiles use custom
+  provenance; built-in configs are deeply immutable; catalog selection rejects
+  empty catalogs and non-integer selected seeds; archive legacy fallback and
+  rollback behavior have direct regression coverage.
+- Final-review focused verification:
+  - `pnpm test:catana`: 214 files and 825 tests passed;
+  - `pnpm test:server`: 47 files and 191 tests passed;
+  - `pnpm -C game-core test`: 14 files and 149 tests passed;
+  - `pnpm -C game-core build`: exit 0.
+- Pre-final-review repository verification (the controller will rerun it after
+  review fixes):
+  - `pnpm verify`: engine 14 files / 148 tests, server/lib/AI 47 files /
+    189 tests, all 229 isolated app test files, and repository lint passed;
+  - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`: exit 0;
+  - `git diff --check`: exit 0.
+- The ordinary production build was not claimed or run without the documented
+  placeholder environment variable. No merge, push, PR, or deploy was
+  performed.
+
+## Status (2026-07-14, explicit board-source architecture designed)
+- Approved and recorded
+  `docs/superpowers/specs/2026-07-14-explicit-board-source-architecture-design.md`.
+  The reviewed implementation plan is recorded at
+  `docs/superpowers/plans/2026-07-14-explicit-board-source-architecture.md`.
+  No runtime or database implementation has started yet.
+- The design removes the provisional `standard-balanced` duel sentinel and old
+  runtime balanced generator, moves SettleHex game-mode presets out of
+  `game-core`, and separates `boardSourceId`, actual `boardConfigId`, and
+  `boardProvenance`.
+- Default duel remains `duel-fair-official-v1`. Switching it to ordinary
+  official-spiral generation becomes one product-preset change to
+  `generated-official-spiral-v1`.
+- Archive design now stores source and provenance explicitly while preserving
+  complete replay initial state. No production behavior or database schema has
+  changed yet.
+
+## Historical status (2026-07-14, superseded duel fair live-catalog implementation)
+- This snapshot predates the explicit board-source migration above. Its hashes,
+  `standard-balanced`/`standard-official` identifiers, and `G.boardCatalog`
+  field describe the superseded provisional representation, not current
+  runtime guidance.
+- Published `duel-fair-official-v1`, the top 1,000 symmetry-distinct boards by
+  `duel-fair-v3` overall score from fixed official-spiral seeds `1..65000`.
+  The source run ranked all 65,000 boards with zero invalid records in
+  `754.488118` seconds (`86.151124` persisted boards/second) and peaked at
+  `150.578125 MiB` RSS. This end-to-end run includes JSONL/report work and is
+  deliberately slower than the evaluation-only benchmark.
+- The selected catalog's overall scores span `96.095340` through `97.245891`.
+  Rank 1 is seed `30861`; rank 1,000 is seed `39724`. Every selected seed,
+  raw board hash, and port-aware canonical symmetry hash is unique.
+- Added a deterministic catalog publisher and reproducible command:
+  `pnpm board:lab:catalog --run-id duel-fair-official-v1-source --family official-spiral --catalog-id duel-fair-official-v1 --size 1000 --data-output data/board-catalogs/duel-fair-official-v1.json --runtime-output app/catana/gameSetup/catalogs/duelFairOfficialV1.generated.js`.
+  Republishing produces byte-identical files with SHA-256 hashes
+  `cee3040f4bc37bf9604d3ecd2449c2f0c9aa9ebee06126b938ad25f943056daa`
+  for the full catalog and
+  `3ac1b3d17fa263d1da3f01778049402aedca7e6821d0ade114900fd6f129d18d`
+  for the runtime module.
+- The full 576 KiB catalog preserves scores, tags, hashes, and evaluator
+  identity under `data/board-catalogs/`. The game imports only an 8 KiB ranked
+  seed module. A default `duel` plus `standard-balanced` setup now chooses one
+  seed uniformly with boardgame.io's injected RNG, regenerates it with the
+  neutral `standard-official` engine path, and records catalog id, rank, seed,
+  generator identity, and evaluator identity in `G.boardCatalog`.
+- Explicit custom/random boards and non-duel modes retain their existing board
+  generation. The old `standard-balanced` generator remains available outside
+  the default duel catalog condition. No fairness policy, weights, catalog, or
+  product selection logic moved into `game-core`.
+- Verification completed before handoff:
+  - catalog artifact test regenerated and hash-checked all 1,000 entries;
+  - `pnpm test:board-lab`: 21 files and 164 tests passed;
+  - `pnpm test:catana`: 214 files and 814 tests passed;
+  - `pnpm -C game-core test`: 14 files and 153 tests passed;
+  - `pnpm -C game-core build`: exit 0;
+  - focused ESLint over board-lab and changed Catana setup/tests: exit 0;
+  - `pnpm verify`: engine 153 tests, server/lib/AI 189 tests, all 229
+    isolated app test files, and repository lint passed;
+  - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`: exit 0.
+- Production has not been deployed. The implementation remains isolated on
+  `codex/duel-fair-board-lab` pending branch integration and explicit release
+  approval.
+
+## Status (2026-07-13, duel fair v3 fast ranker implemented)
+- Implemented `duel-fair-v3` as the default offline board-lab evaluator without
+  changing `game-core` or any production board-selection path. The stable
+  identity is feature version `duel-fair-v3-features-1`, policy version
+  `duel-fair-v3`, profile hash
+  `fefc1c6af6b4ba66c00db3b853feda73d3836ced33b1d9fc43467d17baf3cc05`.
+- The normal path builds board context and all 54 settlement feature vectors,
+  selects a strategically covered 16-node pool (20 maximum only for legal-line
+  fallback), and solves the bounded `P1, P2, P2, P1` opening over that pool.
+  Structurally valid unusual boards remain ranked; warning tags are descriptive
+  rather than reject rules.
+- Task 5 same-machine evidence measured approximately `111.00` v3
+  evaluations/second and `110.943` complete generate-and-evaluate operations/
+  second, above the explicit 100 boards/second development target. The fixed
+  12-board all-node v3 oracle achieved `12/12` seat-direction agreement,
+  `0.000000` median absolute normalised-advantage error, and `1.000000`
+  fairness Spearman correlation. These timings are machine/process specific.
+- Calibration changed two initial plan scales after focused bottleneck tests
+  showed saturation: `tradeCapacityGain` increased from `1.25` to `2.50`, and
+  recipe-capacity targets changed from `road 2 / settlement 1.5 / dev 1.25 /
+  city 0.8` to `road 4 / settlement 3 / dev 3 / city 1.5`. The feature model
+  and overall formula did not change.
+- Generated only the approved bounded 1,000-board official-spiral review run.
+  All 1,000 boards ranked, and the five 20-board selection buckets deduplicated
+  to 85 rendered cards. The streamed run plus bounded diagnostic
+  materialisation measured `94.454` boards/second and `153.5 MiB` peak RSS;
+  this broader run-store measurement is deliberately distinct from the pure
+  generate-and-evaluate benchmark gate.
+- The single ranked gallery is at
+  `tmp/duel-board-lab/runs/v3-review/official-spiral/report.html`. It defaults
+  to numeric overall descending, supports both directions for overall,
+  fairness, quality, and interest, shows all nine geographic ports, and hides
+  suggested placements until its one report-level toggle is enabled. Browser
+  checks passed at 1440x900 and 390x844 with no horizontal overflow, duplicate
+  cards, or console errors.
+- Seed 47 is now the lowest-overall card in that bounded review gallery:
+  `46.661190` overall, `39.407130` fairness, `75.677432` quality, and
+  `100.000000` interest. Explicit exact inspection compared the stored fast
+  advantage `0.121186` with all-node v3 `0.108092`; exact search remains an
+  inspection/calibration tool, never a report-render or normal-batch step.
+- Fresh final verification:
+  - `pnpm test:board-lab`: 19 files and 152 tests passed;
+  - immediate benchmark rerun: `107.104916` evaluation-only and `108.848574`
+    generate-and-evaluate boards/second, `220.640625 MiB` peak RSS;
+  - `pnpm board:lab:oracle-v3`: `12/12` direction agreement, `0.000000`
+    median absolute advantage error, `1.000000` fairness Spearman;
+  - `pnpm lint`: no warnings or errors;
+  - `pnpm -C game-core test`: 14 files and 153 tests passed;
+  - `pnpm -C game-core build`: exit 0.
+
+## Status (2026-07-13, duel fair v3 fast-ranking design)
+- Approved and recorded
+  `docs/superpowers/specs/2026-07-13-duel-fair-v3-fast-ranking-design.md`.
+  This is a design-only checkpoint; no evaluator, generator, report, or
+  production behavior changed.
+- The proposed default is now a cheap contextual portfolio scorer plus a
+  strategically covered 16-node `P1, P2, P2, P1` comparison, with an upper
+  bound of 43,680 raw sequences before distance-rule pruning.
+- Every structurally valid board receives numeric overall, fairness, quality,
+  and interest scores. Interest is initially independently sortable but has
+  zero influence on overall ranking.
+- The proposed all-node v3 solve is limited to named-board inspection and a
+  fixed 12-board pruning oracle. It is not part of normal batch ranking or
+  report rendering; exact v2 remains an explicitly selected historical path.
+- The proposed report is one score-ordered gallery with score sort controls,
+  unique cards, geographic ports, collapsed diagnostics, and placement
+  suggestions hidden by default.
+- The proposed development-machine target is at least 100 complete v3
+  generate-and-evaluate operations per second. No large corpus is authorised
+  by this design checkpoint.
+
+## Status (2026-07-13, duel fair v2 bounded calibration gate)
+- Completed the eight-task `duel-fair-v2` opening-audit slice without changing
+  the production generator or `game-core`. The stable identity is feature
+  version `duel-opening-features-v1`, policy version `duel-fair-v2`, profile
+  hash `115b3e3df07cbe85b1a4e2bf7e8412b9e9324cf8a992a4baebf3a70202c37496`.
+- Extended `board:lab:benchmark` with a separate exact-v2 row over 100
+  pre-generated, structurally valid, non-adjacent-red official-spiral boards.
+  Diagnostic lenses are enabled for that row. The existing v1 sample sizes
+  and 500 evaluation-only / 200 generate-and-evaluate boards-per-second gates
+  are unchanged, and there is no unmeasured v2 pass/fail gate.
+- RSS sampling now takes approximately 100 periodic samples for every timed
+  row and an unconditional final sample. This preserves every-100 sampling for
+  the 10,000-board v1 rows while sampling every board in the 100-board v2 row.
+- Corrected same-machine benchmark evidence from this worktree:
+  - evaluation-only: `662.402959` boards/second, `695.171875 MiB` peak RSS;
+  - generate-and-evaluate: `638.013858` boards/second, `695.1875 MiB` peak RSS;
+  - exact-v2-audit: `0.496638` boards/second, `709.609375 MiB` peak RSS.
+  These are machine- and process-shape-specific measurements, not universal
+  promises. In particular, this benchmark retains the 10,000 v1 candidates;
+  it is not the streamed 100,000-candidate acceptance shape.
+- Focused verification before documentation:
+  - `pnpm test:board-lab`: 12 files and 118 tests passed;
+  - `pnpm -C game-core test`: 14 files and 153 tests passed;
+  - `pnpm -C game-core build`: exit 0;
+  - `pnpm exec eslint 'scripts/duel-board-lab/**/*.{js,mjs}'`: exit 0,
+    no output;
+  - `git diff --check`: exit 0, no output.
+- Generated bounded run `duel-fair-v2-calibration-smoke` at exactly 1,000 v1
+  candidates per family, start seed 1, shortlist size 20, with v2 audits only
+  on selected boards:
+  - official-spiral: v1 `854 pass / 146 reject / 0 invalid`; 146 selected v2
+    audits `0 pass / 116 review / 30 reject / 0 screen reject`;
+  - freeform-random: v1 `111 pass / 889 reject / 0 invalid`; 172 selected v2
+    audits `0 pass / 20 review / 152 reject / 143 screen reject`.
+- The run reports are:
+  - comparison:
+    `tmp/duel-board-lab/runs/duel-fair-v2-calibration-smoke/comparison.html`;
+  - official:
+    `tmp/duel-board-lab/runs/duel-fair-v2-calibration-smoke/official-spiral/report.html`;
+  - freeform:
+    `tmp/duel-board-lab/runs/duel-fair-v2-calibration-smoke/freeform-random/report.html`.
+  Their manifest `peakRssMiB` values (`110.171875` official and `316.5`
+  freeform in the sequential process) measure the streamed v1 `runBatch`
+  corpus loop only. Sampling stops before selected exact-v2 audits and report
+  rendering, so these values are not total compare-process or exact-audit
+  peaks; the separate benchmark is the exact-v2 RSS evidence.
+- Seed 47 (`official-seed-47-p1-dominance`) passes the structural screen but is
+  a v2 `reject`, with P1 favoured (`0.086886` normalised advantage). The exact
+  line is `P1 0 -> P2 6 -> P2 14 -> P1 44`; rejection is
+  `seat-advantage`, with the additional `port-dependent` review condition.
+  P1's ordered portfolio is nodes `[0, 44]`, production
+  `Wood 5 / Brick 3 / Sheep 7 / Wheat 4 / Ore 4`, starting hand
+  `[Wheat, Brick, Sheep]`, no owned port, and direct capacities
+  `road 3 / settlement 3 / devCard 4 / city 1.333333`. P2's portfolio is
+  `[6, 14]`, production `Wood 5 / Brick 5 / Sheep 4 / Wheat 4 / Ore 2`,
+  starting hand `[Sheep, Wood, Ore]`, no owned port, and direct capacities
+  `road 5 / settlement 4 / devCard 2 / city 0.666667`.
+- Seed 2604 (`official-seed-2604-strategic-denial`) passes the structural screen
+  and is a v2 `review`, with P2 favoured (`-0.075936` normalised advantage).
+  The exact defensive line is `P1 31 -> P2 43 -> P2 0 -> P1 50`; review codes
+  are `forced-defence` and `port-dependent`. P1's ordered portfolio is
+  `[31, 50]`, production `Wood 4 / Brick 2 / Sheep 5 / Wheat 3 / Ore 4`,
+  starting hand `[Wheat, Ore]`, owned port `[Any]`, and direct capacities
+  `road 2 / settlement 2 / devCard 3 / city 1.333333`. P2's portfolio is
+  `[43, 0]`, production `Wood 4 / Brick 1 / Sheep 3 / Wheat 4 / Ore 8`,
+  starting hand `[Ore, Sheep, Wheat]`, no owned port, and direct capacities
+  `road 1 / settlement 1 / devCard 3 / city 2`; the node-0 second placement
+  makes a development card immediately ready.
+- Seed 2604's diagnostic lenses disagree in direction but not at the material
+  policy threshold: official is `-0.075936` for P2, expansion is `+0.025576`
+  for P1, and development is `-0.096628` for P2. Because the opposite-sign
+  expansion result and official result do not both reach the profile's `0.08`
+  threshold, `diagnostic-lens-disagreement` is not a review code.
+- Fresh evaluator output, stored selected-board diagnostics, fixture tiles,
+  raw/canonical hashes, and report output agree for seeds 47 and 2604. Each
+  generated report embeds the exact fresh SVG, renders all four solved picks,
+  and renders all nine geographic ports on endpoints that match both land-edge
+  topology and `portsByNodeId`; no rendered-port/topology mismatch was found.
+  Seed 2604's bounded inspection report is
+  `tmp/duel-board-lab/runs/duel-fair-v2-fixture-2604-inspection/official-spiral/report.html`.
+- Stopped at the explicit human calibration gate. No 100,000-per-family or
+  larger corpus was started, no profile/generator tuning was performed, and no
+  production board-generation path was changed.
+
+## Status (2026-07-13, duel fair v2 opening-evaluator design)
+- The written v2 design was approved and converted into an eight-task,
+  test-first implementation plan covering opening features, ordered portfolios,
+  exact draft search, evaluator outputs, calibration fixtures, reports, bounded
+  run integration, benchmarks, and the final human-review stop.
+- Drafted the human-reviewed successor to the `duel-fair-v1` evaluator while
+  retaining the existing facts, generators, streaming pipeline, and
+  `game-core` ownership boundary.
+- Specified an exact `P1, P2, P2, P1` opening solver that evaluates ordered
+  two-settlement portfolios, denial, second-settlement starting cards, direct
+  build-cost bottlenecks, port-adjusted capacity, and expansion geography.
+- Separated fairness, board quality, and placement depth so unusual or scarce
+  boards may remain fair without allowing equal-but-nonviable production to
+  rank highly.
+- Split stable feature extraction from versioned tunable policy parameters so
+  later expert-game data can calibrate values without silently changing the
+  feature contract.
+- Promoted official-spiral seeds 47 and 2604 into proposed durable calibration
+  cases: seed 47 must not remain a top automatic pass, while seed 2604 must
+  surface its defensive first-pick line and starting-development-card tempo for
+  review.
+- No evaluator or production code changed in this design slice. The written
+  specification remains at the explicit user-review gate before implementation
+  planning.
+
 ## Status (2026-07-10, engine transactions and verification efficiency)
 - Hardened the core mutation contract: rejected resource spends and malformed
   robber calls now leave match state unchanged.
@@ -6464,3 +6738,11 @@
 - Verification:
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot` (red before fix: custom labels were ignored and panel headings still used the internal version)
   - `env PATH="/opt/homebrew/bin:$PATH" pnpm exec vitest run app/catana/__tests__/releaseInfo.test.js app/catana/__tests__/VersionBadge.source.test.js --reporter=dot`
+
+## Status (2026-07-14, explicit Catana board sources)
+- Moved Catana product modes out of `game-core` into a shared product registry with explicit board-source ids for duel, standard official-spiral, and generated-random setup.
+- Replaced duel-specific setup interception with board-source materialisation that stores the selected source, actual engine config, and catalog/generated/custom provenance in game state.
+- Migrated match creation and friend challenges to send `boardSourceId`; obsolete `setupData.boardConfigId` is now rejected by game setup.
+- Verification:
+  - `pnpm -C game-core build`
+  - `pnpm exec vitest run lib/shared/catanaGameModes.test.js app/catana/__tests__/boardSources.test.js app/catana/__tests__/initialState.test.js app/catana/__tests__/Game.boardConfig.test.js app/__tests__/api/matchRoutes.test.js app/__tests__/api/challengeRoutes.test.js --reporter=dot`

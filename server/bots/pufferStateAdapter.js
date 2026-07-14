@@ -116,7 +116,7 @@ function hydrateEnvFromMatchState(state, options = {}) {
       : defaultPlacementOrder(players);
 
   const env = new SettlexSelfPlayEnv({
-    boardConfigId: G.boardConfigId ?? options.boardConfigId ?? "standard-official",
+    boardConfigId: G.boardConfigId ?? options.boardConfigId ?? "standard-official-spiral",
     numPlayers: players.length,
     maxSteps: options.maxSteps ?? 1200,
     includeActionMaskInObservation: true,

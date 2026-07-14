@@ -71,7 +71,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--player-id", type=str, default="0")
     parser.add_argument("--num-players", type=int, default=2)
     parser.add_argument("--max-steps", type=int, default=1200)
-    parser.add_argument("--board-config-id", type=str, default="standard-official")
+    parser.add_argument("--board-config-id", type=str, default="standard-official-spiral")
     parser.add_argument("--stochastic", action="store_true")
     parser.add_argument(
         "--every",

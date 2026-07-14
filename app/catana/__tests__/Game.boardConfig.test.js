@@ -8,6 +8,25 @@ const createRandom = (seed = 123) => ({
 });
 
 describe("Catan setup board config", () => {
+  it("rejects a custom board config through production setup validation", async () => {
+    const previousEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    vi.resetModules();
+
+    try {
+      const { Catan: ProductionCatan } = await import("../Game");
+      expect(
+        ProductionCatan.validateSetupData(
+          { boardConfig: { specId: "standard-4p" } },
+          2
+        )
+      ).toBe("Custom board configurations are disabled in production.");
+    } finally {
+      process.env.NODE_ENV = previousEnv;
+      vi.resetModules();
+    }
+  });
+
   it("keeps non-current seats Stage.NULL-active so they can use global moves", () => {
     expect(Catan.phases.placement.turn.activePlayers).toEqual({
       currentPlayer: "settlement",
@@ -19,25 +38,41 @@ describe("Catan setup board config", () => {
     });
   });
 
-  it("uses boardConfigId from setupData", () => {
+  it("uses boardSourceId from setupData", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
     const random = createRandom();
-    const setupData = { boardConfigId: "standard-random" };
+    const setupData = { boardSourceId: "generated-random-v1" };
 
     const G = Catan.setup({ ctx, random }, setupData);
 
+    expect(G.boardSourceId).toBe("generated-random-v1");
     expect(G.boardConfigId).toBe("standard-random");
+    expect(G.boardProvenance).toEqual({
+      sourceKind: "generated",
+      generatorFamily: "freeform-random",
+      generatorVersion: "freeform-random-v1"
+    });
   });
 
-  it("resolves duel mode to duel rules and balanced board generation", () => {
+  it("resolves duel mode to duel rules and the fair catalog board source", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
-    const random = createRandom();
+    const random = {
+      Number: () => 0,
+      Shuffle: (items) => items
+    };
 
     const G = Catan.setup({ ctx, random }, { modeId: "duel" });
 
     expect(G.modeId).toBe("duel");
     expect(G.rulesetId).toBe("duel");
-    expect(G.boardConfigId).toBe("standard-balanced");
+    expect(G.boardSourceId).toBe("duel-fair-official-v1");
+    expect(G.boardConfigId).toBe("standard-official-spiral");
+    expect(G.boardProvenance).toMatchObject({
+      sourceKind: "catalog",
+      catalogId: "duel-fair-official-v1",
+      catalogRank: 1,
+      generatorVersion: "official-spiral-v1"
+    });
     expect(G.core.ruleset.victoryPointsToWin).toBe(15);
     expect(G.core.ruleset.diceMode).toBe("balanced");
     expect(G.diceState?.mode).toBe("balanced");
@@ -45,12 +80,22 @@ describe("Catan setup board config", () => {
 
   it("defaults 2-player setup to duel ruleset", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
-    const random = createRandom();
+    const random = {
+      Number: () => 0,
+      Shuffle: (items) => items
+    };
 
     const G = Catan.setup({ ctx, random }, {});
 
     expect(G.modeId).toBe("duel");
-    expect(G.boardConfigId).toBe("standard-balanced");
+    expect(G.boardSourceId).toBe("duel-fair-official-v1");
+    expect(G.boardConfigId).toBe("standard-official-spiral");
+    expect(G.boardProvenance).toMatchObject({
+      sourceKind: "catalog",
+      catalogId: "duel-fair-official-v1",
+      catalogRank: 1,
+      generatorVersion: "official-spiral-v1"
+    });
     expect(G.core.ruleset.victoryPointsToWin).toBe(15);
     expect(G.core.ruleset.discardLimit).toBe(9);
     expect(G.core.ruleset.diceMode).toBe("balanced");
@@ -64,7 +109,8 @@ describe("Catan setup board config", () => {
     const G = Catan.setup({ ctx, random }, {});
 
     expect(G.modeId).toBe("standard-3p");
-    expect(G.boardConfigId).toBe("standard-official");
+    expect(G.boardSourceId).toBe("generated-official-spiral-v1");
+    expect(G.boardConfigId).toBe("standard-official-spiral");
     expect(G.core.ruleset.victoryPointsToWin).toBe(10);
     expect(G.core.ruleset.discardLimit).toBe(7);
     expect(G.core.ruleset.diceMode).toBe("random");

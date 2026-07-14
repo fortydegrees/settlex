@@ -1,0 +1,1065 @@
+{
+  "label": "dominant-settlement",
+  "expectation": "large quality cliff after the best node",
+  "family": "freeform-random",
+  "generatorVersion": "freeform-random-v1",
+  "seed": 6414,
+  "boardHash": "7ddc18e2ab89193d76b09ab43c570717fe3e48468755d90a6e0ee6addc107d0e",
+  "canonicalSymmetryHash": "8c4562bab674d00b6d6813fbd0b1865ab7deddc05eb12237cd68b9ae86c28aab",
+  "tiles": [
+    {
+      "coordinate": [
+        -2,
+        0,
+        2
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 0,
+        "resource": "Wood",
+        "number": 6,
+        "nodes": {
+          "NORTH": 0,
+          "NORTHEAST": 1,
+          "SOUTHEAST": 2,
+          "SOUTH": 3,
+          "SOUTHWEST": 4,
+          "NORTHWEST": 5
+        },
+        "edges": {
+          "EAST": [
+            1,
+            2
+          ],
+          "SOUTHEAST": [
+            2,
+            3
+          ],
+          "SOUTHWEST": [
+            3,
+            4
+          ],
+          "WEST": [
+            4,
+            5
+          ],
+          "NORTHWEST": [
+            5,
+            0
+          ],
+          "NORTHEAST": [
+            0,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        -2,
+        1,
+        1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 1,
+        "resource": "Brick",
+        "number": 3,
+        "nodes": {
+          "NORTH": 6,
+          "NORTHEAST": 7,
+          "SOUTHEAST": 0,
+          "SOUTH": 5,
+          "SOUTHWEST": 8,
+          "NORTHWEST": 9
+        },
+        "edges": {
+          "EAST": [
+            7,
+            0
+          ],
+          "SOUTHEAST": [
+            5,
+            0
+          ],
+          "SOUTHWEST": [
+            5,
+            8
+          ],
+          "WEST": [
+            8,
+            9
+          ],
+          "NORTHWEST": [
+            9,
+            6
+          ],
+          "NORTHEAST": [
+            6,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        -2,
+        2,
+        0
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 2,
+        "resource": "Sheep",
+        "number": 8,
+        "nodes": {
+          "NORTH": 10,
+          "NORTHEAST": 11,
+          "SOUTHEAST": 6,
+          "SOUTH": 9,
+          "SOUTHWEST": 12,
+          "NORTHWEST": 13
+        },
+        "edges": {
+          "EAST": [
+            11,
+            6
+          ],
+          "SOUTHEAST": [
+            9,
+            6
+          ],
+          "SOUTHWEST": [
+            9,
+            12
+          ],
+          "WEST": [
+            12,
+            13
+          ],
+          "NORTHWEST": [
+            13,
+            10
+          ],
+          "NORTHEAST": [
+            10,
+            11
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        -1,
+        -1,
+        2
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 3,
+        "resource": "Brick",
+        "number": 5,
+        "nodes": {
+          "NORTH": 14,
+          "NORTHEAST": 15,
+          "SOUTHEAST": 16,
+          "SOUTH": 17,
+          "SOUTHWEST": 2,
+          "NORTHWEST": 1
+        },
+        "edges": {
+          "EAST": [
+            15,
+            16
+          ],
+          "SOUTHEAST": [
+            16,
+            17
+          ],
+          "SOUTHWEST": [
+            17,
+            2
+          ],
+          "WEST": [
+            1,
+            2
+          ],
+          "NORTHWEST": [
+            1,
+            14
+          ],
+          "NORTHEAST": [
+            14,
+            15
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        -1,
+        0,
+        1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 4,
+        "resource": "Desert",
+        "nodes": {
+          "NORTH": 18,
+          "NORTHEAST": 19,
+          "SOUTHEAST": 14,
+          "SOUTH": 1,
+          "SOUTHWEST": 0,
+          "NORTHWEST": 7
+        },
+        "edges": {
+          "EAST": [
+            19,
+            14
+          ],
+          "SOUTHEAST": [
+            1,
+            14
+          ],
+          "SOUTHWEST": [
+            0,
+            1
+          ],
+          "WEST": [
+            7,
+            0
+          ],
+          "NORTHWEST": [
+            7,
+            18
+          ],
+          "NORTHEAST": [
+            18,
+            19
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        -1,
+        1,
+        0
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 5,
+        "resource": "Sheep",
+        "number": 4,
+        "nodes": {
+          "NORTH": 20,
+          "NORTHEAST": 21,
+          "SOUTHEAST": 18,
+          "SOUTH": 7,
+          "SOUTHWEST": 6,
+          "NORTHWEST": 11
+        },
+        "edges": {
+          "EAST": [
+            21,
+            18
+          ],
+          "SOUTHEAST": [
+            7,
+            18
+          ],
+          "SOUTHWEST": [
+            6,
+            7
+          ],
+          "WEST": [
+            11,
+            6
+          ],
+          "NORTHWEST": [
+            11,
+            20
+          ],
+          "NORTHEAST": [
+            20,
+            21
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        -1,
+        2,
+        -1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 6,
+        "resource": "Brick",
+        "number": 2,
+        "nodes": {
+          "NORTH": 22,
+          "NORTHEAST": 23,
+          "SOUTHEAST": 20,
+          "SOUTH": 11,
+          "SOUTHWEST": 10,
+          "NORTHWEST": 24
+        },
+        "edges": {
+          "EAST": [
+            23,
+            20
+          ],
+          "SOUTHEAST": [
+            11,
+            20
+          ],
+          "SOUTHWEST": [
+            10,
+            11
+          ],
+          "WEST": [
+            10,
+            24
+          ],
+          "NORTHWEST": [
+            24,
+            22
+          ],
+          "NORTHEAST": [
+            22,
+            23
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        0,
+        -2,
+        2
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 7,
+        "resource": "Wheat",
+        "number": 3,
+        "nodes": {
+          "NORTH": 25,
+          "NORTHEAST": 26,
+          "SOUTHEAST": 27,
+          "SOUTH": 28,
+          "SOUTHWEST": 16,
+          "NORTHWEST": 15
+        },
+        "edges": {
+          "EAST": [
+            26,
+            27
+          ],
+          "SOUTHEAST": [
+            27,
+            28
+          ],
+          "SOUTHWEST": [
+            28,
+            16
+          ],
+          "WEST": [
+            15,
+            16
+          ],
+          "NORTHWEST": [
+            15,
+            25
+          ],
+          "NORTHEAST": [
+            25,
+            26
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        0,
+        -1,
+        1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 8,
+        "resource": "Sheep",
+        "number": 4,
+        "nodes": {
+          "NORTH": 29,
+          "NORTHEAST": 30,
+          "SOUTHEAST": 25,
+          "SOUTH": 15,
+          "SOUTHWEST": 14,
+          "NORTHWEST": 19
+        },
+        "edges": {
+          "EAST": [
+            30,
+            25
+          ],
+          "SOUTHEAST": [
+            15,
+            25
+          ],
+          "SOUTHWEST": [
+            14,
+            15
+          ],
+          "WEST": [
+            19,
+            14
+          ],
+          "NORTHWEST": [
+            19,
+            29
+          ],
+          "NORTHEAST": [
+            29,
+            30
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        0,
+        0,
+        0
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 9,
+        "resource": "Ore",
+        "number": 10,
+        "nodes": {
+          "NORTH": 31,
+          "NORTHEAST": 32,
+          "SOUTHEAST": 29,
+          "SOUTH": 19,
+          "SOUTHWEST": 18,
+          "NORTHWEST": 21
+        },
+        "edges": {
+          "EAST": [
+            32,
+            29
+          ],
+          "SOUTHEAST": [
+            19,
+            29
+          ],
+          "SOUTHWEST": [
+            18,
+            19
+          ],
+          "WEST": [
+            21,
+            18
+          ],
+          "NORTHWEST": [
+            21,
+            31
+          ],
+          "NORTHEAST": [
+            31,
+            32
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        0,
+        1,
+        -1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 10,
+        "resource": "Wheat",
+        "number": 11,
+        "nodes": {
+          "NORTH": 33,
+          "NORTHEAST": 34,
+          "SOUTHEAST": 31,
+          "SOUTH": 21,
+          "SOUTHWEST": 20,
+          "NORTHWEST": 23
+        },
+        "edges": {
+          "EAST": [
+            34,
+            31
+          ],
+          "SOUTHEAST": [
+            21,
+            31
+          ],
+          "SOUTHWEST": [
+            20,
+            21
+          ],
+          "WEST": [
+            23,
+            20
+          ],
+          "NORTHWEST": [
+            23,
+            33
+          ],
+          "NORTHEAST": [
+            33,
+            34
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        0,
+        2,
+        -2
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 11,
+        "resource": "Ore",
+        "number": 9,
+        "nodes": {
+          "NORTH": 35,
+          "NORTHEAST": 36,
+          "SOUTHEAST": 33,
+          "SOUTH": 23,
+          "SOUTHWEST": 22,
+          "NORTHWEST": 37
+        },
+        "edges": {
+          "EAST": [
+            36,
+            33
+          ],
+          "SOUTHEAST": [
+            23,
+            33
+          ],
+          "SOUTHWEST": [
+            22,
+            23
+          ],
+          "WEST": [
+            22,
+            37
+          ],
+          "NORTHWEST": [
+            37,
+            35
+          ],
+          "NORTHEAST": [
+            35,
+            36
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        1,
+        -2,
+        1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 12,
+        "resource": "Sheep",
+        "number": 6,
+        "nodes": {
+          "NORTH": 38,
+          "NORTHEAST": 39,
+          "SOUTHEAST": 40,
+          "SOUTH": 26,
+          "SOUTHWEST": 25,
+          "NORTHWEST": 30
+        },
+        "edges": {
+          "EAST": [
+            39,
+            40
+          ],
+          "SOUTHEAST": [
+            40,
+            26
+          ],
+          "SOUTHWEST": [
+            25,
+            26
+          ],
+          "WEST": [
+            30,
+            25
+          ],
+          "NORTHWEST": [
+            30,
+            38
+          ],
+          "NORTHEAST": [
+            38,
+            39
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        1,
+        -1,
+        0
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 13,
+        "resource": "Wheat",
+        "number": 12,
+        "nodes": {
+          "NORTH": 41,
+          "NORTHEAST": 42,
+          "SOUTHEAST": 38,
+          "SOUTH": 30,
+          "SOUTHWEST": 29,
+          "NORTHWEST": 32
+        },
+        "edges": {
+          "EAST": [
+            42,
+            38
+          ],
+          "SOUTHEAST": [
+            30,
+            38
+          ],
+          "SOUTHWEST": [
+            29,
+            30
+          ],
+          "WEST": [
+            32,
+            29
+          ],
+          "NORTHWEST": [
+            32,
+            41
+          ],
+          "NORTHEAST": [
+            41,
+            42
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        1,
+        0,
+        -1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 14,
+        "resource": "Wood",
+        "number": 5,
+        "nodes": {
+          "NORTH": 43,
+          "NORTHEAST": 44,
+          "SOUTHEAST": 41,
+          "SOUTH": 32,
+          "SOUTHWEST": 31,
+          "NORTHWEST": 34
+        },
+        "edges": {
+          "EAST": [
+            44,
+            41
+          ],
+          "SOUTHEAST": [
+            32,
+            41
+          ],
+          "SOUTHWEST": [
+            31,
+            32
+          ],
+          "WEST": [
+            34,
+            31
+          ],
+          "NORTHWEST": [
+            34,
+            43
+          ],
+          "NORTHEAST": [
+            43,
+            44
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        1,
+        1,
+        -2
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 15,
+        "resource": "Ore",
+        "number": 11,
+        "nodes": {
+          "NORTH": 45,
+          "NORTHEAST": 46,
+          "SOUTHEAST": 43,
+          "SOUTH": 34,
+          "SOUTHWEST": 33,
+          "NORTHWEST": 36
+        },
+        "edges": {
+          "EAST": [
+            46,
+            43
+          ],
+          "SOUTHEAST": [
+            34,
+            43
+          ],
+          "SOUTHWEST": [
+            33,
+            34
+          ],
+          "WEST": [
+            36,
+            33
+          ],
+          "NORTHWEST": [
+            36,
+            45
+          ],
+          "NORTHEAST": [
+            45,
+            46
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        2,
+        -2,
+        0
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 16,
+        "resource": "Wood",
+        "number": 10,
+        "nodes": {
+          "NORTH": 47,
+          "NORTHEAST": 48,
+          "SOUTHEAST": 49,
+          "SOUTH": 39,
+          "SOUTHWEST": 38,
+          "NORTHWEST": 42
+        },
+        "edges": {
+          "EAST": [
+            48,
+            49
+          ],
+          "SOUTHEAST": [
+            49,
+            39
+          ],
+          "SOUTHWEST": [
+            38,
+            39
+          ],
+          "WEST": [
+            42,
+            38
+          ],
+          "NORTHWEST": [
+            42,
+            47
+          ],
+          "NORTHEAST": [
+            47,
+            48
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        2,
+        -1,
+        -1
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 17,
+        "resource": "Wheat",
+        "number": 8,
+        "nodes": {
+          "NORTH": 50,
+          "NORTHEAST": 51,
+          "SOUTHEAST": 47,
+          "SOUTH": 42,
+          "SOUTHWEST": 41,
+          "NORTHWEST": 44
+        },
+        "edges": {
+          "EAST": [
+            51,
+            47
+          ],
+          "SOUTHEAST": [
+            42,
+            47
+          ],
+          "SOUTHWEST": [
+            41,
+            42
+          ],
+          "WEST": [
+            44,
+            41
+          ],
+          "NORTHWEST": [
+            44,
+            50
+          ],
+          "NORTHEAST": [
+            50,
+            51
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        2,
+        0,
+        -2
+      ],
+      "type": "Land",
+      "tile": {
+        "id": 18,
+        "resource": "Wood",
+        "number": 9,
+        "nodes": {
+          "NORTH": 52,
+          "NORTHEAST": 53,
+          "SOUTHEAST": 50,
+          "SOUTH": 44,
+          "SOUTHWEST": 43,
+          "NORTHWEST": 46
+        },
+        "edges": {
+          "EAST": [
+            53,
+            50
+          ],
+          "SOUTHEAST": [
+            44,
+            50
+          ],
+          "SOUTHWEST": [
+            43,
+            44
+          ],
+          "WEST": [
+            46,
+            43
+          ],
+          "NORTHWEST": [
+            46,
+            52
+          ],
+          "NORTHEAST": [
+            52,
+            53
+          ]
+        }
+      }
+    },
+    {
+      "coordinate": [
+        3,
+        -3,
+        0
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "EAST",
+        "id": 19,
+        "nodes": [
+          48,
+          49
+        ],
+        "edges": {},
+        "resource": "Brick"
+      }
+    },
+    {
+      "coordinate": [
+        3,
+        -1,
+        -2
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "NORTHEAST",
+        "id": 20,
+        "nodes": [
+          50,
+          51
+        ],
+        "edges": {},
+        "resource": "Ore"
+      }
+    },
+    {
+      "coordinate": [
+        2,
+        1,
+        -3
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "NORTHEAST",
+        "id": 21,
+        "nodes": [
+          46,
+          45
+        ],
+        "edges": {},
+        "resource": "Any"
+      }
+    },
+    {
+      "coordinate": [
+        0,
+        3,
+        -3
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "NORTHWEST",
+        "id": 22,
+        "nodes": [
+          35,
+          37
+        ],
+        "edges": {},
+        "resource": "Any"
+      }
+    },
+    {
+      "coordinate": [
+        -2,
+        3,
+        -1
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "WEST",
+        "id": 23,
+        "nodes": [
+          24,
+          10
+        ],
+        "edges": {},
+        "resource": "Any"
+      }
+    },
+    {
+      "coordinate": [
+        -3,
+        2,
+        1
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "WEST",
+        "id": 24,
+        "nodes": [
+          9,
+          8
+        ],
+        "edges": {},
+        "resource": "Wheat"
+      }
+    },
+    {
+      "coordinate": [
+        -3,
+        0,
+        3
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "SOUTHWEST",
+        "id": 25,
+        "nodes": [
+          4,
+          3
+        ],
+        "edges": {},
+        "resource": "Sheep"
+      }
+    },
+    {
+      "coordinate": [
+        -1,
+        -2,
+        3
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "SOUTHEAST",
+        "id": 26,
+        "nodes": [
+          16,
+          17
+        ],
+        "edges": {},
+        "resource": "Wood"
+      }
+    },
+    {
+      "coordinate": [
+        1,
+        -3,
+        2
+      ],
+      "type": "Port",
+      "tile": {
+        "direction": "SOUTHEAST",
+        "id": 27,
+        "nodes": [
+          26,
+          40
+        ],
+        "edges": {},
+        "resource": "Any"
+      }
+    }
+  ]
+}

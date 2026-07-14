@@ -1,5 +1,162 @@
 # NOTES
 
+- Explicit board-source implementation note:
+- Default duel mode selects `duel-fair-official-v1`; standard 3p/4p select
+  `generated-official-spiral-v1`.
+- Both official sources construct tiles with `standard-official-spiral` and
+  generator `official-spiral-v1`; fairness comes from catalog selection, not
+  the generator configuration.
+- `game-core` owns no mode or catalog policy. Product modes live in
+  `lib/shared/catanaGameModes.js`; Catana materialises sources in
+  `app/catana/gameSetup/boardSources.js`.
+- Saved games use `boardSourceId`, truthful `boardConfigId`, and
+  `boardProvenance`. Archives persist source and provenance separately.
+
+- Duel fair live catalog v1 publication note:
+- `duel-fair-official-v1` is a versioned product artifact, not a live
+  evaluator. Match setup must select uniformly from its fixed seed list and
+  must never call `evaluateDuelBoardV3`.
+- The full catalog at
+  `data/board-catalogs/duel-fair-official-v1.json` owns offline provenance:
+  generator/evaluator identity, source seed range, rank, hashes, scores, and
+  tags. The generated runtime module intentionally contains only catalog
+  identity and ranked seeds; do not import the 576 KiB provenance file into
+  Catana.
+- Catalog generation is reproducible with the fixed source run
+  `duel-fair-official-v1-source`, official-spiral seeds `1..65000`, and
+  `duel-fair-v3`. Publication sorts overall descending, resolves score ties by
+  lower seed, collapses canonical symmetry duplicates by keeping the better
+  record, and omits timestamps.
+- To publish a successor, use a new catalog id and generated runtime module;
+  do not silently mutate v1 identity or reinterpret its existing seeds. Player
+  placement/seat-preference data can inform later evaluator or catalog
+  versions without changing historical game states.
+
+- Duel fair v3 implemented model:
+- `overall = 0.80 * fairness + 0.20 * quality`. Interest remains independently
+  sortable and has zero weight in overall. Quality is `0.80` weaker selected
+  portfolio plus `0.20` mean selected portfolio.
+- Portfolio component weights are production `0.30`, recipe readiness `0.25`,
+  scarcity access `0.10`, second-settlement starting tempo `0.10`, trade and
+  ports `0.05`, city potential `0.05`, expansion `0.10`, and resilience
+  `0.05`. Base resource weights are wheat `1.15`, ore `1.10`, wood `1.00`,
+  brick `1.00`, and sheep `0.90`; recipe bottlenecks and trade capacity matter
+  in addition to those base weights.
+- Current calibration targets are `tradeCapacityGain 2.50` and recipe capacity
+  `road 4 / settlement 3 / dev 3 / city 1.5`. These replace the plan's initial
+  `1.25` and `2 / 1.5 / 1.25 / 0.8` values because the original scales
+  saturated and failed to distinguish stranded resources from complementary
+  or port-supported portfolios.
+- Candidate champions are selected in this deterministic order: broad, road,
+  settlement, city, development card, Wood, Brick, Sheep, Wheat, Ore, port,
+  expansion, denial. Duplicate champions collapse, broad score fills to 16,
+  and a stable legality fallback may expand only to 20.
+- The all-node v3 oracle uses official-spiral seeds
+  `1, 47, 109, 248, 310, 409, 548, 651, 725, 820, 907, 2604`. It is
+  calibration-only. Normal generation, run resumption, shortlist
+  materialisation, and HTML rendering must never call the 54-node solve.
+- Useful commands:
+  - benchmark: `pnpm board:lab:benchmark`;
+  - fixed oracle: `pnpm board:lab:oracle-v3`;
+  - bounded generation: `pnpm board:lab:generate --family official-spiral --count 1000 --run-id v3-review --shortlist-size 20`;
+  - stored fast inspection: `pnpm board:lab:inspect --family official-spiral --run-id v3-review --candidate-index 46`;
+  - explicit all-node inspection: append `--exact-v3` to that command;
+  - historical v1: append `--evaluator duel-fair-v1` to a bounded generate or
+    compare command;
+  - historical exact v2: append `--evaluator duel-fair-v2` and keep the count
+    deliberately small. `--v2-audit-selections` is opt-in and is rejected on
+    v3.
+- The primary v3 report reads only stored selected diagnostics. It renders one
+  deduplicated gallery sorted numerically by overall descending, exposes all
+  four score sorts in both directions, keeps ports visible, and hides one SVG
+  placement layer by default.
+- Historical v3 evaluator implementation did not itself include a constructive
+  generator, production catalog, live-match integration, multiplayer fairness
+  model, or learned policy. The separately versioned 2026-07-14 live catalog
+  slice now owns production 1v1 selection without moving policy into v3.
+
+- Duel fair v3 design note:
+- Treat v1 and exact v2 as historical research paths once v3 is implemented.
+  The normal ranking contract is one v3 score for every structurally valid
+  board; do not mix a v1 shortlist with v2/v3 verdicts in the primary report.
+- Keep contextual scoring cheap and layered: board context, settlement
+  features, ordered portfolio value, strategically covered candidate pool,
+  then pruned `P1, P2, P2, P1` comparison.
+- The initial candidate pool is 16 nodes and must include lens champions for
+  recipes, resource access, ports, expansion, and denial rather than simply
+  the highest-production nodes. If that pool cannot complete a legal draft,
+  add the missing nodes from a cheap stable full-board legality scan; do not
+  restore a 54-node exhaustive ranking search.
+- Scarcity, city potential, robber resilience, starting tempo, and expansion
+  are tunable portfolio components. Normalise and cap related signals so one
+  resource shortage is not counted repeatedly without bound.
+- Keep `interestScore` secondary. V3 starts with choice depth and response
+  freedom, stores the score for sorting, and gives it zero initial influence
+  on `overallScore`.
+- Exact search is a bounded oracle, not the normal evaluator. Reports must not
+  invoke it during rendering. Stop before large-corpus generation if the v3
+  path misses its 100 boards/second development-machine target.
+
+- Duel fair v2 implemented calibration note:
+- Ordered portfolio identity is semantic. Keep each seat's
+  `settlementNodeIds` in draft order, not numeric order, and derive
+  `startingCards` only from that seat's second settlement in the exact
+  `P1, P2, P2, P1` sequence. Preserve resource multiplicity and deterministic
+  resource order; seed 2604's P2 hand is exactly `[Ore, Sheep, Wheat]` and is
+  immediately development-card ready.
+- Keep `directRecipeCapacity` and `tradeAdjustedRecipeCapacity` as separate
+  evidence. Direct capacity exposes production bottlenecks without trading;
+  trade-adjusted capacity may use the portfolio's owned ports and fallback
+  trades. Do not substitute the trade-adjusted value for the direct value in
+  dominance, quality, or explanatory output.
+- Exact-audit eligibility is stricter than the structural screen. A candidate
+  is eligible for automatic catalog ranking only after a completed exact v2
+  audit with fairness verdict `pass`; `review`, `reject`, and screen-rejected
+  audits keep `overallScore: null`. A v1 pass or v2 structural-screen pass is
+  not, by itself, a fair-board acceptance.
+- Preserve the two-tier run file contract. `candidates.jsonl` remains the
+  streamed `duel-fair-v1` screen/ranking corpus. Opt-in v2 identity lives in
+  the manifest, `diagnosticV2` exists only in bounded selected
+  `boards/*.json`, and `summary.v2Audited` counts only those selections.
+  Unselected corpus rows must not be exact-audited or rendered.
+- A run manifest's `peakRssMiB` is sampled by `runBatch` during the streamed v1
+  corpus loop and does not include the later selected exact-v2 audits or report
+  rendering. Use the separate bounded benchmark for exact-v2 throughput/RSS
+  evidence and keep those measurements machine-specific.
+- The 1,000-per-family `duel-fair-v2-calibration-smoke` output is a human
+  calibration artifact, not evidence-corpus approval. Stop before any
+  100,000-per-family run, policy/profile freeze, generator tuning, or
+  Settlers-Setup-inspired production work until a human reviews the galleries
+  and explicitly approves the next phase.
+
+- Duel fair v2 evaluator design note:
+- Keep the candidate generators comparatively broad and deterministic. The
+  evaluator, not the generator, owns the claim that a board is fair for 1v1.
+- Treat the setup as the bounded perfect-information sequence
+  `P1, P2, P2, P1`. Evaluate ordered two-settlement portfolios so denial and
+  second-settlement starting cards affect the result.
+- Preserve full production vectors until rule-derived recipe capacities are
+  calculated. High wood without brick, or sheep/wheat without ore, must not
+  receive the same direct viability as a functional portfolio.
+- Keep stable opening features separate from subjective policy parameters.
+  Routine calibration may change versioned weights; missing concepts require a
+  new feature version.
+- Fairness, weaker-player board quality, and placement depth are separate
+  outputs. Resource scarcity, clumping, and strategic asymmetry are descriptive
+  properties rather than automatic failures.
+- A structural screen pass is not a final fair-board pass. Only candidates with
+  a completed exact v2 draft audit are eligible for catalog ranking.
+- Keep adjacent red-number rejection as a default-profile guardrail rather than
+  a universal statement about strategic quality.
+- Calibration reports need geographic ports, the solved placement sequence,
+  starting hands, complete production portfolios, recipe viability, and
+  alternative material lines. A text-only port legend is insufficient for
+  human judgment.
+- Execute v2 in eight reviewable commits and retain the two-tier calibration
+  contract: stream cheap v1 records for the full bounded corpus, exact-audit
+  only selected candidates with v2, then stop for human review before any
+  100,000-per-family evidence run.
+
 - Core rule transaction note:
 - A returned `{ ok: false }` must leave `GameState` unchanged. New or repaired
   game-rule moves should validate all inputs before mutating player resources,
@@ -384,9 +541,10 @@
 - `app/catana/gameSetup/devScenarios.js` owns dev-scenario state extraction,
   production/player-count validation, merge-over-generated-state behavior, and
   boardgame.io context seeding.
-- Keep normal board/rules setup in `Game.js`, but route any new
-  `devScenarioState` shape handling or scenario stage derivation through the
-  dev-scenario setup helper.
+- Keep normal board/rules setup in
+  `app/catana/gameSetup/initialState.js`, but route any new `devScenarioState`
+  shape handling or scenario stage derivation through the dev-scenario setup
+  helper.
 - The helper accepts an explicit `nodeEnv` in tests so production guardrails
   can be covered without module-cache gymnastics.
 
@@ -399,12 +557,6 @@
 - Do not add new dev tooling moves back to `app/catana/Moves.js`; put them in
   the debug module and cover exposure with `Game.debugMoves.test.js` or
   `serverGameConfig.test.js`.
-
-- Balanced-board diagnostics note:
-- `BalancedBoard` generation diagnostics are quiet by default; pass
-  `logGenerationStats: true` only for explicit board-tuning/debug sessions.
-- Keep default board generation side-effect-light so focused test lanes remain
-  readable and do not emit generation stats during normal server/app checks.
 
 - Verification lanes note:
 - `pnpm run test:logic` is the default lane for game rules and deterministic
@@ -618,7 +770,9 @@
 - `infra/scripts/deploy-prod.sh` restarts/rebuilds the Docker Compose `postgres`, `web`, `game`, and `proxy` services, then runs `pnpm db:migrate` inside `web` if that script exists.
 - If `deploy-prod` appears to run for hours, inspect the `verify` job before the deploy job. A stuck Vitest process means production has not been updated yet.
 - App Vitest files now run one file per subprocess via `scripts/run-vitest-app-tests.mjs`; keep the per-file timeout so future hangs fail with a concrete file name instead of waiting on the GitHub job timeout.
-- Catan setup tests must use a moving deterministic RNG such as `makeDeterministicRng(...)`. A constant `random.Number` can trap balanced board generation indefinitely.
+- Catan setup tests that exercise generated board sources should use a moving
+  deterministic RNG such as `makeDeterministicRng(...)` so generation follows
+  a reproducible sequence.
 
 - Agent workflow note:
 - repo-root `AGENTS.md` now has a `Fast iteration` carveout for UI/audio/animation/copy/timing tuning. For Catana sandbox/effects work, prefer direct edits plus manual verification and skip test churn unless the change affects shared logic, wiring, state flow, or a deliberate regression lock.
@@ -3442,13 +3596,17 @@
     - follow-up correction: the desired `bottom` behavior is not "lift the whole chat panel." The chat panel body should stay on the old desktop baseline, and only the lower connector seam should sit above the message/composer band, analogous to how the top anchor joins below the title bar instead of at the panel edge.
   - Catana game mode note:
     - matchmaking should pass `modeId` as product intent rather than raw ruleset objects.
-    - current modes live in `game-core/src/gameModes.ts`:
-      - `duel` -> 2 players, `rulesetId: "duel"`, `boardConfigId: "standard-balanced"`
-      - `standard-3p` -> 3 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
-      - `standard-4p` -> 4 players, `rulesetId: "standard"`, `boardConfigId: "standard-official"`
-  - `app/catana/Game.js` still falls back from `ctx.numPlayers` for old callers, scenarios, and custom/dev creation flows.
-  - app-owned create routes should resolve/stamp `modeId`, `rulesetId`, and `boardConfigId` into `setupData` so match metadata, archives, and future queue filters stay self-describing.
-  - tests that run 1v1 setup now need a sequence RNG such as `makeDeterministicRng`; a constant `Number: () => 0.5` can make balanced generation retry the same failed placement indefinitely.
+    - current modes live in `lib/shared/catanaGameModes.js` and declare
+      `numPlayers`, `rulesetId`, and `boardSourceId`:
+      - `duel` -> 2 players, duel rules, `duel-fair-official-v1`
+      - `standard-3p` -> 3 players, standard rules, `generated-official-spiral-v1`
+      - `standard-4p` -> 4 players, standard rules, `generated-official-spiral-v1`
+  - `app/catana/gameSetup/initialState.js` resolves the default mode from
+    `ctx.numPlayers`, materialises the selected source, and stores its actual
+    `boardConfigId` plus `boardProvenance` in game state.
+  - app-owned create routes should resolve/stamp `modeId`, `rulesetId`, and
+    `boardSourceId` into `setupData`; `setupData.boardConfigId` is obsolete and
+    rejected as an input.
   - Settlex standard UI phase 1 note:
     - the standard layer is now concrete enough to review in-browser at `/catana/dev/ui`; use that page as the visual proving ground before spreading new recipes across more product surfaces.
     - the first migration target should stay "normal product UI" rather than bespoke board controls:
@@ -3949,3 +4107,12 @@
 
 - Release label note:
 - Release tooling currently requires positive integer internal versions. For fractional/public labels such as `release 0.8`, keep `currentVersion` and `version` as the next integer and set the release entry `label` for badge/panel display.
+
+- Catana board-source architecture note:
+- Product modes and board-source ids belong in `lib/shared/catanaGameModes.js`, not `game-core`. Runtime setup should resolve `boardSourceId` through `app/catana/gameSetup/boardSources.js` and persist truthful `boardSourceId`, actual `boardConfigId`, and `boardProvenance` fields.
+- Duel uses the ranked `duel-fair-official-v1` catalog source; standard 3-player and 4-player modes use `generated-official-spiral-v1`. Keep custom board configs mutually exclusive with explicit source ids, and do not reintroduce `setupData.boardConfigId` as an input.
+- Explicit board-source safety note (2026-07-14): built-in engine board configs
+  are deeply immutable process-wide. Production setup must reject explicit
+  custom `boardConfig` payloads independently of dev-scenario presence. If a
+  dev scenario supplies replacement tiles, archive/runtime identity must be
+  `custom`; do not retain catalog provenance for those tiles.

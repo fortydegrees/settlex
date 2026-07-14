@@ -43,6 +43,16 @@ describe("dev scenario setup helpers", () => {
     ).toBe("Scenario requires 2 players.");
   });
 
+  it("rejects custom board configurations in production without a scenario", () => {
+    expect(
+      validateScenarioSetupData(
+        { boardConfig: { specId: "standard-4p" } },
+        2,
+        { nodeEnv: "production" }
+      )
+    ).toBe("Custom board configurations are disabled in production.");
+  });
+
   it("merges a dev scenario and seeds boardgame context outside production", () => {
     const initialState = {
       core: {
@@ -74,5 +84,60 @@ describe("dev scenario setup helpers", () => {
     expect(ctx.phase).toBe("main");
     expect(ctx.currentPlayer).toBe("1");
     expect(ctx.activePlayers).toEqual({ "0": null, "1": "postRoll" });
+  });
+
+  it("marks scenario-replaced tiles as custom instead of retaining catalog provenance", () => {
+    const initialState = {
+      core: { players: ["0", "1"] },
+      tiles: [{ tile: { id: 1 } }],
+      boardSourceId: "duel-fair-official-v1",
+      boardConfigId: "standard-official-spiral",
+      boardProvenance: {
+        sourceKind: "catalog",
+        catalogId: "duel-fair-official-v1",
+        seed: 30861
+      }
+    };
+    const replacementTiles = [{ tile: { id: 99 } }];
+
+    const nextState = applyDevScenarioSetup({
+      initialState,
+      ctx: {},
+      setupData: {
+        devScenarioState: {
+          core: { players: ["0", "1"] },
+          tiles: replacementTiles
+        }
+      },
+      nodeEnv: "test"
+    });
+
+    expect(nextState.tiles).toEqual(replacementTiles);
+    expect(nextState).toMatchObject({
+      boardSourceId: "custom",
+      boardConfigId: "custom",
+      boardProvenance: { sourceKind: "custom" }
+    });
+  });
+
+  it("preserves catalog provenance when a scenario does not replace tiles", () => {
+    const initialState = {
+      core: { players: ["0", "1"] },
+      tiles: [{ tile: { id: 1 } }],
+      boardSourceId: "duel-fair-official-v1",
+      boardConfigId: "standard-official-spiral",
+      boardProvenance: { sourceKind: "catalog", seed: 30861 }
+    };
+
+    const nextState = applyDevScenarioSetup({
+      initialState,
+      ctx: {},
+      setupData: { devScenarioState: scenarioState },
+      nodeEnv: "test"
+    });
+
+    expect(nextState.boardSourceId).toBe(initialState.boardSourceId);
+    expect(nextState.boardConfigId).toBe(initialState.boardConfigId);
+    expect(nextState.boardProvenance).toEqual(initialState.boardProvenance);
   });
 });

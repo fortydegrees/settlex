@@ -10,7 +10,10 @@ Build a playable online Catan MVP with a **thin UI** and a **deterministic game 
 - **Thin UI**: UI renders from `G.core` only, calls core rules for all state changes.
 - **Determinism**: no `Math.random` in engine; boardgen uses boardgame.io `random.Number()` from `setup`.
 - **Ruleset-driven**: `ruleset` in core defines build costs, piece limits, trade rates, bank, etc.
-- **Board presets**: `standard-random` is used now; full “official” layout not implemented yet.
+- **Explicit board sources**: shared SettleHex game modes select a source;
+  Catana materialises either the ranked duel catalog or a generated board.
+- **Neutral board configs**: `game-core` exposes deeply immutable
+  `standard-official-spiral` and `standard-random` construction recipes.
 - **TDD for engine changes**: add tests first in `game-core/src/**.test.ts`.
 
 ## Current architecture (important files)
@@ -32,17 +35,34 @@ Build a playable online Catan MVP with a **thin UI** and a **deterministic game 
   - `trading.ts`, `devCards.ts`, `victory.ts`
 - `game-core/src/ruleset.ts`  
   `createRuleset`, `createStandardRuleset`, `validateRuleset`
-- `game-core/src/board/`  
-  `boardPresets.ts`, `generateBoard.ts`, `generateBalancedBoard.ts` (random boardgen)
+- `game-core/src/board/boardConfigs.ts`
+  Owns neutral, deeply immutable board-construction configurations.
+- `game-core/src/board/generateBoard.ts`
+  Deterministically materialises a configuration with an injected RNG.
+
+### SettleHex product setup
+- `lib/shared/catanaGameModes.js`
+  Owns product mode defaults. Duel points to `duel-fair-official-v1`; standard
+  3p/4p point to `generated-official-spiral-v1`.
+- `app/catana/gameSetup/boardSources.js`
+  Resolves catalog/generated sources into tiles, actual `boardConfigId`, and
+  truthful `boardProvenance`.
+- `app/catana/gameSetup/catalogs/duelFairOfficialV1.generated.js`
+  Compact ranked seed catalog used by live duel setup. Fairness evaluation
+  remains offline under `scripts/duel-board-lab/`.
+- `app/catana/gameSetup/initialState.js`
+  Resolves the product mode/ruleset/source and writes `boardSourceId`, actual
+  `boardConfigId`, and `boardProvenance` into initial state.
 
 ### UI (Next + boardgame.io)
 - `app/catana/Game.js`  
-  Boardgame.io game config. `setup()` creates board via `generateBoard()` and `createEmptyState()`.
+  Boardgame.io game config. `setup()` delegates deterministic state and board
+  creation to `gameSetup/initialState.js`.
 - `app/catana/Moves.js`  
   UI moves call core rules (`applyPlaceSettlement`, `applyBuildRoad`, `applyRollDice`, `applyEndTurn`, etc).
 - `app/catana/Board.js`  
   Renders from `G.core` state; action overlays use `buildableNodes/Edges`.
-- `app/catana/utils/playerView.js`  
+- `app/catana/gameSetup/playerView.js`
   Maps core player state to UI colors/resources.
 
 ### UI context and dev surfaces
@@ -52,7 +72,8 @@ Build a playable online Catan MVP with a **thin UI** and a **deterministic game 
 - `app/catana/dev/effects/`: isolated deterministic effect/audio replay surface.
 - `app/catana/components/README.md`: local component context and common UI guardrails.
 
-## Current status (Jan 9, 2026)
+## Historical gameplay status snapshot (Jan 9, 2026)
+This section is retained as chronology, not current implementation guidance.
 Working minimal loop:
 - Initial placement (settlement + road) uses core rules.
 - Roll dice distributes resources via core.
@@ -75,7 +96,7 @@ What is **not** implemented in UI yet:
 - `pnpm -C game-core test` (engine)
 - `pnpm lint` (UI lint)
 
-## Known gaps / next steps
+## Historical gaps / next steps from that snapshot
 1) **Discard/robber flow UI** so 7s with pending discards don’t stall.
 2) **Robber steal UI** (choose victim + random resource transfer).
 3) **Trading UI** (bank/port; player trades later).

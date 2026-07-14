@@ -1,8 +1,8 @@
 import type { BoardSpecId } from "./boardSpecs";
 
 export type BoardGenerationConfig = {
-  terrain: "random" | "balanced" | "official";
-  numbers: "random" | "balanced" | "official";
+  terrain: "random" | "official";
+  numbers: "random" | "official";
   ports: "random";
   options?: { official?: { startCorner?: "random" | "fixed" } };
 };
@@ -19,12 +19,26 @@ export type BoardConfig = {
 };
 
 export type BoardConfigId =
-  | "standard-official"
-  | "standard-random"
-  | "standard-balanced";
+  | "standard-official-spiral"
+  | "standard-random";
 
-export const BOARD_CONFIGS: Record<BoardConfigId, BoardConfig> = {
-  "standard-official": {
+export type DeepReadonly<T> = T extends (...args: never[]) => unknown
+  ? T
+  : T extends object
+    ? { readonly [Key in keyof T]: DeepReadonly<T[Key]> }
+    : T;
+
+const deepFreeze = <T extends object>(value: T): DeepReadonly<T> => {
+  for (const child of Object.values(value)) {
+    if (child != null && typeof child === "object" && !Object.isFrozen(child)) {
+      deepFreeze(child);
+    }
+  }
+  return Object.freeze(value) as DeepReadonly<T>;
+};
+
+export const BOARD_CONFIGS: DeepReadonly<Record<BoardConfigId, BoardConfig>> = deepFreeze({
+  "standard-official-spiral": {
     specId: "standard-4p",
     generation: {
       terrain: "random",
@@ -36,13 +50,9 @@ export const BOARD_CONFIGS: Record<BoardConfigId, BoardConfig> = {
   "standard-random": {
     specId: "standard-4p",
     generation: { terrain: "random", numbers: "random", ports: "random" }
-  },
-  "standard-balanced": {
-    specId: "standard-4p",
-    generation: { terrain: "balanced", numbers: "balanced", ports: "random" }
   }
-};
+});
 
-export function resolveBoardConfig(id: BoardConfigId): BoardConfig {
+export function resolveBoardConfig(id: BoardConfigId): DeepReadonly<BoardConfig> {
   return BOARD_CONFIGS[id];
 }

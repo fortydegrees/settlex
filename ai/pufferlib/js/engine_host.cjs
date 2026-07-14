@@ -42,7 +42,7 @@ function normalizeOptions(raw = {}) {
   return {
     numPlayers: toNumber(raw.numPlayers, 4),
     maxSteps: toNumber(raw.maxSteps, 1200),
-    boardConfigId: raw.boardConfigId ?? "standard-official",
+    boardConfigId: raw.boardConfigId ?? "standard-official-spiral",
     includeActionMaskInObservation: toBoolean(
       raw.includeActionMaskInObservation,
       true
