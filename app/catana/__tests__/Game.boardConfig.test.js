@@ -35,7 +35,7 @@ describe("Catan setup board config", () => {
     });
   });
 
-  it("resolves duel mode to duel rules and balanced board generation", () => {
+  it("resolves duel mode to duel rules and the fair catalog board source", () => {
     const ctx = { numPlayers: 2, phase: "placement" };
     const random = {
       Number: () => 0,
