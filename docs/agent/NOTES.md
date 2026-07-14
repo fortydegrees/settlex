@@ -1,5 +1,14 @@
 # NOTES
 
+- Match-alert pause reservation note:
+- Give every pre-join pause a unique database reservation ID. Restore or
+  finalize only rows that still carry that exact reservation and match ID; this
+  prevents an older failed join from undoing a newer overlapping attempt.
+- A lost join response is not proof that the join failed. Compensate only a
+  definite 4xx rejection, then re-check the live target seat before restoring.
+  Keep the pause for network, 5xx, timeout, or unavailable-reconciliation
+  outcomes. Finalize rather than restore when the target seat is occupied.
+
 - Match-alert human-entry and leave-auth note:
 - Every route that can fill a human match, including friend-challenge accept,
   must reserve both accounts' alert pauses before joining the game-server seat

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAccount.js";
 import {
+  finalizeAlertsAfterHumanJoin,
   reserveAlertsBeforeHumanJoin,
   restoreAlertsAfterFailedHumanJoin,
 } from "../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
@@ -27,6 +28,8 @@ export const createMatchJoinRoute =
     joinMatchForAccount: joinMatchForAccountImpl = joinMatchForAccount,
     reserveAlertsBeforeHumanJoin:
       reserveAlertsBeforeHumanJoinImpl = reserveAlertsBeforeHumanJoin,
+    finalizeAlertsAfterHumanJoin:
+      finalizeAlertsAfterHumanJoinImpl = finalizeAlertsAfterHumanJoin,
     restoreAlertsAfterFailedHumanJoin:
       restoreAlertsAfterFailedHumanJoinImpl = restoreAlertsAfterFailedHumanJoin,
     logger = console,
@@ -106,7 +109,13 @@ export const createMatchJoinRoute =
       } catch (error) {
         if (reservation) {
           try {
-            await restoreAlertsAfterFailedHumanJoinImpl({ reservation });
+            await restoreAlertsAfterFailedHumanJoinImpl({
+              reservation,
+              joiningAccountId: sessionAccount.account.id,
+              joiningPlayerId: payload?.playerID,
+              matchID: payload?.matchID,
+              joinError: error,
+            });
           } catch (restoreError) {
             logger.error("Failed to restore match alerts after rejected human join", {
               matchID: payload?.matchID,
@@ -116,6 +125,18 @@ export const createMatchJoinRoute =
           }
         }
         throw error;
+      }
+
+      if (reservation) {
+        try {
+          await finalizeAlertsAfterHumanJoinImpl({ reservation });
+        } catch (finalizeError) {
+          logger.warn("Failed to finalize match alert pause after human join", {
+            matchID: payload?.matchID,
+            accountId: sessionAccount.account.id,
+            error: finalizeError,
+          });
+        }
       }
 
       const response = NextResponse.json(result);

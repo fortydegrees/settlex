@@ -187,6 +187,7 @@ describe("match API routes", () => {
       previousPreferences: [],
     };
     const reserveAlertsBeforeHumanJoin = vi.fn().mockResolvedValue(reservation);
+    const finalizeAlertsAfterHumanJoin = vi.fn().mockResolvedValue(["acct_1"]);
     const restoreAlertsAfterFailedHumanJoin = vi.fn();
     const leaveMatchForAccount = vi.fn();
     const listPublicOpenMatches = vi.fn().mockResolvedValue([
@@ -204,6 +205,7 @@ describe("match API routes", () => {
       getLiveMatch,
       joinMatchForAccount,
       reserveAlertsBeforeHumanJoin,
+      finalizeAlertsAfterHumanJoin,
       restoreAlertsAfterFailedHumanJoin,
     });
     const LEAVE = createMatchLeaveRoute({
@@ -338,6 +340,7 @@ describe("match API routes", () => {
       participantType: "human",
       matchID: "match_1",
     });
+    expect(finalizeAlertsAfterHumanJoin).toHaveBeenCalledWith({ reservation });
     expect(restoreAlertsAfterFailedHumanJoin).not.toHaveBeenCalled();
     expect(leaveMatchForAccount).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -404,11 +407,13 @@ describe("match API routes", () => {
       };
     });
     const restoreAlertsAfterFailedHumanJoin = vi.fn();
+    const finalizeAlertsAfterHumanJoin = vi.fn().mockResolvedValue(["acct_1"]);
     const JOIN = createMatchJoinRoute({
       getSessionAccount,
       getLiveMatch,
       joinMatchForAccount,
       reserveAlertsBeforeHumanJoin,
+      finalizeAlertsAfterHumanJoin,
       restoreAlertsAfterFailedHumanJoin,
     });
 
@@ -456,6 +461,7 @@ describe("match API routes", () => {
     });
     expect(humanResponse.headers.get("set-cookie")).toContain("secret_join");
     expect(order).toEqual(["pause:start", "pause:done", "join"]);
+    expect(finalizeAlertsAfterHumanJoin).toHaveBeenCalledWith({ reservation });
     expect(restoreAlertsAfterFailedHumanJoin).not.toHaveBeenCalled();
 
     joinMatchForAccount.mockRejectedValueOnce(
@@ -472,6 +478,13 @@ describe("match API routes", () => {
     expect(failedJoin.status).toBe(409);
     expect(restoreAlertsAfterFailedHumanJoin).toHaveBeenCalledWith({
       reservation,
+      joiningAccountId: "acct_1",
+      joiningPlayerId: "1",
+      matchID: "match_1",
+      joinError: expect.objectContaining({
+        message: "seat already filled",
+        status: 409,
+      }),
     });
   });
 

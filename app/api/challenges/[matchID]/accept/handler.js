@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../../lib/server/accounts/getSessionAccount.js";
 import {
+  finalizeAlertsAfterHumanJoin,
   reserveAlertsBeforeHumanJoin,
   restoreAlertsAfterFailedHumanJoin,
 } from "../../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
@@ -34,6 +35,8 @@ export const createChallengeAcceptRoute =
     joinMatchForAccount: joinMatchForAccountImpl = joinMatchForAccount,
     reserveAlertsBeforeHumanJoin:
       reserveAlertsBeforeHumanJoinImpl = reserveAlertsBeforeHumanJoin,
+    finalizeAlertsAfterHumanJoin:
+      finalizeAlertsAfterHumanJoinImpl = finalizeAlertsAfterHumanJoin,
     restoreAlertsAfterFailedHumanJoin:
       restoreAlertsAfterFailedHumanJoinImpl = restoreAlertsAfterFailedHumanJoin,
     logger = console,
@@ -82,7 +85,13 @@ export const createChallengeAcceptRoute =
       } catch (error) {
         if (reservation) {
           try {
-            await restoreAlertsAfterFailedHumanJoinImpl({ reservation });
+            await restoreAlertsAfterFailedHumanJoinImpl({
+              reservation,
+              joiningAccountId: sessionAccount.account.id,
+              joiningPlayerId: challengeState.inviteeSeatId,
+              matchID,
+              joinError: error,
+            });
           } catch (restoreError) {
             logger.error("Failed to restore match alerts after rejected friend challenge", {
               matchID,
@@ -92,6 +101,18 @@ export const createChallengeAcceptRoute =
           }
         }
         throw error;
+      }
+
+      if (reservation) {
+        try {
+          await finalizeAlertsAfterHumanJoinImpl({ reservation });
+        } catch (finalizeError) {
+          logger.warn("Failed to finalize match alert pause after friend challenge join", {
+            matchID,
+            accountId: sessionAccount.account.id,
+            error: finalizeError,
+          });
+        }
       }
 
       const response = NextResponse.json({
