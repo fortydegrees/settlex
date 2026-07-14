@@ -1,5 +1,32 @@
 # PROGRESS
 
+## Status (2026-07-14, explicit board sources implemented)
+- Replaced the provisional duel `standard-balanced` sentinel with explicit
+  product-owned board sources and truthful generator provenance.
+- Default duel remains `duel-fair-official-v1`; changing the shared mode preset
+  to `generated-official-spiral-v1` switches it to direct generation without
+  changing setup code.
+- Removed the legacy elapsed-time-dependent balanced generator from runtime
+  `game-core` and moved product game modes out of the engine.
+- Added nullable archive source/provenance fields through migration 0005 and
+  archive resolved initial-state values.
+- Catalog seed/rank/score/hash entries remain unchanged; only explicit
+  generator-configuration metadata changed.
+- Fresh focused verification:
+  - `pnpm test:board-lab`: 21 files and 164 tests passed;
+  - `pnpm test:catana`: 214 files and 816 tests passed;
+  - `pnpm test:server`: 47 files and 189 tests passed;
+  - `pnpm -C game-core test`: 14 files and 148 tests passed;
+  - `pnpm -C game-core build`: exit 0.
+- Fresh repository verification:
+  - `pnpm verify`: engine 14 files / 148 tests, server/lib/AI 47 files /
+    189 tests, all 229 isolated app test files, and repository lint passed;
+  - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`: exit 0;
+  - `git diff --check`: exit 0.
+- The ordinary production build was not claimed or run without the documented
+  placeholder environment variable. No merge, push, PR, or deploy was
+  performed.
+
 ## Status (2026-07-14, explicit board-source architecture designed)
 - Approved and recorded
   `docs/superpowers/specs/2026-07-14-explicit-board-source-architecture-design.md`.

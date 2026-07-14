@@ -5,6 +5,10 @@
 Approved for implementation on 2026-07-14. Production deployment remains a
 separate approval after local verification.
 
+> Runtime setup and ownership in this document were superseded before launch by
+> `2026-07-14-explicit-board-source-architecture-design.md`. Catalog corpus,
+> publication, ranking, and integrity decisions remain authoritative.
+
 ## Objective
 
 Make pre-ranked fair boards the default board source for new 1v1 games without

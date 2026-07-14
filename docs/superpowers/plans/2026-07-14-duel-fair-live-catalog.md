@@ -1,5 +1,9 @@
 # Duel Fair Live Catalog v1 Implementation Plan
 
+> Historical implementation plan. Its catalog publication tasks remain useful;
+> its provisional `standard-balanced` runtime sentinel was replaced by the
+> explicit board-source architecture before launch.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Publish the top 1,000 symmetry-distinct `duel-fair-v3` official-spiral boards from 65,000 fixed seeds and make that catalog the default board source for new 1v1 games.

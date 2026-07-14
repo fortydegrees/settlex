@@ -1,26 +1,18 @@
 # NOTES
 
-- Explicit board-source architecture note:
-- Treat game mode, ruleset, board source, board configuration, and board
-  provenance as separate concepts. A mode chooses a source; a source resolves
-  the actual engine configuration; provenance records the concrete result.
-- The approved pre-launch target removes `standard-balanced` and the old
-  runtime `BalancedBoard`. Default duel uses source
-  `duel-fair-official-v1`, which reconstructs catalog seeds through board
-  config `standard-official-spiral` and generator `official-spiral-v1`.
-- Keep SettleHex game-mode and catalog policy outside `game-core`. The engine
-  owns deterministic rules, board configuration, generation, and topology.
-- Normal product setup selects built-in boards with `boardSourceId`, never an
-  overloaded `boardConfigId`. Reject conflicting custom config/source inputs
-  and unknown identifiers instead of silently falling back.
-- Saved state and archives must report the resolved source, actual generator
-  configuration, and immutable provenance. `boardCatalog` is provisional
-  terminology and should become `boardProvenance` during implementation.
-- Until that implementation lands, the older live-catalog note below describes
-  the branch's current provisional behavior; it must be updated or removed as
-  part of the cleanup so active guidance does not retain both models.
+- Explicit board-source implementation note:
+- Default duel mode selects `duel-fair-official-v1`; standard 3p/4p select
+  `generated-official-spiral-v1`.
+- Both official sources construct tiles with `standard-official-spiral` and
+  generator `official-spiral-v1`; fairness comes from catalog selection, not
+  the generator configuration.
+- `game-core` owns no mode or catalog policy. Product modes live in
+  `lib/shared/catanaGameModes.js`; Catana materialises sources in
+  `app/catana/gameSetup/boardSources.js`.
+- Saved games use `boardSourceId`, truthful `boardConfigId`, and
+  `boardProvenance`. Archives persist source and provenance separately.
 
-- Duel fair live catalog v1 note:
+- Duel fair live catalog v1 publication note:
 - `duel-fair-official-v1` is a versioned product artifact, not a live
   evaluator. Match setup must select uniformly from its fixed seed list and
   must never call `evaluateDuelBoardV3`.
@@ -30,12 +22,6 @@
   tags. The generated runtime module intentionally contains only catalog
   identity and ranked seeds; do not import the 576 KiB provenance file into
   Catana.
-- Default catalog eligibility is exactly resolved mode `duel`, requested board
-  config `standard-balanced`, and no explicit custom `boardConfig`. Keep
-  explicit random/custom and non-duel paths outside this condition.
-- `G.boardConfigId` remains `standard-balanced` because it describes the fair
-  product policy. `G.boardCatalog` records the concrete catalog id, rank, seed,
-  and generator/evaluator identities needed by archives and future replay UI.
 - Catalog generation is reproducible with the fixed source run
   `duel-fair-official-v1-source`, official-spiral seeds `1..65000`, and
   `duel-fair-v3`. Publication sorts overall descending, resolves score ties by
