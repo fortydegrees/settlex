@@ -100,6 +100,8 @@ describe("match API routes", () => {
     const getSessionAccount = vi.fn();
     const getLiveMatch = vi.fn();
     const joinMatchForAccount = vi.fn();
+    const pauseAlertsAfterHumanJoin = vi.fn().mockResolvedValue([]);
+    const logger = { warn: vi.fn() };
     const leaveMatchForAccount = vi.fn();
     const listPublicOpenMatches = vi.fn().mockResolvedValue([
       { matchID: "public_1" },
@@ -115,6 +117,8 @@ describe("match API routes", () => {
       getSessionAccount,
       getLiveMatch,
       joinMatchForAccount,
+      pauseAlertsAfterHumanJoin,
+      logger,
     });
     const LEAVE = createMatchLeaveRoute({
       getSessionAccount,
@@ -229,6 +233,13 @@ describe("match API routes", () => {
         playerID: "1",
       })
     );
+    expect(pauseAlertsAfterHumanJoin).toHaveBeenCalledWith({
+      liveMatch: expect.objectContaining({ matchID: "match_1" }),
+      joiningAccountId: "acct_1",
+      joiningPlayerId: "1",
+      participantType: "human",
+      matchID: "match_1",
+    });
     expect(leaveMatchForAccount).toHaveBeenCalledWith(
       expect.objectContaining({
         account: expect.objectContaining({ id: "acct_1" }),
@@ -244,6 +255,96 @@ describe("match API routes", () => {
     expect(fetchImpl).toHaveBeenCalledWith(
       "http://game:8080/games/catan/match_1",
       expect.objectContaining({ method: "GET" })
+    );
+  });
+
+  it("does not pause for bot joins and preserves a successful join when pausing fails", async () => {
+    const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
+    const getSessionAccount = vi.fn().mockResolvedValue({
+      account: {
+        id: "acct_1",
+        currentUsername: "Ada",
+        avatarEmoji: "🤠",
+        avatarColor: "sky",
+      },
+    });
+    const liveMatch = {
+      matchID: "match_1",
+      players: {
+        0: {
+          id: 0,
+          name: "Ada",
+          data: { participantType: "human", accountId: "acct_1" },
+        },
+        1: { id: 1, name: "" },
+      },
+    };
+    const getLiveMatch = vi.fn().mockResolvedValue(liveMatch);
+    const joinMatchForAccount = vi.fn().mockResolvedValue({
+      playerID: "1",
+      playerCredentials: "secret_join",
+    });
+    const pauseAlertsAfterHumanJoin = vi.fn(({ participantType }) =>
+      participantType === "bot"
+        ? Promise.resolve([])
+        : Promise.reject(new Error("database unavailable"))
+    );
+    const logger = { warn: vi.fn() };
+    const JOIN = createMatchJoinRoute({
+      getSessionAccount,
+      getLiveMatch,
+      joinMatchForAccount,
+      pauseAlertsAfterHumanJoin,
+      logger,
+    });
+
+    const botResponse = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
+        body: JSON.stringify({
+          matchID: "match_1",
+          playerID: "1",
+          participantType: "bot",
+        }),
+      })
+    );
+
+    expect(botResponse.status).toBe(200);
+    expect(pauseAlertsAfterHumanJoin).toHaveBeenCalledWith({
+      liveMatch,
+      joiningAccountId: "acct_1",
+      joiningPlayerId: "1",
+      participantType: "bot",
+      matchID: "match_1",
+    });
+    expect(logger.warn).not.toHaveBeenCalled();
+    pauseAlertsAfterHumanJoin.mockClear();
+
+    const humanResponse = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
+        body: JSON.stringify({ matchID: "match_1", playerID: "1" }),
+      })
+    );
+
+    expect(humanResponse.status).toBe(200);
+    expect(await humanResponse.json()).toMatchObject({
+      playerID: "1",
+      playerCredentials: "secret_join",
+    });
+    expect(humanResponse.headers.get("set-cookie")).toContain("secret_join");
+    expect(pauseAlertsAfterHumanJoin).toHaveBeenCalledWith({
+      liveMatch,
+      joiningAccountId: "acct_1",
+      joiningPlayerId: "1",
+      participantType: "human",
+      matchID: "match_1",
+    });
+    expect(logger.warn).toHaveBeenCalledWith(
+      "Failed to pause match alerts after human join",
+      expect.objectContaining({ matchID: "match_1", accountId: "acct_1" })
     );
   });
 });
