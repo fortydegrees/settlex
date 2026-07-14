@@ -6817,6 +6817,11 @@
 - Updated the replay source assertions to the current visible-but-read-only HUD
   contract. The complete focused replay suite passes `158/158`; `pnpm lint` and
   `git diff --check` pass.
+- Clean-snapshot browser QA against a real local archived match at
+  `/g/4oFmkV1gMsa` verified the unspoiled first frame, event stepping,
+  player-perspective HUD, spoiler-safe timeline, in-place winnerless Results
+  (`Game ended`), cursor/perspective restoration after closing Results, the
+  compact phone transport/details layout, and zero browser console errors.
 - Broad `pnpm verify` passes game-core `153/153` and server/lib/AI `189/189`, then
   reaches the app lane and encounters the concurrent 3D worktree's stale
   `GameScreen.themeSwitcher.test.js` expectation for `MemoizedCatanBoard`.

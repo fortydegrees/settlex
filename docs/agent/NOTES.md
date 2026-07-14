@@ -4178,3 +4178,7 @@
   the server error where available.
 - Rematch and a full postgame Stats surface remain separate follow-up features;
   do not restore disabled placeholders while they are absent.
+- For replay visual QA in a heavily shared dirty checkout, verify the committed
+  candidate from a clean snapshot. The July 14 replay pass used a real archived
+  match at desktop `1440x900` and phone `390x844`; the dirty live checkout's
+  concurrent 3D files were not treated as replay evidence.
