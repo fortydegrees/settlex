@@ -27,4 +27,10 @@ describe("ReplayPageClient", () => {
     expect(source).toContain('window.addEventListener("keydown"');
     expect(source).not.toContain("ReplayControls");
   });
+
+  it("forwards the initial archived perspective to the real game screen", () => {
+    expect(source).toContain("initialPerspectivePlayerID = null");
+    expect(source).toContain("playerID: initialPerspectivePlayerID");
+    expect(source).not.toContain("playerID: null");
+  });
 });
