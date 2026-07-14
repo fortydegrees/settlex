@@ -31,7 +31,7 @@
 - Consumes: getTimerRemainingMs(timerSnapshot, nowMs) from app/catana/utils/timerSnapshot.js.
 - Produces: LIVE_TURN_TIMER_INTERVAL_MS, formatTimer, getTimerSeconds, getLiveTurnTimerPresentation, startLiveTurnTimerTicker, and useLiveTurnTimer.
 
-- [ ] **Step 1: Write the failing timer-clock tests**
+- [x] **Step 1: Write the failing timer-clock tests**
 
 Create app/catana/__tests__/LiveTurnTimer.test.js:
 
@@ -161,7 +161,7 @@ describe("LiveTurnTimer", () => {
 
 Delete app/catana/__tests__/useLocalPlayerDockModel.test.js; its four tests cover only timer helpers moving to the new test.
 
-- [ ] **Step 2: Run the new test and verify RED**
+- [x] **Step 2: Run the new test and verify RED**
 
 Run:
 
@@ -171,7 +171,7 @@ pnpm exec vitest run app/catana/__tests__/LiveTurnTimer.test.js --exclude '.work
 
 Expected: FAIL because LiveTurnTimer.js does not exist.
 
-- [ ] **Step 3: Implement the shared clock and pure presentation helpers**
+- [x] **Step 3: Implement the shared clock and pure presentation helpers**
 
 Create app/catana/components/LiveTurnTimer.js:
 
@@ -273,7 +273,7 @@ export function useLiveTurnTimer({
 }
 ~~~
 
-- [ ] **Step 4: Run tests and verify GREEN**
+- [x] **Step 4: Run tests and verify GREEN**
 
 ~~~bash
 pnpm exec vitest run app/catana/__tests__/LiveTurnTimer.test.js app/catana/__tests__/timerSnapshot.test.js --exclude '.worktrees/**' --reporter=dot
@@ -281,7 +281,7 @@ pnpm exec vitest run app/catana/__tests__/LiveTurnTimer.test.js app/catana/__tes
 
 Expected: 2 files pass, 9 tests pass.
 
-- [ ] **Step 5: Lint and commit**
+- [x] **Step 5: Lint and commit**
 
 ~~~bash
 pnpm exec eslint app/catana/components/LiveTurnTimer.js app/catana/__tests__/LiveTurnTimer.test.js
@@ -311,7 +311,7 @@ Expected: checks exit 0 and the commit succeeds.
 - Consumes: useLiveTurnTimer from Task 1.
 - Produces: timerSnapshot props on both HUDs and a presence-only GameScreen clock.
 
-- [ ] **Step 1: Write failing ownership guards**
+- [x] **Step 1: Write failing ownership guards**
 
 Replace the timer test in renderPerfGuards.test.js:
 
@@ -395,7 +395,7 @@ timerStatusKind: "your_turn",
 
 Use timerSnapshot: null in the hidden test and a 5_000ms snapshot in the low-time test.
 
-- [ ] **Step 2: Run the guards and verify RED**
+- [x] **Step 2: Run the guards and verify RED**
 
 ~~~bash
 pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/TurnControlCluster.test.js --exclude '.worktrees/**' --reporter=dot
@@ -403,7 +403,7 @@ pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js app/catana/__
 
 Expected: failures show the regular clock remains in GameScreen and HUDs still consume timerMs.
 
-- [ ] **Step 3: Rewire GameScreen**
+- [x] **Step 3: Rewire GameScreen**
 
 Remove getTimerRemainingMs from the timerSnapshot import. Replace the timer section with:
 
@@ -442,7 +442,7 @@ Replace both timerMs={visibleTimerMs} props with:
 timerSnapshot={visibleTimerSnapshot}
 ~~~
 
-- [ ] **Step 4: Remove timer calculations from HUD parents**
+- [x] **Step 4: Remove timer calculations from HUD parents**
 
 In useLocalPlayerDockModel.js, delete the timer constants and helper exports. Remove timerMs, statusType, and gameStatus from the hook parameters. Delete the timer derivation and remove timerText, showStatusTimer, and isLowTimerAlertActive from the returned object.
 
@@ -481,7 +481,7 @@ In MobilePlayerCockpit.js, rename timerMs to timerSnapshot, remove the three tim
 />
 ~~~
 
-- [ ] **Step 5: Put the hook in the timer leaves**
+- [x] **Step 5: Put the hook in the timer leaves**
 
 Import useLiveTurnTimer into TurnControlCluster.js. Add:
 
@@ -551,7 +551,7 @@ Import useLiveTurnTimer into MobilePlayerCockpit.js. At the top of MobileCommand
 
 Rename its isLow usage to isLowTimerAlertActive and otherwise preserve the current JSX and classes exactly.
 
-- [ ] **Step 6: Verify GREEN and lint**
+- [x] **Step 6: Verify GREEN and lint**
 
 ~~~bash
 pnpm exec vitest run app/catana/__tests__/LiveTurnTimer.test.js app/catana/__tests__/timerSnapshot.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/TurnControlCluster.test.js --exclude '.worktrees/**' --reporter=dot
@@ -562,6 +562,8 @@ git diff --check
 Expected: all six test files pass and static checks exit 0.
 
 - [ ] **Step 7: Profile and commit**
+
+Follow-up: the implementation was committed, and development render counters sampled the intended ownership boundary. React DevTools Profiler was unavailable, so the desktop/mobile commit profile remains unchecked.
 
 Record three seconds of a timed 2D match with React DevTools Profiler at desktop and mobile sizes. Expected: timer-leaf commits continue, while GameScreen and the full player HUD do not commit solely because displayed time changed. If they still commit at timer cadence, stop and trace the remaining state source.
 
@@ -585,7 +587,7 @@ git commit -m "perf: isolate Catana turn timer renders"
 - Consumes: width from Board's existing useWindowSize call.
 - Produces: viewportWidth on Edge, PlaceableEdge, and HoverableEdge.
 
-- [ ] **Step 1: Add the failing fan-out guard**
+- [x] **Step 1: Add the failing fan-out guard**
 
 Add to renderPerfGuards.test.js:
 
@@ -608,7 +610,7 @@ Add to renderPerfGuards.test.js:
   });
 ~~~
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 ~~~bash
 pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js --exclude '.worktrees/**' --reporter=dot
@@ -616,7 +618,7 @@ pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js --exclude '.w
 
 Expected: FAIL because Edge still owns viewport subscriptions.
 
-- [ ] **Step 3: Pass the existing Board width**
+- [x] **Step 3: Pass the existing Board width**
 
 Add this prop to every Edge call in Board.js:
 
@@ -636,7 +638,7 @@ Forward the prop from Edge to both specialized edge components:
 viewportWidth={viewportWidth}
 ~~~
 
-- [ ] **Step 4: Verify GREEN, lint, and commit**
+- [x] **Step 4: Verify GREEN, lint, and commit**
 
 ~~~bash
 pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/Edge.passiveHover.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/Board.buildActionSuppression.test.js app/catana/__tests__/useWindowSize.test.js --exclude '.worktrees/**' --reporter=dot
@@ -660,7 +662,7 @@ Expected: all six test files pass and the commit succeeds.
 - Consumes: Tasks 1-3.
 - Produces: durable verification and ownership notes.
 
-- [ ] **Step 1: Run the combined regression set**
+- [x] **Step 1: Run the combined regression set**
 
 ~~~bash
 pnpm exec vitest run app/catana/__tests__/HudMotionPerformance.source.test.js app/catana/__tests__/LiveTurnTimer.test.js app/catana/__tests__/timerSnapshot.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/Edge.passiveHover.test.js app/catana/__tests__/BuildPickupHoverGhost.source.test.js app/catana/__tests__/Board.passiveBuildHover.test.js app/catana/__tests__/Board.buildActionSuppression.test.js app/catana/__tests__/useWindowSize.test.js --exclude '.worktrees/**' --reporter=dot
@@ -668,7 +670,7 @@ pnpm exec vitest run app/catana/__tests__/HudMotionPerformance.source.test.js ap
 
 Expected: all 12 test files pass.
 
-- [ ] **Step 2: Verify timer presentation**
+- [x] **Step 2: Verify timer presentation**
 
 Use a real timed 2D match, or temporarily pass a turn timer snapshot through SandboxBoardShell without staging that edit. Check 1440x900 and 390x844.
 
@@ -676,11 +678,13 @@ Confirm desktop/mobile countdown text and cadence, timer hiding, mobile --:-- fa
 
 - [ ] **Step 3: Verify every road mode after resize**
 
+Follow-up: placed-road and dock-launched build-pickup states were observed, including a desktop-to-mobile resize. The stock fixture produced no valid placement edges, so placement, passive-hover, and post-resize magnetic alignment remain unchecked for manual verification with a valid fixture.
+
 Use /catana/dev/sandbox at 1440x900 and 390x844. Exercise placed, placement, passive-hover, and dock-launched build-pickup roads. Confirm art, hit targets, hover previews, and placement previews remain aligned before and after resize.
 
 If the stock sandbox cannot generate a valid target or reliable geometry observation for a road mode, do not mark that observation complete or infer alignment from source/tests. Record the exact fixture or automation limitation and carry placement, passive-hover, or post-resize magnetic alignment forward as an explicit manual follow-up. The focused automated road suites plus the browser states that were actually observed remain valid branch-completion evidence.
 
-- [ ] **Step 4: Update project notes**
+- [x] **Step 4: Update project notes**
 
 Append to docs/agent/PROGRESS.md:
 
@@ -702,7 +706,7 @@ Append to docs/agent/NOTES.md:
 - Forward Board's existing viewport measurement through Board-rendered gameplay Edge paths to avoid edge-local useWindowSize subscriptions. This does not imply that getEdgeTransform currently consumes width or that non-Board Edge consumers are covered.
 ~~~
 
-- [ ] **Step 5: Final checks and evidence commit**
+- [x] **Step 5: Final checks and evidence commit**
 
 ~~~bash
 pnpm exec eslint app/catana/GameScreen.js app/catana/Board.js app/catana/Edge.js app/catana/components/LiveTurnTimer.js app/catana/components/useLocalPlayerDockModel.js app/catana/components/PlayerActionContainer.js app/catana/components/MobilePlayerCockpit.js app/catana/components/TurnControlCluster.js app/catana/__tests__/LiveTurnTimer.test.js app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/PlayerActionContainer.status.test.js app/catana/__tests__/MobilePlayerCockpit.source.test.js app/catana/__tests__/TurnControlCluster.test.js

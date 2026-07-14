@@ -30,13 +30,15 @@ describe("Catana HUD motion performance", () => {
   it("keeps the placement-node pulse on compositor-friendly properties", () => {
     const contents = readCatanaFile("Board.css");
     const keyframes = extractCssBlock(contents, "@keyframes board-pulse");
+    const pulseRule = extractCssBlock(contents, ".animation-pulse");
 
     expect(keyframes).not.toBe("");
     expect(keyframes).toContain("transform:");
     expect(keyframes).not.toMatch(
       /(?:box-shadow|text-shadow|filter|width|height|top|left|margin|padding)\s*:/
     );
-    expect(contents).toContain("will-change: transform");
+    expect(pulseRule).not.toBe("");
+    expect(pulseRule).toContain("will-change: transform");
   });
 
   it("keeps the active-avatar pulse on compositor-friendly properties", () => {
