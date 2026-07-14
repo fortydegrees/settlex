@@ -1,325 +1,281 @@
 # Archived Replay V1 Design
 
+Date: 2026-07-14
+Status: Approved design revision; pending implementation plan
+
 ## Objective
 
-Turn the existing archived replay infrastructure into a discoverable, useful
-postgame analysis tool without rebuilding the live game screen. A finished
-match should be easy to find, easy to enter from the results flow, and easy to
-navigate by meaningful game events and turns.
+Make replay part of the normal finished-game experience rather than a separate
+analytics page layered over the board. A player who finishes a live match
+should move between Results, Replay, and future postgame tools without leaving
+or remounting the game screen. Someone opening an archived match should be able
+to play through it from the initial pre-placement state without seeing the
+outcome first.
 
-The replay remains the normal Catana board and HUD in read-only mode. Replay
-controls are an additional navigation layer over that screen. Rematches and a
-full postgame statistics product are separate follow-up projects.
+The Catana board and existing HUD remain the dominant surface. Replay adds a
+compact, read-only navigation panel and player-perspective switching. Rematch
+and full postgame statistics remain separate follow-up projects.
 
-## V1 Scope
+## Product Model
 
-The replay slice includes:
-
-- a direct **Watch replay** action from the game-over and postgame summary
-  surfaces;
-- a **My games** account-menu item that opens the signed-in player's existing
-  profile/history page;
-- a right-side desktop replay console and responsive mobile bottom dock/sheet;
-- event and turn navigation, play/pause, scrubbing, and `1x`, `2x`, and `4x`
-  playback;
-- human-readable current-event copy;
-- synchronization between replay position and the existing left game log;
-- a compact interactive victory-point chart powered by Recharts;
-- removal of the disabled Rematch button and disabled Stats/Replay tabs.
-
-V1 does not include rematch behavior, a new match-history page, resource or
-dice analytics, replay-specific sound/effect playback, or implementation of the
-full postgame Stats surface.
-
-## Entry Points And Postgame Cleanup
-
-### Game-over modal
-
-The game-over result remains the first postgame surface. Its actions become:
-
-1. **Watch replay** — the primary postgame action;
-2. **Match summary** — opens the existing final-score summary;
-3. **Return to lobby**;
-4. **Close**.
-
-The disabled Rematch control is removed until rematch behavior has its own
-design and implementation.
-
-### Postgame summary
-
-`PostgameOverlay` becomes a single-purpose match summary. The disabled tab bar
-is removed instead of presenting unavailable Stats and Replay destinations.
-The summary includes a **Watch replay** action so players can move from either
-postgame surface into the archive.
-
-### My games
-
-The signed-in account/profile menu gains **My games**. For v1 it links to the
-current user's public profile route, which already contains recent archived
-matches and replay links. A separate private history surface is not required
-for this slice.
-
-## Replay Routing And Archive Readiness
-
-The postgame action opens the canonical game route with an explicit replay
-intent:
+A match has one canonical route:
 
 ```text
-/g/:matchID?view=replay
+/g/:matchID
 ```
 
-Replay intent changes the route lookup order. It checks the archive before the
-live boardgame.io match, allowing replay entry during the existing grace period
-when both copies are present.
+That route presents one of three states:
 
-- If the archive exists, the explicit replay route starts at the initial replay
-  position.
-- If the live match has ended but the archive write is still completing, the
-  route shows a lightweight **Preparing replay...** state and refreshes once a
-  second for up to ten seconds. It then offers manual Retry and Return to
-  game/lobby actions rather than polling indefinitely.
-- If a replay is requested for an active match, the page explains that the
-  replay is available after the match finishes and links back to the live game.
-- If neither a live nor archived match exists, the existing unavailable-match
-  treatment remains the terminal state.
+1. **Live game** — the existing interactive game experience.
+2. **Live postgame** — the same mounted board after game over, initially with
+   Results open and the archive hydrating in the background.
+3. **Archived replay** — the same board in read-only replay mode, initially at
+   the unspoiled pre-placement state with replay controls open.
 
-The existing route behaviors remain distinct:
+`?view=replay` is no longer part of the product model. Existing URLs containing
+it remain harmless and backward-compatible, but newly generated links omit it.
+The legacy `/replays/:replayId` route may redirect to or render the same
+canonical archived experience; it must not retain a separate interaction
+model.
 
-- `/replays/:replayId` opens a known archive at its first replay position;
-- `/g/:matchID?view=replay` explicitly requests the archive and starts at the
-  beginning;
-- an ordinary `/g/:matchID` continues to prefer a live match and, once only an
-  archive remains, may open its final state as the current graceful fallback.
+## Finished-game Surfaces
 
-This makes the results link reliable without requiring the browser to know the
-archive's generated replay ID.
+Results, Replay, and future Stats are views within one postgame host. They are
+not separate pages.
 
-## Replay Timeline Model
+### Live transition
 
-The archived action reducer remains the source of authoritative raw frames.
-A new pure replay projection converts those frames into the navigation model
-used by the console, chart, and game log.
+When a live game reaches game over:
 
-The projection exposes:
+- the current board stays mounted;
+- the normal game-over Results modal opens immediately;
+- no URL change, page navigation, or full-screen loading state occurs;
+- replay data begins hydrating from the authoritative archive in the
+  background;
+- the viewer's current seat is retained as the default replay perspective.
 
-- ordered meaningful replay events;
-- a mapping from event index to raw frame index;
-- a mapping from stable game-log entry ID to event index;
-- the first event for each turn;
-- victory-point values for every player at every event.
+If Replay is selected before the archive is ready, Results stays visible and
+the Replay action shows a small `Preparing replay...` state. The board never
+disappears. Archive polling is bounded and exposes Retry if preparation fails.
 
-### Meaningful events
+### Archived entry
 
-Structured `G.gameLog` entries define meaningful events. When a reduced raw
-frame introduces a new log entry, that entry becomes a replay event pointing
-to that authoritative frame. Multiple entries introduced by one raw action may
-point to the same board state; they remain separately addressable so every
-visible game-log row can be selected.
+Opening an already archived `/g/:matchID` starts at replay event `0`, the
+initial pre-placement state. Replay controls are open, Results is closed, and
+no winner, final score, or future event label is revealed automatically.
 
-The initial board state is always event index `0`, labelled `Initial setup`.
-If an older archive has no structured game log, the projection falls back to
-raw action frames and maps known action types to cleaned-up labels. Unknown
-action types receive a neutral `Game updated` label rather than exposing
-internal payload names.
+Results is always available as an intentional reveal action. Reaching the
+terminal replay event opens Results automatically once. Closing Results
+returns to the replay event and perspective the viewer was using rather than
+seeking or resetting the replay.
 
-The projection is deterministic and contains no timers or presentation state.
-It is independently testable and does not depend on Recharts or React.
+### Current postgame actions
 
-### Navigation semantics
+The game-over surface contains:
 
-- Previous/next event moves exactly one meaningful event.
-- Next turn moves to the first event whose turn is later than the current turn.
-- Previous turn moves to the first event of the current turn when the user is
-  partway through it; from that boundary it moves to the first event of the
-  preceding turn.
-- The scrubber operates on meaningful event indexes, not raw reducer frames.
-- Manual navigation through buttons, keyboard, game log, scrubber, or chart
-  pauses autoplay.
-- Play at the final event restarts from the initial position and continues.
-- Autoplay stops when it reaches the final event.
+- **Replay**;
+- **Match summary**;
+- **Return to lobby**;
+- **Close**.
 
-The default autoplay cadence is one event per second at `1x`, one event per
-half-second at `2x`, and one event per quarter-second at `4x`. State changes are
-instantaneous at each step.
+Disabled Rematch, Replay, or Stats placeholders are not shown. Stats should be
+added later as another real postgame view when its content exists.
 
-## Replay Console
+## Replay Panel
 
-### Desktop
+### Visual role
 
-A full-height Catana glass console floats against the right edge of the board,
-using space vacated by live-only action controls. It is visually secondary to
-the board and does not create a separate replay page around the game.
+Replay is compact postgame meta chrome, not a full-height analysis console.
+Its container must reuse the visual language and behaviour of the existing
+game log/chat panels:
 
-The console contains, in order:
+- the same light Catana glass hierarchy;
+- comparable corner radius, border, shadow, blur, header density, spacing,
+  button sizing, and typography;
+- a bounded panel that leaves the board visually dominant;
+- no generic SaaS card stack or second application shell.
 
-1. an Archived replay heading and collapse control;
-2. current turn and human-readable event label;
-3. previous event, play/pause, and next event controls;
-4. previous-turn and next-turn controls;
-5. the event scrubber with turn markers and current/total event count;
-6. `1x`, `2x`, and `4x` speed controls;
-7. the compact victory-point chart and current score legend.
+On desktop, the panel uses the available right side of the board. It may
+collapse or close like the log/chat surfaces, but it does not become a narrow
+permanent playback rail. On mobile, it becomes a compact dock/details sheet
+that coexists with the normal mobile cockpit.
 
-The collapsed state becomes a slim replay rail that retains play/pause and
-previous/next event controls plus an expand affordance.
+### Contents
 
-### Mobile
+The panel contains:
 
-At the existing portrait breakpoint, the permanent right console becomes a
-compact bottom replay dock. The dock keeps previous event, play/pause, next
-event, and the current turn visible. Expanding it opens a bottom sheet with the
-turn controls, scrubber, speed choices, event label, and score chart.
+1. Replay heading plus Results and close/collapse actions;
+2. player-perspective switcher;
+3. current turn and human-readable event label;
+4. previous/next event controls;
+5. previous/next turn controls;
+6. meaningful-event scrubber with turn markers and position count;
+7. compact victory-point history.
 
-The mobile treatment must not wrap the board in a second desktop layout or
-permanently reduce the board to a narrow column.
+Replay v1 has no play/pause control, autoplay timer, speed selector, or Space
+keyboard shortcut. Navigation is deliberate and step-based.
 
-### Keyboard
+## Player Perspective
 
-When focus is not inside an editable control:
+The perspective switcher contains **Board** plus every participant in seat
+order.
 
-- Left/Right Arrow moves by event;
-- Shift+Left/Right Arrow moves by turn;
-- Space toggles play/pause.
+- For a participant continuing directly from a live game, their seat is the
+  default.
+- For an archived visitor who can be matched to a participant account or seat
+  credential, that seat is the default.
+- Otherwise, **Board** is the default.
 
-Replay keyboard handling supersedes the live-game Space shortcut while
-`isReplay` is true. Every icon-only control has an accessible name and visible
-focus treatment.
+Board perspective shows the normal spectator composition without a local hand.
+A player perspective renders that player's standard bottom HUD at the current
+replay event:
 
-## Human-readable Event Labels
+- avatar and public player stats;
+- exact resource counts;
+- development cards held at that moment;
+- the normal action dock presentation;
+- dice and turn/status box on desktop;
+- the End Turn/next-turn control in its normal position.
 
-The current-event label and left game log use the same formatting source.
-Existing `formatLogEntry` behavior is extended or adapted to expose both its
-rich display tokens and a plain accessible sentence. Replay UI must not keep a
-second independent dictionary of build, roll, robber, award, development-card,
-and game-over names.
+All gameplay controls are inert. Action-dock items, dice, resource shortcuts,
+development cards, and End Turn retain their familiar silhouettes but use the
+existing disabled/inactive treatment and never call live moves. The desktop
+status box identifies replay context and the current turn instead of
+presenting a live prompt or timer.
 
-Examples of intended labels include:
+Archived replay state is authoritative postgame information, so switching
+perspectives intentionally allows inspection of each player's historical hand.
+Only the selected player's private inventory is rendered in the local HUD;
+other players continue to use opponent-box presentation.
 
-- `DandyDrew rolled 8`;
-- `Ignasis built a settlement`;
-- `Sw00d moved the robber`;
-- `lizzzcakes gained Longest Road`.
+## Timeline And Navigation
 
-## Left Game-log Synchronization
+The existing meaningful-event projection remains authoritative for board
+state, visible log entries, active log row, scrubber, turn jumps, graph cursor,
+and Results-at-end behaviour. There is one replay cursor.
 
-Live-game log behavior remains unchanged. Replay mode adds a controlled log
-path with these rules:
+- Previous/next event moves one meaningful event.
+- Next turn moves to the first event in the next turn.
+- Previous turn moves to the current turn boundary, then the previous turn
+  boundary.
+- The scrubber seeks meaningful events rather than raw reducer frames.
+- Left/Right Arrow steps events when focus is outside an editable control.
+- Shift+Left/Right Arrow steps turns.
+- Clicking a visible game-log row or graph position seeks the same cursor.
 
-- only log entries present at the current replay event are rendered;
-- seeking backwards removes future entries immediately;
-- the entry associated with the current replay position is highlighted;
-- the active row scrolls into view without animated or blocking transitions;
-- selecting a replay log row jumps to its mapped event and pauses playback;
-- entries that share a raw board frame remain individually selectable.
+Replay state changes are immediate. Live GSAP effects, audio, haptics,
+automatic actions, timers, and gameplay input remain suppressed.
 
-Archived chat remains read-only and complete in v1. It is not synchronized to
-replay time because archived chat messages do not currently carry a replay
-frame or game-log event reference.
+## Log And Score History
 
-## Victory-point Chart
+The existing game log remains the event list; Replay does not duplicate it.
 
-The project adds `recharts` as an approved chart-rendering dependency. Shadcn
-chart wrappers and any additional visual system are not introduced.
+- future log entries stay hidden;
+- the active entry scrolls into view without a blocking animation;
+- visible log rows are clickable seek targets;
+- archived chat remains complete and read-only because chat messages do not
+  currently contain replay-event timestamps.
 
-The replay chart is a focused `ReplayScoreChart` component. A small
-Catana-owned chart frame supplies shared typography, player-color treatment,
-grid, and legend styling that future postgame charts can reuse. It is not a
-general analytics framework.
+The stepped victory-point chart remains in the compact panel and continues to
+use Recharts. To preserve the unspoiled archive entry, it renders score history
+only through the current replay event. It must not draw future score lines,
+show final-score legends, or reveal future event labels. The graph can grow as
+the viewer steps forward. Its current-score legend reflects the selected event.
 
-Chart behavior:
+The scrubber necessarily communicates total replay length, but it does not
+label unseen future events or reveal the winner.
 
-- one stepped line per player using existing Catana player colors;
-- x positions use meaningful event index, with turn numbers shown at turn
-  boundaries;
-- y positions use integer total victory points;
-- totals come from the authoritative archived state and therefore include
-  hidden victory-point development cards;
-- a vertical reference line marks the current replay event;
-- clicking or tapping the plot jumps to the nearest event and pauses playback;
-- a compact legend shows every player and their VP at the current replay
-  position;
-- the chart resizes with the console and remains readable for two to four
-  players.
+## Data Flow
 
-V1 does not include zoom/pan, event icons on the plot, resource overlays,
-advanced hover tooltips, export, or comparisons between matches.
+### Archived route
 
-Replay projection prepares plain chart data before rendering. Recharts does
-not own replay indexing, score calculation, labels, player colors, or seek
-behavior. Because the chart component is reached only through the replay
-client tree, the library should remain outside the ordinary live-game route
-chunk.
+The server loads the archived match, rebuilds validated frames, and passes the
+initial event, event projection, participants, and final summary into the
+shared postgame replay client. The client starts at event `0`.
 
-## Playback Presentation
+### Live postgame
 
-Replay playback is state-first:
+The live game-over state is displayed immediately from the connected
+boardgame.io client. A Settlex-owned postgame replay endpoint loads the newly
+archived match by `matchID` and returns the same validated replay payload used
+by the archived route. The postgame host installs that payload without
+navigating or remounting the visible board.
 
-- each event swaps to its reconstructed authoritative state immediately;
-- live GSAP effect sequences do not rerun;
-- live gameplay audio does not play;
-- no generic changed-piece glow or highlight is added;
-- log scrolling and cursor movement are non-blocking.
+Client-recorded snapshots are not the replay source of truth. They are
+incomplete after reconnects and contain player-view masking during live play,
+so they cannot reliably support historical perspective switching.
 
-This avoids misleading animation reconstruction and keeps high-speed playback
-legible. Normal UI hover, press, panel, and reduced-motion behavior continues
-to follow the Catana design system.
+### Reconstruction safety
 
-## Resilience And Empty States
+`buildReplayFrames` remains responsible for deterministic reconstruction and
+must continue to:
 
-- An archive with no actions still renders its initial state with navigation
+- validate initial and final Catana state shape;
+- reject impossible state-ID gaps and reducer errors;
+- skip boardgame.io transition entries already applied by an earlier reducer
+  action;
+- verify that the terminal reconstructed state matches the archived final
+  state ID.
+
+## Resilience
+
+- An archive with no actions renders its initial state with navigation
   disabled.
-- Missing structured game-log data uses the raw-frame fallback.
-- Missing participant color metadata uses the existing player-color fallback.
-- If archived action reconstruction throws or produces no valid state, the
-  replay unavailable treatment is shown rather than presenting a partial,
-  potentially misleading replay.
-- The score chart is omitted when score data cannot be derived, while replay
-  navigation and the board remain usable.
-- Bounded archive preparation provides a manual Retry instead of an infinite
-  loading state.
+- Missing structured game-log entries use the existing human-readable raw
+  action fallback.
+- Invalid reconstruction never renders a partial replay.
+- A live postgame archive delay leaves Results and the final live board usable.
+- A failed background replay request offers Retry and Return to lobby without
+  replacing the whole screen.
+- Missing score history omits the graph while keeping step navigation and the
+  board available.
 
 ## Testing And Verification
 
-Shared logic, event wiring, and state flow are test-first. Focused automated
-coverage includes:
+Shared logic, state flow, routing, and perspective wiring receive focused
+automated coverage for:
 
-- meaningful-event extraction and raw-frame fallback;
-- stable log-ID/event mappings, including multiple log entries on one frame;
-- previous/next event and turn-boundary behavior;
-- autoplay cadence, restart-at-end, stop-at-end, and manual-seek pausing;
-- human-readable labels sharing the game-log formatter;
-- VP series generation from archived states, including hidden VP cards;
-- graph/log seek callbacks selecting the correct event;
-- replay-controlled logs hiding future entries when seeking backwards;
-- replay-intent archive-first routing and its active, preparing, ready, and
-  unavailable states;
-- postgame actions and account-menu history link.
+- canonical `/g/:matchID` live-versus-archive routing without replay intent;
+- archived entry at event `0`;
+- live game-over transition retaining the mounted board while replay hydrates;
+- bounded preparation, retry, and failure behaviour;
+- Results manual reveal and automatic reveal at the terminal event;
+- closing Results preserving cursor and perspective;
+- Board and participant perspective selection;
+- selected historical resources and development cards reaching the local HUD;
+- replay gameplay controls remaining disabled;
+- previous/next event and turn navigation;
+- keyboard, log, scrubber, and graph seeking sharing one cursor;
+- future log rows and future graph data remaining hidden;
+- legacy `?view=replay` and `/replays/:replayId` compatibility;
+- human-readable event labels and replay-frame validation.
 
-Manual browser verification uses:
+Manual verification uses a real archived match and a completed local match:
 
-- desktop at `1440x900` for console/board coexistence, collapsed mode, log
-  scrolling, chart seeking, and keyboard controls;
-- mobile portrait at `390x844` for the compact dock, expanded sheet, touch
-  targets, chart readability, and unobstructed board access;
-- a completed local match or archived fixture for the results-to-preparing-to-
-  replay transition;
-- reduced-motion mode and keyboard-only navigation.
+- desktop `1440x900`: unspoiled entry, native panel fit, every perspective,
+  resources/dev cards, dice/status/disabled End Turn, step controls, log sync,
+  graph growth, Results reveal, and in-place live transition;
+- mobile `390x844`: compact replay controls, player cockpit coexistence,
+  perspective switching, Results access, and unobstructed board interaction;
+- browser console and reduced-motion checks.
 
 ## Acceptance Criteria
 
-The replay v1 slice is complete when:
+Replay v1 revision is complete when:
 
-- a player can reach replay directly from either postgame results surface;
-- archive timing never drops that player into an unintended live/spectator
-  screen or an endless loader;
-- signed-in players can find recent replays through **My games**;
-- disabled Rematch, Stats, and Replay affordances are no longer visible;
-- event, turn, scrubber, log, keyboard, and chart navigation stay synchronized;
-- moving backwards removes future game-log entries;
-- autoplay works at `1x`, `2x`, and `4x` and stops at the end;
-- current event labels are human-readable;
-- the VP graph accurately follows authoritative archived scores and can seek;
-- the full existing game board remains the dominant replay surface;
-- desktop and mobile replay controls are usable without interfering with the
-  live game experience;
-- focused automated tests and the specified manual browser checks pass.
+- a live player sees Results immediately at game over and can enter Replay
+  without navigation or board remounting;
+- an archived `/g/:matchID` opens unspoiled at the initial pre-placement state;
+- newly generated replay links do not require `?view=replay`;
+- Results is deliberately accessible throughout and opens automatically only
+  upon reaching the terminal event;
+- Replay uses a compact panel that visibly belongs to the game log/chat family;
+- play/pause and speed controls are absent;
+- event, turn, scrubber, keyboard, log, and graph seeking remain synchronized;
+- future log and score information stays hidden;
+- Board and player perspectives work, with the selected historical hand and
+  read-only standard HUD shown correctly;
+- desktop dice, replay status, and disabled End Turn remain visible;
+- replay interactions cannot submit gameplay moves;
+- invalid or delayed archives leave the finished-game board and Results usable;
+- focused automated tests and desktop/mobile browser checks pass.
