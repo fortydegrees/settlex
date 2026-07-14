@@ -37,6 +37,7 @@ describe("public profile page", () => {
         {
           archivedMatchId: "arch_3",
           replayId: "rpl_3",
+          bgioMatchId: "match_3",
           finishedAt: "2026-04-07T18:00:00.000Z",
           gameName: "catan",
           playerCount: 4,
@@ -62,6 +63,7 @@ describe("public profile page", () => {
     expect(html).toContain("🤠");
     expect(html).toContain("Joined");
     expect(html).toContain("Total games");
-    expect(html).toContain("/replays/rpl_3");
+    expect(html).toContain("/g/match_3");
+    expect(html).not.toContain("/replays/rpl_3");
   });
 });

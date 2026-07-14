@@ -3357,13 +3357,14 @@
     - `getPublicProfile(username)` is intentionally a small read-model query, not a generic account loader. It returns only the public shape needed for `/u/:username`:
       - current public identity
       - aggregated win/loss/total counts from `archived_match_players`
-      - recent archived matches with replay ids
+      - recent archived matches with both legacy replay ids and canonical
+        boardgame.io match ids
     - the query currently treats username lookup as case-insensitive via `LOWER(current_username) = LOWER($1)`. That is compatible with the reserved-username model already established for guest accounts.
     - the first profile page is server-rendered and deliberately light:
       - current avatar/username
       - joined date
       - summary stat cards
-      - recent finished matches with replay links
+      - recent finished matches linked through the canonical `/g/:matchID` URL
     - the profile page was written without JSX because Vitest imports these app-route modules as plain `.js` files, and Vite import analysis rejects JSX in that path. If we want JSX here later, either the file extension or the test/import strategy will need to change.
   - Archived replay notes:
     - replay frames are rebuilt from archived actions, not stored as per-step snapshots:
@@ -4143,3 +4144,37 @@
 - Keep each pointer batching frame separate from the preview's continuous spring animation frame and cancel both independently during cleanup.
 - Keep development-card hover measurement and pointer state batched to one frame; cancel pending work on mouse leave and unmount so stale hover state cannot arrive afterward.
 - This is intentionally not a target-rectangle cache, idle spring-loop rewrite, shared scheduler abstraction, or visual timing change.
+- Integrated replay note:
+- Generate current replay discovery links as `/g/:matchID`. The legacy
+  `/replays/:replayId` route remains readable for old links, but current UI must
+  not generate it or append `?view=replay` to the canonical game URL.
+- Replay entry is unspoiled: begin at the pre-placement frame with future log
+  entries, final scores, hidden VP, and terminal Results withheld until the
+  replay cursor reaches them.
+- Keep one event index authoritative for reconstructed board state, visible log
+  entries, active log row, scrubber, previous/next event and turn controls,
+  keyboard arrows, and graph seeking. Replay is step-only and state-first; do
+  not restore autoplay, speeds, live GSAP effects, audio, or blocking cues.
+- A selected player perspective uses that player's ordinary desktop/mobile HUD
+  with exact historical resources and development cards, but build/trade
+  actions, resource shortcuts, dev-card play, dice, status actions, Roll, and
+  End Turn stay disabled. A Board/null perspective remains hand-free.
+- The stepped VP graph is spoiler-safe: render samples and turn markers only
+  through the current event, keep the cursor synchronized, and allow pointer or
+  keyboard seeking without exposing future values.
+- Live postgame replay and archived entry converge in `PostgameGameBoard` on one
+  mounted `GameScreenWithEffects`. The Results/Postgame replay actions call the
+  supplied callback, archive preparation happens in place, and entering replay
+  must not navigate, key, blank, or remount the board.
+- Results are a replay-session surface: manual reveal may seek to the terminal
+  frame and closing early restores the prior cursor/panel state; first arrival
+  at the terminal frame opens Results automatically.
+- boardgame.io archive logs may contain transition entries already applied by
+  an earlier reducer action. `buildReplayFrames` must skip entries whose
+  `_stateID` is behind the reconstructed state's `_stateID` or setup replay
+  state will desynchronize.
+- Postgame replay hydration retries only HTTP `202`, waits `750ms`, and stops
+  after 10 attempts by default. Other response statuses fail immediately with
+  the server error where available.
+- Rematch and a full postgame Stats surface remain separate follow-up features;
+  do not restore disabled placeholders while they are absent.

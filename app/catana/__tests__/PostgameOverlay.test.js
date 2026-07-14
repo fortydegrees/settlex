@@ -19,4 +19,19 @@ describe("PostgameOverlay", () => {
 
     expect(contents).toContain("getPlayerNameHex");
   });
+
+  it("shows the completed summary and replay action without disabled tabs", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+
+    expect(contents).toContain("Watch replay");
+    expect(contents).not.toContain("TABS");
+    expect(contents).not.toContain("More stats coming soon");
+  });
+
+  it("uses the supplied callback for Replay instead of generating a URL", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+
+    expect(contents).toContain("onClick={onWatchReplay}");
+    expect(contents).not.toContain("href=");
+  });
 });

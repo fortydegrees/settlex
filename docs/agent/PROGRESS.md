@@ -6796,3 +6796,25 @@
   - `pnpm exec eslint app/catana/BuildPlacementPreview.js app/catana/RobberPlacementPreview.js app/catana/components/DevCardDisplay.js app/catana/__tests__/PointerFrameBatching.source.test.js`
   - `pnpm verify`
   - Playwright CLI on `/catana/dev/sandbox` at `1440x900`: 48-point rapid pointer sweeps kept road and robber previews aligned to the latest pointer; dev-card hover preserved the existing 1.28x scale/15px lift, reset to identity on leave, and retained keyboard-focus magnification; zero browser console warnings/errors.
+## Status (2026-07-14, integrated replay discovery closeout)
+- Added `bgioMatchId` to the public-profile recent-match read model and changed
+  current profile discovery links from `/replays/:replayId` to the canonical
+  `/g/:matchID` route. The legacy replay-id route remains readable.
+- Locked `PostgameOverlay` to its supplied in-place replay callback with no URL,
+  and replaced the superseded replay notes with the unspoiled, step-only,
+  selected-player read-only HUD, spoiler-safe graph, and shared mounted-board
+  rules.
+- RED evidence: the three-file discovery run failed on the absent
+  `bgioMatchId` and legacy profile href; the callback-only overlay regression
+  already passed against the integrated postgame implementation.
+- GREEN evidence: the three-file discovery run passes `5/5`; `pnpm lint`
+  reports no warnings or errors; the production `pnpm build` completes with the
+  local replay verification environment; and `git diff --check` is silent.
+- The full focused replay command passes `151/152`. Its sole failure is the
+  existing dirty-worktree source assertion in
+  `GameScreen.logPresentation.test.js`, which still expects the removed literal
+  `!isReplay && isGameOver` although `GameScreen` now protects live presentation
+  through an explicit replay early-return.
+- `pnpm verify` confirms game-core `153/153` and server/lib/AI `189/189`, then
+  stops at that same app source assertion. Real-archive desktop/mobile and
+  completed-live-game browser QA remains pending the main agent.
