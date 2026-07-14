@@ -21,6 +21,19 @@ import { getPieceSvgFile } from "../theme/pieceAssets.js";
 export const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
 export const DEV_CARD_PRELAUNCH_DELAY_MS = 320;
 
+export const applyReadOnlyDockState = ({
+  readOnly,
+  dynamicActions,
+  rollEnabled,
+  endTurnEnabled,
+}) => ({
+  dynamicActions: readOnly
+    ? dynamicActions.map((action) => action && { ...action, enabled: false })
+    : dynamicActions,
+  rollEnabled: readOnly ? false : rollEnabled,
+  endTurnEnabled: readOnly ? false : endTurnEnabled,
+});
+
 export function useLocalPlayerDockModel({
   G,
   ctx,
@@ -35,12 +48,14 @@ export function useLocalPlayerDockModel({
   canRoll,
   canEnd,
   themeId,
+  readOnly = false,
 }) {
   const activePickupPieceType = buildPickup?.pieceType ?? null;
   const stage = ctx?.activePlayers?.[player.id];
   const isDevStage = stage === "preRoll" || stage === "postRoll";
   const devPlayActive = G.devCardPlay && G.devCardPlay.playerId === player.id;
   const canStartDev =
+    !readOnly &&
     clientPlayerID === player.id &&
     ctx.currentPlayer === player.id &&
     isDevStage &&
@@ -189,7 +204,7 @@ export function useLocalPlayerDockModel({
     ]
   );
 
-  const dynamicActions = useMemo(
+  const availableDynamicActions = useMemo(
     () =>
       actions.map((action) => {
         if (!action) return null;
@@ -205,9 +220,10 @@ export function useLocalPlayerDockModel({
     [actions, activePickupPieceType, actionAvailability]
   );
 
-  const canTradeNow = actionAvailability.trade;
+  const canTradeNow = !readOnly && actionAvailability.trade;
   const canQuickTradeResource = useCallback(
     (resource) => {
+      if (readOnly) return false;
       if (!onTradeClick || !canTradeNow) return false;
       return Boolean(
         getMaritimeTradeRateIfTradable({
@@ -219,11 +235,20 @@ export function useLocalPlayerDockModel({
         })
       );
     },
-    [G.core, G.coreTopology, canTradeNow, onTradeClick, player.id, player.resources]
+    [
+      G.core,
+      G.coreTopology,
+      canTradeNow,
+      onTradeClick,
+      player.id,
+      player.resources,
+      readOnly,
+    ]
   );
 
   const handleResourceClick = useCallback(
     (resource) => {
+      if (readOnly) return;
       if (!onTradeClick) return;
       if (!canTradeNow) return;
 
@@ -238,7 +263,15 @@ export function useLocalPlayerDockModel({
       if (!rate) return;
       onTradeClick(resource);
     },
-    [G.core, G.coreTopology, canTradeNow, onTradeClick, player.id, player.resources]
+    [
+      G.core,
+      G.coreTopology,
+      canTradeNow,
+      onTradeClick,
+      player.id,
+      player.resources,
+      readOnly,
+    ]
   );
 
   const totalResources = player.resources?.length ?? 0;
@@ -247,8 +280,16 @@ export function useLocalPlayerDockModel({
   const visibleDevCards = displayDevCards ?? player.devCards ?? [];
   const showDevCardBay =
     visibleDevCards.length > 0 || Boolean(keepDevCardShellMounted);
-  const rollEnabled = Boolean(canRoll);
-  const endTurnEnabled = Boolean(canEnd);
+  const {
+    dynamicActions,
+    rollEnabled,
+    endTurnEnabled,
+  } = applyReadOnlyDockState({
+    readOnly,
+    dynamicActions: availableDynamicActions,
+    rollEnabled: Boolean(canRoll),
+    endTurnEnabled: Boolean(canEnd),
+  });
   const turnControlMode = getTurnControlMode({
     canRoll: rollEnabled,
     canEnd: endTurnEnabled,

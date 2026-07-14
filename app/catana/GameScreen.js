@@ -340,11 +340,9 @@ export function GameScreen(bgioProps) {
   const idleStateByPlayerId = useMemo(() => {
     return getActiveIdleStateByPlayerId(idlePresence, nowMs);
   }, [idlePresence, nowMs]);
-  const showResultsButton =
-    isGameOver &&
-    (isReplay
-      ? !bgioProps.replayResultsOpen
-      : !showGameOverModal && !showPostgame);
+  const showResultsButton = isReplay
+    ? !bgioProps.replayResultsOpen
+    : isGameOver && !showGameOverModal && !showPostgame;
   const handleWatchReplay = useCallback(() => {
     onWatchReplay?.();
   }, [onWatchReplay]);
@@ -1675,8 +1673,9 @@ TODO: accurately colour it
             themeId={themeId}
             activeMobileMetaPanel={mobileMetaPanel}
             onMobileMetaPanelOpen={setMobileMetaPanel}
-            showTurnControls={!isReplay && !isGameOver}
+            showTurnControls={isReplay || !isGameOver}
             diceRoll={mobileCommandDiceRoll}
+            readOnly={isReplay}
           />
         ) : (
           <PlayerActionContainer
@@ -1707,7 +1706,11 @@ TODO: accurately colour it
             timerSnapshot={visibleTimerSnapshot}
             themeId={themeId}
             layoutOffsetX={playfieldCenterOffsetX}
-            showTurnControls={!isReplay && !isGameOver}
+            showTurnControls={isReplay || !isGameOver}
+            readOnly={isReplay}
+            replayStatusText={
+              isReplay ? `Replay · Turn ${bgioProps.G?.core?.turn ?? "—"}` : null
+            }
           />
         ))}
 
@@ -1831,7 +1834,10 @@ TODO: accurately colour it
             onConfettiFired={() => {
               winnerConfettiSeenRef.current = true;
             }}
-            onWatchReplay={isReplay ? undefined : handleWatchReplay}
+            onWatchReplay={
+              isReplay ? bgioProps.onReplayResultsClose : handleWatchReplay
+            }
+            replayStatus={bgioProps.postgameReplayStatus}
             onViewSummary={
               isReplay
                 ? undefined

@@ -23,7 +23,7 @@ describe("PlayerActionContainer status presentation source", () => {
   it("renders the viewer-aware status title instead of the legacy text field", () => {
     const source = fs.readFileSync(containerPath, "utf8");
 
-    expect(source).toContain("gameStatus.title");
+    expect(source).toContain("gameStatus?.title");
     expect(source).toContain("TurnControlCluster");
     expect(source).not.toContain("gameStatus.text");
   });
@@ -33,6 +33,7 @@ describe("PlayerActionContainer status presentation source", () => {
     const localDockSource = fs.readFileSync(localDockModelPath, "utf8");
 
     expect(source).toContain("timerSnapshot");
+    expect(source).toContain("timerSnapshot={readOnly ? null : timerSnapshot}");
     expect(source).toContain("timerStatusType={statusType}");
     expect(source).toContain("timerStatusKind={gameStatus?.kind}");
     expect(source).not.toContain("timerText={timerText}");
@@ -40,5 +41,13 @@ describe("PlayerActionContainer status presentation source", () => {
     expect(localDockSource).not.toContain("formatTimer");
     expect(localDockSource).not.toContain("LOW_TIMER_THRESHOLD_SECONDS");
     expect(localDockSource).toContain("getTurnControlMode");
+    expect(source).toContain("showTurnControls");
+    expect(source).toContain("rollContent={");
+    expect(source).toContain("replayStatusText");
+    expect(source).toContain("readOnly={readOnly}");
+    expect(source).toContain(
+      'mode={readOnly ? "inactive" : turnControlMode}'
+    );
+    expect(source).not.toContain("Status box - between dice and end turn");
   });
 });
