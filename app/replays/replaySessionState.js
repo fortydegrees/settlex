@@ -14,24 +14,34 @@ export const createReplaySessionState = ({
 });
 
 export const createReplayActivationState = ({
+  identityKey = null,
   replayActive = false,
 } = {}) => ({
+  identityKey,
   intentPending: false,
   replayActive,
 });
 
 export const replayActivationReducer = (state, action) => {
+  if (action.type === "resetIdentity") {
+    if (action.identityKey === state.identityKey) return state;
+    return createReplayActivationState({
+      identityKey: action.identityKey,
+      replayActive: action.replayActive,
+    });
+  }
+  if (action.identityKey !== state.identityKey) return state;
   if (action.type === "requestReplay") {
     if (state.replayActive) return state;
     if (action.payloadStatus === "ready") {
-      return { intentPending: false, replayActive: true };
+      return { ...state, intentPending: false, replayActive: true };
     }
     if (state.intentPending) return state;
-    return { intentPending: true, replayActive: false };
+    return { ...state, intentPending: true, replayActive: false };
   }
   if (action.type === "payloadReady") {
     if (!state.intentPending || state.replayActive) return state;
-    return { intentPending: false, replayActive: true };
+    return { ...state, intentPending: false, replayActive: true };
   }
   return state;
 };

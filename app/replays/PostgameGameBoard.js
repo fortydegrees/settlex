@@ -52,6 +52,7 @@ const postgameReplayReducer = (state, action) => {
         eventCount: action.eventCount,
         perspectiveId: action.perspectiveId,
       }),
+      identityKey: action.identityKey,
       eventIndex: action.eventIndex ?? 0,
     };
   }
@@ -65,7 +66,24 @@ export function PostgameGameBoard(props) {
     initialFrameIndex = 0,
   } = props;
   const archivedMode = initialReplayPayload != null;
+  const initialPayloadIdentityRef = useRef({
+    payload: initialReplayPayload,
+    version: 0,
+  });
+  if (initialPayloadIdentityRef.current.payload !== initialReplayPayload) {
+    initialPayloadIdentityRef.current = {
+      payload: initialReplayPayload,
+      version: initialPayloadIdentityRef.current.version + 1,
+    };
+  }
   const bgioProps = archivedMode ? {} : props;
+  const archivedMatchID =
+    initialReplayPayload?.replay?.match?.bgioMatchId ??
+    initialReplayPayload?.replay?.match?.replayId ??
+    "unknown";
+  const replayIdentityKey = archivedMode
+    ? `archived:${archivedMatchID}:payload-${initialPayloadIdentityRef.current.version}`
+    : `live:${bgioProps.matchID ?? "unknown"}`;
   const liveGameOver = Boolean(
     bgioProps.ctx?.gameover ?? bgioProps.G?.core?.gameOver
   );
@@ -78,13 +96,14 @@ export function PostgameGameBoard(props) {
     status: replayPayloadStatus,
     retry: retryReplayPayload,
   } = replayPayload;
-  const replay = replayPayload.payload?.replay ?? null;
+  const hydratedPayload = initialReplayPayload ?? replayPayload.payload;
+  const replay = hydratedPayload?.replay ?? null;
   const safeFrames = useMemo(() => {
-    const frames = replayPayload.payload?.frames ?? [];
+    const frames = hydratedPayload?.frames ?? [];
     if (frames.length > 0) return frames;
     if (!replay?.initialState) return [];
     return [{ index: 0, state: replay.initialState, logEntry: null }];
-  }, [replay, replayPayload.payload?.frames]);
+  }, [hydratedPayload?.frames, replay]);
   const timeline = useMemo(
     () =>
       buildReplayTimeline({
@@ -113,16 +132,32 @@ export function PostgameGameBoard(props) {
     },
     ({ eventCount, perspectiveId }) => ({
       ...createReplaySessionState({ eventCount, perspectiveId }),
+      identityKey: archivedMode ? replayIdentityKey : null,
       eventIndex: archivedInitialEventIndex,
     })
   );
   const [activation, dispatchActivation] = useReducer(
     replayActivationReducer,
-    { replayActive: archivedMode },
+    { identityKey: replayIdentityKey, replayActive: archivedMode },
     createReplayActivationState
   );
-  const replayActive = activation.replayActive;
-  const liveReplayStartedRef = useRef(archivedMode);
+  const sessionIdentityMatches = session.identityKey === replayIdentityKey;
+  const displaySession = sessionIdentityMatches
+    ? session
+    : {
+        ...createReplaySessionState({
+          eventCount: timeline.events.length,
+          perspectiveId: archivedMode
+            ? initialPerspectivePlayerID
+            : bgioProps.playerID,
+        }),
+        identityKey: replayIdentityKey,
+        eventIndex: archivedMode ? archivedInitialEventIndex : 0,
+      };
+  const activationReady =
+    activation.identityKey === replayIdentityKey && activation.replayActive;
+  const replayActive =
+    archivedMode || (activationReady && sessionIdentityMatches);
   const [mobileReplayOpen, setMobileReplayOpen] = useState(false);
 
   const seekReplayEvent = useCallback(
@@ -130,32 +165,32 @@ export function PostgameGameBoard(props) {
     []
   );
   const previousEvent = useCallback(
-    () => seekReplayEvent(session.eventIndex - 1),
-    [seekReplayEvent, session.eventIndex]
+    () => seekReplayEvent(displaySession.eventIndex - 1),
+    [displaySession.eventIndex, seekReplayEvent]
   );
   const nextEvent = useCallback(
-    () => seekReplayEvent(session.eventIndex + 1),
-    [seekReplayEvent, session.eventIndex]
+    () => seekReplayEvent(displaySession.eventIndex + 1),
+    [displaySession.eventIndex, seekReplayEvent]
   );
   const previousTurn = useCallback(
     () =>
       seekReplayEvent(
-        getPreviousTurnEventIndex(session.eventIndex, timeline.turnStarts)
+        getPreviousTurnEventIndex(displaySession.eventIndex, timeline.turnStarts)
       ),
-    [seekReplayEvent, session.eventIndex, timeline.turnStarts]
+    [displaySession.eventIndex, seekReplayEvent, timeline.turnStarts]
   );
   const nextTurn = useCallback(
     () =>
       seekReplayEvent(
         getNextTurnEventIndex(
-          session.eventIndex,
+          displaySession.eventIndex,
           timeline.turnStarts,
           timeline.events.length - 1
         )
       ),
     [
       seekReplayEvent,
-      session.eventIndex,
+      displaySession.eventIndex,
       timeline.events.length,
       timeline.turnStarts,
     ]
@@ -171,27 +206,50 @@ export function PostgameGameBoard(props) {
     dispatchActivation({
       type: "requestReplay",
       payloadStatus: replayPayloadStatus,
+      identityKey: replayIdentityKey,
     });
     if (replayPayloadStatus === "error") {
       retryReplayPayload();
     }
-  }, [replayPayloadStatus, retryReplayPayload]);
+  }, [replayIdentityKey, replayPayloadStatus, retryReplayPayload]);
+
+  useEffect(() => {
+    dispatchActivation({
+      type: "resetIdentity",
+      identityKey: replayIdentityKey,
+      replayActive: archivedMode,
+    });
+  }, [archivedMode, replayIdentityKey]);
 
   useEffect(() => {
     if (replayPayloadStatus !== "ready") return;
-    dispatchActivation({ type: "payloadReady" });
-  }, [replayPayloadStatus]);
+    dispatchActivation({
+      type: "payloadReady",
+      identityKey: replayIdentityKey,
+    });
+  }, [replayIdentityKey, replayPayloadStatus]);
 
   useEffect(() => {
-    if (!replayActive || liveReplayStartedRef.current) return;
-    liveReplayStartedRef.current = true;
+    if (!activationReady || sessionIdentityMatches) return;
     dispatch({
       type: "startReplay",
+      identityKey: replayIdentityKey,
       eventCount: timeline.events.length,
-      perspectiveId: bgioProps.playerID,
-      eventIndex: 0,
+      perspectiveId: archivedMode
+        ? initialPerspectivePlayerID
+        : bgioProps.playerID,
+      eventIndex: archivedMode ? archivedInitialEventIndex : 0,
     });
-  }, [bgioProps.playerID, replayActive, timeline.events.length]);
+  }, [
+    activationReady,
+    archivedInitialEventIndex,
+    archivedMode,
+    bgioProps.playerID,
+    initialPerspectivePlayerID,
+    replayIdentityKey,
+    sessionIdentityMatches,
+    timeline.events.length,
+  ]);
 
   useEffect(() => {
     if (!replayActive) return undefined;
@@ -218,17 +276,17 @@ export function PostgameGameBoard(props) {
   }, [nextEvent, nextTurn, previousEvent, previousTurn, replayActive]);
 
   const currentEvent =
-    timeline.events[session.eventIndex] ?? timeline.events[0] ?? null;
+    timeline.events[displaySession.eventIndex] ?? timeline.events[0] ?? null;
   const matchID =
     replay?.match?.bgioMatchId ?? replay?.match?.replayId ?? bgioProps.matchID;
   const displayProps = replayActive
     ? {
         ...buildReplayGameScreenProps({
           event: currentEvent,
-          perspectiveId: session.perspectiveId,
+          perspectiveId: displaySession.perspectiveId,
           matchID,
           matchData: replayMatchData,
-          resultsOpen: session.resultsOpen,
+          resultsOpen: displaySession.resultsOpen,
         }),
         chatMessages,
         onReplayResultsOpen: () => dispatch({ type: "openResults" }),
@@ -253,7 +311,7 @@ export function PostgameGameBoard(props) {
       ? h(ReplayConsole, {
           timeline,
           currentEvent,
-          currentEventIndex: session.eventIndex,
+          currentEventIndex: displaySession.eventIndex,
           victoryTarget,
           mobileOpen: mobileReplayOpen,
           onMobileOpenChange: setMobileReplayOpen,
