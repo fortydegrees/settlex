@@ -6,6 +6,9 @@
   count; capture the committed root state only once. A failure releases one
   claim, the last failure restores the root, and any success finalizes the
   lease. This prevents both obsolete-token resurrection and cross-attempt undo.
+- Reject a different-match reservation while an account has an unresolved
+  lease. Do not replace the first match's token/root state: the first join may
+  already have committed even if its response has not returned.
 - A lost join response is not proof that the join failed. Compensate only a
   definite 4xx rejection, then re-check the live target seat before restoring.
   Keep the pause for network, 5xx, timeout, or unavailable-reconciliation

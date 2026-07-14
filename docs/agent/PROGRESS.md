@@ -7,6 +7,10 @@
   duel share its UUID and increment a reference count, while the root prior
   state is captured once. A failed attempt releases one claim; only the last
   failed claim restores the root state. Any success finalizes the lease.
+- A different-duel reservation now returns `409` while any participant has an
+  unresolved lease for another match. This happens before a second game-server
+  join is attempted and leaves the original lease untouched, preventing
+  cross-tab public/friend requests from replacing a possibly committed pause.
 - Successful joins finalize their reservation without unpausing either player.
   A definite 4xx join rejection checks the live target seat before restoring:
   an occupied seat finalizes the pause, while a confirmed open or gone match
@@ -15,10 +19,10 @@
   paused. Network, 5xx, timeout, and other ambiguous outcomes stay paused rather
   than risking alerts during a committed game.
 - The reviewer's nested-failure and competing-winner reproductions are now real
-  Postgres regressions. Migration, store, reconciliation, public/friend routes,
-  and the earlier signed-out Cancel path passed 71/71 focused tests; full
-  repository, production-build, and final independent review remain the next
-  gate.
+  Postgres regressions; different-match overlap is covered there too. Migration,
+  store, reconciliation, public/friend routes, and the earlier signed-out Cancel
+  path passed 73/73 focused tests; full repository, production-build, and final
+  independent review remain the next gate.
 
 ## Status (2026-07-14, Match alerts final route closure)
 - Friend-challenge acceptance now uses the same reserve-before-join contract as
