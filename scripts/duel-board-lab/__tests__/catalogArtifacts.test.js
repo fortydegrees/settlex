@@ -50,6 +50,12 @@ describe("duel fair catalog v1 artifacts", () => {
       }
     });
     expect(fullCatalog.entries).toHaveLength(1000);
+    expect(fullCatalog.generator).toMatchObject({
+      boardConfigId: "standard-official-spiral",
+      family: "official-spiral",
+      version: "official-spiral-v1"
+    });
+    expect(runtimeCatalog.boardConfigId).toBe(fullCatalog.generator.boardConfigId);
     expect(runtimeCatalog).toMatchObject({
       id: fullCatalog.id,
       generatorFamily: fullCatalog.generator.family,

@@ -62,7 +62,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--attention-heads", type=int, default=4)
     parser.add_argument("--attention-layers", type=int, default=2)
     parser.add_argument("--device", type=str, default="cpu")
-    parser.add_argument("--board-config-id", type=str, default="standard-official")
+    parser.add_argument("--board-config-id", type=str, default="standard-official-spiral")
     parser.add_argument("--batch-size", type=parse_auto_int, default="auto")
     parser.add_argument("--minibatch-size", type=int, default=128)
     parser.add_argument("--bptt-horizon", type=parse_auto_int, default=64)

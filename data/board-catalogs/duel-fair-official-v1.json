@@ -1,6 +1,7 @@
 {
   "id": "duel-fair-official-v1",
   "generator": {
+    "boardConfigId": "standard-official-spiral",
     "family": "official-spiral",
     "version": "official-spiral-v1"
   },

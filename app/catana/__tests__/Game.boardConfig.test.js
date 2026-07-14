@@ -66,7 +66,7 @@ describe("Catan setup board config", () => {
     const G = Catan.setup({ ctx, random }, {});
 
     expect(G.modeId).toBe("standard-3p");
-    expect(G.boardConfigId).toBe("standard-official");
+    expect(G.boardConfigId).toBe("standard-official-spiral");
     expect(G.boardCatalog).toBeNull();
     expect(G.core.ruleset.victoryPointsToWin).toBe(10);
     expect(G.core.ruleset.discardLimit).toBe(7);

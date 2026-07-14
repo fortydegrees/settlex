@@ -146,7 +146,7 @@ function resolveRuleset(options) {
 class SettlexSelfPlayEnv {
   constructor(options = {}) {
     this.options = {
-      boardConfigId: options.boardConfigId ?? "standard-official",
+      boardConfigId: options.boardConfigId ?? "standard-official-spiral",
       numPlayers: options.numPlayers ?? 4,
       rulesetId: options.rulesetId ?? "auto",
       maxSteps: options.maxSteps ?? 1200,

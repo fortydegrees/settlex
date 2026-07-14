@@ -42,7 +42,7 @@ describe("duel fair runtime catalog", () => {
 
     expect(generateDuelFairBoard(selection)).toEqual(
       generateBoard(
-        resolveBoardConfig("standard-official"),
+        resolveBoardConfig("standard-official-spiral"),
         makeDeterministicRng(selection.seed)
       )
     );
