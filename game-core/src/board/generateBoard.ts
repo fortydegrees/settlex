@@ -5,7 +5,6 @@ import { generateStandardHexes, getNumDots } from "./boardUtils";
 import { resolveBoardSpec } from "./boardSpecs";
 import type { BoardConfig } from "./boardConfigs";
 import { buildSpiralOrder } from "./officialSpiral";
-import { BalancedBoard } from "./generateBalancedBoard";
 import { buildCoordinateIndex, getNodesAndEdgesForTile } from "./hexWiring";
 
 const assignRandomTerrain = (tiles: any[], spec: any, rng: RandomFn) => {
@@ -110,31 +109,6 @@ export const generateBoard = (config: BoardConfig, rng: RandomFn, empty = false)
   const radius = spec.radius;
   if (shape === undefined || radius === undefined) {
     throw new Error("Spec must include map/radius or shape");
-  }
-
-  const wantsBalanced =
-    config.generation.terrain === "balanced" ||
-    config.generation.numbers === "balanced";
-
-  if (!empty && wantsBalanced) {
-    if (
-      config.generation.terrain !== "balanced" ||
-      config.generation.numbers !== "balanced"
-    ) {
-      throw new Error(
-        "Balanced generation requires both terrain and numbers to be balanced."
-      );
-    }
-    const balanced = new BalancedBoard(
-      {
-        desertPlacement: "Random",
-        resourceDistribution: 1,
-        numberDistribution: 1
-      },
-      rng
-    );
-    const { board } = balanced.generateBoard(spec);
-    return board.tiles;
   }
 
   const tiles = generateStandardHexes(shape, radius);

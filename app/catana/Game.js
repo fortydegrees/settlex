@@ -51,16 +51,6 @@ import { maskPlayerView } from "./gameSetup/playerView.js";
 export { getPlacementOrder } from "./gameSetup/initialState.js";
 //setup board and convert tiles/edges into right format to render
 
-//   new BalancedBoard({
-//     desertPlacement:
-//     this.desertPlacementEnabled ? state.desertPlacement : DesertPlacement.RANDOM,
-// resourceDistribution:
-//     this.resourceDistributionEnabled ?
-//     state.resourceDistribution / CONFIG_SLIDER_MAX_VALUE : 1,
-// numberDistribution: state.numberDistribution / CONFIG_SLIDER_MAX_VALUE,
-// shufflePorts: this.hasDefaultPorts ? state.shufflePorts : true,
-// allowResourceOnPort: state.allowResourceOnPort,
-// });
 const configuredEffectsPlugin = EffectsPlugin({
   effects: {
     distributeCardsFromTile: {

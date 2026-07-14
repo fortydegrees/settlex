@@ -18,27 +18,45 @@ export const extractScenarioState = (value) => {
 
 const cloneScenarioState = (value) => JSON.parse(JSON.stringify(value));
 
-const mergeScenarioState = (baseState, scenarioState) => ({
-  ...baseState,
-  ...scenarioState,
-  core: scenarioState.core ?? baseState.core,
-  coreTopology: scenarioState.coreTopology ?? baseState.coreTopology,
-  tiles: scenarioState.tiles ?? baseState.tiles,
-  valids: scenarioState.valids ?? baseState.valids,
-  diceRoll: scenarioState.diceRoll ?? baseState.diceRoll,
-  diceState: scenarioState.diceState ?? baseState.diceState,
-  robberTileId: scenarioState.robberTileId ?? baseState.robberTileId,
-  placementOrder: scenarioState.placementOrder ?? baseState.placementOrder,
-  preGame: scenarioState.preGame ?? baseState.preGame,
-  devCardPlay: scenarioState.devCardPlay ?? baseState.devCardPlay,
-  robberReturnToStage:
-    scenarioState.robberReturnToStage ?? baseState.robberReturnToStage,
-  gameLog: scenarioState.gameLog ?? baseState.gameLog,
-  gameLogSeq: scenarioState.gameLogSeq ?? baseState.gameLogSeq,
-  modeId: scenarioState.modeId ?? baseState.modeId,
-  rulesetId: scenarioState.rulesetId ?? baseState.rulesetId,
-  boardConfigId: scenarioState.boardConfigId ?? baseState.boardConfigId
-});
+const mergeScenarioState = (baseState, scenarioState) => {
+  const replacesTiles = Object.prototype.hasOwnProperty.call(
+    scenarioState,
+    "tiles"
+  );
+  const boardIdentity = replacesTiles
+    ? {
+        boardSourceId: "custom",
+        boardConfigId: "custom",
+        boardProvenance: { sourceKind: "custom" }
+      }
+    : {
+        boardSourceId: baseState.boardSourceId,
+        boardConfigId: baseState.boardConfigId,
+        boardProvenance: baseState.boardProvenance
+      };
+
+  return {
+    ...baseState,
+    ...scenarioState,
+    core: scenarioState.core ?? baseState.core,
+    coreTopology: scenarioState.coreTopology ?? baseState.coreTopology,
+    tiles: scenarioState.tiles ?? baseState.tiles,
+    valids: scenarioState.valids ?? baseState.valids,
+    diceRoll: scenarioState.diceRoll ?? baseState.diceRoll,
+    diceState: scenarioState.diceState ?? baseState.diceState,
+    robberTileId: scenarioState.robberTileId ?? baseState.robberTileId,
+    placementOrder: scenarioState.placementOrder ?? baseState.placementOrder,
+    preGame: scenarioState.preGame ?? baseState.preGame,
+    devCardPlay: scenarioState.devCardPlay ?? baseState.devCardPlay,
+    robberReturnToStage:
+      scenarioState.robberReturnToStage ?? baseState.robberReturnToStage,
+    gameLog: scenarioState.gameLog ?? baseState.gameLog,
+    gameLogSeq: scenarioState.gameLogSeq ?? baseState.gameLogSeq,
+    modeId: scenarioState.modeId ?? baseState.modeId,
+    rulesetId: scenarioState.rulesetId ?? baseState.rulesetId,
+    ...boardIdentity
+  };
+};
 
 const buildResignableActivePlayers = (playerIds, stageAssignments) => {
   const entries = Object.entries(stageAssignments ?? {});
@@ -160,6 +178,9 @@ export const validateScenarioSetupData = (
   numPlayers,
   { nodeEnv = process.env.NODE_ENV } = {}
 ) => {
+  if (!isDebugEnvironment(nodeEnv) && setupData?.boardConfig != null) {
+    return "Custom board configurations are disabled in production.";
+  }
   const scenarioState = extractScenarioState(setupData?.devScenarioState);
   if (!scenarioState) return undefined;
   if (!isDebugEnvironment(nodeEnv)) {

@@ -25,7 +25,7 @@ const parseJsonbParam = (value) => {
   return JSON.parse(value);
 };
 
-const createArchivePool = () => {
+const createArchivePool = ({ failAfterArchivedMatchInsert = false } = {}) => {
   const state = {
     archivedMatches: [],
     archivedMatchPlayers: [],
@@ -76,13 +76,15 @@ const createArchivePool = () => {
           replayId: params[2],
           gameName: params[3],
           rulesetId: params[4],
-          boardConfigId: params[5],
-          startedAt: params[6],
-          finishedAt: params[7],
-          winnerAccountId: params[8],
-          winnerSeatId: params[9],
-          playerCount: params[10],
-          summaryJson: parseJsonbParam(params[11]),
+          boardSourceId: params[5],
+          boardConfigId: params[6],
+          boardProvenanceJson: parseJsonbParam(params[7]),
+          startedAt: params[8],
+          finishedAt: params[9],
+          winnerAccountId: params[10],
+          winnerSeatId: params[11],
+          playerCount: params[12],
+          summaryJson: parseJsonbParam(params[13]),
         };
         state.archivedMatches.push(row);
         return { rows: [row] };
@@ -104,6 +106,9 @@ const createArchivePool = () => {
       }
 
       if (normalized.startsWith("insert into archived_match_replays")) {
+        if (failAfterArchivedMatchInsert) {
+          throw new Error("injected failure after archived match insert");
+        }
         state.archivedMatchReplays.push({
           archivedMatchId: params[0],
           initialStateJson: parseJsonbParam(params[1]),
@@ -275,7 +280,20 @@ describe("archiveFinishedMatch", () => {
           },
         },
         initialState: {
-          G: { setup: true },
+          G: {
+            rulesetId: "duel",
+            boardSourceId: "duel-fair-official-v1",
+            boardConfigId: "standard-official-spiral",
+            boardProvenance: {
+              sourceKind: "catalog",
+              catalogId: "duel-fair-official-v1",
+              catalogRank: 37,
+              seed: 12345,
+              generatorFamily: "official-spiral",
+              generatorVersion: "official-spiral-v1",
+              evaluatorVersion: "duel-fair-v3",
+            },
+          },
           ctx: { phase: "preGame" },
         },
         state: {
@@ -323,6 +341,17 @@ describe("archiveFinishedMatch", () => {
     expect(state.archivedMatches).toHaveLength(1);
     expect(state.archivedMatchPlayers).toHaveLength(2);
     expect(state.archivedMatchReplays).toHaveLength(1);
+    expect(state.archivedMatches[0]).toMatchObject({
+      rulesetId: "duel",
+      boardSourceId: "duel-fair-official-v1",
+      boardConfigId: "standard-official-spiral",
+      boardProvenanceJson: {
+        sourceKind: "catalog",
+        catalogId: "duel-fair-official-v1",
+        catalogRank: 37,
+        seed: 12345,
+      },
+    });
     expect(state.archivedMatchChatMessages).toEqual([
       {
         archivedMatchId: state.archivedMatches[0].id,
@@ -349,12 +378,80 @@ describe("archiveFinishedMatch", () => {
       ])
     );
     expect(state.archivedMatchReplays[0]).toMatchObject({
-      initialStateJson: { G: { setup: true }, ctx: { phase: "preGame" } },
+      initialStateJson: {
+        G: {
+          rulesetId: "duel",
+          boardSourceId: "duel-fair-official-v1",
+          boardConfigId: "standard-official-spiral",
+          boardProvenance: {
+            sourceKind: "catalog",
+            catalogId: "duel-fair-official-v1",
+            catalogRank: 37,
+            seed: 12345,
+            generatorFamily: "official-spiral",
+            generatorVersion: "official-spiral-v1",
+            evaluatorVersion: "duel-fair-v3",
+          },
+        },
+        ctx: { phase: "preGame" },
+      },
       finalStateJson: {
         G: { complete: true },
         ctx: { phase: "gameOver", gameover: { winner: "0" } },
       },
       logJson: [{ action: { type: "MAKE_MOVE" } }],
     });
+  });
+
+  it("uses legacy setup metadata while leaving source and provenance null", async () => {
+    const { archiveFinishedMatch } = await loadModule("archiveFinishedMatch.js");
+    const { pool, state } = createArchivePool();
+    const serverDb = {
+      fetch: vi.fn().mockResolvedValue({
+        metadata: {
+          gameName: "catan",
+          setupData: {
+            rulesetId: "standard",
+            boardConfigId: "standard-random"
+          },
+          players: {}
+        },
+        initialState: { G: {}, ctx: { phase: "preGame" } },
+        state: { G: {}, ctx: { gameover: {} } },
+        log: []
+      })
+    };
+
+    await archiveFinishedMatch({ pool, serverDb, matchID: "legacy-1" });
+
+    expect(state.archivedMatches[0]).toMatchObject({
+      rulesetId: "standard",
+      boardSourceId: null,
+      boardConfigId: "standard-random",
+      boardProvenanceJson: null
+    });
+  });
+
+  it("rolls back the archive insert when a later transaction step fails", async () => {
+    const { archiveFinishedMatch } = await loadModule("archiveFinishedMatch.js");
+    const { pool, client, state } = createArchivePool({
+      failAfterArchivedMatchInsert: true
+    });
+    const serverDb = {
+      fetch: vi.fn().mockResolvedValue({
+        metadata: { gameName: "catan", players: {} },
+        initialState: { G: {}, ctx: {} },
+        state: { G: {}, ctx: { gameover: {} } },
+        log: []
+      })
+    };
+
+    await expect(
+      archiveFinishedMatch({ pool, serverDb, matchID: "rollback-1" })
+    ).rejects.toThrow("injected failure after archived match insert");
+
+    expect(state.archivedMatches).toEqual([]);
+    expect(client.query).toHaveBeenCalledWith("ROLLBACK");
+    expect(client.release).toHaveBeenCalledOnce();
   });
 });
