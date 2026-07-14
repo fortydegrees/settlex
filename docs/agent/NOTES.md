@@ -3964,3 +3964,9 @@
 - `Board` already owns the measured viewport width used for layout. Pass that width to every `Edge` render path and forward it to placeable/hoverable variants; do not add a second viewport store or keep edge-local `useWindowSize` subscriptions.
 - Keep the runtime quick-wins slice separate from a broad `GameScreen` refactor and from the later production performance certification, long-session, and network-measurement work.
 - Execute the timer clock, timer ownership rewiring/profile gate, edge-width plumbing, and combined verification as separate plan tasks; do not bundle speculative animation or network changes into those commits.
+
+- Catana timer/edge runtime ownership note:
+- Keep the regular turn timer's 250ms clock inside the smallest mounted timer leaf. Do not move `nowMs` back into `GameScreen` or the full HUD.
+- `GameScreen` retains a presence-only clock for active disconnect/idle countdowns; future presence extraction is a separate measured slice.
+- `Board` owns viewport width for road transforms. Every `Edge` path should receive `viewportWidth` rather than subscribing through `useWindowSize`.
+- The current `Road placement` dev-sandbox preset can enter the road stage with `G.valids.edges` empty after the placement phase initializes. Do not treat that preset alone as proof of placement-road geometry until its deterministic valid-edge fixture is repaired; keep the focused placement-path tests and use a real valid placement state for visual evidence.

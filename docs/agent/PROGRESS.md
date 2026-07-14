@@ -6496,3 +6496,11 @@
   - Green: the six focused timer/ownership suites passed 40 tests.
   - Focused ESLint and `git diff --check` exited 0.
   - React DevTools component profiling was unavailable through the current automation surface, so the desktop/mobile three-second profiler gate remains for manual follow-up.
+
+## Status (2026-07-14, Catana runtime quick wins)
+- Moved the normal 250ms turn-timer clock below `GameScreen` into the mounted desktop/mobile timer leaf while preserving server-delay correction, formatting, visibility, and low-time behaviour.
+- Kept the root `GameScreen` clock only for active disconnect/idle presence countdowns.
+- Removed edge-local `useWindowSize` subscriptions and passed `Board`'s measured viewport width through every placed, placement, passive-hover, and dock-launched build-pickup road path.
+- Local development render counters confirmed that normal timer ticks rerendered only the active timer leaf during sampled desktop/mobile three-second windows; React DevTools commit profiling was not available, so this is ownership evidence rather than production performance certification.
+- Combined verification passed 12 focused files and 58 tests. A deterministic sandbox timer fixture confirmed desktop/mobile countdown presentation, the mobile `--:--` fallback, hidden desktop timer state, five-second urgency styling, and pre-roll urgency suppression at `1440x900` and `390x844`; ticker cleanup remains covered by the focused unit test.
+- Browser road evidence confirmed placed-road rendering and a dock-launched road pickup with five registered hit targets; the pickup preview and targets survived a desktop-to-mobile resize. The stock road-placement sandbox preset recomputed to zero valid edges, and automation did not produce a reliable post-resize magnetic-lock measurement, so full placement/passive-hover alignment remains a manual follow-up rather than a claimed result.
