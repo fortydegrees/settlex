@@ -19,10 +19,16 @@
     isolated app test files, and lint with no warnings or errors;
   - `pnpm release:check -- --require-approved` passed for approved release 3;
   - `bash -n infra/scripts/deploy-prod.sh` passed.
-- Real two-profile Web Push, notification-click, iOS Home Screen, and browser
-  acceptance was not executable here: this task environment has no browser
-  backend and no production VAPID environment. No manual Push delivery is
-  claimed.
+- The in-app browser verified the local homepage on desktop and a 390x844
+  mobile viewport: the compact search state, 12-second beta/liquidity rescue,
+  primary Keep waiting action, 30-second quiet Play Puffer action, collapsed
+  Keep waiting state, account-menu alert status, and stale `?matchAlert=`
+  confirmation/query cleanup all rendered and behaved as expected.
+- Real two-profile Web Push delivery, OS notification focus/click behavior,
+  enabled-alert state, and iOS Home Screen delivery were not executable without
+  a production VAPID environment. The local database also had not applied
+  migration `0005`, so its alert status correctly remained unavailable and
+  exposed the local missing-table error; no manual Push delivery is claimed.
 - The plan's second preflight target,
   `infra/scripts/deploy-prod-from-git.sh`, does not exist at base `366706d` or
   on `origin/main` or this clean branch, so its syntax check returned `No such
@@ -6568,7 +6574,7 @@
   - `pnpm exec vitest run app/catana/matchAlerts/__tests__ app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/activeMatchStorage.test.js app/__tests__/appShell.source.test.js app/__tests__/matchAlertServiceWorker.source.test.js --reporter=dot` (98 tests passed)
   - `pnpm lint`
   - Independent re-review reported no remaining Critical or Important issues.
-  - Local development homepage compiled and returned HTTP 200; rendered desktop/mobile inspection was unavailable because no browser backend was exposed in the task environment.
+  - The in-app browser rendered the local homepage at desktop and 390x844 mobile sizes, verified the 12-second rescue and 30-second Puffer states, confirmed Keep waiting collapses without leaving the queue, and confirmed stale `?matchAlert=` input opens the secondary stale dialog and removes the query without autojoining.
 
 ## Status (2026-07-14, static tab attention)
 - Added one singleton tab-attention controller for `match-found` and `your-turn`, with fixed priority, static bell metadata, exact title/favicon restoration, one-shot visible acknowledgement for match-found, and no flashing or animation timers.
