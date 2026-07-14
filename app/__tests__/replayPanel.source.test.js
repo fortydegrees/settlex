@@ -10,6 +10,14 @@ const rail = fs.readFileSync(
   path.resolve("app/catana/components/LeftMetaRail.js"),
   "utf8"
 );
+const board = fs.readFileSync(
+  path.resolve("app/replays/PostgameGameBoard.js"),
+  "utf8"
+);
+const overlay = fs.readFileSync(
+  path.resolve("app/catana/components/GameOverOverlay.js"),
+  "utf8"
+);
 
 describe("ReplayPanel", () => {
   it("shares native meta-panel chrome and contains no playback controls", () => {
@@ -22,5 +30,12 @@ describe("ReplayPanel", () => {
     expect(replay).not.toContain("Play replay");
     expect(replay).not.toContain("Replay speed");
     expect(replay).not.toContain("Match analysis");
+  });
+
+  it("lets session-owned Results state hide replay chrome above the modal", () => {
+    expect(board).toContain("!displaySession.resultsOpen");
+    expect(board).toContain("displaySession.mobilePanelOpen");
+    expect(replay).toContain("getReplayMobileDockClassName(perspectiveId)");
+    expect(overlay).toContain("z-[80]");
   });
 });

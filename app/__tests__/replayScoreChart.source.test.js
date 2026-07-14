@@ -15,6 +15,12 @@ describe("ReplayScoreChart", () => {
     expect(source).toContain('type="stepAfter"');
     expect(source).toContain("accessibilityLayer");
     expect(source).toContain("onSeek");
+    expect(source).toContain('role="slider"');
+    expect(source).toContain("tabIndex={0}");
+    expect(source).toContain('aria-valuemin="0"');
+    expect(source).toContain("aria-valuemax");
+    expect(source).toContain("aria-valuenow");
+    expect(source).toContain("onKeyDown");
     expect(source).not.toContain("Tooltip");
   });
 

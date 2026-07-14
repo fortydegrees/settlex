@@ -8,7 +8,6 @@ import {
   useMemo,
   useReducer,
   useRef,
-  useState,
 } from "react";
 import { GameScreenWithEffects } from "../catana/GameScreen";
 import { ReplayPanel } from "./components/ReplayPanel";
@@ -177,8 +176,6 @@ export function PostgameGameBoard(props) {
     payloadIdentityKey,
     payloadStatus: replayPayloadStatus,
   });
-  const [mobileReplayOpen, setMobileReplayOpen] = useState(false);
-
   const seekReplayEvent = useCallback(
     (eventIndex) => dispatch({ type: "seek", eventIndex }),
     []
@@ -318,8 +315,9 @@ export function PostgameGameBoard(props) {
         onReplayResultsOpen: () => dispatch({ type: "openResults" }),
         onReplayResultsClose: () => dispatch({ type: "closeResults" }),
         onReplayLogEntrySelect: handleReplayLogEntrySelect,
-        replayConsoleMobileOpen: mobileReplayOpen,
-        onReplayMobileMetaPanelOpen: () => setMobileReplayOpen(false),
+        replayConsoleMobileOpen: displaySession.mobilePanelOpen,
+        onReplayMobileMetaPanelOpen: () =>
+          dispatch({ type: "setMobilePanelOpen", open: false }),
       }
     : {
         ...bgioProps,
@@ -341,7 +339,7 @@ export function PostgameGameBoard(props) {
     Fragment,
     null,
     h(GameScreenWithEffects, displayProps),
-    replayActive
+    replayActive && !displaySession.resultsOpen
       ? h(ReplayPanel, {
           timeline,
           currentEvent,
@@ -349,9 +347,10 @@ export function PostgameGameBoard(props) {
           perspectiveId: displaySession.perspectiveId,
           victoryTarget,
           open: displaySession.panelOpen,
-          mobileOpen: mobileReplayOpen,
+          mobileOpen: displaySession.mobilePanelOpen,
           onOpenChange: (open) => dispatch({ type: "setPanelOpen", open }),
-          onMobileOpenChange: setMobileReplayOpen,
+          onMobileOpenChange: (open) =>
+            dispatch({ type: "setMobilePanelOpen", open }),
           onPerspectiveChange: (perspectiveId) =>
             dispatch({ type: "setPerspective", perspectiveId }),
           onResultsOpen: () => dispatch({ type: "openResults" }),
