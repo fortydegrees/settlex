@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getReplayChartKeyboardSeekIndex,
   getReplayEventIndexAtChartX,
   getVisibleReplayScoreData,
 } from "../replays/components/ReplayScoreChart";
@@ -40,5 +41,25 @@ describe("ReplayScoreChart seeking", () => {
 
     expect(getReplayEventIndexAtChartX({ ...input, clientX: 100 })).toBe(0);
     expect(getReplayEventIndexAtChartX({ ...input, clientX: 500 })).toBe(10);
+  });
+
+  it("steps the chart seek cursor with horizontal arrow keys", () => {
+    const input = { currentEventIndex: 5, eventCount: 8 };
+    expect(
+      getReplayChartKeyboardSeekIndex({ ...input, key: "ArrowLeft" })
+    ).toBe(4);
+    expect(
+      getReplayChartKeyboardSeekIndex({ ...input, key: "ArrowRight" })
+    ).toBe(6);
+    expect(
+      getReplayChartKeyboardSeekIndex({ ...input, key: "Enter" })
+    ).toBeNull();
+    expect(
+      getReplayChartKeyboardSeekIndex({
+        currentEventIndex: 0,
+        eventCount: 8,
+        key: "ArrowLeft",
+      })
+    ).toBe(0);
   });
 });

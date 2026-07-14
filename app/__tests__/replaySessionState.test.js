@@ -10,16 +10,39 @@ describe("replay session state", () => {
     const start = {
       ...createReplaySessionState({ eventCount: 8, perspectiveId: "1" }),
       eventIndex: 3,
+      mobilePanelOpen: true,
     };
     const open = replaySessionReducer(start, { type: "openResults" });
     expect(open).toMatchObject({
       eventIndex: 7,
+      panelOpen: false,
+      mobilePanelOpen: false,
       resultsOpen: true,
       resultsReturnEventIndex: 3,
+      resultsReturnPanelOpen: true,
+      resultsReturnMobilePanelOpen: true,
     });
     expect(replaySessionReducer(open, { type: "closeResults" })).toMatchObject({
       eventIndex: 3,
       perspectiveId: "1",
+      panelOpen: true,
+      mobilePanelOpen: true,
+      resultsOpen: false,
+    });
+  });
+
+  it("keeps an intentionally minimized panel minimized after Results", () => {
+    const start = {
+      ...createReplaySessionState({ eventCount: 4, perspectiveId: null }),
+      panelOpen: false,
+    };
+    const open = replaySessionReducer(start, { type: "openResults" });
+    expect(open).toMatchObject({
+      panelOpen: false,
+      resultsReturnPanelOpen: false,
+    });
+    expect(replaySessionReducer(open, { type: "closeResults" })).toMatchObject({
+      panelOpen: false,
       resultsOpen: false,
     });
   });
@@ -34,6 +57,8 @@ describe("replay session state", () => {
       eventIndex: 2,
     });
     expect(terminal).toMatchObject({
+      panelOpen: false,
+      mobilePanelOpen: false,
       resultsOpen: true,
       terminalResultsSeen: true,
     });

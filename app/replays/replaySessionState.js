@@ -8,9 +8,24 @@ export const createReplaySessionState = ({
   eventIndex: 0,
   perspectiveId,
   panelOpen: true,
+  mobilePanelOpen: false,
   resultsOpen: false,
   resultsReturnEventIndex: null,
+  resultsReturnPanelOpen: null,
+  resultsReturnMobilePanelOpen: null,
   terminalResultsSeen: false,
+});
+
+const openReplayResults = (state, { eventIndex, returnEventIndex }) => ({
+  ...state,
+  eventIndex,
+  panelOpen: false,
+  mobilePanelOpen: false,
+  resultsOpen: true,
+  resultsReturnEventIndex: returnEventIndex,
+  resultsReturnPanelOpen: state.panelOpen,
+  resultsReturnMobilePanelOpen: state.mobilePanelOpen,
+  terminalResultsSeen: true,
 });
 
 export const createReplayActivationState = ({
@@ -78,29 +93,32 @@ export const replaySessionReducer = (state, action) => {
     );
     const reachedTerminal =
       eventIndex === finalEventIndex && !state.terminalResultsSeen;
-    return {
-      ...state,
-      eventIndex,
-      resultsOpen: reachedTerminal ? true : state.resultsOpen,
-      terminalResultsSeen: state.terminalResultsSeen || reachedTerminal,
-    };
+    if (reachedTerminal) {
+      return openReplayResults(state, {
+        eventIndex,
+        returnEventIndex: null,
+      });
+    }
+    return { ...state, eventIndex };
   }
   if (action.type === "openResults") {
-    return {
-      ...state,
+    return openReplayResults(state, {
       eventIndex: finalEventIndex,
-      resultsOpen: true,
-      resultsReturnEventIndex:
+      returnEventIndex:
         state.eventIndex < finalEventIndex ? state.eventIndex : null,
-      terminalResultsSeen: true,
-    };
+    });
   }
   if (action.type === "closeResults") {
     return {
       ...state,
       eventIndex: state.resultsReturnEventIndex ?? state.eventIndex,
+      panelOpen: state.resultsReturnPanelOpen ?? state.panelOpen,
+      mobilePanelOpen:
+        state.resultsReturnMobilePanelOpen ?? state.mobilePanelOpen,
       resultsOpen: false,
       resultsReturnEventIndex: null,
+      resultsReturnPanelOpen: null,
+      resultsReturnMobilePanelOpen: null,
     };
   }
   if (action.type === "setPerspective") {
@@ -108,6 +126,9 @@ export const replaySessionReducer = (state, action) => {
   }
   if (action.type === "setPanelOpen") {
     return { ...state, panelOpen: action.open };
+  }
+  if (action.type === "setMobilePanelOpen") {
+    return { ...state, mobilePanelOpen: action.open };
   }
   return state;
 };

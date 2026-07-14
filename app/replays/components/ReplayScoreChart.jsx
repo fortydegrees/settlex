@@ -35,6 +35,19 @@ export const getReplayEventIndexAtChartX = ({
   return Math.round(ratio * finalEventIndex);
 };
 
+export const getReplayChartKeyboardSeekIndex = ({
+  key,
+  currentEventIndex,
+  eventCount,
+}) => {
+  if (key !== "ArrowLeft" && key !== "ArrowRight") return null;
+  const direction = key === "ArrowLeft" ? -1 : 1;
+  return Math.min(
+    Math.max(currentEventIndex + direction, 0),
+    Math.max(eventCount - 1, 0)
+  );
+};
+
 export const getVisibleReplayScoreData = ({
   scoreSeries = [],
   turnStarts = [],
@@ -93,6 +106,16 @@ export function ReplayScoreChart({
       })
     );
   };
+  const handleChartKeyDown = (event) => {
+    const eventIndex = getReplayChartKeyboardSeekIndex({
+      key: event.key,
+      currentEventIndex,
+      eventCount,
+    });
+    if (eventIndex == null) return;
+    event.preventDefault();
+    onSeek?.(eventIndex);
+  };
 
   if (
     players.length === 0 ||
@@ -107,7 +130,18 @@ export function ReplayScoreChart({
       <div
         className="h-44 w-full cursor-pointer"
         data-replay-score-chart="true"
+        role="slider"
+        tabIndex={0}
+        aria-label="Replay victory point timeline"
+        aria-valuemin="0"
+        aria-valuemax={Math.max(eventCount - 1, 0)}
+        aria-valuenow={currentEventIndex}
+        aria-valuetext={`Event ${currentEventIndex + 1} of ${Math.max(
+          eventCount,
+          1
+        )}`}
         onClick={handleChartClick}
+        onKeyDown={handleChartKeyDown}
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart

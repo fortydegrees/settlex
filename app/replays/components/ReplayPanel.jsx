@@ -13,6 +13,7 @@ import { Button } from "../../ui/Button";
 import { Select } from "../../ui/Select";
 import { ReplayScoreChart } from "./ReplayScoreChart";
 import { ReplayStepControls } from "./ReplayStepControls";
+import { getReplayMobileDockClassName } from "./replayPanelLayout";
 
 const replayRestoreClassName =
   "relative overflow-hidden rounded-[1.15rem] border border-white/[0.38] px-4 py-3 text-sm font-bold text-slate-700 shadow-[0_18px_42px_-28px_rgba(37,99,235,0.28),inset_0_1px_0_rgba(255,255,255,0.28)] ring-1 ring-white/35 transition hover:bg-white/20";
@@ -161,7 +162,7 @@ export function ReplayPanel({
       {isPhoneLayout ? (
         <>
           <div
-            className="fixed inset-x-3 bottom-3 z-[55]"
+            className={getReplayMobileDockClassName(perspectiveId)}
             data-replay-mobile-dock="true"
             data-allow-interaction="true"
           >
