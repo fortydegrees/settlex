@@ -6501,3 +6501,16 @@
   - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertJoin.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js --reporter=dot` (27 tests passed; includes executable join/leave ordering, 409 race, pending-lock, and storage-failure regressions added after review)
   - `pnpm exec vitest run app/catana/matchAlerts/__tests__ app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js app/catana/__tests__/activeMatchStorage.test.js app/catana/__tests__/gameScreenDisplayModel.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/GameScreen.idleGrace.test.js --reporter=dot` (82 tests passed)
   - `pnpm lint`
+
+## Status (2026-07-14, slow public matchmaking rescue)
+- Kept public matchmaking creation, polling, elapsed display state, and delayed alert announcements in `useLobbyHomeActions`; only genuinely new public duels schedule one announcement after two seconds, while join-existing, cancellation, unmount, match-found, and Puffer transitions do not leave announcement timers behind.
+- Added the staged homepage wait treatment without replacing the compact search modal: honest beta/liquidity guidance and an inline provider-owned Match alerts control appear at 12 seconds, Keep waiting remains primary, and a quiet Play Puffer action appears at 30 seconds.
+- Added the same compact Match alerts control to the existing account Popover, preserving explicit-click permission prompts and provider states without turning the menu into a settings surface.
+- Made the Puffer rescue await a confirmed public waiting-seat leave before bot creation, keep a blocking Starting Puffer overlay through bot setup, and exit coherently with an error rather than resurrecting the old queue when bot setup fails.
+- Added generation-based queue ownership so stale polls cannot navigate, late acquired seats are left, delayed responses cannot announce after cancel/unmount, and uncertain interrupted join/create mutations cannot start Puffer. One-shot `playOnline=1` recovery waits for account/session readiness before removing the query with the Next router and entering ordinary online play.
+- Verification:
+  - `pnpm exec vitest run app/catana/matchmaking/__tests__/matchmakingRescue.test.js app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js --reporter=dot` (red before implementation: helper module missing and 12 source assertions failed; final green after lifecycle review fixes: 35 tests passed)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__ app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/activeMatchStorage.test.js app/__tests__/appShell.source.test.js app/__tests__/matchAlertServiceWorker.source.test.js --reporter=dot` (98 tests passed)
+  - `pnpm lint`
+  - Independent re-review reported no remaining Critical or Important issues.
+  - Local development homepage compiled and returned HTTP 200; rendered desktop/mobile inspection was unavailable because no browser backend was exposed in the task environment.

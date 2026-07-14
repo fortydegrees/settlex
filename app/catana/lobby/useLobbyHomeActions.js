@@ -3,6 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "../../../lib/client/authClient";
+import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
+import {
+  advanceSearchGeneration,
+  clearScheduledMatchAnnouncement,
+  commitSearchSeat,
+  finishSearchPoll,
+  getSearchElapsedSeconds,
+  isSearchGenerationCurrent,
+  playPufferAfterLeavingSearch,
+  scheduleMatchAnnouncement,
+} from "../matchmaking/matchmakingRescue.js";
 import { normalizePlayerColorId } from "../theme/playerColors";
 import {
   clearLastActiveMatch,
@@ -70,6 +81,7 @@ function normalizeMatch(raw) {
 
 export function useLobbyHomeActions({ initialAccount = null } = {}) {
   const router = useRouter();
+  const { requestAnnouncement } = useMatchAlerts();
   const initialIdentity = getAccountIdentity(initialAccount);
 
   const [playerName, setPlayerName] = useState(initialIdentity.name);
@@ -82,9 +94,18 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
   const [searchState, setSearchState] = useState(null);
   const [challengeState, setChallengeState] = useState(null);
   const [authOptions, setAuthOptions] = useState(DEFAULT_AUTH_OPTIONS);
+  const [accountReady, setAccountReady] = useState(false);
+  const [searchElapsedSeconds, setSearchElapsedSeconds] = useState(0);
+  const [isPufferTransitionPending, setIsPufferTransitionPending] = useState(false);
 
   const pendingActionRef = useRef(null);
   const pendingEntryActionRef = useRef(null);
+  const announcementTimerRef = useRef(null);
+  const announcedMatchIDRef = useRef(null);
+  const searchGenerationRef = useRef(0);
+  const searchOperationPromiseRef = useRef(null);
+  const pufferTransitionPendingRef = useRef(false);
+  const mountedRef = useRef(true);
   const playerNameRef = useRef(playerName);
   playerNameRef.current = playerName;
 
@@ -380,20 +401,52 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
   );
 
   useEffect(() => {
-    if (initialAccount?.id) {
-      applyAccountIdentity(initialAccount);
-      return;
-    }
+    let cancelled = false;
 
-    const storedIdentity = readStoredPlayerIdentity(window.localStorage);
-    if (storedIdentity.name) {
-      setPlayerName(storedIdentity.name);
-      playerNameRef.current = storedIdentity.name;
-    }
-    if (storedIdentity.emoji) setPlayerEmoji(storedIdentity.emoji);
-    if (storedIdentity.color) setPlayerColor(storedIdentity.color);
-    restoreOrCreateAccount();
+    const restoreInitialAccount = async () => {
+      if (initialAccount?.id) {
+        applyAccountIdentity(initialAccount);
+        if (!cancelled) setAccountReady(true);
+        return;
+      }
+
+      const storedIdentity = readStoredPlayerIdentity(window.localStorage);
+      if (storedIdentity.name) {
+        setPlayerName(storedIdentity.name);
+        playerNameRef.current = storedIdentity.name;
+      }
+      if (storedIdentity.emoji) setPlayerEmoji(storedIdentity.emoji);
+      if (storedIdentity.color) setPlayerColor(storedIdentity.color);
+      await restoreOrCreateAccount();
+      if (!cancelled) setAccountReady(true);
+    };
+
+    void restoreInitialAccount();
+
+    return () => {
+      cancelled = true;
+    };
   }, [applyAccountIdentity, initialAccount, restoreOrCreateAccount]);
+
+  useEffect(() => {
+    if (!searchState?.startedAt || searchState.phase !== "searching") return;
+
+    const updateElapsed = () => {
+      setSearchElapsedSeconds(getSearchElapsedSeconds(searchState.startedAt));
+    };
+    updateElapsed();
+    const id = setInterval(updateElapsed, 1000);
+    return () => clearInterval(id);
+  }, [searchState?.phase, searchState?.startedAt]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      advanceSearchGeneration(searchGenerationRef);
+      clearScheduledMatchAnnouncement({ announcementTimerRef });
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -427,6 +480,7 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
 
   useEffect(() => {
     if (!searchState?.matchID || searchState.playerID == null) return;
+    const generation = searchGenerationRef.current;
 
     const poll = async () => {
       try {
@@ -436,12 +490,20 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
         const match = normalizeMatch(data);
         const allJoined = match.players.every((p) => p.name);
         if (allJoined) {
-          setSearchState((current) =>
-            current && current.matchID === searchState.matchID
-              ? { ...current, phase: "matchFound" }
-              : current
-          );
-          router.push(`/g/${searchState.matchID}`);
+          finishSearchPoll({
+            searchGenerationRef,
+            generation,
+            onMatchFound: () => {
+              clearScheduledMatchAnnouncement({ announcementTimerRef });
+              advanceSearchGeneration(searchGenerationRef);
+              setSearchState((current) =>
+                current && current.matchID === searchState.matchID
+                  ? { ...current, phase: "matchFound" }
+                  : current
+              );
+              router.push(`/g/${searchState.matchID}`);
+            }
+          });
         }
       } catch (err) {
         /* keep polling */
@@ -550,17 +612,50 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
     return createGeneratedGuestAccount();
   }, [createGeneratedGuestAccount, ensureAccountSession]);
 
+  const leaveSearchSeat = useCallback(async ({
+    matchID,
+    playerID,
+    credentials
+  }) => {
+    if (!matchID || playerID == null || !credentials) return false;
+
+    try {
+      await appRequest({
+        route: "/api/matches/leave",
+        init: {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ matchID, playerID, credentials })
+        }
+      });
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }, []);
+
   const joinRoom = useCallback(
-    async ({ matchID, playerID, onError }) => {
+    async ({ matchID, playerID, onError, searchGeneration = null }) => {
       if (!matchID) return;
 
+      let seatRequestStarted = false;
       setError("");
       try {
         const account = await ensureAccountSession();
+        if (
+          searchGeneration != null &&
+          !isSearchGenerationCurrent({
+            searchGenerationRef,
+            generation: searchGeneration
+          })
+        ) {
+          return true;
+        }
         if (!account?.id) {
           throw new Error("Pick a username first.");
         }
 
+        seatRequestStarted = true;
         const joined = await appRequest({
           route: "/api/matches/join",
           init: {
@@ -577,36 +672,82 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
         if (!credentials)
           throw new Error("Join succeeded but returned no credentials.");
 
-        persistJoinedSeat({
+        const seat = {
           matchID,
           playerID: String(playerID),
-          credentials,
-          playerName: account.currentUsername
-        });
+          credentials
+        };
+        if (searchGeneration == null) {
+          persistJoinedSeat({
+            ...seat,
+            playerName: account.currentUsername
+          });
+          router.push(`/g/${matchID}`);
+          return true;
+        }
 
-        router.push(`/g/${matchID}`);
+        const outcome = await commitSearchSeat({
+          searchGenerationRef,
+          generation: searchGeneration,
+          seat,
+          leaveSeat: leaveSearchSeat,
+          commit: () => {
+            persistJoinedSeat({
+              ...seat,
+              playerName: account.currentUsername
+            });
+            router.push(`/g/${matchID}`);
+          }
+        });
+        return outcome.committed || outcome.cleaned;
       } catch (err) {
+        if (
+          searchGeneration != null &&
+          !isSearchGenerationCurrent({
+            searchGenerationRef,
+            generation: searchGeneration
+          })
+        ) {
+          return !seatRequestStarted;
+        }
         setError(err?.message || "Failed to join room.");
         onError?.(err);
+        return false;
       }
     },
-    [ensureAccountSession, persistJoinedSeat, router]
+    [ensureAccountSession, leaveSearchSeat, persistJoinedSeat, router]
   );
 
   const play = useCallback(async () => {
     const startedAt = Date.now();
+    const generation = advanceSearchGeneration(searchGenerationRef);
+    let settleSearchOperation;
+    let operationSafeToTransition = true;
+    const searchOperation = new Promise((resolve) => {
+      settleSearchOperation = resolve;
+    });
+    searchOperationPromiseRef.current = searchOperation;
+    clearScheduledMatchAnnouncement({ announcementTimerRef });
+    announcedMatchIDRef.current = null;
+    setSearchElapsedSeconds(0);
     setError("");
     setSearchState({
       matchID: null,
       playerID: null,
       startedAt,
-      phase: "searching"
+      phase: "searching",
+      createdNewPublicDuel: false
     });
 
     try {
       const data = await appRequest({
         route: "/api/matches/open?modeId=duel"
       });
+      if (
+        !isSearchGenerationCurrent({ searchGenerationRef, generation })
+      ) {
+        return;
+      }
       const allMatches = (data?.matches || []).map(normalizeMatch);
       const openMatch = allMatches.find(
         (match) =>
@@ -616,20 +757,30 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
       );
 
       if (openMatch) {
+        setSearchState((current) =>
+          current ? { ...current, createdNewPublicDuel: false } : current
+        );
         const openSeat = openMatch.players.find((player) => !player.name);
-        await joinRoom({
+        operationSafeToTransition = await joinRoom({
           matchID: openMatch.matchID,
           playerID: String(openSeat.id),
-          onError: () => setSearchState(null)
+          onError: () => setSearchState(null),
+          searchGeneration: generation
         });
         return;
       }
 
       const account = await ensureAccountSession();
+      if (
+        !isSearchGenerationCurrent({ searchGenerationRef, generation })
+      ) {
+        return;
+      }
       if (!account?.id) {
         throw new Error("Pick a username first.");
       }
 
+      operationSafeToTransition = false;
       const created = await appRequest({
         route: "/api/matches/create",
         init: {
@@ -641,25 +792,65 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
 
       const matchID = created?.matchID;
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
+      if (!created?.playerCredentials) {
+        throw new Error("Create succeeded but returned no credentials.");
+      }
 
-      persistJoinedSeat({
+      const seat = {
         matchID,
         playerID: "0",
-        credentials: created?.playerCredentials,
-        playerName: account.currentUsername
+        credentials: created.playerCredentials
+      };
+      const outcome = await commitSearchSeat({
+        searchGenerationRef,
+        generation,
+        seat,
+        leaveSeat: leaveSearchSeat,
+        commit: () => {
+          persistJoinedSeat({
+            ...seat,
+            playerName: account.currentUsername
+          });
+          setSearchState({
+            matchID,
+            playerID: "0",
+            startedAt,
+            phase: "searching",
+            createdNewPublicDuel: true
+          });
+          scheduleMatchAnnouncement({
+            matchID,
+            announcementTimerRef,
+            announcedMatchIDRef,
+            requestAnnouncement
+          });
+        }
       });
-
-      setSearchState({
-        matchID,
-        playerID: "0",
-        startedAt,
-        phase: "searching"
-      });
+      operationSafeToTransition = outcome.committed || outcome.cleaned;
     } catch (err) {
+      if (
+        !isSearchGenerationCurrent({ searchGenerationRef, generation })
+      ) {
+        return;
+      }
+      clearScheduledMatchAnnouncement({ announcementTimerRef });
+      advanceSearchGeneration(searchGenerationRef);
       setSearchState(null);
+      setSearchElapsedSeconds(0);
       setError(err?.message || "Matchmaking failed.");
+    } finally {
+      settleSearchOperation(operationSafeToTransition);
+      if (searchOperationPromiseRef.current === searchOperation) {
+        searchOperationPromiseRef.current = null;
+      }
     }
-  }, [ensureAccountSession, joinRoom, persistJoinedSeat]);
+  }, [
+    ensureAccountSession,
+    joinRoom,
+    leaveSearchSeat,
+    persistJoinedSeat,
+    requestAnnouncement
+  ]);
 
   const createFriendChallenge = useCallback(async () => {
     setError("");
@@ -791,36 +982,62 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
     setChallengeState(null);
   }, [challengeState]);
 
-  const cancelSearch = useCallback(async () => {
-    if (!searchState) return;
+  const cancelSearch = useCallback(async (options = {}) => {
+    const preserveOnLeaveFailure = options?.preserveOnLeaveFailure === true;
+    const pendingSearchOperation = searchOperationPromiseRef.current;
+    const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
+    clearScheduledMatchAnnouncement({ announcementTimerRef });
+    if (!searchState) {
+      const safeToTransition = pendingSearchOperation
+        ? await pendingSearchOperation
+        : true;
+      return safeToTransition;
+    }
     if (!searchState.matchID || searchState.playerID == null) {
       setSearchState(null);
-      return;
+      setSearchElapsedSeconds(0);
+      const safeToTransition = pendingSearchOperation
+        ? await pendingSearchOperation
+        : true;
+      if (
+        !isSearchGenerationCurrent({
+          searchGenerationRef,
+          generation: cancellationGeneration
+        })
+      ) {
+        return false;
+      }
+      if (!safeToTransition) {
+        setError("Could not leave the public queue. Puffer was not started.");
+        return false;
+      }
+      return true;
     }
 
-    try {
-      const credentials = window.localStorage.getItem(
-        getCredentialsStorageKey({
-          matchID: searchState.matchID,
-          playerID: searchState.playerID
-        })
-      );
-      if (credentials) {
-        await appRequest({
-          route: "/api/matches/leave",
-          init: {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              matchID: searchState.matchID,
-              playerID: searchState.playerID,
-              credentials
-            })
-          }
-        });
-      }
-    } catch (err) {
-      /* ignore */
+    const credentials = window.localStorage.getItem(
+      getCredentialsStorageKey({
+        matchID: searchState.matchID,
+        playerID: searchState.playerID
+      })
+    );
+    const leftSearch = await leaveSearchSeat({
+      matchID: searchState.matchID,
+      playerID: searchState.playerID,
+      credentials
+    });
+    if (
+      !isSearchGenerationCurrent({
+        searchGenerationRef,
+        generation: cancellationGeneration
+      })
+    ) {
+      return false;
+    }
+
+    if (!leftSearch && preserveOnLeaveFailure) {
+      setError("Could not leave the public queue. Puffer was not started.");
+      setSearchState((current) => (current ? { ...current } : current));
+      return false;
     }
 
     const activeMatch = readLastActiveMatch(window.localStorage);
@@ -832,7 +1049,21 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
     }
 
     setSearchState(null);
-  }, [searchState]);
+    setSearchElapsedSeconds(0);
+    return leftSearch;
+  }, [leaveSearchSeat, searchState]);
+
+  const playPufferFromSearch = useCallback(async () => {
+    clearScheduledMatchAnnouncement({ announcementTimerRef });
+    return playPufferAfterLeavingSearch({
+      cancelSearch: () => cancelSearch({ preserveOnLeaveFailure: true }),
+      playAgainstBot,
+      pufferTransitionPendingRef,
+      onPendingChange: (pending) => {
+        if (mountedRef.current) setIsPufferTransitionPending(pending);
+      }
+    });
+  }, [cancelSearch, playAgainstBot]);
 
   const openIdentity = useCallback(() => {
     pendingActionRef.current = null;
@@ -856,6 +1087,8 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
     writeStoredPlayerIdentity(window.localStorage, {});
     clearPendingFriendChallenge(window.localStorage);
     clearLastActiveMatch(window.localStorage);
+    advanceSearchGeneration(searchGenerationRef);
+    clearScheduledMatchAnnouncement({ announcementTimerRef });
     setCurrentAccount(null);
     setPlayerName("");
     setPlayerEmoji("");
@@ -904,6 +1137,7 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
 
   return {
     account: currentAccount,
+    accountReady,
     error,
     hasIdentity,
     identity: {
@@ -911,16 +1145,21 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
       emoji: currentAccount?.avatarEmoji ?? playerEmoji,
       color: currentAccount?.avatarColor ?? playerColor
     },
-    isBusy: Boolean(searchState || challengeState),
+    isBusy: Boolean(searchState || challengeState || isPufferTransitionPending),
     showIdentity,
     entryModal,
     searchState,
+    searchElapsedSeconds,
+    isPufferTransitionPending,
+    createdNewPublicDuel: Boolean(searchState?.createdNewPublicDuel),
+    playPufferFromSearch,
     challengeState,
     authOptions,
     actions: {
       playOnline: () => requirePlayIdentity({ intent: "online", action: play }),
       playFriend: () => requirePlayIdentity({ intent: "friend", action: createFriendChallenge }),
       playBot: playAgainstBot,
+      playPufferFromSearch,
       openIdentity,
       openSignIn,
       switchEntryToAuth,
