@@ -31,6 +31,7 @@ import {
   readStoredPlayerIdentity,
   writeStoredPlayerIdentity
 } from "./playerIdentityStorage";
+import { tabAttention } from "../utils/tabAttention";
 
 const BOT_NAME_PREFIX = "Puffer";
 const DEFAULT_AUTH_OPTIONS = Object.freeze({
@@ -79,7 +80,10 @@ function normalizeMatch(raw) {
   };
 }
 
-export function useLobbyHomeActions({ initialAccount = null } = {}) {
+export function useLobbyHomeActions({
+  initialAccount = null,
+  onMatchFound = null
+} = {}) {
   const router = useRouter();
   const { requestAnnouncement } = useMatchAlerts();
   const initialIdentity = getAccountIdentity(initialAccount);
@@ -496,6 +500,12 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
             onMatchFound: () => {
               clearScheduledMatchAnnouncement({ announcementTimerRef });
               advanceSearchGeneration(searchGenerationRef);
+              tabAttention.request("match-found");
+              try {
+                onMatchFound?.();
+              } catch (err) {
+                /* Match-found sound is best-effort. */
+              }
               setSearchState((current) =>
                 current && current.matchID === searchState.matchID
                   ? { ...current, phase: "matchFound" }
@@ -512,7 +522,7 @@ export function useLobbyHomeActions({ initialAccount = null } = {}) {
 
     const id = setInterval(poll, 1500);
     return () => clearInterval(id);
-  }, [router, searchState]);
+  }, [onMatchFound, router, searchState]);
 
   useEffect(() => {
     if (!challengeState?.matchID || challengeState.phase !== "waiting") return;

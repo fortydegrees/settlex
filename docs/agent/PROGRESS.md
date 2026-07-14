@@ -6514,3 +6514,14 @@
   - `pnpm lint`
   - Independent re-review reported no remaining Critical or Important issues.
   - Local development homepage compiled and returned HTTP 200; rendered desktop/mobile inspection was unavailable because no browser backend was exposed in the task environment.
+
+## Status (2026-07-14, static tab attention)
+- Added one singleton tab-attention controller for `match-found` and `your-turn`, with fixed priority, static bell metadata, exact title/favicon restoration, one-shot visible acknowledgement for match-found, and no flashing or animation timers.
+- Wired public queue completion to request match-found attention before navigation and attempt the existing turn-start sound once. The attempt respects `catana:audioMuted` and contains both synchronous and autoplay-promise failures.
+- Wired `GameScreen` turn attention only for a credentialed, non-bot local human who owns both the current turn and the actionable status. Pregame, opponent wait states, spectators, replays, game-over boards, turn changes, and unmount do not retain attention; visible restoration removes temporary metadata without forgetting an otherwise actionable turn.
+- Preserved the existing `turn:start` effect cue and hidden-tab audio policy; no second turn sound or attention asset was added.
+- Verification:
+  - `pnpm exec vitest run app/catana/utils/__tests__/tabAttention.test.js app/catana/__tests__/GameScreen.tabAttention.source.test.js --reporter=dot` (red before implementation: controller module missing and all wiring assertions failed; review-driven red: visible `your-turn` requests were forgotten; final green: 12 tests passed)
+  - `pnpm exec vitest run app/catana/utils/__tests__/tabAttention.test.js app/catana/__tests__/GameScreen.tabAttention.source.test.js app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js app/catana/matchmaking/__tests__/matchmakingRescue.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/GameScreen.audioMute.test.js app/catana/__tests__/effects/turnStartCue.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js --reporter=dot` (76 tests passed)
+  - `pnpm lint`
+  - Independent review's one Important visible-lifecycle finding was fixed with failing-first coverage; re-review reported no remaining Critical or Important issues.

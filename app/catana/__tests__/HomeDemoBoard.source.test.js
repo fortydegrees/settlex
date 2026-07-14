@@ -148,7 +148,8 @@ describe("Home demo board source", () => {
     );
     expect(rootSource).toContain("<HomeTableClient initialAccount={initialAccount} />");
     expect(source).toContain("initialAccount");
-    expect(source).toContain("useLobbyHomeActions({ initialAccount })");
+    expect(source).toContain("useLobbyHomeActions({");
+    expect(source).toContain("onMatchFound: playMatchFoundSound");
     expect(source).toContain("useLobbyHomeActions");
     expect(source).toContain("isBoardLayoutReady");
     expect(source).toContain("useBrowserLayoutEffect");
