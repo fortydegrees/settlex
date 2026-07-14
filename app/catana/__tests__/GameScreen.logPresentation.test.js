@@ -24,4 +24,16 @@ describe("GameScreen log presentation source", () => {
     expect(source).toContain("bgioProps.isConnected");
     expect(source).toContain("previousIsConnectedRef");
   });
+
+  it("uses controlled replay entries without changing live presentation", () => {
+    const source = fs.readFileSync(screenPath, "utf8");
+    expect(source).toContain("bgioProps.replayLogEntries");
+    expect(source).toContain("replayActiveLogEntryKey");
+    expect(source).toContain("onReplayLogEntrySelect");
+    expect(source).toContain("replayConsoleMobileOpen");
+    expect(source).toContain("onReplayMobileMetaPanelOpen");
+    expect(source).toContain("showTurnControls={isReplay || !isGameOver}");
+    expect(source).toContain("readOnly={isReplay}");
+    expect(source).toMatch(/if \(isReplay\) return/);
+  });
 });

@@ -14,7 +14,7 @@ it("projects the selected historical frame and player perspective", () => {
     plugins: {},
   };
   const props = buildReplayGameScreenProps({
-    event: { state, visibleLogEntries: [], logEntryKey: null },
+    event: { state, turn: 7, visibleLogEntries: [], logEntryKey: null },
     perspectiveId: "1",
     matchID: "m1",
     matchData: [],
@@ -24,5 +24,6 @@ it("projects the selected historical frame and player perspective", () => {
   expect(props.playerID).toBe("1");
   expect(props.G.core.playerStateById["1"].devCards).toEqual(["Knight"]);
   expect(props.isReplay).toBe(true);
+  expect(props.replayTurn).toBe(7);
   expect(props.moves.rollDice()).toBeUndefined();
 });

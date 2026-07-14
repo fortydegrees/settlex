@@ -26,9 +26,15 @@ describe("GameScreen mobile shell source", () => {
     expect(source).toContain("mobileMetaPanel");
     expect(source).toContain("setMobileMetaPanel");
     expect(source).toContain("mobileActivePanel={mobileMetaPanel}");
-    expect(source).toContain("onMobileActivePanelChange={setMobileMetaPanel}");
+    expect(source).toContain(
+      "onMobileActivePanelChange={handleMobileMetaPanelChange}"
+    );
     expect(source).toContain("activeMobileMetaPanel={mobileMetaPanel}");
-    expect(source).toContain("onMobileMetaPanelOpen={setMobileMetaPanel}");
+    expect(source).toContain(
+      "onMobileMetaPanelOpen={handleMobileMetaPanelChange}"
+    );
+    expect(source).toContain("onReplayMobileMetaPanelOpen");
+    expect(source).toContain("replayConsoleMobileOpen");
     expect(source).toContain('pointerEvents: mobileMetaPanel ? "auto" : undefined');
   });
 

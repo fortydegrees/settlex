@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { createEmptyState } from "@settlex/game-core";
 import {
   buildGameScreenDisplayModel,
-  getGameOverReasonCopy
+  getGameOverReasonCopy,
+  getGameOverTitle
 } from "../utils/gameScreenDisplayModel";
 
 describe("gameScreenDisplayModel", () => {
@@ -112,5 +113,29 @@ describe("gameScreenDisplayModel", () => {
     expect(model.postgameSummary).toEqual([]);
     expect(model.winnerName).toBe("Unknown");
     expect(model.winnerVP).toBeNull();
+  });
+
+  it("formats terminal titles without inventing a winner", () => {
+    expect(
+      getGameOverTitle({
+        isWinner: false,
+        winnerId: null,
+        winnerName: "Unknown"
+      })
+    ).toBe("Game ended");
+    expect(
+      getGameOverTitle({
+        isWinner: true,
+        winnerId: "0",
+        winnerName: "Dana"
+      })
+    ).toBe("You win!");
+    expect(
+      getGameOverTitle({
+        isWinner: false,
+        winnerId: "0",
+        winnerName: "Dana"
+      })
+    ).toBe("Dana wins!");
   });
 });

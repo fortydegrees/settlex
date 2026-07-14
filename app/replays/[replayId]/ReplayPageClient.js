@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement as h } from "react";
+import { createElement as h, useMemo } from "react";
 import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
 import { PostgameGameBoard } from "../PostgameGameBoard";
 
@@ -13,6 +13,11 @@ export const createReplayPageClient = ({
     initialFrameIndex = 0,
     initialPerspectivePlayerID = null,
   }) {
+    const initialReplayPayload = useMemo(
+      () => ({ replay, frames }),
+      [replay, frames]
+    );
+
     return h(
       "div",
       {
@@ -20,7 +25,7 @@ export const createReplayPageClient = ({
         style: { background: CATANA_TABLE_BACKGROUND },
       },
       h(PostgameGameBoardImpl, {
-        initialReplayPayload: { replay, frames },
+        initialReplayPayload,
         initialPerspectivePlayerID,
         initialFrameIndex,
       })
