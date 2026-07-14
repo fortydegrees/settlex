@@ -735,6 +735,7 @@ export function CatanBoard({
         coordinate={renderEdge.tile_coordinate}
         direction={renderEdge.direction}
         color={owner.color}
+        viewportWidth={width}
         themeId={themeId}
       />
     );
@@ -829,6 +830,7 @@ export function CatanBoard({
             coordinate={renderEdge.tile_coordinate}
             direction={renderEdge.direction}
             color={currentPlayerView?.color ?? "red"}
+            viewportWidth={width}
             placing
             initialPlacement
             moves={moves}
@@ -860,6 +862,7 @@ export function CatanBoard({
             coordinate={renderEdge.tile_coordinate}
             direction={renderEdge.direction}
             color={currentPlayerView?.color ?? "red"}
+            viewportWidth={width}
             hoverable
             moves={moves}
             setHoveredNode={setHoveredNode}
@@ -956,6 +959,7 @@ export function CatanBoard({
           coordinate={renderEdge.tile_coordinate}
           direction={renderEdge.direction}
           color={currentPlayerView?.color ?? "red"}
+          viewportWidth={width}
           placing
           initialPlacement={false}
           roadBuilding={playerAction === "roadBuilding"}

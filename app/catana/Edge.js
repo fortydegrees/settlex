@@ -1,7 +1,6 @@
 import React from "react";
 
 import { tilePixelVector, getEdgeTransform } from "./utils/coordinates";
-import useWindowSize from "./utils/useWindowSize";
 import { ActionNode } from "./ActionNode";
 import { getBackgroundImageWithFallback } from "./theme/themes";
 import { getPieceSvgFile } from "./theme/pieceAssets.js";
@@ -63,6 +62,7 @@ function PlaceableEdge({
   coordinate,
   direction,
   color,
+  viewportWidth,
   initialPlacement,
   hoveredNode,
   setHoveredNode,
@@ -71,10 +71,9 @@ function PlaceableEdge({
   showRegisteredHoverPreview = false,
   themeId,
 }) {
-  const { width } = useWindowSize();
   const [centerX, centerY] = center;
   const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
-  const transform = getEdgeTransform(direction, size, width);
+  const transform = getEdgeTransform(direction, size, viewportWidth);
 
   const showRoadOutline = initialPlacement && !hoveredNode;
   const isHovered = hoveredNode === id;
@@ -145,15 +144,15 @@ function HoverableEdge({
   coordinate,
   direction,
   color,
+  viewportWidth,
   hoveredEdge,
   setHoveredEdge,
   onPlace,
   themeId,
 }) {
-  const { width } = useWindowSize();
   const [centerX, centerY] = center;
   const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
-  const transform = getEdgeTransform(direction, size, width);
+  const transform = getEdgeTransform(direction, size, viewportWidth);
 
   const isHovered = hoveredEdge === id;
 
@@ -198,6 +197,7 @@ export function Edge({
   coordinate,
   direction,
   color,
+  viewportWidth,
   placing = false,
   initialPlacement = false,
   roadBuilding = false,
@@ -211,10 +211,9 @@ export function Edge({
   onPlaceCommitted,
   themeId,
 }) {
-  const { width } = useWindowSize();
   const [centerX, centerY] = center;
   const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
-  const transform = getEdgeTransform(direction, size, width);
+  const transform = getEdgeTransform(direction, size, viewportWidth);
 
   if (placing) {
     return (
@@ -225,6 +224,7 @@ export function Edge({
         coordinate={coordinate}
         direction={direction}
         color={color}
+        viewportWidth={viewportWidth}
         initialPlacement={initialPlacement}
         hoveredNode={hoveredNode}
         setHoveredNode={setHoveredNode}
@@ -254,6 +254,7 @@ export function Edge({
         coordinate={coordinate}
         direction={direction}
         color={color}
+        viewportWidth={viewportWidth}
         hoveredEdge={hoveredNode}
         setHoveredEdge={setHoveredNode}
         themeId={themeId}
