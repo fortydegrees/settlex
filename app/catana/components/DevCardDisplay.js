@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Image from "./NextImage";
 import "./hudGlass.css";
 import "./DevCardDisplay.css";
@@ -185,6 +191,8 @@ export const DevCardDisplay = ({
   embedded = false,
 }) => {
   const dockRef = useRef(null);
+  const pointerUpdateFrameRef = useRef(null);
+  const latestPointerClientXRef = useRef(null);
   const [pointerX, setPointerX] = useState(null);
   const [focusedIndex, setFocusedIndex] = useState(null);
   const dockItems = useMemo(
@@ -234,11 +242,37 @@ export const DevCardDisplay = ({
     },
     [containerRef]
   );
-  const handlePointerMove = useCallback((event) => {
-    const rect = dockRef.current?.getBoundingClientRect?.();
-    if (!rect) return;
-    setPointerX(event.clientX - rect.left);
+  const cancelPointerUpdate = useCallback(() => {
+    if (pointerUpdateFrameRef.current != null) {
+      cancelAnimationFrame(pointerUpdateFrameRef.current);
+    }
+    pointerUpdateFrameRef.current = null;
   }, []);
+  const flushPointerUpdate = useCallback(() => {
+    pointerUpdateFrameRef.current = null;
+    const clientX = latestPointerClientXRef.current;
+    const rect = dockRef.current?.getBoundingClientRect?.();
+    if (!Number.isFinite(clientX) || !rect) return;
+    setPointerX(clientX - rect.left);
+  }, []);
+  const handlePointerMove = useCallback(
+    (event) => {
+      latestPointerClientXRef.current = event.clientX;
+      if (pointerUpdateFrameRef.current == null) {
+        pointerUpdateFrameRef.current = requestAnimationFrame(flushPointerUpdate);
+      }
+    },
+    [flushPointerUpdate]
+  );
+  const handlePointerLeave = useCallback(() => {
+    cancelPointerUpdate();
+    latestPointerClientXRef.current = null;
+    setPointerX(null);
+    setFocusedIndex(null);
+  }, [cancelPointerUpdate]);
+
+  useEffect(() => cancelPointerUpdate, [cancelPointerUpdate]);
+
   const primaryDockIndex = useMemo(() => {
     if (focusedIndex != null) return focusedIndex;
     if (pointerX == null || laidOutDockItems.length === 0) return null;
@@ -285,10 +319,7 @@ export const DevCardDisplay = ({
         className={boxClassName}
         style={{ width: `${Math.round(boxWidth)}px` }}
         onMouseMove={handlePointerMove}
-        onMouseLeave={() => {
-          setPointerX(null);
-          setFocusedIndex(null);
-        }}
+        onMouseLeave={handlePointerLeave}
       >
         <div className="devcard-dock-track">
           {laidOutDockItems.map((item, index) => (
