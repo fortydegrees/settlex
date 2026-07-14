@@ -95,6 +95,17 @@ export async function runAccountSignOutLifecycle({
   await refreshMatchAlerts?.();
 }
 
+export async function runAccountEstablishedLifecycle({
+  account,
+  applyAccountIdentity,
+  refreshMatchAlerts,
+} = {}) {
+  if (!account) return null;
+  applyAccountIdentity?.(account);
+  await refreshMatchAlerts?.();
+  return account;
+}
+
 function normalizeMatch(raw) {
   const playersObj = raw?.players || {};
   const players = Object.values(playersObj).sort(
@@ -210,20 +221,27 @@ export function useLobbyHomeActions({
       });
 
       if (response?.account) {
-        applyAccountIdentity(response.account);
+        await runAccountEstablishedLifecycle({
+          account: response.account,
+          applyAccountIdentity,
+          refreshMatchAlerts,
+        });
       }
 
       return response?.account ?? null;
     },
-    [applyAccountIdentity, ensureBetterAuthSession]
+    [applyAccountIdentity, ensureBetterAuthSession, refreshMatchAlerts]
   );
 
   const restoreOrCreateAccount = useCallback(async () => {
     try {
       const current = await appRequest({ route: "/api/account/me" });
       if (current?.account) {
-        applyAccountIdentity(current.account);
-        return current.account;
+        return runAccountEstablishedLifecycle({
+          account: current.account,
+          applyAccountIdentity,
+          refreshMatchAlerts,
+        });
       }
     } catch (err) {
       /* ignore */
@@ -244,7 +262,7 @@ export function useLobbyHomeActions({
     } catch (err) {
       return null;
     }
-  }, [applyAccountIdentity, upsertGuestIdentity]);
+  }, [applyAccountIdentity, refreshMatchAlerts, upsertGuestIdentity]);
 
   useEffect(() => {
     let cancelled = false;
@@ -441,7 +459,11 @@ export function useLobbyHomeActions({
 
     const restoreInitialAccount = async () => {
       if (initialAccount?.id) {
-        applyAccountIdentity(initialAccount);
+        await runAccountEstablishedLifecycle({
+          account: initialAccount,
+          applyAccountIdentity,
+          refreshMatchAlerts,
+        });
         if (!cancelled) setAccountReady(true);
         return;
       }
@@ -462,7 +484,12 @@ export function useLobbyHomeActions({
     return () => {
       cancelled = true;
     };
-  }, [applyAccountIdentity, initialAccount, restoreOrCreateAccount]);
+  }, [
+    applyAccountIdentity,
+    initialAccount,
+    refreshMatchAlerts,
+    restoreOrCreateAccount,
+  ]);
 
   useEffect(() => {
     if (!searchState?.startedAt || searchState.phase !== "searching") return;

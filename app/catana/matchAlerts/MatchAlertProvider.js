@@ -14,6 +14,7 @@ import {
   getSignedOutMatchAlertState,
   loadMatchAlertSnapshot,
   requestMatchAnnouncement,
+  registerCurrentMatchAlertGame,
   runEnableTransaction,
   runPreferenceAction,
 } from "./matchAlertProviderActions.js";
@@ -109,19 +110,11 @@ export function MatchAlertProvider({ children }) {
     alertJoinPendingRef.current = Boolean(pending);
   }, []);
 
-  const registerCurrentGame = useCallback((game) => {
-    if (!game?.matchID) return () => {};
-    const registered = {
-      matchID: String(game.matchID),
-      opponentType: game.opponentType === "bot" ? "bot" : "human",
-    };
-    setCurrentGame(registered);
-    return () => {
-      setCurrentGame((current) =>
-        current?.matchID === registered.matchID ? null : current
-      );
-    };
-  }, []);
+  const registerCurrentGame = useCallback(
+    (game) =>
+      registerCurrentMatchAlertGame({ game, setCurrentGame, refresh }),
+    [refresh]
+  );
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -245,10 +238,12 @@ export function MatchAlertProvider({ children }) {
         preference,
         hasSubscription,
         enableAttempted,
+        currentGame,
       }),
     [
       capability,
       configured,
+      currentGame,
       enableAttempted,
       hasSubscription,
       permission,
