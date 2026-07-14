@@ -3956,3 +3956,9 @@
 - Keep the active-player avatar's white ring static and render its glow on the existing pseudo-element. The infinite avatar keyframes should remain limited to `transform` and `opacity`; reduced-motion should retain the ring without running the glow animation.
 - Do not restore `will-change: contents` on the action dock. Its card-level transform hints already cover the spring-driven motion that benefits from compositor preparation.
 - Use `HudMotionPerformance.source.test.js` as the narrow regression guard. Broader rail, award, count, dice, timer, and mobile inventory changes still require targeted browser evidence before changing their visible effects.
+
+- Catana runtime quick-wins boundary:
+- Moving timer markup alone is not a performance boundary. The 250ms `nowMs` state must live inside the smallest desktop/mobile timer leaf so the regular turn countdown does not rerun `GameScreen` or the complete player HUD.
+- Preserve the current normalized server snapshot, server-delay correction, 250ms cadence, timer formatting, five-second urgency rule, and roll-status suppression. `GameScreen` may keep its clock temporarily for the rarer disconnect and idle countdowns.
+- `Board` already owns the measured viewport width used for layout. Pass that width to every `Edge` render path and forward it to placeable/hoverable variants; do not add a second viewport store or keep edge-local `useWindowSize` subscriptions.
+- Keep the runtime quick-wins slice separate from a broad `GameScreen` refactor and from the later production performance certification, long-session, and network-measurement work.

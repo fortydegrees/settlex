@@ -6475,3 +6475,9 @@
   - Green: the same focused command passed 3 tests.
   - `pnpm exec eslint app/catana/__tests__/HudMotionPerformance.source.test.js`
   - Playwright CLI on `/catana/dev/sandbox`: desktop `1440x900`, mobile `390x844`, settlement-placement preset with 54 action nodes, runtime keyframe inspection, reduced-motion emulation, and zero browser console warnings/errors.
+
+## Status (2026-07-14, Catana runtime quick-wins design)
+- Approved a separate, bounded runtime slice after the animation work: move the normal turn-timer clock into the desktop/mobile timer leaf and remove per-edge `useWindowSize` listener fan-out by passing `Board`'s measured width.
+- Kept broad `GameScreen` decomposition, presence-clock extraction, effect changes, performance certification, memory soak work, and network analysis out of this slice.
+- Added `docs/superpowers/specs/2026-07-14-catana-runtime-quick-wins-design.md` with ownership, data-flow, regression, manual-verification, and acceptance boundaries.
+- Baseline verification: `pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/timerSnapshot.test.js app/catana/__tests__/useLocalPlayerDockModel.test.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/useWindowSize.test.js --exclude '.worktrees/**' --reporter=dot` (5 files, 34 tests passed).
