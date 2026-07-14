@@ -4,7 +4,7 @@
 
 **Goal:** Stop normal turn-timer ticks from rerunning GameScreen and remove redundant per-edge viewport listeners without changing timer presentation or 2D board geometry.
 
-**Architecture:** A shared useLiveTurnTimer hook will own the 250ms regular-turn clock, but it will be called only by the small desktop and mobile timer leaves. GameScreen will retain its clock solely for disconnect/idle presence. Separately, Board will pass its already measured viewport width through every Edge path.
+**Architecture:** A shared useLiveTurnTimer hook will own the 250ms regular-turn clock, but it will be called only by the small desktop and mobile timer leaves. GameScreen will retain its clock solely for disconnect/idle presence. Separately, Board will forward its existing viewport measurement through the gameplay Edge paths that Board renders, removing edge-local subscriptions without asserting width-dependent transform semantics or coverage of non-Board consumers.
 
 **Tech Stack:** React, JavaScript, Vitest, React server rendering, Playwright CLI, Catana 2D dev sandbox.
 
@@ -678,6 +678,8 @@ Confirm desktop/mobile countdown text and cadence, timer hiding, mobile --:-- fa
 
 Use /catana/dev/sandbox at 1440x900 and 390x844. Exercise placed, placement, passive-hover, and dock-launched build-pickup roads. Confirm art, hit targets, hover previews, and placement previews remain aligned before and after resize.
 
+If the stock sandbox cannot generate a valid target or reliable geometry observation for a road mode, do not mark that observation complete or infer alignment from source/tests. Record the exact fixture or automation limitation and carry placement, passive-hover, or post-resize magnetic alignment forward as an explicit manual follow-up. The focused automated road suites plus the browser states that were actually observed remain valid branch-completion evidence.
+
 - [ ] **Step 4: Update project notes**
 
 Append to docs/agent/PROGRESS.md:
@@ -686,9 +688,9 @@ Append to docs/agent/PROGRESS.md:
 ## Status (2026-07-14, Catana runtime quick wins)
 - Moved the normal 250ms turn-timer clock below GameScreen into the mounted desktop/mobile timer leaf while preserving server-delay correction, formatting, visibility, and low-time behaviour.
 - Kept the root GameScreen clock only for active disconnect/idle presence countdowns.
-- Removed edge-local useWindowSize subscriptions and passed Board's measured viewport width through every road path.
-- React profiling confirmed normal timer ticks commit the timer leaf without recurring GameScreen or full player-HUD commits.
-- Desktop 1440x900 and mobile 390x844 checks confirmed unchanged timer presentation and aligned road geometry after resize.
+- Removed edge-local useWindowSize subscriptions by forwarding Board's existing viewport measurement through Board-rendered gameplay Edge paths; getEdgeTransform does not currently consume width, and non-Board consumers are outside this slice.
+- Development render counters confirmed normal timer ticks rerender the timer leaf without recurring GameScreen or full player-HUD renders; React DevTools commit profiling was unavailable.
+- Desktop 1440x900 and mobile 390x844 checks confirmed timer presentation and the road states actually observed; fixture-blocked placement/passive-hover/post-resize magnetic alignment remains a documented manual follow-up.
 ~~~
 
 Append to docs/agent/NOTES.md:
@@ -697,7 +699,7 @@ Append to docs/agent/NOTES.md:
 - Catana timer/edge runtime ownership note:
 - Keep the regular turn timer's 250ms clock inside the smallest mounted timer leaf. Do not move nowMs back into GameScreen or the full HUD.
 - GameScreen retains a presence-only clock for active disconnect/idle countdowns; future presence extraction is a separate measured slice.
-- Board owns viewport width for road transforms. Every Edge path should receive viewportWidth rather than subscribing through useWindowSize.
+- Forward Board's existing viewport measurement through Board-rendered gameplay Edge paths to avoid edge-local useWindowSize subscriptions. This does not imply that getEdgeTransform currently consumes width or that non-Board Edge consumers are covered.
 ~~~
 
 - [ ] **Step 5: Final checks and evidence commit**
@@ -714,4 +716,4 @@ Expected: checks exit 0, only the two documentation files enter the evidence com
 
 ## Completion Boundary
 
-Stop when this runtime quick-wins branch is clean and verified. Do not begin production performance certification, visual-effect changes, long-session soak work, network measurement, or broad GameScreen refactoring in this plan.
+Stop when this runtime quick-wins branch is clean, the combined automated set passes, verified browser observations are recorded honestly, and any sandbox-fixture-blocked placement, passive-hover, or post-resize magnetic-alignment checks are explicitly listed as manual follow-ups. Those blocked observations are not acceptance claims and must not be marked complete. Do not begin production performance certification, visual-effect changes, long-session soak work, network measurement, or broad GameScreen refactoring in this plan.

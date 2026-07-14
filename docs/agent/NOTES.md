@@ -3961,12 +3961,12 @@
 - Moving timer markup alone is not a performance boundary. The 250ms `nowMs` state must live inside the smallest desktop/mobile timer leaf so the regular turn countdown does not rerun `GameScreen` or the complete player HUD.
 - Preserve the current normalized server snapshot, server-delay correction, 250ms cadence, timer formatting, five-second urgency rule, and roll-status suppression. `GameScreen` may keep its clock temporarily for the rarer disconnect and idle countdowns.
 - The desktop leaf is `TurnTimerSegment` inside `TurnControlCluster`; the mobile leaf is `MobileCommandTimerBox`. Keep timer text/urgency derivation in those leaves and pass `timerSnapshot` through the HUD parents without converting it to `timerMs`.
-- `Board` already owns the measured viewport width used for layout. Pass that width to every `Edge` render path and forward it to placeable/hoverable variants; do not add a second viewport store or keep edge-local `useWindowSize` subscriptions.
+- `Board` already has the viewport measurement used by its gameplay layout. Forward that existing value through each `Board`-rendered `Edge` path and its placeable/hoverable variants so those components do not add edge-local `useWindowSize` subscriptions. `getEdgeTransform` currently does not consume the width value, and non-`Board` `Edge` consumers are outside this slice.
 - Keep the runtime quick-wins slice separate from a broad `GameScreen` refactor and from the later production performance certification, long-session, and network-measurement work.
 - Execute the timer clock, timer ownership rewiring/profile gate, edge-width plumbing, and combined verification as separate plan tasks; do not bundle speculative animation or network changes into those commits.
 
 - Catana timer/edge runtime ownership note:
 - Keep the regular turn timer's 250ms clock inside the smallest mounted timer leaf. Do not move `nowMs` back into `GameScreen` or the full HUD.
 - `GameScreen` retains a presence-only clock for active disconnect/idle countdowns; future presence extraction is a separate measured slice.
-- `Board` owns viewport width for road transforms. Every `Edge` path should receive `viewportWidth` rather than subscribing through `useWindowSize`.
+- Forward `Board`'s existing viewport measurement through the gameplay `Edge` paths that `Board` renders, rather than adding edge-local `useWindowSize` subscriptions. This is subscription ownership plumbing, not a claim that viewport width currently changes `getEdgeTransform` semantics or that every non-`Board` `Edge` consumer is covered.
 - The current `Road placement` dev-sandbox preset can enter the road stage with `G.valids.edges` empty after the placement phase initializes. Do not treat that preset alone as proof of placement-road geometry until its deterministic valid-edge fixture is repaired; keep the focused placement-path tests and use a real valid placement state for visual evidence.
