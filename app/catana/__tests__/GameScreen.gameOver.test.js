@@ -32,7 +32,9 @@ describe("GameScreen game over", () => {
 
     expect(contents).toContain("winnerConfettiSeenRef");
     expect(contents).toContain("winnerConfettiSeenRef.current = false");
-    expect(contents).toContain("shouldFireConfetti={isWinner && !winnerConfettiSeenRef.current}");
+    expect(contents).toMatch(
+      /shouldFireConfetti=\{\s*!isReplay &&\s*isWinner &&\s*!winnerConfettiSeenRef\.current\s*\}/
+    );
     expect(contents).toContain("onConfettiFired={() => {\n              winnerConfettiSeenRef.current = true;\n            }}");
   });
 
@@ -56,5 +58,14 @@ describe("GameScreen game over", () => {
     expect(contents).toContain("if (isReplay) return;");
     expect(contents).toContain("!isReplay && !isGameOver && !!player");
     expect(contents).toContain("{!isReplay && (");
+  });
+
+  it("delegates finished-game replay actions without navigating", () => {
+    const contents = fs.readFileSync(screenPath, "utf8");
+
+    expect(contents).toContain("bgioProps.onWatchReplay");
+    expect(contents).not.toContain("?view=replay");
+    expect(contents).not.toContain("window.location.assign");
+    expect(contents).not.toContain("onRematch={() => {}}");
   });
 });

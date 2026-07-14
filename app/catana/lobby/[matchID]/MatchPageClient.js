@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Client } from "boardgame.io/react";
 import { SocketIO } from "boardgame.io/multiplayer";
 import { Catan } from "../../Game";
-import { GameScreenWithEffects } from "../../GameScreen";
+import { PostgameGameBoard } from "../../../replays/PostgameGameBoard";
 import { GlassPillButton } from "../../components/GlassPillButton";
 import { Banner } from "../../../ui/Banner";
 import { Button } from "../../../ui/Button";
@@ -90,7 +90,7 @@ export function MatchPageClient({
   const CatanClient = useMemo(() => {
     return Client({
       game: Catan,
-      board: GameScreenWithEffects,
+      board: PostgameGameBoard,
       multiplayer: SocketIO({ server: gameServer }),
       loading: LiveMatchLoadingShell,
       debug: false,

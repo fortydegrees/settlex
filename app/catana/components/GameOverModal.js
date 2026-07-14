@@ -11,8 +11,8 @@ export function GameOverModal({
   isWinner = false,
   shouldFireConfetti = false,
   onConfettiFired,
-  onViewPostgame,
-  onRematch,
+  onWatchReplay,
+  onViewSummary,
   onLobby,
   onClose
 }) {
@@ -98,19 +98,22 @@ export function GameOverModal({
       )}
 
       <div className="mt-6 grid gap-2 sm:grid-cols-2">
-        <button
-          className="rounded-lg bg-green-500 hover:bg-green-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02]"
-          onClick={onViewPostgame}
-        >
-          View Postgame
-        </button>
-        <button
-          className="rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500 cursor-not-allowed"
-          onClick={onRematch}
-          disabled
-        >
-          Rematch
-        </button>
+        {onWatchReplay ? (
+          <button
+            className="rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-lime-600"
+            onClick={onWatchReplay}
+          >
+            Watch replay
+          </button>
+        ) : null}
+        {onViewSummary ? (
+          <button
+            className="rounded-lg bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white/85"
+            onClick={onViewSummary}
+          >
+            Match summary
+          </button>
+        ) : null}
         <button
           className="rounded-lg bg-slate-600 hover:bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm"
           onClick={onLobby}
