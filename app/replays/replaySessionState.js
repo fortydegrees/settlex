@@ -13,6 +13,29 @@ export const createReplaySessionState = ({
   terminalResultsSeen: false,
 });
 
+export const createReplayActivationState = ({
+  replayActive = false,
+} = {}) => ({
+  intentPending: false,
+  replayActive,
+});
+
+export const replayActivationReducer = (state, action) => {
+  if (action.type === "requestReplay") {
+    if (state.replayActive) return state;
+    if (action.payloadStatus === "ready") {
+      return { intentPending: false, replayActive: true };
+    }
+    if (state.intentPending) return state;
+    return { intentPending: true, replayActive: false };
+  }
+  if (action.type === "payloadReady") {
+    if (!state.intentPending || state.replayActive) return state;
+    return { intentPending: false, replayActive: true };
+  }
+  return state;
+};
+
 export const replaySessionReducer = (state, action) => {
   const finalEventIndex = Math.max(state.eventCount - 1, 0);
   if (action.type === "seek") {

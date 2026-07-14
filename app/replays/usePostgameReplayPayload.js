@@ -2,19 +2,48 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const defaultWait = (delayMs) =>
-  new Promise((resolve) => setTimeout(resolve, delayMs));
+const createAbortError = () => {
+  if (typeof DOMException === "function") {
+    return new DOMException("The operation was aborted", "AbortError");
+  }
+  const error = new Error("The operation was aborted");
+  error.name = "AbortError";
+  return error;
+};
+
+const throwIfAborted = (signal) => {
+  if (!signal?.aborted) return;
+  throw signal.reason ?? createAbortError();
+};
+
+const defaultWait = (delayMs, { signal } = {}) =>
+  new Promise((resolve, reject) => {
+    throwIfAborted(signal);
+    const timeoutId = setTimeout(resolve, delayMs);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timeoutId);
+        reject(signal.reason ?? createAbortError());
+      },
+      { once: true }
+    );
+  });
 
 export const loadPostgameReplayPayload = async ({
   matchID,
   fetchImpl = fetch,
   wait = defaultWait,
   maxAttempts = 10,
+  signal,
 }) => {
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    throwIfAborted(signal);
     const response = await fetchImpl(
-      `/api/matches/${encodeURIComponent(matchID)}/replay`
+      `/api/matches/${encodeURIComponent(matchID)}/replay`,
+      { signal }
     );
+    throwIfAborted(signal);
     if (response.ok && response.status !== 202) {
       return response.json();
     }
@@ -27,10 +56,29 @@ export const loadPostgameReplayPayload = async ({
     if (attempt === maxAttempts - 1) {
       throw new Error("Replay is still preparing");
     }
-    await wait(750);
+    await wait(750, { signal });
+    throwIfAborted(signal);
   }
 
   throw new Error("Replay is still preparing");
+};
+
+export const startPostgameReplayRequest = ({
+  matchID,
+  load = loadPostgameReplayPayload,
+  onReady,
+  onError,
+}) => {
+  const controller = new AbortController();
+  load({ matchID, signal: controller.signal })
+    .then((payload) => {
+      if (!controller.signal.aborted) onReady(payload);
+    })
+    .catch((error) => {
+      if (controller.signal.aborted || error?.name === "AbortError") return;
+      onError(error);
+    });
+  return () => controller.abort();
 };
 
 export function usePostgameReplayPayload({
@@ -50,21 +98,19 @@ export function usePostgameReplayPayload({
       setRequest({ status: "ready", payload: initialPayload, error: null });
       return undefined;
     }
-    if (!enabled) return undefined;
+    if (!enabled) {
+      setRequest({ status: "idle", payload: null, error: null });
+      return undefined;
+    }
 
-    let active = true;
     setRequest({ status: "loading", payload: null, error: null });
-    loadPostgameReplayPayload({ matchID })
-      .then((payload) => {
-        if (active) setRequest({ status: "ready", payload, error: null });
-      })
-      .catch((error) => {
-        if (active) setRequest({ status: "error", payload: null, error });
-      });
-
-    return () => {
-      active = false;
-    };
+    return startPostgameReplayRequest({
+      matchID,
+      onReady: (payload) =>
+        setRequest({ status: "ready", payload, error: null }),
+      onError: (error) =>
+        setRequest({ status: "error", payload: null, error }),
+    });
   }, [enabled, initialPayload, matchID, retryCounter]);
 
   const retry = useCallback(() => {
