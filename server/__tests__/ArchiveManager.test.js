@@ -76,13 +76,15 @@ const createArchivePool = () => {
           replayId: params[2],
           gameName: params[3],
           rulesetId: params[4],
-          boardConfigId: params[5],
-          startedAt: params[6],
-          finishedAt: params[7],
-          winnerAccountId: params[8],
-          winnerSeatId: params[9],
-          playerCount: params[10],
-          summaryJson: parseJsonbParam(params[11]),
+          boardSourceId: params[5],
+          boardConfigId: params[6],
+          boardProvenanceJson: parseJsonbParam(params[7]),
+          startedAt: params[8],
+          finishedAt: params[9],
+          winnerAccountId: params[10],
+          winnerSeatId: params[11],
+          playerCount: params[12],
+          summaryJson: parseJsonbParam(params[13]),
         };
         state.archivedMatches.push(row);
         return { rows: [row] };
@@ -275,7 +277,20 @@ describe("archiveFinishedMatch", () => {
           },
         },
         initialState: {
-          G: { setup: true },
+          G: {
+            rulesetId: "duel",
+            boardSourceId: "duel-fair-official-v1",
+            boardConfigId: "standard-official-spiral",
+            boardProvenance: {
+              sourceKind: "catalog",
+              catalogId: "duel-fair-official-v1",
+              catalogRank: 37,
+              seed: 12345,
+              generatorFamily: "official-spiral",
+              generatorVersion: "official-spiral-v1",
+              evaluatorVersion: "duel-fair-v3",
+            },
+          },
           ctx: { phase: "preGame" },
         },
         state: {
@@ -323,6 +338,17 @@ describe("archiveFinishedMatch", () => {
     expect(state.archivedMatches).toHaveLength(1);
     expect(state.archivedMatchPlayers).toHaveLength(2);
     expect(state.archivedMatchReplays).toHaveLength(1);
+    expect(state.archivedMatches[0]).toMatchObject({
+      rulesetId: "duel",
+      boardSourceId: "duel-fair-official-v1",
+      boardConfigId: "standard-official-spiral",
+      boardProvenanceJson: {
+        sourceKind: "catalog",
+        catalogId: "duel-fair-official-v1",
+        catalogRank: 37,
+        seed: 12345,
+      },
+    });
     expect(state.archivedMatchChatMessages).toEqual([
       {
         archivedMatchId: state.archivedMatches[0].id,
@@ -349,7 +375,23 @@ describe("archiveFinishedMatch", () => {
       ])
     );
     expect(state.archivedMatchReplays[0]).toMatchObject({
-      initialStateJson: { G: { setup: true }, ctx: { phase: "preGame" } },
+      initialStateJson: {
+        G: {
+          rulesetId: "duel",
+          boardSourceId: "duel-fair-official-v1",
+          boardConfigId: "standard-official-spiral",
+          boardProvenance: {
+            sourceKind: "catalog",
+            catalogId: "duel-fair-official-v1",
+            catalogRank: 37,
+            seed: 12345,
+            generatorFamily: "official-spiral",
+            generatorVersion: "official-spiral-v1",
+            evaluatorVersion: "duel-fair-v3",
+          },
+        },
+        ctx: { phase: "preGame" },
+      },
       finalStateJson: {
         G: { complete: true },
         ctx: { phase: "gameOver", gameover: { winner: "0" } },
