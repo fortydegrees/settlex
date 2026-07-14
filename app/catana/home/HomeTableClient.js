@@ -1,9 +1,11 @@
 "use client";
 
 import { Fredoka } from "next/font/google";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRightOnRectangleIcon,
+  BellAlertIcon,
   ChevronDownIcon,
   CpuChipIcon,
   Cog6ToothIcon,
@@ -22,6 +24,8 @@ import { IdentityModal } from "../lobby/IdentityModal";
 import { publicReleaseInfo } from "../lobby/releaseInfo";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
 import { EMOJI_OPTIONS } from "../lobby/playerIdentityStorage";
+import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
+import { getMatchmakingRescueStage } from "../matchmaking/matchmakingRescue.js";
 import { getPlayerColorOption } from "../theme/playerColors";
 import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
 import { createEffectBus } from "../effects/EffectBus";
@@ -95,6 +99,16 @@ const HOME_RELEASE_PANEL_HIGHLIGHT_COUNT = 3;
 
 const HOME_DEMO_AUDIO_SETTINGS = Object.freeze({
   muted: true
+});
+
+const MATCH_ALERT_STATUS_LABELS = Object.freeze({
+  off: "Enable",
+  active: "On",
+  paused: "Paused during game",
+  blocked: "Blocked",
+  unsupported: "Unsupported",
+  unconfigured: "Unavailable",
+  install_required: "Home Screen required"
 });
 
 const useBrowserLayoutEffect =
@@ -528,10 +542,71 @@ function HomeMetaChrome({ releaseInfo = publicReleaseInfo }) {
   );
 }
 
+function handleMatchAlertAction(matchAlerts) {
+  const action = matchAlerts.display?.action;
+  if (action === "enable") return matchAlerts.enable();
+  if (action === "disable") return matchAlerts.disable();
+  if (action === "resume") return matchAlerts.resume();
+  return Promise.resolve();
+}
+
+function MatchAlertControl({ matchAlerts, surface = "modal" }) {
+  const display = matchAlerts.display;
+  const isMenu = surface === "menu";
+  const statusLabel =
+    MATCH_ALERT_STATUS_LABELS[display?.status] ?? "Unavailable";
+
+  return (
+    <div
+      className={
+        isMenu
+          ? "border-t border-slate-200/72 px-2.5 py-2.5"
+          : "rounded-[1rem] border border-white/55 bg-white/42 p-3 text-left"
+      }
+    >
+      <div className="flex items-center gap-2.5">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[0.74rem] bg-sky-100/72 text-slate-700">
+          <BellAlertIcon className="h-4 w-4" aria-hidden="true" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[0.78rem] font-bold text-slate-900">
+            Match alerts
+          </span>
+          <span className="block text-[0.68rem] font-semibold text-slate-500">
+            {statusLabel}
+          </span>
+        </span>
+        {display?.action ? (
+          <Button
+            variant={isMenu ? "ghost" : "secondary"}
+            size="sm"
+            className={isMenu ? "min-h-8 px-2.5 py-1 text-xs" : "min-h-9 px-3 py-1.5 text-xs"}
+            disabled={matchAlerts.loading}
+            onClick={() => void handleMatchAlertAction(matchAlerts)}
+          >
+            {display.actionLabel}
+          </Button>
+        ) : null}
+      </div>
+      {!isMenu || display?.status === "install_required" ? (
+        <p className="mt-2 text-[0.7rem] font-medium leading-relaxed text-slate-600">
+          {display?.detail}
+        </p>
+      ) : null}
+      {matchAlerts.error ? (
+        <p role="alert" className="mt-2 text-[0.7rem] font-semibold leading-relaxed text-rose-600">
+          {matchAlerts.error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function SystemAccountMenu({
   identity,
   accountStatus,
   hasIdentity,
+  matchAlerts,
   onEditIdentity,
   onOpenAccount,
   onOpenSignIn,
@@ -666,6 +741,7 @@ function SystemAccountMenu({
           );
         })}
       </div>
+      <MatchAlertControl matchAlerts={matchAlerts} surface="menu" />
     </Popover>
   );
 }
@@ -674,6 +750,7 @@ function SystemTopChrome({
   identity,
   accountStatus,
   hasIdentity,
+  matchAlerts,
   onEditIdentity,
   onOpenAccount,
   onOpenSignIn,
@@ -706,6 +783,7 @@ function SystemTopChrome({
         identity={identity}
         accountStatus={accountStatus}
         hasIdentity={hasIdentity}
+        matchAlerts={matchAlerts}
         onEditIdentity={onEditIdentity}
         onOpenAccount={onOpenAccount}
         onOpenSignIn={onOpenSignIn}
@@ -804,6 +882,7 @@ function SystemChromeVariant({
   identity,
   accountStatus,
   hasIdentity,
+  matchAlerts,
   isBoardLayoutReady,
   actions,
   logoVariant,
@@ -828,6 +907,7 @@ function SystemChromeVariant({
         identity={identity}
         accountStatus={accountStatus}
         hasIdentity={hasIdentity}
+        matchAlerts={matchAlerts}
         onEditIdentity={actions.openIdentity}
         onOpenAccount={actions.goToAccount}
         onOpenSignIn={actions.openSignIn}
@@ -840,31 +920,47 @@ function SystemChromeVariant({
   );
 }
 
-function SearchingModal({ searchState, onCancel }) {
-  const [elapsed, setElapsed] = useState(0);
+function SearchingModal({
+  searchState,
+  searchElapsedSeconds,
+  matchAlerts,
+  isPufferTransitionPending,
+  onCancel,
+  onPlayPuffer
+}) {
+  const [rescueExpanded, setRescueExpanded] = useState(true);
 
   useEffect(() => {
-    if (!searchState?.startedAt) return undefined;
+    setRescueExpanded(true);
+  }, [searchState?.startedAt]);
 
-    const id = setInterval(() => {
-      setElapsed(Math.floor((Date.now() - searchState.startedAt) / 1000));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [searchState]);
+  if (!searchState && !isPufferTransitionPending) return null;
 
-  if (!searchState) return null;
-
-  const mins = Math.floor(elapsed / 60);
-  const secs = elapsed % 60;
+  const mins = Math.floor(searchElapsedSeconds / 60);
+  const secs = searchElapsedSeconds % 60;
   const timeStr =
     mins > 0
       ? `${mins}:${String(secs).padStart(2, "0")}`
       : `0:${String(secs).padStart(2, "0")}`;
-  const isMatchFound = searchState.phase === "matchFound";
-  const title = isMatchFound ? "Match found" : "Finding a table";
-  const subtitle = isMatchFound ? "Loading board..." : `1v1 · ${timeStr}`;
-  const canCancel =
-    !isMatchFound && searchState.matchID && searchState.playerID != null;
+  const isStartingPuffer = isPufferTransitionPending && !searchState;
+  const isMatchFound = searchState?.phase === "matchFound";
+  const rescueStage = getMatchmakingRescueStage(searchElapsedSeconds);
+  const showRescue =
+    Boolean(searchState) &&
+    !isMatchFound &&
+    rescueStage !== "waiting" &&
+    rescueExpanded;
+  const title = isStartingPuffer
+    ? "Starting Puffer"
+    : isMatchFound
+      ? "Match found"
+      : "Finding a table";
+  const subtitle = isStartingPuffer
+    ? "Setting up a bot duel..."
+    : isMatchFound
+      ? "Loading board..."
+      : `1v1 · ${timeStr}`;
+  const canCancel = Boolean(searchState) && !isMatchFound;
 
   return (
     <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center bg-sky-700/[0.18] p-4 backdrop-blur-md">
@@ -878,14 +974,42 @@ function SearchingModal({ searchState, onCancel }) {
         <p className="mt-1 text-sm font-semibold text-slate-600">
           {subtitle}
         </p>
+        {showRescue ? (
+          <div className="mt-4 grid gap-3">
+            <p className="text-left text-xs font-medium leading-relaxed text-slate-600">
+              SettleHex is still in beta, so it can take a little while to find another player. You can keep your place here, or turn on Match alerts and come back when someone is looking.
+            </p>
+            <MatchAlertControl matchAlerts={matchAlerts} />
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full"
+              onClick={() => setRescueExpanded(false)}
+            >
+              Keep waiting
+            </Button>
+          </div>
+        ) : null}
         {canCancel ? (
           <Button
             variant="secondary"
             size="md"
-            className="mt-4 w-full"
-            onClick={onCancel}
+            className={`${showRescue ? "mt-2" : "mt-4"} w-full`}
+            disabled={isPufferTransitionPending}
+            onClick={() => void onCancel()}
           >
             Cancel
+          </Button>
+        ) : null}
+        {searchState && !isMatchFound && rescueStage === "puffer" ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-1 w-full text-xs text-slate-600"
+            disabled={isPufferTransitionPending}
+            onClick={onPlayPuffer}
+          >
+            Play Puffer
           </Button>
         ) : null}
       </div>
@@ -914,6 +1038,7 @@ function HomeErrorBanner({ error, onDismiss }) {
 }
 
 function HomeTableBoard({ initialAccount = null }) {
+  const router = useRouter();
   const viewportWidth = useViewportWidth();
   const { variant: logoVariant, tone: logoTone } = useBrandLogoOptions();
   const isBoardLayoutReady = viewportWidth > 0;
@@ -925,25 +1050,22 @@ function HomeTableBoard({ initialAccount = null }) {
   const placementRoadLayerRef = useRef(null);
   const effectsBus = useMemo(() => createEffectBus(), []);
   const lobby = useLobbyHomeActions({ initialAccount });
+  const matchAlerts = useMatchAlerts();
   const handledPlayOnlineQueryRef = useRef(false);
   const boardReservedHeight = isCompact ? 276 : 158;
   const boardCenterYOffset = isCompact ? -56 : 0;
 
   useEffect(() => {
-    if (handledPlayOnlineQueryRef.current) return;
-    handledPlayOnlineQueryRef.current = true;
+    if (!lobby.accountReady || handledPlayOnlineQueryRef.current) return;
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get("playOnline") === "1") {
+      handledPlayOnlineQueryRef.current = true;
       const url = new URL(window.location.href);
       url.searchParams.delete("playOnline");
-      window.history.replaceState(
-        window.history.state,
-        "",
-        `${url.pathname}${url.search}${url.hash}`
-      );
+      router.replace(`${url.pathname}${url.search}${url.hash}`, { scroll: false });
       lobby.actions.playOnline();
     }
-  }, [lobby.actions]);
+  }, [lobby.accountReady, lobby.actions, router]);
 
   const handleSelectMode = (mode) => {
     if (mode === "queue") {
@@ -980,6 +1102,7 @@ function HomeTableBoard({ initialAccount = null }) {
         identity={lobby.identity}
         accountStatus={lobby.account?.status}
         hasIdentity={lobby.hasIdentity}
+        matchAlerts={matchAlerts}
         isBoardLayoutReady={isBoardLayoutReady}
         actions={lobby.actions}
         onSelectMode={handleSelectMode}
@@ -1040,7 +1163,11 @@ function HomeTableBoard({ initialAccount = null }) {
 
       <SearchingModal
         searchState={lobby.searchState}
+        searchElapsedSeconds={lobby.searchElapsedSeconds}
+        matchAlerts={matchAlerts}
+        isPufferTransitionPending={lobby.isPufferTransitionPending}
         onCancel={lobby.overlays.cancelSearch}
+        onPlayPuffer={lobby.actions.playPufferFromSearch}
       />
     </main>
   );
