@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAccount.js";
+import { pauseAlertsAfterHumanJoin } from "../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
 import { isFriendChallengeMatch } from "../../../../lib/server/matches/friendChallenge.js";
 import { getLiveMatch } from "../../../../lib/server/matches/getLiveMatch.js";
 import { joinMatchForAccount } from "../../../../lib/server/matches/joinMatchForAccount.js";
@@ -19,6 +20,8 @@ export const createMatchJoinRoute =
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
     getLiveMatch: getLiveMatchImpl = getLiveMatch,
     joinMatchForAccount: joinMatchForAccountImpl = joinMatchForAccount,
+    pauseAlertsAfterHumanJoin: pauseAlertsAfterHumanJoinImpl = pauseAlertsAfterHumanJoin,
+    logger = console,
   } = {}) =>
   async (request) => {
     try {
@@ -59,6 +62,22 @@ export const createMatchJoinRoute =
               }
             : undefined,
       });
+
+      try {
+        await pauseAlertsAfterHumanJoinImpl({
+          liveMatch,
+          joiningAccountId: sessionAccount.account.id,
+          joiningPlayerId: payload?.playerID,
+          participantType: payload?.participantType === "bot" ? "bot" : "human",
+          matchID: payload?.matchID,
+        });
+      } catch (error) {
+        logger.warn("Failed to pause match alerts after human join", {
+          matchID: payload?.matchID,
+          accountId: sessionAccount.account.id,
+          error,
+        });
+      }
 
       const response = NextResponse.json(result);
       writeMatchCredentialCookie(response, {

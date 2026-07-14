@@ -171,6 +171,8 @@ describe("challenge API routes", () => {
     const getSessionAccount = vi.fn();
     const getLiveMatch = vi.fn();
     const joinMatchForAccount = vi.fn();
+    const pauseAlertsAfterHumanJoin = vi.fn().mockResolvedValue([]);
+    const logger = { warn: vi.fn() };
     const leaveMatchForAccount = vi.fn();
 
     const pendingMatch = {
@@ -196,6 +198,8 @@ describe("challenge API routes", () => {
       getSessionAccount,
       getLiveMatch,
       joinMatchForAccount,
+      pauseAlertsAfterHumanJoin,
+      logger,
       now: () => new Date("2026-04-09T08:02:00.000Z"),
     });
     const CANCEL = createChallengeCancelRoute({
@@ -249,6 +253,47 @@ describe("challenge API routes", () => {
         playerID: "0",
         account: expect.objectContaining({ id: "acct_friend" }),
       })
+    );
+    expect(pauseAlertsAfterHumanJoin).toHaveBeenCalledWith({
+      liveMatch: pendingMatch,
+      joiningAccountId: "acct_friend",
+      joiningPlayerId: "0",
+      participantType: "human",
+      matchID: "match_1",
+    });
+
+    getSessionAccount.mockResolvedValueOnce({
+      account: {
+        id: "acct_friend_2",
+        currentUsername: "Bren",
+        avatarEmoji: "😎",
+        avatarColor: "white",
+      },
+    });
+    getLiveMatch.mockResolvedValueOnce(pendingMatch);
+    joinMatchForAccount.mockResolvedValueOnce({
+      playerID: "0",
+      playerCredentials: "secret_friend_2",
+    });
+    pauseAlertsAfterHumanJoin.mockRejectedValueOnce(new Error("database unavailable"));
+
+    const pauseFailureResponse = await ACCEPT(
+      new Request("http://localhost/api/challenges/match_1/accept", {
+        method: "POST",
+        headers: { cookie: "settlehex_session=a.b" },
+      }),
+      { params: { matchID: "match_1" } }
+    );
+    expect(pauseFailureResponse.status).toBe(200);
+    expect(await pauseFailureResponse.json()).toMatchObject({
+      matchID: "match_1",
+      playerID: "0",
+      playerCredentials: "secret_friend_2",
+    });
+    expect(pauseFailureResponse.headers.get("set-cookie")).toContain("secret_friend_2");
+    expect(logger.warn).toHaveBeenCalledWith(
+      "Failed to pause match alerts after human join",
+      expect.objectContaining({ matchID: "match_1", accountId: "acct_friend_2" })
     );
 
     getSessionAccount.mockResolvedValueOnce({

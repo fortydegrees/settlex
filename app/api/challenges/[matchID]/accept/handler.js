@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../../lib/server/accounts/getSessionAccount.js";
+import { pauseAlertsAfterHumanJoin } from "../../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
 import {
   FRIEND_CHALLENGE_EXPIRED_MESSAGE,
   resolveFriendChallengeState,
@@ -28,6 +29,8 @@ export const createChallengeAcceptRoute =
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
     getLiveMatch: getLiveMatchImpl = getLiveMatch,
     joinMatchForAccount: joinMatchForAccountImpl = joinMatchForAccount,
+    pauseAlertsAfterHumanJoin: pauseAlertsAfterHumanJoinImpl = pauseAlertsAfterHumanJoin,
+    logger = console,
     now = () => new Date(),
   } = {}) =>
   async (request, { params } = {}) => {
@@ -60,6 +63,22 @@ export const createChallengeAcceptRoute =
         matchID,
         playerID: challengeState.inviteeSeatId,
       });
+
+      try {
+        await pauseAlertsAfterHumanJoinImpl({
+          liveMatch,
+          joiningAccountId: sessionAccount.account.id,
+          joiningPlayerId: challengeState.inviteeSeatId,
+          participantType: "human",
+          matchID,
+        });
+      } catch (error) {
+        logger.warn("Failed to pause match alerts after human join", {
+          matchID,
+          accountId: sessionAccount.account.id,
+          error,
+        });
+      }
 
       const response = NextResponse.json({
         matchID,
