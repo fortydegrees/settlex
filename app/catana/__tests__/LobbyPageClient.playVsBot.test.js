@@ -3,28 +3,31 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 describe("LobbyPageClient play-vs-bot entrypoint", () => {
-  it("exposes a Play Against Bot button and bot seat join payload", () => {
+  it("exposes a Play Against Bot button backed by atomic server setup", () => {
     const source = readFileSync(
       resolve(process.cwd(), "app/catana/lobby/LobbyPageClient.js"),
       "utf8"
     );
 
     expect(source).toContain("Play Against Bot");
-    expect(source).toContain('route: "/api/matches/join"');
-    expect(source).toContain('participantType: "bot"');
-    expect(source).toContain('botKey: "puffer"');
-    expect(source).toContain('avatarEmoji: "🤖"');
     expect(source).toContain("const playAgainstBot = async");
     expect(source).toContain('modeId: "duel"');
+    expect(source).toContain('opponentType: "bot"');
+
+    const botFlow = source.slice(
+      source.indexOf("const playAgainstBot = async"),
+      source.indexOf("const cancelChallengeInvite")
+    );
+    expect(botFlow).not.toContain('route: "/api/matches/join"');
   });
 
-  it("normalizes stored colors and uses canonical ids for bot seats", () => {
+  it("normalizes stored player colors while bot identity stays server-owned", () => {
     const source = readFileSync(
       resolve(process.cwd(), "app/catana/lobby/LobbyPageClient.js"),
       "utf8"
     );
 
     expect(source).toContain("normalizePlayerColorId");
-    expect(source).toContain('avatarColor: "royal"');
+    expect(source).not.toContain("BOT_NAME_PREFIX");
   });
 });

@@ -36,9 +36,11 @@ describe("match API routes", () => {
     const { createMatchCreateRoute } = await loadRoute("create", "handler.js");
     const getSessionAccount = vi.fn();
     const createMatchForAccount = vi.fn();
+    const createBotMatchForAccount = vi.fn();
     const POST = createMatchCreateRoute({
       getSessionAccount,
       createMatchForAccount,
+      createBotMatchForAccount,
     });
 
     const unauthorized = await POST(
@@ -89,6 +91,29 @@ describe("match API routes", () => {
     expect(json.playerCredentials).toBe("secret_123");
     expect(authorized.headers.get("set-cookie")).toContain("HttpOnly");
     expect(authorized.headers.get("set-cookie")).toContain("secret_123");
+
+    createBotMatchForAccount.mockResolvedValue({
+      matchID: "bot_match_1",
+      playerID: "0",
+      playerCredentials: "bot_human_secret",
+    });
+    const botResponse = await POST(
+      new Request("http://localhost/api/matches/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
+        body: JSON.stringify({ modeId: "duel", opponentType: "bot" }),
+      })
+    );
+
+    expect(botResponse.status).toBe(200);
+    expect(createBotMatchForAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        account: expect.objectContaining({ id: "acct_1" }),
+        numPlayers: 2,
+        setupData: expect.objectContaining({ modeId: "duel" }),
+      })
+    );
+    expect(createMatchForAccount).toHaveBeenCalledTimes(1);
   });
 
   it("requires a current session for join and leave, and proxies match metadata reads", async () => {
@@ -346,5 +371,38 @@ describe("match API routes", () => {
       "Failed to pause match alerts after human join",
       expect.objectContaining({ matchID: "match_1", accountId: "acct_1" })
     );
+  });
+
+  it("does not allow the public join route into a private bot-intent match", async () => {
+    const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
+    const joinMatchForAccount = vi.fn();
+    const JOIN = createMatchJoinRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: { id: "acct_1", currentUsername: "Ada" },
+      }),
+      getLiveMatch: vi.fn().mockResolvedValue({
+        matchID: "bot_match_1",
+        metadata: { setupData: { modeId: "duel", matchKind: "bot_game" } },
+        players: {
+          0: { id: 0, name: "Ada" },
+          1: { id: 1, name: "" },
+        },
+      }),
+      joinMatchForAccount,
+    });
+
+    const response = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "session=1" },
+        body: JSON.stringify({ matchID: "bot_match_1", playerID: "1" }),
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({
+      error: "Bot matches finish setup on the server.",
+    });
+    expect(joinMatchForAccount).not.toHaveBeenCalled();
   });
 });

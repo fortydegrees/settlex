@@ -34,7 +34,6 @@ import {
   writeStoredPlayerIdentity
 } from "./playerIdentityStorage";
 
-const BOT_NAME_PREFIX = "Puffer";
 const isDevEnvironment = process.env.NODE_ENV !== "production";
 
 const safeJson = async (res) => {
@@ -733,35 +732,21 @@ export function LobbyPageClient() {
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ modeId: "duel" }),
+          body: JSON.stringify({ modeId: "duel", opponentType: "bot" }),
         },
       });
 
       const matchID = created?.matchID;
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
+      if (!created?.playerCredentials) {
+        throw new Error("Create succeeded but returned no credentials.");
+      }
 
       persistJoinedSeat({
         matchID,
         playerID: "0",
         credentials: created?.playerCredentials,
         playerName: account.currentUsername,
-      });
-
-      await appRequest({
-        route: "/api/matches/join",
-        init: {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            matchID,
-            playerID: "1",
-            participantType: "bot",
-            botKey: "puffer",
-            botName: `${BOT_NAME_PREFIX} 2`,
-            avatarEmoji: "🤖",
-            avatarColor: "royal",
-          }),
-        },
       });
 
       router.push(`/g/${matchID}`);

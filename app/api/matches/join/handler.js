@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAccount.js";
 import { pauseAlertsAfterHumanJoin } from "../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
 import { isFriendChallengeMatch } from "../../../../lib/server/matches/friendChallenge.js";
+import { isBotMatch } from "../../../../lib/server/matches/botMatch.js";
 import { getLiveMatch } from "../../../../lib/server/matches/getLiveMatch.js";
 import { joinMatchForAccount } from "../../../../lib/server/matches/joinMatchForAccount.js";
 import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
@@ -37,6 +38,13 @@ export const createMatchJoinRoute =
       const liveMatch = await getLiveMatchImpl({
         matchID: payload?.matchID,
       });
+
+      if (isBotMatch(liveMatch)) {
+        return NextResponse.json(
+          { error: "Bot matches finish setup on the server." },
+          { status: 403 }
+        );
+      }
 
       if (isFriendChallengeMatch(liveMatch)) {
         return NextResponse.json(

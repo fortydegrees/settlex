@@ -43,15 +43,54 @@ export async function commitSearchSeat({
   generation,
   seat,
   leaveSeat,
+  preserve,
   commit,
 }) {
   if (!isSearchGenerationCurrent({ searchGenerationRef, generation })) {
     const cleaned = await leaveSeat(seat);
+    if (!cleaned) preserve?.(seat);
     return { committed: false, cleaned };
   }
 
   const result = commit(seat);
   return { committed: true, result };
+}
+
+const matchPlayers = (match) =>
+  (Array.isArray(match?.players)
+    ? match.players
+    : Object.values(match?.players ?? {}))
+    .filter(Boolean);
+
+export async function reconcileSearchDeparture({
+  seat,
+  accountId,
+  leaveSeat,
+  loadMatch,
+} = {}) {
+  try {
+    if (await leaveSeat?.(seat)) {
+      return { released: true, reason: "left" };
+    }
+  } catch {
+    /* Reconcile the ambiguous mutation against authoritative match state. */
+  }
+
+  try {
+    const match = await loadMatch?.(seat?.matchID);
+    if (!accountId) return { released: false, reason: "ownership_unknown" };
+    const stillOwned = matchPlayers(match).some(
+      (player) => player?.data?.accountId === accountId
+    );
+    return stillOwned
+      ? { released: false, reason: "still_owned" }
+      : { released: true, reason: "ownership_cleared" };
+  } catch (error) {
+    if (error?.status === 404 || error?.status === 410) {
+      return { released: true, reason: "match_gone" };
+    }
+    return { released: false, reason: "reconcile_failed" };
+  }
 }
 
 export function clearScheduledMatchAnnouncement({

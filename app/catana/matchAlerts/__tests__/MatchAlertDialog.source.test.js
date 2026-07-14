@@ -45,6 +45,7 @@ describe("MatchAlertDialog", () => {
 
     expect(transaction).toContain("response.status === 409");
     expect(dialog).toContain("That table has already filled");
+    expect(dialog).toContain("Match alerts are still on");
     expect(dialog).toContain("Keep looking");
     expect(dialog).toContain('window.location.assign("/?playOnline=1")');
   });

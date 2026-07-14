@@ -1,5 +1,23 @@
 # PROGRESS
 
+## Status (2026-07-14, Match alerts final review corrections)
+- Closed all five Important findings from the whole-feature review:
+  - Push endpoints now reject literal private/loopback targets, use a
+    connection-time DNS guard, cap each account at five subscriptions, time
+    out delivery after ten seconds, and fan out at four concurrent requests;
+  - account establishment and human-game registration refresh provider state,
+    while each newly filled human game re-owns the pause and the lobby offers
+    an authoritative manual resume after the current game unregisters;
+  - every queue cancellation reconciles an ambiguous leave against live match
+    ownership, preserving the visible seat and credentials when departure
+    cannot be confirmed;
+  - Puffer creation is one client request to a server-owned `bot_game`, which
+    is excluded from public matchmaking and announcements and cleans up the
+    human seat when bot setup fails;
+  - stale alert prompts now say that Match alerts remain enabled.
+- Focused correction regression: 180 tests passed across 14 files, with each
+  correction first reproduced by a failing test.
+
 ## Status (2026-07-14, Match alerts release readiness)
 - Declared the opt-in Match alerts Web Push runtime contract in `.env.example`:
   `VAPID_SUBJECT=mailto:hello@settlehex.com` plus blank public/private key

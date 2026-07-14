@@ -1,5 +1,25 @@
 # NOTES
 
+- Match-alert security and failure-atomicity note:
+- A browser Push endpoint is untrusted input. Reject non-HTTPS, credentialed,
+  non-443, localhost, and literal private/reserved endpoints at subscription
+  time; repeat the static check before delivery and use the custom HTTPS agent
+  to reject private/reserved DNS results at connection time. Keep delivery
+  bounded to four concurrent requests with a ten-second socket timeout, and
+  retain at most five subscriptions per account under an account-row lock.
+- A cancelled public search is only locally clear after the leave succeeds or
+  a live match fetch proves the account no longer owns a seat. If neither can
+  be established, retain the credentials and visible queue so Cancel can be
+  retried and Puffer cannot start on top of an uncertain human seat.
+- Starting Puffer must use the server-owned `bot_game` path. Mark the match as
+  bot-intent before any open bot seat exists, exclude that kind from public
+  listing and match-alert eligibility, seat Puffer before returning to the
+  browser, and explicitly leave the human seat if bot setup fails.
+- Each completed human fill writes its match ID over any older human-game
+  pause. The client refreshes after account establishment and human-game
+  registration; manual resume remains server-authoritative and is rejected
+  while the currently recorded match is live.
+
 - Match-alert announcement authority note:
 - Treat the live game-server match as authoritative immediately before an
   announcement. Validate the exact match ID, public duel setup, two-seat shape,
