@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAccount.js";
-import { pauseAlertsAfterHumanJoin } from "../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
+import {
+  reserveAlertsBeforeHumanJoin,
+  restoreAlertsAfterFailedHumanJoin,
+} from "../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
 import { isFriendChallengeMatch } from "../../../../lib/server/matches/friendChallenge.js";
 import { isBotMatch } from "../../../../lib/server/matches/botMatch.js";
 import { getLiveMatch } from "../../../../lib/server/matches/getLiveMatch.js";
 import { joinMatchForAccount } from "../../../../lib/server/matches/joinMatchForAccount.js";
+import { readOptionalMatchmakingMutationToken } from "../../../../lib/server/matches/matchmakingMutation.js";
 import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
 
 const unauthorizedResponse = () =>
@@ -21,7 +25,10 @@ export const createMatchJoinRoute =
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
     getLiveMatch: getLiveMatchImpl = getLiveMatch,
     joinMatchForAccount: joinMatchForAccountImpl = joinMatchForAccount,
-    pauseAlertsAfterHumanJoin: pauseAlertsAfterHumanJoinImpl = pauseAlertsAfterHumanJoin,
+    reserveAlertsBeforeHumanJoin:
+      reserveAlertsBeforeHumanJoinImpl = reserveAlertsBeforeHumanJoin,
+    restoreAlertsAfterFailedHumanJoin:
+      restoreAlertsAfterFailedHumanJoinImpl = restoreAlertsAfterFailedHumanJoin,
     logger = console,
   } = {}) =>
   async (request) => {
@@ -53,38 +60,62 @@ export const createMatchJoinRoute =
         );
       }
 
-      const result = await joinMatchForAccountImpl({
-        account: sessionAccount.account,
+      const participantType =
+        payload?.participantType === "bot" ? "bot" : "human";
+      const reservation = await reserveAlertsBeforeHumanJoinImpl({
+        liveMatch,
+        joiningAccountId: sessionAccount.account.id,
+        joiningPlayerId: payload?.playerID,
+        participantType,
         matchID: payload?.matchID,
-        playerID: payload?.playerID,
-        participant:
-          payload?.participantType === "bot"
-            ? {
-                participantType: "bot",
-                botKey: payload?.botKey ?? "puffer",
-                usernameSnapshot: payload?.botName ?? "[BOT]",
-                avatarSnapshot: {
-                  emoji: payload?.avatarEmoji ?? "🤖",
-                  color: payload?.avatarColor ?? "sky",
-                },
-              }
-            : undefined,
       });
 
+      let result;
       try {
-        await pauseAlertsAfterHumanJoinImpl({
-          liveMatch,
-          joiningAccountId: sessionAccount.account.id,
-          joiningPlayerId: payload?.playerID,
-          participantType: payload?.participantType === "bot" ? "bot" : "human",
+        const mutationIdentity =
+          participantType === "bot"
+            ? {}
+            : {
+                matchmakingRequestId: readOptionalMatchmakingMutationToken(
+                  payload?.matchmakingRequestId,
+                  "matchmakingRequestId"
+                ),
+                requestedCredentials: readOptionalMatchmakingMutationToken(
+                  payload?.requestedCredentials,
+                  "requestedCredentials"
+                ),
+              };
+        result = await joinMatchForAccountImpl({
+          account: sessionAccount.account,
           matchID: payload?.matchID,
+          playerID: payload?.playerID,
+          participant:
+            participantType === "bot"
+              ? {
+                  participantType: "bot",
+                  botKey: payload?.botKey ?? "puffer",
+                  usernameSnapshot: payload?.botName ?? "[BOT]",
+                  avatarSnapshot: {
+                    emoji: payload?.avatarEmoji ?? "🤖",
+                    color: payload?.avatarColor ?? "sky",
+                  },
+                }
+              : undefined,
+          ...mutationIdentity,
         });
       } catch (error) {
-        logger.warn("Failed to pause match alerts after human join", {
-          matchID: payload?.matchID,
-          accountId: sessionAccount.account.id,
-          error,
-        });
+        if (reservation) {
+          try {
+            await restoreAlertsAfterFailedHumanJoinImpl({ reservation });
+          } catch (restoreError) {
+            logger.error("Failed to restore match alerts after rejected human join", {
+              matchID: payload?.matchID,
+              accountId: sessionAccount.account.id,
+              error: restoreError,
+            });
+          }
+        }
+        throw error;
       }
 
       const response = NextResponse.json(result);

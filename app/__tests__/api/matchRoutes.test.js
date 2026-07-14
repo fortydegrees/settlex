@@ -32,6 +32,55 @@ afterEach(() => {
 });
 
 describe("match API routes", () => {
+  it("recovers only the current account's seats for a matchmaking operation", async () => {
+    const { createMatchRecoveryRoute } = await loadRoute("recover", "handler.js");
+    const getSessionAccount = vi.fn();
+    const findMatchmakingMutationSeats = vi
+      .fn()
+      .mockResolvedValue([{ matchID: "match_1", playerID: "0" }]);
+    const POST = createMatchRecoveryRoute({
+      getSessionAccount,
+      findMatchmakingMutationSeats,
+    });
+    const requestId = "r".repeat(48);
+
+    const unauthorized = await POST(
+      new Request("http://localhost/api/matches/recover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId }),
+      })
+    );
+    expect(unauthorized.status).toBe(401);
+    expect(findMatchmakingMutationSeats).not.toHaveBeenCalled();
+
+    getSessionAccount.mockResolvedValue({ account: { id: "acct_1" } });
+    const recovered = await POST(
+      new Request("http://localhost/api/matches/recover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "session=1" },
+        body: JSON.stringify({ requestId }),
+      })
+    );
+    expect(recovered.status).toBe(200);
+    expect(await recovered.json()).toEqual({
+      seats: [{ matchID: "match_1", playerID: "0" }],
+    });
+    expect(findMatchmakingMutationSeats).toHaveBeenCalledWith({
+      accountId: "acct_1",
+      requestId,
+    });
+
+    const invalid = await POST(
+      new Request("http://localhost/api/matches/recover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "session=1" },
+        body: JSON.stringify({ requestId: "short" }),
+      })
+    );
+    expect(invalid.status).toBe(400);
+  });
+
   it("requires a current session for create and returns seat credentials from the wrapper layer", async () => {
     const { createMatchCreateRoute } = await loadRoute("create", "handler.js");
     const getSessionAccount = vi.fn();
@@ -71,7 +120,12 @@ describe("match API routes", () => {
       new Request("http://localhost/api/matches/create", {
         method: "POST",
         headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
-        body: JSON.stringify({ modeId: "duel", numPlayers: 4 }),
+        body: JSON.stringify({
+          modeId: "duel",
+          numPlayers: 4,
+          matchmakingRequestId: "r".repeat(48),
+          requestedCredentials: "c".repeat(48),
+        }),
       })
     );
     const json = await authorized.json();
@@ -81,6 +135,8 @@ describe("match API routes", () => {
       expect.objectContaining({
         account: expect.objectContaining({ id: "acct_1" }),
         numPlayers: 2,
+        matchmakingRequestId: "r".repeat(48),
+        requestedCredentials: "c".repeat(48),
         setupData: {
           modeId: "duel",
           rulesetId: "duel",
@@ -125,8 +181,13 @@ describe("match API routes", () => {
     const getSessionAccount = vi.fn();
     const getLiveMatch = vi.fn();
     const joinMatchForAccount = vi.fn();
-    const pauseAlertsAfterHumanJoin = vi.fn().mockResolvedValue([]);
-    const logger = { warn: vi.fn() };
+    const reservation = {
+      matchID: "match_1",
+      pausedAccountIds: ["acct_1"],
+      previousPreferences: [],
+    };
+    const reserveAlertsBeforeHumanJoin = vi.fn().mockResolvedValue(reservation);
+    const restoreAlertsAfterFailedHumanJoin = vi.fn();
     const leaveMatchForAccount = vi.fn();
     const listPublicOpenMatches = vi.fn().mockResolvedValue([
       { matchID: "public_1" },
@@ -142,8 +203,8 @@ describe("match API routes", () => {
       getSessionAccount,
       getLiveMatch,
       joinMatchForAccount,
-      pauseAlertsAfterHumanJoin,
-      logger,
+      reserveAlertsBeforeHumanJoin,
+      restoreAlertsAfterFailedHumanJoin,
     });
     const LEAVE = createMatchLeaveRoute({
       getSessionAccount,
@@ -161,7 +222,12 @@ describe("match API routes", () => {
       new Request("http://localhost/api/matches/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchID: "match_1", playerID: "1" }),
+        body: JSON.stringify({
+          matchID: "match_1",
+          playerID: "1",
+          matchmakingRequestId: "j".repeat(48),
+          requestedCredentials: "k".repeat(48),
+        }),
       })
     );
     expect(unauthorizedJoin.status).toBe(401);
@@ -230,7 +296,12 @@ describe("match API routes", () => {
       new Request("http://localhost/api/matches/join", {
         method: "POST",
         headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
-        body: JSON.stringify({ matchID: "match_1", playerID: "1" }),
+        body: JSON.stringify({
+          matchID: "match_1",
+          playerID: "1",
+          matchmakingRequestId: "j".repeat(48),
+          requestedCredentials: "k".repeat(48),
+        }),
       })
     );
     const leaveResponse = await LEAVE(
@@ -256,15 +327,18 @@ describe("match API routes", () => {
         account: expect.objectContaining({ id: "acct_1" }),
         matchID: "match_1",
         playerID: "1",
+        matchmakingRequestId: "j".repeat(48),
+        requestedCredentials: "k".repeat(48),
       })
     );
-    expect(pauseAlertsAfterHumanJoin).toHaveBeenCalledWith({
+    expect(reserveAlertsBeforeHumanJoin).toHaveBeenCalledWith({
       liveMatch: expect.objectContaining({ matchID: "match_1" }),
       joiningAccountId: "acct_1",
       joiningPlayerId: "1",
       participantType: "human",
       matchID: "match_1",
     });
+    expect(restoreAlertsAfterFailedHumanJoin).not.toHaveBeenCalled();
     expect(leaveMatchForAccount).toHaveBeenCalledWith(
       expect.objectContaining({
         account: expect.objectContaining({ id: "acct_1" }),
@@ -283,7 +357,7 @@ describe("match API routes", () => {
     );
   });
 
-  it("does not pause for bot joins and preserves a successful join when pausing fails", async () => {
+  it("makes the alert pause visible before a human seat and compensates a failed join", async () => {
     const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
     const getSessionAccount = vi.fn().mockResolvedValue({
       account: {
@@ -305,22 +379,37 @@ describe("match API routes", () => {
       },
     };
     const getLiveMatch = vi.fn().mockResolvedValue(liveMatch);
-    const joinMatchForAccount = vi.fn().mockResolvedValue({
-      playerID: "1",
-      playerCredentials: "secret_join",
+    const order = [];
+    let releasePause;
+    const pauseGate = new Promise((resolve) => {
+      releasePause = resolve;
     });
-    const pauseAlertsAfterHumanJoin = vi.fn(({ participantType }) =>
-      participantType === "bot"
-        ? Promise.resolve([])
-        : Promise.reject(new Error("database unavailable"))
-    );
-    const logger = { warn: vi.fn() };
+    const reservation = {
+      matchID: "match_1",
+      pausedAccountIds: ["acct_1"],
+      previousPreferences: [],
+    };
+    const reserveAlertsBeforeHumanJoin = vi.fn(async ({ participantType }) => {
+      order.push("pause:start");
+      if (participantType === "bot") return null;
+      await pauseGate;
+      order.push("pause:done");
+      return reservation;
+    });
+    const joinMatchForAccount = vi.fn(async () => {
+      order.push("join");
+      return {
+        playerID: "1",
+        playerCredentials: "secret_join",
+      };
+    });
+    const restoreAlertsAfterFailedHumanJoin = vi.fn();
     const JOIN = createMatchJoinRoute({
       getSessionAccount,
       getLiveMatch,
       joinMatchForAccount,
-      pauseAlertsAfterHumanJoin,
-      logger,
+      reserveAlertsBeforeHumanJoin,
+      restoreAlertsAfterFailedHumanJoin,
     });
 
     const botResponse = await JOIN(
@@ -336,23 +425,29 @@ describe("match API routes", () => {
     );
 
     expect(botResponse.status).toBe(200);
-    expect(pauseAlertsAfterHumanJoin).toHaveBeenCalledWith({
+    expect(reserveAlertsBeforeHumanJoin).toHaveBeenCalledWith({
       liveMatch,
       joiningAccountId: "acct_1",
       joiningPlayerId: "1",
       participantType: "bot",
       matchID: "match_1",
     });
-    expect(logger.warn).not.toHaveBeenCalled();
-    pauseAlertsAfterHumanJoin.mockClear();
+    reserveAlertsBeforeHumanJoin.mockClear();
+    joinMatchForAccount.mockClear();
+    order.length = 0;
 
-    const humanResponse = await JOIN(
+    const humanResponsePromise = JOIN(
       new Request("http://localhost/api/matches/join", {
         method: "POST",
         headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
         body: JSON.stringify({ matchID: "match_1", playerID: "1" }),
       })
     );
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(joinMatchForAccount).not.toHaveBeenCalled();
+    releasePause();
+    const humanResponse = await humanResponsePromise;
 
     expect(humanResponse.status).toBe(200);
     expect(await humanResponse.json()).toMatchObject({
@@ -360,17 +455,60 @@ describe("match API routes", () => {
       playerCredentials: "secret_join",
     });
     expect(humanResponse.headers.get("set-cookie")).toContain("secret_join");
-    expect(pauseAlertsAfterHumanJoin).toHaveBeenCalledWith({
-      liveMatch,
-      joiningAccountId: "acct_1",
-      joiningPlayerId: "1",
-      participantType: "human",
-      matchID: "match_1",
-    });
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Failed to pause match alerts after human join",
-      expect.objectContaining({ matchID: "match_1", accountId: "acct_1" })
+    expect(order).toEqual(["pause:start", "pause:done", "join"]);
+    expect(restoreAlertsAfterFailedHumanJoin).not.toHaveBeenCalled();
+
+    joinMatchForAccount.mockRejectedValueOnce(
+      Object.assign(new Error("seat already filled"), { status: 409 })
     );
+    restoreAlertsAfterFailedHumanJoin.mockResolvedValueOnce(["acct_1"]);
+    const failedJoin = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
+        body: JSON.stringify({ matchID: "match_1", playerID: "1" }),
+      })
+    );
+    expect(failedJoin.status).toBe(409);
+    expect(restoreAlertsAfterFailedHumanJoin).toHaveBeenCalledWith({
+      reservation,
+    });
+  });
+
+  it("does not expose a human seat when reserving the pause fails", async () => {
+    const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
+    const joinMatchForAccount = vi.fn();
+    const JOIN = createMatchJoinRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: { id: "acct_1", currentUsername: "Ada" },
+      }),
+      getLiveMatch: vi.fn().mockResolvedValue({
+        matchID: "match_1",
+        players: {
+          0: {
+            id: 0,
+            name: "Bren",
+            data: { participantType: "human", accountId: "acct_2" },
+          },
+          1: { id: 1, name: "" },
+        },
+      }),
+      joinMatchForAccount,
+      reserveAlertsBeforeHumanJoin: vi
+        .fn()
+        .mockRejectedValue(new Error("database unavailable")),
+    });
+
+    const response = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", cookie: "session=1" },
+        body: JSON.stringify({ matchID: "match_1", playerID: "1" }),
+      })
+    );
+
+    expect(response.status).toBe(500);
+    expect(joinMatchForAccount).not.toHaveBeenCalled();
   });
 
   it("does not allow the public join route into a private bot-intent match", async () => {
