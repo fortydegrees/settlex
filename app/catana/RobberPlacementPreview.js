@@ -83,6 +83,7 @@ export function RobberPlacementPreview({
   const previewShadowRef = useRef(null);
   const previewGraphicRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const pointerSyncFrameRef = useRef(null);
   const lastTickMsRef = useRef(null);
   const pointerRef = useRef({ x: null, y: null });
   const currentPositionRef = useRef({ x: null, y: null });
@@ -217,9 +218,16 @@ export function RobberPlacementPreview({
       rotation: 0
     });
 
+    const flushPointerSync = () => {
+      pointerSyncFrameRef.current = null;
+      syncDesiredPosition();
+    };
+
     const handlePointerMove = (event) => {
       pointerRef.current = { x: event.clientX, y: event.clientY };
-      syncDesiredPosition();
+      if (pointerSyncFrameRef.current == null) {
+        pointerSyncFrameRef.current = requestAnimationFrame(flushPointerSync);
+      }
     };
 
     window.addEventListener("pointermove", handlePointerMove);
@@ -321,6 +329,10 @@ export function RobberPlacementPreview({
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
+      if (pointerSyncFrameRef.current != null) {
+        cancelAnimationFrame(pointerSyncFrameRef.current);
+      }
+      pointerSyncFrameRef.current = null;
       if (animationFrameRef.current != null) {
         cancelAnimationFrame(animationFrameRef.current);
       }

@@ -108,6 +108,7 @@ export function BuildPlacementPreview({
   const previewShadowRef = useRef(null);
   const previewGraphicRef = useRef(null);
   const animationFrameRef = useRef(null);
+  const pointerSyncFrameRef = useRef(null);
   const handoffTimeoutRef = useRef(null);
   const launchReadyTimeoutRef = useRef(null);
   const launchTimelineRef = useRef(null);
@@ -408,8 +409,8 @@ export function BuildPlacementPreview({
       transformOrigin: "50% 50%"
     });
 
-    const updateDesiredFromPointer = (event) => {
-      pointerRef.current = { x: event.clientX, y: event.clientY };
+    const flushPointerSync = () => {
+      pointerSyncFrameRef.current = null;
       syncDesiredPosition();
 
       if (reduceMotion) {
@@ -447,6 +448,13 @@ export function BuildPlacementPreview({
             overwrite: "auto"
           });
         }
+      }
+    };
+
+    const updateDesiredFromPointer = (event) => {
+      pointerRef.current = { x: event.clientX, y: event.clientY };
+      if (pointerSyncFrameRef.current == null) {
+        pointerSyncFrameRef.current = requestAnimationFrame(flushPointerSync);
       }
     };
 
@@ -638,6 +646,10 @@ export function BuildPlacementPreview({
 
     return () => {
       window.removeEventListener("pointermove", updateDesiredFromPointer);
+      if (pointerSyncFrameRef.current != null) {
+        cancelAnimationFrame(pointerSyncFrameRef.current);
+      }
+      pointerSyncFrameRef.current = null;
       if (animationFrameRef.current != null) {
         cancelAnimationFrame(animationFrameRef.current);
       }
