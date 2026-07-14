@@ -6481,3 +6481,8 @@
 - Kept broad `GameScreen` decomposition, presence-clock extraction, effect changes, performance certification, memory soak work, and network analysis out of this slice.
 - Added `docs/superpowers/specs/2026-07-14-catana-runtime-quick-wins-design.md` with ownership, data-flow, regression, manual-verification, and acceptance boundaries.
 - Baseline verification: `pnpm exec vitest run app/catana/__tests__/renderPerfGuards.test.js app/catana/__tests__/timerSnapshot.test.js app/catana/__tests__/useLocalPlayerDockModel.test.js app/catana/__tests__/TurnControlCluster.test.js app/catana/__tests__/useWindowSize.test.js --exclude '.worktrees/**' --reporter=dot` (5 files, 34 tests passed).
+
+## Status (2026-07-14, Catana runtime quick-wins implementation plan)
+- Added `docs/superpowers/plans/2026-07-14-catana-runtime-quick-wins.md` after approval of the written design.
+- Split execution into four reviewable tasks: shared live-timer clock, HUD/root timer rewiring with a render-profile gate, edge viewport-width plumbing, and combined browser verification/evidence.
+- The plan uses red/green focused tests and separate commits for timer ownership and edge listeners, and stops before the broader performance certification or network work.
