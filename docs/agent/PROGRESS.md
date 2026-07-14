@@ -1,5 +1,20 @@
 # PROGRESS
 
+## Status (2026-07-14, explicit board-source architecture designed)
+- Approved and recorded
+  `docs/superpowers/specs/2026-07-14-explicit-board-source-architecture-design.md`.
+  This is a design-only checkpoint; implementation remains gated on review.
+- The design removes the provisional `standard-balanced` duel sentinel and old
+  runtime balanced generator, moves SettleHex game-mode presets out of
+  `game-core`, and separates `boardSourceId`, actual `boardConfigId`, and
+  `boardProvenance`.
+- Default duel remains `duel-fair-official-v1`. Switching it to ordinary
+  official-spiral generation becomes one product-preset change to
+  `generated-official-spiral-v1`.
+- Archive design now stores source and provenance explicitly while preserving
+  complete replay initial state. No production behavior or database schema has
+  changed yet.
+
 ## Status (2026-07-14, duel fair live catalog v1 implemented)
 - Published `duel-fair-official-v1`, the top 1,000 symmetry-distinct boards by
   `duel-fair-v3` overall score from fixed official-spiral seeds `1..65000`.

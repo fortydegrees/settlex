@@ -1,5 +1,25 @@
 # NOTES
 
+- Explicit board-source architecture note:
+- Treat game mode, ruleset, board source, board configuration, and board
+  provenance as separate concepts. A mode chooses a source; a source resolves
+  the actual engine configuration; provenance records the concrete result.
+- The approved pre-launch target removes `standard-balanced` and the old
+  runtime `BalancedBoard`. Default duel uses source
+  `duel-fair-official-v1`, which reconstructs catalog seeds through board
+  config `standard-official-spiral` and generator `official-spiral-v1`.
+- Keep SettleHex game-mode and catalog policy outside `game-core`. The engine
+  owns deterministic rules, board configuration, generation, and topology.
+- Normal product setup selects built-in boards with `boardSourceId`, never an
+  overloaded `boardConfigId`. Reject conflicting custom config/source inputs
+  and unknown identifiers instead of silently falling back.
+- Saved state and archives must report the resolved source, actual generator
+  configuration, and immutable provenance. `boardCatalog` is provisional
+  terminology and should become `boardProvenance` during implementation.
+- Until that implementation lands, the older live-catalog note below describes
+  the branch's current provisional behavior; it must be updated or removed as
+  part of the cleanup so active guidance does not retain both models.
+
 - Duel fair live catalog v1 note:
 - `duel-fair-official-v1` is a versioned product artifact, not a live
   evaluator. Match setup must select uniformly from its fixed seed list and
