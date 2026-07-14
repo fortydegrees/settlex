@@ -29,14 +29,14 @@ describe("GameOverModal", () => {
     expect(contents).not.toContain("Rematch");
   });
 
-  it("disables replay while the archived replay is still preparing", () => {
+  it("disables replay only while preparing and offers a retry after an error", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
 
     expect(contents).toContain('replayStatus = "ready"');
-    expect(contents).toContain('disabled={replayStatus !== "ready"}');
-    expect(contents).toContain(
-      'replayStatus === "ready" ? "Replay" : "Preparing replay..."'
-    );
+    expect(contents).toContain('disabled={replayStatus === "loading"}');
+    expect(contents).toContain('replayStatus === "error" ? "Retry replay"');
+    expect(contents).toContain('replayStatus === "loading"');
+    expect(contents).toContain('"Preparing replay..."');
   });
 
   it("lets the parent own winner confetti state so remounts do not replay it", () => {

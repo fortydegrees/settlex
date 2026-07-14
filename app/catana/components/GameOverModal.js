@@ -105,15 +105,17 @@ export function GameOverModal({
       <div className="mt-6 grid gap-2 sm:grid-cols-2">
         {onWatchReplay ? (
           <button
-            disabled={replayStatus !== "ready"}
+            disabled={replayStatus === "loading"}
             onClick={onWatchReplay}
             className={
-              replayStatus === "ready"
-                ? replayReadyClassName
-                : replayDisabledClassName
+              replayStatus === "loading"
+                ? replayDisabledClassName
+                : replayReadyClassName
             }
           >
-            {replayStatus === "ready" ? "Replay" : "Preparing replay..."}
+            {replayStatus === "error" ? "Retry replay" : replayStatus === "loading"
+              ? "Preparing replay..."
+              : "Replay"}
           </button>
         ) : null}
         {onViewSummary ? (

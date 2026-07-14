@@ -79,6 +79,42 @@ describe("replay page", () => {
     expect(html).toContain("Replay rpl_3 has 2 frame(s)");
   });
 
+  it("uses the current archived participant as the legacy replay perspective", async () => {
+    const { createReplayPage } = await loadReplayPageModule();
+    const ReplayPageClient = ({ initialPerspectivePlayerID }) =>
+      h("div", null, `Perspective ${initialPerspectivePlayerID}`);
+    const Page = createReplayPage({
+      getArchivedReplay: vi.fn().mockResolvedValue({
+        match: {
+          replayId: "rpl_seated",
+          bgioMatchId: "match_seated",
+        },
+        participants: [
+          { seatId: "0", accountId: "account_other" },
+          { seatId: "1", accountId: "account_me" },
+        ],
+        initialState: { G: {}, ctx: {} },
+        finalState: { G: {}, ctx: {} },
+        log: [],
+      }),
+      buildReplayFrames: vi.fn().mockReturnValue([
+        { index: 0, state: { G: {}, ctx: {} } },
+      ]),
+      ReplayPageClient,
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: { id: "account_me" },
+      }),
+      headers: vi.fn().mockReturnValue(new Headers()),
+      readSeatCredential: vi.fn().mockResolvedValue(null),
+    });
+
+    const html = renderToStaticMarkup(
+      await Page({ params: { replayId: "rpl_seated" } })
+    );
+
+    expect(html).toContain("Perspective 1");
+  });
+
   it("renders an invalid status when archived frames cannot be rebuilt", async () => {
     const { createReplayPage } = await loadReplayPageModule();
     const replay = {

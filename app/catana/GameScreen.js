@@ -803,6 +803,12 @@ export function GameScreen(bgioProps) {
   }, [activeIdlePlayerId, isGameOver]);
 
   useEffect(() => {
+    if (isReplay) {
+      if (playerAction === "roadBuilding") {
+        setPlayerAction(null);
+      }
+      return;
+    }
     if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
       if (playerAction !== "roadBuilding") {
         setPlayerAction("roadBuilding");
@@ -812,7 +818,7 @@ export function GameScreen(bgioProps) {
     if (playerAction === "roadBuilding") {
       setPlayerAction(null);
     }
-  }, [devPlay, playerID, playerAction]);
+  }, [devPlay, isReplay, playerID, playerAction]);
 
   useEffect(() => {
     if (
@@ -1006,8 +1012,8 @@ export function GameScreen(bgioProps) {
 
   const hasModalOpen = getHasBlockingModal({
     tradeModalVisible,
-    needsToDiscard,
-    devPlayModalVisible,
+    needsToDiscard: !isReplay && needsToDiscard,
+    devPlayModalVisible: !isReplay && devPlayModalVisible,
     showGameOverModal,
     showPostgame,
     showGameSettings,
@@ -1760,7 +1766,7 @@ TODO: accurately colour it
 
       {/* MODALS */}
       {/* 1. Force Discard Modal */}
-      {!!player && needsToDiscard && !isGameOver && (
+      {!!player && !isReplay && needsToDiscard && !isGameOver && (
         <TradeDiscardModal
           mode="discard"
           player={player}
@@ -1788,7 +1794,7 @@ TODO: accurately colour it
         />
       )}
 
-      {!!player && devPlayModalVisible && !needsToDiscard && !isGameOver && (
+      {!!player && !isReplay && devPlayModalVisible && !needsToDiscard && !isGameOver && (
         <TradeDiscardModal
           mode={devPlayMode}
           player={player}

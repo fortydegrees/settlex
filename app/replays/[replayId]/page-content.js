@@ -1,13 +1,40 @@
 import { createElement as h } from "react";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { getSessionAccount } from "../../../lib/server/accounts/getSessionAccount.js";
 import { getArchivedReplay } from "../../../lib/server/replays/getArchivedReplay.js";
 import { buildReplayFrames } from "../../../lib/server/replays/buildReplayFrames.js";
+import { readMatchCredentialCookie } from "../../../lib/server/session/matchCredentialCookie.js";
+
+export const resolveLegacyReplayPerspectivePlayerID = async ({
+  matchID,
+  participants = [],
+  accountId = null,
+  readSeatCredential,
+}) => {
+  const accountParticipant = participants.find(
+    (participant) =>
+      accountId != null &&
+      String(participant.accountId) === String(accountId)
+  );
+  if (accountParticipant?.seatId != null) {
+    return String(accountParticipant.seatId);
+  }
+  for (const participant of participants) {
+    const playerID = String(participant.seatId);
+    if (await readSeatCredential({ matchID, playerID })) return playerID;
+  }
+  return null;
+};
 
 export const createReplayPage = ({
   getArchivedReplay: getArchivedReplayImpl = getArchivedReplay,
   buildReplayFrames: buildReplayFramesImpl = buildReplayFrames,
   ReplayPageClient: ReplayPageClientImpl = null,
   ReplayStatusPage: ReplayStatusPageImpl = null,
+  getSessionAccount: getSessionAccountImpl = getSessionAccount,
+  readSeatCredential: readSeatCredentialImpl = readMatchCredentialCookie,
+  headers: headersImpl = headers,
   notFoundImpl = notFound,
 } = {}) =>
   async function ReplayPage({ params }) {
@@ -41,9 +68,28 @@ export const createReplayPage = ({
       ReplayPageClientImpl ??
       (await import("./ReplayPageClient.js")).ReplayPageClient;
 
+    let accountId = null;
+    try {
+      const sessionAccount = await getSessionAccountImpl({
+        headers: headersImpl(),
+      });
+      accountId = sessionAccount?.account?.id ?? null;
+    } catch {
+      accountId = null;
+    }
+    const matchID = replay.match.bgioMatchId ?? replay.match.replayId;
+    const initialPerspectivePlayerID =
+      await resolveLegacyReplayPerspectivePlayerID({
+        matchID,
+        participants: replay.participants,
+        accountId,
+        readSeatCredential: readSeatCredentialImpl,
+      });
+
     return h(ReplayPageClientResolved, {
       replay,
       frames,
+      initialPerspectivePlayerID,
     });
   };
 

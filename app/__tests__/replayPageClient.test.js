@@ -159,6 +159,42 @@ describe("replay client state", () => {
     });
   });
 
+  it("keeps hidden victory-point development cards out of the replay graph", async () => {
+    const { buildReplayTimeline } = await import(
+      "../replays/replayTimeline.js"
+    );
+    const core = {
+      buildingsByNodeId: {
+        a: { ownerId: "0", type: "settlement" },
+      },
+      playerStateById: {
+        "0": { devCards: ["victoryPoint"] },
+        "1": { devCards: [] },
+      },
+      awards: {
+        longestRoadOwnerId: null,
+        largestArmyOwnerId: null,
+      },
+      turn: 1,
+    };
+
+    const timeline = buildReplayTimeline({
+      frames: [
+        {
+          index: 0,
+          state: { G: { core, gameLog: [] }, ctx: {} },
+          logEntry: null,
+        },
+      ],
+      participants: [{ seatId: "0" }, { seatId: "1" }],
+    });
+
+    expect(timeline.scoreSeries[0].scoresByPlayerId).toEqual({
+      "0": 1,
+      "1": 0,
+    });
+  });
+
   it("falls back to raw action frames without structured game-log events", async () => {
     const { buildReplayTimeline } = await import(
       "../replays/replayTimeline.js"
