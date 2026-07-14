@@ -401,3 +401,152 @@ describe("match alert subscription routes", () => {
     });
   });
 });
+
+describe("match alert announcement route", () => {
+  const loadHandler = () =>
+    loadModule("app", "api", "match-alerts", "announce", "handler.js");
+  const request = (body) =>
+    new Request("http://localhost/api/match-alerts/announce", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: "settlehex_session=a.b",
+      },
+      body: JSON.stringify(body),
+    });
+
+  it("requires an authenticated account before announcing", async () => {
+    const { createMatchAlertAnnouncePostRoute } = await loadHandler();
+    const getSessionAccount = vi.fn();
+    const announceWaitingDuel = vi.fn();
+    const POST = createMatchAlertAnnouncePostRoute({
+      getSessionAccount,
+      announceWaitingDuel,
+    });
+
+    const missingResponse = await POST(request({ matchID: "match_1" }));
+    getSessionAccount.mockResolvedValue({ account: {} });
+    const unidentifiedResponse = await POST(request({ matchID: "match_1" }));
+
+    expect(missingResponse.status).toBe(401);
+    expect(unidentifiedResponse.status).toBe(401);
+    expect(announceWaitingDuel).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["missing", {}],
+    ["blank", { matchID: "   " }],
+    ["non-string", { matchID: 123 }],
+    ["oversized", { matchID: "x".repeat(257) }],
+  ])("rejects a %s match ID", async (_label, body) => {
+    const { createMatchAlertAnnouncePostRoute } = await loadHandler();
+    const announceWaitingDuel = vi.fn();
+    const POST = createMatchAlertAnnouncePostRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({ account: { id: "acct_session" } }),
+      announceWaitingDuel,
+    });
+
+    const response = await POST(request(body));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Invalid match ID." });
+    expect(announceWaitingDuel).not.toHaveBeenCalled();
+  });
+
+  it("trims the match ID and trusts only the session account", async () => {
+    const { createMatchAlertAnnouncePostRoute } = await loadHandler();
+    const announceWaitingDuel = vi.fn().mockResolvedValue({
+      announced: true,
+      reason: "announced",
+      delivery: { attempted: 1, delivered: 1, expired: 0, failed: 0 },
+    });
+    const POST = createMatchAlertAnnouncePostRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({ account: { id: "acct_session" } }),
+      announceWaitingDuel,
+    });
+
+    const response = await POST(
+      request({ matchID: "  match_1  ", seekerAccountId: "acct_forged" })
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      announced: true,
+      reason: "announced",
+      delivery: { attempted: 1, delivered: 1, expired: 0, failed: 0 },
+    });
+    expect(announceWaitingDuel).toHaveBeenCalledWith({
+      matchID: "match_1",
+      seekerAccountId: "acct_session",
+    });
+  });
+
+  it("applies the 256-character cap after trimming", async () => {
+    const { createMatchAlertAnnouncePostRoute } = await loadHandler();
+    const matchID = "x".repeat(256);
+    const announceWaitingDuel = vi
+      .fn()
+      .mockResolvedValue({ announced: false, reason: "duplicate" });
+    const POST = createMatchAlertAnnouncePostRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({ account: { id: "acct_session" } }),
+      announceWaitingDuel,
+    });
+
+    const response = await POST(request({ matchID: `  ${matchID}  ` }));
+
+    expect(response.status).toBe(200);
+    expect(announceWaitingDuel).toHaveBeenCalledWith({
+      matchID,
+      seekerAccountId: "acct_session",
+    });
+  });
+
+  it.each(["duplicate", "filled", "cancelled", "rate_limited_minute", "rate_limited_hour"])(
+    "returns 200 for a harmless %s no-op",
+    async (reason) => {
+      const { createMatchAlertAnnouncePostRoute } = await loadHandler();
+      const POST = createMatchAlertAnnouncePostRoute({
+        getSessionAccount: vi
+          .fn()
+          .mockResolvedValue({ account: { id: "acct_session" } }),
+        announceWaitingDuel: vi.fn().mockResolvedValue({
+          announced: false,
+          reason,
+        }),
+      });
+
+      const response = await POST(request({ matchID: "match_1" }));
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ announced: false, reason });
+    }
+  );
+
+  it("uses one generic 404 for forged, non-owner, and private matches", async () => {
+    const { createMatchAlertAnnouncePostRoute } = await loadHandler();
+    const POST = createMatchAlertAnnouncePostRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({ account: { id: "acct_session" } }),
+      announceWaitingDuel: vi
+        .fn()
+        .mockResolvedValue({ announced: false, reason: "not_eligible" }),
+    });
+
+    const response = await POST(request({ matchID: "match_private_or_forged" }));
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Match not found." });
+  });
+
+  it("maps unexpected delivery errors to 500", async () => {
+    const { createMatchAlertAnnouncePostRoute } = await loadHandler();
+    const POST = createMatchAlertAnnouncePostRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({ account: { id: "acct_session" } }),
+      announceWaitingDuel: vi.fn().mockRejectedValue(new Error("push database failed")),
+    });
+
+    const response = await POST(request({ matchID: "match_1" }));
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Failed to announce match." });
+  });
+});

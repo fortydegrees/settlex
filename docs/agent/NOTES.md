@@ -1,5 +1,20 @@
 # NOTES
 
+- Match-alert announcement authority note:
+- Treat the live game-server match as authoritative immediately before an
+  announcement. Validate the exact match ID, public duel setup, two-seat shape,
+  lone human occupant, and authenticated account ownership before claiming.
+- Keep the order fetch, validate, claim, list, send. A claimed event is the
+  at-most-once boundary: individual Push failures are counted and swallowed,
+  and must not undo the event or affect the seeker's waiting table.
+- Collapse private, friend-challenge, forged, wrong-owner, wrong-mode, and
+  non-human cases to `not_eligible`; the API exposes one generic 404 for all of
+  them. Public filled, cancelled, duplicate, and rate-limited attempts are
+  harmless 200 no-ops and never fan out.
+- Keep VAPID lookup lazy inside the server-only delivery call. An unconfigured
+  deployment records each attempted delivery as failed without invoking
+  `web-push`; 404 and 410 Push responses remove their stored endpoints.
+
 - Core rule transaction note:
 - A returned `{ ok: false }` must leave `GameState` unchanged. New or repaired
   game-rule moves should validate all inputs before mutating player resources,

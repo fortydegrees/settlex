@@ -1,5 +1,19 @@
 # PROGRESS
 
+## Status (2026-07-14, verified waiting-duel Web Push)
+- Added an authenticated announcement boundary that re-fetches live match
+  metadata and accepts only an open public duel owned by the lone seated human.
+- Claims each eligible match before recipient lookup and fanout, making
+  duplicates and seeker rate limits harmless no-ops without repeated pushes.
+- Added fixed Web Push payloads, lazy VAPID use, delivery accounting, and
+  automatic removal of endpoints returning 404 or 410.
+- Kept private, friend, forged, non-owner, wrong-mode, and non-human tables
+  behind the same generic 404 response; public filled and cancelled tables
+  return non-revealing successful no-ops.
+- Focused verification:
+  - `pnpm exec vitest run lib/server/__tests__/matchAlertAnnouncement.test.js lib/server/__tests__/matchAlertStore.test.js lib/server/__tests__/humanMatchAlertPause.test.js app/__tests__/api/matchAlertRoutes.test.js app/__tests__/api/routeModuleExports.source.test.js --reporter=dot` (80 tests)
+  - targeted ESLint over the announcement modules, route, and tests
+
 ## Status (2026-07-10, engine transactions and verification efficiency)
 - Hardened the core mutation contract: rejected resource spends and malformed
   robber calls now leave match state unchanged.
