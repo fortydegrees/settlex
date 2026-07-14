@@ -25,7 +25,7 @@ const parseJsonbParam = (value) => {
   return JSON.parse(value);
 };
 
-const createArchivePool = () => {
+const createArchivePool = ({ failAfterArchivedMatchInsert = false } = {}) => {
   const state = {
     archivedMatches: [],
     archivedMatchPlayers: [],
@@ -106,6 +106,9 @@ const createArchivePool = () => {
       }
 
       if (normalized.startsWith("insert into archived_match_replays")) {
+        if (failAfterArchivedMatchInsert) {
+          throw new Error("injected failure after archived match insert");
+        }
         state.archivedMatchReplays.push({
           archivedMatchId: params[0],
           initialStateJson: parseJsonbParam(params[1]),
@@ -398,5 +401,57 @@ describe("archiveFinishedMatch", () => {
       },
       logJson: [{ action: { type: "MAKE_MOVE" } }],
     });
+  });
+
+  it("uses legacy setup metadata while leaving source and provenance null", async () => {
+    const { archiveFinishedMatch } = await loadModule("archiveFinishedMatch.js");
+    const { pool, state } = createArchivePool();
+    const serverDb = {
+      fetch: vi.fn().mockResolvedValue({
+        metadata: {
+          gameName: "catan",
+          setupData: {
+            rulesetId: "standard",
+            boardConfigId: "standard-random"
+          },
+          players: {}
+        },
+        initialState: { G: {}, ctx: { phase: "preGame" } },
+        state: { G: {}, ctx: { gameover: {} } },
+        log: []
+      })
+    };
+
+    await archiveFinishedMatch({ pool, serverDb, matchID: "legacy-1" });
+
+    expect(state.archivedMatches[0]).toMatchObject({
+      rulesetId: "standard",
+      boardSourceId: null,
+      boardConfigId: "standard-random",
+      boardProvenanceJson: null
+    });
+  });
+
+  it("rolls back the archive insert when a later transaction step fails", async () => {
+    const { archiveFinishedMatch } = await loadModule("archiveFinishedMatch.js");
+    const { pool, client, state } = createArchivePool({
+      failAfterArchivedMatchInsert: true
+    });
+    const serverDb = {
+      fetch: vi.fn().mockResolvedValue({
+        metadata: { gameName: "catan", players: {} },
+        initialState: { G: {}, ctx: {} },
+        state: { G: {}, ctx: { gameover: {} } },
+        log: []
+      })
+    };
+
+    await expect(
+      archiveFinishedMatch({ pool, serverDb, matchID: "rollback-1" })
+    ).rejects.toThrow("injected failure after archived match insert");
+
+    expect(state.archivedMatches).toEqual([]);
+    expect(client.query).toHaveBeenCalledWith("ROLLBACK");
+    expect(client.release).toHaveBeenCalledOnce();
   });
 });
