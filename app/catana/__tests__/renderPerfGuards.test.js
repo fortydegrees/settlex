@@ -41,13 +41,21 @@ describe("render performance guards", () => {
     );
   });
 
-  it("only starts the ticker when a visible timer, disconnect countdown, or idle countdown is active", () => {
-    const contents = readCatanaFile("GameScreen.js");
-    expect(contents).toContain("hasDisconnectCountdown");
-    expect(contents).toContain("hasIdleCountdown");
-    expect(contents).toMatch(
-      /if \(!timerSnapshot \|\| hideTimer\) \{\s+if \(!hasDisconnectCountdown && !hasIdleCountdown\) return;\s+\}/
+  it("keeps the regular timer clock below GameScreen", () => {
+    const screenContents = readCatanaFile("GameScreen.js");
+    const desktopContents = readCatanaFile("components/TurnControlCluster.js");
+    const mobileContents = readCatanaFile("components/MobilePlayerCockpit.js");
+
+    expect(screenContents).toContain(
+      "if (!hasDisconnectCountdown && !hasIdleCountdown) return;"
     );
+    expect(screenContents).not.toContain(
+      "[timerSnapshot, hideTimer, hasDisconnectCountdown, hasIdleCountdown]"
+    );
+    expect(screenContents).not.toContain("const timerMs = getTimerRemainingMs");
+    expect(screenContents).toContain("timerSnapshot={visibleTimerSnapshot}");
+    expect(desktopContents).toContain("useLiveTurnTimer");
+    expect(mobileContents).toContain("useLiveTurnTimer");
   });
 
   it("precomputes resource counts in PlayerActionContainer", () => {
@@ -221,6 +229,23 @@ describe("render performance guards", () => {
     );
     expect(screenContents).toContain("MemoizedCatanBoard");
     expect(boardContents).not.toContain('console.log("board render ');
+  });
+
+  it("passes Board viewport width through every Edge", () => {
+    const boardContents = readCatanaFile("Board.js");
+    const edgeContents = readCatanaFile("Edge.js");
+    const edgeRenderCount = (boardContents.match(/<Edge\b/g) ?? []).length;
+    const viewportPropCount = (
+      boardContents.match(/viewportWidth=\{width\}/g) ?? []
+    ).length;
+
+    expect(edgeRenderCount).toBeGreaterThan(0);
+    expect(viewportPropCount).toBe(edgeRenderCount);
+    expect(edgeContents).not.toContain("useWindowSize");
+    expect(edgeContents).toContain("viewportWidth");
+    expect(edgeContents).toContain(
+      "getEdgeTransform(direction, size, viewportWidth)"
+    );
   });
 
   it("lazy-loads preview components so GSAP is not part of the initial board bundle", () => {

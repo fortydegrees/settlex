@@ -38,12 +38,14 @@ describe("MobilePlayerCockpit source", () => {
     expect(source).toContain("mobile-command-row__timer");
     expect(source).toContain("MobileCommandTimerBox");
     expect(source).toContain('data-mobile-command-timer="true"');
-    expect(source).toContain("timerText");
-    expect(source).toContain("showStatusTimer");
-    expect(source).toContain("isLowTimerAlertActive");
+    expect(source).toContain("useLiveTurnTimer");
+    expect(source).toContain("timerSnapshot");
+    expect(source).toContain("statusKind={gameStatus?.kind}");
     expect(source).toContain("grid-cols-[5.75rem_minmax(0,1fr)_4rem]");
     expect(source).toContain("min-[400px]:grid-cols-[6.25rem_minmax(0,1fr)_4rem]");
     expect(source).toContain('const displayTimerText = hasTimerText ? timerText : "--:--";');
+    expect(source).not.toContain("showStatusTimer");
+    expect(source).not.toContain("timerMs,");
     expect(source).toContain("max-[380px]:h-[3.25rem]");
     expect(source).toContain("MiniDiceFace");
     expect(source).toContain("passiveCommandDice");
