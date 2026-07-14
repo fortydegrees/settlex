@@ -82,7 +82,7 @@ describe("match API routes", () => {
         setupData: {
           modeId: "duel",
           rulesetId: "duel",
-          boardConfigId: "standard-balanced",
+          boardSourceId: "duel-fair-official-v1",
         },
       })
     );
