@@ -12,6 +12,7 @@ import {
   getSearchElapsedSeconds,
   isSearchGenerationCurrent,
   playPufferAfterLeavingSearch,
+  reconcileSearchDeparture,
   scheduleMatchAnnouncement,
 } from "../matchmaking/matchmakingRescue.js";
 import { normalizePlayerColorId } from "../theme/playerColors";
@@ -33,7 +34,6 @@ import {
 } from "./playerIdentityStorage";
 import { tabAttention } from "../utils/tabAttention";
 
-const BOT_NAME_PREFIX = "Puffer";
 const DEFAULT_AUTH_OPTIONS = Object.freeze({
   emailPassword: true,
   socialProviders: []
@@ -65,7 +65,7 @@ const appRequest = async ({ route, init }) => {
   const details = await safeJson(res);
   const message =
     details?.error || details?.message || `HTTP ${res.status} ${res.statusText}`;
-  throw new Error(message);
+  throw Object.assign(new Error(message), { status: res.status });
 };
 
 export async function runAccountSignOutLifecycle({
@@ -760,6 +760,24 @@ export function useLobbyHomeActions({
           generation: searchGeneration,
           seat,
           leaveSeat: leaveSearchSeat,
+          preserve: () => {
+            persistJoinedSeat({
+              ...seat,
+              playerName: account.currentUsername
+            });
+            if (mountedRef.current) {
+              setSearchState({
+                matchID,
+                playerID: String(playerID),
+                startedAt: Date.now(),
+                phase: "searching",
+                createdNewPublicDuel: false
+              });
+              setError(
+                "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
+              );
+            }
+          },
           commit: () => {
             persistJoinedSeat({
               ...seat,
@@ -875,6 +893,24 @@ export function useLobbyHomeActions({
         generation,
         seat,
         leaveSeat: leaveSearchSeat,
+        preserve: () => {
+          persistJoinedSeat({
+            ...seat,
+            playerName: account.currentUsername
+          });
+          if (mountedRef.current) {
+            setSearchState({
+              matchID,
+              playerID: "0",
+              startedAt,
+              phase: "searching",
+              createdNewPublicDuel: true
+            });
+            setError(
+              "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
+            );
+          }
+        },
         commit: () => {
           persistJoinedSeat({
             ...seat,
@@ -979,35 +1015,21 @@ export function useLobbyHomeActions({
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ modeId: "duel" })
+          body: JSON.stringify({ modeId: "duel", opponentType: "bot" })
         }
       });
 
       const matchID = created?.matchID;
       if (!matchID) throw new Error("Create succeeded but returned no matchID.");
+      if (!created?.playerCredentials) {
+        throw new Error("Create succeeded but returned no credentials.");
+      }
 
       persistJoinedSeat({
         matchID,
         playerID: "0",
         credentials: created?.playerCredentials,
         playerName: account.currentUsername
-      });
-
-      await appRequest({
-        route: "/api/matches/join",
-        init: {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            matchID,
-            playerID: "1",
-            participantType: "bot",
-            botKey: "puffer",
-            botName: `${BOT_NAME_PREFIX} 2`,
-            avatarEmoji: "🤖",
-            avatarColor: "royal"
-          })
-        }
       });
 
       router.push(`/g/${matchID}`);
@@ -1051,8 +1073,7 @@ export function useLobbyHomeActions({
     setChallengeState(null);
   }, [challengeState]);
 
-  const cancelSearch = useCallback(async (options = {}) => {
-    const preserveOnLeaveFailure = options?.preserveOnLeaveFailure === true;
+  const cancelSearch = useCallback(async () => {
     const pendingSearchOperation = searchOperationPromiseRef.current;
     const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
     clearScheduledMatchAnnouncement({ announcementTimerRef });
@@ -1063,8 +1084,6 @@ export function useLobbyHomeActions({
       return safeToTransition;
     }
     if (!searchState.matchID || searchState.playerID == null) {
-      setSearchState(null);
-      setSearchElapsedSeconds(0);
       const safeToTransition = pendingSearchOperation
         ? await pendingSearchOperation
         : true;
@@ -1077,9 +1096,14 @@ export function useLobbyHomeActions({
         return false;
       }
       if (!safeToTransition) {
-        setError("Could not leave the public queue. Puffer was not started.");
+        setError(
+          "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
+        );
+        setSearchState((current) => (current ? { ...current } : current));
         return false;
       }
+      setSearchState(null);
+      setSearchElapsedSeconds(0);
       return true;
     }
 
@@ -1089,10 +1113,17 @@ export function useLobbyHomeActions({
         playerID: searchState.playerID
       })
     );
-    const leftSearch = await leaveSearchSeat({
+    const seat = {
       matchID: searchState.matchID,
       playerID: searchState.playerID,
       credentials
+    };
+    const departure = await reconcileSearchDeparture({
+      seat,
+      accountId: currentAccount?.id,
+      leaveSeat: leaveSearchSeat,
+      loadMatch: (matchID) =>
+        appRequest({ route: `/api/matches/${matchID}` })
     });
     if (
       !isSearchGenerationCurrent({
@@ -1103,8 +1134,10 @@ export function useLobbyHomeActions({
       return false;
     }
 
-    if (!leftSearch && preserveOnLeaveFailure) {
-      setError("Could not leave the public queue. Puffer was not started.");
+    if (!departure.released) {
+      setError(
+        "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
+      );
       setSearchState((current) => (current ? { ...current } : current));
       return false;
     }
@@ -1119,13 +1152,13 @@ export function useLobbyHomeActions({
 
     setSearchState(null);
     setSearchElapsedSeconds(0);
-    return leftSearch;
-  }, [leaveSearchSeat, searchState]);
+    return true;
+  }, [currentAccount?.id, leaveSearchSeat, searchState]);
 
   const playPufferFromSearch = useCallback(async () => {
     clearScheduledMatchAnnouncement({ announcementTimerRef });
     return playPufferAfterLeavingSearch({
-      cancelSearch: () => cancelSearch({ preserveOnLeaveFailure: true }),
+      cancelSearch,
       playAgainstBot,
       pufferTransitionPendingRef,
       onPendingChange: (pending) => {

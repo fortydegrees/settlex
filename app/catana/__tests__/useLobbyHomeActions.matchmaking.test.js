@@ -138,7 +138,7 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     expect(source).toContain("playPufferFromSearch,");
   });
 
-  it("keeps the queue active when Puffer cannot leave its public seat", () => {
+  it("keeps the queue active whenever an authoritative leave cannot be confirmed", () => {
     const source = readHook();
     const cancelSource = between(
       source,
@@ -146,9 +146,11 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
       "const playPufferFromSearch"
     );
 
-    expect(cancelSource).toContain("preserveOnLeaveFailure");
+    expect(cancelSource).toContain("reconcileSearchDeparture");
+    expect(cancelSource).toContain("still queued");
     expect(cancelSource).toContain("return false");
     expect(cancelSource).toContain("setSearchState((current) =>");
+    expect(cancelSource).not.toContain("preserveOnLeaveFailure");
   });
 
   it("treats an interrupted join mutation as unsafe for a Puffer transition", () => {
@@ -194,6 +196,20 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     );
     expect(pufferSource).not.toContain("setSearchState");
     expect(source).toContain('setError(err?.message || "Failed to start bot match.")');
+  });
+
+  it("asks the server to create a bot-intent match in one client request", () => {
+    const source = readHook();
+    const botSource = between(
+      source,
+      "const playAgainstBot = useCallback",
+      "const cancelChallengeInvite"
+    );
+
+    expect(botSource).toContain('route: "/api/matches/create"');
+    expect(botSource).toContain('opponentType: "bot"');
+    expect(botSource).not.toContain('route: "/api/matches/join"');
+    expect(botSource.match(/appRequest\(\{/g)).toHaveLength(1);
   });
 });
 

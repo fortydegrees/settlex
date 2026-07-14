@@ -83,7 +83,8 @@ export function MatchAlertDialog({
       : "Take the open seat?";
   } else if (state === "stale") {
     title = "That table has already filled";
-    description = "Someone else got there first. We can find you another duel.";
+    description =
+      "Someone else got there first. Match alerts are still on, or we can find you another duel.";
   } else if (state === "error") {
     title = "We couldn’t join that table";
     description = "Check your connection, or look for another open duel.";
