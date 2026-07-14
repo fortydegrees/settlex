@@ -42,6 +42,7 @@ export const createReplayPageClient = ({
     replay,
     frames = [],
     initialFrameIndex = 0,
+    initialPerspectivePlayerID = null,
   }) {
     const safeFrames = useMemo(
       () =>
@@ -156,7 +157,7 @@ export const createReplayPageClient = ({
       matchData,
       matchMetadata: matchData,
       matchID: replay.match.bgioMatchId ?? replay.match.replayId,
-      playerID: null,
+      playerID: initialPerspectivePlayerID,
       credentials: null,
       moves: {},
       events: {},

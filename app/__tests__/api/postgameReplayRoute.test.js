@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createPostgameReplayRoute } from "../../api/matches/[matchID]/replay/handler";
+import { getLiveMatch } from "../../../lib/server/matches/getLiveMatch.js";
 
 describe("postgame replay payload route", () => {
   it("returns a ready archived payload", async () => {
@@ -50,5 +51,21 @@ describe("postgame replay payload route", () => {
       status: "invalid",
       error: "Replay has no valid frames",
     });
+  });
+
+  it("returns missing when the real live-match loader receives HTTP 404", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: "Not Found",
+      json: vi.fn().mockResolvedValue({ error: "Match not found" }),
+    });
+    const response = await createPostgameReplayRoute({
+      getPostgameReplayPayload: vi.fn().mockResolvedValue(null),
+      getLiveMatch: ({ matchID }) => getLiveMatch({ matchID, fetchImpl }),
+    })(null, { params: { matchID: "missing" } });
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ status: "missing" });
   });
 });
