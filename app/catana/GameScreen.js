@@ -224,6 +224,7 @@ export function GameScreen(bgioProps) {
   const playfieldCenterOffsetX = 0;
   const moves = bgioProps.moves;
   const isReplay = bgioProps.isReplay === true;
+  const onWatchReplay = bgioProps.onWatchReplay;
 
   useEffect(() => {
     if (isPhoneLayout) return;
@@ -340,7 +341,13 @@ export function GameScreen(bgioProps) {
     return getActiveIdleStateByPlayerId(idlePresence, nowMs);
   }, [idlePresence, nowMs]);
   const showResultsButton =
-    isGameOver && !showGameOverModal && !showPostgame;
+    isGameOver &&
+    (isReplay
+      ? !bgioProps.replayResultsOpen
+      : !showGameOverModal && !showPostgame);
+  const handleWatchReplay = useCallback(() => {
+    onWatchReplay?.();
+  }, [onWatchReplay]);
   const clearBuildPickup = useCallback(() => {
     setBuildPickup(null);
   }, []);
@@ -1519,7 +1526,11 @@ export function GameScreen(bgioProps) {
       {showResultsButton && (
         <div className="fixed right-4 top-4 z-40" data-allow-interaction="true">
           <GlassPillButton
-            onClick={() => setShowGameOverModal(true)}
+            onClick={() =>
+              isReplay
+                ? bgioProps.onReplayResultsOpen?.()
+                : setShowGameOverModal(true)
+            }
             aria-label="Open game results"
             data-allow-interaction="true"
           >
@@ -1800,7 +1811,8 @@ TODO: accurately colour it
         </div>
       )}
 
-      {showGameOverModal && (
+      {((isReplay && bgioProps.replayResultsOpen) ||
+        (!isReplay && showGameOverModal)) && (
         <GameOverOverlay>
           <GameOverModal
             title={isWinner ? "You win!" : `${winnerName} wins!`}
@@ -1813,19 +1825,29 @@ TODO: accurately colour it
             }
             scoreboard={scoreboard}
             isWinner={isWinner}
-            shouldFireConfetti={isWinner && !winnerConfettiSeenRef.current}
+            shouldFireConfetti={
+              !isReplay && isWinner && !winnerConfettiSeenRef.current
+            }
             onConfettiFired={() => {
               winnerConfettiSeenRef.current = true;
             }}
-            onViewPostgame={() => {
-              setShowPostgame(true);
-              setShowGameOverModal(false);
-            }}
-            onRematch={() => {}}
+            onWatchReplay={isReplay ? undefined : handleWatchReplay}
+            onViewSummary={
+              isReplay
+                ? undefined
+                : () => {
+                    setShowPostgame(true);
+                    setShowGameOverModal(false);
+                  }
+            }
             onLobby={() => {
               window.location.href = "/";
             }}
-            onClose={() => setShowGameOverModal(false)}
+            onClose={() =>
+              isReplay
+                ? bgioProps.onReplayResultsClose?.()
+                : setShowGameOverModal(false)
+            }
           />
         </GameOverOverlay>
       )}
@@ -1834,6 +1856,7 @@ TODO: accurately colour it
         <PostgameOverlay
           summary={postgameSummary}
           scoreboard={scoreboard}
+          onWatchReplay={handleWatchReplay}
           onClose={() => {
             setShowPostgame(false);
             setShowGameOverModal(true);

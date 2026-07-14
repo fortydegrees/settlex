@@ -23,8 +23,10 @@ describe("GameOverModal", () => {
 
   it("includes core CTA labels", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("View Postgame");
+    expect(contents).toContain("Watch replay");
+    expect(contents).toContain("Match summary");
     expect(contents).toContain("Return to Lobby");
+    expect(contents).not.toContain("Rematch");
   });
 
   it("lets the parent own winner confetti state so remounts do not replay it", () => {

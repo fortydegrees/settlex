@@ -11,26 +11,18 @@ const source = fs.readFileSync(
 );
 
 describe("ReplayPageClient", () => {
-  it("drives board, log, chart, transport, and keyboard from one event index", () => {
-    expect(source).toContain("buildReplayTimeline");
-    expect(source).toContain("useReplayNavigation");
-    expect(source).not.toContain("useReplayPlayback");
-    expect(source).not.toContain("toggleReplayPlaying");
-    expect(source).toContain("ReplayConsole");
-    expect(source).toContain("GameScreenWithEffects");
-    expect(source).toContain("replayLogEntries");
-    expect(source).toContain("replayActiveLogEntryKey");
-    expect(source).toContain("onReplayLogEntrySelect");
-    expect(source).toContain("replayConsoleMobileOpen");
-    expect(source).toContain("onReplayMobileMetaPanelOpen");
-    expect(source).toContain("getReplayKeyboardAction");
-    expect(source).toContain('window.addEventListener("keydown"');
-    expect(source).not.toContain("ReplayControls");
+  it("delegates archived replay state to the shared postgame board", () => {
+    expect(source).toContain("PostgameGameBoard");
+    expect(source).toContain("initialReplayPayload: { replay, frames }");
+    expect(source).not.toContain("buildReplayTimeline");
+    expect(source).not.toContain("useReplayNavigation");
+    expect(source).not.toContain("ReplayConsole");
+    expect(source).not.toContain("GameScreenWithEffects");
   });
 
   it("forwards the initial archived perspective to the real game screen", () => {
     expect(source).toContain("initialPerspectivePlayerID = null");
-    expect(source).toContain("playerID: initialPerspectivePlayerID");
+    expect(source).toContain("initialPerspectivePlayerID,");
     expect(source).not.toContain("playerID: null");
   });
 });
