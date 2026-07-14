@@ -170,4 +170,43 @@ describe("postgame replay activation", () => {
       replayActive: false,
     });
   });
+
+  it("atomically preserves a replay click across an identity change", () => {
+    const stateA = replaySessionState.createReplayActivationState({
+      identityKey: "A",
+    });
+    const requestedB = replaySessionState.replayActivationReducer(stateA, {
+      type: "requestReplay",
+      payloadStatus: "loading",
+      identityKey: "B",
+    });
+    expect(requestedB).toEqual({
+      identityKey: "B",
+      intentPending: true,
+      replayActive: false,
+    });
+
+    expect(
+      replaySessionState.replayActivationReducer(requestedB, {
+        type: "payloadReady",
+        identityKey: "A",
+      })
+    ).toBe(requestedB);
+
+    const readyB = replaySessionState.replayActivationReducer(requestedB, {
+      type: "payloadReady",
+      identityKey: "B",
+    });
+    expect(readyB).toEqual({
+      identityKey: "B",
+      intentPending: false,
+      replayActive: true,
+    });
+    expect(
+      replaySessionState.replayActivationReducer(readyB, {
+        type: "payloadReady",
+        identityKey: "B",
+      })
+    ).toBe(readyB);
+  });
 });
