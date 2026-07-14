@@ -6504,3 +6504,13 @@
 - Local development render counters confirmed that normal timer ticks rerendered only the active timer leaf during sampled desktop/mobile three-second windows; React DevTools commit profiling was not available, so this is ownership evidence rather than production performance certification.
 - Combined verification passed 12 focused files and 58 tests. A deterministic sandbox timer fixture confirmed desktop/mobile countdown presentation, the mobile `--:--` fallback, hidden desktop timer state, five-second urgency styling, and pre-roll urgency suppression at `1440x900` and `390x844`; ticker cleanup remains covered by the focused unit test.
 - Browser road evidence confirmed placed-road rendering and a dock-launched road pickup with five registered hit targets; the pickup preview and targets survived a desktop-to-mobile resize. The stock road-placement sandbox preset recomputed to zero valid edges, and automation did not produce a reliable post-resize magnetic-lock measurement, so full placement/passive-hover alignment remains a manual follow-up rather than a claimed result.
+
+## Status (2026-07-14, Catana pointer-frame batching)
+- Coalesced build and robber placement-preview pointer synchronization to one live target-geometry pass per browser frame while preserving the existing spring loops and magnetic selection.
+- Coalesced development-card dock hover measurement and React pointer state to one update per browser frame, with pending work cancelled on leave and unmount.
+- Kept board geometry live rather than caching target rectangles, so pan, zoom, and responsive movement cannot leave stale snapping coordinates.
+- Verification:
+  - `pnpm exec vitest run app/catana/__tests__/PointerFrameBatching.source.test.js app/catana/__tests__/BuildPlacementPreview.springMotion.test.js app/catana/__tests__/RobberPlacementPreview.springMotion.test.js app/catana/__tests__/RobberPlacementPreview.test.js app/catana/__tests__/DevCardDisplayLayout.source.test.js app/catana/__tests__/PlayerActionBadges.test.js --exclude '.worktrees/**' --reporter=dot`
+  - `pnpm exec eslint app/catana/BuildPlacementPreview.js app/catana/RobberPlacementPreview.js app/catana/components/DevCardDisplay.js app/catana/__tests__/PointerFrameBatching.source.test.js`
+  - `pnpm verify`
+  - Playwright CLI on `/catana/dev/sandbox` at `1440x900`: 48-point rapid pointer sweeps kept road and robber previews aligned to the latest pointer; dev-card hover preserved the existing 1.28x scale/15px lift, reset to identity on leave, and retained keyboard-focus magnification; zero browser console warnings/errors.

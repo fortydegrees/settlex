@@ -3970,3 +3970,9 @@
 - `GameScreen` retains a presence-only clock for active disconnect/idle countdowns; future presence extraction is a separate measured slice.
 - Forward `Board`'s existing viewport measurement through the gameplay `Edge` paths that `Board` renders, rather than adding edge-local `useWindowSize` subscriptions. This is subscription ownership plumbing, not a claim that viewport width currently changes `getEdgeTransform` semantics or that every non-`Board` `Edge` consumer is covered.
 - The current `Road placement` dev-sandbox preset can enter the road stage with `G.valids.edges` empty after the placement phase initializes. Do not treat that preset alone as proof of placement-road geometry until its deterministic valid-edge fixture is repaired; keep the focused placement-path tests and use a real valid placement state for visual evidence.
+
+- Catana pointer-frame batching note:
+- Keep placement target geometry live, but coalesce raw pointer events so build and robber previews measure magnetic targets at most once per browser frame.
+- Keep each pointer batching frame separate from the preview's continuous spring animation frame and cancel both independently during cleanup.
+- Keep development-card hover measurement and pointer state batched to one frame; cancel pending work on mouse leave and unmount so stale hover state cannot arrive afterward.
+- This is intentionally not a target-rectangle cache, idle spring-loop rewrite, shared scheduler abstraction, or visual timing change.
