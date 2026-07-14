@@ -161,8 +161,180 @@ describe("/g match page", () => {
     expect(buildReplayFrames).toHaveBeenCalledWith({
       initialState: { G: { turn: 0 }, ctx: { gameover: null } },
       log: [{ action: { type: "MOVE" } }],
+      finalState: {
+        G: { turn: 1 },
+        ctx: { gameover: { winner: "0" } },
+      },
     });
-    expect(html).toContain("Archived r1 frames 2 start 1");
+    expect(getMatchPageData).toHaveBeenCalledWith("m1");
+    expect(html).toContain("Archived r1 frames 2 start 0");
+  });
+
+  it("shows replay preparation while a finished live match is being archived", async () => {
+    const { createGMatchPage } = await loadPageModule();
+    const getMatchPageData = vi.fn().mockResolvedValue({
+      kind: "postgame-preparing",
+      matchID: "m1",
+      liveMatch: { matchID: "m1", gameover: true },
+    });
+    const ReplayStatusPage = ({ matchID, status }) =>
+      h("div", null, `Replay status ${status} for ${matchID}`);
+    const Page = createGMatchPage({
+      getMatchPageData,
+      ReplayStatusPage,
+      notFoundImpl: () => {
+        throw new Error("not found");
+      },
+    });
+
+    const element = await Page({
+      params: { matchID: "m1" },
+      searchParams: {},
+    });
+    const html = renderToStaticMarkup(element);
+
+    expect(getMatchPageData).toHaveBeenCalledWith("m1");
+    expect(html).toContain("Replay status preparing for m1");
+  });
+
+  it("renders ?view=replay identically to the canonical archived URL", async () => {
+    const { createGMatchPage } = await loadPageModule();
+    const getMatchPageData = vi.fn().mockResolvedValue({
+      kind: "archived",
+      matchID: "m1",
+      archivedMatch: {
+        match: { replayId: "r1", bgioMatchId: "m1" },
+        participants: [],
+        initialState: { G: {}, ctx: {} },
+        log: [],
+      },
+    });
+    const buildReplayFrames = vi.fn().mockReturnValue([
+      { index: 0, state: { G: {}, ctx: {} } },
+      { index: 1, state: { G: {}, ctx: { gameover: true } } },
+    ]);
+    const ReplayPageClient = ({ initialFrameIndex }) =>
+      h("div", null, `Replay starts at ${initialFrameIndex}`);
+    const Page = createGMatchPage({
+      getMatchPageData,
+      buildReplayFrames,
+      ReplayPageClient,
+    });
+
+    const element = await Page({
+      params: { matchID: "m1" },
+      searchParams: { view: "replay" },
+    });
+    const html = renderToStaticMarkup(element);
+
+    expect(getMatchPageData).toHaveBeenCalledWith("m1");
+    expect(html).toContain("Replay starts at 0");
+  });
+
+  it("uses the archived participant matching the current account as the initial perspective", async () => {
+    const { createGMatchPage } = await loadPageModule();
+    const ReplayPageClient = ({ initialPerspectivePlayerID }) =>
+      h("div", null, `Perspective ${initialPerspectivePlayerID}`);
+    const Page = createGMatchPage({
+      getMatchPageData: vi.fn().mockResolvedValue({
+        kind: "archived",
+        matchID: "m1",
+        archivedMatch: {
+          match: { replayId: "r1", bgioMatchId: "m1" },
+          participants: [
+            { seatId: "0", accountId: "account_a" },
+            { seatId: "1", accountId: "account_b" },
+          ],
+          initialState: { G: {}, ctx: {} },
+          log: [],
+        },
+      }),
+      buildReplayFrames: vi.fn().mockReturnValue([{ index: 0 }]),
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: { id: "account_b" },
+      }),
+      headers: vi.fn().mockReturnValue(new Headers()),
+      readSeatCredential: vi.fn(),
+      ReplayPageClient,
+    });
+
+    const html = renderToStaticMarkup(
+      await Page({ params: { matchID: "m1" }, searchParams: {} })
+    );
+
+    expect(html).toContain("Perspective 1");
+  });
+
+  it("falls back to an archived participant's seat cookie for the initial perspective", async () => {
+    const { createGMatchPage } = await loadPageModule();
+    const readSeatCredential = vi.fn(async ({ playerID }) =>
+      playerID === "0" ? "secret_0" : null
+    );
+    const ReplayPageClient = ({ initialPerspectivePlayerID }) =>
+      h("div", null, `Perspective ${initialPerspectivePlayerID}`);
+    const Page = createGMatchPage({
+      getMatchPageData: vi.fn().mockResolvedValue({
+        kind: "archived",
+        matchID: "m1",
+        archivedMatch: {
+          match: { replayId: "r1", bgioMatchId: "m1" },
+          participants: [
+            { seatId: "0", accountId: "account_a" },
+            { seatId: "1", accountId: "account_b" },
+          ],
+          initialState: { G: {}, ctx: {} },
+          log: [],
+        },
+      }),
+      buildReplayFrames: vi.fn().mockReturnValue([{ index: 0 }]),
+      getSessionAccount: vi.fn().mockResolvedValue(null),
+      headers: vi.fn().mockReturnValue(new Headers()),
+      readSeatCredential,
+      ReplayPageClient,
+    });
+
+    const html = renderToStaticMarkup(
+      await Page({ params: { matchID: "m1" }, searchParams: {} })
+    );
+
+    expect(readSeatCredential).toHaveBeenCalledWith({
+      matchID: "m1",
+      playerID: "0",
+    });
+    expect(html).toContain("Perspective 0");
+  });
+
+  it("renders an invalid status when canonical replay reconstruction fails", async () => {
+    const { createGMatchPage } = await loadPageModule();
+    const archivedMatch = {
+      match: { replayId: "r_bad", bgioMatchId: "m_bad" },
+      participants: [],
+      initialState: {},
+      finalState: {},
+      log: [],
+    };
+    const ReplayStatusPage = ({ matchID, status }) =>
+      h("div", null, `Replay status ${status} for ${matchID}`);
+    const Page = createGMatchPage({
+      getMatchPageData: vi.fn().mockResolvedValue({
+        kind: "archived",
+        matchID: "m_bad",
+        archivedMatch,
+      }),
+      buildReplayFrames: vi.fn().mockImplementation(() => {
+        throw new Error("Initial replay state is invalid");
+      }),
+      ReplayStatusPage,
+    });
+
+    const element = await Page({
+      params: { matchID: "m_bad" },
+      searchParams: { view: "replay" },
+    });
+
+    expect(renderToStaticMarkup(element)).toContain(
+      "Replay status invalid for m_bad"
+    );
   });
 
   it("returns notFound when neither live nor archived data exists", async () => {
