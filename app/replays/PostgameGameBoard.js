@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import { GameScreenWithEffects } from "../catana/GameScreen";
-import { ReplayConsole } from "./components/ReplayConsole";
+import { ReplayPanel } from "./components/ReplayPanel";
 import {
   buildReplayChatMessages,
   getReplayKeyboardAction,
@@ -342,13 +342,19 @@ export function PostgameGameBoard(props) {
     null,
     h(GameScreenWithEffects, displayProps),
     replayActive
-      ? h(ReplayConsole, {
+      ? h(ReplayPanel, {
           timeline,
           currentEvent,
           currentEventIndex: displaySession.eventIndex,
+          perspectiveId: displaySession.perspectiveId,
           victoryTarget,
+          open: displaySession.panelOpen,
           mobileOpen: mobileReplayOpen,
+          onOpenChange: (open) => dispatch({ type: "setPanelOpen", open }),
           onMobileOpenChange: setMobileReplayOpen,
+          onPerspectiveChange: (perspectiveId) =>
+            dispatch({ type: "setPerspective", perspectiveId }),
+          onResultsOpen: () => dispatch({ type: "openResults" }),
           onPreviousEvent: previousEvent,
           onNextEvent: nextEvent,
           onPreviousTurn: previousTurn,

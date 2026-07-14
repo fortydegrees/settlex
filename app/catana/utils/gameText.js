@@ -339,3 +339,40 @@ export function formatChatEntry(entry, playerMap = {}) {
     textToken(String(message))
   ];
 }
+
+export const getGameLogEntryKey = (entry, index) =>
+  String(entry?.id ?? `replay-log-${index}-${entry?.type ?? "entry"}`);
+
+export const formatLogTokensToText = (tokens = []) => {
+  const diceTotal = tokens
+    .filter((token) => token?.kind === "die")
+    .reduce((total, token) => total + (Number(token.value) || 0), 0);
+
+  return tokens
+    .map((token, index) => {
+      if (token?.kind === "text") return String(token.text ?? "");
+      if (token?.kind === "player") {
+        return String(token.name ?? `Player ${token.id}`);
+      }
+      if (token?.kind === "die") {
+        const hasPreviousDie = tokens
+          .slice(0, index)
+          .some((item) => item?.kind === "die");
+        return hasPreviousDie ? "" : String(diceTotal);
+      }
+      if (token?.kind === "resource") {
+        const separator = tokens[index - 1]?.kind === "resource" ? " " : "";
+        return `${separator}${String(token.resource ?? "")}`;
+      }
+      if (token?.kind === "label") {
+        return `${String(token.text ?? "")} `;
+      }
+      return "";
+    })
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+export const formatLogEntryText = (entry, playerMap = {}) =>
+  formatLogTokensToText(formatLogEntry(entry, playerMap));

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatChatEntry, formatLogEntry, STATUS_TEXT } from "../utils/gameText";
+import {
+  formatChatEntry,
+  formatLogEntry,
+  formatLogEntryText,
+  getGameLogEntryKey,
+  STATUS_TEXT,
+} from "../utils/gameText";
 
 describe("formatLogEntry", () => {
   it("returns player + resource tokens", () => {
@@ -490,5 +496,42 @@ describe("formatChatEntry", () => {
 describe("STATUS_TEXT", () => {
   it("contains Roll Dice copy", () => {
     expect(STATUS_TEXT.ROLLING).toBe("Roll Dice");
+  });
+});
+
+describe("replay log text", () => {
+  it("formats a plain sentence from the same tokens used by the game log", () => {
+    expect(
+      formatLogEntryText(
+        {
+          id: 7,
+          type: "roll",
+          actorId: "1",
+          data: { dice: [3, 4] },
+        },
+        { "1": { name: "Bren" } }
+      )
+    ).toBe("Bren rolled 7");
+    expect(formatLogEntryText({ type: "turn:end" })).toBe("");
+  });
+
+  it("separates consecutive resource tokens in plain text", () => {
+    expect(
+      formatLogEntryText(
+        {
+          type: "discard",
+          actorId: "1",
+          data: { resources: { Ore: 2, Wheat: 1 } },
+        },
+        { "1": { name: "Bren" } }
+      )
+    ).toBe("Bren discarded Ore Ore Wheat");
+  });
+
+  it("builds stable log keys with an index fallback", () => {
+    expect(getGameLogEntryKey({ id: 7, type: "roll" }, 2)).toBe("7");
+    expect(getGameLogEntryKey({ type: "roll" }, 2)).toBe(
+      "replay-log-2-roll"
+    );
   });
 });

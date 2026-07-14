@@ -116,4 +116,10 @@ describe("LeftMetaRail", () => {
     expect(contents).not.toContain("data-meta-mobile-sheet");
     expect(contents).not.toContain("fixed left-3 bottom-[18.75rem]");
   });
+
+  it("uses the shared native meta-panel chrome", () => {
+    const contents = fs.readFileSync(leftMetaRailPath, "utf8");
+    expect(contents).toContain("META_PANEL_FRAME_CLASS_NAME");
+    expect(contents).toContain("META_PANEL_GLASS_STYLE");
+  });
 });
