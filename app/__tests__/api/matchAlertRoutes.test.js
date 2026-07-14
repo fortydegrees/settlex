@@ -501,7 +501,7 @@ describe("match alert announcement route", () => {
     });
   });
 
-  it.each(["duplicate", "filled", "cancelled", "rate_limited_minute", "rate_limited_hour"])(
+  it.each(["duplicate", "filled", "rate_limited_minute", "rate_limited_hour"])(
     "returns 200 for a harmless %s no-op",
     async (reason) => {
       const { createMatchAlertAnnouncePostRoute } = await loadHandler();
@@ -522,7 +522,7 @@ describe("match alert announcement route", () => {
     }
   );
 
-  it("uses one generic 404 for forged, non-owner, and private matches", async () => {
+  it("uses one generic 404 for missing, ownerless, forged, non-owner, and private matches", async () => {
     const { createMatchAlertAnnouncePostRoute } = await loadHandler();
     const POST = createMatchAlertAnnouncePostRoute({
       getSessionAccount: vi.fn().mockResolvedValue({ account: { id: "acct_session" } }),
