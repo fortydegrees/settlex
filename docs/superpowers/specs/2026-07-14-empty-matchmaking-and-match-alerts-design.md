@@ -241,6 +241,31 @@ error requiring browser-permission changes.
 If the table was cancelled, expired, or otherwise became unjoinable, use the
 same friendly stale treatment.
 
+### Join versus seeker cancellation
+
+The final alert join and the original seeker's Cancel action are competing
+mutations of the same public table. They must be serialized by match ID on the
+server; client polling is not an ownership boundary.
+
+After serialization, only two outcomes are valid:
+
+- if cancellation wins first, the waiting seat is released and the alert join
+  receives the ordinary stale-table result;
+- if the alert join wins first, cancellation must not remove the original
+  seeker. It becomes a match-found transition and both seated players enter the
+  game.
+
+The system must never leave a live duel with one occupied seat after the other
+seat had already joined. In particular, a late Cancel must not delete player
+0's credentials after player 1 has filled the table.
+
+As a defensive UI fallback, a credentialed `/g/:matchID` route that observes
+an incomplete duel before play starts does not mount the game client. It shows
+`Duel interrupted` with Return to lobby and Look again actions. Those actions
+request the same server-authoritative matchmaking cancellation; if the table
+filled in the meantime, the user enters the game instead of deleting a valid
+seat. The browser never unilaterally ends or wipes a match.
+
 ## Alert Preference Lifecycle
 
 Match alerts are persistent consent attached to the current guest or saved game
