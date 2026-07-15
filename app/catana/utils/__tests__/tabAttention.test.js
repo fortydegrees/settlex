@@ -150,6 +150,21 @@ describe("tabAttention", () => {
     expect(children[0].getAttribute("href")).toBe("/match-alert-bell.svg");
   });
 
+  it("uses a one-shot player-looking cue for a push received while hidden", async () => {
+    const { documentRef, children } = createFakeDocument({ hidden: true });
+    const controller = await loadController(documentRef);
+
+    controller.request("player-looking");
+    expect(documentRef.title).toBe("🔔 Player looking · Settlehex");
+    expect(children[0].getAttribute("href")).toBe("/match-alert-bell.svg");
+
+    documentRef.hidden = false;
+    documentRef.dispatchVisibilityChange();
+    documentRef.hidden = true;
+    documentRef.dispatchVisibilityChange();
+    expect(documentRef.title).toBe("Original route title");
+  });
+
   it("prioritizes match-found and reveals a remaining turn request on release", async () => {
     const { documentRef } = createFakeDocument({ hidden: true });
     const controller = await loadController(documentRef);

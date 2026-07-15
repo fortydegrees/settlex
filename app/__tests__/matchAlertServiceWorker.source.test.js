@@ -37,6 +37,21 @@ describe("match-alert service worker", () => {
     );
   });
 
+  it("also tells open tabs when a push arrives without focusing them", () => {
+    const source = readSource("public/match-alerts-sw.js");
+    const pushHandler = source.slice(
+      source.indexOf('addEventListener("push"'),
+      source.indexOf('addEventListener("notificationclick"')
+    );
+
+    expect(pushHandler).toMatch(/clients\s*\.\s*matchAll/);
+    expect(pushHandler).toContain('type: "window"');
+    expect(pushHandler).toContain("includeUncontrolled: true");
+    expect(pushHandler).toContain("client.postMessage");
+    expect(pushHandler).toContain('type: "match-alert-received"');
+    expect(pushHandler).not.toContain("client.focus");
+  });
+
   it("defines a static high-contrast bell asset", () => {
     const source = readSource("public/match-alert-bell.svg");
 

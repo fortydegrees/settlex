@@ -21,6 +21,7 @@ import {
 import { MatchAlertDialog } from "./MatchAlertDialog.js";
 import { resolveAlertMatch } from "./matchAlertJoin.js";
 import { getMatchAlertDisplayState } from "./matchAlertState.js";
+import { tabAttention } from "../utils/tabAttention.js";
 
 const OFF_PREFERENCE = Object.freeze({
   enabled: false,
@@ -131,6 +132,10 @@ export function MatchAlertProvider({ children }) {
     }
 
     const handleServiceWorkerMessage = (event) => {
+      if (event?.data?.type === "match-alert-received") {
+        tabAttention.request("player-looking");
+        return;
+      }
       if (event?.data?.type !== "match-alert-click") return;
       const clickedMatchID = event.data.matchID;
       if (typeof clickedMatchID !== "string" || !clickedMatchID) return;

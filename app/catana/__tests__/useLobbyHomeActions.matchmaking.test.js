@@ -154,6 +154,25 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     expect(cancelSource).not.toContain("preserveOnLeaveFailure");
   });
 
+  it("enters a duel instead of cancelling when the opponent has already joined", () => {
+    const source = readHook();
+    const leaveSource = between(
+      source,
+      "const leaveSearchSeat = useCallback",
+      "const recoverMatchmakingSeats"
+    );
+    const cancelSource = between(
+      source,
+      "const cancelSearch = useCallback",
+      "const playPufferFromSearch"
+    );
+
+    expect(source).toContain("code: details?.code");
+    expect(leaveSource).toContain('intent: "matchmaking_cancel"');
+    expect(cancelSource).toContain('departure.reason === "match_found"');
+    expect(cancelSource).toContain("router.push(`/g/${matchID}`)");
+  });
+
   it("treats an interrupted join mutation as unsafe for a Puffer transition", () => {
     const source = readHook();
     const joinSource = between(
