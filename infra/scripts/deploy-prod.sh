@@ -7,6 +7,28 @@ COMPOSE_FILE="infra/docker-compose.prod.yml"
 
 cd "$ROOT_DIR"
 
+require_env_key() {
+  local key="$1"
+  local value=""
+  if [ -f .env.prod ]; then
+    value="$(sed -n "s/^${key}=//p" .env.prod | tail -n 1)"
+  fi
+  if [[ ! "$value" =~ [^[:space:]] ]]; then
+    echo "Missing required production env key in .env.prod: ${key}" >&2
+    exit 1
+  fi
+}
+
+required_env_keys=(
+  VAPID_SUBJECT
+  VAPID_PUBLIC_KEY
+  VAPID_PRIVATE_KEY
+)
+
+for key in "${required_env_keys[@]}"; do
+  require_env_key "$key"
+done
+
 if [ -z "${SETTLEX_BUILD_SHA:-}" ]; then
   if git rev-parse --short=12 HEAD >/dev/null 2>&1; then
     SETTLEX_BUILD_SHA="$(git rev-parse --short=12 HEAD)"

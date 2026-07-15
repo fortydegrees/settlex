@@ -16,13 +16,16 @@ import { Select } from "../../../ui/Select";
 import { LiveMatchLoadingShell } from "./LiveMatchLoadingShell";
 import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import {
+  clearLastActiveMatch,
   getCredentialsStorageKey,
+  readLastActiveMatch,
   writeLastActiveMatch
 } from "../../utils/activeMatchStorage";
 import { sanitizeDisplayName } from "../../utils/playerIdentity";
 import {
   getGameServerOrigin,
 } from "../../utils/serverOrigins";
+import { isInterruptedCredentialedDuel } from "../interruptedDuel";
 
 const BOT_NAME_PREFIX = "Puffer";
 const PLAYER_NAME_STORAGE_KEY = "catana:lobby:playerName";
@@ -44,7 +47,10 @@ const apiRequest = async ({ baseUrl, route, init }) => {
   const details = await safeJson(res);
   const message =
     details?.error || details?.message || `HTTP ${res.status} ${res.statusText}`;
-  throw new Error(message);
+  throw Object.assign(new Error(message), {
+    status: res.status,
+    code: details?.code,
+  });
 };
 
 const appRequest = ({ route, init }) => apiRequest({ baseUrl: "", route, init });
@@ -63,6 +69,8 @@ function normalizeMatch(raw) {
   return {
     matchID: raw?.matchID,
     gameName: raw?.gameName,
+    metadata: raw?.metadata,
+    setupData: raw?.setupData,
     players,
   };
 }
@@ -84,6 +92,7 @@ export function MatchPageClient({
   const [credentials, setCredentials] = useState(initialCredentials ?? null);
   const [joinPending, setJoinPending] = useState(false);
   const [botFillPending, setBotFillPending] = useState(false);
+  const [recoveryPending, setRecoveryPending] = useState(false);
   const [spectatorMode, setSpectatorMode] = useState(false);
 
   const gameServer = useMemo(() => getGameServerOrigin(), []);
@@ -214,16 +223,22 @@ export function MatchPageClient({
   );
   const isFullMatch = Boolean(match?.players?.length) && openSeats.length === 0;
   const isSpectating = !credentials && (spectatorMode || isFullMatch);
+  const interruptedDuel = isInterruptedCredentialedDuel({
+    match,
+    playerID,
+    credentials,
+  });
 
   useEffect(() => {
     if (spectatorMode) return;
+    if (credentials) return;
     if (openSeats.length === 0) return;
     const openSeatIds = new Set(openSeats.map((seat) => String(seat.id)));
     const current = String(playerID || "");
     if (!current || !openSeatIds.has(current)) {
       setPlayerID(String(openSeats[0].id));
     }
-  }, [playerID, openSeats, spectatorMode]);
+  }, [credentials, playerID, openSeats, spectatorMode]);
 
   const joinSeat = async (event) => {
     event.preventDefault();
@@ -320,6 +335,101 @@ export function MatchPageClient({
       setBotFillPending(false);
     }
   };
+
+  const leaveInterruptedDuel = async ({ lookAgain = false } = {}) => {
+    setRecoveryPending(true);
+    setError("");
+    try {
+      await appRequest({
+        route: "/api/matches/leave",
+        init: {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            matchID,
+            playerID,
+            credentials,
+            intent: "matchmaking_cancel",
+          }),
+        },
+      });
+
+      try {
+        window.localStorage.removeItem(
+          getCredentialsStorageKey({ matchID, playerID })
+        );
+        const activeMatch = readLastActiveMatch(window.localStorage);
+        if (
+          activeMatch?.matchID === matchID &&
+          activeMatch?.playerID === String(playerID)
+        ) {
+          clearLastActiveMatch(window.localStorage);
+        }
+      } catch (err) {
+        /* Local cleanup is best-effort after the server releases the seat. */
+      }
+
+      setCredentials(null);
+      router.replace(lookAgain ? "/?playOnline=1" : "/");
+    } catch (error) {
+      if (error?.code === "MATCH_FOUND") {
+        await refreshMatch();
+        return;
+      }
+      setError(error?.message || "Failed to leave the interrupted duel.");
+    } finally {
+      setRecoveryPending(false);
+    }
+  };
+
+  if (interruptedDuel) {
+    return (
+      <div
+        className="min-h-screen"
+        style={{ background: CATANA_TABLE_BACKGROUND }}
+      >
+        <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-10">
+          <Panel bodyClassName="p-6 md:p-8">
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
+              Match update
+            </div>
+            <h1 className="mt-3 text-3xl font-bold text-slate-900 drop-shadow-sm">
+              Duel interrupted
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-slate-700">
+              The other player left before the duel could begin. You can return
+              to the lobby or look for another opponent now.
+            </p>
+            {error ? (
+              <Banner
+                variant="danger"
+                title="Couldn’t leave the duel"
+                body={error}
+                className="mt-5"
+              />
+            ) : null}
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button
+                variant="secondary"
+                className="w-full"
+                disabled={recoveryPending}
+                onClick={() => leaveInterruptedDuel()}
+              >
+                Return to lobby
+              </Button>
+              <Button
+                className="w-full"
+                disabled={recoveryPending}
+                onClick={() => leaveInterruptedDuel({ lookAgain: true })}
+              >
+                {recoveryPending ? "Checking duel…" : "Look again"}
+              </Button>
+            </div>
+          </Panel>
+        </div>
+      </div>
+    );
+  }
 
   if (credentials && playerID) {
     return (

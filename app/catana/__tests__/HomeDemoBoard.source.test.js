@@ -148,7 +148,8 @@ describe("Home demo board source", () => {
     );
     expect(rootSource).toContain("<HomeTableClient initialAccount={initialAccount} />");
     expect(source).toContain("initialAccount");
-    expect(source).toContain("useLobbyHomeActions({ initialAccount })");
+    expect(source).toContain("useLobbyHomeActions({");
+    expect(source).toContain("onMatchFound: playMatchFoundSound");
     expect(source).toContain("useLobbyHomeActions");
     expect(source).toContain("isBoardLayoutReady");
     expect(source).toContain("useBrowserLayoutEffect");
@@ -191,7 +192,9 @@ describe("Home demo board source", () => {
 
     expect(source).toContain("initialAccount");
     expect(source).toContain("getAccountIdentity");
-    expect(source).toContain("applyAccountIdentity(initialAccount)");
+    expect(source).toContain("runAccountEstablishedLifecycle({");
+    expect(source).toContain("account: initialAccount");
+    expect(source).toContain("refreshMatchAlerts");
     expect(source).toContain('route: "/api/auth/options"');
     expect(source).toContain("setAuthOptions");
     expect(source).toContain("socialProviders");

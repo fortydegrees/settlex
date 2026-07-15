@@ -1,5 +1,7 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
@@ -9,6 +11,34 @@ const repoRoot = path.resolve(__dirname, "..", "..");
 
 const readRepoFile = (...segments) =>
   fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
+
+const runProductionDeployPreflight = (env) => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "settlex-deploy-preflight-")
+  );
+  const scriptDir = path.join(tempRoot, "infra", "scripts");
+  fs.mkdirSync(scriptDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(scriptDir, "deploy-prod.sh"),
+    readRepoFile("infra", "scripts", "deploy-prod.sh"),
+    { mode: 0o755 }
+  );
+  if (env) {
+    const contents = Object.entries(env)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n");
+    fs.writeFileSync(path.join(tempRoot, ".env.prod"), `${contents}\n`);
+  }
+
+  try {
+    return spawnSync("bash", ["infra/scripts/deploy-prod.sh"], {
+      cwd: tempRoot,
+      encoding: "utf8",
+    });
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+};
 
 const expectPatchFilesAvailableBeforeInstall = (dockerfile) => {
   const patchCopyIndex = dockerfile.indexOf("COPY patches patches");
@@ -20,6 +50,76 @@ const expectPatchFilesAvailableBeforeInstall = (dockerfile) => {
 };
 
 describe("deployment file wiring", () => {
+  it("declares the Match alerts VAPID runtime contract without example key material", () => {
+    const exampleEnv = readRepoFile(".env.example");
+
+    expect(exampleEnv).toContain("VAPID_SUBJECT=mailto:hello@settlehex.com");
+    expect(exampleEnv).toMatch(/^VAPID_PUBLIC_KEY=$/m);
+    expect(exampleEnv).toMatch(/^VAPID_PRIVATE_KEY=$/m);
+  });
+
+  it("preflights Match alerts VAPID configuration before production deploys", () => {
+    const script = readRepoFile("infra", "scripts", "deploy-prod.sh");
+    const requiredKeysStart = script.indexOf("required_env_keys=(");
+    const requiredKeysEnd = script.indexOf(")", requiredKeysStart);
+    const preflightLoopStart = script.indexOf(
+      'for key in "${required_env_keys[@]}"; do'
+    );
+    const preflightCallIndex = script.indexOf(
+      'require_env_key "$key"',
+      preflightLoopStart
+    );
+    const preflightLoopEnd = script.indexOf("done", preflightCallIndex);
+    const firstDockerIndex = script.indexOf("docker compose");
+    const requiredKeys = script.slice(requiredKeysStart, requiredKeysEnd);
+
+    expect(requiredKeysStart).toBeGreaterThanOrEqual(0);
+    expect(requiredKeysEnd).toBeGreaterThan(requiredKeysStart);
+    expect(preflightLoopStart).toBeGreaterThan(requiredKeysEnd);
+    expect(preflightCallIndex).toBeGreaterThan(preflightLoopStart);
+    expect(preflightLoopEnd).toBeGreaterThan(preflightCallIndex);
+    expect(firstDockerIndex).toBeGreaterThan(preflightLoopEnd);
+    expect(requiredKeys).toMatch(/^\s+VAPID_SUBJECT$/m);
+    expect(requiredKeys).toMatch(/^\s+VAPID_PUBLIC_KEY$/m);
+    expect(requiredKeys).toMatch(/^\s+VAPID_PRIVATE_KEY$/m);
+  });
+
+  it.each([
+    ["missing file", null, "VAPID_SUBJECT"],
+    [
+      "blank value",
+      {
+        VAPID_SUBJECT: "",
+        VAPID_PUBLIC_KEY: "x",
+        VAPID_PRIVATE_KEY: "x",
+      },
+      "VAPID_SUBJECT",
+    ],
+    [
+      "whitespace-only value",
+      {
+        VAPID_SUBJECT: "mailto:test@example.com",
+        VAPID_PUBLIC_KEY: "   ",
+        VAPID_PRIVATE_KEY: "x",
+      },
+      "VAPID_PUBLIC_KEY",
+    ],
+  ])("rejects a %s before invoking Docker", (_label, env, missingKey) => {
+    const result = runProductionDeployPreflight(env);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      `Missing required production env key in .env.prod: ${missingKey}`
+    );
+    expect(result.stderr).not.toContain("docker:");
+  });
+
+  it("keeps the production environment out of Docker build context", () => {
+    const dockerignore = readRepoFile(".dockerignore");
+
+    expect(dockerignore).toMatch(/^\.env\.prod$/m);
+  });
+
   it("keeps local compose limited to postgres", () => {
     const compose = readRepoFile("infra", "docker-compose.local.yml");
 

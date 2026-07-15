@@ -13,6 +13,21 @@ jobs:
   verify:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_DB: settlehex_test
+          POSTGRES_USER: settlehex
+          POSTGRES_PASSWORD: settlehex
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U settlehex -d settlehex_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,7 +53,13 @@ jobs:
       - name: Check release notes for manual deploy
         if: github.event_name != 'push'
         run: pnpm release:check -- --require-approved
+      - name: Prepare test database
+        run: pnpm db:migrate:test
+        env:
+          DATABASE_URL: postgres://settlehex:settlehex@localhost:5432/settlehex_test
       - run: pnpm verify
+        env:
+          MATCH_ALERT_POSTGRES_URL: postgres://settlehex:settlehex@localhost:5432/settlehex_test
 
   deploy:
     needs: verify
