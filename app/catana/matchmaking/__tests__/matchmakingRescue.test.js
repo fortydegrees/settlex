@@ -403,6 +403,29 @@ describe("search lifecycle ownership", () => {
     expect(loadMatch).toHaveBeenCalledWith("target-duel");
   });
 
+  it("treats a filled-match cancellation as a match-found transition", async () => {
+    const loadMatch = vi.fn();
+
+    await expect(
+      matchmakingRescue.reconcileSearchDeparture({
+        seat: {
+          matchID: "filled-duel",
+          playerID: "0",
+          credentials: "seeker-secret",
+        },
+        accountId: "acct_1",
+        leaveSeat: vi.fn().mockRejectedValue(
+          Object.assign(new Error("Another player joined."), {
+            status: 409,
+            code: "MATCH_FOUND",
+          })
+        ),
+        loadMatch,
+      })
+    ).resolves.toEqual({ released: false, reason: "match_found" });
+    expect(loadMatch).not.toHaveBeenCalled();
+  });
+
   it("suppresses a stale poll result after ownership is invalidated", () => {
     const searchGenerationRef = { current: 0 };
     const generation = advanceSearchGeneration(searchGenerationRef);

@@ -96,6 +96,9 @@ export async function reconcileSearchDeparture({
       return { released: true, reason: "left" };
     }
   } catch (error) {
+    if (error?.code === "MATCH_FOUND") {
+      return { released: false, reason: "match_found" };
+    }
     if (error?.status === 403) {
       return { released: true, reason: "credentials_rejected" };
     }

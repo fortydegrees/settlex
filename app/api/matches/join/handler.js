@@ -9,6 +9,7 @@ import { isFriendChallengeMatch } from "../../../../lib/server/matches/friendCha
 import { isBotMatch } from "../../../../lib/server/matches/botMatch.js";
 import { getLiveMatch } from "../../../../lib/server/matches/getLiveMatch.js";
 import { joinMatchForAccount } from "../../../../lib/server/matches/joinMatchForAccount.js";
+import { withMatchMutationLock } from "../../../../lib/server/matches/matchMutationLock.js";
 import { readOptionalMatchmakingMutationToken } from "../../../../lib/server/matches/matchmakingMutation.js";
 import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
 
@@ -32,6 +33,7 @@ export const createMatchJoinRoute =
       finalizeAlertsAfterHumanJoinImpl = finalizeAlertsAfterHumanJoin,
     restoreAlertsAfterFailedHumanJoin:
       restoreAlertsAfterFailedHumanJoinImpl = restoreAlertsAfterFailedHumanJoin,
+    withMatchMutationLock: withMatchMutationLockImpl = withMatchMutationLock,
     logger = console,
   } = {}) =>
   async (request) => {
@@ -45,99 +47,113 @@ export const createMatchJoinRoute =
       }
 
       const payload = await request.json();
-      const liveMatch = await getLiveMatchImpl({
-        matchID: payload?.matchID,
-      });
-
-      if (isBotMatch(liveMatch)) {
-        return NextResponse.json(
-          { error: "Bot matches finish setup on the server." },
-          { status: 403 }
-        );
-      }
-
-      if (isFriendChallengeMatch(liveMatch)) {
-        return NextResponse.json(
-          { error: "Private friend challenges must be joined through their challenge link." },
-          { status: 403 }
-        );
-      }
-
       const participantType =
         payload?.participantType === "bot" ? "bot" : "human";
-      const reservation = await reserveAlertsBeforeHumanJoinImpl({
-        liveMatch,
-        joiningAccountId: sessionAccount.account.id,
-        joiningPlayerId: payload?.playerID,
-        participantType,
+      const outcome = await withMatchMutationLockImpl({
         matchID: payload?.matchID,
+        run: async () => {
+          const liveMatch = await getLiveMatchImpl({
+            matchID: payload?.matchID,
+          });
+
+          if (isBotMatch(liveMatch)) {
+            return {
+              response: NextResponse.json(
+                { error: "Bot matches finish setup on the server." },
+                { status: 403 }
+              ),
+            };
+          }
+
+          if (isFriendChallengeMatch(liveMatch)) {
+            return {
+              response: NextResponse.json(
+                { error: "Private friend challenges must be joined through their challenge link." },
+                { status: 403 }
+              ),
+            };
+          }
+
+          const reservation = await reserveAlertsBeforeHumanJoinImpl({
+            liveMatch,
+            joiningAccountId: sessionAccount.account.id,
+            joiningPlayerId: payload?.playerID,
+            participantType,
+            matchID: payload?.matchID,
+          });
+
+          let result;
+          try {
+            const mutationIdentity =
+              participantType === "bot"
+                ? {}
+                : {
+                    matchmakingRequestId: readOptionalMatchmakingMutationToken(
+                      payload?.matchmakingRequestId,
+                      "matchmakingRequestId"
+                    ),
+                    requestedCredentials: readOptionalMatchmakingMutationToken(
+                      payload?.requestedCredentials,
+                      "requestedCredentials"
+                    ),
+                  };
+            result = await joinMatchForAccountImpl({
+              account: sessionAccount.account,
+              matchID: payload?.matchID,
+              playerID: payload?.playerID,
+              participant:
+                participantType === "bot"
+                  ? {
+                      participantType: "bot",
+                      botKey: payload?.botKey ?? "puffer",
+                      usernameSnapshot: payload?.botName ?? "[BOT]",
+                      avatarSnapshot: {
+                        emoji: payload?.avatarEmoji ?? "🤖",
+                        color: payload?.avatarColor ?? "sky",
+                      },
+                    }
+                  : undefined,
+              ...mutationIdentity,
+            });
+          } catch (error) {
+            if (reservation) {
+              try {
+                await restoreAlertsAfterFailedHumanJoinImpl({
+                  reservation,
+                  joiningAccountId: sessionAccount.account.id,
+                  joiningPlayerId: payload?.playerID,
+                  matchID: payload?.matchID,
+                  joinError: error,
+                });
+              } catch (restoreError) {
+                logger.error("Failed to restore match alerts after rejected human join", {
+                  matchID: payload?.matchID,
+                  accountId: sessionAccount.account.id,
+                  error: restoreError,
+                });
+              }
+            }
+            throw error;
+          }
+
+          if (reservation) {
+            try {
+              await finalizeAlertsAfterHumanJoinImpl({ reservation });
+            } catch (finalizeError) {
+              logger.warn("Failed to finalize match alert pause after human join", {
+                matchID: payload?.matchID,
+                accountId: sessionAccount.account.id,
+                error: finalizeError,
+              });
+            }
+          }
+
+          return { result };
+        },
       });
 
-      let result;
-      try {
-        const mutationIdentity =
-          participantType === "bot"
-            ? {}
-            : {
-                matchmakingRequestId: readOptionalMatchmakingMutationToken(
-                  payload?.matchmakingRequestId,
-                  "matchmakingRequestId"
-                ),
-                requestedCredentials: readOptionalMatchmakingMutationToken(
-                  payload?.requestedCredentials,
-                  "requestedCredentials"
-                ),
-              };
-        result = await joinMatchForAccountImpl({
-          account: sessionAccount.account,
-          matchID: payload?.matchID,
-          playerID: payload?.playerID,
-          participant:
-            participantType === "bot"
-              ? {
-                  participantType: "bot",
-                  botKey: payload?.botKey ?? "puffer",
-                  usernameSnapshot: payload?.botName ?? "[BOT]",
-                  avatarSnapshot: {
-                    emoji: payload?.avatarEmoji ?? "🤖",
-                    color: payload?.avatarColor ?? "sky",
-                  },
-                }
-              : undefined,
-          ...mutationIdentity,
-        });
-      } catch (error) {
-        if (reservation) {
-          try {
-            await restoreAlertsAfterFailedHumanJoinImpl({
-              reservation,
-              joiningAccountId: sessionAccount.account.id,
-              joiningPlayerId: payload?.playerID,
-              matchID: payload?.matchID,
-              joinError: error,
-            });
-          } catch (restoreError) {
-            logger.error("Failed to restore match alerts after rejected human join", {
-              matchID: payload?.matchID,
-              accountId: sessionAccount.account.id,
-              error: restoreError,
-            });
-          }
-        }
-        throw error;
-      }
-
-      if (reservation) {
-        try {
-          await finalizeAlertsAfterHumanJoinImpl({ reservation });
-        } catch (finalizeError) {
-          logger.warn("Failed to finalize match alert pause after human join", {
-            matchID: payload?.matchID,
-            accountId: sessionAccount.account.id,
-            error: finalizeError,
-          });
-        }
-      }
+      if (outcome?.response) return outcome.response;
+      const result = outcome?.result;
 
       const response = NextResponse.json(result);
       writeMatchCredentialCookie(response, {

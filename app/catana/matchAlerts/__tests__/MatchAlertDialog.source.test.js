@@ -75,6 +75,13 @@ describe("match-alert click wiring", () => {
     expect(source).not.toContain("/api/matches/join");
   });
 
+  it("raises the static bell cue when an open tab receives a match push", () => {
+    const source = readSource("app/catana/matchAlerts/MatchAlertProvider.js");
+
+    expect(source).toContain('type === "match-alert-received"');
+    expect(source).toContain('tabAttention.request("player-looking")');
+  });
+
   it("does not replace a prompt while its confirmed join is pending", () => {
     const provider = readSource("app/catana/matchAlerts/MatchAlertProvider.js");
     const dialog = readSource("app/catana/matchAlerts/MatchAlertDialog.js");

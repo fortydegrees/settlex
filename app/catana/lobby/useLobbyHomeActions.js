@@ -67,7 +67,10 @@ const appRequest = async ({ route, init }) => {
   const details = await safeJson(res);
   const message =
     details?.error || details?.message || `HTTP ${res.status} ${res.statusText}`;
-  throw Object.assign(new Error(message), { status: res.status });
+  throw Object.assign(new Error(message), {
+    status: res.status,
+    code: details?.code
+  });
 };
 
 export async function runAccountSignOutLifecycle({
@@ -697,7 +700,12 @@ export function useLobbyHomeActions({
       init: {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchID, playerID, credentials })
+        body: JSON.stringify({
+          matchID,
+          playerID,
+          credentials,
+          intent: "matchmaking_cancel"
+        })
       }
     });
     return true;
@@ -1220,6 +1228,23 @@ export function useLobbyHomeActions({
   }, [challengeState]);
 
   const cancelSearch = useCallback(async () => {
+    const enterFoundMatch = (matchID) => {
+      if (!matchID) return false;
+      unresolvedSearchMutationRef.current = null;
+      setError("");
+      setSearchState((current) =>
+        current ? { ...current, matchID, phase: "matchFound" } : current
+      );
+      tabAttention.request("match-found");
+      try {
+        onMatchFound?.();
+      } catch (err) {
+        /* Match-found sound is best-effort. */
+      }
+      router.push(`/g/${matchID}`);
+      return true;
+    };
+
     const pendingSearchOperation = searchOperationPromiseRef.current;
     const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
     clearScheduledMatchAnnouncement({ announcementTimerRef });
@@ -1244,6 +1269,12 @@ export function useLobbyHomeActions({
           generation: cancellationGeneration
         })
       ) {
+        return false;
+      }
+      if (departure.reason === "match_found") {
+        enterFoundMatch(
+          departure.seats?.[0]?.matchID ?? unresolvedMutation.matchID
+        );
         return false;
       }
       if (!departure.released) {
@@ -1320,6 +1351,11 @@ export function useLobbyHomeActions({
       return false;
     }
 
+    if (departure.reason === "match_found") {
+      enterFoundMatch(searchState.matchID);
+      return false;
+    }
+
     if (!departure.released) {
       setError(
         "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
@@ -1342,7 +1378,9 @@ export function useLobbyHomeActions({
   }, [
     currentAccount?.id,
     leaveSearchSeat,
+    onMatchFound,
     reconcileUnresolvedSearchMutation,
+    router,
     searchState
   ]);
 

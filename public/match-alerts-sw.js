@@ -17,7 +17,7 @@ self.addEventListener("push", (event) => {
         return;
       }
 
-      await self.registration.showNotification(payload.title, {
+      const notificationPromise = self.registration.showNotification(payload.title, {
         body: typeof payload.body === "string" ? payload.body : "",
         tag:
           typeof payload.tag === "string"
@@ -31,6 +31,21 @@ self.addEventListener("push", (event) => {
           url: payload.url,
         },
       });
+      const openTabPromise = self.clients
+        .matchAll({
+          type: "window",
+          includeUncontrolled: true,
+        })
+        .then((windowClients) => {
+          windowClients.forEach((client) => {
+            client.postMessage({
+              type: "match-alert-received",
+              matchID: payload.matchID,
+            });
+          });
+        });
+
+      await Promise.allSettled([notificationPromise, openTabPromise]);
     })()
   );
 });

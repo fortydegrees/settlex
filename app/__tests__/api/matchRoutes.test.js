@@ -27,6 +27,8 @@ const jsonResponse = (body, status = 200) =>
     },
   });
 
+const runWithoutLock = async ({ run }) => run();
+
 afterEach(() => {
   vi.resetModules();
 });
@@ -180,6 +182,7 @@ describe("match API routes", () => {
 
     const getSessionAccount = vi.fn();
     const getLiveMatch = vi.fn();
+    const withMatchMutationLock = vi.fn(async ({ run }) => run());
     const joinMatchForAccount = vi.fn();
     const reservation = {
       matchID: "match_1",
@@ -203,6 +206,7 @@ describe("match API routes", () => {
     const JOIN = createMatchJoinRoute({
       getSessionAccount,
       getLiveMatch,
+      withMatchMutationLock,
       joinMatchForAccount,
       reserveAlertsBeforeHumanJoin,
       finalizeAlertsAfterHumanJoin,
@@ -210,6 +214,8 @@ describe("match API routes", () => {
     });
     const LEAVE = createMatchLeaveRoute({
       getSessionAccount,
+      getLiveMatch,
+      withMatchMutationLock,
       leaveMatchForAccount,
     });
     const OPEN = createOpenMatchesRoute({
@@ -348,6 +354,13 @@ describe("match API routes", () => {
         credentials: "secret_join",
       })
     );
+    expect(withMatchMutationLock).toHaveBeenCalledTimes(3);
+    expect(withMatchMutationLock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        matchID: "match_1",
+        run: expect.any(Function),
+      })
+    );
     expect(joinResponse.headers.get("set-cookie")).toContain("HttpOnly");
     expect(joinResponse.headers.get("set-cookie")).toContain("secret_join");
     expect(leaveResponse.headers.get("set-cookie")).toContain("Max-Age=0");
@@ -358,6 +371,67 @@ describe("match API routes", () => {
       "http://game:8080/games/catan/match_1",
       expect.objectContaining({ method: "GET" })
     );
+  });
+
+  it("preserves a filled human duel when its seeker tries to cancel matchmaking", async () => {
+    const { createMatchLeaveRoute } = await loadRoute("leave", "handler.js");
+    const leaveMatchForAccount = vi.fn();
+    const withMatchMutationLock = vi.fn(async ({ run }) => run());
+    const LEAVE = createMatchLeaveRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: { id: "seeker_account", currentUsername: "Seeker" },
+      }),
+      getLiveMatch: vi.fn().mockResolvedValue({
+        matchID: "filled_duel",
+        players: {
+          0: {
+            id: 0,
+            name: "Seeker",
+            data: {
+              accountId: "seeker_account",
+              participantType: "human",
+            },
+          },
+          1: {
+            id: 1,
+            name: "Joiner",
+            data: {
+              accountId: "joiner_account",
+              participantType: "human",
+            },
+          },
+        },
+      }),
+      withMatchMutationLock,
+      leaveMatchForAccount,
+    });
+
+    const response = await LEAVE(
+      new Request("http://localhost/api/matches/leave", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({
+          matchID: "filled_duel",
+          playerID: "0",
+          credentials: "seeker_secret",
+          intent: "matchmaking_cancel",
+        }),
+      })
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: "Another player has joined your duel.",
+      code: "MATCH_FOUND",
+    });
+    expect(leaveMatchForAccount).not.toHaveBeenCalled();
+    expect(withMatchMutationLock).toHaveBeenCalledWith({
+      matchID: "filled_duel",
+      run: expect.any(Function),
+    });
   });
 
   it("makes the alert pause visible before a human seat and compensates a failed join", async () => {
@@ -415,6 +489,7 @@ describe("match API routes", () => {
       reserveAlertsBeforeHumanJoin,
       finalizeAlertsAfterHumanJoin,
       restoreAlertsAfterFailedHumanJoin,
+      withMatchMutationLock: runWithoutLock,
     });
 
     const botResponse = await JOIN(
@@ -510,6 +585,7 @@ describe("match API routes", () => {
       reserveAlertsBeforeHumanJoin: vi
         .fn()
         .mockRejectedValue(new Error("database unavailable")),
+      withMatchMutationLock: runWithoutLock,
     });
 
     const response = await JOIN(
@@ -540,6 +616,7 @@ describe("match API routes", () => {
         },
       }),
       joinMatchForAccount,
+      withMatchMutationLock: runWithoutLock,
     });
 
     const response = await JOIN(

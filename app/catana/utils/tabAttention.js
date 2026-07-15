@@ -1,8 +1,14 @@
 const ATTENTION_ICON_HREF = "/match-alert-bell.svg";
-const ATTENTION_REASONS = new Set(["match-found", "your-turn"]);
-const ATTENTION_PRIORITY = ["match-found", "your-turn"];
+const ATTENTION_REASONS = new Set([
+  "match-found",
+  "player-looking",
+  "your-turn"
+]);
+const ATTENTION_PRIORITY = ["match-found", "player-looking", "your-turn"];
+const TRANSIENT_ATTENTION_REASONS = ["match-found", "player-looking"];
 const ATTENTION_TITLES = Object.freeze({
   "match-found": "🔔 Match found · Settlehex",
+  "player-looking": "🔔 Player looking · Settlehex",
   "your-turn": "🔔 Your turn · Settlehex"
 });
 
@@ -75,7 +81,7 @@ const syncVisibility = () => {
 
   if (!documentRef.hidden) {
     restoreMetadata(documentRef);
-    activeReasons.delete("match-found");
+    TRANSIENT_ATTENTION_REASONS.forEach((reason) => activeReasons.delete(reason));
     return;
   }
 
