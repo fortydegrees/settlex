@@ -273,6 +273,175 @@
 - No evaluator or production code changed in this design slice. The written
   specification remains at the explicit user-review gate before implementation
   planning.
+## Status (2026-07-14, Match alert pause reservation closure)
+- Added migrations `0006_match_alert_pause_reservations.sql` and
+  `0007_match_alert_pause_reservation_leases.sql`. Each account now has a
+  database-owned provisional-pause lease: overlapping attempts for the same
+  duel share its UUID and increment a reference count, while the root prior
+  state is captured once. A failed attempt releases one claim; only the last
+  failed claim restores the root state. Any success finalizes the lease.
+- A different-duel reservation now returns `409` while any participant has an
+  unresolved lease for another match. This happens before a second game-server
+  join is attempted and leaves the original lease untouched, preventing
+  cross-tab public/friend requests from replacing a possibly committed pause.
+- Successful joins finalize their reservation without unpausing either player.
+  A definite 4xx join rejection checks the live target seat before restoring:
+  an occupied seat finalizes the pause, while a confirmed open or gone match
+  restores the captured prior state. If a competing account occupies the seat,
+  only the losing attempt is released; the shared participant and winner stay
+  paused. Network, 5xx, timeout, and other ambiguous outcomes stay paused rather
+  than risking alerts during a committed game.
+- The reviewer's nested-failure and competing-winner reproductions are now real
+  Postgres regressions; different-match overlap is covered there too. Migration,
+  store, reconciliation, public/friend routes, and the earlier signed-out Cancel
+  path passed 73/73 focused tests.
+- Final repository verification passed: all 153 engine tests, all 252
+  server/lib/AI tests (including five real-Postgres store regressions), all 241
+  isolated app test files, and lint with no warnings or errors. The approved
+  release check, 16-test deployment contract, deploy-script syntax check, and
+  fresh production builds for both Dockerfiles also passed.
+- Final independent re-review reproduced the same-match lease, competing-winner,
+  and different-match guard orderings against Postgres and reported no Critical,
+  Important, or Minor findings. The branch is ready for an integration choice;
+  it has not been pushed, merged, or deployed.
+
+## Status (2026-07-14, Match alerts final route closure)
+- Friend-challenge acceptance now uses the same reserve-before-join contract as
+  public matchmaking. Both human participants' alert pauses commit before the
+  game-server seat can become visible, and a rejected join restores the exact
+  reservation only while that match still owns it.
+- A `401` from the app-owned leave route is no longer treated as proof that the
+  supplied seat credential was rejected: it can mean the account session
+  expired before the game server was contacted. The client now reconciles that
+  case against the live match and keeps Cancel/Puffer blocked while ownership
+  remains or cannot be established. A game-server `403` remains credential
+  rejection proof.
+- Both issues were reproduced with failing-first tests. The wider affected
+  matchmaking, challenge, route, lifecycle, store, real-Postgres, and
+  game-server credential suite passed 81/81; the later final gate above passed.
+
+## Status (2026-07-14, Match alerts concurrency closure)
+- Replaced the subscription-cap CTE with an account-row-locked transaction:
+  upsert and overflow deletion now run as separate statements with fresh
+  Postgres snapshots. Real Postgres regressions prove both the sixth sequential
+  insert and twelve simultaneous inserts retain at most five endpoints.
+- Human match joins now reserve both accounts' alert pauses before exposing the
+  filled game-server seat. A rejected join restores each account's exact prior
+  pause only while the failed match still owns it; interrupted pre-join pauses
+  can be resumed because an unfilled table is not treated as a live human game.
+- Online create/join requests now carry browser-generated 192-bit correlation
+  and credential tokens. The game server installs the requested credential,
+  and an authenticated recovery route can find matching public human seats
+  after a lost response. Cancel verifies and leaves every recovered seat before
+  Puffer can start; an empty or unavailable recovery remains sticky rather than
+  assuming the in-flight request did nothing.
+- GitHub Actions now migrates a real Postgres service before verification and
+  enables the concurrent subscription-cap regression in the thorough lane.
+- Focused verification passed 124/124 across the changed matchmaking, API,
+  store, lifecycle, server-wiring, and deployment contracts. Final repository
+  verification also passed: all 153 engine tests, all 252 server/lib/AI tests,
+  all 241 isolated app test files, and lint with no warnings or errors.
+- The approved-release check, 16-test deployment contract, deploy-script syntax
+  check, and fresh production builds for both Dockerfiles passed against the
+  concurrency-safe implementation. The later final re-review above is clean.
+
+## Status (2026-07-14, Match alerts final review corrections)
+- Closed all five Important findings from the whole-feature review:
+  - Push endpoints now reject literal private/loopback targets, use a
+    connection-time DNS guard, cap each account at five subscriptions, time
+    out delivery after ten seconds, and fan out at four concurrent requests;
+  - account establishment and human-game registration refresh provider state,
+    while each newly filled human game re-owns the pause and the lobby offers
+    an authoritative manual resume after the current game unregisters;
+  - every queue cancellation reconciles an ambiguous leave against live match
+    ownership, preserving the visible seat and credentials when departure
+    cannot be confirmed;
+  - Puffer creation is one client request to a server-owned `bot_game`, which
+    is excluded from public matchmaking and announcements and cleans up the
+    human seat when bot setup fails;
+  - stale alert prompts now say that Match alerts remain enabled.
+- Focused correction regression: 180 tests passed across 14 files, with each
+  correction first reproduced by a failing test.
+- Final repository verification passed after the corrections: all 153 engine
+  tests, all 252 server/lib/AI tests, all 241 isolated app test files, and lint
+  with no warnings or errors. The approved-release check, deploy-script syntax
+  check, and fresh production builds for both Dockerfiles also passed.
+
+## Status (2026-07-14, Match alerts release readiness)
+- Declared the opt-in Match alerts Web Push runtime contract in `.env.example`:
+  `VAPID_SUBJECT=mailto:hello@settlehex.com` plus blank public/private key
+  placeholders. No VAPID key pair was generated, printed, or committed.
+- Added a production preflight to the tracked thorough deploy script so all
+  three VAPID values must be populated with non-whitespace content in
+  `.env.prod` before any rebuild. Added `.env.prod` to `.dockerignore` so the
+  runtime-only private key cannot enter a Docker build context or cached layer.
+- Verification:
+  - deployment contract: 16 tests passed after the initial expected two-test
+    RED and a review-driven whitespace/build-context two-test RED;
+  - focused Match alerts: 160 tests passed across 11 files;
+  - review-driven feature/service-worker regression pass: 163 tests passed
+    across 12 files;
+  - engine build and all 153 engine tests passed;
+  - full `pnpm verify`: 153 engine tests, 252 server/lib/AI tests, all 241
+    isolated app test files, and lint with no warnings or errors;
+  - `pnpm release:check -- --require-approved` passed for approved release 3;
+  - `bash -n infra/scripts/deploy-prod.sh` passed;
+  - production builds completed for both `Dockerfile.web` and
+    `Dockerfile.game`.
+- The in-app browser verified the local homepage on desktop and a 390x844
+  mobile viewport: the compact search state, 12-second beta/liquidity rescue,
+  primary Keep waiting action, 30-second quiet Play Puffer action, collapsed
+  Keep waiting state, account-menu alert status, and stale `?matchAlert=`
+  confirmation/query cleanup all rendered and behaved as expected.
+- Real two-profile Web Push delivery, OS notification focus/click behavior,
+  enabled-alert state, and iOS Home Screen delivery were not executable without
+  a production VAPID environment. The local database also had not applied
+  migration `0005`, so its alert status correctly remained unavailable and
+  exposed the local missing-table error; no manual Push delivery is claimed.
+- The plan's second preflight target,
+  `infra/scripts/deploy-prod-from-git.sh`, does not exist at base `366706d` or
+  on `origin/main` or this clean branch, so its syntax check returned `No such
+  file or directory` and no contract was added. The actual thorough production
+  lane on this branch remains `.github/workflows/deploy-prod.yml` calling the
+  tracked `infra/scripts/deploy-prod.sh`; a future fast-lane integration must
+  add its own matching VAPID preflight deliberately.
+- Docker builds only changed this machine's local image/cache state. No
+  deployment, push, release-note approval/edit, production-secret edit, or key
+  generation was performed.
+
+## Status (2026-07-14, match-alert postgame and sign-out lifecycle)
+- Finished human matches now offer a checked-by-default `Turn match alerts back
+  on` control only when that exact match paused the account preference.
+- Return to Lobby awaits the provider resume action when selected. Resume
+  failures keep the results modal open with explicit Retry and Continue without
+  alerts choices; close, postgame review, rematch, and unchecked return paths do
+  not resume implicitly.
+- Homepage sign-out now detaches an authenticated browser endpoint before
+  logout. Unsafe server-detach failures stop logout, while a local unsubscribe
+  failure after successful server detach is reported and allowed to continue.
+- Match-alert provider state refreshes only after logout succeeds. Sign-out
+  asks the provider to inspect the actual browser subscription instead of
+  trusting a potentially stale render snapshot; the no-subscription result is
+  a local no-op before the existing logout path.
+- Verification:
+  - focused lifecycle suite: 33 tests across game-over and lobby actions;
+  - match-alert/postgame/matchmaking/provider regressions: 108 tests across 12 files;
+  - targeted ESLint for touched production and test files;
+  - full `pnpm lint` with no warnings or errors.
+
+## Status (2026-07-14, verified waiting-duel Web Push)
+- Added an authenticated announcement boundary that re-fetches live match
+  metadata and accepts only an open public duel owned by the lone seated human.
+- Claims each eligible match before recipient lookup and fanout, making
+  duplicates and seeker rate limits harmless no-ops without repeated pushes.
+- Added fixed Web Push payloads, lazy VAPID use, delivery accounting, and
+  automatic removal of endpoints returning 404 or 410.
+- Kept missing, ownerless, private, friend, forged, non-owner, wrong-mode, and
+  non-human tables behind the same generic 404 response; public filled tables
+  return non-revealing successful no-ops.
+- Focused verification:
+  - `pnpm exec vitest run lib/server/__tests__/matchAlertAnnouncement.test.js lib/server/__tests__/matchAlertStore.test.js lib/server/__tests__/humanMatchAlertPause.test.js app/__tests__/api/matchAlertRoutes.test.js app/__tests__/api/routeModuleExports.source.test.js --reporter=dot` (80 tests)
+  - targeted ESLint over the announcement modules, route, and tests
 
 ## Status (2026-07-10, engine transactions and verification efficiency)
 - Hardened the core mutation contract: rejected resource spends and malformed
@@ -6844,3 +7013,63 @@
   GREEN evidence: the focused five-file set passes `30/30`; the wider replay,
   postgame, game-over, and forced-action compatibility set passes after updating
   its replay-aware dialog matcher; focused ESLint and `git diff --check` pass.
+## Status (2026-07-14, browser match-alert foundation)
+- Added DOM-free browser capability, URL-safe VAPID decoding, root service-worker registration, and local PushSubscription lifecycle helpers for opt-in match alerts.
+- Added the root `MatchAlertProvider` and `useMatchAlerts`, with explicit-click permission/subscription enablement, server preference actions, safe server-first browser detachment, signed-out refresh handling, and no-throw announcement requests. Executable provider-action tests cover those browser/API transactions instead of relying on source-token order.
+- Guarded provider refresh commits by request generation so a slow mount-time response cannot overwrite a newer refresh after account creation or restoration.
+- Added a defensive root notification worker, installable App Router manifest, and a static Catana blue/white bell icon; notification clicks focus/message an existing SettleHex client or open the alert URL only when none exists.
+- Verification:
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertBrowser.test.js app/catana/matchAlerts/__tests__/matchAlertState.test.js app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js --reporter=dot` (red before implementation: browser modules, provider, worker, icon, and manifest missing)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertProviderActions.test.js --reporter=dot` (red before the review fix: provider action module and refresh-generation guard missing)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertBrowser.test.js app/catana/matchAlerts/__tests__/matchAlertState.test.js app/catana/matchAlerts/__tests__/matchAlertProviderActions.test.js app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js --reporter=dot`
+  - `pnpm exec vitest run app/catana/__tests__/GlobalReconnectBanner.source.test.js app/catana/__tests__/SettlexUiFoundation.source.test.js app/__tests__/publicBranding.source.test.js app/__tests__/api/matchAlertRoutes.test.js lib/server/__tests__/matchAlertAnnouncement.test.js lib/server/__tests__/matchAlertStore.test.js --reporter=dot`
+  - `pnpm lint`
+
+## Status (2026-07-14, confirmed match-alert joins)
+- Added an authoritative client resolver for alert targets: only a live public two-seat duel with one human seeker and one open seat reaches confirmation; deleted, filled, private, bot, cancelled, wrong-mode, and finished tables become a friendly stale state.
+- Routed both `?matchAlert=` deep links and `match-alert-click` worker messages into one root-owned dialog. Click sources only re-fetch and open the secondary confirmation; neither path can autojoin.
+- Added a second live verification immediately before the confirmed join, with disabled pending controls, 409/deleted race handling, existing active-match credential persistence, and existing `/api/matches/leave` handling before abandoning a Puffer game.
+- Registered credential-free current-game context from `GameScreen`, and made the stale dialog's `Keep looking` action enter the homepage's ordinary online-play action through a one-shot `?playOnline=1` query.
+- Verification:
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertJoin.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js --reporter=dot` (red before implementation: resolver/dialog missing and provider/game/home wiring absent)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertJoin.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js --reporter=dot` (27 tests passed; includes executable join/leave ordering, 409 race, pending-lock, and storage-failure regressions added after review)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__ app/__tests__/matchAlertServiceWorker.source.test.js app/__tests__/appShell.source.test.js app/catana/__tests__/activeMatchStorage.test.js app/catana/__tests__/gameScreenDisplayModel.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/GameScreen.idleGrace.test.js --reporter=dot` (82 tests passed)
+  - `pnpm lint`
+
+## Status (2026-07-14, slow public matchmaking rescue)
+- Kept public matchmaking creation, polling, elapsed display state, and delayed alert announcements in `useLobbyHomeActions`; only genuinely new public duels schedule one announcement after two seconds, while join-existing, cancellation, unmount, match-found, and Puffer transitions do not leave announcement timers behind.
+- Added the staged homepage wait treatment without replacing the compact search modal: honest beta/liquidity guidance and an inline provider-owned Match alerts control appear at 12 seconds, Keep waiting remains primary, and a quiet Play Puffer action appears at 30 seconds.
+- Added the same compact Match alerts control to the existing account Popover, preserving explicit-click permission prompts and provider states without turning the menu into a settings surface.
+- Made the Puffer rescue await a confirmed public waiting-seat leave before bot creation, keep a blocking Starting Puffer overlay through bot setup, and exit coherently with an error rather than resurrecting the old queue when bot setup fails.
+- Added generation-based queue ownership so stale polls cannot navigate, late acquired seats are left, delayed responses cannot announce after cancel/unmount, and uncertain interrupted join/create mutations cannot start Puffer. One-shot `playOnline=1` recovery waits for account/session readiness before removing the query with the Next router and entering ordinary online play.
+- Verification:
+  - `pnpm exec vitest run app/catana/matchmaking/__tests__/matchmakingRescue.test.js app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js --reporter=dot` (red before implementation: helper module missing and 12 source assertions failed; final green after lifecycle review fixes: 35 tests passed)
+  - `pnpm exec vitest run app/catana/matchAlerts/__tests__ app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/LobbyPageClient.matchmakingFeedback.test.js app/catana/__tests__/LobbyPageClient.identity.test.js app/catana/__tests__/LobbyPageClient.playVsBot.test.js app/catana/__tests__/activeMatchStorage.test.js app/__tests__/appShell.source.test.js app/__tests__/matchAlertServiceWorker.source.test.js --reporter=dot` (98 tests passed)
+  - `pnpm lint`
+  - Independent re-review reported no remaining Critical or Important issues.
+  - The in-app browser rendered the local homepage at desktop and 390x844 mobile sizes, verified the 12-second rescue and 30-second Puffer states, confirmed Keep waiting collapses without leaving the queue, and confirmed stale `?matchAlert=` input opens the secondary stale dialog and removes the query without autojoining.
+
+## Status (2026-07-14, static tab attention)
+- Added one singleton tab-attention controller for `match-found` and `your-turn`, with fixed priority, static bell metadata, exact title/favicon restoration, one-shot visible acknowledgement for match-found, and no flashing or animation timers.
+- Wired public queue completion to request match-found attention before navigation and attempt the existing turn-start sound once. The attempt respects `catana:audioMuted` and contains both synchronous and autoplay-promise failures.
+- Wired `GameScreen` turn attention only for a credentialed, non-bot local human who owns both the current turn and the actionable status. Pregame, opponent wait states, spectators, replays, game-over boards, turn changes, and unmount do not retain attention; visible restoration removes temporary metadata without forgetting an otherwise actionable turn.
+- Preserved the existing `turn:start` effect cue and hidden-tab audio policy; no second turn sound or attention asset was added.
+- Verification:
+  - `pnpm exec vitest run app/catana/utils/__tests__/tabAttention.test.js app/catana/__tests__/GameScreen.tabAttention.source.test.js --reporter=dot` (red before implementation: controller module missing and all wiring assertions failed; review-driven red: visible `your-turn` requests were forgotten; final green: 12 tests passed)
+  - `pnpm exec vitest run app/catana/utils/__tests__/tabAttention.test.js app/catana/__tests__/GameScreen.tabAttention.source.test.js app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js app/catana/matchmaking/__tests__/matchmakingRescue.test.js app/catana/__tests__/HomeDemoBoard.source.test.js app/catana/__tests__/GameScreen.audioMute.test.js app/catana/__tests__/effects/turnStartCue.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js --reporter=dot` (76 tests passed)
+  - `pnpm lint`
+  - Independent review's one Important visible-lifecycle finding was fixed with failing-first coverage; re-review reported no remaining Critical or Important issues.
+
+## Status (2026-07-15, match-alert join/cancel race recovery)
+- Reproduced the reported frozen duel as a join-versus-Cancel race: boardgame.io preserves a match when the alert joiner occupies seat 1 before the seeker leaves seat 0, but the scheduled player-0 `autoStartGame` then has no valid seat-0 credentials and is rejected as unauthorized.
+- Added a PostgreSQL transaction-scoped advisory lock around app-owned join/leave mutations for each match. A matchmaking Cancel now re-checks the locked live table and returns `MATCH_FOUND` instead of removing the seeker from an already-filled human duel; the lobby preserves credentials and enters that duel.
+- Fixed the exact wrong-perspective regression on `/g/:matchID`: the room's open-seat selector could retarget seat-1 credentials to newly open seat 0. Credentialed players now keep their authenticated `playerID` unchanged.
+- Added a narrow `Duel interrupted` recovery surface before the boardgame client for an incomplete credentialed public duel. Return to lobby and Look again release the seat server-authoritatively and clear only the matching local credential; if the duel fills during cleanup, `MATCH_FOUND` refreshes into the valid game instead.
+- Added open-tab push redundancy: the service worker messages open clients on real match-alert receipt, and a hidden tab shows the static `🔔 Player looking · Settlehex` title plus the shared bell favicon until visibility acknowledges it. No focus stealing or animation timer was added.
+- Restored `.env.example` to blank VAPID placeholders after verification caught local key material there; the real ignored `.env.local` values remain available for local testing and no key material was committed.
+- Verification:
+  - Failing-first route, reconciliation, interrupted-duel, credential-perspective, service-worker, provider, and tab-attention regressions were observed before implementation.
+  - `pnpm exec vitest run app/__tests__/api/matchRoutes.test.js app/catana/matchmaking/__tests__/matchmakingRescue.test.js app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js app/catana/lobby/__tests__/interruptedDuel.test.js app/catana/__tests__/MatchPageClient.boot.source.test.js app/catana/__tests__/MatchPageClient.standardUi.source.test.js --reporter=dot` (63 tests passed before the later credential and open-tab additions)
+  - `MATCH_ALERT_POSTGRES_URL=postgres://settlehex:settlehex@localhost:55432/settlehex_test pnpm exec vitest run lib/server/__tests__/matchMutationLock.postgres.test.js --reporter=dot` (2 tests passed; same-match serialization and different-match independence)
+  - `pnpm exec vitest run app/__tests__/matchAlertServiceWorker.source.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js app/catana/utils/__tests__/tabAttention.test.js --reporter=dot` (23 tests passed)
+  - `MATCH_ALERT_POSTGRES_URL=postgres://settlehex:settlehex@localhost:55432/settlehex_test pnpm verify` (153 engine, 254 server, all 242 app test files, and lint passed)

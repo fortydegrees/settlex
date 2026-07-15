@@ -156,6 +156,130 @@
   contract: stream cheap v1 records for the full bounded corpus, exact-audit
   only selected candidates with v2, then stop for human review before any
   100,000-per-family evidence run.
+- Match-alert pause reservation note:
+- Give each account's provisional pre-join pause a database lease. Overlapping
+  attempts for the same match share the lease UUID and increment its reference
+  count; capture the committed root state only once. A failure releases one
+  claim, the last failure restores the root, and any success finalizes the
+  lease. This prevents both obsolete-token resurrection and cross-attempt undo.
+- Reject a different-match reservation while an account has an unresolved
+  lease. Do not replace the first match's token/root state: the first join may
+  already have committed even if its response has not returned.
+- A lost join response is not proof that the join failed. Compensate only a
+  definite 4xx rejection, then re-check the live target seat before restoring.
+  Keep the pause for network, 5xx, timeout, or unavailable-reconciliation
+  outcomes. When the target seat is occupied, compare its account ID: finalize
+  if it is this joining account, but release the losing attempt when a different
+  account won the seat.
+
+- Match-alert human-entry and leave-auth note:
+- Every route that can fill a human match, including friend-challenge accept,
+  must reserve both accounts' alert pauses before joining the game-server seat
+  and conditionally restore the reservation when that join is rejected.
+- Do not interpret an app-route `401` as a game-server credential rejection.
+  The account session can expire before the leave request reaches the game
+  server, so reconcile `401` against live match ownership and stay sticky when
+  ownership cannot be cleared. The authenticated leave path's `403` is the
+  credential-specific proof that the supplied seat token does not own the seat.
+
+- Match-alert concurrency and ambiguous-mutation note:
+- Enforce per-account Push-subscription caps in a real transaction. Lock the
+  account row, upsert the endpoint, then delete overflow in a later statement;
+  sibling data-modifying CTEs share a snapshot and cannot safely trim the row
+  they just inserted.
+- A human game must not become observable before its alert pause. Reserve the
+  pause for both accounts first, retain their prior pause snapshots, and restore
+  only rows still owned by the rejected match if the game-server join fails.
+- Browser matchmaking mutations use independent secure request and credential
+  tokens. Put the request token in human-seat metadata and install the requested
+  credential at the game server so an authenticated recovery scan can identify
+  and prove ownership of seats whose HTTP response was lost. Never let an empty
+  recovery scan prove safety while the original mutation outcome is unknown;
+  keep Cancel/Puffer blocked and let the user retry reconciliation.
+
+- Match-alert security and failure-atomicity note:
+- A browser Push endpoint is untrusted input. Reject non-HTTPS, credentialed,
+  non-443, localhost, and literal private/reserved endpoints at subscription
+  time; repeat the static check before delivery and use the custom HTTPS agent
+  to reject private/reserved DNS results at connection time. Keep delivery
+  bounded to four concurrent requests with a ten-second socket timeout, and
+  retain at most five subscriptions per account under an account-row lock.
+- A cancelled public search is only locally clear after the leave succeeds or
+  a live match fetch proves the account no longer owns a seat. If neither can
+  be established, retain the credentials and visible queue so Cancel can be
+  retried and Puffer cannot start on top of an uncertain human seat.
+- Starting Puffer must use the server-owned `bot_game` path. Mark the match as
+  bot-intent before any open bot seat exists, exclude that kind from public
+  listing and match-alert eligibility, seat Puffer before returning to the
+  browser, and explicitly leave the human seat if bot setup fails.
+- Each completed human fill writes its match ID over any older human-game
+  pause. The client refreshes after account establishment and human-game
+  registration; manual resume remains server-authoritative and is rejected
+  while the currently recorded match is live.
+
+- Match-alert announcement authority note:
+- Treat the live game-server match as authoritative immediately before an
+  announcement. Validate the exact match ID, public duel setup, two-seat shape,
+  lone human occupant, and authenticated account ownership before claiming.
+- Keep the order fetch, validate, claim, list, send. A claimed event is the
+  at-most-once boundary: individual Push failures are counted and swallowed,
+  and must not undo the event or affect the seeker's waiting table.
+- Collapse missing, ownerless, private, friend-challenge, forged, wrong-owner,
+  wrong-mode, and non-human cases to `not_eligible`; the API exposes one generic
+  404 for all of them. Public filled, duplicate, and rate-limited attempts are
+  harmless 200 no-ops and never fan out. Boardgame.io wipes a match after its
+  final named player leaves, so a legitimate final-seat cancellation reaches
+  this boundary as missing rather than as an ownerless live match.
+- Keep VAPID lookup lazy inside the server-only delivery call. An unconfigured
+  deployment records each attempted delivery as failed without invoking
+  `web-push`; 404 and 410 Push responses remove their stored endpoints.
+
+- Match-alert release architecture note:
+- Migration `0005_match_alerts.sql` owns three tables:
+  `match_alert_preferences` for account opt-in/pause state,
+  `match_alert_subscriptions` for account-bound Push endpoints and browser key
+  material, and `match_alert_events` for the one claimed announcement per
+  match plus delivery counts.
+- Keep the authenticated route boundaries separate. `GET/PATCH
+  /api/match-alerts` exposes configuration and mutates preference state;
+  `POST/DELETE /api/match-alerts/subscriptions` owns endpoint association; and
+  `POST /api/match-alerts/announce` accepts a match ID from the seeker but
+  re-fetches the live game-server match before claiming or sending. Only
+  `VAPID_PUBLIC_KEY` is returned by the authenticated configuration route;
+  the private key stays server-only.
+- The homepage waits two seconds before requesting an announcement for a newly
+  created public duel. Cancelling, filling, unmounting, or switching to Puffer
+  clears that timer. The delay is not authority: the announcement route still
+  verifies the live match ID, public duel setup, lone seated human, open seat,
+  and authenticated seeker ownership immediately before the event claim.
+- There is no recipient-wide cooldown. Every eligible active recipient except
+  the seeker is considered. Seeker rate limits remain one announcement per
+  minute and ten per hour, while `match_alert_events.match_id` is the
+  at-most-once boundary for one event per match.
+- A successful human-versus-human join pauses enabled preferences for both
+  accounts with `paused_reason = 'human_game'` and the match ID. Resume stays
+  explicit after the human game has ended; Puffer games do not pause alerts.
+- The browser worker is rooted at `/match-alerts-sw.js`. It shows valid Push
+  payloads and, on notification click, focuses/messages an existing window or
+  opens the payload URL; the page then re-checks eligibility and asks for
+  confirmation before joining.
+- Runtime Web Push configuration is `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`, and
+  `VAPID_PRIVATE_KEY`. Keep the example keys blank, install real production
+  values only in `.env.prod`, and require all three in every production deploy
+  preflight before rebuild. Keep `.env.prod` in `.dockerignore` so a
+  repository-root Docker build cannot copy the private key into a builder
+  layer or cache. Never pass the private key through Docker build arguments,
+  client bundles, logs, documentation, tests, or chat.
+- Delivery is direct request-time `web-push` fanout, not a worker queue. An
+  event remains claimed when an individual delivery fails; counts are recorded
+  and expired endpoints are removed, but transient failures are not retried.
+  This avoids queue/cron infrastructure at the cost of possible lost alerts
+  during transient Push-provider or process failures.
+- On the `366706d` release-readiness base and `origin/main`, only
+  `infra/scripts/deploy-prod.sh` is tracked. If
+  `infra/scripts/deploy-prod-from-git.sh` is deliberately integrated later,
+  add the same three-key preflight there rather than importing uncommitted
+  deployment plumbing as part of the Match alerts slice.
 
 - Core rule transaction note:
 - A returned `{ ok: false }` must leave `GameState` unchanged. New or repaired
@@ -4195,3 +4319,32 @@
   candidate from a clean snapshot. The July 14 replay pass used a real archived
   match at desktop `1440x900` and phone `390x844`; the dirty live checkout's
   concurrent 3D files were not treated as replay evidence.
+- Browser match-alert foundation note:
+- `app/catana/matchAlerts/MatchAlertProvider.js` is the root owner of local browser subscription state and account alert preference state; homepage and game consumers should use `useMatchAlerts()` instead of registering service workers or calling the alert routes independently.
+- Provider browser/API transactions are implemented in `matchAlertProviderActions.js` so their order and failure boundaries stay executable without a DOM. `MatchAlertProvider` uses a latest-request guard and only commits the newest refresh snapshot; preserve that guard when adding post-account refresh calls.
+- Notification permission belongs only to the provider's explicit `enable()` action. Mount, refresh, queue start, and delayed announcement timers must never call `Notification.requestPermission()`.
+- Disabling alerts keeps the local PushSubscription for cheap re-enable. Sign-out/browser detachment must delete the authenticated server association before local `unsubscribe()`; a server failure is unsafe to sign out, while a later local unsubscribe failure is safe because the server association is already gone.
+- The finished-game resume affordance belongs to `GameScreen`/`GameOverModal`: show it only when the provider preference is paused for that exact human match, reset it checked whenever eligible results open, and await resume only from Return to Lobby or its explicit Retry path. Close, postgame review, rematch, and Continue without alerts must leave the paused preference untouched.
+- Resume failures must keep the game-over modal mounted and offer both Retry and Continue without alerts. Keep the executable eligibility, action-intent, and ordered-return contract in `app/catana/components/gameOverAlertLifecycle.js` instead of relying on source-text lifecycle assertions.
+- Homepage sign-out uses `runAccountSignOutLifecycle`: always ask `detachCurrentBrowser({ refreshAfterDetach: false })` for the authoritative browser state instead of gating on the provider's render snapshot. The action is a local no-op when no subscription exists; otherwise it must become safe before `/api/account/logout` runs. Only after logout succeeds, commit `completeMatchAlertSignOut(detachResult)` so even a failed follow-up refresh cannot retain the departed account snapshot, then run the normal refresh.
+- The root worker always shows valid match-alert pushes, even when a SettleHex page is visible. Notification clicks only focus/message an existing client or open the payload URL; the confirmation and race-safe join flow belongs to the later match-alert dialog slice, not the worker.
+- iPhone/iPad Safari outside a Home Screen install initially retains the normal Enable affordance. Only the first explicit enable attempt reveals installation guidance, without invoking notification permission.
+- Alert click inputs are match IDs only. `MatchAlertProvider` removes only the one-shot `matchAlert` query key, accepts `match-alert-click` worker messages, re-fetches live metadata, and opens `MatchAlertDialog`; do not pass seeker/seat data from push payloads into the join path or add an autojoin shortcut.
+- `matchAlertJoin.js` owns both the client-observable eligibility re-check and the executable confirmed-join transaction. It only resolves `open` for the same public human duel with exactly one occupied human seat and one open seat, then re-checks before any optional stored-credential Puffer leave and the final `/api/matches/join`; the server join route remains final authority.
+- `GameScreen` registers only `{ matchID, opponentType }` with the provider while a credentialed, non-finished player game is mounted; spectators, replays, the dev sandbox, and game-over boards do not count as an active game. Keep credentials in the existing active-match storage path; Puffer abandonment reads that stored seat/credential and uses `/api/matches/leave` before the alerted human join.
+- `Keep looking` uses `/?playOnline=1`, which `HomeTableClient` consumes once through `lobby.actions.playOnline()`. Keep this as an entry into the ordinary identity/search flow rather than a second queue implementation.
+- Slow public matchmaking stays owned by `useLobbyHomeActions`: its elapsed counter is display-only, only a newly created public duel gets one delayed announcement, and cancel/unmount/match-found/Puffer transitions clear the pending timer. Joining an existing duel must never announce.
+- The 12-second rescue keeps the player in queue while it offers provider-owned Match alerts; enabling alerts must not close or cancel search. The 30-second Puffer escape must await the existing public-seat leave path before creating the bot duel, while leaving the alert preference enabled.
+- Queue cancellation, polling, delayed announcements, and Puffer handoff share one generation token. Late seat responses must leave their acquired seat, and uncertain interrupted server mutations must block Puffer rather than risk occupying two tables.
+- Keep the Starting Puffer overlay and `isBusy` state active after the public seat is left and until bot setup finishes; on setup failure, clear the transition and show the existing lobby error without restoring the abandoned public queue.
+- The homepage and account Popover share the same compact provider-backed Match alerts control. Notification permission remains reachable only through the explicit Enable action; do not request it from queue start, timers, mount, or status rendering.
+- `app/catana/utils/tabAttention.js` is the sole owner of hidden-tab title/favicon metadata. Consumers request `match-found` or `your-turn`; do not add route-local title flashing, favicon swaps, timers, or extra visibility listeners.
+- Match-found outranks turn attention while hidden. Returning to a visible document restores the exact captured route title/favicon and acknowledges only the one-shot match-found reason; `your-turn` remains requested until `GameScreen` releases it. A controller-created icon link is removed rather than retained.
+- Public queue completion requests match-found attention before route navigation and makes one best-effort `/sounds/turn-start.mp3` attempt through the homepage callback. Keep that callback muted by `catana:audioMuted` and contain autoplay rejection so sound can never block navigation.
+- `GameScreen` turn attention requires a credentialed, non-bot local seat, `ctx.currentPlayer` ownership, a local actionable `gameStatus.activePlayerId`, and a non-pregame/non-game-over live board. Keep the existing `turn:start` cue as the only turn sound and preserve `AudioManager` hidden-tab policy.
+- App-owned public-match join and leave mutations must share `withMatchMutationLock({ matchID, run })`. Keep the live-table read and boardgame.io mutation inside the same PostgreSQL advisory-lock boundary so join and matchmaking Cancel cannot create an orphaned one-seat duel across Next.js processes.
+- A leave with `intent: "matchmaking_cancel"` is conditional cancellation, not an unconditional seat removal. If the locked table is already a filled human duel owned by that account, preserve both seats and return `MATCH_FOUND`; clients must enter the match without clearing credentials or starting Puffer.
+- Never auto-select an open room seat while credentials are present. `playerID` and credentials are one authenticated pair; retargeting stored seat-1 credentials to a newly open seat 0 produces the wrong perspective and unauthorized boardgame.io actions.
+- `isInterruptedCredentialedDuel` is a pre-client safety gate for incomplete credentialed public duels. Recovery actions use the same server-authoritative matchmaking cancellation; they may clear local state only after a confirmed leave, and must refresh into the game if cancellation returns `MATCH_FOUND`.
+- Real match-alert push receipt may request the transient `player-looking` tab-attention reason for an already open hidden tab. It uses the shared static bell title/favicon, does not focus the client or open the confirmation dialog, and is acknowledged on visibility like `match-found`; notification click remains the only prompt-opening worker message.
+- Keep `.env.example` VAPID public/private values blank. Local keys belong in ignored `.env.local`, and production keys belong in the production environment; deployment wiring tests intentionally fail if example key material appears.

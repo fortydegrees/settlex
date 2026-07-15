@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSessionAccount } from "../../../../lib/server/accounts/getSessionAccount.js";
-import { createMatchForAccount } from "../../../../lib/server/matches/createMatchForAccount.js";
+import {
+  createBotMatchForAccount,
+  createMatchForAccount,
+} from "../../../../lib/server/matches/createMatchForAccount.js";
 import { resolveMatchCreationMode } from "../../../../lib/server/matches/gameModeSetupData.js";
+import { readOptionalMatchmakingMutationToken } from "../../../../lib/server/matches/matchmakingMutation.js";
 import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
 
 const unauthorizedResponse = () =>
@@ -16,6 +20,8 @@ const errorResponse = (error) =>
 export const createMatchCreateRoute =
   ({
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
+    createBotMatchForAccount:
+      createBotMatchForAccountImpl = createBotMatchForAccount,
     createMatchForAccount: createMatchForAccountImpl = createMatchForAccount,
   } = {}) =>
   async (request) => {
@@ -34,10 +40,28 @@ export const createMatchCreateRoute =
         numPlayers: Number(payload?.numPlayers) || 2,
         setupData: payload?.setupData,
       });
-      const result = await createMatchForAccountImpl({
+      const createMatch =
+        payload?.opponentType === "bot"
+          ? createBotMatchForAccountImpl
+          : createMatchForAccountImpl;
+      const mutationIdentity =
+        payload?.opponentType === "bot"
+          ? {}
+          : {
+              matchmakingRequestId: readOptionalMatchmakingMutationToken(
+                payload?.matchmakingRequestId,
+                "matchmakingRequestId"
+              ),
+              requestedCredentials: readOptionalMatchmakingMutationToken(
+                payload?.requestedCredentials,
+                "requestedCredentials"
+              ),
+            };
+      const result = await createMatch({
         account: sessionAccount.account,
         numPlayers: creationMode.numPlayers,
         setupData: creationMode.setupData,
+        ...mutationIdentity,
       });
 
       const response = NextResponse.json(result);

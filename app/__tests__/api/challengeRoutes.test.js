@@ -171,6 +171,21 @@ describe("challenge API routes", () => {
     const getSessionAccount = vi.fn();
     const getLiveMatch = vi.fn();
     const joinMatchForAccount = vi.fn();
+    const reservation = {
+      matchID: "match_1",
+      pausedAccountIds: ["acct_inviter", "acct_friend"],
+      previousPreferences: [],
+    };
+    const order = [];
+    const reserveAlertsBeforeHumanJoin = vi.fn(async () => {
+      order.push("reserve");
+      return reservation;
+    });
+    const finalizeAlertsAfterHumanJoin = vi
+      .fn()
+      .mockResolvedValue(["acct_inviter", "acct_friend"]);
+    const restoreAlertsAfterFailedHumanJoin = vi.fn().mockResolvedValue([]);
+    const logger = { error: vi.fn(), warn: vi.fn() };
     const leaveMatchForAccount = vi.fn();
 
     const pendingMatch = {
@@ -196,6 +211,10 @@ describe("challenge API routes", () => {
       getSessionAccount,
       getLiveMatch,
       joinMatchForAccount,
+      reserveAlertsBeforeHumanJoin,
+      finalizeAlertsAfterHumanJoin,
+      restoreAlertsAfterFailedHumanJoin,
+      logger,
       now: () => new Date("2026-04-09T08:02:00.000Z"),
     });
     const CANCEL = createChallengeCancelRoute({
@@ -223,9 +242,12 @@ describe("challenge API routes", () => {
       },
     });
     getLiveMatch.mockResolvedValueOnce(pendingMatch);
-    joinMatchForAccount.mockResolvedValueOnce({
-      playerID: "0",
-      playerCredentials: "secret_friend",
+    joinMatchForAccount.mockImplementationOnce(async () => {
+      order.push("join");
+      return {
+        playerID: "0",
+        playerCredentials: "secret_friend",
+      };
     });
 
     const acceptResponse = await ACCEPT(
@@ -250,6 +272,57 @@ describe("challenge API routes", () => {
         account: expect.objectContaining({ id: "acct_friend" }),
       })
     );
+    expect(reserveAlertsBeforeHumanJoin).toHaveBeenCalledWith({
+      liveMatch: pendingMatch,
+      joiningAccountId: "acct_friend",
+      joiningPlayerId: "0",
+      participantType: "human",
+      matchID: "match_1",
+    });
+    expect(order).toEqual(["reserve", "join"]);
+    expect(finalizeAlertsAfterHumanJoin).toHaveBeenCalledWith({ reservation });
+    expect(restoreAlertsAfterFailedHumanJoin).not.toHaveBeenCalled();
+
+    getSessionAccount.mockResolvedValueOnce({
+      account: {
+        id: "acct_friend_2",
+        currentUsername: "Bren",
+        avatarEmoji: "😎",
+        avatarColor: "white",
+      },
+    });
+    getLiveMatch.mockResolvedValueOnce(pendingMatch);
+    const failedReservation = {
+      matchID: "match_1",
+      pausedAccountIds: ["acct_inviter", "acct_friend_2"],
+      previousPreferences: [],
+    };
+    reserveAlertsBeforeHumanJoin.mockResolvedValueOnce(failedReservation);
+    joinMatchForAccount.mockRejectedValueOnce(
+      Object.assign(new Error("seat already filled"), { status: 409 })
+    );
+
+    const rejectedJoinResponse = await ACCEPT(
+      new Request("http://localhost/api/challenges/match_1/accept", {
+        method: "POST",
+        headers: { cookie: "settlehex_session=a.b" },
+      }),
+      { params: { matchID: "match_1" } }
+    );
+    expect(rejectedJoinResponse.status).toBe(409);
+    expect(await rejectedJoinResponse.json()).toEqual({
+      error: "seat already filled",
+    });
+    expect(restoreAlertsAfterFailedHumanJoin).toHaveBeenCalledWith({
+      reservation: failedReservation,
+      joiningAccountId: "acct_friend_2",
+      joiningPlayerId: "0",
+      matchID: "match_1",
+      joinError: expect.objectContaining({
+        message: "seat already filled",
+        status: 409,
+      }),
+    });
 
     getSessionAccount.mockResolvedValueOnce({
       account: {

@@ -67,6 +67,11 @@ import { IdlePromptModal } from "./components/IdlePromptModal";
 import { ResignConfirmDialog } from "./components/ResignConfirmDialog";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import { GameOverModal } from "./components/GameOverModal";
+import {
+  runGameOverLobbyAction,
+  shouldResumeMatchAlertsForAction,
+  shouldOfferMatchAlertResume,
+} from "./components/gameOverAlertLifecycle.js";
 import { PostgameOverlay } from "./components/PostgameOverlay";
 import { DevCardPurchaseReveal } from "./DevCardPurchaseReveal";
 import { GameEffects } from "./effects/GameEffects";
@@ -120,6 +125,8 @@ import {
   buildSandboxDevCardPlayPayload,
   buildSandboxRobberMovePayload
 } from "./dev/sandbox/effectPayloads";
+import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
+import { tabAttention } from "./utils/tabAttention";
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const topUtilityButtonClassName =
@@ -170,6 +177,8 @@ const runAfterNextPaint = (callback) => {
 };
 
 export function GameScreen(bgioProps) {
+  const matchAlerts = useMatchAlerts();
+  const { registerCurrentGame } = matchAlerts;
   //playerAction is things that appear to the user (not spectator)
   //e.g. placeRoad, placeSettle, placeCity, moveRobber, trading
   //but i think we want this controlled by server/gameState
@@ -192,6 +201,9 @@ export function GameScreen(bgioProps) {
   const [themeId] = useState(readStoredThemeId);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [showPostgame, setShowPostgame] = useState(false);
+  const [matchAlertResumeChecked, setMatchAlertResumeChecked] = useState(true);
+  const [matchAlertResumeError, setMatchAlertResumeError] = useState("");
+  const [matchAlertResumePending, setMatchAlertResumePending] = useState(false);
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [showGameSettings, setShowGameSettings] = useState(false);
   const [showGameRules, setShowGameRules] = useState(false);
@@ -287,6 +299,7 @@ export function GameScreen(bgioProps) {
       isGameOver
     });
   const {
+    mergedMatchData,
     nameMap,
     emojiMap,
     effectiveColorByPlayerId,
@@ -319,11 +332,129 @@ export function GameScreen(bgioProps) {
       bgioProps.matchMetadata
     ]
   );
+  const hasBotOpponent = useMemo(
+    () =>
+      mergedMatchData.some(
+        (seat) =>
+          String(seat?.id) !== String(playerID) &&
+          (seat?.data?.participantType === "bot" ||
+            seat?.data?.isBot === true ||
+            Boolean(seat?.data?.bot))
+      ),
+    [mergedMatchData, playerID]
+  );
+  const opponentType = hasBotOpponent ? "bot" : "human";
+  const canOfferAlertResume = shouldOfferMatchAlertResume({
+    preference: matchAlerts.preference,
+    matchID,
+    opponentType,
+  });
+
+  useEffect(() => {
+    if (!showGameOverModal || !canOfferAlertResume) return;
+    setMatchAlertResumeChecked(true);
+    setMatchAlertResumeError("");
+    setMatchAlertResumePending(false);
+  }, [canOfferAlertResume, showGameOverModal]);
+
+  const returnToLobby = useCallback(() => {
+    window.location.href = "/";
+  }, []);
+
+  const attemptReturnToLobby = useCallback(async (action) => {
+    if (matchAlertResumePending) return;
+    setMatchAlertResumePending(true);
+    setMatchAlertResumeError("");
+
+    const result = await runGameOverLobbyAction({
+      shouldResume: shouldResumeMatchAlertsForAction({
+        action,
+        eligible: canOfferAlertResume,
+        checked: matchAlertResumeChecked,
+      }),
+      resumeMatchAlerts: matchAlerts.resume,
+      onLobby: returnToLobby,
+    });
+
+    if (!result.returnedToLobby) {
+      setMatchAlertResumeError(result.error);
+      setMatchAlertResumePending(false);
+    }
+  }, [
+    canOfferAlertResume,
+    matchAlertResumeChecked,
+    matchAlertResumePending,
+    matchAlerts.resume,
+    returnToLobby,
+  ]);
+  const handleReturnToLobby = useCallback(
+    () => attemptReturnToLobby("return"),
+    [attemptReturnToLobby]
+  );
+  const handleRetryMatchAlertResume = useCallback(
+    () => attemptReturnToLobby("retry"),
+    [attemptReturnToLobby]
+  );
+
+  useEffect(() => {
+    if (
+      isReplay ||
+      isGameOver ||
+      !bgioProps.credentials ||
+      playerID == null ||
+      playerID === "" ||
+      !matchID ||
+      matchID === "default" ||
+      matchID === "dev-sandbox"
+    ) {
+      return undefined;
+    }
+
+    return registerCurrentGame({
+      matchID,
+      opponentType: hasBotOpponent ? "bot" : "human"
+    });
+  }, [
+    bgioProps.credentials,
+    hasBotOpponent,
+    isGameOver,
+    isReplay,
+    matchID,
+    playerID,
+    registerCurrentGame
+  ]);
   const rawGameStatus = getGameStatus(core, bgioProps.ctx, {
     playerAction,
     viewerPlayerId: playerID,
     playerMap: nameMap
   });
+  const localMatchSeat = mergedMatchData.find(
+    (seat) => String(seat?.id) === String(playerID)
+  );
+  const shouldRequestYourTurnAttention =
+    !isReplay &&
+    !isGameOver &&
+    Boolean(bgioProps.credentials) &&
+    playerID != null &&
+    playerID !== "" &&
+    localMatchSeat?.data?.participantType !== "bot" &&
+    localMatchSeat?.data?.isBot !== true &&
+    !Boolean(localMatchSeat?.data?.bot) &&
+    String(bgioProps.ctx?.currentPlayer) === String(playerID) &&
+    rawGameStatus.kind !== "pregame" &&
+    String(rawGameStatus.activePlayerId) === String(playerID);
+
+  useEffect(() => {
+    if (shouldRequestYourTurnAttention) {
+      tabAttention.request("your-turn");
+    } else {
+      tabAttention.release("your-turn");
+    }
+
+    return () => {
+      tabAttention.release("your-turn");
+    };
+  }, [shouldRequestYourTurnAttention]);
   latestPlayerViewMapRef.current = playerViewMap;
 
   useEffect(() => {
@@ -1896,14 +2027,23 @@ TODO: accurately colour it
                     setShowGameOverModal(false);
                   }
             }
-            onLobby={() => {
-              window.location.href = "/";
-            }}
+            onLobby={handleReturnToLobby}
             onClose={() =>
               isReplay
                 ? bgioProps.onReplayResultsClose?.()
                 : setShowGameOverModal(false)
             }
+            showMatchAlertResume={canOfferAlertResume}
+            matchAlertResumeChecked={matchAlertResumeChecked}
+            matchAlertResumeError={
+              matchAlertResumeError
+                ? matchAlerts.error || matchAlertResumeError
+                : ""
+            }
+            matchAlertResumePending={matchAlertResumePending}
+            onMatchAlertResumeCheckedChange={setMatchAlertResumeChecked}
+            onRetryMatchAlertResume={handleRetryMatchAlertResume}
+            onContinueWithoutMatchAlerts={returnToLobby}
           />
         </GameOverOverlay>
       )}
