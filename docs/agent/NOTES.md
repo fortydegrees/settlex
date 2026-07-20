@@ -1,5 +1,10 @@
 # NOTES
 
+- Catana dev-surface verification note: runtime render-count, listener-count,
+  focused-trace, and frame-timing evidence belongs in
+  `.agents/skills/catana-dev-surfaces/SKILL.md`, not in a separate performance
+  skill.
+
 - Explicit board-source implementation note:
 - Default duel mode selects `duel-fair-official-v1`; standard 3p/4p select
   `generated-official-spiral-v1`.

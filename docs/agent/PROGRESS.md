@@ -1,5 +1,18 @@
 # PROGRESS
 
+## Status (2026-07-20, Catana dev-surface skill validated)
+- Baseline gap: the no-skill mobile-reveal answer selected the real dev surfaces,
+  phone verification, and tuning-only test boundary but omitted same-scenario
+  render/listener/frame evidence and sampled-evidence limits.
+- Three fresh final evaluators using
+  `.agents/skills/catana-dev-surfaces/SKILL.md` satisfied the full rubric:
+  smallest real surface, explicit phone viewports, tuning/test boundary,
+  before/after evidence and claim limits, and shared deterministic logic/tests
+  for the Road Building counterexample.
+- The recovered and tightened skill is 545 words.
+- Static checks passed: valid YAML metadata, word count at most 550, both real
+  dev-route directories present, and clean `git diff --check`.
+
 ## Status (2026-07-14, explicit board sources implemented)
 - Replaced the provisional duel `standard-balanced` sentinel with explicit
   product-owned board sources and truthful generator provenance.
