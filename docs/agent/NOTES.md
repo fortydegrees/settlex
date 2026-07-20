@@ -4372,3 +4372,12 @@
 - Scope `touch-action`, context-menu suppression, tap-highlight, and selection
   changes to the board/control that owns the gesture so Log, Chat, dialogs,
   links, and ordinary text retain native browser behavior.
+
+- Catana match-lifecycle boundary:
+- Consolidate finished/archived replay and postgame safety into
+  `.agents/skills/catana-match-lifecycle/SKILL.md`: canonical `/g/:matchID`
+  entry, proven participant perspective, spoiler gating, and read-only behavior
+  share the app-owned lifecycle. Do not create a separate replay lifecycle.
+- Road Building placement and boardgame.io stage-return semantics remain
+  deterministic game/server work and require focused engine/server state tests,
+  not app-owned match-lifecycle handling.

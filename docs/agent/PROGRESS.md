@@ -7120,3 +7120,22 @@
   state matrix; named cockpit/button/drawer/dock-model owners; real short/tall
   sandbox verification; 44px, hold, drawer/board, and scoped-browser behavior;
   behavior tests rather than value-only CSS tests; and shared-state protection.
+
+## Status (2026-07-20, Catana match-lifecycle skill)
+
+- Added and routed the 549-word
+  `.agents/skills/catana-match-lifecycle/SKILL.md`, consolidating app-owned
+  create/join/leave, ambiguous mutation recovery, credentials, canonical game
+  entry, and archived replay safety without creating a replay-specific skill.
+- RED used three fresh read-only `gpt-5.6-sol` evaluators without the recovered
+  draft. The controls preserved a filled duel, canonicalized replay, and routed
+  Road Building to deterministic game/server work, but omitted the complete
+  account/`playerID`/credential/`matchID` proof, different-match independence,
+  stale-response guards, local-storage-as-hint rule, and explicit replay
+  read-only guarantee.
+- GREEN used three fresh read-only evaluators against identical final skill
+  bytes (`b1da4b66de555648dba61f4a6b569946fffd47f0d9e376868e353ff0be14037b`).
+  Every rubric item passed: server/Postgres authority; definite versus ambiguous
+  outcomes; separate identity proofs; same/different-match locking; stale-safe
+  reconciliation; filled-duel and `/g/:matchID` preservation; consolidated
+  perspective/spoiler/read-only replay; and deterministic Road Building tests.

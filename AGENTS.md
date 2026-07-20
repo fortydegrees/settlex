@@ -55,6 +55,7 @@ Ship small, correct changes with a stable, testable game engine.
 - **Dev verification surfaces**: use `.agents/skills/catana-dev-surfaces/SKILL.md` when choosing, adding, or using sandbox, effects-lab, viewport-wall, scenario, replay, or measured UI-performance verification surfaces.
 - **Gameplay feel/effects**: use `.agents/skills/catana-game-feel-effects/SKILL.md` before animation, audio, haptic, effect-bus, cue-routing, dice/card/piece motion, or semantic presentation-loop work.
 - **Mobile gameplay UX**: use `.agents/skills/catana-mobile-game-ux/SKILL.md` before phone HUD, command-row, touch-control, drawer, narrow-viewport, haptic, or mobile-browser work.
+- **Match lifecycle**: use `.agents/skills/catana-match-lifecycle/SKILL.md` before match create/join/leave, matchmaking recovery, match alerts, credentials, canonical game URLs, interrupted duels, finished/archived matches, replay entry, or ambiguous network outcomes.
 - **Design system**: `.agents/skills/catana-design/SKILL.md` is the active native skill for Catana/SettleHex design routing. Also use `docs/agent/UI_CONTEXT.md` and `docs/agent/skills/catana-brand/SKILL.md` before building or restyling UI. If adding shared product-surface primitives, read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` and review targeted external references before inventing a new common interaction pattern.
 
 ## Effects + audio (GSAP + cue bus)
