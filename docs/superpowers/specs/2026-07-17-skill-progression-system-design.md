@@ -3,7 +3,7 @@
 Date: 2026-07-17
 Scope: The weekly skill-progression automation, its durable inventory, and the
 safe validation and landing of existing repo-local Catana workflow skills.
-Status: Written design, pending user review
+Status: Approved design; feature-branch review complete; main-merge approval pending
 
 ## Objective
 
@@ -102,15 +102,17 @@ is available; its absence is not a blocker.
 For a weekly run, analyze changes since the previous successful run with up to
 eight weeks of context. Report:
 1. evidence boundary;
-2. skill inventory with separate integration and confidence states;
+2. skill inventory with separate integration and confidence states, exact
+   location, last meaningful evidence date, and one recommended action;
 3. what materially changed;
 4. at most three ranked actions; and
 5. integration truth for every referenced draft.
 
 Prefer recovering, validating, consolidating, or deepening existing skills over
 creating narrow new ones. Defer work that is still actively changing. Do not
-edit, create, commit, merge, or call repo files upstreamed/landed. Update only
-the automation memory with a timestamped evidence and inventory summary.
+edit, create, commit, or merge repo files. Do not imply this run landed files;
+use `landed` only after verifying committed and routed state on `main`. Update
+only the automation memory with a timestamped evidence and inventory summary.
 ```
 
 ## Existing Skill Landing Program
