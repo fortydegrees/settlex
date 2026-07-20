@@ -4362,3 +4362,13 @@
   shared helpers, or cleanup/lifecycle ownership changes. Authoritative game
   events drive presentation; optimistic or masked React state must not become a
   second source of board truth.
+
+- Catana mobile gameplay UX boundary:
+- Phone UI may own narrow-viewport layout, touch targets, drawers, hold
+  ergonomics, and scoped mobile-browser behavior, but it must consume the same
+  `GameScreen`/local-player dock gameplay model as desktop. If the shared model
+  is insufficient, extract one shared pure helper; never add a mobile-only
+  derivation of playable cards, commands, stages, or forced actions.
+- Scope `touch-action`, context-menu suppression, tap-highlight, and selection
+  changes to the board/control that owns the gesture so Log, Chat, dialogs,
+  links, and ordinary text retain native browser behavior.

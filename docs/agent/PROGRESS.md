@@ -7103,3 +7103,20 @@
   cue timing; viewer, dedupe, anchor, reduced-motion, hidden-tab, and cleanup
   coverage; no tests for tuning-only work; focused tests for payload/routing or
   shared cleanup; and rejection of optimistic UI as a second source of truth.
+
+## Status (2026-07-20, Catana mobile-game UX skill)
+
+- Added and routed the 527-word
+  `.agents/skills/catana-mobile-game-ux/SKILL.md`; corrected the recovered
+  dock-model path to `app/catana/components/useLocalPlayerDockModel.js` and
+  delegated route choice and haptic/effect ownership to the established skills.
+- RED used three fresh `gpt-5.6-sol` evaluators without the skill. The control
+  answers handled drawer/hold mechanics, scoped Safari behavior, focused tests,
+  both required phone sizes, and rejected a mobile state fork, but did not walk
+  the complete pre-roll/waiting/placement state matrix.
+- The first GREEN pass exposed one output-shape gap: the command plan did not
+  name all inspected mobile owners. After one minimal refactor, three fresh
+  evaluators using the same final skill bytes passed every rubric item: full
+  state matrix; named cockpit/button/drawer/dock-model owners; real short/tall
+  sandbox verification; 44px, hold, drawer/board, and scoped-browser behavior;
+  behavior tests rather than value-only CSS tests; and shared-state protection.
