@@ -4353,3 +4353,12 @@
 - `isInterruptedCredentialedDuel` is a pre-client safety gate for incomplete credentialed public duels. Recovery actions use the same server-authoritative matchmaking cancellation; they may clear local state only after a confirmed leave, and must refresh into the game if cancellation returns `MATCH_FOUND`.
 - Real match-alert push receipt may request the transient `player-looking` tab-attention reason for an already open hidden tab. It uses the shared static bell title/favicon, does not focus the client or open the confirmation dialog, and is acknowledged on visibility like `match-found`; notification click remains the only prompt-opening worker message.
 - Keep `.env.example` VAPID public/private values blank. Local keys belong in ignored `.env.local`, and production keys belong in the production environment; deployment wiring tests intentionally fail if example key material appears.
+
+- Catana game-feel/effects verification boundary:
+- Keep value-only timing, easing, sound, haptic, and cue-timing changes on the
+  smallest routed sandbox/effects-lab manual loop; do not add tests for pure
+  tuning.
+- Add focused tests when effect payload shape, semantic event routing, dedupe,
+  shared helpers, or cleanup/lifecycle ownership changes. Authoritative game
+  events drive presentation; optimistic or masked React state must not become a
+  second source of board truth.

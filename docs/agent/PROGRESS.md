@@ -7086,3 +7086,20 @@
   - `MATCH_ALERT_POSTGRES_URL=postgres://settlehex:settlehex@localhost:55432/settlehex_test pnpm exec vitest run lib/server/__tests__/matchMutationLock.postgres.test.js --reporter=dot` (2 tests passed; same-match serialization and different-match independence)
   - `pnpm exec vitest run app/__tests__/matchAlertServiceWorker.source.test.js app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js app/catana/utils/__tests__/tabAttention.test.js --reporter=dot` (23 tests passed)
   - `MATCH_ALERT_POSTGRES_URL=postgres://settlehex:settlehex@localhost:55432/settlehex_test pnpm verify` (153 engine, 254 server, all 242 app test files, and lint passed)
+
+## Status (2026-07-20, Catana game-feel/effects skill)
+
+- Added and routed `.agents/skills/catana-game-feel-effects/SKILL.md` as the
+  semantic event-to-presentation owner for animation, audio, haptics, effect
+  payloads, cue routing, dedupe, viewer safety, and cleanup. Game truth remains
+  server-authoritative; the skill delegates route choice to
+  `catana-dev-surfaces`.
+- RED used three fresh `gpt-5.6-sol` evaluators without the skill. Resource
+  distribution omitted the named `GameEffects`/registry/runner path and full
+  dedupe contract; timing-only tuning correctly stayed manual; optimistic road
+  rendering incorrectly treated React state as provisional game truth.
+- GREEN used three new evaluators with the 461-word skill explicitly loaded.
+  All rubric items passed: authoritative events; named effects ownership and
+  cue timing; viewer, dedupe, anchor, reduced-motion, hidden-tab, and cleanup
+  coverage; no tests for tuning-only work; focused tests for payload/routing or
+  shared cleanup; and rejection of optimistic UI as a second source of truth.
