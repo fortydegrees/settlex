@@ -1,5 +1,30 @@
 # PROGRESS
 
+## Status (2026-07-28, stranded mainline improvements recovered)
+- Recovered the useful non-3D work that had been preserved in the mixed replay
+  WIP commit as focused, reviewable commits on top of current `main`.
+- The recovered slices are replay reconstruction integrity, replay feed
+  selection and neutral two-player viewer HUD behavior, canonical `/g/...`
+  friend-challenge URLs, shared audio/effect ownership, frontend lazy loading,
+  and the fast production deploy lane.
+- Restored the `recharts` and `react-is` manifest entries required by the
+  replay score chart already present on `main`; the missing dependency was
+  exposed by the full repository verification pass.
+- Deliberately excluded the Caddy public-file routing experiment, screenshots,
+  stale/generated planning artifacts, and unrelated unfinished UI experiments.
+- All 3D runtime code, dependencies, assets, Blender output, and 3D plans remain
+  isolated on `codex/3d-sandbox-recovery`. The bot and Storybook worktrees were
+  not changed.
+- Focused verification passed for each recovered slice. Final verification
+  passed:
+  - `pnpm release:check -- --require-approved` (approved release notes v3);
+  - `pnpm verify` (game-core 149 tests; server 270 passed and 7 skipped; all
+    261 app test files; lint clean);
+  - `docker build -f Dockerfile.web .` (production compile and 17/17 static
+    pages);
+  - `docker build -f Dockerfile.game .` (game-core TypeScript build).
+- Nothing has been pushed or deployed.
+
 ## Status (2026-07-20, Catana dev-surface skill validated)
 - Baseline gap: the no-skill mobile-reveal answer selected the real dev surfaces,
   phone verification, and tuning-only test boundary but omitted same-scenario

@@ -1,5 +1,20 @@
 # NOTES
 
+- Stranded-mainline recovery boundary (2026-07-28):
+- `codex/mixed-unfinished-rescue-2026-07-28` was used only as a source archive;
+  its large mixed commit must not be merged or cherry-picked wholesale.
+- Mainline-worthy slices were recovered independently: replay integrity,
+  replay feed/neutral HUD behavior, canonical friend-challenge URLs, shared
+  audio ownership, frontend lazy loading, replay chart dependencies, and the
+  fast deploy scripts.
+- Keep 3D work on `codex/3d-sandbox-recovery`; do not add its runtime,
+  dependencies, assets, Blender artifacts, or plans to `main` as part of this
+  recovery.
+- The Caddy public `/games` exposure change was intentionally not recovered.
+  It needs a separate security/product decision before any implementation.
+- This recovery authorizes local integration only. Pushing and deploying still
+  require separate approval.
+
 - Catana dev-surface verification note: runtime render-count, listener-count,
   focused-trace, and frame-timing evidence belongs in
   `.agents/skills/catana-dev-surfaces/SKILL.md`, not in a separate performance
