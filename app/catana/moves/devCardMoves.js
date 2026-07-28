@@ -1,3 +1,4 @@
+import { INVALID_MOVE } from "boardgame.io/core";
 import {
   applyFreeRoad,
   applyKnight,
@@ -41,7 +42,7 @@ export const buyDevCard = {
     const result = applyBuyDevCard(G.core, playerID);
     if (!result.ok) {
       console.log(`Invalid buy dev card: ${result.error}`);
-      return;
+      return INVALID_MOVE;
     }
     effects?.buyDevCardReveal?.({
       playerId: playerID,
@@ -83,12 +84,12 @@ export const playDevCardStart = {
       const played = playDevCard(G.core, playerID, "knight");
       if (!played.ok) {
         console.log(`Invalid play dev card: ${played.error}`);
-        return;
+        return INVALID_MOVE;
       }
       const result = applyKnight(G.core, playerID);
       if (!result.ok) {
         console.log(`Invalid knight: ${result.error}`);
-        return;
+        return INVALID_MOVE;
       }
       appendGameLog(G, ctx, {
         type: "dev:play",
@@ -126,7 +127,7 @@ export const playDevCardStart = {
       const played = playDevCard(G.core, playerID, "roadBuilding");
       if (!played.ok) {
         console.log(`Invalid play dev card: ${played.error}`);
-        return;
+        return INVALID_MOVE;
       }
       appendGameLog(G, ctx, {
         type: "dev:play",
@@ -177,6 +178,8 @@ export const playDevCardStart = {
 };
 
 export const confirmDevCardPlay = {
+  // Resolves against the masked dev deck/hands on the client; server-only.
+  client: false,
   move: (context, payload, options) => {
     const { G, playerID, ctx, effects } = context;
     const devPlay = G.devCardPlay;
@@ -228,7 +231,7 @@ export const confirmDevCardPlay = {
     const played = playDevCard(G.core, playerID, devPlay.type);
     if (!played.ok) {
       console.log(`Invalid play dev card: ${played.error}`);
-      return;
+      return INVALID_MOVE;
     }
     appendGameLog(G, ctx, {
       type: "dev:play",
@@ -308,7 +311,7 @@ export const placeRoadFromDevCard = {
     const result = applyFreeRoad(G.core, G.coreTopology, edge, playerID);
     if (!result.ok) {
       console.log(`Invalid dev road: ${result.error}`);
-      return;
+      return INVALID_MOVE;
     }
     effects?.placePiece?.({
       pieceType: "road",

@@ -1,3 +1,4 @@
+import { INVALID_MOVE } from "boardgame.io/core";
 import {
   applyMoveRobber,
   canPlaceRobber,
@@ -66,6 +67,8 @@ export const beginRobberMoveStage = (context, options) => {
 };
 
 export const moveRobber = {
+  // Steals from masked opponent hands on the client; server-only.
+  client: false,
   move: (context, tileID, options) => {
     const { G, ctx, random, effects } = context;
     const fromTileId = G.core?.robberTileId ?? null;
@@ -89,7 +92,7 @@ export const moveRobber = {
     );
     if (!result.ok) {
       console.log(`Invalid robber placement on tile ${tileID}: ${result.error}`);
-      return;
+      return INVALID_MOVE;
     }
     appendGameLog(G, ctx, {
       type: "robber:move",
