@@ -214,6 +214,33 @@ describe("archive manager", () => {
     expect(cleanupArchivedMatch).toHaveBeenCalledWith({ matchID: "m1" });
   });
 
+  it("does not reject when archiving fails, and retries on a later publish", async () => {
+    const { ArchiveManager } = await loadModule("ArchiveManager.js");
+    const archiveFinishedMatch = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("db down"));
+    const logger = { error: vi.fn() };
+    const manager = new ArchiveManager({
+      archiveFinishedMatch,
+      cleanupArchivedMatch: vi.fn(),
+      graceMs: 10,
+      logger,
+    });
+
+    await expect(
+      manager.onState("m1", { ctx: { gameover: { winner: "0" } } })
+    ).resolves.toBeUndefined();
+
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(manager.archivedMatchIDs.has("m1")).toBe(false);
+
+    archiveFinishedMatch.mockResolvedValueOnce({ archived: true });
+    await manager.onState("m1", { ctx: { gameover: { winner: "0" } } });
+
+    expect(archiveFinishedMatch).toHaveBeenCalledTimes(2);
+    expect(manager.archivedMatchIDs.has("m1")).toBe(true);
+  });
+
   it("deleteMatch clears pending cleanup timers and match metadata", async () => {
     vi.useFakeTimers();
 
