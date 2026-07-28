@@ -3,6 +3,7 @@ import {
   CreateGameReducer,
   InitializeGame
 } from "boardgame.io/dist/cjs/internal.js";
+import { ResourceType } from "@settlex/game-core";
 import { createCatanGame } from "../Game";
 
 const game = createCatanGame({
@@ -13,6 +14,16 @@ const game = createCatanGame({
 const makeMove = (type, args, playerID) => ({
   type: "MAKE_MOVE",
   payload: { type, args, playerID }
+});
+
+const enterMainStage = (state, stage) => ({
+  ...state,
+  ctx: {
+    ...state.ctx,
+    phase: "main",
+    currentPlayer: "0",
+    activePlayers: { "0": stage }
+  }
 });
 
 describe("invalid moves are rejected instead of committed as no-ops", () => {
@@ -41,6 +52,65 @@ describe("invalid moves are rejected instead of committed as no-ops", () => {
     expect(Object.keys(state.G.core.buildingsByNodeId)).toContain(
       String(validNode)
     );
+  });
+
+  it("rejects an invalid Year of Plenty choice without consuming a state id", () => {
+    const reducer = CreateGameReducer({ game, isClient: false });
+    let state = enterMainStage(
+      InitializeGame({ game, numPlayers: 2 }),
+      "devCardChoice"
+    );
+    state = {
+      ...state,
+      G: {
+        ...state.G,
+        core: {
+          ...state.G.core,
+          bank: {
+            ...state.G.core.bank,
+            resources: [
+              ResourceType.WOOD,
+              ResourceType.BRICK,
+              ResourceType.ORE
+            ]
+          }
+        },
+        devCardPlay: {
+          type: "yearOfPlenty",
+          playerId: "0",
+          startedFromStage: "postRoll"
+        }
+      }
+    };
+    const before = state._stateID;
+
+    state = reducer(
+      state,
+      makeMove(
+        "confirmDevCardPlay",
+        [[ResourceType.WOOD, ResourceType.BRICK, ResourceType.ORE]],
+        "0"
+      )
+    );
+
+    expect(state._stateID).toBe(before);
+    expect(state.G.devCardPlay).toMatchObject({
+      type: "yearOfPlenty",
+      playerId: "0"
+    });
+  });
+
+  it("rejects a malformed maritime trade without consuming a state id", () => {
+    const reducer = CreateGameReducer({ game, isClient: false });
+    let state = enterMainStage(
+      InitializeGame({ game, numPlayers: 2 }),
+      "postRoll"
+    );
+    const before = state._stateID;
+
+    state = reducer(state, makeMove("maritimeTrade", [null], "0"));
+
+    expect(state._stateID).toBe(before);
   });
 
   it("keeps masked-state moves off the client", () => {

@@ -15,7 +15,7 @@ export const maritimeTrade = {
 
     if (!trade || !Array.isArray(trade.give) || receive.length === 0) {
       console.log("Invalid trade format");
-      return;
+      return INVALID_MOVE;
     }
 
     const result = applyMaritimeTradeBatch(G.core, G.coreTopology, playerID, {

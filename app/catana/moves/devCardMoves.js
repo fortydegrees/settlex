@@ -225,7 +225,7 @@ export const confirmDevCardPlay = {
 
     if (!applied.ok) {
       console.log(`Invalid dev card play: ${applied.error}`);
-      return;
+      return INVALID_MOVE;
     }
 
     const played = playDevCard(G.core, playerID, devPlay.type);
