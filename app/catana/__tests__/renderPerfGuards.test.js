@@ -264,6 +264,22 @@ describe("render performance guards", () => {
     expect(contents).toContain("<React.Suspense fallback={null}>");
   });
 
+  it("defers noncritical game surfaces and warms their chunks while idle", () => {
+    const contents = readCatanaFile("GameScreen.js");
+
+    expect(contents).not.toContain(
+      'import { TradeDiscardModal } from "./components/TradeDiscardModal"'
+    );
+    expect(contents).not.toContain(
+      'import { DevCardPurchaseReveal } from "./DevCardPurchaseReveal"'
+    );
+    expect(contents).toContain("const LazyTradeDiscardModal = React.lazy(");
+    expect(contents).toContain("const LazyDevCardPurchaseReveal = React.lazy(");
+    expect(contents).toContain("const loadDeferredGameSurfaces = () =>");
+    expect(contents).toContain("requestIdleCallback");
+    expect(contents).toContain("<React.Suspense fallback={null}>");
+  });
+
   it("tracks board flash timers so effect callbacks clean up on unmount", () => {
     const contents = readCatanaFile("Board.js");
 

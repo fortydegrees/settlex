@@ -63,18 +63,13 @@ import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
 import { GlassPillButton } from "./components/GlassPillButton";
 import { LeftMetaRail } from "./components/LeftMetaRail";
 import { StatusBanner } from "./components/StatusBanner";
-import { TradeDiscardModal } from "./components/TradeDiscardModal";
 import { IdlePromptModal } from "./components/IdlePromptModal";
-import { ResignConfirmDialog } from "./components/ResignConfirmDialog";
 import { GameOverOverlay } from "./components/GameOverOverlay";
-import { GameOverModal } from "./components/GameOverModal";
 import {
   runGameOverLobbyAction,
   shouldResumeMatchAlertsForAction,
   shouldOfferMatchAlertResume,
 } from "./components/gameOverAlertLifecycle.js";
-import { PostgameOverlay } from "./components/PostgameOverlay";
-import { DevCardPurchaseReveal } from "./DevCardPurchaseReveal";
 import { GameEffects } from "./effects/GameEffects";
 import { createEffectBus } from "./effects/EffectBus";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
@@ -128,6 +123,58 @@ import {
 } from "./dev/sandbox/effectPayloads";
 import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
 import { tabAttention } from "./utils/tabAttention";
+
+let tradeDiscardModalPromise;
+const loadTradeDiscardModal = () =>
+  (tradeDiscardModalPromise ??= import("./components/TradeDiscardModal"));
+const LazyTradeDiscardModal = React.lazy(() =>
+  loadTradeDiscardModal().then((module) => ({
+    default: module.TradeDiscardModal
+  }))
+);
+
+let resignConfirmDialogPromise;
+const loadResignConfirmDialog = () =>
+  (resignConfirmDialogPromise ??= import("./components/ResignConfirmDialog"));
+const LazyResignConfirmDialog = React.lazy(() =>
+  loadResignConfirmDialog().then((module) => ({
+    default: module.ResignConfirmDialog
+  }))
+);
+
+let gameOverModalPromise;
+const loadGameOverModal = () =>
+  (gameOverModalPromise ??= import("./components/GameOverModal"));
+const LazyGameOverModal = React.lazy(() =>
+  loadGameOverModal().then((module) => ({ default: module.GameOverModal }))
+);
+
+let postgameOverlayPromise;
+const loadPostgameOverlay = () =>
+  (postgameOverlayPromise ??= import("./components/PostgameOverlay"));
+const LazyPostgameOverlay = React.lazy(() =>
+  loadPostgameOverlay().then((module) => ({
+    default: module.PostgameOverlay
+  }))
+);
+
+let devCardPurchaseRevealPromise;
+const loadDevCardPurchaseReveal = () =>
+  (devCardPurchaseRevealPromise ??= import("./DevCardPurchaseReveal"));
+const LazyDevCardPurchaseReveal = React.lazy(() =>
+  loadDevCardPurchaseReveal().then((module) => ({
+    default: module.DevCardPurchaseReveal
+  }))
+);
+
+const loadDeferredGameSurfaces = () =>
+  Promise.all([
+    loadTradeDiscardModal(),
+    loadResignConfirmDialog(),
+    loadGameOverModal(),
+    loadPostgameOverlay(),
+    loadDevCardPurchaseReveal()
+  ]);
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const topUtilityButtonClassName =
@@ -263,6 +310,22 @@ export function GameScreen(bgioProps) {
     },
     [isReplay, onReplayMobileMetaPanelOpen]
   );
+
+  useEffect(() => {
+    const preload = () => {
+      void loadDeferredGameSurfaces().catch(() => {});
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleCallbackId = window.requestIdleCallback(preload, {
+        timeout: 2000
+      });
+      return () => window.cancelIdleCallback?.(idleCallbackId);
+    }
+
+    const timeoutId = window.setTimeout(preload, 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   //get the active playerID of who's watching
   //can be null for spectator?
@@ -1619,11 +1682,15 @@ export function GameScreen(bgioProps) {
         </TransformComponent>
       </TransformWrapper>
 
-      <DevCardPurchaseReveal
-        reveal={activeDevCardReveal}
-        effectsBus={effectsBus}
-        onComplete={handleDevCardRevealComplete}
-      />
+      {activeDevCardReveal ? (
+        <React.Suspense fallback={null}>
+          <LazyDevCardPurchaseReveal
+            reveal={activeDevCardReveal}
+            effectsBus={effectsBus}
+            onComplete={handleDevCardRevealComplete}
+          />
+        </React.Suspense>
+      ) : null}
 
       <TooltipProvider delay={0}>
         <div
@@ -1940,41 +2007,47 @@ TODO: accurately colour it
       {/* MODALS */}
       {/* 1. Force Discard Modal */}
       {!!player && !isReplay && needsToDiscard && !isGameOver && (
-        <TradeDiscardModal
-          mode="discard"
-          player={player}
-          requiredDiscardCount={discardCount}
-          onConfirm={handleDiscardConfirm}
-          themeId={themeId}
-          // No cancel for forced discard
-        />
+        <React.Suspense fallback={null}>
+          <LazyTradeDiscardModal
+            mode="discard"
+            player={player}
+            requiredDiscardCount={discardCount}
+            onConfirm={handleDiscardConfirm}
+            themeId={themeId}
+            // No cancel for forced discard
+          />
+        </React.Suspense>
       )}
 
       {/* 2. Manual Trade Modal */}
       {!!player && tradeModalVisible && !needsToDiscard && !isGameOver && (
-        <TradeDiscardModal
-          mode="trade"
-          player={player}
-                onConfirm={handleTradeConfirm}
-                onCancel={() => {
-                  setShowTradeModal(false);
-                  setTradePresetResource(null);
-                  clearBuildPickup();
-                }}
-          G={bgioProps.G}
-          tradePresetResource={tradePresetResource}
-          themeId={themeId}
-        />
+        <React.Suspense fallback={null}>
+          <LazyTradeDiscardModal
+            mode="trade"
+            player={player}
+            onConfirm={handleTradeConfirm}
+            onCancel={() => {
+              setShowTradeModal(false);
+              setTradePresetResource(null);
+              clearBuildPickup();
+            }}
+            G={bgioProps.G}
+            tradePresetResource={tradePresetResource}
+            themeId={themeId}
+          />
+        </React.Suspense>
       )}
 
       {!!player && !isReplay && devPlayModalVisible && !needsToDiscard && !isGameOver && (
-        <TradeDiscardModal
-          mode={devPlayMode}
-          player={player}
-          onConfirm={handleDevPlayConfirm}
-          G={bgioProps.G}
-          themeId={themeId}
-        />
+        <React.Suspense fallback={null}>
+          <LazyTradeDiscardModal
+            mode={devPlayMode}
+            player={player}
+            onConfirm={handleDevPlayConfirm}
+            G={bgioProps.G}
+            themeId={themeId}
+          />
+        </React.Suspense>
       )}
 
       {showIdlePrompt ? (
@@ -1986,12 +2059,14 @@ TODO: accurately colour it
         />
       ) : null}
 
-      {!isReplay ? (
-        <ResignConfirmDialog
-          open={showResignConfirm}
-          onOpenChange={setShowResignConfirm}
-          onConfirm={handleConfirmResign}
-        />
+      {!isReplay && showResignConfirm ? (
+        <React.Suspense fallback={null}>
+          <LazyResignConfirmDialog
+            open={showResignConfirm}
+            onOpenChange={setShowResignConfirm}
+            onConfirm={handleConfirmResign}
+          />
+        </React.Suspense>
       ) : null}
 
       {(displayedOpponents.length > 0 || showConnectionBanner) && (
@@ -2040,66 +2115,70 @@ TODO: accurately colour it
       {((isReplay && bgioProps.replayResultsOpen) ||
         (!isReplay && showGameOverModal)) && (
         <GameOverOverlay>
-          <GameOverModal
-            title={getGameOverTitle({ isWinner, winnerId, winnerName })}
-            subtitle={
-              gameOverState?.reason === "victoryPoints"
-                ? winnerVP != null
-                  ? `Victory Points: ${winnerVP}`
-                  : "Victory Points"
-                : gameOverReasonText
-            }
-            scoreboard={scoreboard}
-            isWinner={isWinner}
-            shouldFireConfetti={
-              !isReplay && isWinner && !winnerConfettiSeenRef.current
-            }
-            onConfettiFired={() => {
-              winnerConfettiSeenRef.current = true;
-            }}
-            onWatchReplay={
-              isReplay ? bgioProps.onReplayResultsClose : handleWatchReplay
-            }
-            replayStatus={bgioProps.postgameReplayStatus}
-            onViewSummary={
-              isReplay
-                ? undefined
-                : () => {
-                    setShowPostgame(true);
-                    setShowGameOverModal(false);
-                  }
-            }
-            onLobby={handleReturnToLobby}
-            onClose={() =>
-              isReplay
-                ? bgioProps.onReplayResultsClose?.()
-                : setShowGameOverModal(false)
-            }
-            showMatchAlertResume={canOfferAlertResume}
-            matchAlertResumeChecked={matchAlertResumeChecked}
-            matchAlertResumeError={
-              matchAlertResumeError
-                ? matchAlerts.error || matchAlertResumeError
-                : ""
-            }
-            matchAlertResumePending={matchAlertResumePending}
-            onMatchAlertResumeCheckedChange={setMatchAlertResumeChecked}
-            onRetryMatchAlertResume={handleRetryMatchAlertResume}
-            onContinueWithoutMatchAlerts={returnToLobby}
-          />
+          <React.Suspense fallback={null}>
+            <LazyGameOverModal
+              title={getGameOverTitle({ isWinner, winnerId, winnerName })}
+              subtitle={
+                gameOverState?.reason === "victoryPoints"
+                  ? winnerVP != null
+                    ? `Victory Points: ${winnerVP}`
+                    : "Victory Points"
+                  : gameOverReasonText
+              }
+              scoreboard={scoreboard}
+              isWinner={isWinner}
+              shouldFireConfetti={
+                !isReplay && isWinner && !winnerConfettiSeenRef.current
+              }
+              onConfettiFired={() => {
+                winnerConfettiSeenRef.current = true;
+              }}
+              onWatchReplay={
+                isReplay ? bgioProps.onReplayResultsClose : handleWatchReplay
+              }
+              replayStatus={bgioProps.postgameReplayStatus}
+              onViewSummary={
+                isReplay
+                  ? undefined
+                  : () => {
+                      setShowPostgame(true);
+                      setShowGameOverModal(false);
+                    }
+              }
+              onLobby={handleReturnToLobby}
+              onClose={() =>
+                isReplay
+                  ? bgioProps.onReplayResultsClose?.()
+                  : setShowGameOverModal(false)
+              }
+              showMatchAlertResume={canOfferAlertResume}
+              matchAlertResumeChecked={matchAlertResumeChecked}
+              matchAlertResumeError={
+                matchAlertResumeError
+                  ? matchAlerts.error || matchAlertResumeError
+                  : ""
+              }
+              matchAlertResumePending={matchAlertResumePending}
+              onMatchAlertResumeCheckedChange={setMatchAlertResumeChecked}
+              onRetryMatchAlertResume={handleRetryMatchAlertResume}
+              onContinueWithoutMatchAlerts={returnToLobby}
+            />
+          </React.Suspense>
         </GameOverOverlay>
       )}
 
       {showPostgame && (
-        <PostgameOverlay
-          summary={postgameSummary}
-          scoreboard={scoreboard}
-          onWatchReplay={handleWatchReplay}
-          onClose={() => {
-            setShowPostgame(false);
-            setShowGameOverModal(true);
-          }}
-        />
+        <React.Suspense fallback={null}>
+          <LazyPostgameOverlay
+            summary={postgameSummary}
+            scoreboard={scoreboard}
+            onWatchReplay={handleWatchReplay}
+            onClose={() => {
+              setShowPostgame(false);
+              setShowGameOverModal(true);
+            }}
+          />
+        </React.Suspense>
       )}
     </div>
   );

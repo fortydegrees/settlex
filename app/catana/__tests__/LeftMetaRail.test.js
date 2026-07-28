@@ -108,7 +108,12 @@ describe("LeftMetaRail", () => {
   it("uses a Vaul-backed bottom drawer instead of the old floating edge rail", () => {
     const contents = fs.readFileSync(leftMetaRailPath, "utf8");
 
-    expect(contents).toContain('import { MobileMetaDrawer } from "./MobileMetaDrawer"');
+    expect(contents).toContain('import("./MobileMetaDrawer")');
+    expect(contents).toContain("React.lazy");
+    expect(contents).toContain("requestIdleCallback");
+    expect(contents).not.toContain(
+      'import { MobileMetaDrawer } from "./MobileMetaDrawer"'
+    );
     expect(contents).toContain("mobileActivePanel");
     expect(contents).toContain("onMobileActivePanelChange");
     expect(contents).toContain("MobileMetaDrawer");
