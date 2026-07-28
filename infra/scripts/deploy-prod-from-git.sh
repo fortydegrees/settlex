@@ -71,7 +71,16 @@ done
 
 ensure_git_checkout
 
+has_head=false
 if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  has_head=true
+else
+  # A pre-existing source tree may have stale untracked files. Preserve only
+  # production configuration and backups before adopting the Git checkout.
+  git clean -fdx -e .env.prod -e '.env.prod.backup-*' -e backups/
+fi
+
+if [ "$has_head" = true ]; then
   if ! git diff --quiet --ignore-submodules -- ||
     ! git diff --cached --quiet --ignore-submodules --; then
     echo "Production checkout has tracked local changes; refusing to overwrite them." >&2
@@ -80,7 +89,10 @@ if git rev-parse --verify HEAD >/dev/null 2>&1; then
   fi
 fi
 
-old_sha="$(git rev-parse HEAD 2>/dev/null || true)"
+old_sha=""
+if [ "$has_head" = true ]; then
+  old_sha="$(git rev-parse HEAD)"
+fi
 git fetch "$REMOTE" "$BRANCH"
 new_sha="$(git rev-parse "${REMOTE}/${BRANCH}")"
 
