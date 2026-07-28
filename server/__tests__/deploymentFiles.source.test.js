@@ -188,8 +188,16 @@ describe("deployment file wiring", () => {
 
     expect(caddyfile).toContain("reverse_proxy web:");
     expect(caddyfile).toContain("reverse_proxy @gameSocket game:8000");
-    expect(caddyfile).toContain("reverse_proxy @lobby game:8080");
     expect(caddyfile).toContain("/socket.io");
+  });
+
+  it("never exposes the boardgame.io lobby API publicly", () => {
+    const caddyfile = readRepoFile("infra", "Caddyfile");
+
+    // The lobby REST API (create/join/list matches) has no auth of its own;
+    // all lobby operations must flow through the Next API server-side.
+    expect(caddyfile).not.toContain("/games");
+    expect(caddyfile).not.toContain("game:8080");
   });
 
   it("rebuilds app services on the server and migrates after boot", () => {

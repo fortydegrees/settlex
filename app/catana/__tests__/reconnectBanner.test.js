@@ -93,8 +93,7 @@ describe("resolveReconnectBannerCandidate", () => {
     const result = await resolveReconnectBannerCandidate({
       pathname: "/",
       storage,
-      fetchImpl,
-      lobbyBaseUrl: "http://localhost:8080"
+      fetchImpl
     });
 
     expect(result).toEqual({
@@ -103,10 +102,9 @@ describe("resolveReconnectBannerCandidate", () => {
       playerName: "Alice",
       href: "/g/m1"
     });
-    expect(fetchImpl).toHaveBeenCalledWith(
-      "http://localhost:8080/games/catan/m1",
-      { cache: "no-store" }
-    );
+    expect(fetchImpl).toHaveBeenCalledWith("/api/matches/m1", {
+      cache: "no-store"
+    });
   });
 
   it("returns null and clears stale state when the lobby match is missing", async () => {
