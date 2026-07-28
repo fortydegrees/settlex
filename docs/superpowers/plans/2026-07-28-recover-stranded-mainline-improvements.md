@@ -313,6 +313,6 @@ git add docs/agent/PROGRESS.md docs/agent/NOTES.md docs/superpowers/plans/2026-0
 git commit -m "docs: record stranded mainline recovery"
 ```
 
-- [ ] **Step 4: Integrate locally only after verification**
+- [x] **Step 4: Integrate locally only after verification**
 
 Fast-forward local `main` to the verified recovery branch. Do not push, deploy, or delete `codex/mixed-unfinished-rescue-2026-07-28` until the recovered tree and exclusions are confirmed.
