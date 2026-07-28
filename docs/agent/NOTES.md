@@ -1,5 +1,19 @@
 # NOTES
 
+- Integrity boundary (2026-07-28):
+- The public/socket game definition must never expose
+  `resolveDisconnectForfeit`, `resolveIdleForfeit`, or `autoStartGame`.
+  Server-owned timers/presence dispatch those moves through the privileged game
+  definition.
+- Treat `G.core.gameOver` and `ctx.gameover` as `{ winnerId, reason }`;
+  archive reads retain a `winner` fallback only for historical states.
+- boardgame.io publishes a terminal update before its synchronous store writes
+  the state and log. Terminal archiving must wait for the persisted terminal
+  record rather than archiving the first value fetched during `sendAll`.
+- Year of Plenty accepts exactly `min(2, finite bank size)` standard resources
+  for a finite bank, or exactly two standard resources for an infinite bank.
+- The Caddy `/games*` public route was not changed in this batch.
+
 - Stranded-mainline recovery boundary (2026-07-28):
 - `codex/mixed-unfinished-rescue-2026-07-28` was used only as a source archive;
   its large mixed commit must not be merged or cherry-picked wholesale.

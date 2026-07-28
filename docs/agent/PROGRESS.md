@@ -1,5 +1,24 @@
 # PROGRESS
 
+## Status (2026-07-28, integrity fixes merged to local main)
+- Closed the resign argument exploit and removed privileged disconnect, idle,
+  and auto-start moves from the socket-facing game definition while retaining
+  them for authenticated internal dispatch.
+- Added game-level victory handling so VP wins set `ctx.gameover`, stop further
+  moves, and enter the archive/replay lifecycle.
+- Validated Year of Plenty payload resource types and arity in the engine,
+  including finite-bank partial resolution when fewer than two cards remain.
+- Guarded archive failures and idle PostgreSQL pool errors from crashing the
+  in-memory game server.
+- Corrected terminal archiving to wait for boardgame.io to persist the winning
+  state/log and to accept both current `winnerId` and legacy `winner` result
+  shapes. The Master-to-archive regression test covers final state, winning
+  move, winner account/seat, and participant win/loss results.
+- Post-merge `pnpm verify` passed on local `main`: game-core 153 tests; server
+  276 passed and 7 skipped; all 263 app test files; lint clean.
+- The Caddy `/games*` exposure remains deliberately deferred for a separate
+  request-path investigation. Nothing was pushed or deployed.
+
 ## Status (2026-07-28, stranded mainline improvements recovered)
 - Recovered the useful non-3D work that had been preserved in the mixed replay
   WIP commit as focused, reviewable commits on top of current `main`.
