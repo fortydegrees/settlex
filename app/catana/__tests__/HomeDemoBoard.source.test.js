@@ -129,8 +129,8 @@ describe("Home demo board source", () => {
     const source = readAppFile("home", "HomeTableClient.js");
     expect(source).toContain("HomeDemoBoard");
     expect(source).toContain("HomeDemoEffectBridge");
-    expect(source).toContain("HOME_DEMO_AUDIO_SETTINGS");
-    expect(source).toContain("muted: true");
+    expect(source).toContain("React.lazy");
+    expect(source).toContain("requestIdleCallback");
     expect(source).not.toContain("boardgame.io/react");
     expect(source).not.toContain("EffectsBoardWrapper");
     expect(source).not.toContain("createSandboxGame");
@@ -177,8 +177,8 @@ describe("Home demo board source", () => {
   it("renders the shared account entry modal for auth and play username entry", () => {
     const source = readAppFile("home", "HomeTableClient.js");
 
-    expect(source).toContain('import { AccountEntryModal } from "../lobby/AccountEntryModal";');
-    expect(source).toContain("<AccountEntryModal");
+    expect(source).toContain('import("../lobby/AccountEntryModal")');
+    expect(source).toContain("<LazyAccountEntryModal");
     expect(source).toContain("mode={lobby.entryModal.mode}");
     expect(source).toContain("intent={lobby.entryModal.intent}");
     expect(source).toContain("onSwitchToAuth={lobby.actions.switchEntryToAuth}");

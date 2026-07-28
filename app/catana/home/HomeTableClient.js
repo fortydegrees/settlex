@@ -6,7 +6,6 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState
 } from "react";
@@ -25,8 +24,6 @@ import { Button } from "../../ui/Button";
 import { MetaDisclosure } from "../../ui/MetaDisclosure";
 import { Popover } from "../../ui/Popover";
 import { StatusBanner } from "../components/StatusBanner";
-import { AccountEntryModal } from "../lobby/AccountEntryModal";
-import { IdentityModal } from "../lobby/IdentityModal";
 import { publicReleaseInfo } from "../lobby/releaseInfo";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
 import { EMOJI_OPTIONS } from "../lobby/playerIdentityStorage";
@@ -34,12 +31,41 @@ import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
 import { getMatchmakingRescueStage } from "../matchmaking/matchmakingRescue.js";
 import { getPlayerColorOption } from "../theme/playerColors";
 import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
-import { createEffectBus } from "../effects/EffectBus";
-import { HomeDemoBoard } from "../homeDemo/HomeDemoBoard";
 import { HomeDemoBoardPoster } from "../homeDemo/HomeDemoBoardPoster";
-import { HomeDemoEffectBridge } from "../homeDemo/HomeDemoEffectBridge";
 import { createHomeDemoPieceState } from "../homeDemo/homeDemoSequence";
 import "../components/hudGlass.css";
+
+let homeDemoBoardPromise;
+const loadHomeDemoBoard = () =>
+  (homeDemoBoardPromise ??= import("../homeDemo/HomeDemoBoard"));
+const LazyHomeDemoBoard = React.lazy(() =>
+  loadHomeDemoBoard().then((module) => ({ default: module.HomeDemoBoard }))
+);
+
+let homeDemoEffectBridgePromise;
+const loadHomeDemoEffectBridge = () =>
+  (homeDemoEffectBridgePromise ??= import("../homeDemo/HomeDemoEffectBridge"));
+const LazyHomeDemoEffectBridge = React.lazy(() =>
+  loadHomeDemoEffectBridge().then((module) => ({
+    default: module.HomeDemoEffectBridge
+  }))
+);
+
+let accountEntryModalPromise;
+const loadAccountEntryModal = () =>
+  (accountEntryModalPromise ??= import("../lobby/AccountEntryModal"));
+const LazyAccountEntryModal = React.lazy(() =>
+  loadAccountEntryModal().then((module) => ({
+    default: module.AccountEntryModal
+  }))
+);
+
+let identityModalPromise;
+const loadIdentityModal = () =>
+  (identityModalPromise ??= import("../lobby/IdentityModal"));
+const LazyIdentityModal = React.lazy(() =>
+  loadIdentityModal().then((module) => ({ default: module.IdentityModal }))
+);
 
 const brandWordmarkFont = Fredoka({
   subsets: ["latin"],
@@ -102,10 +128,6 @@ const HOME_TOP_LINKS = [
 ];
 
 const HOME_RELEASE_PANEL_HIGHLIGHT_COUNT = 3;
-
-const HOME_DEMO_AUDIO_SETTINGS = Object.freeze({
-  muted: true
-});
 
 const MATCH_ALERT_STATUS_LABELS = Object.freeze({
   off: "Enable",
@@ -896,15 +918,17 @@ function FullBoardLayer({
 }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-0">
-      <HomeDemoBoard
-        pieceState={pieceState}
-        reservedHeight={reservedHeight}
-        centerYOffset={centerYOffset}
-        boardRef={boardRef}
-        placementLayerRef={placementLayerRef}
-        placementRoadLayerRef={placementRoadLayerRef}
-        onBoardMeasuredChange={onBoardMeasuredChange}
-      />
+      <React.Suspense fallback={null}>
+        <LazyHomeDemoBoard
+          pieceState={pieceState}
+          reservedHeight={reservedHeight}
+          centerYOffset={centerYOffset}
+          boardRef={boardRef}
+          placementLayerRef={placementLayerRef}
+          placementRoadLayerRef={placementRoadLayerRef}
+          onBoardMeasuredChange={onBoardMeasuredChange}
+        />
+      </React.Suspense>
     </div>
   );
 }
@@ -925,6 +949,7 @@ function SystemChromeVariant({
   hasIdentity,
   matchAlerts,
   isBoardLayoutReady,
+  isHomeDemoReady,
   actions,
   logoVariant,
   logoTone
@@ -932,7 +957,7 @@ function SystemChromeVariant({
   return (
     <>
       <HomeDemoBoardPoster hidden={isBoardMeasured} />
-      {isBoardLayoutReady ? (
+      {isBoardLayoutReady && isHomeDemoReady ? (
         <FullBoardLayer
           pieceState={pieceState}
           reservedHeight={isCompact ? 276 : 158}
@@ -1090,10 +1115,10 @@ function HomeTableBoard({ initialAccount = null }) {
   const isCompact = isBoardLayoutReady && viewportWidth < 760;
   const [pieceState, setPieceState] = useState(() => createHomeDemoPieceState());
   const [isBoardMeasured, setIsBoardMeasured] = useState(false);
+  const [isHomeDemoReady, setIsHomeDemoReady] = useState(false);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
-  const effectsBus = useMemo(() => createEffectBus(), []);
   const lobby = useLobbyHomeActions({
     initialAccount,
     onMatchFound: playMatchFoundSound
@@ -1131,6 +1156,36 @@ function HomeTableBoard({ initialAccount = null }) {
     }
   };
 
+  useEffect(() => {
+    let cancelled = false;
+    const loadDeferredHomepage = () => {
+      void Promise.all([
+        loadHomeDemoBoard(),
+        loadHomeDemoEffectBridge(),
+        loadAccountEntryModal(),
+        loadIdentityModal()
+      ]).finally(() => {
+        if (!cancelled) setIsHomeDemoReady(true);
+      });
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleCallbackId = window.requestIdleCallback(loadDeferredHomepage, {
+        timeout: 1500
+      });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback?.(idleCallbackId);
+      };
+    }
+
+    const timeoutId = window.setTimeout(loadDeferredHomepage, 1200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
   return (
     <main
       className="fixed inset-0 overflow-hidden text-slate-900"
@@ -1153,6 +1208,7 @@ function HomeTableBoard({ initialAccount = null }) {
         hasIdentity={lobby.hasIdentity}
         matchAlerts={matchAlerts}
         isBoardLayoutReady={isBoardLayoutReady}
+        isHomeDemoReady={isHomeDemoReady}
         actions={lobby.actions}
         onSelectMode={handleSelectMode}
       />
@@ -1162,43 +1218,46 @@ function HomeTableBoard({ initialAccount = null }) {
       />
 
       {lobby.entryModal.open ? (
-        <AccountEntryModal
-          open={lobby.entryModal.open}
-          mode={lobby.entryModal.mode}
-          intent={lobby.entryModal.intent}
-          identity={lobby.identity}
-          authOptions={lobby.authOptions}
-          onClose={lobby.overlays.closeEntryModal}
-          onSwitchToAuth={lobby.actions.switchEntryToAuth}
-          onPlayUsernameSubmit={lobby.overlays.handlePlayUsernameSubmit}
-          onEmailSignIn={lobby.overlays.handleAuthEmailSignIn}
-          onEmailSignUp={lobby.overlays.handleAuthEmailSignUp}
-          onSignInProvider={lobby.actions.signInWithProvider}
-          onContinueAsGuest={lobby.actions.continueAsGuest}
-        />
+        <React.Suspense fallback={null}>
+          <LazyAccountEntryModal
+            open={lobby.entryModal.open}
+            mode={lobby.entryModal.mode}
+            intent={lobby.entryModal.intent}
+            identity={lobby.identity}
+            authOptions={lobby.authOptions}
+            onClose={lobby.overlays.closeEntryModal}
+            onSwitchToAuth={lobby.actions.switchEntryToAuth}
+            onPlayUsernameSubmit={lobby.overlays.handlePlayUsernameSubmit}
+            onEmailSignIn={lobby.overlays.handleAuthEmailSignIn}
+            onEmailSignUp={lobby.overlays.handleAuthEmailSignUp}
+            onSignInProvider={lobby.actions.signInWithProvider}
+            onContinueAsGuest={lobby.actions.continueAsGuest}
+          />
+        </React.Suspense>
       ) : null}
 
-      {isBoardLayoutReady ? (
-        <HomeDemoEffectBridge
-          effectsBus={effectsBus}
-          boardRef={boardRef}
-          placementLayerRef={placementLayerRef}
-          placementRoadLayerRef={placementRoadLayerRef}
-          reservedHeight={boardReservedHeight}
-          centerYOffset={boardCenterYOffset}
-          audioSettings={HOME_DEMO_AUDIO_SETTINGS}
-          onPieceStateChange={setPieceState}
-        />
+      {isBoardLayoutReady && isHomeDemoReady ? (
+        <React.Suspense fallback={null}>
+          <LazyHomeDemoEffectBridge
+            placementLayerRef={placementLayerRef}
+            placementRoadLayerRef={placementRoadLayerRef}
+            reservedHeight={boardReservedHeight}
+            centerYOffset={boardCenterYOffset}
+            onPieceStateChange={setPieceState}
+          />
+        </React.Suspense>
       ) : null}
 
       {lobby.showIdentity ? (
-        <IdentityModal
-          onSubmit={lobby.overlays.handleIdentitySubmit}
-          onClose={lobby.overlays.closeIdentity}
-          initialName={lobby.identity.name}
-          initialEmoji={lobby.identity.emoji}
-          initialColor={lobby.identity.color}
-        />
+        <React.Suspense fallback={null}>
+          <LazyIdentityModal
+            onSubmit={lobby.overlays.handleIdentitySubmit}
+            onClose={lobby.overlays.closeIdentity}
+            initialName={lobby.identity.name}
+            initialEmoji={lobby.identity.emoji}
+            initialColor={lobby.identity.color}
+          />
+        </React.Suspense>
       ) : null}
 
       <SearchingModal

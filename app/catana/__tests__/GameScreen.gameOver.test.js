@@ -72,7 +72,9 @@ describe("GameScreen game over", () => {
     expect(contents).toMatch(
       /shouldFireConfetti=\{\s*!isReplay &&\s*isWinner &&\s*!winnerConfettiSeenRef\.current\s*\}/
     );
-    expect(contents).toContain("onConfettiFired={() => {\n              winnerConfettiSeenRef.current = true;\n            }}");
+    expect(contents).toMatch(
+      /onConfettiFired=\{\(\) => \{\s*winnerConfettiSeenRef\.current = true;\s*\}\}/
+    );
   });
 
   it("wires a shared resign confirm dialog", () => {

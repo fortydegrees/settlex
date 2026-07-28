@@ -31,6 +31,6 @@ describe("GameScreen theme wiring", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
     expect(contents).toMatch(/<MemoizedCatanBoard[\s\S]*themeId=\{themeId\}/);
     expect(contents).toMatch(/<PlayerActionContainer[\s\S]*themeId=\{themeId\}/);
-    expect(contents).toMatch(/<TradeDiscardModal[\s\S]*themeId=\{themeId\}/);
+    expect(contents).toMatch(/<LazyTradeDiscardModal[\s\S]*themeId=\{themeId\}/);
   });
 });

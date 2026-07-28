@@ -5,12 +5,20 @@ import {
   META_PANEL_FRAME_CLASS_NAME,
   META_PANEL_GLASS_STYLE,
 } from "./metaPanelChrome";
-import { MobileMetaDrawer } from "./MobileMetaDrawer";
 import {
   normalizeLeftMetaRailDesktopPrefs,
   readLeftMetaRailDesktopPrefs,
   writeLeftMetaRailDesktopPrefs,
 } from "../utils/leftMetaRailPreferences";
+
+let mobileMetaDrawerPromise;
+const loadMobileMetaDrawer = () =>
+  (mobileMetaDrawerPromise ??= import("./MobileMetaDrawer"));
+const LazyMobileMetaDrawer = React.lazy(() =>
+  loadMobileMetaDrawer().then((module) => ({
+    default: module.MobileMetaDrawer,
+  }))
+);
 
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
@@ -584,16 +592,50 @@ const MobileMetaRailComponent = ({
   mobileActivePanel,
   onMobileActivePanelChange,
   initialActivePanel = null,
+  isPhoneLayout = false,
 }) => {
   const isControlled = mobileActivePanel !== undefined;
   const [uncontrolledActivePanel, setUncontrolledActivePanel] = useState(() =>
     normalizePanelId(initialActivePanel)
   );
+  const [isDrawerReady, setIsDrawerReady] = useState(false);
 
   useEffect(() => {
     if (isControlled) return;
     setUncontrolledActivePanel(normalizePanelId(initialActivePanel));
   }, [initialActivePanel, isControlled]);
+
+  useEffect(() => {
+    if (!isPhoneLayout) {
+      setIsDrawerReady(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const preloadDrawer = () => {
+      void loadMobileMetaDrawer()
+        .then(() => {
+          if (!cancelled) setIsDrawerReady(true);
+        })
+        .catch(() => {});
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleCallbackId = window.requestIdleCallback(preloadDrawer, {
+        timeout: 2000,
+      });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback?.(idleCallbackId);
+      };
+    }
+
+    const timeoutId = window.setTimeout(preloadDrawer, 1500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [isPhoneLayout]);
 
   const activePanel = isControlled
     ? normalizePanelId(mobileActivePanel)
@@ -633,11 +675,17 @@ const MobileMetaRailComponent = ({
     ]
   );
 
-  return React.createElement(MobileMetaDrawer, {
-    activePanel,
-    panels,
-    onActivePanelChange: setActivePanel,
-  });
+  if (!isPhoneLayout || (!isDrawerReady && !activePanel)) return null;
+
+  return React.createElement(
+    React.Suspense,
+    { fallback: null },
+    React.createElement(LazyMobileMetaDrawer, {
+      activePanel,
+      panels,
+      onActivePanelChange: setActivePanel,
+    })
+  );
 };
 
 export const DesktopMetaDock = React.memo(DesktopMetaDockComponent);
