@@ -4,11 +4,13 @@ export class ArchiveManager {
     cleanupArchivedMatch,
     cleanupEnabled = false,
     graceMs = 5_000,
+    logger = console,
   } = {}) {
     this.archiveFinishedMatch = archiveFinishedMatch;
     this.cleanupArchivedMatch = cleanupArchivedMatch;
     this.cleanupEnabled = cleanupEnabled;
     this.graceMs = graceMs;
+    this.logger = logger;
     this.archivingMatchIDs = new Set();
     this.archivedMatchIDs = new Set();
     this.cleanupTimers = new Map();
@@ -41,6 +43,13 @@ export class ArchiveManager {
       if (this.cleanupEnabled) {
         this.scheduleCleanup(matchID);
       }
+    } catch (error) {
+      // Leave the match unarchived so a later state publish retries; a
+      // rejection here would otherwise crash the process mid-archive.
+      this.logger?.error?.("ArchiveManager failed to archive match", {
+        matchID,
+        error,
+      });
     } finally {
       this.archivingMatchIDs.delete(matchID);
     }
