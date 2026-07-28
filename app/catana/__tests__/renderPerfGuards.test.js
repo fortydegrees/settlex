@@ -295,4 +295,43 @@ describe("render performance guards", () => {
     const contents = readCatanaFile("ActionNode.js");
     expect(contents).toContain("getPieceSvgFile");
   });
+
+  it("keeps effect runners stable across game state ticks", () => {
+    const contents = readCatanaFile("GameScreen.js");
+
+    // Runners read G lazily through a ref so the effects memo does not
+    // rebuild (and re-subscribe ~10 bus listeners) on every move.
+    expect(contents).toContain("latestGRef.current");
+    expect(contents).not.toMatch(/\(\) => bgioProps\.G/);
+    expect(contents).not.toMatch(/^\s*bgioProps\.G,$/m);
+  });
+
+  it("measures the dev card display on layout changes, not every render", () => {
+    const contents = readCatanaFile("GameScreen.js");
+
+    expect(contents).not.toMatch(
+      /getBoundingClientRect\?\.\(\)\);\s*\n\s*if \(rect\) \{\s*\n\s*devCardDisplayRectRef\.current = rect;\s*\n\s*\}\s*\n\s*\}\);/
+    );
+  });
+
+  it("reads board effect props through a single bgio-effects hook and guards robber resets", () => {
+    const contents = readCatanaFile("Board.js");
+
+    expect((contents.match(/useLatestPropsOnEffect\(/g) ?? []).length).toBe(1);
+    expect(contents).toContain("setRobberTiles((prev) => (prev.length ? [] : prev))");
+    expect(contents).toContain(
+      "setRobberTargetElementsByTileId((prev) =>"
+    );
+  });
+
+  it("keeps chat panel props identity-stable across game ticks", () => {
+    const contents = readCatanaFile("components/LeftMetaRail.js");
+
+    expect(contents).toContain("EMPTY_CHAT_MESSAGES");
+    // The panels memo must not depend on the whole bgioProps object, whose
+    // identity changes on every move (receiving it as a component prop is
+    // fine - only the builder input and memo deps matter).
+    expect(contents).not.toMatch(/buildMetaPanels\(\{[^}]*bgioProps/s);
+    expect(contents).not.toMatch(/^ {6}bgioProps,$/m);
+  });
 });
