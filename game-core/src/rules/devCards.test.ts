@@ -233,6 +233,28 @@ it("year of plenty rejects payloads that are not exactly two resources", () => {
   expect(state.bank.resources).toHaveLength(3);
 });
 
+it("year of plenty allows a single resource when the finite bank has only one card", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.SHEEP];
+
+  const result = applyYearOfPlenty(state, "0", [ResourceType.SHEEP] as never);
+
+  expect(result.ok).toBe(true);
+  expect(state.playerStateById["0"].resources).toEqual([ResourceType.SHEEP]);
+  expect(state.bank.resources).toEqual([]);
+});
+
+it("year of plenty rejects taking fewer than two when the bank can supply two", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD, ResourceType.BRICK];
+
+  const result = applyYearOfPlenty(state, "0", [ResourceType.WOOD] as never);
+
+  expect(result.ok).toBe(false);
+  expect(state.playerStateById["0"].resources).toEqual([]);
+  expect(state.bank.resources).toHaveLength(2);
+});
+
 it("year of plenty rejects non-card resource identifiers", () => {
   const state = createEmptyState(["0"]);
   state.bank.resources = [ResourceType.WOOD, ResourceType.BRICK];
