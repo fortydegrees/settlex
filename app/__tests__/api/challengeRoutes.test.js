@@ -164,6 +164,69 @@ describe("challenge API routes", () => {
     });
   });
 
+  it("rejects the inviter accepting their own friend challenge", async () => {
+    const { createChallengeAcceptRoute } = await loadRoute(
+      "[matchID]",
+      "accept",
+      "handler.js"
+    );
+    const reserveAlertsBeforeHumanJoin = vi.fn();
+    const joinMatchForAccount = vi.fn();
+    const ACCEPT = createChallengeAcceptRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: {
+          id: "acct_inviter",
+          currentUsername: "Ada",
+        },
+      }),
+      getLiveMatch: vi.fn().mockResolvedValue({
+        matchID: "match_1",
+        metadata: {
+          setupData: {
+            matchKind: "friend_challenge",
+            friendChallenge: {
+              inviterAccountId: "acct_inviter",
+              inviterSeatId: "1",
+              createdAt: "2026-07-28T10:00:00.000Z",
+              expiresAt: "2026-07-28T10:05:00.000Z",
+            },
+          },
+        },
+        players: {
+          0: { id: 0, name: "" },
+          1: {
+            id: 1,
+            name: "Ada",
+            data: {
+              participantType: "human",
+              accountId: "acct_inviter",
+            },
+          },
+        },
+      }),
+      reserveAlertsBeforeHumanJoin,
+      joinMatchForAccount,
+      now: () => new Date("2026-07-28T10:02:00.000Z"),
+    });
+
+    const response = await ACCEPT(
+      new Request("http://localhost/api/challenges/match_1/accept", {
+        method: "POST",
+        headers: {
+          cookie: "settlehex_session=a.b",
+        },
+      }),
+      { params: { matchID: "match_1" } }
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({
+      error: "You cannot accept your own challenge.",
+    });
+    expect(reserveAlertsBeforeHumanJoin).not.toHaveBeenCalled();
+    expect(joinMatchForAccount).not.toHaveBeenCalled();
+  });
+
   it("accepts and cancels a pending friend challenge through app-owned routes", async () => {
     const { createChallengeAcceptRoute } = await loadRoute("[matchID]", "accept", "handler.js");
     const { createChallengeCancelRoute } = await loadRoute("[matchID]", "cancel", "handler.js");

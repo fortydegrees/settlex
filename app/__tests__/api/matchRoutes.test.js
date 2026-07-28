@@ -455,7 +455,16 @@ describe("match API routes", () => {
         1: { id: 1, name: "" },
       },
     };
-    const getLiveMatch = vi.fn().mockResolvedValue(liveMatch);
+    const getLiveMatch = vi
+      .fn()
+      .mockResolvedValueOnce(liveMatch)
+      .mockResolvedValue({
+        ...liveMatch,
+        players: {
+          ...liveMatch.players,
+          0: { id: 0, name: "" },
+        },
+      });
     const order = [];
     let releasePause;
     const pauseGate = new Promise((resolve) => {
@@ -598,6 +607,83 @@ describe("match API routes", () => {
 
     expect(response.status).toBe(500);
     expect(joinMatchForAccount).not.toHaveBeenCalled();
+  });
+
+  it("rejects a second human seat for the same account inside the match lock", async () => {
+    const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
+    const order = [];
+    const reserveAlertsBeforeHumanJoin = vi.fn(async () => {
+      order.push("reserve");
+      return null;
+    });
+    const joinMatchForAccount = vi.fn(async () => {
+      order.push("join");
+      return {
+        playerID: "1",
+        playerCredentials: "second_secret",
+      };
+    });
+    const withMatchMutationLock = vi.fn(async ({ run }) => {
+      order.push("lock:start");
+      const result = await run();
+      order.push("lock:end");
+      return result;
+    });
+    const JOIN = createMatchJoinRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: {
+          id: "acct_1",
+          currentUsername: "Ada",
+        },
+      }),
+      getLiveMatch: vi.fn(async () => {
+        order.push("read");
+        return {
+          matchID: "match_1",
+          players: {
+            0: {
+              id: 0,
+              name: "Ada",
+              data: {
+                participantType: "human",
+                accountId: "acct_1",
+              },
+            },
+            1: { id: 1, name: "" },
+          },
+        };
+      }),
+      reserveAlertsBeforeHumanJoin,
+      joinMatchForAccount,
+      withMatchMutationLock,
+    });
+
+    const response = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({
+          matchID: "match_1",
+          playerID: "1",
+        }),
+      })
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: "You are already seated in this match.",
+      code: "ACCOUNT_ALREADY_SEATED",
+    });
+    expect(order).toEqual(["lock:start", "read", "lock:end"]);
+    expect(reserveAlertsBeforeHumanJoin).not.toHaveBeenCalled();
+    expect(joinMatchForAccount).not.toHaveBeenCalled();
+    expect(withMatchMutationLock).toHaveBeenCalledWith({
+      matchID: "match_1",
+      run: expect.any(Function),
+    });
   });
 
   it("does not allow the public join route into a private bot-intent match", async () => {
