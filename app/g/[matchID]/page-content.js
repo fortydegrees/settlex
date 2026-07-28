@@ -176,7 +176,13 @@ export const createGMatchPage = ({
       });
     }
 
-    return notFoundImpl();
+    const UnavailableMatchPageResolved =
+      UnavailableMatchPageImpl ??
+      (await import("./UnavailableMatchPage.jsx")).UnavailableMatchPage;
+
+    return h(UnavailableMatchPageResolved, {
+      matchID: params.matchID,
+    });
   };
 
 const GMatchPage = createGMatchPage();

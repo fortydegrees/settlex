@@ -145,6 +145,7 @@ export function useLobbyHomeActions({
   const [entryModal, setEntryModal] = useState(CLOSED_ENTRY_MODAL);
   const [searchState, setSearchState] = useState(null);
   const [challengeState, setChallengeState] = useState(null);
+  const [activeActionId, setActiveActionId] = useState(null);
   const [authOptions, setAuthOptions] = useState(DEFAULT_AUTH_OPTIONS);
   const [accountReady, setAccountReady] = useState(false);
   const [searchElapsedSeconds, setSearchElapsedSeconds] = useState(0);
@@ -531,7 +532,10 @@ export function useLobbyHomeActions({
       }
 
       if (restored.status === "pending") {
-        setChallengeState((current) => current ?? restored.challengeState);
+        router.push(
+          restored.challengeState?.challengeUrl ??
+            `/g/${restored.challengeState?.matchID}`
+        );
         return;
       }
 
@@ -923,6 +927,7 @@ export function useLobbyHomeActions({
     announcedMatchIDRef.current = null;
     setSearchElapsedSeconds(0);
     setError("");
+    setActiveActionId("queue");
     setSearchState({
       matchID: null,
       playerID: null,
@@ -1097,6 +1102,7 @@ export function useLobbyHomeActions({
       setSearchElapsedSeconds(0);
       setError(err?.message || "Matchmaking failed.");
     } finally {
+      setActiveActionId(null);
       settleSearchOperation(operationSafeToTransition);
       if (searchOperationPromiseRef.current === searchOperation) {
         searchOperationPromiseRef.current = null;
@@ -1113,6 +1119,7 @@ export function useLobbyHomeActions({
 
   const createFriendChallenge = useCallback(async () => {
     setError("");
+    setActiveActionId("friend");
 
     try {
       const account = await ensureAccountSession();
@@ -1146,17 +1153,17 @@ export function useLobbyHomeActions({
         playerID: created.playerID
       });
 
-      setChallengeState({
-        ...created,
-        phase: "waiting"
-      });
+      router.push(`/g/${created.matchID}`);
     } catch (err) {
       setError(err?.message || "Failed to create challenge.");
+    } finally {
+      setActiveActionId(null);
     }
-  }, [ensureAccountSession, persistJoinedSeat]);
+  }, [ensureAccountSession, persistJoinedSeat, router]);
 
   const playAgainstBot = useCallback(async () => {
     setError("");
+    setActiveActionId("bot");
 
     try {
       const account = await ensureGeneratedGuestAccount();
@@ -1189,6 +1196,8 @@ export function useLobbyHomeActions({
       router.push(`/g/${matchID}`);
     } catch (err) {
       setError(err?.message || "Failed to start bot match.");
+    } finally {
+      setActiveActionId(null);
     }
   }, [ensureGeneratedGuestAccount, persistJoinedSeat, router]);
 
@@ -1486,7 +1495,13 @@ export function useLobbyHomeActions({
       emoji: currentAccount?.avatarEmoji ?? playerEmoji,
       color: currentAccount?.avatarColor ?? playerColor
     },
-    isBusy: Boolean(searchState || challengeState || isPufferTransitionPending),
+    isBusy: Boolean(
+      searchState ||
+        challengeState ||
+        isPufferTransitionPending ||
+        activeActionId
+    ),
+    activeActionId,
     showIdentity,
     entryModal,
     searchState,

@@ -235,8 +235,8 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
       "const openIdentity"
     );
 
-    expect(source).toContain(
-      "isBusy: Boolean(searchState || challengeState || isPufferTransitionPending)"
+    expect(source).toMatch(
+      /isBusy: Boolean\([\s\S]*searchState[\s\S]*challengeState[\s\S]*isPufferTransitionPending[\s\S]*activeActionId[\s\S]*\)/
     );
     expect(pufferSource).not.toContain("setSearchState");
     expect(source).toContain('setError(err?.message || "Failed to start bot match.")');

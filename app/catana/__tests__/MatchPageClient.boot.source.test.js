@@ -67,6 +67,9 @@ describe("MatchPageClient live boot path", () => {
     );
 
     expect(seatSelection).toContain("if (credentials) return");
-    expect(seatSelection).toContain("[credentials, playerID, openSeats, spectatorMode]");
+    expect(seatSelection).toContain("if (pendingChallengeState) return");
+    expect(seatSelection).toContain(
+      "[credentials, pendingChallengeState, playerID, openSeats, spectatorMode]"
+    );
   });
 });

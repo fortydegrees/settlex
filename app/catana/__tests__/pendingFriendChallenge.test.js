@@ -97,7 +97,7 @@ describe("pendingFriendChallenge", () => {
       challengeState: {
         matchID: "m1",
         playerID: "0",
-        challengeUrl: "/challenge/m1",
+        challengeUrl: "/g/m1",
         expiresAt: "2099-04-23T10:05:00.000Z",
         playerCredentials: "secret",
         phase: "waiting"

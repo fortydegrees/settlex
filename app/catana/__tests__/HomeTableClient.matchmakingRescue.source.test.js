@@ -35,8 +35,12 @@ describe("HomeTableClient matchmaking rescue", () => {
     expect(modalSource).toContain("setRescueExpanded(false)");
     expect(modalSource).not.toContain("playOnline");
     expect(modalSource).not.toContain("/api/matches/create");
+    expect(modalSource).toContain("{searchState ? (");
     expect(modalSource).toContain(
-      "const canCancel = Boolean(searchState) && !isMatchFound"
+      "disabled={isMatchFound || isPufferTransitionPending}"
+    );
+    expect(modalSource).toContain(
+      '{isMatchFound ? "Loading board..." : "Cancel"}'
     );
   });
 

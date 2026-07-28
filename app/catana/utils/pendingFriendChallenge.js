@@ -112,7 +112,7 @@ export async function restorePendingFriendChallenge({
       challengeState: {
         matchID: record.matchID,
         playerID: record.playerID,
-        challengeUrl: `/challenge/${record.matchID}`,
+        challengeUrl: `/g/${record.matchID}`,
         expiresAt: challenge?.expiresAt ?? null,
         playerCredentials: credentials ?? null,
         phase: "waiting"

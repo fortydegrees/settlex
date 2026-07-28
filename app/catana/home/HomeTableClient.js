@@ -26,7 +26,6 @@ import { MetaDisclosure } from "../../ui/MetaDisclosure";
 import { Popover } from "../../ui/Popover";
 import { StatusBanner } from "../components/StatusBanner";
 import { AccountEntryModal } from "../lobby/AccountEntryModal";
-import { FriendChallengeModal } from "../lobby/FriendChallengeModal";
 import { IdentityModal } from "../lobby/IdentityModal";
 import { publicReleaseInfo } from "../lobby/releaseInfo";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
@@ -820,8 +819,15 @@ function SystemTopChrome({
   );
 }
 
-function SystemActionButton({ action, disabled, onSelectMode }) {
+function SystemActionButton({ action, disabled, isActive, onSelectMode }) {
   const Icon = action.icon;
+  const activeLabel =
+    action.id === "bot"
+      ? "Starting..."
+      : action.id === "friend"
+      ? "Creating..."
+      : "Finding...";
+  const label = isActive ? activeLabel : action.label;
 
   return (
     <button
@@ -842,21 +848,28 @@ function SystemActionButton({ action, disabled, onSelectMode }) {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-base font-bold leading-none sm:text-lg">
-            {action.label}
+            {label}
           </span>
           <span className="mt-1 block truncate text-[0.7rem] font-semibold opacity-75 sm:text-xs">
             {action.subtitle}
           </span>
         </span>
         <span className={`grid h-10 min-w-10 shrink-0 place-items-center rounded-[0.88rem] px-2 text-sm font-bold sm:h-11 sm:min-w-11 sm:rounded-[0.95rem] ${action.badgeClassName}`}>
-          {action.badge}
+          {isActive ? (
+            <span
+              aria-hidden="true"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none"
+            />
+          ) : (
+            action.badge
+          )}
         </span>
       </span>
     </button>
   );
 }
 
-function SystemActionDock({ isBusy, onSelectMode }) {
+function SystemActionDock({ isBusy, activeActionId, onSelectMode }) {
   return (
     <section className="catana-hud-glass pointer-events-auto absolute inset-x-3 bottom-3 z-30 mx-auto grid max-w-[55rem] grid-cols-1 gap-1.5 rounded-[1.35rem] p-1.5 sm:inset-x-4 sm:bottom-6 sm:grid-cols-[1.2fr_1fr_1fr] sm:gap-2">
       {SYSTEM_ACTIONS.map((action) => (
@@ -864,6 +877,7 @@ function SystemActionDock({ isBusy, onSelectMode }) {
           key={action.id}
           action={action}
           disabled={isBusy}
+          isActive={activeActionId === action.id}
           onSelectMode={onSelectMode}
         />
       ))}
@@ -905,6 +919,7 @@ function SystemChromeVariant({
   onBoardMeasuredChange,
   onSelectMode,
   isBusy,
+  activeActionId,
   identity,
   accountStatus,
   hasIdentity,
@@ -941,7 +956,11 @@ function SystemChromeVariant({
         onSignOut={actions.signOut}
       />
       <HomeMetaChrome />
-      <SystemActionDock isBusy={isBusy} onSelectMode={onSelectMode} />
+      <SystemActionDock
+        isBusy={isBusy}
+        activeActionId={activeActionId}
+        onSelectMode={onSelectMode}
+      />
     </>
   );
 }
@@ -986,7 +1005,6 @@ function SearchingModal({
     : isMatchFound
       ? "Loading board..."
       : `1v1 · ${timeStr}`;
-  const canCancel = Boolean(searchState) && !isMatchFound;
 
   return (
     <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center bg-sky-700/[0.18] p-4 backdrop-blur-md">
@@ -1016,15 +1034,15 @@ function SearchingModal({
             </Button>
           </div>
         ) : null}
-        {canCancel ? (
+        {searchState ? (
           <Button
             variant="secondary"
             size="md"
             className={`${showRescue ? "mt-2" : "mt-4"} w-full`}
-            disabled={isPufferTransitionPending}
+            disabled={isMatchFound || isPufferTransitionPending}
             onClick={() => void onCancel()}
           >
-            Cancel
+            {isMatchFound ? "Loading board..." : "Cancel"}
           </Button>
         ) : null}
         {searchState && !isMatchFound && rescueStage === "puffer" ? (
@@ -1129,6 +1147,7 @@ function HomeTableBoard({ initialAccount = null }) {
         logoVariant={logoVariant}
         logoTone={logoTone}
         isBusy={lobby.isBusy}
+        activeActionId={lobby.activeActionId}
         identity={lobby.identity}
         accountStatus={lobby.account?.status}
         hasIdentity={lobby.hasIdentity}
@@ -1179,15 +1198,6 @@ function HomeTableBoard({ initialAccount = null }) {
           initialName={lobby.identity.name}
           initialEmoji={lobby.identity.emoji}
           initialColor={lobby.identity.color}
-        />
-      ) : null}
-
-      {lobby.challengeState ? (
-        <FriendChallengeModal
-          phase={lobby.challengeState.phase}
-          challengeUrl={lobby.challengeState.challengeUrl}
-          expiresAt={lobby.challengeState.expiresAt}
-          onClose={lobby.overlays.cancelChallengeInvite}
         />
       ) : null}
 
