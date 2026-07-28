@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 const PRODUCT_BACKGROUND_FILES = [
   "app/account/AccountPageClient.js",
   "app/board-editor/page.js",
-  "app/challenge/[matchID]/ChallengePageClient.js",
+  "app/g/[matchID]/UnavailableMatchPage.jsx",
   "app/catana/GameScreen.js",
   "app/catana/home/HomeTableClient.js",
   "app/catana/lobby/LobbyPageClient.js",
