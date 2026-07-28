@@ -22,6 +22,7 @@ import {
   buildGameScreenDisplayModel,
   getGameOverTitle
 } from "./utils/gameScreenDisplayModel";
+import { getOpponentHudLayout } from "./utils/opponentHudLayout";
 import {
   getActiveDisconnectStateByPlayerId,
   mergeVisibleLogEntries,
@@ -1164,9 +1165,14 @@ export function GameScreen(bgioProps) {
         })),
     [emojiMap, nameMap, playerID, playerViewMap]
   );
-  const displayedOpponents = useMemo(
-    () => (isPhoneLayout ? opponents.slice(0, 1) : opponents),
-    [isPhoneLayout, opponents]
+  const { topOpponents: displayedOpponents, bottomOpponent } = useMemo(
+    () =>
+      getOpponentHudLayout({
+        opponents,
+        isNeutralViewer: playerID == null,
+        isPhoneLayout
+      }),
+    [isPhoneLayout, opponents, playerID]
   );
   const localIdlePresence =
     playerID != null ? idleStateByPlayerId[playerID] ?? null : null;
@@ -1894,6 +1900,40 @@ TODO: accurately colour it
             }
           />
         ))}
+
+      {bottomOpponent ? (
+        <div
+          className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4"
+          data-neutral-viewer-bottom-player="true"
+          style={{
+            transform: playfieldCenterOffsetX
+              ? `translateX(${Math.round(playfieldCenterOffsetX)}px)`
+              : undefined
+          }}
+        >
+          <div className="pointer-events-auto">
+            <OpponentPlayerBox
+              player={bottomOpponent}
+              presence={
+                disconnectStateByPlayerId[bottomOpponent.id] ??
+                idleStateByPlayerId[bottomOpponent.id] ??
+                null
+              }
+              core={bgioProps.G.core}
+              coreTopology={bgioProps.G.coreTopology}
+              isActive={
+                !isGameOver &&
+                gameStatus.activePlayerId === bottomOpponent.id
+              }
+              statusType={gameStatus.statusType}
+              knightDisplayOverride={
+                knightDisplayOverrideByPlayerId[String(bottomOpponent.id)] ??
+                null
+              }
+            />
+          </div>
+        </div>
+      ) : null}
 
       {/* MODALS */}
       {/* 1. Force Discard Modal */}
