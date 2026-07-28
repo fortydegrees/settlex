@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { EffectsBoardWrapper } from "bgio-effects/react";
-import { GameEffects } from "../effects/GameEffects";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPiecePlacementRunner } from "../effects/placePiece";
 import {
   PLACE_PIECE_DEFAULT_TUNING,
@@ -35,17 +33,6 @@ const HOME_DEMO_PLACE_PIECE_TUNING = Object.freeze({
   easeSettle: "back.out(1.45)",
   easeSettleRoad: "back.out(1.35)"
 });
-const GameEffectsWithProvider = EffectsBoardWrapper(GameEffects);
-const HOME_DEMO_EFFECT_PROVIDER_STATE = Object.freeze({
-  effects: Object.freeze({
-    data: Object.freeze({
-      id: "home-demo-effects",
-      queue: Object.freeze([]),
-      duration: 0
-    })
-  })
-});
-
 function useReducedMotion() {
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -116,74 +103,60 @@ function getHomeDemoTailPlacementDurationMs(events) {
 }
 
 export function HomeDemoEffectBridge({
-  effectsBus,
-  boardRef,
   placementLayerRef,
   placementRoadLayerRef,
   reservedHeight,
   centerYOffset = 0,
   onPieceStateChange,
-  themeId = DEFAULT_THEME_ID,
-  audioSettings
+  themeId = DEFAULT_THEME_ID
 }) {
   const { width, height, isMeasured } = useWindowSize();
   const reducedMotion = useReducedMotion();
-  const [isMounted, setIsMounted] = useState(false);
   const cycleIndexRef = useRef(0);
 
-  const effects = useMemo(
-    () => ({
-      piecePlacement: ({ emitCue }) => {
-        const runner = createPiecePlacementRunner({
-          getLayerEl: (payload) =>
-            payload?.pieceType === "road"
-              ? placementRoadLayerRef.current
-              : placementLayerRef.current,
-          getLayout: () => {
-            if (!isMeasured || !width || !height) return null;
-            const layout = getBoardLayout({
-              width,
-              height,
-              reservedUiHeight: reservedHeight
-            });
-            return {
-              ...layout,
-              center: [layout.center[0], layout.center[1] + centerYOffset]
-            };
-          },
-          getTiles: () => HOME_DEMO_BOARD_PRESET.tiles,
-          getPlayerColor: (playerId) =>
-            HOME_DEMO_PLAYER_COLORS[playerId] ?? "red",
-          getViewerPlayerId: () => "home-blue",
-          emitCue,
-          useBoardSpace: true,
-          themeId
-        });
-        return (event) => runner(event?.payload);
-      }
-    }),
-    [
-      centerYOffset,
+  const resolveLayout = useCallback(() => {
+    if (!isMeasured || !width || !height) return null;
+    const layout = getBoardLayout({
+      width,
       height,
-      isMeasured,
+      reservedUiHeight: reservedHeight
+    });
+    return {
+      ...layout,
+      center: [layout.center[0], layout.center[1] + centerYOffset]
+    };
+  }, [centerYOffset, height, isMeasured, reservedHeight, width]);
+
+  const runPlacement = useMemo(
+    () =>
+      createPiecePlacementRunner({
+        getLayerEl: (payload) =>
+          payload?.pieceType === "road"
+            ? placementRoadLayerRef.current
+            : placementLayerRef.current,
+        getLayout: resolveLayout,
+        getTiles: () => HOME_DEMO_BOARD_PRESET.tiles,
+        getPlayerColor: (playerId) =>
+          HOME_DEMO_PLAYER_COLORS[playerId] ?? "red",
+        getViewerPlayerId: () => "home-blue",
+        emitCue: () => {},
+        useBoardSpace: true,
+        themeId
+      }),
+    [
       placementLayerRef,
       placementRoadLayerRef,
-      reservedHeight,
-      themeId,
-      width
+      resolveLayout,
+      themeId
     ]
   );
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     if (reducedMotion) {
       onPieceStateChange(getHomeDemoReducedMotionPieceState());
       return undefined;
     }
-    if (!effectsBus || !isMeasured) return undefined;
+    if (!isMeasured) return undefined;
 
     let cancelled = false;
     const timers = [];
@@ -208,11 +181,7 @@ export function HomeDemoEffectBridge({
       const queuePlacementEvent = (event, atMs) => {
         const placementDurationMs = getHomeDemoPlacementDurationMs(event);
         queueTimeout(() => {
-          effectsBus.emit({
-            type: "build:place",
-            effectId: `home-demo:${scene.id}:${cycleIndex}:${event.id}`,
-            payload: getPayloadForEvent(event)
-          });
+          runPlacement(getPayloadForEvent(event));
         }, atMs);
 
         queueTimeout(() => {
@@ -243,20 +212,7 @@ export function HomeDemoEffectBridge({
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [effectsBus, isMeasured, onPieceStateChange, reducedMotion]);
+  }, [isMeasured, onPieceStateChange, reducedMotion, runPlacement]);
 
-  if (!isMounted) return null;
-
-  return (
-    <GameEffectsWithProvider
-      plugins={HOME_DEMO_EFFECT_PROVIDER_STATE}
-      effectsBus={effectsBus}
-      boardRef={boardRef}
-      effects={effects}
-      currentPlayerId={null}
-      playerID="home-blue"
-      phase={null}
-      audioSettings={audioSettings}
-    />
-  );
+  return null;
 }

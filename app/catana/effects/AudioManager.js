@@ -318,6 +318,19 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
     unlocked = true;
   };
 
+  const preload = () => {
+    const preloadEntry = (entry) => {
+      if (!entry) return;
+      if (entry.src) getVariantHowl(entry.src, entry);
+      entry.variants?.forEach((src) => getVariantHowl(src, entry));
+    };
+
+    Object.values(theme).forEach((entry) => {
+      preloadEntry(entry?.leadIn);
+      preloadEntry(entry);
+    });
+  };
+
   const unsubscribe = bus?.on("cue", (event) => {
     const cueName = event.payload?.name;
     if (cueName) play(cueName, event.payload?.plan);
@@ -325,6 +338,7 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
 
   return {
     planCue,
+    preload,
     unlock,
     destroy: () => {
       destroyed = true;

@@ -382,6 +382,28 @@ describe("AudioManager", () => {
     expect(instance.volume).toHaveBeenCalledWith(0.475, 1);
   });
 
+  it("preloads each unique theme source once without playing", () => {
+    const audio = createAudioManager({
+      bus: createEffectBus(),
+      theme: {
+        one: { src: "/sounds/shared.mp3" },
+        two: {
+          variants: ["/sounds/shared.mp3", "/sounds/two.mp3"]
+        },
+        three: {
+          leadIn: { src: "/sounds/lead.mp3" },
+          src: "/sounds/three.mp3"
+        }
+      }
+    });
+
+    audio.preload();
+    audio.preload();
+
+    expect(Howl).toHaveBeenCalledTimes(4);
+    expect(playLog).toEqual([]);
+  });
+
   it("unloads cached Howl instances on destroy", () => {
     const bus = createEffectBus();
     const audio = createAudioManager({
