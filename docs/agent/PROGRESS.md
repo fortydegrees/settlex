@@ -1,5 +1,26 @@
 # PROGRESS
 
+## Status (2026-07-28, lobby exposure and invalid-move hardening)
+- Removed the public Caddy `/games*` proxy after confirming browser-owned match
+  creation, join, leave, listing, and reconnect flows use the app-owned
+  `/api/matches/...` routes.
+- Reduced avoidable board/HUD render work by stabilizing effect-time state
+  access and memoizing board leaf layers without changing authoritative game
+  state.
+- Removed dead UI modules, unused dependencies, and the stale npm lockfile;
+  pnpm remains the only supported package manager.
+- Converted rejected player move results to boardgame.io `INVALID_MOVE` so
+  invalid actions do not consume state IDs or add empty replay/log entries.
+- Final review caught two missed rejection paths. Failing-first reducer tests
+  reproduced invalid Year of Plenty and malformed maritime-trade payloads
+  advancing `_stateID`; both now remain unchanged on rejection.
+- Verification passed:
+  - focused reducer suite: 4 tests;
+  - `pnpm verify`: 153 engine tests, 276 server tests with 7 expected skips,
+    all 257 app test files, and lint;
+  - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`: production
+    compilation, type checks, page-data collection, and 17 static pages.
+
 ## Status (2026-07-28, integrity fixes merged to local main)
 - Closed the resign argument exploit and removed privileged disconnect, idle,
   and auto-start moves from the socket-facing game definition while retaining

@@ -1,5 +1,18 @@
 # NOTES
 
+- Lobby exposure and invalid-move boundary (2026-07-28):
+- Keep the boardgame.io lobby REST surface private. Browser match lifecycle
+  operations go through app-owned `/api/matches/...` routes; the game socket,
+  timer, idle, and chat paths remain separate server transports.
+- Player moves that fail input or engine validation must return boardgame.io
+  `INVALID_MOVE`. Returning `undefined` commits a successful no-op, consumes a
+  state ID, and creates misleading replay/log history.
+- Preserve reducer-level coverage for invalid Year of Plenty choices and
+  malformed maritime trades. Direct move-unit tests do not prove that
+  boardgame.io leaves `_stateID` unchanged.
+- Server-dispatched timeout/automatic moves retain their deliberate no-op
+  semantics where there is no valid automatic action.
+
 - Integrity boundary (2026-07-28):
 - The public/socket game definition must never expose
   `resolveDisconnectForfeit`, `resolveIdleForfeit`, or `autoStartGame`.
