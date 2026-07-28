@@ -3,7 +3,6 @@ import {
   getCredentialsStorageKey,
   readLastActiveMatch
 } from "./activeMatchStorage";
-import { getLobbyServerOrigin } from "./serverOrigins";
 
 const readPlayers = (match) => {
   if (Array.isArray(match?.players)) return match.players;
@@ -42,8 +41,7 @@ export const isSameMatchPath = (pathname, matchID) =>
 export async function resolveReconnectBannerCandidate({
   pathname,
   storage,
-  fetchImpl = fetch,
-  lobbyBaseUrl = getLobbyServerOrigin()
+  fetchImpl = fetch
 }) {
   const activeMatch = readLastActiveMatch(storage);
   if (!activeMatch) return null;
@@ -57,10 +55,11 @@ export async function resolveReconnectBannerCandidate({
 
   let response;
   try {
-    response = await fetchImpl(
-      `${lobbyBaseUrl}/games/catan/${activeMatch.matchID}`,
-      { cache: "no-store" }
-    );
+    // Same-origin Next API route; the game server's lobby API is not
+    // publicly exposed.
+    response = await fetchImpl(`/api/matches/${activeMatch.matchID}`, {
+      cache: "no-store"
+    });
   } catch (err) {
     return null;
   }
