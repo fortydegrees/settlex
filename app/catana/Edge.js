@@ -190,7 +190,7 @@ function HoverableEdge({
   );
 }
 
-export function Edge({
+function EdgeImpl({
   id,
   center,
   size,
@@ -279,3 +279,5 @@ export function Edge({
     />
   );
 }
+
+export const Edge = React.memo(EdgeImpl);

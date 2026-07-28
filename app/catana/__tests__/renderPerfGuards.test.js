@@ -324,6 +324,24 @@ describe("render performance guards", () => {
     );
   });
 
+  it("memoizes board leaf layers so hover only re-renders interactive targets", () => {
+    const tile = readCatanaFile("Tile.js");
+    const edge = readCatanaFile("Edge.js");
+    const port = readCatanaFile("Port.js");
+    const node = readCatanaFile("Node.js");
+    const board = readCatanaFile("Board.js");
+
+    expect(tile).toContain("export const Tile = React.memo(");
+    expect(edge).toContain("export const Edge = React.memo(");
+    expect(port).toContain("export const Port = React.memo(");
+    expect(node).toContain("export const Node = React.memo(");
+    // Tiles receive per-tile booleans, not the hoveredTiles array identity.
+    expect(board).toContain("isNodeHovered={");
+    expect(board).not.toContain("hoveredTiles={hoveredTiles}");
+    // The board layout (center array) must be identity-stable across renders.
+    expect(board).toMatch(/useMemo\(\s*\(\) =>\s*getBoardLayout\(/);
+  });
+
   it("keeps chat panel props identity-stable across game ticks", () => {
     const contents = readCatanaFile("components/LeftMetaRail.js");
 

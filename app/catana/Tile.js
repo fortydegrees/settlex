@@ -94,7 +94,7 @@ export function NumberToken({ number, style, size }) {
   );
 }
 
-export function Tile({
+function TileImpl({
   id,
   coordinate,
   type,
@@ -105,7 +105,8 @@ export function Tile({
   draggable,
   droppable,
   number,
-  hoveredTiles,
+  isNodeHovered = false,
+  hasNodeHover = false,
   isFlashing,
   isBlockedFlashing,
   hasRobber,
@@ -165,12 +166,7 @@ export function Tile({
     height: h,
 
     //opacity: resource === "Empty" ? 0.3 : 1,
-    opacity:
-      hoveredTiles && hoveredTiles.length > 0
-        ? hoveredTiles.includes(parseInt(id))
-          ? 1
-          : 0.8
-        : 1,
+    opacity: hasNodeHover ? (isNodeHovered ? 1 : 0.8) : 1,
   };
   const tileVisualStyle = {
     position: "absolute",
@@ -376,3 +372,5 @@ export function Tile({
 flashing anim: https://codepen.io/h7w/pen/bGGOyyj
 other flashes: https://codepen.io/emmawalden/pen/qBOZXGa https://codepen.io/paigen11/pen/VwKZGMp
 */
+
+export const Tile = React.memo(TileImpl);

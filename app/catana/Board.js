@@ -164,12 +164,17 @@ export function CatanBoard({
   const flashTimeoutsRef = useRef(new Set());
   const { width, height, isMeasured } = useWindowSize();
   // TODO: Keep in sync with CSS
-  const { containerWidth, containerHeight, center, size } = getBoardLayout({
-    width,
-    height,
-    leftInset: boardLayoutLeftInset,
-    reservedUiHeight: boardLayoutReservedHeight,
-  });
+  // Memoized so `center` keeps a stable identity for the memoized leaf layers.
+  const { containerWidth, containerHeight, center, size } = useMemo(
+    () =>
+      getBoardLayout({
+        width,
+        height,
+        leftInset: boardLayoutLeftInset,
+        reservedUiHeight: boardLayoutReservedHeight,
+      }),
+    [width, height, boardLayoutLeftInset, boardLayoutReservedHeight]
+  );
   const [boardCenterX, boardCenterY] = center;
   const { nodeRenderById, edgeRenderById } = useMemo(
     () => buildRenderMaps(G.tiles),
@@ -508,11 +513,11 @@ export function CatanBoard({
         }
         setHoveredTiles(newHoveredTiles);
       } else {
-        setHoveredTiles([]);
+        setHoveredTiles((prev) => (prev.length ? [] : prev));
       }
       return;
     }
-    setHoveredTiles([]);
+    setHoveredTiles((prev) => (prev.length ? [] : prev));
   }, [hoveredNode, G.tiles, isPlacementSettlementStage]);
 
   const handleRobberTargetHoverChange = useCallback((payload) => {
@@ -655,7 +660,8 @@ export function CatanBoard({
           resource={tile.resource}
           number={tile.number}
           boardCenter={center}
-          hoveredTiles={hoveredTiles}
+          isNodeHovered={hoveredTiles.includes(tile.id)}
+          hasNodeHover={hoveredTiles.length > 0}
           isFlashing={flashingTiles.includes(tile.id)}
           isBlockedFlashing={blockedFlashingTiles.includes(tile.id)}
           hasRobber={tile.id == G.core?.robberTileId}

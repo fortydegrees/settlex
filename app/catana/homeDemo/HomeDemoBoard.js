@@ -92,7 +92,6 @@ export function HomeDemoBoard({
                 resource={tile.resource}
                 number={tile.number}
                 boardCenter={center}
-                hoveredTiles={[]}
                 isFlashing={false}
                 isBlockedFlashing={false}
                 hasRobber={tile.id === HOME_DEMO_BOARD_PRESET.robberTileId}
