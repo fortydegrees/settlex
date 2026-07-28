@@ -52,7 +52,7 @@ export const createChallengeCreateRoute =
 
       const response = NextResponse.json({
         ...result,
-        challengeUrl: `/challenge/${result.matchID}`,
+        challengeUrl: `/g/${result.matchID}`,
         expiresAt: expiresAt.toISOString(),
       });
       writeMatchCredentialCookie(response, {

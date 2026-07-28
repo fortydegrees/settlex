@@ -31,7 +31,6 @@ const routePaths = [
 ];
 
 const pagePaths = [
-  ["app", "challenge", "[matchID]", "page.js"],
   ["app", "replays", "[replayId]", "page.js"],
   ["app", "u", "[username]", "page.js"],
 ];

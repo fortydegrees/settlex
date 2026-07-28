@@ -71,7 +71,7 @@ describe("challenge API routes", () => {
       matchID: "match_1",
       playerID: "1",
       playerCredentials: "secret_inviter",
-      challengeUrl: "/challenge/match_1",
+      challengeUrl: "/g/match_1",
       expiresAt: "2026-04-09T08:05:00.000Z",
     });
     expect(createMatchForAccount).toHaveBeenCalledWith(

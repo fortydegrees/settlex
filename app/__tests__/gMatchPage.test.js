@@ -337,27 +337,29 @@ describe("/g match page", () => {
     );
   });
 
-  it("returns notFound when neither live nor archived data exists", async () => {
+  it("renders an unavailable game state when neither live nor archived data exists", async () => {
     const { createGMatchPage } = await loadPageModule();
     const getMatchPageData = vi.fn().mockResolvedValue({
       kind: "missing",
       matchID: "m404",
     });
-    const notFoundImpl = vi.fn(() => {
-      throw new Error("not found");
-    });
+    const UnavailableMatchPage = ({ matchID }) =>
+      h("div", null, `Game ${matchID} unavailable`);
+    const notFoundImpl = vi.fn();
 
     const Page = createGMatchPage({
       getMatchPageData,
+      UnavailableMatchPage,
       notFoundImpl,
     });
 
-    await expect(
-      Page({
-        params: { matchID: "m404" },
-        searchParams: {},
-      })
-    ).rejects.toThrow("not found");
-    expect(notFoundImpl).toHaveBeenCalledTimes(1);
+    const element = await Page({
+      params: { matchID: "m404" },
+      searchParams: {},
+    });
+    const html = renderToStaticMarkup(element);
+
+    expect(html).toContain("Game m404 unavailable");
+    expect(notFoundImpl).not.toHaveBeenCalled();
   });
 });
