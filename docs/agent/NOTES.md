@@ -7,6 +7,9 @@
 - Account ownership is per match and keyed by `data.accountId`, not username.
   Bot participants do not count, and browser storage or public-list filtering
   must never be treated as the enforcement boundary.
+- For this guard, occupancy is a truthy live `player.name`; retained
+  `data.usernameSnapshot` or account metadata alone does not keep a vacated
+  seat occupied.
 - Duplicate-account human joins return `409 ACCOUNT_ALREADY_SEATED` without
   changing seats, credentials, or alert state.
 

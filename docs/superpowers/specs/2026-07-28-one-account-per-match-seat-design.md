@@ -68,6 +68,9 @@ human-entry invariant; the fix does not broaden challenge lifecycle behavior.
 The account-seat inspection should be a small server helper under
 `lib/server/matches/`. It accepts a live match and account ID, considers only
 occupied human participants, and returns the matching seat or `null`.
+For this guard, occupancy is a truthy live `player.name`; retained
+`data.usernameSnapshot`, `data.accountId`, and other snapshot metadata alone
+do not keep a vacated seat occupied.
 
 Keeping the metadata interpretation in one helper makes the invariant
 executable without coupling it to `NextResponse`, alert reservation, or
@@ -108,7 +111,8 @@ Test-first regressions will prove:
 - a bot participant can still fill an open seat when the requesting account
   owns the human seat;
 - matching usernames with different account IDs are allowed;
-- the helper ignores empty seats and bot participants;
+- the helper ignores empty seats (including retained human snapshot metadata)
+  and bot participants;
 - the existing friend-challenge self-accept rejection remains intact; and
 - account ownership in one match does not affect joins to another match.
 

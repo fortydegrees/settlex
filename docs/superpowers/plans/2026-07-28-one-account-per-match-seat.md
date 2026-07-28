@@ -32,7 +32,9 @@
 
 **Interfaces:**
 - Produces: `findHumanSeatForAccount({ match, accountId }) -> object | null`
-- A matching seat must be occupied, have `data.participantType === "human"`, and have `data.accountId === accountId`.
+- A matching seat must have a truthy live `name`, have
+  `data.participantType === "human"`, and have `data.accountId === accountId`.
+  Retained `data.usernameSnapshot` or account data alone is not occupancy.
 
 - [ ] **Step 1: Write the failing helper tests**
 
@@ -73,6 +75,7 @@ describe("findHumanSeatForAccount", () => {
           data: {
             participantType: "human",
             accountId: "acct_1",
+            usernameSnapshot: "Ada",
           },
         },
         {
@@ -175,8 +178,7 @@ const playersOf = (match) => {
     .filter(Boolean);
 };
 
-const isOccupied = (player) =>
-  Boolean(player?.name || player?.data?.usernameSnapshot);
+const isOccupied = (player) => Boolean(player?.name);
 
 export function findHumanSeatForAccount({ match, accountId } = {}) {
   if (!accountId) return null;
