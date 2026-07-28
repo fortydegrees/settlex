@@ -71,11 +71,13 @@ done
 
 ensure_git_checkout
 
-if ! git diff --quiet --ignore-submodules -- ||
-  ! git diff --cached --quiet --ignore-submodules --; then
-  echo "Production checkout has tracked local changes; refusing to overwrite them." >&2
-  git status --short >&2
-  exit 1
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  if ! git diff --quiet --ignore-submodules -- ||
+    ! git diff --cached --quiet --ignore-submodules --; then
+    echo "Production checkout has tracked local changes; refusing to overwrite them." >&2
+    git status --short >&2
+    exit 1
+  fi
 fi
 
 old_sha="$(git rev-parse HEAD 2>/dev/null || true)"
