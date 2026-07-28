@@ -5,7 +5,7 @@ import { getClassicSvgPath, getThemedSvgPath } from "./theme/themes";
 import { getPieceSvgFile } from "./theme/pieceAssets.js";
 
 
-export function Node({
+function NodeImpl({
   tileId, //tileId
   nodeId,
   center,
@@ -48,3 +48,5 @@ export function Node({
         />
   );
 }
+
+export const Node = React.memo(NodeImpl);

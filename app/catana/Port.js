@@ -7,7 +7,7 @@ import {
 } from "./theme/themes.js";
 import { getPortRenderModel } from "./utils/portLayout.js";
 
-export function Port({
+function PortImpl({
   coordinate,
   size = 30,
   boardCenter,
@@ -76,3 +76,5 @@ export function Port({
     )
   );
 }
+
+export const Port = React.memo(PortImpl);
