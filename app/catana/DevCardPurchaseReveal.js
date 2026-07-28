@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { Howl } from "howler";
 import { getDevCardRevealDurations } from "./utils/devCardPurchaseReveal";
 
 const DEV_CARD_FACE_SVGS = Object.freeze({
@@ -26,6 +25,7 @@ const getCenterCardWidth = () => {
 export function DevCardPurchaseReveal({
   reveal,
   onComplete,
+  effectsBus,
   flipVariant = "3d",
 }) {
   const actorRef = useRef(null);
@@ -35,8 +35,6 @@ export function DevCardPurchaseReveal({
   const card3dRef = useRef(null);
   const cardBackFaceRef = useRef(null);
   const cardFrontFaceRef = useRef(null);
-  const popHowlRef = useRef(null);
-  const travelHowlRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
   const [midpointCardSrc, setMidpointCardSrc] = useState(DEV_CARD_BACK_SVG);
   const isMidpointFlip = flipVariant === "midpoint";
@@ -49,22 +47,6 @@ export function DevCardPurchaseReveal({
   useEffect(() => {
     setMidpointCardSrc(DEV_CARD_BACK_SVG);
   }, [reveal, flipVariant]);
-
-  useEffect(() => {
-    popHowlRef.current = new Howl({
-      src: ["/sounds/ui-pop-resource-out.mp3"],
-      volume: 0.4,
-    });
-    travelHowlRef.current = new Howl({
-      src: ["/sounds/card_woosh.mp3"],
-      volume: 0.4,
-    });
-
-    return () => {
-      popHowlRef.current?.unload();
-      travelHowlRef.current?.unload();
-    };
-  }, []);
 
   useEffect(() => {
     const actorNode = actorRef.current;
@@ -170,7 +152,12 @@ export function DevCardPurchaseReveal({
     });
 
     timeline.set(actorNode, { autoAlpha: 1 });
-    timeline.call(() => popHowlRef.current?.play());
+    timeline.call(() => {
+      effectsBus?.emit({
+        type: "cue",
+        payload: { name: "devcard:reveal:pop" },
+      });
+    });
     timeline.to(actorNode, {
       y: startY - centerCardHeight * 0.12,
       scale: 0.92,
@@ -225,7 +212,12 @@ export function DevCardPurchaseReveal({
       });
     }
     timeline.to({}, { duration: durations.holdOnFace });
-    timeline.call(() => travelHowlRef.current?.play());
+    timeline.call(() => {
+      effectsBus?.emit({
+        type: "cue",
+        payload: { name: "devcard:reveal:travel" },
+      });
+    });
     timeline.to(actorNode, {
       x: endX,
       y: endY,
@@ -237,7 +229,7 @@ export function DevCardPurchaseReveal({
     return () => {
       timeline.kill();
     };
-  }, [isMidpointFlip, reveal, revealCardSrc]);
+  }, [effectsBus, isMidpointFlip, reveal, revealCardSrc]);
 
   if (!reveal) return null;
 

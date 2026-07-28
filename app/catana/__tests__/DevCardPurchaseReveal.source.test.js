@@ -46,4 +46,12 @@ describe("DevCardPurchaseReveal source", () => {
     expect(source).toContain("scale: 0.46");
     expect(source).toContain("scale: 0.92");
   });
+
+  it("uses the shared cue bus instead of constructing sounds on mount", () => {
+    const source = fs.readFileSync(sourcePath, "utf8");
+    expect(source).toContain('name: "devcard:reveal:pop"');
+    expect(source).toContain('name: "devcard:reveal:travel"');
+    expect(source).not.toContain('from "howler"');
+    expect(source).not.toContain("new Howl");
+  });
 });

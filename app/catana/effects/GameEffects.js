@@ -17,7 +17,8 @@ export function GameEffects({
   phase,
   gameOverState,
   isWinner,
-  audioSettings
+  audioSettings,
+  preloadSounds = false
 }) {
   const localBus = useMemo(() => createEffectBus(), []);
   const bus = providedBus ?? localBus;
@@ -66,6 +67,25 @@ export function GameEffects({
   useEffect(() => {
     return () => haptics.destroy();
   }, [haptics]);
+
+  useEffect(() => {
+    return () => audio.destroy();
+  }, [audio]);
+
+  useEffect(() => {
+    if (!preloadSounds) return undefined;
+
+    const preload = () => audio.preload();
+    if (typeof window.requestIdleCallback === "function") {
+      const idleCallbackId = window.requestIdleCallback(preload, {
+        timeout: 2000
+      });
+      return () => window.cancelIdleCallback?.(idleCallbackId);
+    }
+
+    const timeoutId = window.setTimeout(preload, 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, [audio, preloadSounds]);
 
   useEffectListener(
     "distributeCardsFromTile",

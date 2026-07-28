@@ -59,6 +59,7 @@ function RevealComparisonLane({
   apexRef,
   activeReveal,
   landedCards,
+  effectsBus,
   onStartReveal,
   onComplete
 }) {
@@ -117,13 +118,14 @@ function RevealComparisonLane({
       <DevCardPurchaseReveal
         flipVariant={flipVariant}
         reveal={activeReveal}
+        effectsBus={effectsBus}
         onComplete={onComplete}
       />
     </section>
   );
 }
 
-export function DevCardRevealLab() {
+export function DevCardRevealLab({ emitCue }) {
   const midpointDockCardRef = useRef(null);
   const midpointDestinationRef = useRef(null);
   const midpointApexRef = useRef(null);
@@ -134,6 +136,12 @@ export function DevCardRevealLab() {
   const [selectedCardType, setSelectedCardType] = useState(DEFAULT_CARD_TYPE);
   const [activeReveals, setActiveReveals] = useState(EMPTY_REVEALS);
   const [landedCardsByLane, setLandedCardsByLane] = useState(EMPTY_LANDED_CARDS);
+  const effectsBus = React.useMemo(
+    () => ({
+      emit: (event) => emitCue?.(event?.payload?.name),
+    }),
+    [emitCue]
+  );
 
   const startReveal =
     ({ laneId, destinationRef, apexRef }) =>
@@ -223,6 +231,7 @@ export function DevCardRevealLab() {
             apexRef={midpointApexRef}
             activeReveal={activeReveals.midpoint}
             landedCards={landedCardsByLane.midpoint}
+            effectsBus={effectsBus}
             onStartReveal={startReveal({
               laneId: "midpoint",
               destinationRef: midpointDestinationRef,
@@ -249,6 +258,7 @@ export function DevCardRevealLab() {
             apexRef={threeDApexRef}
             activeReveal={activeReveals.threeD}
             landedCards={landedCardsByLane.threeD}
+            effectsBus={effectsBus}
             onStartReveal={startReveal({
               laneId: "threeD",
               destinationRef: threeDDestinationRef,

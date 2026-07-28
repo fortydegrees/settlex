@@ -1621,6 +1621,7 @@ export function GameScreen(bgioProps) {
 
       <DevCardPurchaseReveal
         reveal={activeDevCardReveal}
+        effectsBus={effectsBus}
         onComplete={handleDevCardRevealComplete}
       />
 
@@ -1823,6 +1824,7 @@ export function GameScreen(bgioProps) {
           phase={bgioProps.ctx?.phase}
           gameOverState={gameOverState}
           isWinner={isWinner}
+          preloadSounds
         />
       )}
 

@@ -86,14 +86,15 @@ describe("Home demo board source", () => {
     expect(posterCssSource).toContain("filter: blur(4px)");
   });
 
-  it("bridges homepage demo events through the existing placement effect stack", () => {
+  it("runs homepage placement effects without the full live-game effect stack", () => {
     const source = readAppFile("homeDemo", "HomeDemoEffectBridge.js");
     expect(source).toContain("export function HomeDemoEffectBridge");
     expect(source).toContain("createPiecePlacementRunner");
-    expect(source).toContain("GameEffects");
-    expect(source).toContain("build:place");
     expect(source).toContain("applyHomeDemoEvent");
-    expect(source).toContain("audioSettings={audioSettings}");
+    expect(source).not.toContain("GameEffects");
+    expect(source).not.toContain("EffectsBoardWrapper");
+    expect(source).not.toContain("bgio-effects");
+    expect(source).not.toContain("audioSettings");
   });
 
   it("scopes slower homepage placement tuning to scene-start drops only", () => {
@@ -155,7 +156,7 @@ describe("Home demo board source", () => {
     expect(source).toContain("useBrowserLayoutEffect");
     expect(source).toContain("AccountEntryModal");
     expect(source).toContain("IdentityModal");
-    expect(source).toContain("FriendChallengeModal");
+    expect(source).not.toContain("FriendChallengeModal");
     expect(source).not.toContain("Prototype state only");
   });
 
