@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -8,21 +5,6 @@ import {
   AnimatedCount,
   getAnimatedCountDirection,
 } from "../components/AnimatedCount";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const cssPath = path.resolve(
-  __dirname,
-  "..",
-  "components",
-  "AnimatedCount.css"
-);
-const sourcePath = path.resolve(
-  __dirname,
-  "..",
-  "components",
-  "AnimatedCount.js"
-);
 
 describe("AnimatedCount", () => {
   it("derives slide direction from the comparable numeric value", () => {
@@ -46,25 +28,5 @@ describe("AnimatedCount", () => {
     expect(markup).toContain("animated-count");
     expect(markup).toContain("vp-badge");
     expect(markup).toContain("3 (+1)");
-  });
-
-  it("keeps motion local and disabled under reduced motion", () => {
-    const contents = fs.readFileSync(cssPath, "utf8");
-    const source = fs.readFileSync(sourcePath, "utf8");
-
-    expect(contents).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(contents).toContain("animation: none");
-    expect(contents).toContain("font-variant-numeric: tabular-nums");
-    expect(source).toContain("ANIMATION_CLEAR_MS");
-    expect(source).toContain("window.setTimeout");
-  });
-
-  it("keeps resource dock loss styling more specific than the generic decrease animation", () => {
-    const contents = fs.readFileSync(cssPath, "utf8");
-
-    expect(contents).toContain(
-      '.animated-count.resource-dock-count[data-direction="decrease"] .animated-count__value--enter'
-    );
-    expect(contents).toContain("animation-name: catana-resource-count-loss");
   });
 });

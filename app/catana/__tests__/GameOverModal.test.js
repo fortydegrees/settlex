@@ -1,6 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import {
   createGameOverModalActionHandlers,
@@ -9,56 +6,7 @@ import {
   shouldResumeMatchAlertsForAction,
 } from "../components/gameOverAlertLifecycle.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const componentPath = path.resolve(
-  __dirname,
-  "..",
-  "components",
-  "GameOverModal.js"
-);
-
 describe("GameOverModal", () => {
-  it("derives the highlighted player from the explicit winner flag instead of score rank", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-
-    expect(contents).toContain("scoreboard.find((row) => row.isWinner)");
-    expect(contents).not.toContain("const winner = scoreboard[0];");
-  });
-
-  it("includes core CTA labels", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-    expect(contents).toContain("Replay");
-    expect(contents).toContain("Match summary");
-    expect(contents).toContain("Return to Lobby");
-    expect(contents).not.toContain("Rematch");
-  });
-
-  it("disables replay only while preparing and offers a retry after an error", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-
-    expect(contents).toContain('replayStatus = "ready"');
-    expect(contents).toContain('replayStatus === "loading" || matchAlertResume.pending');
-    expect(contents).toContain('replayStatus === "error" ? "Retry replay"');
-    expect(contents).toContain('replayStatus === "loading"');
-    expect(contents).toContain('"Preparing replay..."');
-  });
-
-  it("lets the parent own winner confetti state so remounts do not replay it", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-
-    expect(contents).toContain("shouldFireConfetti");
-    expect(contents).toContain("onConfettiFired");
-    expect(contents).not.toContain("const confettiFired = useRef(false);");
-  });
-
-  it("resolves canonical player color ids before using them for winner swatches", () => {
-    const contents = fs.readFileSync(componentPath, "utf8");
-
-    expect(contents).toContain("getPlayerNameHex");
-  });
-
   it("shows a checked-by-default match alert control only when offered", () => {
     const hidden = getMatchAlertResumeControlState({
       showMatchAlertResume: false,

@@ -1,5 +1,14 @@
 # NOTES
 
+- Test-quality boundary (2026-07-28):
+- Follow `docs/agent/TESTING.md`. Prefer engine/reducer, handler/manager, pure
+  model, rendered interaction, or browser evidence in that order.
+- Do not protect UI copy, CSS/Tailwind classes, import paths, local variable
+  names, hook placement, or component composition with source-grep tests.
+- Source inspection remains appropriate when the source artifact is the
+  executable contract, including Caddy, Docker, shell scripts, manifests,
+  patches, and Next route-export constraints.
+
 - Lobby exposure and invalid-move boundary (2026-07-28):
 - Keep the boardgame.io lobby REST surface private. Browser match lifecycle
   operations go through app-owned `/api/matches/...` routes; the game socket,

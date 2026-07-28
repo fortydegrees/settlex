@@ -1,5 +1,32 @@
 # PROGRESS
 
+## Status (2026-07-28, test-suite quality refactor)
+- Removed 68 brittle UI/source-inspection test files and added one focused
+  five-test feed scroll state-machine suite. No product code changed.
+- Trimmed source-string assertions from four mixed files while preserving their
+  helper, lifecycle, and rendered-semantic coverage.
+- Reduced app test files from 257 to 190 and production-source readers across
+  the repository from 133 to 63. App source readers fell from 121 to 51,
+  Catana source readers from 110 to 46, and explicit app
+  `*.source.test.js` files from 51 to 22.
+- Retained engine/reducer, server/auth, match-lifecycle, replay integrity,
+  security/configuration, state-model, rendered interaction, and executable
+  artifact contracts. Source-oriented UI behavior without a replacement was
+  retained for a later behavior-first migration rather than deleted
+  speculatively.
+- Added `docs/agent/TESTING.md` and routed future agents to it from
+  `AGENTS.md`.
+- Verification passed:
+  - focused replay behavior: 5 files / 23 tests;
+  - focused Catana state/effects behavior: 10 files / 60 tests;
+  - focused mixed-file replacements: 4 files / 17 tests;
+  - timed `pnpm test:app`: all 190 files passed in 117.72 seconds on this
+    machine;
+  - `pnpm verify`: 153 engine tests, 261 server/AI tests with 7 expected skips,
+    all 190 app test files, and lint;
+  - `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`: production
+    compilation, type checks, page-data collection, and 17 static pages.
+
 ## Status (2026-07-28, lobby exposure and invalid-move hardening)
 - Removed the public Caddy `/games*` proxy after confirming browser-owned match
   creation, join, leave, listing, and reconnect flows use the app-owned

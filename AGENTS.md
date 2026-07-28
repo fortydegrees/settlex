@@ -17,6 +17,8 @@ Ship small, correct changes with a stable, testable game engine.
 - Prefer test-first for game rules and state transitions.
 - Keep diffs small and focused; avoid unrelated refactors.
 - Update `docs/agent/PROGRESS.md` and `docs/agent/NOTES.md` after meaningful changes.
+- Before adding or updating tests, follow `docs/agent/TESTING.md`; do not add
+  source-grep tests for UI implementation details.
 - If instructions are ambiguous, ask up to 3 targeted questions or state assumptions.
 - Avoid scope creep; implement only what was requested.
 - If you notice repeated mistakes, propose a short edit to `AGENTS.md`.
