@@ -139,9 +139,13 @@ export function applyYearOfPlenty(
     return { ok: false, error: "unknown-player" };
   }
   // Payload arrives from the network; the tuple type is compile-time only.
+  // A depleted finite bank legitimately forces a partial (or empty) take.
+  const requiredCount = state.ruleset.bank.finite
+    ? Math.min(2, state.bank.resources.length)
+    : 2;
   if (
     !Array.isArray(resources) ||
-    resources.length !== 2 ||
+    resources.length !== requiredCount ||
     !resources.every((resource) => CARD_RESOURCES.includes(resource))
   ) {
     return { ok: false, error: "invalid-resources" };
