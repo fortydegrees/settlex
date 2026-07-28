@@ -1,3 +1,4 @@
+import { INVALID_MOVE } from "boardgame.io/core";
 import {
   applyBuildCity,
   applyBuildRoad,
@@ -71,7 +72,7 @@ export const placeSettlement = {
       : applyBuildSettlement(G.core, G.coreTopology, nodeId, playerID);
     if (!result.ok) {
       console.log(`Invalid settlement placement at node ${node}`);
-      return;
+      return INVALID_MOVE;
     }
     effects?.placePiece?.({
       pieceType: "settlement",
@@ -125,7 +126,7 @@ export const placeRoad = {
       : applyBuildRoad(G.core, G.coreTopology, edge, playerID);
     if (!result.ok) {
       console.log(`Invalid road placement at edge ${edge}`);
-      return;
+      return INVALID_MOVE;
     }
     effects?.placePiece?.({
       pieceType: "road",
@@ -177,7 +178,7 @@ export const placeCity = {
     const result = applyBuildCity(G.core, G.coreTopology, nodeId, playerID);
     if (!result.ok) {
       console.log(`Invalid city placement at node ${node}`);
-      return;
+      return INVALID_MOVE;
     }
     effects?.placePiece?.({
       pieceType: "city",

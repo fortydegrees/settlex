@@ -1,4 +1,5 @@
 import { applyMaritimeTradeBatch } from "@settlex/game-core";
+import { INVALID_MOVE } from "boardgame.io/core";
 import { appendGameLog } from "../utils/gameLog.js";
 import { countResources } from "./resourceCounts.js";
 
@@ -24,7 +25,7 @@ export const maritimeTrade = {
 
     if (!result.ok) {
       console.log(`Invalid maritime trade: ${result.error}`);
-      return;
+      return INVALID_MOVE;
     }
     appendGameLog(G, context.ctx, {
       type: "trade:maritime",

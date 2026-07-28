@@ -1,3 +1,4 @@
+import { INVALID_MOVE } from "boardgame.io/core";
 import {
   applyDiscard,
   applyEndTurn,
@@ -31,7 +32,8 @@ const drawDiceForRoll = ({ G, ctx, random }) => {
 };
 
 export const rollDice = {
-  canDo: () => console.log("hi roll dive"),
+  // Runs against masked dice state on the client; server-only.
+  client: false,
   move: (context, options) => {
     const { G, random, effects, events } = context;
     const roll = drawDiceForRoll(context);
@@ -42,7 +44,7 @@ export const rollDice = {
     const result = applyRollDice(G.core, G.coreTopology, diceScore);
     if (!result.ok) {
       console.log("Invalid dice roll");
-      return;
+      return INVALID_MOVE;
     }
     appendGameLog(G, context.ctx, {
       type: "roll",
@@ -105,7 +107,7 @@ export const endTurn = {
     const result = applyEndTurn(G.core);
     if (!result.ok) {
       console.log(`Invalid end turn: ${result.error}`);
-      return;
+      return INVALID_MOVE;
     }
 
     if (G.devCardPlay?.playerId === ctx.currentPlayer) {
@@ -131,7 +133,7 @@ export const discardResources = {
     const result = applyDiscard(G.core, playerID, resources);
     if (!result.ok) {
       console.log(`Invalid discard: ${result.error}`);
-      return;
+      return INVALID_MOVE;
     }
     appendGameLog(G, context.ctx, {
       type: "discard",
