@@ -43,6 +43,9 @@ describe("release status", () => {
     );
 
     expect(hasDeploymentInfraChanged(["Dockerfile.web"])).toBe(true);
+    expect(
+      hasDeploymentInfraChanged(["infra/scripts/deploy-prod-from-git.sh"])
+    ).toBe(true);
     expect(hasDeploymentInfraChanged(["app/catana/lobby/VersionBadge.js"])).toBe(
       false
     );
@@ -111,6 +114,9 @@ describe("release status", () => {
     expect(checks).toContain("pnpm release:check -- --require-approved");
     expect(checks).toContain("pnpm verify");
     expect(checks).toContain("bash -n infra/scripts/deploy-prod.sh");
+    expect(checks).toContain(
+      "bash -n infra/scripts/deploy-prod-from-git.sh"
+    );
     expect(checks).toContain("docker build -f Dockerfile.web .");
     expect(checks).toContain("docker build -f Dockerfile.game .");
     expect(checks).not.toContain(

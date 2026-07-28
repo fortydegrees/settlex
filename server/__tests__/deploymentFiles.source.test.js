@@ -12,6 +12,23 @@ const repoRoot = path.resolve(__dirname, "..", "..");
 const readRepoFile = (...segments) =>
   fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
 
+const validDeploymentEnv = {
+  DATABASE_URL: "postgres://example",
+  POSTGRES_DB: "settlehex",
+  POSTGRES_USER: "settlehex",
+  POSTGRES_PASSWORD: "secret",
+  PUBLIC_APP_URL: "https://settlehex.com",
+  NEXT_PUBLIC_GAME_SERVER_ORIGIN: "https://settlehex.com",
+  GAME_SERVER_INTERNAL_URL: "http://game:8080",
+  SITE_HOST: "settlehex.com",
+  SESSION_SECRET: "secret",
+  BETTER_AUTH_SECRET: "secret",
+  BETTER_AUTH_URL: "https://settlehex.com",
+  VAPID_SUBJECT: "mailto:test@example.com",
+  VAPID_PUBLIC_KEY: "public",
+  VAPID_PRIVATE_KEY: "private",
+};
+
 const runProductionDeployPreflight = (env) => {
   const tempRoot = fs.mkdtempSync(
     path.join(os.tmpdir(), "settlex-deploy-preflight-")
@@ -85,22 +102,20 @@ describe("deployment file wiring", () => {
   });
 
   it.each([
-    ["missing file", null, "VAPID_SUBJECT"],
+    ["missing file", null, "DATABASE_URL"],
     [
       "blank value",
       {
+        ...validDeploymentEnv,
         VAPID_SUBJECT: "",
-        VAPID_PUBLIC_KEY: "x",
-        VAPID_PRIVATE_KEY: "x",
       },
       "VAPID_SUBJECT",
     ],
     [
       "whitespace-only value",
       {
-        VAPID_SUBJECT: "mailto:test@example.com",
+        ...validDeploymentEnv,
         VAPID_PUBLIC_KEY: "   ",
-        VAPID_PRIVATE_KEY: "x",
       },
       "VAPID_PUBLIC_KEY",
     ],
@@ -191,6 +206,28 @@ describe("deployment file wiring", () => {
     expect(script).toContain("Could not determine SETTLEX_RELEASE_VERSION.");
     expect(script).toContain('docker compose -f "$COMPOSE_FILE" up -d --build web game');
     expect(script).toContain('docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate');
+    expect(script).toContain("curl --fail");
+    expect(script).toContain("https://settlehex.com");
+  });
+
+  it("provides a fast git-based production deploy lane", () => {
+    const packageJson = JSON.parse(readRepoFile("package.json"));
+    const script = readRepoFile("infra", "scripts", "deploy-prod-from-git.sh");
+
+    expect(packageJson.scripts["deploy:prod:fast"]).toContain("settlehex-oci");
+    expect(packageJson.scripts["deploy:prod:fast"]).toContain(
+      "infra/scripts/deploy-prod-from-git.sh"
+    );
+    expect(script).toContain("git fetch");
+    expect(script).toContain("git init");
+    expect(script).toContain("git reset --hard");
+    expect(script).toContain("require_env_key");
+    expect(script).toContain("BETTER_AUTH_SECRET");
+    expect(script).toContain("VAPID_PUBLIC_KEY");
+    expect(script).toContain("pg_dump");
+    expect(script).toContain("infra/scripts/deploy-prod.sh");
+    expect(script).toContain("curl --fail");
+    expect(script).toContain("https://settlehex.com");
   });
 
   it("packages migration files into the web runtime image", () => {
@@ -225,14 +262,15 @@ describe("deployment file wiring", () => {
     expectPatchFilesAvailableBeforeInstall(dockerfile);
   });
 
-  it("verifies before syncing source and triggering a server-side rebuild", () => {
+  it("keeps the GitHub deploy workflow as the manual thorough lane", () => {
     const workflow = readRepoFile(".github", "workflows", "deploy-prod.yml");
 
     expect(workflow).toContain("fetch-depth: 0");
     expect(workflow).toContain("pnpm release:check -- --require-approved");
-    expect(workflow).toContain("pnpm release:check -- --require-bump-from");
-    expect(workflow).toContain("git diff --quiet");
     expect(workflow).toContain("pnpm verify");
+    expect(workflow).toContain("workflow_dispatch:");
+    expect(workflow).not.toContain("push:");
+    expect(workflow).not.toContain("branches:");
     expect(workflow).toContain("SETTLEX_BUILD_SHA");
     expect(workflow).toContain("SETTLEX_BUILD_DATE");
     expect(workflow).toContain("SETTLEX_RELEASE_VERSION");

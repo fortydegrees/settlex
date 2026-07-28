@@ -1,9 +1,6 @@
 name: deploy-prod
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -43,15 +40,7 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - name: Check release notes for push deploy
-        if: github.event_name == 'push'
-        run: |
-          pnpm release:check -- --require-approved
-          if ! git diff --quiet "${{ github.event.before }}" -- release/release-notes.json; then
-            pnpm release:check -- --require-bump-from "${{ github.event.before }}"
-          fi
-      - name: Check release notes for manual deploy
-        if: github.event_name != 'push'
+      - name: Check approved release notes
         run: pnpm release:check -- --require-approved
       - name: Prepare test database
         run: pnpm db:migrate:test

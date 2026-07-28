@@ -30,6 +30,7 @@
     "board:lab:benchmark": "node scripts/duel-board-lab/benchmark.mjs",
     "board:lab:oracle-v3": "node scripts/duel-board-lab/oracle-v3.mjs",
     "board:lab:catalog": "node scripts/duel-board-lab/catalog.mjs",
+    "deploy:prod:fast": "ssh settlehex-oci 'cd /srv/settlex && bash -s' < infra/scripts/deploy-prod-from-git.sh",
     "release:check": "node scripts/release/check-release.mjs",
     "release:status": "node scripts/release/status.mjs",
     "docs:index": "node scripts/write-docs-index.mjs"
