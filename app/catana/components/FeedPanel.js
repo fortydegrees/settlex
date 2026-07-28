@@ -9,6 +9,7 @@ import {
   handleFeedPanelMouseLeave,
   markFeedPanelManualScroll,
   runFeedPanelAutoScrollIfNeeded,
+  scrollFeedPanelRowIntoView,
 } from "./FeedPanelScrollState";
 
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
@@ -35,8 +36,10 @@ const FeedPanelComponent = ({
   entryClassName = "feed-panel-entry",
   contentClassName = "space-y-2 text-sm pt-2",
   trackPanelInteraction = false,
+  activeRowKey = null,
 }) => {
   const scrollRef = useRef(null);
+  const rowRefs = useRef(new Map());
   const stateRef = useRef(null);
   const hasMountedAutoScrollRef = useRef(false);
   if (!stateRef.current) {
@@ -65,6 +68,11 @@ const FeedPanelComponent = ({
     if (resumeAutoScrollKey == null || !scrollRef.current) return;
     forceScrollToBottom();
   }, [resumeAutoScrollKey]);
+
+  useEffect(() => {
+    if (activeRowKey == null) return;
+    scrollFeedPanelRowIntoView(rowRefs.current.get(String(activeRowKey)));
+  }, [activeRowKey]);
 
   useEffect(
     () => () => {
@@ -133,16 +141,23 @@ const FeedPanelComponent = ({
             ? React.createElement(
                 "div",
                 { className: contentClassName },
-                rows.map((row, index) =>
-                  React.createElement(
+                rows.map((row, index) => {
+                  const rowKey = String(row?.key ?? row?.id ?? index);
+                  return React.createElement(
                     "div",
                     {
-                      key: row?.key ?? row?.id ?? index,
+                      key: rowKey,
+                      ref: (node) => {
+                        if (node) rowRefs.current.set(rowKey, node);
+                        else rowRefs.current.delete(rowKey);
+                      },
                       className: entryClassName,
+                      "data-feed-row-active":
+                        String(activeRowKey) === rowKey ? "true" : undefined,
                     },
                     renderRow ? renderRow(row, index) : row
-                  )
-                )
+                  );
+                })
               )
             : null
         )

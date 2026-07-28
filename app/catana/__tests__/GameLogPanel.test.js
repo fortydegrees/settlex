@@ -69,6 +69,13 @@ describe("GameLogPanel", () => {
     expect(contents).toContain("React.memo");
   });
 
+  it("supports replay selection and active-row styling", () => {
+    const contents = fs.readFileSync(componentPath, "utf8");
+    expect(contents).toContain("activeEntryKey");
+    expect(contents).toContain("onEntrySelect");
+    expect(contents).toContain("aria-current");
+  });
+
   it("anchors the log to the bottom-left of the screen", () => {
     const contents = fs.readFileSync(componentPath, "utf8");
     expect(contents).toContain("bottom-4");

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { formatLogEntry } from "../utils/gameText";
+import { formatLogEntry, getGameLogEntryKey } from "../utils/gameText";
 import { FeedPanel } from "./FeedPanel";
 import { FeedTokenRow } from "./FeedTokenRow";
 
@@ -7,6 +7,8 @@ const GameLogPanelComponent = ({
   entries = [],
   playerMap = {},
   themeId,
+  activeEntryKey = null,
+  onEntrySelect,
   headerClassName = "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
   rootClassName = "fixed left-4 bottom-4 w-72 md:w-80 xl:w-96 z-30 pointer-events-auto",
   panelClassName = "flex h-[20vh] xl:h-[24vh] flex-col rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text overflow-hidden",
@@ -19,20 +21,25 @@ const GameLogPanelComponent = ({
           if (!tokens || tokens.length === 0) return null;
 
           return {
-            key: entry.id ?? `${entryIndex}-${entry.type}`,
+            key: getGameLogEntryKey(entry, entryIndex),
+            entry,
             tokens,
+            isActive:
+              activeEntryKey != null &&
+              String(activeEntryKey) === getGameLogEntryKey(entry, entryIndex),
             isServerEntry:
               typeof entry?.type === "string" && entry.type.startsWith("server:"),
           };
         })
         .filter(Boolean),
-    [entries, playerMap]
+    [entries, playerMap, activeEntryKey]
   );
 
   return (
     <FeedPanel
       title="Game Log"
       rows={formattedEntries}
+      activeRowKey={activeEntryKey}
       rootClassName={rootClassName}
       panelClassName={panelClassName}
       headerClassName={headerClassName}
@@ -45,9 +52,28 @@ const GameLogPanelComponent = ({
       contentClassName="space-y-2 text-sm pt-2"
       renderRow={(entry) => (
         <div
-          className={`game-log-entry break-words text-sm leading-5 ${
+          className={`game-log-entry break-words rounded-lg px-1.5 py-0.5 text-sm leading-5 ${
+            entry.isActive
+              ? "bg-amber-100/75 ring-1 ring-amber-300/70"
+              : ""
+          } ${
             entry.isServerEntry ? "italic text-slate-600" : "text-slate-800"
           }`}
+          role={onEntrySelect ? "button" : undefined}
+          tabIndex={onEntrySelect ? 0 : undefined}
+          aria-current={entry.isActive ? "step" : undefined}
+          onClick={
+            onEntrySelect ? () => onEntrySelect(entry.key) : undefined
+          }
+          onKeyDown={
+            onEntrySelect
+              ? (event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  onEntrySelect(entry.key);
+                }
+              : undefined
+          }
         >
           {entry.tokens.map((token, tokenIndex) => (
             <FeedTokenRow

@@ -55,6 +55,18 @@ describe("FeedPanel", () => {
     expect(markup).toContain("select-none");
   });
 
+  it("marks the active row for replay scrolling", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(FeedPanel, {
+        rows: [{ key: "row-1", label: "Hello" }],
+        activeRowKey: "row-1",
+        renderRow: (row) => React.createElement("span", null, row.label),
+      })
+    );
+
+    expect(markup).toContain('data-feed-row-active="true"');
+  });
+
   it("ignores unsupported raw children content", () => {
     const markup = renderToStaticMarkup(
       React.createElement(

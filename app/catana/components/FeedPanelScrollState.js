@@ -146,3 +146,11 @@ export const forceFeedPanelAutoScroll = (
 export const cleanupFeedPanelScrollState = (state, clearTimeoutFn = clearTimeout) => {
   clearFeedPanelIdleTimeout(state, clearTimeoutFn);
 };
+
+export const scrollFeedPanelRowIntoView = (rowElement) => {
+  if (!rowElement || typeof rowElement.scrollIntoView !== "function") {
+    return false;
+  }
+  rowElement.scrollIntoView({ block: "nearest", behavior: "auto" });
+  return true;
+};

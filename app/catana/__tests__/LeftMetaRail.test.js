@@ -117,6 +117,12 @@ describe("LeftMetaRail", () => {
     expect(contents).not.toContain("fixed left-3 bottom-[18.75rem]");
   });
 
+  it("passes replay log selection through desktop and mobile panels", () => {
+    const contents = fs.readFileSync(leftMetaRailPath, "utf8");
+    expect(contents).toContain("activeEntryKey");
+    expect(contents).toContain("onEntrySelect");
+  });
+
   it("uses the shared native meta-panel chrome", () => {
     const contents = fs.readFileSync(leftMetaRailPath, "utf8");
     expect(contents).toContain("META_PANEL_FRAME_CLASS_NAME");

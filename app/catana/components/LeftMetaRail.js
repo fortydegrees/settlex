@@ -90,6 +90,8 @@ const ChatIcon = ({ className = mobileButtonIconClassName } = {}) =>
 
 const buildMetaPanels = ({
   entries,
+  activeEntryKey,
+  onEntrySelect,
   logPlayerMap,
   themeId,
   playerID,
@@ -106,6 +108,8 @@ const buildMetaPanels = ({
     renderDesktop: () =>
       React.createElement(GameLogPanel, {
         entries,
+        activeEntryKey,
+        onEntrySelect,
         playerMap: logPlayerMap,
         themeId,
         rootClassName: "h-full w-full",
@@ -115,6 +119,8 @@ const buildMetaPanels = ({
     renderMobile: () =>
       React.createElement(GameLogPanel, {
         entries,
+        activeEntryKey,
+        onEntrySelect,
         playerMap: logPlayerMap,
         themeId,
         rootClassName: "h-full w-full",
@@ -398,6 +404,8 @@ function DesktopFeedFrame({
 
 const DesktopMetaDockComponent = ({
   entries = [],
+  activeEntryKey = null,
+  onEntrySelect,
   logPlayerMap = {},
   themeId,
   playerID,
@@ -464,12 +472,22 @@ const DesktopMetaDockComponent = ({
     () =>
       buildMetaPanels({
         entries,
+        activeEntryKey,
+        onEntrySelect,
         logPlayerMap,
         themeId,
         playerID,
         bgioProps,
       }),
-    [entries, logPlayerMap, themeId, playerID, bgioProps]
+    [
+      entries,
+      activeEntryKey,
+      onEntrySelect,
+      logPlayerMap,
+      themeId,
+      playerID,
+      bgioProps,
+    ]
   );
   const logPanel = panels.find((panel) => panel.id === "log") ?? panels[0];
   const chatPanel = panels.find((panel) => panel.id === "chat") ?? panels[1];
@@ -557,6 +575,8 @@ const DesktopMetaDockComponent = ({
 
 const MobileMetaRailComponent = ({
   entries = [],
+  activeEntryKey = null,
+  onEntrySelect,
   logPlayerMap = {},
   themeId,
   playerID,
@@ -595,12 +615,22 @@ const MobileMetaRailComponent = ({
     () =>
       buildMetaPanels({
         entries,
+        activeEntryKey,
+        onEntrySelect,
         logPlayerMap,
         themeId,
         playerID,
         bgioProps,
       }),
-    [entries, logPlayerMap, themeId, playerID, bgioProps]
+    [
+      entries,
+      activeEntryKey,
+      onEntrySelect,
+      logPlayerMap,
+      themeId,
+      playerID,
+      bgioProps,
+    ]
   );
 
   return React.createElement(MobileMetaDrawer, {
