@@ -96,6 +96,8 @@ const ChatIcon = ({ className = mobileButtonIconClassName } = {}) =>
     })
   );
 
+const EMPTY_CHAT_MESSAGES = [];
+
 const buildMetaPanels = ({
   entries,
   activeEntryKey,
@@ -103,7 +105,8 @@ const buildMetaPanels = ({
   logPlayerMap,
   themeId,
   playerID,
-  bgioProps,
+  chatMessages,
+  sendChatMessage,
 }) => [
   {
     id: "log",
@@ -149,8 +152,8 @@ const buildMetaPanels = ({
         playerID,
         playerMap: logPlayerMap,
         themeId,
-        chatMessages: bgioProps?.chatMessages ?? [],
-        sendChatMessage: bgioProps?.sendChatMessage,
+        chatMessages,
+        sendChatMessage,
         rootClassName: "h-full w-full",
         panelClassName: desktopFeedPanelClassName,
         headerClassName: desktopFeedHeaderClassName,
@@ -160,8 +163,8 @@ const buildMetaPanels = ({
         playerID,
         playerMap: logPlayerMap,
         themeId,
-        chatMessages: bgioProps?.chatMessages ?? [],
-        sendChatMessage: bgioProps?.sendChatMessage,
+        chatMessages,
+        sendChatMessage,
         rootClassName: "h-full w-full",
         panelClassName: mobileFeedContentPanelClassName,
         headerClassName: "sr-only",
@@ -476,6 +479,8 @@ const DesktopMetaDockComponent = ({
     [updateDesktopPrefs]
   );
 
+  const chatMessages = bgioProps?.chatMessages ?? EMPTY_CHAT_MESSAGES;
+  const sendChatMessage = bgioProps?.sendChatMessage;
   const panels = useMemo(
     () =>
       buildMetaPanels({
@@ -485,7 +490,8 @@ const DesktopMetaDockComponent = ({
         logPlayerMap,
         themeId,
         playerID,
-        bgioProps,
+        chatMessages,
+        sendChatMessage,
       }),
     [
       entries,
@@ -494,7 +500,8 @@ const DesktopMetaDockComponent = ({
       logPlayerMap,
       themeId,
       playerID,
-      bgioProps,
+      chatMessages,
+      sendChatMessage,
     ]
   );
   const logPanel = panels.find((panel) => panel.id === "log") ?? panels[0];
@@ -653,6 +660,8 @@ const MobileMetaRailComponent = ({
     [onMobileActivePanelChange]
   );
 
+  const chatMessages = bgioProps?.chatMessages ?? EMPTY_CHAT_MESSAGES;
+  const sendChatMessage = bgioProps?.sendChatMessage;
   const panels = useMemo(
     () =>
       buildMetaPanels({
@@ -662,7 +671,8 @@ const MobileMetaRailComponent = ({
         logPlayerMap,
         themeId,
         playerID,
-        bgioProps,
+        chatMessages,
+        sendChatMessage,
       }),
     [
       entries,
@@ -671,7 +681,8 @@ const MobileMetaRailComponent = ({
       logPlayerMap,
       themeId,
       playerID,
-      bgioProps,
+      chatMessages,
+      sendChatMessage,
     ]
   );
 

@@ -277,6 +277,8 @@ export function GameScreen(bgioProps) {
   const devCardPlayActorStoreRef = useRef(new Map());
   const pendingDevCardRevealRef = useRef(null);
   const latestPlayerViewMapRef = useRef({});
+  const latestGRef = useRef(bgioProps.G);
+  latestGRef.current = bgioProps.G;
   const previousResourcesByPlayerIdRef = useRef(new Map());
   const deferredLogEntriesRef = useRef([]);
   const effectsBus = useMemo(() => createEffectBus(), []);
@@ -738,7 +740,7 @@ export function GameScreen(bgioProps) {
     if (rect) {
       devCardDisplayRectRef.current = rect;
     }
-  });
+  }, [width, height]);
 
   useEffect(() => {
     deferredLogEntriesRef.current = deferredLogEntries;
@@ -1370,7 +1372,7 @@ export function GameScreen(bgioProps) {
           },
           getBoardRect: () =>
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
-          getTiles: () => bgioProps.G?.tiles ?? [],
+          getTiles: () => latestGRef.current?.tiles ?? [],
           getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId] ?? "red",
           getViewerPlayerId: () => playerID,
           emitCue,
@@ -1457,7 +1459,7 @@ export function GameScreen(bgioProps) {
               reservedUiHeight: boardLayoutReservedHeight,
             });
           },
-          getTiles: () => bgioProps.G?.tiles ?? [],
+          getTiles: () => latestGRef.current?.tiles ?? [],
           viewerPlayerId: playerID,
           emitCue,
           themeId
@@ -1468,7 +1470,7 @@ export function GameScreen(bgioProps) {
       awardClaim: ({ layerRef, emitCue }) => {
         const runner = createAwardClaimRunner({
           getLayerEl: () => layerRef.current,
-          getRoadsByEdgeId: () => bgioProps.G?.core?.roadsByEdgeId ?? {},
+          getRoadsByEdgeId: () => latestGRef.current?.core?.roadsByEdgeId ?? {},
           getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId],
           getTargetEl: (_payload, id) => document.getElementById(id),
           emitCue
@@ -1483,6 +1485,14 @@ export function GameScreen(bgioProps) {
             const sourceEl = document.getElementById(id);
             if (sourceEl) return sourceEl;
             if (String(payload?.playerId) !== String(playerID)) return null;
+            // Prefer a live measurement; fall back to the cached rect when
+            // the dev card display is unmounted at effect time.
+            const liveRect = copyRect(
+              devCardDisplayRef.current?.getBoundingClientRect?.()
+            );
+            if (liveRect) {
+              devCardDisplayRectRef.current = liveRect;
+            }
             const cachedRect = devCardDisplayRectRef.current;
             if (!cachedRect) return null;
             return {
@@ -1516,7 +1526,6 @@ export function GameScreen(bgioProps) {
     width,
     height,
     boardLayoutReservedHeight,
-    bgioProps.G,
     effectiveColorByPlayerId,
     handleResourceDistributionComplete,
     handleDevCardPlayResolveComplete,

@@ -111,8 +111,10 @@ export function CatanBoard({
   const actions = [];
 
   //we do this so that the board updates while the cardContainer is waiting to be updated after animation
-  G = useLatestPropsOnEffect("distributeCardsFromTile").G;
-  ctx = useLatestPropsOnEffect("distributeCardsFromTile").ctx;
+  //(single hook call: each instance re-renders once per props change on its own)
+  const latestEffectProps = useLatestPropsOnEffect("distributeCardsFromTile");
+  G = latestEffectProps.G;
+  ctx = latestEffectProps.ctx;
 
   //from https://github.com/blunket/camelot/blob/master/src/Board.jsx
   // let isMyTurn = this.props.playerID === this.props.ctx.currentPlayer;
@@ -473,9 +475,12 @@ export function CatanBoard({
       return;
     }
 
-    setRobberTiles([]);
-    setHoveredRobberTarget(null);
-    setRobberTargetElementsByTileId({});
+    // Guard identities so the every-move reset does not re-render the board.
+    setRobberTiles((prev) => (prev.length ? [] : prev));
+    setHoveredRobberTarget((prev) => (prev == null ? prev : null));
+    setRobberTargetElementsByTileId((prev) =>
+      Object.keys(prev).length ? {} : prev
+    );
   }, [isRobberPlacementActive, G]);
 
   useEffect(() => {
