@@ -194,7 +194,7 @@ export const createCatanGame = ({
           waiting: {
             moves: {
               readyUp,
-              autoStartGame,
+              ...(includeServerMoves ? { autoStartGame } : {}),
               ...terminalStageMoves,
               ...debugMoves
             }

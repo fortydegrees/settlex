@@ -1,7 +1,7 @@
 // src/server.js
 import { Server, Origins, SocketIO } from "boardgame.io/dist/cjs/server.js"
 import koaBody from "koa-body"
-import { ServerCatan } from "./serverGame.js"
+import { ServerCatan, SocketCatan } from "./serverGame.js"
 import { TimerManager } from "./timers/TimerManager.js"
 import { createTimerPubSub } from "./timers/timerPubSub.js"
 import { DisconnectPresenceManager } from "./presence/DisconnectPresenceManager.js"
@@ -113,7 +113,7 @@ pubSub = createTimerPubSub(timerManager, {
 const transport = new SocketIO({ pubSub })
 
 const server = Server({
-  games: [ServerCatan],
+  games: [SocketCatan],
   generateCredentials: (context) =>
     generateMatchPlayerCredentials({ context }),
   origins: [Origins.LOCALHOST_IN_DEVELOPMENT],

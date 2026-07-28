@@ -39,9 +39,9 @@ const resolveTerminalForfeit = (
 };
 
 export const resign = {
-  move: (context, losingPlayerIdArg) => {
-    const losingPlayerId =
-      losingPlayerIdArg ?? context.playerID ?? context.ctx?.currentPlayer;
+  move: (context) => {
+    // Players may only resign themselves; the caller's seat is authoritative.
+    const losingPlayerId = context.playerID ?? context.ctx?.currentPlayer;
     resolveTerminalForfeit(
       context,
       losingPlayerId,
