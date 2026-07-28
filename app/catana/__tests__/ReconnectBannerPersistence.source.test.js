@@ -3,9 +3,9 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 describe("reconnect banner persistence wiring", () => {
-  it("writes the last active match from lobby join flows", () => {
+  it("writes the last active match from home join flows", () => {
     const source = readFileSync(
-      resolve(process.cwd(), "app/catana/lobby/LobbyPageClient.js"),
+      resolve(process.cwd(), "app/catana/lobby/useLobbyHomeActions.js"),
       "utf8"
     );
 

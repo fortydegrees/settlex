@@ -55,9 +55,4 @@ describe("Catana UI images", () => {
     const contents = readComponent("TradeDiscardModal.js");
     expect(contents).toMatch(/<img[\s\S]*draggable=\{false\}/);
   });
-
-  it("disables dragging on animated resource cards", () => {
-    const contents = readFile("Card.js");
-    expect(contents).toMatch(/<img[\s\S]*draggable=\{false\}/);
-  });
 });

@@ -8,7 +8,6 @@ const PRODUCT_BACKGROUND_FILES = [
   "app/g/[matchID]/UnavailableMatchPage.jsx",
   "app/catana/GameScreen.js",
   "app/catana/home/HomeTableClient.js",
-  "app/catana/lobby/LobbyPageClient.js",
   "app/catana/lobby/[matchID]/LiveMatchLoadingShell.js",
   "app/catana/lobby/[matchID]/MatchPageClient.js",
   "app/replays/[replayId]/ReplayPageClient.js",
