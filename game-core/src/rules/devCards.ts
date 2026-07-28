@@ -1,4 +1,7 @@
+import { STANDARD_RESOURCES } from "../types";
 import type { DevCardType, Resource } from "../types";
+
+const CARD_RESOURCES: readonly Resource[] = STANDARD_RESOURCES;
 import type { GameState } from "../core/state";
 import type { BoardTopology } from "../core/topology";
 import { buildableEdges } from "./buildability";
@@ -134,6 +137,14 @@ export function applyYearOfPlenty(
   const player = state.playerStateById[playerId];
   if (!player) {
     return { ok: false, error: "unknown-player" };
+  }
+  // Payload arrives from the network; the tuple type is compile-time only.
+  if (
+    !Array.isArray(resources) ||
+    resources.length !== 2 ||
+    !resources.every((resource) => CARD_RESOURCES.includes(resource))
+  ) {
+    return { ok: false, error: "invalid-resources" };
   }
   if (state.ruleset.bank.finite) {
     const availableByResource: Record<string, number> = {};
