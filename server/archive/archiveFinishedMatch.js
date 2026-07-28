@@ -56,11 +56,15 @@ const toParticipantRows = (metadataPlayers, winnerSeatId) => {
     });
 };
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const archiveFinishedMatch = async ({
   pool = getPool(),
   serverDb,
   matchID,
   chatMessages = [],
+  maxTerminalFetchRetries = 20,
+  terminalFetchRetryDelayMs = 25,
 } = {}) => {
   if (!serverDb?.fetch) {
     throw new Error("A live boardgame.io DB is required to archive finished matches");
@@ -70,15 +74,36 @@ export const archiveFinishedMatch = async ({
     throw new Error("matchID is required");
   }
 
-  const liveRecord = await serverDb.fetch(matchID, {
-    metadata: true,
-    initialState: true,
-    state: true,
-    log: true,
-  });
+  const fetchLiveRecord = () =>
+    serverDb.fetch(matchID, {
+      metadata: true,
+      initialState: true,
+      state: true,
+      log: true,
+    });
+
+  // The archive is triggered from the Master's sendAll, which runs BEFORE the
+  // terminal state/log are persisted (with sync storage the first fetch here
+  // deterministically reads the previous move's state). Retry until the
+  // persisted state is terminal so we archive the winning move too.
+  let liveRecord = await fetchLiveRecord();
+  for (
+    let attempt = 0;
+    attempt < maxTerminalFetchRetries && !liveRecord?.state?.ctx?.gameover;
+    attempt += 1
+  ) {
+    await delay(terminalFetchRetryDelayMs);
+    liveRecord = await fetchLiveRecord();
+  }
 
   if (!liveRecord?.metadata || !liveRecord?.state) {
     throw new Error(`Match ${matchID} is missing live metadata/state`);
+  }
+
+  if (!liveRecord.state?.ctx?.gameover) {
+    throw new Error(
+      `Match ${matchID} state is not terminal yet; archive will retry on the next publish`
+    );
   }
 
   const initialGameState = liveRecord.initialState?.G ?? {};
@@ -91,7 +116,10 @@ export const archiveFinishedMatch = async ({
     null;
   const resolvedBoardProvenance = initialGameState.boardProvenance ?? null;
   const metadataPlayers = liveRecord.metadata.players ?? {};
-  const winnerSeatId = liveRecord.state?.ctx?.gameover?.winner ?? null;
+  // Forfeits and the game-level endIf both produce { winnerId }; older
+  // states may carry { winner }.
+  const gameover = liveRecord.state?.ctx?.gameover;
+  const winnerSeatId = gameover?.winnerId ?? gameover?.winner ?? null;
   const participantRows = toParticipantRows(metadataPlayers, winnerSeatId);
   const winnerParticipant =
     winnerSeatId == null
