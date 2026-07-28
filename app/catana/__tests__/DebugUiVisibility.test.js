@@ -14,12 +14,6 @@ const leftMetaRailPath = path.resolve(
   "LeftMetaRail.js"
 );
 const pagePath = path.resolve(__dirname, "..", "page.js");
-const lobbyPagePath = path.resolve(
-  __dirname,
-  "..",
-  "lobby",
-  "LobbyPageClient.js"
-);
 const lobbyMatchClientPath = path.resolve(
   __dirname,
   "..",
@@ -47,12 +41,5 @@ describe("debug UI visibility", () => {
 
     expect(page).toContain('redirect("/")');
     expect(lobbyMatchClient).toMatch(/debug:\s*false/);
-  });
-
-  it("keeps the start-from-scenario entry dev-only", () => {
-    const lobbyPage = fs.readFileSync(lobbyPagePath, "utf8");
-
-    expect(lobbyPage).toContain("Start from scenario");
-    expect(lobbyPage).toMatch(/NODE_ENV\s*!==\s*["']production["']/);
   });
 });

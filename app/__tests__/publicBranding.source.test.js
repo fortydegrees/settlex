@@ -19,14 +19,14 @@ describe("public branding and legacy route wiring", () => {
       "account",
       "AccountPageClient.js"
     );
-    const lobbySource = readAppFile("app", "catana", "lobby", "LobbyPageClient.js");
+    const homeSource = readAppFile("app", "catana", "home", "HomeTableClient.js");
 
     expect(layoutSource).toContain("title: 'Settlehex'");
     expect(accountPageSource).not.toContain("Settlex account");
     expect(accountClientSource).toContain("Settlehex account");
     expect(accountClientSource).not.toContain("Settlex account");
-    expect(lobbySource).toContain("Settlehex");
-    expect(lobbySource).not.toContain("\n            Catana\n");
+    expect(homeSource).toContain("Settlehex");
+    expect(homeSource).not.toContain("\n            Catana\n");
   });
 
   it("removes public /catana links and catana-named reconnect copy", () => {

@@ -107,16 +107,6 @@ const configuredEffectsPlugin = EffectsPlugin({
 //tiles.push({coordinate:[-1,0,3], tile:{edges:{}, id:100, nodes: {}, number: 2, resource: "Sheep"}})
 
 
-const TURN_ORDER_ONCE = {
-  first: 0,
-  next: ({ G, ctx }) => {
-    if (getFirstPlayer(G) === ctx.playOrderPos) {
-      return (ctx.playOrderPos + 1) % ctx.numPlayers;
-    }
-    return undefined;
-  },
-};
-
 export const createCatanGame = ({
   includeDebugMoves = isDebugEnvironment(),
   includeEffects = true,
