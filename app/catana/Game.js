@@ -184,7 +184,10 @@ export const createCatanGame = ({
   //p2: place road
   //https://boardgame.io/documentation/#/phases
 
-
+  // Game-level endIf: sets ctx.gameover for VP wins. The phase-level endIf on
+  // "main" only ends the phase, which never marks the game finished for the
+  // server (archive/replay/cleanup all gate on ctx.gameover).
+  endIf: ({ G }) => G.core?.gameOver ?? undefined,
 
   phases: {
     preGame: {
