@@ -21,6 +21,7 @@ const deploymentInfraPaths = new Set([
   "Dockerfile.web",
   "infra/docker-compose.prod.yml",
   "infra/scripts/deploy-prod.sh",
+  "infra/scripts/deploy-prod-from-git.sh",
   "package.json",
   "pnpm-lock.yaml"
 ]);
@@ -84,6 +85,7 @@ export function buildRequiredChecks({
     checks.push(
       "pnpm exec vitest run server/__tests__/deploymentFiles.source.test.js --reporter=dot",
       "bash -n infra/scripts/deploy-prod.sh",
+      "bash -n infra/scripts/deploy-prod-from-git.sh",
       "docker build -f Dockerfile.web .",
       "docker build -f Dockerfile.game ."
     );

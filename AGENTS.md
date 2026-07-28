@@ -42,8 +42,14 @@ Ship small, correct changes with a stable, testable game engine.
 - Game server: `pnpm serve`
 - Lint: `pnpm lint`
 - Verify: `pnpm verify`
+- Fast beta deploy: `pnpm deploy:prod:fast` after explicit user approval and local release checks
 - Engine build: `pnpm -C game-core build`
 - Engine tests: `pnpm -C game-core test`
+
+## Production deploy lanes
+- Default to the fast beta lane for normal MVP fixes: local verification, push to `main`, then `pnpm deploy:prod:fast`. This SSHes to `settlehex-oci`, updates the `/srv/settlex` Git checkout, rebuilds Docker Compose services, runs migrations, and checks `https://settlehex.com`.
+- Use the thorough GitHub Actions lane only when requested or when changes touch deploy/Docker infrastructure, dependencies, auth/session/security, or risky database migrations.
+- Before any production deploy, state which lane is being used and why. Never deploy without explicit user approval.
 
 ## Project map
 - UI: `app/`

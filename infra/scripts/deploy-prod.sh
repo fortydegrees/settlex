@@ -4,6 +4,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 COMPOSE_FILE="infra/docker-compose.prod.yml"
+HEALTH_URL="${SETTLEX_HEALTH_URL:-https://settlehex.com}"
 
 cd "$ROOT_DIR"
 
@@ -20,6 +21,17 @@ require_env_key() {
 }
 
 required_env_keys=(
+  DATABASE_URL
+  POSTGRES_DB
+  POSTGRES_USER
+  POSTGRES_PASSWORD
+  PUBLIC_APP_URL
+  NEXT_PUBLIC_GAME_SERVER_ORIGIN
+  GAME_SERVER_INTERNAL_URL
+  SITE_HOST
+  SESSION_SECRET
+  BETTER_AUTH_SECRET
+  BETTER_AUTH_URL
   VAPID_SUBJECT
   VAPID_PUBLIC_KEY
   VAPID_PRIVATE_KEY
@@ -67,3 +79,6 @@ if docker compose -f "$COMPOSE_FILE" exec -T web node -e "const pkg=require('./p
 else
   echo "Skipping db:migrate because the script is not defined yet."
 fi
+
+curl --fail --silent --show-error --location "$HEALTH_URL" >/dev/null
+echo "Live health check passed: ${HEALTH_URL}"
