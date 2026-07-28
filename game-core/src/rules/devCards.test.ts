@@ -214,6 +214,38 @@ it("year of plenty allows taking two of the same resource when both are availabl
   expect(state.bank.resources).toEqual([]);
 });
 
+it("year of plenty rejects payloads that are not exactly two resources", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [
+    ResourceType.ORE,
+    ResourceType.ORE,
+    ResourceType.ORE
+  ];
+
+  const result = applyYearOfPlenty(state, "0", [
+    ResourceType.ORE,
+    ResourceType.ORE,
+    ResourceType.ORE
+  ] as never);
+
+  expect(result.ok).toBe(false);
+  expect(state.playerStateById["0"].resources).toEqual([]);
+  expect(state.bank.resources).toHaveLength(3);
+});
+
+it("year of plenty rejects non-card resource identifiers", () => {
+  const state = createEmptyState(["0"]);
+  state.bank.resources = [ResourceType.WOOD, ResourceType.BRICK];
+
+  const result = applyYearOfPlenty(state, "0", [
+    ResourceType.GOLD,
+    ResourceType.GOLD
+  ] as never);
+
+  expect(result.ok).toBe(false);
+  expect(state.playerStateById["0"].resources).toEqual([]);
+});
+
 it("monopoly transfers resources from other players", () => {
   const state = createEmptyState(["0", "1"]);
   state.playerStateById["1"].resources = [ResourceType.WOOD, ResourceType.WOOD];
