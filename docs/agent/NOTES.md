@@ -1,5 +1,15 @@
 # NOTES
 
+- Match seat ownership boundary (2026-07-28):
+- One authenticated account may own at most one occupied human seat per match.
+  Enforce this from live match metadata inside the app-owned per-match mutation
+  lock, before alert reservation or boardgame.io mutation.
+- Account ownership is per match and keyed by `data.accountId`, not username.
+  Bot participants do not count, and browser storage or public-list filtering
+  must never be treated as the enforcement boundary.
+- Duplicate-account human joins return `409 ACCOUNT_ALREADY_SEATED` without
+  changing seats, credentials, or alert state.
+
 - Test-quality boundary (2026-07-28):
 - Follow `docs/agent/TESTING.md`. Prefer engine/reducer, handler/manager, pure
   model, rendered interaction, or browser evidence in that order.

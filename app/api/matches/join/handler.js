@@ -7,6 +7,7 @@ import {
 } from "../../../../lib/server/matchAlerts/humanMatchAlertPause.js";
 import { isFriendChallengeMatch } from "../../../../lib/server/matches/friendChallenge.js";
 import { isBotMatch } from "../../../../lib/server/matches/botMatch.js";
+import { findHumanSeatForAccount } from "../../../../lib/server/matches/humanSeatOwnership.js";
 import { getLiveMatch } from "../../../../lib/server/matches/getLiveMatch.js";
 import { joinMatchForAccount } from "../../../../lib/server/matches/joinMatchForAccount.js";
 import { withMatchMutationLock } from "../../../../lib/server/matches/matchMutationLock.js";
@@ -70,6 +71,24 @@ export const createMatchJoinRoute =
               response: NextResponse.json(
                 { error: "Private friend challenges must be joined through their challenge link." },
                 { status: 403 }
+              ),
+            };
+          }
+
+          if (
+            participantType === "human" &&
+            findHumanSeatForAccount({
+              match: liveMatch,
+              accountId: sessionAccount.account.id,
+            })
+          ) {
+            return {
+              response: NextResponse.json(
+                {
+                  error: "You are already seated in this match.",
+                  code: "ACCOUNT_ALREADY_SEATED",
+                },
+                { status: 409 }
               ),
             };
           }

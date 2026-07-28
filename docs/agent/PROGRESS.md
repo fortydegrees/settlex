@@ -1,5 +1,16 @@
 # PROGRESS
 
+## Status (2026-07-28, one account per match seat)
+- Added a server-authoritative public-join guard so one authenticated account
+  cannot occupy both human seats in the same match.
+- Kept the live ownership read and rejection inside the existing per-match
+  advisory lock and before alert reservation, boardgame.io join, or credential
+  writes.
+- Preserved different-account joins, bot fills, separate matches, and the
+  existing friend-challenge self-accept rejection.
+- Focused helper, match-route, challenge-route, and matchmaking lifecycle tests
+  passed with changed-file lint and whitespace checks.
+
 ## Status (2026-07-28, test-suite quality refactor)
 - Removed 68 brittle UI/source-inspection test files and added one focused
   five-test feed scroll state-machine suite. No product code changed.
