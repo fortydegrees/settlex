@@ -522,6 +522,7 @@ git commit -m "feat: catalog shared SettleHex UI primitives"
 
 **Files:**
 - Create: `app/catana/matchAlerts/MatchAlertControl.js`
+- Create: `app/catana/home/systemAccountMenuModel.js`
 - Create: `app/catana/home/SystemAccountMenu.js`
 - Create: `app/catana/home/SystemTopChrome.js`
 - Modify: `app/catana/home/HomeTableClient.js`
@@ -654,7 +655,7 @@ production actions, not their current copy:
 
 ```js
 import { describe, expect, it } from "vitest";
-import { getSystemAccountMenuItems } from "../home/SystemAccountMenu";
+import { getSystemAccountMenuItems } from "../home/systemAccountMenuModel";
 
 describe("getSystemAccountMenuItems", () => {
   it("returns only production guest actions", () => {
@@ -680,7 +681,8 @@ state and its interaction assertion in Task 5.
 
 - [ ] **Step 7: Extract the account menu with a controllable open state**
 
-Create `app/catana/home/SystemAccountMenu.js` by moving the current production markup. Export this pure menu model:
+Create `app/catana/home/systemAccountMenuModel.js` with this pure menu model,
+and import it from `SystemAccountMenu.js`:
 
 ```js
 export const getSystemAccountMenuItems = (accountStatus) =>
