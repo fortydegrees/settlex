@@ -1308,10 +1308,12 @@ In `RecoverySurfaces.stories.jsx`, render:
 - `ReconnectStatusRecipe` using the same `StatusBanner` props returned by the reconnect display helper; do not mount `GlobalReconnectBanner` with storage/router providers.
 - `IdlePrompt`
 - `ResignConfirmation`
-- `LiveMatchLoading` using `LiveMatchLoadingShell`
 - `UnavailableMatch` using `UnavailableMatchPage`
 
 Use real production copy/data helpers. Interact with open/close or cancel actions using `fn()`.
+Keep `LiveMatchLoadingShell` excluded: it intentionally renders the board
+underlay and belongs to the board/game-screen verification boundary, not this
+standard product-UI catalog.
 
 - [ ] **Step 4: Add game-over stories**
 
