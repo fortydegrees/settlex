@@ -160,20 +160,6 @@ describe("Home demo board source", () => {
     expect(source).not.toContain("Prototype state only");
   });
 
-  it("keeps logged-out account chrome as a sign-in trigger instead of an auth menu or avatar", () => {
-    const source = readAppFile("home", "HomeTableClient.js");
-
-    expect(source).toContain("if (!hasIdentity)");
-    expect(source).toContain('aria-label="Sign in"');
-    expect(source).toContain("onOpenSignIn");
-    expect(source).toContain("Sign in");
-    expect(source).not.toContain('triggerAriaLabel="Open sign in menu"');
-    expect(source).not.toContain("Continue with Email");
-    expect(source).not.toContain("Continue as guest");
-    expect(source).not.toContain("Set player profile");
-    expect(source).not.toContain("Choose username");
-  });
-
   it("renders the shared account entry modal for auth and play username entry", () => {
     const source = readAppFile("home", "HomeTableClient.js");
 
@@ -199,18 +185,6 @@ describe("Home demo board source", () => {
     expect(source).toContain('route: "/api/auth/options"');
     expect(source).toContain("setAuthOptions");
     expect(source).toContain("socialProviders");
-  });
-
-  it("keeps signed-in account chrome content-sized with a standard account menu", () => {
-    const source = readAppFile("home", "HomeTableClient.js");
-
-    expect(source).toContain("Signed in as");
-    expect(source).toContain("ChevronDownIcon");
-    expect(source).toContain("Sign out");
-    expect(source).toContain("onSignOut");
-    expect(source).toContain("actions.signOut");
-    expect(source).not.toContain("sm:min-w-[9.8rem]");
-    expect(source).not.toContain("rounded-[0.86rem] bg-gradient-to-br");
   });
 
   it("signs out homepage identity through the server session before clearing local state", () => {

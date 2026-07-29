@@ -4512,3 +4512,15 @@
   notices, and bundle-size advisories. The browser evidence is Chromium-based;
   provider/network behavior, whole routes, full board gameplay, and iOS Safari
   remain outside this Storybook gate.
+
+## Storybook catalog integration gate (2026-07-29)
+
+- When production UI is extracted from `HomeTableClient`, delete presentation
+  assertions that grep that route-client source for copy, icons, spinners, or
+  button markup. Preserve real lifecycle contracts separately and use the
+  production component's Storybook state for copy and visual interaction.
+- Before merging the catalog, the complete `pnpm verify` sequence and a fresh
+  static Storybook build must both pass. The integration gate passed after
+  removing four stale presentation-only assertions; the retained canonical
+  friend-challenge routing assertion and pure account-menu model suite stayed
+  green.

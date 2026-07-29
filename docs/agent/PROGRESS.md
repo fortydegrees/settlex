@@ -7301,3 +7301,19 @@
   rows are `Covered`, with no Planned, boundary-work, TBD, or TODO marker.
   No production or story defect was found, so this gate changed documentation
   only. Claude Design upload remains the separate approval-gated next step.
+
+## Status (2026-07-29, Storybook catalog integration verification)
+
+- Removed four presentation-only source assertions that still expected account
+  chrome, busy-button, and search-modal markup inside `HomeTableClient` after
+  those production surfaces moved to `SystemAccountMenu`, `HomeTitleChrome`,
+  and `SearchingModal`.
+- Retained the executable friend-challenge routing contract and the existing
+  pure menu-model coverage. The displaced visible states and interaction
+  semantics remain covered by their production-component Storybook stories.
+- `pnpm verify` passed the complete engine, server, 189-file app, and lint
+  sequence. A fresh `CI=1 pnpm build-storybook` also passed.
+- The rebuilt catalog still indexed 109 stories. All 109 static iframe routes
+  rendered without a visible Storybook error or page exception; a repeated
+  check of the sole initial generic 404 console event produced no failed
+  request, console error, or visible component error.
