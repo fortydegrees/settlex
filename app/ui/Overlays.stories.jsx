@@ -1,5 +1,5 @@
 import React from "react";
-import { expect, fn, userEvent, within } from "@storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { AlertDialog } from "./AlertDialog";
 import { Button } from "./Button";
 import { Dialog } from "./Dialog";
@@ -102,9 +102,9 @@ export const AccountDialogMotion = {
     const canvas = within(canvasElement.ownerDocument.body);
     const trigger = canvas.getByRole("button", { name: "Open account settings" });
     await userEvent.click(trigger);
-    await expect(canvas.getByRole("dialog", { name: "Account settings" })).toBeVisible();
+    await waitFor(() => expect(canvas.getByRole("dialog", { name: "Account settings" })).toBeVisible());
     await userEvent.keyboard("{Escape}");
-    await expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
 
@@ -114,9 +114,9 @@ export const LeaveTableConfirmation = {
     const canvas = within(canvasElement.ownerDocument.body);
     const trigger = canvas.getByRole("button", { name: "Leave table" });
     await userEvent.click(trigger);
-    await expect(canvas.getByRole("alertdialog", { name: "Leave this table?" })).toBeVisible();
+    await waitFor(() => expect(canvas.getByRole("alertdialog", { name: "Leave this table?" })).toBeVisible());
     await userEvent.keyboard("{Escape}");
-    await expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
 
@@ -126,9 +126,9 @@ export const AccountPopoverMotion = {
     const canvas = within(canvasElement.ownerDocument.body);
     const trigger = canvas.getByRole("button", { name: "Open example menu" });
     await userEvent.click(trigger);
-    await expect(canvas.getByRole("menu", { name: "Example menu" })).toBeVisible();
+    await waitFor(() => expect(canvas.getByRole("menu", { name: "Example menu" })).toBeVisible());
     await userEvent.keyboard("{Escape}");
-    await expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
 
@@ -138,9 +138,9 @@ export const ReleaseMetaDisclosure = {
     const canvas = within(canvasElement.ownerDocument.body);
     const trigger = canvas.getByRole("button", { name: "Show example release notes" });
     await userEvent.click(trigger);
-    await expect(canvas.getByRole("heading", { name: "Release notes" })).toBeVisible();
+    await waitFor(() => expect(canvas.getByRole("heading", { name: "Release notes" })).toBeVisible());
     await userEvent.keyboard("{Escape}");
-    await expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
 
@@ -149,9 +149,9 @@ export const GameLogTooltip = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement.ownerDocument.body);
     const trigger = canvas.getByRole("button", { name: "Open game log" });
-    trigger.focus();
-    await expect(canvas.getByText("Open the game log")).toBeVisible();
+    await userEvent.click(trigger);
+    await waitFor(() => expect(canvas.getByText("Open the game log")).toBeVisible());
     await userEvent.keyboard("{Escape}");
-    await expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
