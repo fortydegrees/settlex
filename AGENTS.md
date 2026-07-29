@@ -65,6 +65,7 @@ Ship small, correct changes with a stable, testable game engine.
 - **Mobile gameplay UX**: use `.agents/skills/catana-mobile-game-ux/SKILL.md` before phone HUD, command-row, touch-control, drawer, narrow-viewport, haptic, or mobile-browser work.
 - **Match lifecycle**: use `.agents/skills/catana-match-lifecycle/SKILL.md` before match create/join/leave, matchmaking recovery, match alerts, credentials, canonical game URLs, interrupted duels, finished/archived matches, replay entry, or ambiguous network outcomes.
 - **Design system**: `.agents/skills/catana-design/SKILL.md` is the active native skill for Catana/SettleHex design routing. Also use `docs/agent/UI_CONTEXT.md` and `docs/agent/skills/catana-brand/SKILL.md` before building or restyling UI. If adding shared product-surface primitives, read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` and review targeted external references before inventing a new common interaction pattern.
+- **Standard UI catalog**: before adding or changing standard product UI, inspect `docs/agent/UI_CATALOG.md` and the relevant Storybook stories. Reuse the owning production component, add a named story for a meaningful production state/copy branch, and verify interaction plus desktop/mobile motion with `pnpm storybook`. Use integrated Catana dev surfaces for gameplay/provider behavior outside Storybook's scope.
 
 ## Effects + audio (GSAP + cue bus)
 - Entry point: `app/catana/effects/GameEffects.js` (EffectBus + AudioManager + cue emit)
