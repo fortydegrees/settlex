@@ -877,6 +877,8 @@ export const GuestResumeFailed = {};
 export const SavedAccountAlertsActive = {};
 export const SavedAccountNotificationsBlocked = {};
 export const SavedAccountInstallRequired = {};
+export const SavedAccountNotificationsUnsupported = {};
+export const SavedAccountAlertsUnavailable = {};
 export const AlertActionPending = {};
 ```
 
@@ -920,7 +922,12 @@ Use the same `accountFixtures.js` values and callback spies. `Mobile` uses `view
 CI=1 pnpm build-storybook
 ```
 
-Expected: account stories build with no network calls. Mark Account menu and Match-alert control `Covered`.
+Expected: account stories build with no network calls. Mark Account menu and
+Match-alert control `Covered`. Update their production owners and completed
+boundary work to the extracted `SystemAccountMenu.js` and
+`MatchAlertControl.js`. The homepage title/top-chrome row should name
+`SystemTopChrome.js` alongside the remaining `HomeTableClient.js` mode-dock
+owner and leave only that mode-dock extraction as boundary work.
 
 - [ ] **Step 6: Commit the account catalog**
 
