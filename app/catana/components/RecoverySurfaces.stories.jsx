@@ -1,6 +1,7 @@
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { Button } from "../../ui/Button";
 import { UnavailableMatchPage } from "../../g/[matchID]/UnavailableMatchPage";
+import { InterruptedDuelRecovery } from "../lobby/[matchID]/InterruptedDuelRecovery";
 import {
   getReconnectStatusBannerProps,
 } from "./GlobalReconnectBanner";
@@ -134,4 +135,64 @@ export const ResignConfirmation = {
 
 export const UnavailableMatch = {
   render: () => <UnavailableMatchPage matchID="storybook-unavailable" />,
+};
+
+export const InterruptedDuel = {
+  args: {
+    onReturnToLobby: fn(),
+    onLookAgain: fn(),
+  },
+  render: (args) => (
+    <InterruptedDuelRecovery
+      pending={false}
+      error=""
+      {...args}
+    />
+  ),
+  play: async ({ canvasElement, args }) => {
+    const screen = within(canvasElement);
+    args.onReturnToLobby.mockClear();
+    args.onLookAgain.mockClear();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Return to lobby" })
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Look again" })
+    );
+    expect(args.onReturnToLobby).toHaveBeenCalledOnce();
+    expect(args.onLookAgain).toHaveBeenCalledOnce();
+  },
+};
+
+export const InterruptedDuelRecoveryPending = {
+  args: {
+    onReturnToLobby: fn(),
+    onLookAgain: fn(),
+  },
+  render: (args) => (
+    <InterruptedDuelRecovery pending error="" {...args} />
+  ),
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement);
+    expect(
+      screen.getByRole("button", { name: "Return to lobby" })
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Checking duel…" })
+    ).toBeDisabled();
+  },
+};
+
+export const InterruptedDuelRecoveryError = {
+  args: {
+    onReturnToLobby: fn(),
+    onLookAgain: fn(),
+  },
+  render: (args) => (
+    <InterruptedDuelRecovery
+      pending={false}
+      error="The duel could not be released. Try again."
+      {...args}
+    />
+  ),
 };
