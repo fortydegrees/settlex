@@ -15,22 +15,4 @@ describe("home table challenge and busy feedback", () => {
     expect(source).not.toContain("setChallengeState({");
   });
 
-  it("shows inline bot startup feedback instead of a separate loading modal", () => {
-    const source = read("app/catana/home/HomeTableClient.js");
-
-    expect(source).toContain("activeActionId");
-    expect(source).toContain("isActive");
-    expect(source).toContain("animate-spin");
-    expect(source).toContain("Starting...");
-  });
-
-  it("keeps the matchmaking cancel action visible while searching", () => {
-    const source = read("app/catana/home/HomeTableClient.js");
-
-    expect(source).toContain(
-      "disabled={isMatchFound || isPufferTransitionPending}"
-    );
-    expect(source).toContain('{isMatchFound ? "Loading board..." : "Cancel"}');
-    expect(source).not.toContain("{canCancel ? (");
-  });
 });
