@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Client } from "boardgame.io/react";
 import { SocketIO } from "boardgame.io/multiplayer";
@@ -12,16 +11,11 @@ import {
 } from "../../../../lib/server/matches/friendChallenge.js";
 import { Catan } from "../../Game";
 import { PostgameGameBoard } from "../../../replays/PostgameGameBoard";
-import { GlassPillButton } from "../../components/GlassPillButton";
-import { Banner } from "../../../ui/Banner";
-import { Button } from "../../../ui/Button";
-import { Input } from "../../../ui/Input";
-import { Panel } from "../../../ui/Panel";
-import { Select } from "../../../ui/Select";
+import { InterruptedDuelRecovery } from "./InterruptedDuelRecovery";
 import { LiveMatchLoadingShell } from "./LiveMatchLoadingShell";
+import { OpenMatchRoom } from "./OpenMatchRoom";
 import { PendingFriendChallengeScreen } from "./PendingFriendChallengeScreen";
 import { provisionFriendChallengeGuestIdentity } from "./friendChallengeClient";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import {
   clearLastActiveMatch,
   getCredentialsStorageKey,
@@ -34,8 +28,14 @@ import {
   getGameServerOrigin,
 } from "../../utils/serverOrigins";
 import { isInterruptedCredentialedDuel } from "../interruptedDuel";
+import {
+  buildInterruptedDuelLeavePayload,
+  buildPufferBotJoinPayload,
+  resolveInterruptedDuelLeaveFailure,
+  resolveLiveMatchClientMode,
+  resolveOpenSeatSelection,
+} from "../matchRoomState";
 
-const BOT_NAME_PREFIX = "Puffer";
 const PLAYER_NAME_STORAGE_KEY = "catana:lobby:playerName";
 const PLAYER_EMOJI_STORAGE_KEY = "catana:lobby:playerEmoji";
 const PLAYER_COLOR_STORAGE_KEY = "catana:lobby:playerColor";
@@ -62,13 +62,6 @@ const apiRequest = async ({ baseUrl, route, init }) => {
 };
 
 const appRequest = ({ route, init }) => apiRequest({ baseUrl: "", route, init });
-
-function seatLabel(seat) {
-  if (!seat) return "Seat";
-  const id = Number.isFinite(Number(seat.id)) ? Number(seat.id) : null;
-  if (!seat.name) return id != null ? `Open Seat ${id + 1}` : "Open Seat";
-  return sanitizeDisplayName(seat.name) || seat.name;
-}
 
 function normalizeMatch(raw) {
   if (!raw) return null;
@@ -292,17 +285,22 @@ export function MatchPageClient({
     playerID,
     credentials,
   });
+  const clientMode = resolveLiveMatchClientMode({
+    interruptedDuel,
+    credentials,
+    playerID,
+    isSpectating,
+  });
 
   useEffect(() => {
-    if (pendingChallengeState) return;
-    if (spectatorMode) return;
-    if (credentials) return;
-    if (openSeats.length === 0) return;
-    const openSeatIds = new Set(openSeats.map((seat) => String(seat.id)));
-    const current = String(playerID || "");
-    if (!current || !openSeatIds.has(current)) {
-      setPlayerID(String(openSeats[0].id));
-    }
+    const nextPlayerID = resolveOpenSeatSelection({
+      credentials,
+      pendingChallengeState,
+      spectatorMode,
+      openSeats,
+      playerID,
+    });
+    if (nextPlayerID !== playerID) setPlayerID(nextPlayerID);
   }, [credentials, pendingChallengeState, playerID, openSeats, spectatorMode]);
 
   const acceptFriendChallenge = async (event) => {
@@ -510,15 +508,9 @@ export function MatchPageClient({
           init: {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              matchID,
-              playerID: String(seat.id),
-              participantType: "bot",
-              botKey: "puffer",
-              botName: `${BOT_NAME_PREFIX} ${Number(seat.id) + 1}`,
-              avatarEmoji: "🤖",
-              avatarColor: "royal",
-            }),
+            body: JSON.stringify(
+              buildPufferBotJoinPayload({ matchID, seat })
+            ),
           },
         });
       }
@@ -540,12 +532,11 @@ export function MatchPageClient({
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+          body: JSON.stringify(buildInterruptedDuelLeavePayload({
             matchID,
             playerID,
             credentials,
-            intent: "matchmaking_cancel",
-          }),
+          })),
         },
       });
 
@@ -567,11 +558,12 @@ export function MatchPageClient({
       setCredentials(null);
       router.replace(lookAgain ? "/?playOnline=1" : "/");
     } catch (error) {
-      if (error?.code === "MATCH_FOUND") {
+      const failure = resolveInterruptedDuelLeaveFailure(error);
+      if (failure.refreshMatch) {
         await refreshMatch();
         return;
       }
-      setError(error?.message || "Failed to leave the interrupted duel.");
+      setError(failure.message);
     } finally {
       setRecoveryPending(false);
     }
@@ -605,56 +597,18 @@ export function MatchPageClient({
     );
   }
 
-  if (interruptedDuel) {
+  if (clientMode === "interrupted") {
     return (
-      <div
-        className="min-h-screen"
-        style={{ background: CATANA_TABLE_BACKGROUND }}
-      >
-        <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-10">
-          <Panel bodyClassName="p-6 md:p-8">
-            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
-              Match update
-            </div>
-            <h1 className="mt-3 text-3xl font-bold text-slate-900 drop-shadow-sm">
-              Duel interrupted
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-slate-700">
-              The other player left before the duel could begin. You can return
-              to the lobby or look for another opponent now.
-            </p>
-            {error ? (
-              <Banner
-                variant="danger"
-                title="Couldn’t leave the duel"
-                body={error}
-                className="mt-5"
-              />
-            ) : null}
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Button
-                variant="secondary"
-                className="w-full"
-                disabled={recoveryPending}
-                onClick={() => leaveInterruptedDuel()}
-              >
-                Return to lobby
-              </Button>
-              <Button
-                className="w-full"
-                disabled={recoveryPending}
-                onClick={() => leaveInterruptedDuel({ lookAgain: true })}
-              >
-                {recoveryPending ? "Checking duel…" : "Look again"}
-              </Button>
-            </div>
-          </Panel>
-        </div>
-      </div>
+      <InterruptedDuelRecovery
+        pending={recoveryPending}
+        error={error}
+        onReturnToLobby={() => leaveInterruptedDuel()}
+        onLookAgain={() => leaveInterruptedDuel({ lookAgain: true })}
+      />
     );
   }
 
-  if (credentials && playerID) {
+  if (clientMode === "player") {
     return (
       <CatanClient
         matchID={matchID}
@@ -665,7 +619,7 @@ export function MatchPageClient({
     );
   }
 
-  if (isSpectating) {
+  if (clientMode === "spectator") {
     return (
       <CatanClient
         matchID={matchID}
@@ -676,154 +630,27 @@ export function MatchPageClient({
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
-    >
-      <div className="mx-auto w-full max-w-4xl px-4 py-10">
-        <Panel bodyClassName="p-6 md:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-700">
-                Settlehex Room
-              </div>
-              <h1 className="mt-2 text-2xl font-bold text-slate-900 drop-shadow-sm">
-                {matchID}
-              </h1>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Link
-                  href="/"
-                  className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
-                >
-                  Back to lobby
-                </Link>
-                <Link
-                  href="/account"
-                  className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
-                >
-                  Account
-                </Link>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {hasTakenSeats ? (
-                <GlassPillButton onClick={spectateMatch}>
-                  Spectate
-                </GlassPillButton>
-              ) : null}
-              <GlassPillButton onClick={refreshMatch} disabled={isLoadingMatch}>
-                {isLoadingMatch ? "Refreshing…" : "Refresh"}
-              </GlassPillButton>
-            </div>
-          </div>
-
-          {error ? (
-            <Banner
-              variant="danger"
-              title="Match error"
-              body={error}
-              className="mt-4"
-            />
-          ) : null}
-
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <Panel title="Join Seat">
-              <form className="space-y-3" onSubmit={joinSeat}>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-widest text-slate-700">
-                    Player name
-                  </label>
-                  <div className="mt-2">
-                    <Input
-                      value={playerName}
-                      onChange={(e) => setPlayerName(e.target.value)}
-                      placeholder="Visitor"
-                      autoComplete="nickname"
-                      maxLength={28}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-widest text-slate-700">
-                    Seat
-                  </label>
-                  <div className="mt-2">
-                    <Select
-                      value={playerID}
-                      onChange={(e) => {
-                        setSpectatorMode(false);
-                        setPlayerID(e.target.value);
-                      }}
-                      disabled={openSeats.length === 0}
-                    >
-                      {openSeats.length === 0 ? (
-                        <option value="">No open seats</option>
-                      ) : null}
-                      {openSeats.map((seat) => (
-                        <option key={seat.id} value={String(seat.id)}>
-                          {seatLabel(seat)}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
-                <Button
-                  type="submit"
-                  disabled={joinPending || openSeats.length === 0}
-                  className="w-full"
-                >
-                  {joinPending ? "Joining…" : "Join & Play"}
-                </Button>
-                <GlassPillButton
-                  type="button"
-                  onClick={fillOpenSeatsWithBots}
-                  disabled={botFillPending || joinPending || openSeats.length === 0}
-                >
-                  {botFillPending ? "Adding Bots…" : "Fill Open Seats With Bots"}
-                </GlassPillButton>
-                <div className="text-xs text-slate-700/80">
-                  Game server: <span className="font-mono">{gameServer}</span>
-                </div>
-              </form>
-            </Panel>
-
-            <Panel title="Seats">
-              {isLoadingMatch && !match ? (
-                <div className="h-24 rounded-lg bg-white/40 ring-1 ring-white/40 animate-pulse motion-reduce:animate-none" />
-              ) : null}
-
-              {match?.players ? (
-                <div className="space-y-2">
-                  {match.players.map((seat) => {
-                    const taken = Boolean(seat.name);
-                    const displayName = sanitizeDisplayName(seat.name) || seat.name;
-                    return (
-                      <div
-                        key={seat.id}
-                        className={`flex items-center justify-between rounded-lg px-3 py-2 ring-1 ${
-                          taken
-                            ? "bg-white/60 text-slate-800 ring-white/60"
-                            : "bg-white/40 text-slate-700 ring-white/40"
-                        }`}
-                      >
-                        <div className="text-sm font-semibold">
-                          Seat {Number(seat.id) + 1}
-                        </div>
-                        <div className="text-sm">{taken ? displayName : "Open"}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="rounded-lg bg-white/40 p-4 text-sm text-slate-700">
-                  Match details unavailable.
-                </div>
-              )}
-            </Panel>
-          </div>
-        </Panel>
-      </div>
-    </div>
+    <OpenMatchRoom
+      matchID={matchID}
+      gameServer={gameServer}
+      match={match}
+      openSeats={openSeats}
+      hasTakenSeats={hasTakenSeats}
+      playerName={playerName}
+      playerID={playerID}
+      isLoadingMatch={isLoadingMatch}
+      joinPending={joinPending}
+      botFillPending={botFillPending}
+      error={error}
+      onPlayerNameChange={setPlayerName}
+      onSeatChange={(nextPlayerID) => {
+        setSpectatorMode(false);
+        setPlayerID(nextPlayerID);
+      }}
+      onJoin={joinSeat}
+      onSpectate={spectateMatch}
+      onRefresh={refreshMatch}
+      onFillBots={fillOpenSeatsWithBots}
+    />
   );
 }
