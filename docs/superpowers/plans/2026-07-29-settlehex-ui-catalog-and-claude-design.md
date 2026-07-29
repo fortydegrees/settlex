@@ -1494,11 +1494,187 @@ git add app/catana/dev/storybook/replayFixtures.js \
 git commit -m "feat: catalog replay UI states"
 ```
 
-### Task 9: Review Standard UI Motion And Responsive Behavior
+### Task 9: Complete Remaining Standard UI Surface Coverage
+
+**Files:**
+- Create: `app/u/[username]/PublicProfileView.js`
+- Modify: `app/u/[username]/page-content.js`
+- Create: `app/u/[username]/PublicProfileView.stories.jsx`
+- Create: `app/catana/home/HomeTitleChrome.js`
+- Modify: `app/catana/home/HomeTableClient.js`
+- Create: `app/catana/home/HomeTitleChrome.stories.jsx`
+- Create: `app/catana/lobby/[matchID]/OpenMatchRoom.js`
+- Create: `app/catana/lobby/[matchID]/InterruptedDuelRecovery.js`
+- Modify: `app/catana/lobby/[matchID]/MatchPageClient.js`
+- Create: `app/catana/lobby/[matchID]/OpenMatchRoom.stories.jsx`
+- Modify: `app/catana/components/RecoverySurfaces.stories.jsx`
+- Create: `app/catana/dev/storybook/postgameFixtures.js`
+- Create: `app/catana/components/PostgameOverlay.stories.jsx`
+- Delete or replace: `app/catana/__tests__/MatchPageClient.boot.source.test.js`
+- Delete or replace: `app/catana/__tests__/MatchPageClient.botFill.test.js`
+- Modify: `docs/agent/UI_CATALOG.md`
+
+**Interfaces:**
+- Consumes: the five remaining `Planned` standard-UI rows after Tasks 1–8.
+- Produces: production-used view boundaries and deterministic stories for public profile, homepage mode chrome, ordinary open-match rooms, interrupted-duel recovery, and the full postgame summary.
+- Excludes: the mounted board client and a manufactured full/spectating room state, because production immediately crosses into the game-screen boundary.
+
+- [ ] **Step 1: Catalog the already-provider-free profile and postgame views**
+
+Extract `PublicProfileView({ profile })` from
+`app/u/[username]/page-content.js`. The server page must retain
+`getPublicProfile`, username decoding, and `notFound`; the view owns only the
+existing stat cards, date formatting, match-history rows, and replay links.
+Create `PublicProfileView.stories.jsx` with:
+
+- `EmptyRecentMatches`
+- `RecentMatchHistory`
+- `Mobile`
+
+Use the real `{ account, summary, recentMatches }` profile result shape. Keep
+`app/__tests__/profilePage.test.js`; it covers the server/page contract.
+
+Create `postgameFixtures.js` from one deterministic completed-game fixture,
+deriving `summary` and ranked `scoreboard` through
+`buildGameScreenDisplayModel` and `buildPostgameSummary`. Create
+`PostgameOverlay.stories.jsx` with:
+
+- `RankedScoreboard`
+- `SummaryRows`
+- `FinalScoresUnavailable`
+- `Mobile`
+
+Use `fn()` callbacks for replay/close and the real `PostgameOverlay`. Do not
+duplicate winner, reason, score-ranking, or player-color logic in the stories.
+
+- [ ] **Step 2: Extract and catalog the complete homepage title/mode chrome**
+
+Create `HomeTitleChrome.js` by moving the current brand/status/release
+composition and `SystemActionDock` leaves out of `HomeTableClient.js`. Export
+the mode dock as `HomeGameModeDock`, and compose the existing
+`SystemTopChrome`; keep matchmaking, auth, routing, and mode-start actions in
+`HomeTableClient`.
+
+Create `HomeTitleChrome.stories.jsx` with:
+
+- `SignedOutIdle`
+- `GuestFindingOnline`
+- `ClaimedCreatingFriend`
+- `ClaimedStartingPuffer`
+- `ReleaseNotesOpen`
+- `Mobile`
+
+Reuse the production `SYSTEM_ACTIONS`, `publicReleaseInfo`, and Task-5 account
+fixtures. The harness may control only disclosure and mode-selection
+presentation. It must not call auth, matchmaking, or navigation providers.
+
+- [ ] **Step 3: Extract the ordinary open-match room and migrate source tests**
+
+Move only the final, pre-board room branch from `MatchPageClient.js` into
+`OpenMatchRoom.js`. Its production props are:
+
+```js
+{
+  matchID,
+  gameServer,
+  match,
+  openSeats,
+  hasTakenSeats,
+  playerName,
+  playerID,
+  isLoadingMatch,
+  joinPending,
+  botFillPending,
+  error,
+  onPlayerNameChange,
+  onSeatChange,
+  onJoin,
+  onSpectate,
+  onRefresh,
+  onFillBots,
+}
+```
+
+Reuse `seatLabel` and `sanitizeDisplayName`. `MatchPageClient` retains
+auth/session state, requests, polling, credentials, navigation, and board-client
+mounting.
+
+Create `OpenMatchRoom.stories.jsx` with:
+
+- `OpenSeats`
+- `Loading`
+- `JoinPending`
+- `BotFillPending`
+- `JoinError`
+
+Do not add a full/spectating-room story: production mounts `CatanClient`
+immediately once that state is reached, so it belongs to the explicit
+game-screen exclusion.
+
+Audit `MatchPageClient.boot.source.test.js` and
+`MatchPageClient.botFill.test.js`. Delete assertions about component location,
+copy, imports, class names, or JSX shape. Preserve any unique request ordering,
+payload, pending, or error contract through the smallest production-used
+behavior helper/test, then delete the source-reading suites.
+
+- [ ] **Step 4: Extract interrupted-duel recovery**
+
+Move the inline `if (interruptedDuel)` presentation into
+`InterruptedDuelRecovery.js` with props:
+
+```js
+{
+  pending,
+  error,
+  onReturnToLobby,
+  onLookAgain,
+}
+```
+
+Keep `isInterruptedCredentialedDuel`, the leave request, `MATCH_FOUND`
+handling, active-match storage cleanup, and redirects in `MatchPageClient`.
+Append these provider-free stories to `RecoverySurfaces.stories.jsx`:
+
+- `InterruptedDuel`
+- `InterruptedDuelRecoveryPending`
+- `InterruptedDuelRecoveryError`
+
+Keep `app/catana/lobby/__tests__/interruptedDuel.test.js`. Convert only a
+genuinely unique lifecycle contract from the deleted source suite into a
+behavior test; exact copy remains a Storybook/browser responsibility.
+
+- [ ] **Step 5: Verify behavior and rendered coverage**
+
+Run the retained and newly added focused behavior suites, targeted ESLint, and:
+
+```bash
+CI=1 pnpm build-storybook
+```
+
+Exercise every new story at 1440×900 and 390×844. Treat visible Storybook
+errors, uncaught page errors, clipped required actions, and horizontal overflow
+as failures. For the homepage release disclosure, room form actions,
+interrupted-duel actions, profile replay link, and postgame actions, include at
+least one live interaction assertion without invoking network/navigation.
+
+- [ ] **Step 6: Finish the inventory rows and commit**
+
+Mark Public profile, Homepage title chrome and game-mode dock, Open match room,
+Match availability and interrupted-duel recovery, and Postgame summary
+`Covered`. Record the full/spectating board-client transition as an explicit
+excluded sub-state instead of inventing a non-production story.
+
+```bash
+git add app/u app/catana/home app/catana/lobby app/catana/components \
+  app/catana/dev/storybook docs/agent/UI_CATALOG.md
+git commit -m "feat: complete standard UI catalog coverage"
+```
+
+### Task 10: Review Standard UI Motion And Responsive Behavior
 
 **Files:**
 - Modify if repeated need is proven: `app/globals.css`
-- Modify: relevant story files from Tasks 3, 5, 6, 7, and 8
+- Modify: relevant story files from Tasks 3, 5, 6, 7, 8, and 9
 - Modify: `docs/agent/UI_CATALOG.md`
 
 **Interfaces:**
@@ -1562,7 +1738,7 @@ git commit -m "fix: align standard UI motion in catalog"
 
 If visual review requires no production changes, commit only the reviewed inventory/story annotations with message `docs: record UI motion review`.
 
-### Task 10: Encode The Catalog Workflow For Future Agents
+### Task 11: Encode The Catalog Workflow For Future Agents
 
 **Files:**
 - Create: `docs/agent/STORYBOOK.md`
@@ -1657,7 +1833,7 @@ git add AGENTS.md .agents/skills/catana-design/SKILL.md \
 git commit -m "docs: route standard UI work through Storybook"
 ```
 
-### Task 11: Perform Full Local Verification
+### Task 12: Perform Full Local Verification
 
 **Files:**
 - Modify only for defects found: in-scope source/story/test files.
@@ -1679,7 +1855,9 @@ pnpm exec vitest run \
   app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js \
   app/catana/__tests__/pendingFriendChallenge.test.js \
   app/catana/__tests__/GameOverModal.test.js \
+  app/catana/lobby/__tests__/interruptedDuel.test.js \
   app/replays \
+  app/__tests__/profilePage.test.js \
   app/__tests__/api/matchAlertRoutes.test.js \
   --reporter=dot
 ```
@@ -1708,7 +1886,7 @@ Verify:
 - Tab/Enter/Escape operation for popover and dialogs;
 - focus return after dismissal;
 - replay chart arrow-key seek;
-- the five representative desktop/mobile stories from Task 9;
+- the representative desktop/mobile stories from Task 10;
 - normal and reduced-motion operation.
 
 Expected: no keyboard trap, clipped required action, or unreachable copy.
@@ -1744,7 +1922,7 @@ git status --short --branch
 
 Expected: clean branch. Do not push.
 
-### Task 12: Sync The Verified Catalog Into Claude Design
+### Task 13: Sync The Verified Catalog Into Claude Design
 
 **Files:**
 - Do not commit by default: `.design-sync/config.json`
