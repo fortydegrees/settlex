@@ -649,54 +649,34 @@ export function MatchAlertControl({
 
 - [ ] **Step 6: Write the account-menu model test**
 
-Create `app/catana/__tests__/SystemAccountMenu.test.js`:
+Create `app/catana/__tests__/SystemAccountMenu.test.js`. Test the available
+production actions, not their current copy:
 
 ```js
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
-import {
-  SystemAccountMenu,
-  getSystemAccountMenuItems,
-} from "../home/SystemAccountMenu";
+import { describe, expect, it } from "vitest";
+import { getSystemAccountMenuItems } from "../home/SystemAccountMenu";
 
 describe("getSystemAccountMenuItems", () => {
   it("returns only production guest actions", () => {
-    expect(getSystemAccountMenuItems("guest").map((item) => item.label)).toEqual([
-      "Save profile",
-      "Edit profile",
-      "Sign out",
+    expect(getSystemAccountMenuItems("guest").map((item) => item.action)).toEqual([
+      "saveProfile",
+      "identity",
+      "signOut",
     ]);
   });
 
   it("returns only production claimed-account actions", () => {
-    expect(getSystemAccountMenuItems("claimed").map((item) => item.label)).toEqual([
-      "Account",
-      "Edit profile",
-      "Sign out",
+    expect(getSystemAccountMenuItems("claimed").map((item) => item.action)).toEqual([
+      "account",
+      "identity",
+      "signOut",
     ]);
-  });
-
-  it("renders the production sign-in action when no identity exists", () => {
-    const html = renderToStaticMarkup(
-      React.createElement(SystemAccountMenu, {
-        identity: {},
-        accountStatus: "guest",
-        hasIdentity: false,
-        matchAlertDisplay: null,
-        onMatchAlertAction: vi.fn(),
-        onEditIdentity: vi.fn(),
-        onOpenAccount: vi.fn(),
-        onOpenSignIn: vi.fn(),
-        onOpenSaveProfile: vi.fn(),
-        onSignOut: vi.fn(),
-      })
-    );
-    expect(html).toContain('aria-label="Sign in"');
-    expect(html).toContain("Sign in");
   });
 });
 ```
+
+The signed-out visible label and button semantics belong to the named Storybook
+state and its interaction assertion in Task 5.
 
 - [ ] **Step 7: Extract the account menu with a controllable open state**
 
