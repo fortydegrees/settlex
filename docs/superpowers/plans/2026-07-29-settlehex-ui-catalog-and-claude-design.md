@@ -19,6 +19,8 @@
 - Production components own transitions. Story files trigger motion but do not duplicate it.
 - Retain the existing motion tokens `--settlex-ui-duration-fast`, `--settlex-ui-duration-dialog`, `--settlex-ui-ease-standard`, and `--settlex-ui-ease-bounce`; add a token only if repeated use is demonstrated.
 - Use rendered behavior tests for new component boundaries and Storybook play tests for visible interaction. Do not add source-grep tests for UI implementation details.
+- Treat every touched surviving `*.source.test.js` file as a migration candidate, not an endorsed contract. Map its assertions to behavior-first coverage, delete redundant copy/structure assertions, and replace only genuinely unique runtime behavior before deleting the source test.
+- Storybook/browser review owns exact UI copy, CSS, layout, and motion. Vitest may assert an exact response only when that response is itself an external API/runtime contract; do not duplicate the same copy assertion across helpers and components.
 - Use pnpm. Keep Storybook on 8.6.14 and pin `webpack@5.101.2` for the current Next 13 integration unless the clean install proves that combination unusable.
 - Do not push, deploy, or alter production. Pause for explicit approval immediately before the Claude Design upload.
 - Follow `docs/agent/TESTING.md`, `.agents/skills/catana-design/SKILL.md`, `docs/agent/UI_CONTEXT.md`, and `docs/agent/skills/catana-brand/SKILL.md`.
@@ -78,10 +80,10 @@
 
 ### Tests and guidance
 
-- `app/catana/matchAlerts/__tests__/MatchAlertControl.test.js` — visible status/detail/error/action behavior.
 - `app/catana/__tests__/SystemAccountMenu.test.js` — pure menu-state model and server-rendered sign-in semantics.
-- `app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js` — remove assertions invalidated by extraction; retain only runtime-contract assertions that genuinely belong here.
-- `app/catana/matchAlerts/__tests__/matchAlertState.test.js` — shared copy and production state mapping.
+- Touched source tests — audit, migrate any unique runtime contracts to behavior-first coverage, then delete.
+- `app/catana/matchAlerts/__tests__/matchAlertState.test.js` — production state mapping.
+- Existing matchmaking, challenge, match-alert join/provider, and route tests — retain lifecycle behavior while the presentation boundaries move.
 - `app/__tests__/api/matchAlertRoutes.test.js` — confirm the API still returns the shared pause message.
 - `AGENTS.md` — concise rule routing standard UI work through the catalog.
 - `.agents/skills/catana-design/SKILL.md` — add Storybook as executable design evidence.
@@ -525,11 +527,9 @@ git commit -m "feat: catalog shared SettleHex UI primitives"
 - Modify: `app/catana/home/HomeTableClient.js`
 - Modify: `app/catana/matchAlerts/matchAlertState.js`
 - Modify: `app/api/match-alerts/handler.js`
-- Create: `app/catana/matchAlerts/__tests__/MatchAlertControl.test.js`
 - Create: `app/catana/__tests__/SystemAccountMenu.test.js`
-- Modify: `app/catana/matchAlerts/__tests__/matchAlertState.test.js`
 - Modify: `app/__tests__/api/matchAlertRoutes.test.js`
-- Modify: `app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js`
+- Delete or replace: `app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js`
 
 **Interfaces:**
 - Consumes: `getMatchAlertDisplayState`, `Popover`, `Button`, identity/color data, and homepage callbacks.
@@ -540,45 +540,7 @@ git commit -m "feat: catalog shared SettleHex UI primitives"
   - `SystemAccountMenu({ identity, accountStatus, hasIdentity, matchAlertDisplay, matchAlertLoading, matchAlertError, onMatchAlertAction, open, defaultOpen, onOpenChange, ...callbacks })`
   - `SystemTopChrome` with the same account/menu inputs plus homepage links.
 
-- [ ] **Step 1: Add failing display/copy tests**
-
-Add to `app/catana/matchAlerts/__tests__/matchAlertState.test.js`:
-
-```js
-import {
-  HUMAN_GAME_MATCH_ALERT_PAUSE_MESSAGE,
-  getMatchAlertDisplayState,
-  getMatchAlertStatusLabel,
-} from "../matchAlertState";
-
-it("owns the production human-game pause error copy", () => {
-  expect(HUMAN_GAME_MATCH_ALERT_PAUSE_MESSAGE).toBe(
-    "Match alerts stay paused until your human game ends."
-  );
-});
-
-it.each([
-  ["off", "Enable"],
-  ["active", "On"],
-  ["paused", "Paused during game"],
-  ["blocked", "Blocked"],
-  ["unsupported", "Unsupported"],
-  ["unconfigured", "Unavailable"],
-  ["install_required", "Home Screen required"],
-])("maps %s to the compact menu label", (status, label) => {
-  expect(getMatchAlertStatusLabel(status)).toBe(label);
-});
-```
-
-- [ ] **Step 2: Run the tests and confirm the new exports fail**
-
-```bash
-pnpm exec vitest run app/catana/matchAlerts/__tests__/matchAlertState.test.js --reporter=dot
-```
-
-Expected: failure because the constant and label helper are not exported.
-
-- [ ] **Step 3: Add the shared copy and label owner**
+- [ ] **Step 1: Add the shared copy and label owner**
 
 Add to `app/catana/matchAlerts/matchAlertState.js`:
 
@@ -602,55 +564,15 @@ export const getMatchAlertStatusLabel = (status) =>
 
 Import `HUMAN_GAME_MATCH_ALERT_PAUSE_MESSAGE` in `app/api/match-alerts/handler.js` and replace only the matching response literal. Keep the existing route test's exact response assertion.
 
-- [ ] **Step 4: Write failing rendered tests for the alert control**
+- [ ] **Step 2: Confirm the existing behavior contracts before extraction**
 
-Create `app/catana/matchAlerts/__tests__/MatchAlertControl.test.js`:
+Run the existing `matchAlertState` and match-alert route tests. They cover the
+state machine and the externally visible API error respectively. Do not add
+Vitest assertions for compact labels or duplicate the human-game copy in a
+component test; named stories and browser review cover those presentation
+branches.
 
-```js
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
-import { MatchAlertControl } from "../MatchAlertControl";
-import { getMatchAlertDisplayState } from "../matchAlertState";
-
-describe("MatchAlertControl", () => {
-  it("renders the compact paused state and production error", () => {
-    const display = getMatchAlertDisplayState({
-      configured: true,
-      capability: { supported: true, permission: "granted" },
-      preference: { state: "paused" },
-      currentGame: null,
-    });
-    const html = renderToStaticMarkup(
-      React.createElement(MatchAlertControl, {
-        display,
-        surface: "menu",
-        error: "Match alerts stay paused until your human game ends.",
-        onAction: vi.fn(),
-      })
-    );
-    expect(html).toContain("Match alerts");
-    expect(html).toContain("Paused during game");
-    expect(html).toContain("Resume");
-    expect(html).toContain("role=\"alert\"");
-    expect(html).toContain("Match alerts stay paused until your human game ends.");
-  });
-
-  it("shows detail on the modal surface", () => {
-    const display = getMatchAlertDisplayState({});
-    const html = renderToStaticMarkup(
-      React.createElement(MatchAlertControl, {
-        display,
-        surface: "modal",
-        onAction: vi.fn(),
-      })
-    );
-    expect(html).toContain(display.detail);
-  });
-});
-```
-
-- [ ] **Step 5: Implement the presentational alert control**
+- [ ] **Step 3: Implement the presentational alert control**
 
 Move the current markup from `HomeTableClient.js` to `app/catana/matchAlerts/MatchAlertControl.js` with this complete implementation:
 
@@ -851,16 +773,18 @@ Pass:
 
 Remove the old local `MATCH_ALERT_STATUS_LABELS`, `handleMatchAlertAction`, `MatchAlertControl`, `SystemAccountMenu`, and `SystemTopChrome`.
 
-- [ ] **Step 9: Remove brittle extraction assertions and run focused tests**
+- [ ] **Step 9: Migrate brittle extraction assertions and run focused tests**
 
-In `HomeTableClient.matchmakingRescue.source.test.js`, remove assertions that require `MatchAlertControl` or `SystemAccountMenu` to be defined inside `HomeTableClient.js`. Do not replace them with import/source assertions.
+In `HomeTableClient.matchmakingRescue.source.test.js`, delete the match-alert and
+account-menu assertions about copy, component location, imports, and local
+handlers. Map any unique behavior to existing state/handler tests; do not replace
+the deleted checks with new source assertions. Task 6 completes the audit for the
+remaining search-modal assertions.
 
 ```bash
 pnpm exec vitest run \
   app/catana/matchAlerts/__tests__/matchAlertState.test.js \
-  app/catana/matchAlerts/__tests__/MatchAlertControl.test.js \
   app/catana/__tests__/SystemAccountMenu.test.js \
-  app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js \
   app/__tests__/api/matchAlertRoutes.test.js \
   --reporter=dot
 ```
@@ -1039,8 +963,8 @@ git commit -m "feat: catalog account and match-alert states"
 - Create: `app/account/AccountPageView.js`
 - Modify: `app/account/AccountPageClient.js`
 - Create: `app/account/AccountPageView.stories.jsx`
-- Create: `app/account/__tests__/AccountPageView.test.js`
-- Modify: `app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js`
+- Delete or replace: `app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js`
+- Delete or replace: `app/catana/__tests__/MatchPageClient.friendChallenge.source.test.js`
 - Modify: `docs/agent/UI_CATALOG.md`
 
 **Interfaces:**
@@ -1064,15 +988,22 @@ Replace the old `matchAlerts` object use with:
 
 Keep local `rescueExpanded` UI state because it belongs to the view. Keep matchmaking/network actions in `HomeTableClient`.
 
-- [ ] **Step 2: Reconnect the route and remove invalid source assertions**
+- [ ] **Step 2: Reconnect the route and migrate the source assertions**
 
-Pass the same match-alert adapter from Task 4. Remove only source assertions that require `SearchingModal` to live inside `HomeTableClient.js`. Retain tests of `getMatchmakingRescueStage` and other actual runtime helpers.
+Pass the same match-alert adapter from Task 4. Map the remaining
+`HomeTableClient.matchmakingRescue.source.test.js` assertions to
+`matchmakingRescue.test.js` and `useLobbyHomeActions.matchmaking.test.js`.
+Delete copy, component-location, and local-state assertions. Add a behavior
+replacement only for a unique runtime contract, then delete the source test.
 
 ```bash
-pnpm exec vitest run app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js --reporter=dot
+pnpm exec vitest run \
+  app/catana/matchmaking/__tests__/matchmakingRescue.test.js \
+  app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js \
+  --reporter=dot
 ```
 
-Expected: pass.
+Expected: behavior coverage passes without reading `HomeTableClient.js`.
 
 - [ ] **Step 3: Add production matchmaking states**
 
@@ -1263,46 +1194,20 @@ export function getAccountProfileCopy(account) {
 
 `AccountPageClient` retains `refreshAccount`, the two option/account fetches, `authClient`, provider redirect, and account refresh after email auth. It passes network callbacks into `AccountPageView`.
 
-Add `app/account/__tests__/AccountPageView.test.js`:
-
-```js
-import { describe, expect, it } from "vitest";
-import { getAccountProfileCopy } from "../AccountPageView";
-
-describe("getAccountProfileCopy", () => {
-  it.each([
-    [null, "No profile yet", "Create a profile from the home table"],
-    [
-      { currentUsername: "BoldTraderYM", status: "guest" },
-      "BoldTraderYM",
-      "You are playing as a guest",
-    ],
-    [
-      { currentUsername: "HarbourFox", status: "claimed" },
-      "HarbourFox",
-      "Your profile is connected",
-    ],
-  ])("maps production account state to profile copy", (account, title, detail) => {
-    const copy = getAccountProfileCopy(account);
-    expect(copy.title).toBe(title);
-    expect(copy.description).toContain(detail);
-  });
-});
-```
-
 Create `AccountPageView.stories.jsx` with title `Composed Surfaces/Account & Identity/Account Page` and stories `NoProfile`, `GuestProfile`, `ClaimedProfile`, `MissingCredentials`, `EmailSubmitting`, and `Mobile`. Use callback spies or a never-resolving promise; do not call `authClient` or `fetch`.
 
-- [ ] **Step 8: Run focused extraction tests**
+- [ ] **Step 8: Audit the touched source tests and run focused behavior tests**
 
-```bash
-pnpm exec vitest run \
-  app/account/__tests__/AccountPageView.test.js \
-  app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js \
-  app/catana/__tests__/MatchPageClient.friendChallenge.source.test.js \
-  --reporter=dot
-```
+For `HomeTableClient.matchmakingRescue.source.test.js` and
+`MatchPageClient.friendChallenge.source.test.js`, map every assertion to the
+existing matchmaking/challenge helper, handler, or route tests. Delete copy,
+component-location, import, and local-state assertions. If a unique lifecycle
+contract remains, add the smallest behavior-first replacement and then delete
+the source test; otherwise delete it outright.
 
-Expected: behavior/model tests pass. Remove only friend-challenge source assertions that require the view to remain nested in `MatchPageClient`; do not replace them with import/source checks.
+Run the affected matchmaking, pending-friend-challenge, route, and any new
+rendered interaction tests. Exact account and friend-challenge copy is verified
+through the named stories and browser pass, not a pure-copy Vitest helper.
 
 - [ ] **Step 9: Build, review both viewports, and commit**
 
@@ -1313,9 +1218,7 @@ CI=1 pnpm build-storybook
 Expected: no provider/network error. Mark Account entry, Identity editor, Account/profile page, Search/rescue modal, and Friend invite `Covered`.
 
 ```bash
-git add app/account app/catana/home app/catana/lobby \
-  app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js \
-  app/catana/__tests__/MatchPageClient.friendChallenge.source.test.js \
+git add app/account app/catana/home app/catana/lobby app/catana/__tests__ \
   docs/agent/UI_CATALOG.md
 git commit -m "feat: catalog account entry and matchmaking UI"
 ```
@@ -1327,14 +1230,14 @@ git commit -m "feat: catalog account entry and matchmaking UI"
 - Create: `app/catana/components/RecoverySurfaces.stories.jsx`
 - Create: `app/catana/components/GameOverModal.stories.jsx`
 - Modify: `app/catana/matchAlerts/MatchAlertDialog.js`
-- Create: `app/catana/matchAlerts/__tests__/MatchAlertDialog.test.js`
+- Delete or replace: `app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js`
 - Modify: `docs/agent/UI_CATALOG.md`
 
 **Interfaces:**
 - Consumes: real production components and their pure display helpers.
 - Produces: named provider-free stories for copy, actions, and dialog/banner motion.
 
-- [ ] **Step 1: Extract and test the match-alert dialog copy model**
+- [ ] **Step 1: Extract the match-alert dialog copy model**
 
 Add to `app/catana/matchAlerts/MatchAlertDialog.js`:
 
@@ -1380,7 +1283,8 @@ const { title, description } = getMatchAlertDialogCopy({
 });
 ```
 
-Create `app/catana/matchAlerts/__tests__/MatchAlertDialog.test.js` with one table-driven assertion for `checking`, `confirm`, bot `confirm`, `stale`, and `error`, using the exact titles above.
+Do not add a table of exact-title Vitest assertions. The named Storybook states
+below are the executable copy catalog.
 
 - [ ] **Step 2: Add match-alert dialog stories**
 
@@ -1405,6 +1309,13 @@ const errorAlert = { ...openAlert, status: "error" };
 ```
 
 Do not click `Join duel` or `Keep looking` because those paths intentionally invoke production navigation/network helpers. Use `Not now` for the interaction assertion. Do not inject a Storybook-only network implementation.
+
+Audit `MatchAlertDialog.source.test.js` assertion by assertion. Match-alert
+resolution, join ordering, conflict handling, storage-failure tolerance, and
+provider routing are real lifecycle contracts and must remain covered at their
+handler/helper boundary. Delete source-only assertions about imports, labels,
+copy, and component nesting, then remove the source test once every unique
+runtime contract is mapped or replaced.
 
 - [ ] **Step 3: Add recovery surface stories**
 
@@ -1749,7 +1660,9 @@ git commit -m "docs: route standard UI work through Storybook"
 pnpm exec vitest run \
   app/catana/matchAlerts \
   app/catana/__tests__/SystemAccountMenu.test.js \
-  app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js \
+  app/catana/matchmaking/__tests__/matchmakingRescue.test.js \
+  app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js \
+  app/catana/__tests__/pendingFriendChallenge.test.js \
   app/catana/__tests__/GameOverModal.test.js \
   app/replays \
   app/__tests__/api/matchAlertRoutes.test.js \
