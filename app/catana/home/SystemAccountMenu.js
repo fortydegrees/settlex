@@ -1,0 +1,163 @@
+"use client";
+
+import { useState } from "react";
+import {
+  ChevronDownIcon,
+  UserCircleIcon,
+} from "@heroicons/react/24/outline";
+import { Popover } from "../../ui/Popover";
+import { EMOJI_OPTIONS } from "../lobby/playerIdentityStorage";
+import { MatchAlertControl } from "../matchAlerts/MatchAlertControl";
+import { getPlayerColorOption } from "../theme/playerColors";
+import { getSystemAccountMenuItems } from "./systemAccountMenuModel";
+
+export function SystemAccountMenu({
+  identity,
+  accountStatus,
+  hasIdentity,
+  matchAlertDisplay,
+  matchAlertLoading = false,
+  matchAlertError = "",
+  onMatchAlertAction = () => {},
+  open,
+  defaultOpen = false,
+  onOpenChange,
+  onEditIdentity,
+  onOpenAccount,
+  onOpenSignIn,
+  onOpenSaveProfile,
+  onSignOut,
+}) {
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : internalOpen;
+  const setIsOpen = (nextOpen) => {
+    if (!isControlled) setInternalOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
+  const colorOption = getPlayerColorOption(identity.color || "gold");
+  const displayName = identity.name || "Player";
+  const displayEmoji = identity.emoji || EMOJI_OPTIONS[0];
+  const isGuestProfile = accountStatus !== "claimed";
+  const accountMenuItems = getSystemAccountMenuItems(accountStatus);
+  const avatar = (
+    <span
+      className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br ${colorOption.gradient} text-lg shadow-[0_12px_24px_-18px_rgba(15,23,42,0.72)] ring-1 ring-white/55 sm:h-11 sm:w-11 sm:text-xl`}
+    >
+      {displayEmoji}
+    </span>
+  );
+
+  const handleMenuItem = (action) => {
+    setIsOpen(false);
+
+    if (action === "account" && hasIdentity) {
+      onOpenAccount();
+      return;
+    }
+
+    if (action === "saveProfile") {
+      onOpenSaveProfile();
+      return;
+    }
+
+    if (action === "signOut") {
+      void onSignOut();
+      return;
+    }
+
+    onEditIdentity();
+  };
+
+  if (!hasIdentity) {
+    return (
+      <button
+        type="button"
+        aria-label="Sign in"
+        className="catana-hud-glass catana-hud-glass--compact group inline-flex min-h-[2.86rem] items-center gap-2 rounded-full px-3.5 text-left text-sm font-bold text-white transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 active:translate-y-0 motion-reduce:transition-none sm:min-h-[3rem] sm:px-4"
+        onClick={onOpenSignIn}
+      >
+        <UserCircleIcon
+          className="h-5 w-5 shrink-0 text-white/95 drop-shadow-[0_1px_1px_rgba(15,23,42,0.22)]"
+          aria-hidden="true"
+        />
+        <span className="drop-shadow-[0_1px_1px_rgba(15,23,42,0.24)]">
+          Sign in
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <Popover
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      align="end"
+      sideOffset={8}
+      triggerAriaLabel="Open account menu"
+      triggerClassName="catana-hud-glass catana-hud-glass--compact group inline-flex min-h-[2.86rem] max-w-[2.86rem] items-center gap-2 overflow-hidden rounded-full p-[3px] text-left font-semibold text-white transition hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transition-none sm:min-h-[3rem] sm:w-auto sm:max-w-[13rem] sm:p-1 sm:pr-2.5"
+      triggerContent={
+        <>
+          {avatar}
+          <span className="hidden min-w-0 flex-1 sm:block">
+            <span className="block max-w-[7.3rem] truncate text-[0.82rem] font-semibold leading-none text-white drop-shadow-[0_1px_1px_rgba(15,23,42,0.3)]">
+              {displayName}
+            </span>
+          </span>
+          <ChevronDownIcon
+            className="hidden h-4 w-4 shrink-0 text-white/78 sm:block"
+            aria-hidden="true"
+          />
+        </>
+      }
+      className="w-56 p-1.5"
+    >
+      <div
+        className="border-b border-slate-200/72 px-2.5 pb-2.5 pt-1.5"
+        role="none"
+      >
+        <div className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-slate-500">
+          {isGuestProfile ? "Playing as guest" : "Signed in as"}
+        </div>
+        <div className="mt-1 flex min-w-0 items-center gap-2">
+          <span
+            className={`grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br ${colorOption.gradient} text-sm shadow-[0_10px_20px_-16px_rgba(15,23,42,0.7)] ring-1 ring-white/70`}
+          >
+            {displayEmoji}
+          </span>
+          <span className="min-w-0 truncate text-sm font-bold text-slate-900">
+            {displayName}
+          </span>
+        </div>
+      </div>
+      <div className="grid gap-0.5" role="menu" aria-label="Account menu">
+        {accountMenuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.action}
+              type="button"
+              role="menuitem"
+              className="group/item flex min-h-10 items-center gap-2.5 rounded-[0.9rem] px-2.5 text-left transition hover:bg-white/52 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85"
+              onClick={() => handleMenuItem(item.action)}
+            >
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[0.74rem] bg-sky-100/72 text-slate-700 transition group-hover/item:bg-white/70">
+                <Icon className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 truncate text-[0.86rem] font-bold text-slate-900">
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+      <MatchAlertControl
+        display={matchAlertDisplay}
+        loading={matchAlertLoading}
+        error={matchAlertError}
+        surface="menu"
+        onAction={onMatchAlertAction}
+      />
+    </Popover>
+  );
+}
