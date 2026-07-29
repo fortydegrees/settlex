@@ -1477,7 +1477,19 @@ Render the real `ReplayPanel` and its actual child components. Do not mount `Pos
 - [ ] **Step 4: Run replay tests and static build**
 
 ```bash
-pnpm exec vitest run app/replays --reporter=dot
+pnpm exec vitest run \
+  app/__tests__/api/postgameReplayRoute.test.js \
+  app/__tests__/postgameReplayPayload.test.js \
+  app/__tests__/postgameGameBoard.source.test.js \
+  app/__tests__/replayGameScreenProps.test.js \
+  app/__tests__/replayNavigation.test.js \
+  app/__tests__/replayPage.test.js \
+  app/__tests__/replayPageClient.test.js \
+  app/__tests__/replayPanel.test.js \
+  app/__tests__/replayScoreChart.test.js \
+  app/__tests__/replaySessionState.test.js \
+  app/__tests__/gMatchPage.test.js \
+  --reporter=dot
 CI=1 pnpm build-storybook
 ```
 
@@ -1856,7 +1868,15 @@ pnpm exec vitest run \
   app/catana/__tests__/pendingFriendChallenge.test.js \
   app/catana/__tests__/GameOverModal.test.js \
   app/catana/lobby/__tests__/interruptedDuel.test.js \
-  app/replays \
+  app/__tests__/api/postgameReplayRoute.test.js \
+  app/__tests__/postgameReplayPayload.test.js \
+  app/__tests__/replayGameScreenProps.test.js \
+  app/__tests__/replayNavigation.test.js \
+  app/__tests__/replayPage.test.js \
+  app/__tests__/replayPageClient.test.js \
+  app/__tests__/replayPanel.test.js \
+  app/__tests__/replayScoreChart.test.js \
+  app/__tests__/replaySessionState.test.js \
   app/__tests__/profilePage.test.js \
   app/__tests__/api/matchAlertRoutes.test.js \
   --reporter=dot
