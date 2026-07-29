@@ -26,6 +26,50 @@ describe("getMatchmakingRescueStage", () => {
   });
 });
 
+describe("play-online query intent", () => {
+  it("waits for account readiness and consumes the intent only once", () => {
+    expect(matchmakingRescue.consumePlayOnlineIntent).toBeTypeOf("function");
+
+    const href =
+      "https://settlehex.com/?table=public&playOnline=1#matchmaking";
+    expect(
+      matchmakingRescue.consumePlayOnlineIntent({
+        href,
+        accountReady: false,
+        alreadyHandled: false,
+      })
+    ).toEqual({
+      handled: false,
+      shouldPlay: false,
+      nextHref: null,
+    });
+
+    expect(
+      matchmakingRescue.consumePlayOnlineIntent({
+        href,
+        accountReady: true,
+        alreadyHandled: false,
+      })
+    ).toEqual({
+      handled: true,
+      shouldPlay: true,
+      nextHref: "/?table=public#matchmaking",
+    });
+
+    expect(
+      matchmakingRescue.consumePlayOnlineIntent({
+        href,
+        accountReady: true,
+        alreadyHandled: true,
+      })
+    ).toEqual({
+      handled: true,
+      shouldPlay: false,
+      nextHref: null,
+    });
+  });
+});
+
 describe("matchmaking rescue timing", () => {
   beforeEach(() => {
     vi.useFakeTimers();

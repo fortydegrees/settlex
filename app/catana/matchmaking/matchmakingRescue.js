@@ -9,6 +9,31 @@ export function getMatchmakingRescueStage(elapsedSeconds) {
   return "waiting";
 }
 
+export function consumePlayOnlineIntent({
+  href,
+  accountReady,
+  alreadyHandled,
+}) {
+  if (alreadyHandled) {
+    return { handled: true, shouldPlay: false, nextHref: null };
+  }
+  if (!accountReady) {
+    return { handled: false, shouldPlay: false, nextHref: null };
+  }
+
+  const url = new URL(href);
+  if (url.searchParams.get("playOnline") !== "1") {
+    return { handled: false, shouldPlay: false, nextHref: null };
+  }
+
+  url.searchParams.delete("playOnline");
+  return {
+    handled: true,
+    shouldPlay: true,
+    nextHref: `${url.pathname}${url.search}${url.hash}`,
+  };
+}
+
 export function getSearchElapsedSeconds(startedAt, now = Date.now()) {
   if (!Number.isFinite(startedAt) || !Number.isFinite(now)) return 0;
   return Math.max(0, Math.floor((now - startedAt) / 1000));
