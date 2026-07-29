@@ -6,12 +6,12 @@ ownership, scope, and coverage only.
 
 | Domain | Surface | Production owner | Appears in | Valid visible states | Copy owner | Motion/interaction | Viewports | Story | Boundary work |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Foundations | Brand foundations | `app/globals.css` | Product-wide | Default; reduced motion | CSS tokens | Token samples | Desktop; mobile | Planned | None |
-| Components | Button | `app/ui/Button.js` | Product-wide | Variants; sizes; disabled; sheen | Component children | Hover; press; focus | Both | Planned | None |
-| Components | Icon button | `app/ui/IconButton.js` | Product-wide | Variants; sizes; disabled | `aria-label` at call site | Hover; press; tooltip composition | Both | Planned | None |
-| Components | Fields and selectors | `app/ui/Input.js`, `Select.js`, `SwatchPicker.js` | Account and setup forms | Empty; populated; disabled; selected | Call site | Focus; selection | Both | Planned | None |
-| Components | Feedback | `app/ui/Banner.js`, `Panel.js` | Status and content surfaces | Neutral; danger; title/body/actions | Props | Entry at composition | Both | Planned | None |
-| Components | Overlays | `app/ui/Dialog.js`, `AlertDialog.js`, `Popover.js`, `MetaDisclosure.js`, `Tooltip.js` | Product-wide | Open; closed; confirm; destructive | Props | Open; close; dismiss; focus | Both | Planned | None |
+| Foundations | Brand foundations | `app/globals.css` | Product-wide | Default; reduced motion | CSS tokens | Token samples | Desktop; mobile | Covered | None |
+| Components | Button | `app/ui/Button.js` | Product-wide | Variants; sizes; disabled; sheen | Component children | Hover; press; focus | Both | Covered | None |
+| Components | Icon button | `app/ui/IconButton.js` | Product-wide | Variants; sizes; disabled | `aria-label` at call site | Hover; press; tooltip composition | Both | Covered | None |
+| Components | Fields and selectors | `app/ui/Input.js`, `Select.js`, `SwatchPicker.js` | Account and setup forms | Empty; populated; disabled; selected | Call site | Focus; selection | Both | Covered | None |
+| Components | Feedback | `app/ui/Banner.js`, `Panel.js` | Status and content surfaces | Neutral; danger; title/body/actions | Props | Entry at composition | Both | Covered | None |
+| Components | Overlays | `app/ui/Dialog.js`, `AlertDialog.js`, `Popover.js`, `MetaDisclosure.js`, `Tooltip.js` | Product-wide | Open; closed; confirm; destructive | Props | Open; close; dismiss; focus | Both | Covered | None |
 | Account & Identity | Account entry | `app/catana/lobby/AccountEntryModal.js` | Homepage/account entry | Sign in; save guest profile; pending; error | Component | Dialog transition | Both | Planned | None |
 | Account & Identity | Identity editor | `app/catana/lobby/IdentityModal.js` | Homepage/lobby | New guest; edit guest; edit saved; validation | Component and identity helpers | Dialog; picker selection | Both | Planned | None |
 | Account & Identity | Account menu | `app/catana/home/HomeTableClient.js` | Homepage top chrome | Signed out; guest; claimed; alert states; pending; error | Component and match-alert helper | Popover open/close | Both | Planned | Extract |
