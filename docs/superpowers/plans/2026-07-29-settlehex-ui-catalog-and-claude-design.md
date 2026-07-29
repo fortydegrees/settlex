@@ -1867,7 +1867,9 @@ pnpm exec vitest run \
   app/catana/__tests__/useLobbyHomeActions.matchmaking.test.js \
   app/catana/__tests__/pendingFriendChallenge.test.js \
   app/catana/__tests__/GameOverModal.test.js \
+  app/catana/__tests__/gameScreenDisplayModel.test.js \
   app/catana/lobby/__tests__/interruptedDuel.test.js \
+  app/catana/lobby/__tests__/matchRoomState.test.js \
   app/__tests__/api/postgameReplayRoute.test.js \
   app/__tests__/postgameReplayPayload.test.js \
   app/__tests__/replayGameScreenProps.test.js \
@@ -1877,6 +1879,7 @@ pnpm exec vitest run \
   app/__tests__/replayPanel.test.js \
   app/__tests__/replayScoreChart.test.js \
   app/__tests__/replaySessionState.test.js \
+  app/__tests__/gMatchPage.test.js \
   app/__tests__/profilePage.test.js \
   app/__tests__/api/matchAlertRoutes.test.js \
   --reporter=dot
