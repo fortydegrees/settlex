@@ -1422,11 +1422,12 @@ Set `ReplaySurfaces.stories.jsx` title to `Product Patterns/Postgame & Replay/Re
 - `StepControlsInMiddle`
 - `StepControlsAtEnd`
 - `PreparingArchive`
-- `MatchStillActive`
-- `ReplayUnavailable`
+- `ReplayUnavailable` using the production-routed `invalid` status
 - `ReplayScoreTimeline`
 
 Use `fn()` for seek/step callbacks. Add a keyboard interaction play function to `ReplayScoreTimeline` that focuses the chart, presses an arrow key, and verifies the seek spy receives the production-derived target index.
+Do not add an `active` status story unless a production route starts passing
+that state; current routes expose only `preparing` and `invalid`.
 
 - [ ] **Step 3: Add composed panel stories**
 
