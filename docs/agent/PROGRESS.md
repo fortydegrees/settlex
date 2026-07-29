@@ -7277,3 +7277,27 @@
   tests, Storybook builds, browser interaction/layout checks, and normal/reduced
   motion evidence passed; the remaining Claude Design sync is a separate,
   approval-gated final step.
+
+## Status (2026-07-29, Storybook catalog final local verification)
+
+- The exact Task 12 focused Vitest command passed 24 test files and 216 tests.
+  `CI=1 pnpm build-storybook` then rebuilt `game-core` and the Storybook 8.6.14
+  production output successfully.
+- Fresh `storybook-static/index.json` contained 109 indexed stories from 21
+  colocated modules. A new static server on `127.0.0.1:62340` served that build;
+  all 109 iframe routes completed with zero visible Storybook error surfaces,
+  page errors, story-origin console errors, or horizontal-overflow cases.
+- The bounded catalog accessibility crawl checked 391 visible buttons and 60
+  visible form controls; every control had an accessible name. Live keyboard
+  checks opened Dialog, AlertDialog, the account Popover, and the replay mobile
+  Drawer with Enter, exercised Tab, dismissed with Escape, and returned focus
+  to the trigger in normal and reduced-motion modes. Replay chart ArrowRight
+  kept focus and issued `onSeek(3)`.
+- The ten Task 10 representative desktop/mobile compositions were re-rendered
+  under normal and reduced motion for 20 total cases. At 1440×900 and 390×844,
+  none had horizontal overflow, clipped required actions, unreachable copy,
+  visible Storybook errors, page errors, or console errors.
+- `docs/agent/UI_CATALOG.md` required no evidence correction: all 25 inventory
+  rows are `Covered`, with no Planned, boundary-work, TBD, or TODO marker.
+  No production or story defect was found, so this gate changed documentation
+  only. Claude Design upload remains the separate approval-gated next step.

@@ -4481,3 +4481,34 @@
   contracts. Through Task 10, focused behavior tests, static builds, browser
   interaction/layout checks, and normal/reduced-motion review passed. Claude
   Design sync remains a separate approval-gated final step.
+
+## Storybook catalog final local gate (2026-07-29)
+
+- Final upload-checkpoint evidence must come from a freshly rebuilt static
+  catalog, not an older long-running Storybook server. Task 12 used
+  `CI=1 pnpm build-storybook`, parsed the resulting
+  `storybook-static/index.json`, and served that exact directory on a newly
+  allocated localhost port.
+- The final index contained 109 stories from 21 modules. The full iframe sweep
+  treated only visible `.sb-errordisplay` UI, uncaught page errors, and
+  story-origin console errors as failures; hidden Storybook error scaffolding
+  was ignored. The separate Python static-server `/favicon.ico` 404 is
+  infrastructure noise, not a component error.
+- The bounded accessible-name crawl covered 391 visible buttons and 60 visible
+  form controls with no unnamed result. Live Enter/Tab/Escape checks covered
+  Dialog, AlertDialog, account Popover, and replay Drawer focus return in both
+  motion modes. The controlled replay-chart story does not update
+  `aria-valuenow`; verify ArrowRight by its live `onSeek` spy call instead
+  (`onSeek(3)` from event index 2).
+- Repeat the ten representative Task 10 cases at both normal and reduced
+  motion: account resume failure at desktop/mobile, Puffer rescue at
+  desktop/mobile, mobile game over, desktop replay panel, mobile replay
+  drawer, mobile alert pending, desktop button variants, and mobile disabled
+  fields. The final 20-case matrix had no horizontal overflow, clipped required
+  action, unreachable required copy, visible Storybook error, page error, or
+  console error.
+- Existing build notices remain non-component warnings: webpack package
+  metadata discovery, stale Browserslist data, Node CJS/ESM and `punycode`
+  notices, and bundle-size advisories. The browser evidence is Chromium-based;
+  provider/network behavior, whole routes, full board gameplay, and iOS Safari
+  remain outside this Storybook gate.
