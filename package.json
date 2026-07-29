@@ -5,6 +5,10 @@
   "packageManager": "pnpm@9.13.2",
   "scripts": {
     "predev": "pnpm -C game-core build",
+    "prestorybook": "pnpm -C game-core build",
+    "storybook": "storybook dev -p 6006",
+    "prebuild-storybook": "pnpm -C game-core build",
+    "build-storybook": "storybook build",
     "dev": "next dev",
     "dev:log": "mkdir -p .logs && pnpm dev 2>&1 | tee .logs/dev.log",
     "db:migrate": "DATABASE_URL=${DATABASE_URL:-postgres://settlehex:settlehex@localhost:55432/settlehex} node scripts/db/migrate.mjs",
@@ -67,13 +71,19 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "8.6.14",
+    "@storybook/addon-essentials": "8.6.14",
+    "@storybook/nextjs": "8.6.14",
+    "@storybook/test": "8.6.14",
     "@types/node": "^20.11.30",
     "@types/react": "18.2.21",
     "eslint": "^8.57.1",
     "eslint-config-next": "^13.5.11",
+    "storybook": "8.6.14",
     "tailwind-clip-path": "^1.0.0",
     "typescript": "5.2.2",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "webpack": "5.101.2"
   },
   "pnpm": {
     "patchedDependencies": {
