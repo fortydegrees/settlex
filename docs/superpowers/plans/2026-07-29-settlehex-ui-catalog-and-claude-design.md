@@ -1119,7 +1119,11 @@ The modal itself imports production `EMOJI_OPTIONS` and player colors; the story
 
 - [ ] **Step 6: Extract and catalog the friend-invite screen**
 
-Move `ChallengeExpiryCountdown`, `ChallengeSeat`, `ChallengeStatusBanner`, and `PendingFriendChallengeScreen` unchanged from `MatchPageClient.js` into `app/catana/lobby/[matchID]/PendingFriendChallengeScreen.js`. Export only `PendingFriendChallengeScreen`, with exact props `mode`, `matchID`, `challengeUrl`, `match`, `challengeState`, `playerName`, `setPlayerName`, `joinPending`, `cancelPending`, `isLoadingMatch`, `error`, `onJoin`, `onCancel`, `onRefresh`, and `onBackToLobby`.
+Move `ChallengeExpiryCountdown`, `ChallengeSeat`, `ChallengeStatusBanner`, and `PendingFriendChallengeScreen` unchanged from `MatchPageClient.js` into `app/catana/lobby/[matchID]/PendingFriendChallengeScreen.js`. Export only `PendingFriendChallengeScreen`, with props `mode`, `matchID`, `challengeUrl`, `match`, `challengeState`, `playerName`, `setPlayerName`, `joinPending`, `cancelPending`, `isLoadingMatch`, `error`, `onJoin`, `onCancel`, `onRefresh`, `onBackToLobby`, and optional `nowMs`.
+
+`nowMs` is a deterministic presentation seam: when finite, the countdown uses
+that value and does not start its live interval. Production callers omit it and
+retain the live `Date.now()` countdown.
 
 The file imports `sanitizeDisplayName`, `CATANA_TABLE_BACKGROUND`, `Banner`, `Button`, `Input`, and `Panel`. `MatchPageClient` retains `resolveFriendChallengeState`, polling, credentials, accept/cancel requests, and navigation, and imports the extracted screen.
 
@@ -1130,7 +1134,7 @@ const challengeState = {
   status: "pending",
   inviterSeatId: "0",
   inviteeSeatId: "1",
-  expiresAt: "2099-01-01T00:00:00.000Z",
+  expiresAt: "2026-07-29T12:05:00.000Z",
 };
 const match = {
   players: [
@@ -1139,6 +1143,7 @@ const match = {
   ],
 };
 const baseArgs = {
+  nowMs: Date.parse("2026-07-29T12:00:00.000Z"),
   matchID: "storybook-friend-duel",
   challengeUrl: "/g/storybook-friend-duel",
   match,
