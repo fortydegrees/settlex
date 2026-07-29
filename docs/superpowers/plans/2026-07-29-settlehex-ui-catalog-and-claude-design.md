@@ -954,6 +954,9 @@ git commit -m "feat: catalog account and match-alert states"
 - Create: `app/account/AccountPageView.stories.jsx`
 - Delete or replace: `app/catana/__tests__/HomeTableClient.matchmakingRescue.source.test.js`
 - Delete or replace: `app/catana/__tests__/MatchPageClient.friendChallenge.source.test.js`
+- Create as needed: narrow behavior-first helpers/tests for one-shot
+  `playOnline=1` consumption and anonymous-session-before-guest-profile
+  provisioning
 - Modify: `docs/agent/UI_CATALOG.md`
 
 **Interfaces:**
@@ -984,6 +987,9 @@ Pass the same match-alert adapter from Task 4. Map the remaining
 `matchmakingRescue.test.js` and `useLobbyHomeActions.matchmaking.test.js`.
 Delete copy, component-location, and local-state assertions. Add a behavior
 replacement only for a unique runtime contract, then delete the source test.
+The one-shot `playOnline=1` query flow is a real behavior contract: extract the
+smallest production-used orchestration seam and test that it waits for account
+readiness, consumes once, replaces the URL, and invokes ordinary online play.
 
 ```bash
 pnpm exec vitest run \
@@ -1193,6 +1199,11 @@ existing matchmaking/challenge helper, handler, or route tests. Delete copy,
 component-location, import, and local-state assertions. If a unique lifecycle
 contract remains, add the smallest behavior-first replacement and then delete
 the source test; otherwise delete it outright.
+
+Preserve anonymous-auth-before-guest-profile ordering with a small
+production-used helper that accepts injected session/profile operations. Test
+ordering and failure short-circuiting without asserting local hook names or
+source structure.
 
 Run the affected matchmaking, pending-friend-challenge, route, and any new
 rendered interaction tests. Exact account and friend-challenge copy is verified
