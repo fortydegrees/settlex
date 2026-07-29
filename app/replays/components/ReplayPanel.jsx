@@ -160,7 +160,14 @@ export function ReplayPanel({
       ) : null}
 
       {isPhoneLayout ? (
-        <>
+        <Drawer.Root
+          open={mobileOpen}
+          onOpenChange={onMobileOpenChange}
+          direction="bottom"
+          dismissible
+          modal={false}
+          noBodyStyles
+        >
           <div
             className={getReplayMobileDockClassName(perspectiveId)}
             data-replay-mobile-dock="true"
@@ -182,56 +189,45 @@ export function ReplayPanel({
                   </div>
                 </div>
                 <ReplayStepControls {...stepProps} compact />
-                <Button
-                  size="sm"
-                  variant="subtle"
-                  onClick={() => onMobileOpenChange(true)}
-                >
-                  Details
-                </Button>
+                <Drawer.Trigger asChild>
+                  <Button size="sm" variant="subtle">
+                    Details
+                  </Button>
+                </Drawer.Trigger>
               </div>
             </div>
           </div>
 
-          <Drawer.Root
-            open={mobileOpen}
-            onOpenChange={onMobileOpenChange}
-            direction="bottom"
-            dismissible
-            modal={false}
-            noBodyStyles
-          >
-            <Drawer.Portal>
-              <Drawer.Content
-                className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-t-[1.55rem] border border-white/55 bg-blue-100/95 p-4 shadow-[0_-28px_70px_-38px_rgba(15,23,42,0.72)] backdrop-blur-2xl outline-none motion-reduce:!animate-none motion-reduce:!transition-none"
-                onPointerDownOutside={preserveBoardPointerDown}
-                data-allow-interaction="true"
-              >
-                <Drawer.Handle className="!mx-auto !mb-3 !mt-0 !h-1.5 !w-14 !rounded-full !bg-slate-500/36" />
-                <div className="flex items-center justify-between gap-3">
-                  <Drawer.Title className="text-lg font-extrabold text-slate-900">
-                    Replay
-                  </Drawer.Title>
-                  <Button size="sm" variant="subtle" onClick={onResultsOpen}>
-                    Results
-                  </Button>
-                </div>
-                <Drawer.Description className="sr-only">
-                  Replay navigation and victory point history.
-                </Drawer.Description>
-                <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
-                  {perspectiveControl}
-                  <div className="mt-3">
-                    <div aria-label="Previous turn and event controls">
-                      <ReplayStepControls {...stepProps} />
-                    </div>
+          <Drawer.Portal>
+            <Drawer.Content
+              className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-t-[1.55rem] border border-white/55 bg-blue-100/95 p-4 shadow-[0_-28px_70px_-38px_rgba(15,23,42,0.72)] backdrop-blur-2xl outline-none motion-reduce:!animate-none motion-reduce:!transition-none"
+              onPointerDownOutside={preserveBoardPointerDown}
+              data-allow-interaction="true"
+            >
+              <Drawer.Handle className="!mx-auto !mb-3 !mt-0 !h-1.5 !w-14 !rounded-full !bg-slate-500/36" />
+              <div className="flex items-center justify-between gap-3">
+                <Drawer.Title className="text-lg font-extrabold text-slate-900">
+                  Replay
+                </Drawer.Title>
+                <Button size="sm" variant="subtle" onClick={onResultsOpen}>
+                  Results
+                </Button>
+              </div>
+              <Drawer.Description className="sr-only">
+                Replay navigation and victory point history.
+              </Drawer.Description>
+              <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
+                {perspectiveControl}
+                <div className="mt-3">
+                  <div aria-label="Previous turn and event controls">
+                    <ReplayStepControls {...stepProps} />
                   </div>
-                  {chart}
                 </div>
-              </Drawer.Content>
-            </Drawer.Portal>
-          </Drawer.Root>
-        </>
+                {chart}
+              </div>
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
       ) : null}
     </>
   );
