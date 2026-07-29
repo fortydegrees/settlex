@@ -7,42 +7,29 @@ import { Input } from "../../../ui/Input";
 import { Panel } from "../../../ui/Panel";
 import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import { sanitizeDisplayName } from "../../utils/playerIdentity";
+import {
+  getChallengeCountdownPresentation,
+  startChallengeExpiryTicker,
+} from "./friendChallengeCountdown";
 
-function formatChallengeExpiry(expiresAt, nowMs) {
-  if (!expiresAt) return "a few minutes";
-  const expiresAtDate = new Date(expiresAt);
-  if (Number.isNaN(expiresAtDate.getTime())) return "a few minutes";
-  if (!Number.isFinite(nowMs)) return "soon";
+function ChallengeExpiryCountdown({ expiresAt, nowMs }) {
+  const [liveNowMs, setLiveNowMs] = useState(null);
+  const presentation = getChallengeCountdownPresentation({
+    expiresAt,
+    nowMs,
+    liveNowMs,
+  });
 
-  const remainingSeconds = Math.max(
-    0,
-    Math.ceil((expiresAtDate.getTime() - nowMs) / 1000)
+  useEffect(
+    () =>
+      startChallengeExpiryTicker({
+        enabled: presentation.tickerEnabled,
+        onTick: setLiveNowMs,
+      }),
+    [presentation.tickerEnabled]
   );
-  const minutes = Math.floor(remainingSeconds / 60);
-  const seconds = remainingSeconds % 60;
 
-  if (minutes <= 0) {
-    return `${seconds}s`;
-  }
-
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
-
-function ChallengeExpiryCountdown({ expiresAt }) {
-  const [nowMs, setNowMs] = useState(null);
-
-  useEffect(() => {
-    const updateNow = () => setNowMs(Date.now());
-    updateNow();
-    const id = setInterval(updateNow, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  if (nowMs == null) {
-    return "This challenge expires soon.";
-  }
-
-  return `This challenge expires in ${formatChallengeExpiry(expiresAt, nowMs)}.`;
+  return presentation.text;
 }
 
 function findSeat(players, seatId) {
@@ -64,7 +51,7 @@ function ChallengeSeat({ label, seat, fallback }) {
   );
 }
 
-function ChallengeStatusBanner({ error, expiresAt }) {
+function ChallengeStatusBanner({ error, expiresAt, nowMs }) {
   if (error) {
     return (
       <Banner
@@ -80,7 +67,7 @@ function ChallengeStatusBanner({ error, expiresAt }) {
     <Banner
       variant="neutral"
       title="Private invite"
-      body={<ChallengeExpiryCountdown expiresAt={expiresAt} />}
+      body={<ChallengeExpiryCountdown expiresAt={expiresAt} nowMs={nowMs} />}
       className="mt-4"
     />
   );
@@ -98,6 +85,7 @@ export function PendingFriendChallengeScreen({
   cancelPending,
   isLoadingMatch,
   error,
+  nowMs,
   onJoin,
   onCancel,
   onRefresh,
@@ -182,6 +170,7 @@ export function PendingFriendChallengeScreen({
                 <ChallengeStatusBanner
                   error={error}
                   expiresAt={challengeState?.expiresAt}
+                  nowMs={nowMs}
                 />
               ) : error ? (
                 <ChallengeStatusBanner error={error} />
