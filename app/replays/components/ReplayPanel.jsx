@@ -203,7 +203,7 @@ export function ReplayPanel({
           >
             <Drawer.Portal>
               <Drawer.Content
-                className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-t-[1.55rem] border border-white/55 bg-blue-100/95 p-4 shadow-[0_-28px_70px_-38px_rgba(15,23,42,0.72)] backdrop-blur-2xl outline-none"
+                className="fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-t-[1.55rem] border border-white/55 bg-blue-100/95 p-4 shadow-[0_-28px_70px_-38px_rgba(15,23,42,0.72)] backdrop-blur-2xl outline-none motion-reduce:!animate-none motion-reduce:!transition-none"
                 onPointerDownOutside={preserveBoardPointerDown}
                 data-allow-interaction="true"
               >
