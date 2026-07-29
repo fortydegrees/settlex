@@ -1729,8 +1729,8 @@ Review at least:
 - `SystemAccountMenu/GuestResumeFailed` at 1440×900 and 390×844.
 - `SearchingModal/PufferRescueAvailable` at both viewports.
 - `GameOverModal/Mobile` at 390×844.
-- `ReplaySurfaces/DesktopPanelOpen` at 1440×900.
-- `ReplaySurfaces/MobileDrawerOpen` at 390×844.
+- `ReplayPanel/DesktopPanelOpen` at 1440×900.
+- `ReplayPanel/MobileDrawerOpen` at 390×844.
 
 Record any deliberate responsive exclusions in `UI_CATALOG.md`; otherwise mark motion/viewports reviewed.
 
