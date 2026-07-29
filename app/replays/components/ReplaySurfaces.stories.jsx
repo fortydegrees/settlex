@@ -32,6 +32,16 @@ const stepControlsStage = (props) => (
 const meta = {
   title: "Product Patterns/Postgame & Replay/Replay Controls",
   parameters: { layout: "fullscreen" },
+  argTypes: {
+    currentEventIndex: { control: false },
+    eventCount: { control: false },
+    victoryTarget: { control: false },
+    players: { control: false },
+    scoreSeries: { control: false },
+    turnStarts: { control: false },
+    matchID: { control: false },
+    status: { control: false },
+  },
 };
 
 export default meta;
