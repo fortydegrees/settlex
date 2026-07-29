@@ -223,6 +223,53 @@ describe("joinAlertMatch", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
+  it("continues to the human join when post-leave local cleanup fails", async () => {
+    const activeBotMatch = {
+      matchID: "bot_1",
+      playerID: "0",
+      savedAtMs: 1,
+    };
+    const oldCredentialKey = getCredentialsStorageKey(activeBotMatch);
+    const storage = createStorage({
+      [ACTIVE_MATCH_STORAGE_KEY]: JSON.stringify(activeBotMatch),
+      [oldCredentialKey]: "puffer-secret",
+    });
+    storage.removeItem.mockImplementation(() => {
+      throw new Error("storage disabled");
+    });
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(validWaitingMatch))
+      .mockResolvedValueOnce(jsonResponse({ left: true }))
+      .mockResolvedValueOnce(
+        jsonResponse({ playerID: "1", playerCredentials: "joined-secret" })
+      );
+
+    await expect(
+      joinAlertMatch({
+        matchID: "match_1",
+        currentGame: { matchID: "bot_1", opponentType: "bot" },
+        storage,
+        fetchImpl,
+      })
+    ).resolves.toEqual({
+      status: "joined",
+      matchID: "match_1",
+      playerID: "1",
+    });
+    expect(fetchImpl.mock.calls.map(([url]) => url)).toEqual([
+      "/api/matches/match_1",
+      "/api/matches/leave",
+      "/api/matches/join",
+    ]);
+    expect(storage.removeItem).toHaveBeenCalledWith(oldCredentialKey);
+    expect(storage.removeItem).toHaveBeenCalledWith(ACTIVE_MATCH_STORAGE_KEY);
+    expect(storage.setItem).toHaveBeenCalledWith(
+      getCredentialsStorageKey({ matchID: "match_1", playerID: "1" }),
+      "joined-secret"
+    );
+  });
+
   it("returns stale when the final join loses a 409 race", async () => {
     const fetchImpl = vi
       .fn()
