@@ -1236,6 +1236,8 @@ git commit -m "feat: catalog account entry and matchmaking UI"
 - Create: `app/catana/components/GameOverModal.stories.jsx`
 - Modify: `app/catana/matchAlerts/MatchAlertDialog.js`
 - Delete or replace: `app/catana/matchAlerts/__tests__/MatchAlertDialog.source.test.js`
+- Modify as needed: `app/catana/matchAlerts/matchAlertProviderActions.js`,
+  its behavior tests, and minimal provider/GameScreen wiring
 - Modify: `docs/agent/UI_CATALOG.md`
 
 **Interfaces:**
@@ -1321,6 +1323,11 @@ provider routing are real lifecycle contracts and must remain covered at their
 handler/helper boundary. Delete source-only assertions about imports, labels,
 copy, and component nesting, then remove the source test once every unique
 runtime contract is mapped or replaced.
+
+If the audit finds deep-link/worker routing, join-pending prompt replacement,
+or current-game registration eligibility covered only by source spelling,
+extract the smallest production-used decision helpers and add behavior tests
+for those contracts before deleting the source suite.
 
 - [ ] **Step 3: Add recovery surface stories**
 
