@@ -7258,3 +7258,22 @@
   `CI=1 pnpm build-storybook` passed; all 18 new stories completed their play
   interactions at 1440x900 and 390x844 with no visible Storybook error or
   horizontal overflow.
+
+## Status (2026-07-29, standard UI catalog workflow)
+
+- Built in a fresh `ui-catalog-storybook` worktree rather than merging the old
+  atlas. The catalog uses Storybook 8.6.14 with the Next 13 integration and the
+  pinned `webpack@5.101.2` compatibility boundary.
+- Standard product scope covers `app/ui`, account/identity, homepage/lobby
+  chrome, alerts/recovery, postgame, and replay controls. Full board/HUD,
+  gameplay effects/audio/haptics, provider/network behavior, and whole routes
+  remain integrated sandbox, effects-lab, or real-route work.
+- Extracted account/menu and match-alert presentation owners while retaining
+  homepage/provider/network orchestration in their route clients. Fixtures
+  derive from production helpers or valid core state, stay deterministic and
+  network-free, and cannot represent impossible product states.
+- Brittle source-reading assertions were migrated to production-used behavior
+  helpers before their suites were removed. Through Task 10, focused behavior
+  tests, Storybook builds, browser interaction/layout checks, and normal/reduced
+  motion evidence passed; the remaining Claude Design sync is a separate,
+  approval-gated final step.

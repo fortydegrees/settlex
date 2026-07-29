@@ -15,6 +15,12 @@ Use this as the active router for SettleHex visual work. The older brand guide i
 - For a new reusable `app/ui/*` primitive, also read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`.
 - Search `docs/agent/NOTES.md` for the specific surface before making broad style claims.
 
+For standard product UI, also consult `docs/agent/UI_CATALOG.md` and the
+relevant Storybook component/composed stories before inventing a new pattern.
+Treat Storybook as executable evidence for production components, valid states,
+copy, responsive behavior, and standard UI motion. Use the sandbox/effects lab
+or real route when the change depends on gameplay, providers, or network state.
+
 ## Route By Surface
 
 - Game HUD or play screen: treat the current game screen as the strongest canonical reference. Use `/catana/dev/sandbox` for manual verification when useful. Preserve the HUD glass, action dock/resource rails, game log/chat button language, player color identity, and tactile animation style.

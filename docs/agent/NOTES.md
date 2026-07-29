@@ -4464,3 +4464,20 @@
   board underlay belongs to the board/game-screen verification boundary.
 - Build game-over story props from `gameScreenDisplayModel` so winner flags,
   standings, reason copy, and titles cannot drift into parallel story fixtures.
+
+## Storybook catalog workflow (2026-07-29)
+
+- This fresh `ui-catalog-storybook` worktree, rather than the old atlas merge,
+  uses Storybook 8.6.14 with Next 13 and pinned `webpack@5.101.2`.
+- Standard UI belongs in the catalog: `app/ui`, account/identity,
+  homepage/lobby chrome, alerts/recovery, postgame, and replay controls. Keep
+  boards/HUD, game-event effects/audio/haptics, provider/network behavior, and
+  whole routes on the sandbox, effects lab, or real route.
+- Keep extracted account-menu and match-alert presentation components thin;
+  route-client orchestration stays live. Story fixtures must be deterministic,
+  network-free, production-valid, and derived from production helpers or valid
+  core state rather than a parallel copy/state model.
+- Source-reading tests were replaced with behavior coverage for durable
+  contracts. Through Task 10, focused behavior tests, static builds, browser
+  interaction/layout checks, and normal/reduced-motion review passed. Claude
+  Design sync remains a separate approval-gated final step.
