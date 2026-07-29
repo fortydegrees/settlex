@@ -74,6 +74,16 @@
   transform-origin: center bottom;
 }
 
+.settlex-ui-dialog-backdrop[data-ending-style] {
+  animation-name: settlex-ui-backdrop-out;
+  animation-timing-function: ease-in;
+}
+
+.settlex-ui-dialog-popup[data-ending-style] {
+  animation-name: settlex-ui-dialog-out;
+  animation-timing-function: ease-in;
+}
+
 @keyframes settlex-ui-backdrop-in {
   from {
     opacity: 0;
@@ -81,6 +91,16 @@
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes settlex-ui-backdrop-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }
 
@@ -93,6 +113,18 @@
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes settlex-ui-dialog-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
   }
 }
 
