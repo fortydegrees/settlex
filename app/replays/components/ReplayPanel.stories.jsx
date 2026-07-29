@@ -49,6 +49,13 @@ const meta = {
     initialOpen: { control: false },
     initialMobileOpen: { control: false },
     initialPerspectiveId: { control: false },
+    timeline: { control: false },
+    currentEvent: { control: false },
+    currentEventIndex: { control: false },
+    perspectiveId: { control: false },
+    victoryTarget: { control: false },
+    open: { control: false },
+    mobileOpen: { control: false },
   },
   render: (args) => <ReplayPanelHarness {...args} />,
 };
