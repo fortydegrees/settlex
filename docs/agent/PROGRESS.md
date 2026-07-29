@@ -7242,3 +7242,19 @@
   outcomes; separate identity proofs; same/different-match locking; stale-safe
   reconciliation; filled-duel and `/g/:matchID` preservation; consolidated
   perspective/spoiler/read-only replay; and deterministic Road Building tests.
+
+## Status (2026-07-29, alert, recovery, and postgame UI catalog)
+
+- Added provider-free Storybook coverage for five match-alert dialog states,
+  six recovery/status surfaces, and seven game-over states, including desktop
+  and mobile compositions.
+- Replaced the legacy match-alert source-reading suite with production-used
+  behavior helpers for deep-link and worker routing, pending prompt ownership,
+  stale resolution suppression, and live-game registration eligibility.
+- Preserved server-authoritative alert resolution, Puffer leave/join ordering,
+  race conflict handling, and storage-failure tolerance in the existing
+  `matchAlertJoin` behavior suite.
+- Verification: targeted ESLint passed; 80 focused behavior tests passed;
+  `CI=1 pnpm build-storybook` passed; all 18 new stories completed their play
+  interactions at 1440x900 and 390x844 with no visible Storybook error or
+  horizontal overflow.

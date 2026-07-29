@@ -4445,3 +4445,22 @@
 - Road Building placement and boardgame.io stage-return semantics remain
   deterministic game/server work and require focused engine/server state tests,
   not app-owned match-lifecycle handling.
+
+- Storybook alert/recovery/postgame catalog boundary:
+- Keep match-alert stories provider-free: construct resolved alert states and
+  exercise `Not now`; do not click Join duel or Keep looking because those
+  intentionally enter production network/navigation lifecycles.
+- `createMatchAlertPromptController` owns prompt request generations and the
+  confirmed-join pending gate. Deep-link consumption and worker-message routing
+  stay in production-used provider helpers so they remain behavior-testable
+  without freezing React source structure.
+- `getCurrentMatchAlertGameRegistration` is the single executable eligibility
+  decision for provider registration: only credentialed, non-finished,
+  non-replay player games register, and credentials never enter provider state.
+- Catalog the reconnect recipe through `getReconnectStatusBannerProps` and
+  `StatusBanner`; do not mount `GlobalReconnectBanner` in Storybook because it
+  retains storage/router ownership.
+- Keep `LiveMatchLoadingShell` out of the standard recovery catalog because its
+  board underlay belongs to the board/game-screen verification boundary.
+- Build game-over story props from `gameScreenDisplayModel` so winner flags,
+  standings, reason copy, and titles cannot drift into parallel story fixtures.

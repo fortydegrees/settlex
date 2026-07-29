@@ -7,6 +7,17 @@ import { GlassPillButton } from "./GlassPillButton";
 import { StatusBanner } from "./StatusBanner";
 import { resolveReconnectBannerCandidate } from "../utils/reconnectBanner";
 
+export function getReconnectStatusBannerProps(candidate) {
+  return {
+    variant: "neutral",
+    title: "You're already in a game",
+    body: candidate?.playerName
+      ? `Return to your latest match as ${candidate.playerName}.`
+      : "Return to your latest match.",
+    className: "max-w-2xl",
+  };
+}
+
 export function GlobalReconnectBanner() {
   const pathname = usePathname();
   const router = useRouter();
@@ -35,17 +46,12 @@ export function GlobalReconnectBanner() {
 
   if (dismissed || !candidate) return null;
 
-  const bodyText = candidate.playerName
-    ? `Return to your latest match as ${candidate.playerName}.`
-    : "Return to your latest match.";
+  const statusBannerProps = getReconnectStatusBannerProps(candidate);
 
   return (
     <StatusBanner
       overlay
-      variant="neutral"
-      title={"You're already in a game"}
-      body={bodyText}
-      className="max-w-2xl"
+      {...statusBannerProps}
       actions={
         <>
           <GlassPillButton

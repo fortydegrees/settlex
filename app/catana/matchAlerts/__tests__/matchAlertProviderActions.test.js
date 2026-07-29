@@ -30,7 +30,141 @@ describe("latest refresh wins", () => {
   });
 });
 
+describe("match-alert prompt routing", () => {
+  it("consumes a deep link without dropping unrelated query or hash state", () => {
+    const replace = vi.fn();
+    const openMatchAlert = vi.fn();
+
+    const consumed = matchAlertActions.consumeMatchAlertDeepLink?.({
+      href: "https://settlehex.com/g/current?matchAlert=duel_1&panel=chat#turn",
+      replace,
+      openMatchAlert,
+    });
+
+    expect(consumed).toEqual({
+      consumed: true,
+      matchID: "duel_1",
+      nextHref: "/g/current?panel=chat#turn",
+    });
+    expect(replace).toHaveBeenCalledWith("/g/current?panel=chat#turn");
+    expect(openMatchAlert).toHaveBeenCalledWith("duel_1");
+  });
+
+  it("routes worker receipt to attention and worker click to the prompt", () => {
+    const requestAttention = vi.fn();
+    const openMatchAlert = vi.fn();
+
+    expect(
+      matchAlertActions.routeMatchAlertWorkerMessage?.({
+        data: { type: "match-alert-received", matchID: "duel_1" },
+        requestAttention,
+        openMatchAlert,
+      })
+    ).toEqual({ handled: true, action: "attention" });
+    expect(requestAttention).toHaveBeenCalledWith("player-looking");
+    expect(openMatchAlert).not.toHaveBeenCalled();
+
+    expect(
+      matchAlertActions.routeMatchAlertWorkerMessage?.({
+        data: { type: "match-alert-click", matchID: "duel_1" },
+        requestAttention,
+        openMatchAlert,
+      })
+    ).toEqual({
+      handled: true,
+      action: "open",
+      matchID: "duel_1",
+    });
+    expect(openMatchAlert).toHaveBeenCalledWith("duel_1");
+  });
+
+  it("keeps the current prompt unchanged while a confirmed join is pending", async () => {
+    const setAlert = vi.fn();
+    const resolveAlertMatch = vi.fn().mockResolvedValue({
+      status: "open",
+      match: { matchID: "duel_2" },
+      seekerName: "HarbourFox",
+    });
+    const controller =
+      matchAlertActions.createMatchAlertPromptController?.({
+        resolveAlertMatch,
+        setAlert,
+      });
+
+    controller?.setJoinPending(true);
+    await expect(controller?.open("duel_2")).resolves.toBe(false);
+    expect(resolveAlertMatch).not.toHaveBeenCalled();
+    expect(setAlert).not.toHaveBeenCalled();
+  });
+
+  it("ignores an older prompt resolution after a newer alert opens", async () => {
+    const setAlert = vi.fn();
+    let resolveFirst;
+    const resolveAlertMatch = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirst = resolve;
+          })
+      )
+      .mockResolvedValueOnce({
+        status: "open",
+        match: { matchID: "duel_2" },
+        seekerName: "NewPlayer",
+      });
+    const controller =
+      matchAlertActions.createMatchAlertPromptController?.({
+        resolveAlertMatch,
+        setAlert,
+      });
+
+    const first = controller?.open("duel_1");
+    await expect(controller?.open("duel_2")).resolves.toBe(true);
+    resolveFirst({
+      status: "open",
+      match: { matchID: "duel_1" },
+      seekerName: "OldPlayer",
+    });
+    await expect(first).resolves.toBe(false);
+
+    expect(setAlert).toHaveBeenLastCalledWith({
+      status: "open",
+      match: { matchID: "duel_2" },
+      seekerName: "NewPlayer",
+      matchID: "duel_2",
+    });
+  });
+});
+
 describe("current-game registration", () => {
+  it("registers only a live credentialed player game and returns no credentials", () => {
+    const buildRegistration =
+      matchAlertActions.getCurrentMatchAlertGameRegistration;
+    const base = {
+      isReplay: false,
+      isGameOver: false,
+      credentials: "secret",
+      playerID: "0",
+      matchID: "human_1",
+      opponentType: "human",
+    };
+
+    expect(buildRegistration?.(base)).toEqual({
+      matchID: "human_1",
+      opponentType: "human",
+    });
+    expect(buildRegistration?.({ ...base, opponentType: "bot" })).toEqual({
+      matchID: "human_1",
+      opponentType: "bot",
+    });
+    expect(buildRegistration?.({ ...base, isReplay: true })).toBeNull();
+    expect(buildRegistration?.({ ...base, isGameOver: true })).toBeNull();
+    expect(buildRegistration?.({ ...base, credentials: "" })).toBeNull();
+    expect(buildRegistration?.({ ...base, playerID: null })).toBeNull();
+    expect(buildRegistration?.({ ...base, matchID: "dev-sandbox" })).toBeNull();
+  });
+
   it("refreshes authoritative alert state when a human game is registered", async () => {
     expect(matchAlertActions.registerCurrentMatchAlertGame).toBeTypeOf("function");
     let currentGame = null;

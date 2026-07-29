@@ -44,6 +44,108 @@ export function createLatestRefreshGuard() {
   };
 }
 
+export function createMatchAlertPromptController({
+  resolveAlertMatch,
+  setAlert,
+} = {}) {
+  let latestRequest = 0;
+  let joinPending = false;
+
+  return {
+    async open(matchID) {
+      if (!matchID || joinPending) return false;
+
+      latestRequest += 1;
+      const request = latestRequest;
+      setAlert?.({
+        status: "checking",
+        matchID,
+        match: null,
+        seekerName: null,
+      });
+
+      const result = await resolveAlertMatch({ matchID });
+      if (latestRequest !== request) return false;
+      setAlert?.({ ...result, matchID });
+      return true;
+    },
+    setJoinPending(pending) {
+      joinPending = Boolean(pending);
+    },
+    close() {
+      latestRequest += 1;
+      setAlert?.(null);
+    },
+  };
+}
+
+export function consumeMatchAlertDeepLink({
+  href,
+  replace,
+  openMatchAlert,
+} = {}) {
+  const url = new URL(href);
+  const matchID = url.searchParams.get("matchAlert");
+  if (!matchID) {
+    return { consumed: false, matchID: null, nextHref: null };
+  }
+
+  url.searchParams.delete("matchAlert");
+  const nextHref = `${url.pathname}${url.search}${url.hash}`;
+  replace?.(nextHref);
+  openMatchAlert?.(matchID);
+  return { consumed: true, matchID, nextHref };
+}
+
+export function routeMatchAlertWorkerMessage({
+  data,
+  requestAttention,
+  openMatchAlert,
+} = {}) {
+  if (data?.type === "match-alert-received") {
+    requestAttention?.("player-looking");
+    return { handled: true, action: "attention" };
+  }
+
+  if (
+    data?.type !== "match-alert-click" ||
+    typeof data.matchID !== "string" ||
+    !data.matchID
+  ) {
+    return { handled: false, action: null };
+  }
+
+  openMatchAlert?.(data.matchID);
+  return { handled: true, action: "open", matchID: data.matchID };
+}
+
+export function getCurrentMatchAlertGameRegistration({
+  isReplay,
+  isGameOver,
+  credentials,
+  playerID,
+  matchID,
+  opponentType,
+} = {}) {
+  if (
+    isReplay ||
+    isGameOver ||
+    !credentials ||
+    playerID == null ||
+    playerID === "" ||
+    !matchID ||
+    matchID === "default" ||
+    matchID === "dev-sandbox"
+  ) {
+    return null;
+  }
+
+  return {
+    matchID: String(matchID),
+    opponentType: opponentType === "bot" ? "bot" : "human",
+  };
+}
+
 export function registerCurrentMatchAlertGame({
   game,
   setCurrentGame,

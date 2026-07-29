@@ -122,6 +122,7 @@ import {
   buildSandboxRobberMovePayload
 } from "./dev/sandbox/effectPayloads";
 import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
+import { getCurrentMatchAlertGameRegistration } from "./matchAlerts/matchAlertProviderActions.js";
 import { tabAttention } from "./utils/tabAttention";
 
 let tradeDiscardModalPromise;
@@ -463,23 +464,16 @@ export function GameScreen(bgioProps) {
   );
 
   useEffect(() => {
-    if (
-      isReplay ||
-      isGameOver ||
-      !bgioProps.credentials ||
-      playerID == null ||
-      playerID === "" ||
-      !matchID ||
-      matchID === "default" ||
-      matchID === "dev-sandbox"
-    ) {
-      return undefined;
-    }
-
-    return registerCurrentGame({
+    const registration = getCurrentMatchAlertGameRegistration({
+      isReplay,
+      isGameOver,
+      credentials: bgioProps.credentials,
+      playerID,
       matchID,
-      opponentType: hasBotOpponent ? "bot" : "human"
+      opponentType: hasBotOpponent ? "bot" : "human",
     });
+    if (!registration) return undefined;
+    return registerCurrentGame(registration);
   }, [
     bgioProps.credentials,
     hasBotOpponent,

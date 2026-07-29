@@ -13,6 +13,36 @@ const initialDialogState = (alert) => {
   return "checking";
 };
 
+export function getMatchAlertDialogCopy({ state, alert, currentGame }) {
+  const seekerName = alert?.seekerName || "Someone";
+  if (state === "confirm" || state === "joining") {
+    return {
+      title: `${seekerName} is looking for a duel`,
+      description:
+        currentGame?.opponentType === "bot"
+          ? `Leave your Puffer game and join ${seekerName}?`
+          : "Take the open seat?",
+    };
+  }
+  if (state === "stale") {
+    return {
+      title: "That table has already filled",
+      description:
+        "Someone else got there first. Match alerts are still on, or we can find you another duel.",
+    };
+  }
+  if (state === "error") {
+    return {
+      title: "We couldn’t join that table",
+      description: "Check your connection, or look for another open duel.",
+    };
+  }
+  return {
+    title: "Checking that table…",
+    description: "Making sure the seat is still open.",
+  };
+}
+
 export function MatchAlertDialog({
   alert,
   currentGame,
@@ -31,9 +61,7 @@ export function MatchAlertDialog({
 
   if (!alert) return null;
 
-  const seekerName = alert.seekerName || "Someone";
   const isJoining = state === "joining";
-  const isPufferGame = currentGame?.opponentType === "bot";
 
   const close = () => {
     if (isJoining) return;
@@ -74,21 +102,11 @@ export function MatchAlertDialog({
     window.location.assign("/?playOnline=1");
   };
 
-  let title = "Checking that table…";
-  let description = "Making sure the seat is still open.";
-  if (state === "confirm" || state === "joining") {
-    title = `${seekerName} is looking for a duel`;
-    description = isPufferGame
-      ? `Leave your Puffer game and join ${seekerName}?`
-      : "Take the open seat?";
-  } else if (state === "stale") {
-    title = "That table has already filled";
-    description =
-      "Someone else got there first. Match alerts are still on, or we can find you another duel.";
-  } else if (state === "error") {
-    title = "We couldn’t join that table";
-    description = "Check your connection, or look for another open duel.";
-  }
+  const { title, description } = getMatchAlertDialogCopy({
+    state,
+    alert,
+    currentGame,
+  });
 
   const actions =
     state === "confirm" || state === "joining" ? (
