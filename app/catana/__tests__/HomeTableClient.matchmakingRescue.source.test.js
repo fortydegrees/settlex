@@ -9,18 +9,11 @@ const readHome = () =>
   );
 
 describe("HomeTableClient matchmaking rescue", () => {
-  it("keeps the 0-11 second wait compact and expands honest beta copy at 12 seconds", () => {
+  it("keeps the 0-11 second wait compact and expands rescue controls at 12 seconds", () => {
     const source = readHome();
 
     expect(source).toContain("getMatchmakingRescueStage(searchElapsedSeconds)");
     expect(source).toContain('rescueStage !== "waiting"');
-    expect(source).toContain(
-      "SettleHex is still in beta, so it can take a little while to find another"
-    );
-    expect(source).toContain(
-      "player. You can keep your place here, or turn on Match alerts and come back"
-    );
-    expect(source).toContain("when someone is looking.");
   });
 
   it("keeps waiting primary and does not restart or recreate the queue", () => {
@@ -44,25 +37,6 @@ describe("HomeTableClient matchmaking rescue", () => {
     );
   });
 
-  it("renders inline provider-owned Match alerts state without leaving search", () => {
-    const source = readHome();
-    const modalSource = source.slice(
-      source.indexOf("function SearchingModal"),
-      source.indexOf("function HomeErrorBanner")
-    );
-    const controlSource = source.slice(
-      source.indexOf("function MatchAlertControl"),
-      source.indexOf("function SystemAccountMenu")
-    );
-
-    expect(source).toContain('import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js"');
-    expect(modalSource).toContain("Match alerts");
-    expect(modalSource).toContain("<MatchAlertControl matchAlerts={matchAlerts}");
-    expect(controlSource).toContain("matchAlerts.display");
-    expect(source).toContain("matchAlerts.enable()");
-    expect(modalSource).not.toContain("cancelSearch");
-  });
-
   it("reveals a quiet Play Puffer action only in the 30-second stage", () => {
     const source = readHome();
     const modalSource = source.slice(
@@ -74,21 +48,6 @@ describe("HomeTableClient matchmaking rescue", () => {
     expect(modalSource).toContain("Play Puffer");
     expect(modalSource).toContain("onPlayPuffer");
     expect(modalSource).toMatch(/variant="ghost"[\s\S]*Play Puffer/);
-  });
-
-  it("adds the same compact Match alerts control to the account menu", () => {
-    const source = readHome();
-    const accountMenuSource = source.slice(
-      source.indexOf("function SystemAccountMenu"),
-      source.indexOf("function SystemTopChrome")
-    );
-
-    expect(accountMenuSource).toContain(
-      '<MatchAlertControl matchAlerts={matchAlerts} surface="menu" />'
-    );
-    expect(source).toContain("function MatchAlertControl");
-    expect(source).toContain("handleMatchAlertAction(matchAlerts)");
-    expect(source).toContain("matchAlerts.error");
   });
 
   it("consumes playOnline once through router replacement after account readiness", () => {

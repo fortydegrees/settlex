@@ -6,6 +6,22 @@ const state = ({ status, label, detail, action = null, actionLabel = null }) => 
   actionLabel,
 });
 
+export const HUMAN_GAME_MATCH_ALERT_PAUSE_MESSAGE =
+  "Match alerts stay paused until your human game ends.";
+
+const MATCH_ALERT_STATUS_LABELS = Object.freeze({
+  off: "Enable",
+  active: "On",
+  paused: "Paused during game",
+  blocked: "Blocked",
+  unsupported: "Unsupported",
+  unconfigured: "Unavailable",
+  install_required: "Home Screen required",
+});
+
+export const getMatchAlertStatusLabel = (status) =>
+  MATCH_ALERT_STATUS_LABELS[status] ?? "Unavailable";
+
 const OFF = state({
   status: "off",
   label: "Get match alerts",

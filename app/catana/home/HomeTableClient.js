@@ -10,29 +10,22 @@ import React, {
   useState
 } from "react";
 import {
-  ArrowRightOnRectangleIcon,
-  BellAlertIcon,
-  ChevronDownIcon,
   CpuChipIcon,
-  Cog6ToothIcon,
   LinkIcon,
-  PencilSquareIcon,
-  UserCircleIcon,
   UserGroupIcon
 } from "@heroicons/react/24/outline";
 import { Button } from "../../ui/Button";
 import { MetaDisclosure } from "../../ui/MetaDisclosure";
-import { Popover } from "../../ui/Popover";
 import { StatusBanner } from "../components/StatusBanner";
 import { publicReleaseInfo } from "../lobby/releaseInfo";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
-import { EMOJI_OPTIONS } from "../lobby/playerIdentityStorage";
+import { MatchAlertControl } from "../matchAlerts/MatchAlertControl";
 import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
 import { getMatchmakingRescueStage } from "../matchmaking/matchmakingRescue.js";
-import { getPlayerColorOption } from "../theme/playerColors";
 import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
 import { HomeDemoBoardPoster } from "../homeDemo/HomeDemoBoardPoster";
 import { createHomeDemoPieceState } from "../homeDemo/homeDemoSequence";
+import { SystemTopChrome } from "./SystemTopChrome";
 import "../components/hudGlass.css";
 
 let homeDemoBoardPromise;
@@ -85,59 +78,7 @@ const SYSTEM_STATUS_ITEMS = [
   }
 ];
 
-const SYSTEM_ACCOUNT_MENU_ITEMS = [
-  {
-    label: "Profile",
-    icon: PencilSquareIcon,
-    action: "identity"
-  },
-  {
-    label: "Account",
-    icon: UserCircleIcon,
-    action: "account"
-  },
-  {
-    label: "Preferences",
-    icon: Cog6ToothIcon,
-    action: "identity"
-  },
-  {
-    label: "Sign out",
-    icon: ArrowRightOnRectangleIcon,
-    action: "signOut"
-  }
-];
-
-const HOME_TOP_LINKS = [
-  {
-    label: "About",
-    href: "#about"
-  },
-  {
-    label: "Blog",
-    href: "#blog"
-  },
-  {
-    label: "Discord",
-    href: "#discord"
-  },
-  {
-    label: "Feedback",
-    href: "#feedback"
-  }
-];
-
 const HOME_RELEASE_PANEL_HIGHLIGHT_COUNT = 3;
-
-const MATCH_ALERT_STATUS_LABELS = Object.freeze({
-  off: "Enable",
-  active: "On",
-  paused: "Paused during game",
-  blocked: "Blocked",
-  unsupported: "Unsupported",
-  unconfigured: "Unavailable",
-  install_required: "Home Screen required"
-});
 
 const useBrowserLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -589,258 +530,6 @@ function HomeMetaChrome({ releaseInfo = publicReleaseInfo }) {
   );
 }
 
-function handleMatchAlertAction(matchAlerts) {
-  const action = matchAlerts.display?.action;
-  if (action === "enable") return matchAlerts.enable();
-  if (action === "disable") return matchAlerts.disable();
-  if (action === "resume") return matchAlerts.resume();
-  return Promise.resolve();
-}
-
-function MatchAlertControl({ matchAlerts, surface = "modal" }) {
-  const display = matchAlerts.display;
-  const isMenu = surface === "menu";
-  const statusLabel =
-    MATCH_ALERT_STATUS_LABELS[display?.status] ?? "Unavailable";
-
-  return (
-    <div
-      className={
-        isMenu
-          ? "border-t border-slate-200/72 px-2.5 py-2.5"
-          : "rounded-[1rem] border border-white/55 bg-white/42 p-3 text-left"
-      }
-    >
-      <div className="flex items-center gap-2.5">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[0.74rem] bg-sky-100/72 text-slate-700">
-          <BellAlertIcon className="h-4 w-4" aria-hidden="true" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[0.78rem] font-bold text-slate-900">
-            Match alerts
-          </span>
-          <span className="block text-[0.68rem] font-semibold text-slate-500">
-            {statusLabel}
-          </span>
-        </span>
-        {display?.action ? (
-          <Button
-            variant={isMenu ? "ghost" : "secondary"}
-            size="sm"
-            className={isMenu ? "min-h-8 px-2.5 py-1 text-xs" : "min-h-9 px-3 py-1.5 text-xs"}
-            disabled={matchAlerts.loading}
-            onClick={() => void handleMatchAlertAction(matchAlerts)}
-          >
-            {display.actionLabel}
-          </Button>
-        ) : null}
-      </div>
-      {!isMenu || display?.status === "install_required" ? (
-        <p className="mt-2 text-[0.7rem] font-medium leading-relaxed text-slate-600">
-          {display?.detail}
-        </p>
-      ) : null}
-      {matchAlerts.error ? (
-        <p role="alert" className="mt-2 text-[0.7rem] font-semibold leading-relaxed text-rose-600">
-          {matchAlerts.error}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function SystemAccountMenu({
-  identity,
-  accountStatus,
-  hasIdentity,
-  matchAlerts,
-  onEditIdentity,
-  onOpenAccount,
-  onOpenSignIn,
-  onOpenSaveProfile,
-  onSignOut
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const colorOption = getPlayerColorOption(identity.color || "gold");
-  const displayName = identity.name || "Player";
-  const displayEmoji = identity.emoji || EMOJI_OPTIONS[0];
-  const isGuestProfile = accountStatus !== "claimed";
-  const accountMenuItems = isGuestProfile
-    ? [
-        {
-          label: "Save profile",
-          icon: UserCircleIcon,
-          action: "saveProfile"
-        },
-        {
-          label: "Edit profile",
-          icon: PencilSquareIcon,
-          action: "identity"
-        },
-        {
-          label: "Sign out",
-          icon: ArrowRightOnRectangleIcon,
-          action: "signOut"
-        }
-      ]
-    : SYSTEM_ACCOUNT_MENU_ITEMS;
-  const avatar = (
-    <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br ${colorOption.gradient} text-lg shadow-[0_12px_24px_-18px_rgba(15,23,42,0.72)] ring-1 ring-white/55 sm:h-11 sm:w-11 sm:text-xl`}>
-      {displayEmoji}
-    </span>
-  );
-
-  const handleMenuItem = (action) => {
-    setIsOpen(false);
-
-    if (action === "account" && hasIdentity) {
-      onOpenAccount();
-      return;
-    }
-
-    if (action === "saveProfile") {
-      onOpenSaveProfile();
-      return;
-    }
-
-    if (action === "signOut") {
-      void onSignOut();
-      return;
-    }
-
-    onEditIdentity();
-  };
-
-  if (!hasIdentity) {
-    return (
-      <button
-        type="button"
-        aria-label="Sign in"
-        className="catana-hud-glass catana-hud-glass--compact group inline-flex min-h-[2.86rem] items-center gap-2 rounded-full px-3.5 text-left text-sm font-bold text-white transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 active:translate-y-0 motion-reduce:transition-none sm:min-h-[3rem] sm:px-4"
-        onClick={onOpenSignIn}
-      >
-        <UserCircleIcon
-          className="h-5 w-5 shrink-0 text-white/95 drop-shadow-[0_1px_1px_rgba(15,23,42,0.22)]"
-          aria-hidden="true"
-        />
-        <span className="drop-shadow-[0_1px_1px_rgba(15,23,42,0.24)]">
-          Sign in
-        </span>
-      </button>
-    );
-  }
-
-  return (
-    <Popover
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      align="end"
-      sideOffset={8}
-      triggerAriaLabel="Open account menu"
-      triggerClassName="catana-hud-glass catana-hud-glass--compact group inline-flex min-h-[2.86rem] max-w-[2.86rem] items-center gap-2 overflow-hidden rounded-full p-[3px] text-left font-semibold text-white transition hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transition-none sm:min-h-[3rem] sm:w-auto sm:max-w-[13rem] sm:p-1 sm:pr-2.5"
-      triggerContent={
-        <>
-          {avatar}
-          <span className="hidden min-w-0 flex-1 sm:block">
-            <span className="block max-w-[7.3rem] truncate text-[0.82rem] font-semibold leading-none text-white drop-shadow-[0_1px_1px_rgba(15,23,42,0.3)]">
-              {displayName}
-            </span>
-          </span>
-          <ChevronDownIcon
-            className="hidden h-4 w-4 shrink-0 text-white/78 sm:block"
-            aria-hidden="true"
-          />
-        </>
-      }
-      className="w-56 p-1.5"
-    >
-      <div className="border-b border-slate-200/72 px-2.5 pb-2.5 pt-1.5" role="none">
-        <div className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-slate-500">
-          {isGuestProfile ? "Playing as guest" : "Signed in as"}
-        </div>
-        <div className="mt-1 flex min-w-0 items-center gap-2">
-          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br ${colorOption.gradient} text-sm shadow-[0_10px_20px_-16px_rgba(15,23,42,0.7)] ring-1 ring-white/70`}>
-            {displayEmoji}
-          </span>
-          <span className="min-w-0 truncate text-sm font-bold text-slate-900">
-            {displayName}
-          </span>
-        </div>
-      </div>
-      <div className="grid gap-0.5" role="menu" aria-label="Account menu">
-        {accountMenuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.label}
-              type="button"
-              role="menuitem"
-              className="group/item flex min-h-10 items-center gap-2.5 rounded-[0.9rem] px-2.5 text-left transition hover:bg-white/52 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85"
-              onClick={() => handleMenuItem(item.action)}
-            >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[0.74rem] bg-sky-100/72 text-slate-700 transition group-hover/item:bg-white/70">
-                <Icon className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <span className="min-w-0 truncate text-[0.86rem] font-bold text-slate-900">
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      <MatchAlertControl matchAlerts={matchAlerts} surface="menu" />
-    </Popover>
-  );
-}
-
-function SystemTopChrome({
-  identity,
-  accountStatus,
-  hasIdentity,
-  matchAlerts,
-  onEditIdentity,
-  onOpenAccount,
-  onOpenSignIn,
-  onOpenSaveProfile,
-  onSignOut
-}) {
-  return (
-    <div className="absolute right-3 top-3 z-30 flex items-center justify-end gap-3 sm:right-6 sm:top-6">
-      <nav
-        className="hidden items-center gap-1 rounded-full px-1 text-[0.78rem] font-semibold text-white/90 md:flex"
-        aria-label="Settlehex links"
-      >
-        {HOME_TOP_LINKS.map((link) => (
-          <a
-            key={link.label}
-            href={link.href}
-            className="group/link relative inline-flex min-h-8 items-center rounded-full px-2 transition-[transform,color] duration-150 ease-out hover:-translate-y-0.5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 active:translate-y-0 motion-reduce:transition-none"
-          >
-            <span className="drop-shadow-[0_1px_1px_rgba(15,23,42,0.26)]">
-              {link.label}
-            </span>
-            <span
-              aria-hidden="true"
-              className="absolute inset-x-2 bottom-1 h-px origin-left scale-x-0 rounded-full bg-white/70 transition-transform duration-150 ease-out group-hover/link:scale-x-100"
-            />
-          </a>
-        ))}
-      </nav>
-      <SystemAccountMenu
-        identity={identity}
-        accountStatus={accountStatus}
-        hasIdentity={hasIdentity}
-        matchAlerts={matchAlerts}
-        onEditIdentity={onEditIdentity}
-        onOpenAccount={onOpenAccount}
-        onOpenSignIn={onOpenSignIn}
-        onOpenSaveProfile={onOpenSaveProfile}
-        onSignOut={onSignOut}
-      />
-    </div>
-  );
-}
-
 function SystemActionButton({ action, disabled, isActive, onSelectMode }) {
   const Icon = action.icon;
   const activeLabel =
@@ -947,7 +636,10 @@ function SystemChromeVariant({
   identity,
   accountStatus,
   hasIdentity,
-  matchAlerts,
+  matchAlertDisplay,
+  matchAlertLoading,
+  matchAlertError,
+  onMatchAlertAction,
   isBoardLayoutReady,
   isHomeDemoReady,
   actions,
@@ -973,7 +665,10 @@ function SystemChromeVariant({
         identity={identity}
         accountStatus={accountStatus}
         hasIdentity={hasIdentity}
-        matchAlerts={matchAlerts}
+        matchAlertDisplay={matchAlertDisplay}
+        matchAlertLoading={matchAlertLoading}
+        matchAlertError={matchAlertError}
+        onMatchAlertAction={onMatchAlertAction}
         onEditIdentity={actions.openIdentity}
         onOpenAccount={actions.goToAccount}
         onOpenSignIn={actions.openSignIn}
@@ -993,7 +688,10 @@ function SystemChromeVariant({
 function SearchingModal({
   searchState,
   searchElapsedSeconds,
-  matchAlerts,
+  matchAlertDisplay,
+  matchAlertLoading,
+  matchAlertError,
+  onMatchAlertAction,
   isPufferTransitionPending,
   onCancel,
   onPlayPuffer
@@ -1048,7 +746,12 @@ function SearchingModal({
             <p className="text-left text-xs font-medium leading-relaxed text-slate-600">
               SettleHex is still in beta, so it can take a little while to find another player. You can keep your place here, or turn on Match alerts and come back when someone is looking.
             </p>
-            <MatchAlertControl matchAlerts={matchAlerts} />
+            <MatchAlertControl
+              display={matchAlertDisplay}
+              loading={matchAlertLoading}
+              error={matchAlertError}
+              onAction={onMatchAlertAction}
+            />
             <Button
               variant="primary"
               size="md"
@@ -1124,6 +827,12 @@ function HomeTableBoard({ initialAccount = null }) {
     onMatchFound: playMatchFoundSound
   });
   const matchAlerts = useMatchAlerts();
+  const handleMatchAlertAction = (action) => {
+    if (action === "enable") return matchAlerts.enable();
+    if (action === "disable") return matchAlerts.disable();
+    if (action === "resume") return matchAlerts.resume();
+    return Promise.resolve();
+  };
   const handledPlayOnlineQueryRef = useRef(false);
   const boardReservedHeight = isCompact ? 276 : 158;
   const boardCenterYOffset = isCompact ? -56 : 0;
@@ -1206,7 +915,10 @@ function HomeTableBoard({ initialAccount = null }) {
         identity={lobby.identity}
         accountStatus={lobby.account?.status}
         hasIdentity={lobby.hasIdentity}
-        matchAlerts={matchAlerts}
+        matchAlertDisplay={matchAlerts.display}
+        matchAlertLoading={matchAlerts.loading}
+        matchAlertError={matchAlerts.error}
+        onMatchAlertAction={handleMatchAlertAction}
         isBoardLayoutReady={isBoardLayoutReady}
         isHomeDemoReady={isHomeDemoReady}
         actions={lobby.actions}
@@ -1263,7 +975,10 @@ function HomeTableBoard({ initialAccount = null }) {
       <SearchingModal
         searchState={lobby.searchState}
         searchElapsedSeconds={lobby.searchElapsedSeconds}
-        matchAlerts={matchAlerts}
+        matchAlertDisplay={matchAlerts.display}
+        matchAlertLoading={matchAlerts.loading}
+        matchAlertError={matchAlerts.error}
+        onMatchAlertAction={handleMatchAlertAction}
         isPufferTransitionPending={lobby.isPufferTransitionPending}
         onCancel={lobby.overlays.cancelSearch}
         onPlayPuffer={lobby.actions.playPufferFromSearch}
