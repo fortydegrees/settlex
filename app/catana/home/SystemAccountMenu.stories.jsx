@@ -117,6 +117,20 @@ export const SavedAccountNotificationsBlocked = {
   },
 };
 
+export const SavedAccountNotificationsUnsupported = {
+  args: {
+    ...savedArgs,
+    matchAlertDisplay: matchAlertFixtures.unsupported,
+  },
+};
+
+export const SavedAccountAlertsUnavailable = {
+  args: {
+    ...savedArgs,
+    matchAlertDisplay: matchAlertFixtures.unconfigured,
+  },
+};
+
 export const SavedAccountInstallRequired = {
   args: {
     ...savedArgs,
