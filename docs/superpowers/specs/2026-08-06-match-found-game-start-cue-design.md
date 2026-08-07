@@ -94,6 +94,45 @@ anchors. The new cue may be more melodic and polished because it communicates a
 rare match-level event, but its opening tactility should keep it in the same
 product family.
 
+## Calibration Batch
+
+Before refining the three close production candidates, generate one deliberately
+spread four-cue calibration batch. The batch is a hot/cold search for the melody
+and notification character, not a set of presumed finalists.
+
+The intended semantic balance is:
+
+- 60% recognisable SettleHex signature,
+- 30% connection-established confirmation,
+- 10% attention notification.
+
+Melody should carry the SettleHex identity. All four anchors must share the same
+clean synthetic material, processing, loudness target, and compact envelope so
+the comparison isolates melodic gesture rather than unrelated sound palettes.
+Each should last approximately 0.7-1.0 seconds, communicate its identity within
+the first 250 ms, and avoid shimmer, bells, pads, exposed beeps, large reverb,
+and fantasy-style bloom.
+
+Generate these four anchors:
+
+1. **Connected** — low to high to middle, with an even rhythm and confident
+   landing.
+2. **Signature** — a clean three-note rising hook, cut tightly before it reads
+   as magical or celebratory.
+3. **Playful** — high to low to high, slightly syncopated and more pop-forward.
+4. **Notification baseline** — a simpler two-note rise paired with a soft,
+   tactile connection latch.
+
+Use the current Stable Audio A2A render as the explicit “too mystical” negative
+reference. Author a simple melodic guide for each anchor, then use the corrected
+deterministic A2A path at a conservative guide-preserving strength. Keep rejected
+working WAVs outside `public/sounds/`; promote nothing into the game during this
+calibration pass.
+
+After the user marks each anchor hotter or colder, retain the strongest gesture
+and vary one dimension at a time: interval shape, rhythm, or timbre. Do not
+polish all four branches in parallel.
+
 ## Runtime Contract
 
 - Use one dedicated production asset at `/sounds/game-start.mp3` after a
