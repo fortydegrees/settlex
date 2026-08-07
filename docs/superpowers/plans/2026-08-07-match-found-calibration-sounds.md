@@ -64,7 +64,9 @@ Expected: four guide WAVs and `manifest.json`, with no clipping or non-finite sa
 Run:
 
 ```bash
-ffprobe -v error -show_entries stream=sample_rate,channels,duration -of compact=p=0:nk=1 /Users/david/.codex/visualizations/2026/08/03/019fc91a-81ce-75e2-9a6e-9a233390669d/settlehex-sounds/stable-audio-3/calibration-batch/guides/*.wav
+for calibration_wav in /Users/david/.codex/visualizations/2026/08/03/019fc91a-81ce-75e2-9a6e-9a233390669d/settlehex-sounds/stable-audio-3/calibration-batch/guides/*.wav; do
+  ffprobe -v error -show_entries stream=sample_rate,channels,duration -of compact=p=0:nk=1 "$calibration_wav"
+done
 ```
 
 Expected for all four files: 44,100 Hz, 2 channels, 0.95 seconds.
@@ -160,7 +162,9 @@ Expected: four audition WAVs, `metrics.json`, and `spectrograms.png` with no cli
 Run:
 
 ```bash
-ffprobe -v error -show_entries stream=sample_rate,channels,duration -of compact=p=0:nk=1 /Users/david/.codex/visualizations/2026/08/03/019fc91a-81ce-75e2-9a6e-9a233390669d/settlehex-sounds/stable-audio-3/calibration-batch/audition/*.wav
+for calibration_wav in /Users/david/.codex/visualizations/2026/08/03/019fc91a-81ce-75e2-9a6e-9a233390669d/settlehex-sounds/stable-audio-3/calibration-batch/audition/*.wav; do
+  ffprobe -v error -show_entries stream=sample_rate,channels,duration -of compact=p=0:nk=1 "$calibration_wav"
+done
 ```
 
 Expected for all four files: 44,100 Hz, 2 channels, 0.95 seconds. Inspect `spectrograms.png` and reject any render with a dense repeating broadband tail resembling the previously diagnosed pneumatic-drill failure.
