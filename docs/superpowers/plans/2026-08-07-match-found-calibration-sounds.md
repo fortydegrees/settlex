@@ -6,7 +6,7 @@
 
 **Architecture:** Render four deterministic, lossless melodic guide WAVs with one shared compact synthetic voice. Transform each guide through the corrected Stable Audio 3 MLX audio-to-audio path using identical model, prompt, strength, steps, and seed, then apply one shared mastering pass and expose the four final WAVs for direct audition.
 
-**Tech Stack:** Python 3, NumPy, SciPy WAV I/O, Stable Audio 3 MLX `sm-sfx`, existing local model weights, ffprobe, no new dependencies.
+**Tech Stack:** Python 3, NumPy, standard-library PCM WAV I/O, Stable Audio 3 MLX `sm-sfx`, existing local model weights, ffprobe, no new dependencies.
 
 ## Global Constraints
 
