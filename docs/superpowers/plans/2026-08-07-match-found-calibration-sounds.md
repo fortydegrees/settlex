@@ -13,7 +13,7 @@
 - Keep every guide, raw render, script, metric, and audition WAV under `/Users/david/.codex/visualizations/2026/08/03/019fc91a-81ce-75e2-9a6e-9a233390669d/settlehex-sounds/stable-audio-3/calibration-batch/`.
 - Do not modify `public/sounds/`, `app/catana/effects/soundThemes.js`, matchmaking code, or production cue wiring.
 - Use 44.1 kHz stereo PCM WAV throughout and a final duration of exactly 0.95 seconds.
-- Keep Stable Audio settings identical across variants: `sm-sfx`, `same-s`, 8 steps, seed `43100`, CFG `1.0`, APG `1.0`, and A2A strength `0.15`.
+- Keep Stable Audio settings identical across variants: `sm-sfx`, `same-s`, 8 steps, seed `43100`, CFG `1.0`, APG `1.0`, and A2A strength `0.08`. The initial `0.15` pass was rejected because the simple short guides developed excessive percussive energy.
 - The shared prompt must explicitly reject bells, shimmer, pads, fantasy, magic, cinematic bloom, and large reverb.
 - Treat the batch as calibration; do not promote a candidate until the user identifies the hottest melodic gesture.
 
@@ -99,7 +99,7 @@ decoder: same-s
 seconds: 0.95
 steps: 8
 seed: 43100
-init-noise-level: 0.15
+init-noise-level: 0.08
 cfg: 1.0
 apg: 1.0
 ```
@@ -144,7 +144,7 @@ For each raw render:
 - match active-signal RMS to `-20 dBFS`, measured only where the smoothed envelope exceeds `-45 dBFS`;
 - limit scale so peak never exceeds `-1 dBFS`;
 - write stereo PCM16 at 44.1 kHz;
-- record duration, peak dBFS, active RMS dBFS, zero-crossing rate, spectral centroid, onset count, and final-250-ms RMS in `metrics.json`;
+- record duration, peak dBFS, active RMS dBFS, zero-crossing rate, spectral centroid, onset count, percussive-energy ratio, and final-250-ms RMS in `metrics.json`;
 - render waveform and log-frequency spectrogram rows for all four files into `spectrograms.png`.
 
 - [ ] **Step 2: Run finalization**
