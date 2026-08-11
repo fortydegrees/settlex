@@ -1,5 +1,5 @@
 import { applyMaritimeTradeBatch } from "@settlex/game-core";
-import { INVALID_MOVE } from "boardgame.io/core";
+import { INVALID_MOVE } from "boardgame.io/dist/cjs/core.js";
 import { appendGameLog } from "../utils/gameLog.js";
 import { countResources } from "./resourceCounts.js";
 

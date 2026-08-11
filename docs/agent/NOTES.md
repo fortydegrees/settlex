@@ -4445,3 +4445,11 @@
 - Road Building placement and boardgame.io stage-return semantics remain
   deterministic game/server work and require focused engine/server state tests,
   not app-owned match-lifecycle handling.
+
+- Production game-server Node import boundary:
+  - `server/serverGame.js` must load under the plain Node runtime used by
+    `Dockerfile.game`. Vite can resolve the `boardgame.io/core` directory
+    import, but Node ESM cannot; import `INVALID_MOVE` from the explicit
+    `boardgame.io/dist/cjs/core.js` file.
+  - Keep `server/__tests__/nodeRuntimeImport.test.js` as the focused executable
+    regression check for that runtime boundary.
