@@ -1,4 +1,4 @@
-import { INVALID_MOVE } from "boardgame.io/core";
+import { INVALID_MOVE } from "boardgame.io/dist/cjs/core.js";
 import {
   applyDiscard,
   applyEndTurn,
