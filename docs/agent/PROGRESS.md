@@ -7317,3 +7317,247 @@
   rendered without a visible Storybook error or page exception; a repeated
   check of the sole initial generic 404 console event produced no failed
   request, console error, or visible component error.
+
+## Status (2026-07-28, share metadata and link previews)
+
+- Added shared root metadata with a canonical production URL, clearer product
+  title/description, Open Graph/Twitter card fields, and a generated 1200x630
+  `/opengraph-image` PNG route.
+- Added privacy-safe metadata for canonical `/g/:matchID` links: previews stay
+  fetchable, while match URLs are marked `noindex, nofollow` and do not expose
+  player or match state.
+- Added `/robots.txt` and `/sitemap.xml` routes, and changed the PWA manifest to
+  use the real favicon rather than the match-alert bell.
+- Verification: metadata/image Vitest suite (5 tests), focused ESLint, and
+  production `pnpm build` with local `BETTER_AUTH_SECRET` and `DATABASE_URL`.
+  The built server returned a non-empty 1200x630 PNG and the expected HTML/text
+  metadata routes. The first image render exposed and fixed Satori's unsupported
+  `fit-content` width value.
+
+## Status (2026-07-28, native share-card artwork)
+
+- Reworked `/opengraph-image` around the shipped emoji-theme resource tile
+  SVGs, Catana board underlay, and player settlement/city/road SVGs instead of
+  synthetic hex placeholders.
+- Matched the card to the Catana table treatment and bundled renderer-safe
+  static Outfit faces for the same product typography.
+- Verification: the focused metadata/image suite (6 tests), focused ESLint,
+  production `pnpm build`, and a local production fetch/render of the
+  1200x630 PNG; the rendered card was visually inspected.
+
+## Status (2026-07-28, Fable handoff)
+
+- Added `docs/superpowers/handoffs/2026-07-28-settlehex-share-card-fable-handoff.md`
+  with the current metadata contract, native asset/font map, Satori/runtime
+  constraints, verification commands, and a paste-ready review brief.
+
+## Status (2026-07-29, share-card number tokens)
+
+- Tuned the generated card's number tokens against the live `Tile.js`
+  implementation: token radius/shadow, black versus red high-yield colours,
+  number/pip proportions, and vertical placement now follow the shipped board
+  treatment.
+- Kept the final text positioning Satori-safe because the browser's
+  `line-height: 0` token layout clipped glyphs in `ImageResponse`.
+- Verification: 6 focused metadata/image tests, focused ESLint, production
+  build, and a fresh local 1200x630 PNG render passed and was visually
+  inspected.
+
+## Status (2026-07-29, share-card token alignment)
+
+- Made the final token polish pass: shifted the number/pip group down 2px
+  together and reduced the large-card corner radius from 6px to 5px so the
+  fixed-format OG raster matches the live token's visual centering more closely.
+- Verification: 6 focused metadata/image tests, focused ESLint, production
+  build, and a fresh local 1200x630 PNG render passed and was visually
+  inspected.
+
+## Status (2026-07-29, share-card glyph baseline)
+
+- Moved only the number glyph down a further 3px while leaving the pips in
+  place, tightening the visible gap to match the live `12` token more closely.
+- Verification: production build and a fresh local 1200x630 PNG render passed
+  and were visually inspected.
+
+## Status (2026-07-29, shared share-card branding copy)
+
+- Centralized the shared SettleHex name, product descriptor, domain label,
+  image alt text, and root title/description in `app/metadata.js`.
+- Updated the OG renderer and root/match metadata to consume the shared brand
+  values, so future product-copy changes do not silently leave the share card
+  behind.
+- Verification: 6 focused metadata/image tests, focused ESLint, `git diff
+  --check`, and production `pnpm build` passed.
+
+## Status (2026-07-29, beta product copy)
+
+- Replaced the placeholder homepage/share positioning with `Free online Catan for quick 1v1 games.`
+- Updated root search/social metadata with the balanced-board proof and the friend, matchmaking, and Puffer play paths.
+- Kept open-source/beta language secondary and left functional lobby copy unchanged.
+- Verified the focused metadata/image tests, targeted ESLint, production build, canonical desktop/mobile homepage views, and an actual 1200×630 social-card render.
+
+## Status (2026-07-29, homepage city-upgrade handoff)
+
+- Fixed the homepage attract loop's city upgrade so the committed settlement is
+  removed synchronously before the shared placement effect takes ownership of
+  its node. The transition now renders one departing settlement and one
+  incoming city instead of a static settlement, duplicate lifting settlement,
+  and city together.
+- Kept the change scoped to `HomeDemoEffectBridge`; live board placement and
+  first-person city previews are unchanged.
+- Added a pure state-handoff regression test. Four focused Catana suites passed
+  (41 tests), targeted ESLint passed, and the real homepage animation was
+  replayed at 1440x900 with no browser errors. DOM inspection during the
+  upgrade confirmed that only the temporary settlement and city occupied the
+  node.
+
+## Status (2026-07-29, spectator city-upgrade perspective)
+
+- Fixed live unseated spectators falling through to the acting player's direct
+  city-drop path.
+- Seated opponents and spectators now share the existing observational
+  settlement-lift/city-drop animation; the acting player's first-person path is
+  unchanged.
+- Added behavior-level perspective coverage for local, opponent, and spectator
+  viewers. Four focused placement suites passed (13 tests), with targeted
+  ESLint clean.
+
+## Status (2026-07-29, orange settlement favicon experiment)
+
+- Replaced the green `Sx` ICO with an App Router `icon.svg` derived from the
+  shipped orange settlement artwork.
+- Tightened the favicon-only viewBox so the settlement fills the square icon
+  slot, then shifted the favicon-only palette to brighter tangerine with a dark
+  burnt-orange edge for legibility at 16px. Kept the existing border geometry
+  and left the shared game piece unchanged.
+- Updated the web manifest to advertise `/icon.svg`.
+- Verified the candidate in a browser-rendered 16px/32px/64px scale comparison;
+  the 16px version remains recognisable as a settlement.
+- Production `pnpm build` passed and emitted `/icon.svg`; the built homepage
+  advertised only the hashed SVG icon, the manifest returned the SVG icon
+  contract, and the removed legacy `/favicon.ico` returned 404.
+
+## Status (2026-07-30, Year of Plenty game-log detail)
+
+- Routed successful Year of Plenty bank grants through the existing
+  `resource:gain` log path, so the played-card entry is followed by the exact
+  resource icons received.
+- Replaced raw dev-card ids such as `yearOfPlenty` with a shared dev-card log
+  token that renders the shipped card portrait and readable `Year of Plenty`
+  label.
+- Flushes the delayed resource row when the Year of Plenty resolve animation
+  completes. Five focused suites passed (52 tests), and the production log
+  treatment was visually checked in `/catana/dev/sandbox` at 1440x900 with a
+  clean browser console.
+
+## Status (2026-07-30, road and robber placement handoff)
+
+- Kept road/build target previews suppressed until the shared `placePiece`
+  effect finishes, preventing the destination preview from reappearing under a
+  still-descending road.
+- Kept the local playful robber preview mounted after click until it reaches
+  the committed target and the authoritative robber tile confirms the same
+  destination. The static destination robber stays hidden during that handoff.
+- Left engine rules and the existing remote robber move animation unchanged.
+- Verified 22 focused placement tests, targeted ESLint, and the real road and
+  robber scenarios in `/catana/dev/sandbox` at 1280x720 with no browser
+  warnings or errors.
+
+## Status (2026-07-30, robber destination game-log token)
+
+- Replaced the plain `wood 11` robber destination suffix with one semantic,
+  unbreakable tile-destination token: the active resource-theme icon plus a
+  compact board-style number chip with probability pips and red 6/8 emphasis.
+- Kept replay/plain-text output readable as `moved the robber to Wood 11` and
+  exposed the visual pair as one accessible `Wood tile, number 11` label.
+- Three focused log/formatter/component suites passed (43 tests). The real
+  `robber-move` scenario was exercised in `/catana/dev/sandbox` at 1440x900;
+  the wood icon and `11` chip stayed grouped when the line wrapped. The sandbox
+  console only showed existing unauthenticated match-alert and missing
+  settlement-audio requests.
+
+## Status (2026-07-30, combined robber tile log icon)
+
+- Combined the robber destination terrain, resource glyph, and number chip
+  into one 28x32px miniature board tile instead of two adjacent icons.
+- The composite follows the active tile/resource theme, retains the board's
+  number and probability-pip treatment, and remains one accessible
+  `Wood tile, number 11` object.
+- Verified the production renderer in the real `/catana/dev/sandbox`
+  `robber-move` scenario at 1440x900 and at native CSS resolution.
+
+## Status (2026-07-31, robber card-transfer destination)
+
+- Added a stable `p{id}-resources` anchor to the desktop local resource rail so
+  hidden robber cards have a real hand destination instead of falling through
+  to the viewport-center bank fallback.
+- Preserved the committed pre-move resource snapshot across the next-paint
+  robber effect handoff, restoring viewer-local resource-face detection.
+- Player-anchor misses now skip that transfer rather than animating to the
+  bank point; hidden robber payloads explicitly target the thief's hand anchor.
+- Added focused snapshot/payload regression coverage. The Catana suite passed
+  169 files / 811 tests, changed-file ESLint passed, and the sandbox exposed
+  valid local hand anchors at desktop 1440x900 and mobile 390x844.
+
+## Status (2026-07-31, blocked robber-roll pulse)
+
+- Removed the duplicate horizontal translation from the blocked-roll robber
+  pulse; the tile robber wrapper keeps the canonical `translateX(-60%)` and
+  the pulse now changes scale only.
+- Verified the real `/catana/dev/sandbox` route at desktop size with no new
+  browser warnings or errors. Existing sandbox auth/audio request errors are
+  unrelated.
+
+## Status (2026-07-31, replay analysis-panel refinement)
+
+- Reworked the real replay panel to the approved compact 1D direction:
+  contextual collapsed pill, compact two-player perspective segments with a
+  long-name/multi-player select fallback, event context and count, optional
+  score chart, and terminal Results emphasis.
+- Replaced media-style skip icons with single event chevrons and double turn
+  chevrons. Desktop controls use tooltips; the mobile tray retains word labels.
+- Moved the phone compact replay dock to the safe-area bottom. Board
+  perspective uses the full strip; player perspective leaves the existing
+  Log/Chat cells accessible and replaces only the read-only status/timer area.
+  The expanded tray still overlays the cockpit without reserving board space.
+- Added chart-disclosure session persistence and Storybook coverage for chart
+  open, four long-name players, terminal state, board mobile dock, seated
+  mobile dock, and the expanded tray.
+- Verification: all focused replay Vitest suites passed (28 tests),
+  changed-file ESLint, `git diff --check`, and the production Storybook build
+  passed. The production components were visually reviewed at desktop
+  1440x900 and mobile 390x844; the mobile drawer accessibility scan reported
+  zero violations.
+
+## Status (2026-07-31, replay 1d visual reconciliation)
+
+- Second pass over the replay panel against `Replay Experience Explorations`
+  1d. The structure already matched; this closed the remaining visual gaps.
+- Seek rail is now the design's own: white trough with an inset shadow, lime
+  gradient fill, 2px white turn ticks that overhang the track, and a 17px amber
+  thumb. Kept the native `input[type=range]` for keyboard and ARIA, and added
+  `getReplayRailOffset` so the fill and ticks follow the thumb's inset travel
+  instead of the raw percentage.
+- Board now sits between the two seats in the segmented perspective control.
+  The rule and the option order moved to `replayPanelLayout.js` as pure
+  helpers so they are testable — component render tests are not available here
+  (see the JSX-in-`.js` note below).
+- Score chart hatches the region right of the playhead rather than just
+  stopping, and the legend is one row per player with a square swatch and live
+  VP, bolded for the active perspective.
+- Collapsed pill is fully rounded with "Replay" split from its context text;
+  the compact mobile dock regained the design's thin lime progress bar.
+- Desktop chart disclosure is a full-bleed strip with a rotating caret square;
+  the tray keeps the Show/Hide word where there is no hover.
+- Two repo pitfalls worth remembering, both hit during this pass:
+  - `app/ui/cn.js` concatenates rather than merging, so a `Button` variant's
+    own `rounded-[1.2rem]` beats a local `rounded-xl` on stylesheet order.
+    Local overrides of variant properties need `!`.
+  - Tests cannot import a module that transitively reaches JSX inside a `.js`
+    file (`app/ui/Tooltip.js`, `app/ui/Button.js`) — Vite refuses to transform
+    it. Pure helpers must live in a JSX-free module to be testable.
+- Verification: `pnpm run test:app` passed (192 files, exit 0), ESLint on every
+  changed file, `git diff --check`, and the production Storybook build all
+  passed. Every replay story was reviewed in a real browser at desktop
+  1440x900 and mobile 390x844; console showed only the pre-existing favicon
+  404 and the React `act` deprecation warning.

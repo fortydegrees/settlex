@@ -4524,3 +4524,159 @@
   removing four stale presentation-only assertions; the retained canonical
   friend-challenge routing assertion and pure account-menu model suite stayed
   green.
+
+- Share metadata boundary:
+  - `app/metadata.js` owns the canonical `https://settlehex.com` origin, root
+    social metadata, safe `/g/:matchID` metadata, robots rules, and initial
+    sitemap entries. Keep private match IDs out of the sitemap and do not put
+    player names, scores, credentials, or live match state into social cards.
+  - `/g/:matchID` must remain fetchable by link-preview bots even though its
+    page metadata is `noindex, nofollow`; do not disallow `/g/` in
+    `app/robots.js`.
+- The generated `app/opengraph-image.jsx` uses Next `ImageResponse` and
+    Satori-compatible fixed dimensions. Avoid intrinsic CSS values such as
+    `fit-content`, which caused an empty 200 response in the local production
+    server.
+  - Keep share-card artwork tied to shipped Catana assets through
+    `app/opengraph-assets.js`: use the emoji-theme tiles, board underlay, and
+    piece SVGs rather than re-drawing generic hexes. The OG renderer needs
+    local static Outfit faces passed through `ImageResponse` fonts; the normal
+    `next/font` page class is not inherited by this standalone image route.
+  - The share card draws the real board, not a decorative hex arrangement. It
+    reuses `tilePixelVector`/`getNodeDelta`/`SQRT3` from
+    `app/catana/utils/coordinates.js`, the tile-icon and number-token constants
+    from `app/catana/Tile.js`, the `0.8`/`0.63` piece anchoring from
+    `app/catana/Piece.js`, and the shipped `HOME_DEMO_BOARD_PRESET`. Do not
+    hand-roll a grid here; a mismatched vertical step overlapped every row and
+    the card read as a pile of hexes. Board data is a static homepage preset,
+    so this still involves no match fetch.
+  - Number tokens should follow `app/catana/Tile.js` and
+    `app/catana/homeDemo/HomeDemoBoardPoster.module.css`: `#f1f5f9` chip,
+    rounded-md-like geometry, black normal values, red 6/8 values, and the
+    shipped number/pip scale. The fixed-format OG renderer uses a subtle 5px
+    large-card radius, shifts the text group down 2px, and moves the number
+    glyph a further 3px toward the pips to match the live raster visually.
+    Fixed-position text is required because the browser's `line-height: 0`
+    implementation clips glyphs under Satori.
+  - `createMatchMetadata` must keep declaring `width`/`height` on its
+    `openGraph.images` entry. Setting `images` at a route level overrides Next's
+    `opengraph-image` file convention (`mergeStaticMetadata` skips file images
+    when the level already has `images`), so the large-card dimension hints are
+    lost unless they are supplied by hand. Removing `images` entirely is not a
+    fix: a child `openGraph` replaces the parent's resolved value, so `/g/` would
+    emit no `og:image` at all.
+  - Known gap: the homepage `og:image` carries Next's content hash
+    (`?<hash>`) but the explicit `/g/` one does not, so preview caches for match
+    links will not bust when the card art changes.
+- The curated downstream review handoff is
+    `docs/superpowers/handoffs/2026-07-28-settlehex-share-card-fable-handoff.md`.
+- Shared share-card branding copy now lives in `app/metadata.js` as exported
+  constants (`BRAND_NAME`, `BETA_PRIMARY_DESCRIPTOR`,
+  `BETA_SUPPORTING_PROOF`, `BRAND_DOMAIN_LABEL`, and the canonical
+  title/description/alt text). The homepage and OG renderer import those
+  values; keep future product-copy edits there so the visible title surface,
+  image, and HTML metadata move together.
+
+- Beta product-copy direction:
+  - Lead with the current player benefit: `Free online Catan for quick 1v1 games.`
+  - Supporting proof is `Balanced boards. Play a friend, find a match, or challenge Puffer.`
+  - Keep open-source and beta status as secondary trust/context, not the homepage pitch.
+  - Homepage, root metadata, and social-card copy should consume the shared values from `app/metadata.js`; do not reintroduce generic trailer slogans or unsupported rankings.
+  - When four-player play is live, broaden the primary descriptor to `Free online Catan for quick games with friends.` and keep balanced-board language attached to 1v1.
+
+- Homepage city-upgrade ownership boundary (2026-07-29):
+  - Before the homepage starts a `place-city` effect,
+    `HomeDemoEffectBridge` must synchronously remove the matching committed
+    settlement through `prepareHomeDemoEventState`. The shared placement runner
+    owns both temporary upgrade pieces until the city is committed near the
+    end of the effect.
+  - Keep this handoff homepage-specific. The live `Board` already suppresses
+    its authoritative settlement/city while the placement effect owns that
+    node.
+
+- City-upgrade viewer-perspective boundary (2026-07-29):
+  - The acting player keeps the direct city-drop path because their local
+    pickup/hover interaction already removes the settlement.
+  - Seated opponents and unseated spectators share the observational
+    replacement path: lift the settlement away, then drop the city. A missing
+    viewer player ID means spectator, not local player.
+
+- Settlement favicon experiment (2026-07-29):
+  - `app/icon.svg` is a favicon-specific crop of the shipped orange settlement,
+    not a replacement for `public/svgs/pieces/settlement_orange.svg`.
+  - Keep its near-full-canvas crop when evaluating the concept; the unmodified
+    piece export carries enough horizontal whitespace to look optically small
+    in a browser tab.
+  - The favicon variant uses a brighter tangerine face with a dark burnt-orange
+    edge. Keep the existing outline geometry: it preserves the roof and wall
+    silhouette at 16px without adding an enclosing badge. The game-piece palette
+    is unchanged.
+  - `app/favicon.ico` was removed so Next does not advertise both the previous
+    green `Sx` ICO and the new settlement SVG. The web manifest points to
+    `/icon.svg`.
+
+- Year of Plenty game-log boundary (2026-07-30):
+  - Successful Year of Plenty choices should reuse the ordinary
+    `resource:gain` entry rather than introduce a dev-card-specific resource
+    sentence. This keeps all bank grants on the same icon-based formatter.
+  - Keep the `dev:play` row separate and present known dev-card types through a
+    semantic card token: shipped portrait plus the readable card name, never a
+    raw camel-case id.
+- Year of Plenty resource gains use the existing delayed distribution-log
+    presentation and must flush when the dev-card resolve animation completes.
+
+- Road and robber placement handoff boundary (2026-07-30):
+  - Treat an active `placePiece` effect as part of build-action suppression.
+    The moving effect piece owns the target until its effect ends; passive or
+    explicit hover previews must not remount underneath it.
+  - For the local playful robber interaction, keep the cursor preview as the
+    destination visual until both conditions are true: its spring is at rest on
+    the committed tile and the authoritative robber tile matches that target.
+    Hide the static destination robber during this short handoff.
+  - Do not route the local placer through the remote robber travel animation;
+    the direct-placement and observer choreography remain distinct.
+
+- Robber destination game-log boundary (2026-07-30):
+  - Keep the destination as one `tileDestination` presentation token rather
+    than separate resource and number siblings; narrow feed rows otherwise can
+    strand the number chip on a different line from its resource icon.
+  - Render that token as one miniature board tile: the active themed terrain
+    shell, resource glyph, and number chip share the same relative positions as
+    the live tile. At 28x32px this remains readable while communicating one
+    destination rather than two adjacent UI tokens.
+  - Preserve the board number-token grammar inside the composite: slate chip,
+    bold number, probability pips, and red 6/8 values.
+- Preserve a readable plain-text fallback (`Wood 11`) for replay/export and
+  expose the composite visual with one destination-level accessible label.
+
+- Robber card-transfer destination boundary (2026-07-31):
+  - Keep `p{id}-resources` mounted on the desktop local resource rail as the
+    aggregate hand anchor; hidden robber cards must use it rather than a
+    resource-specific anchor that may be unavailable to the viewer.
+  - Maintain separate committed/current resource snapshots around the
+    next-paint effect handoff. Updating the previous snapshot directly to the
+    current view before diffing makes the stolen resource appear hidden even to
+    the local thief.
+  - The card-transfer runner may use the viewport-center point only for real
+    bank/discard endpoints. A missing player anchor should skip that transfer,
+    not send a card through the middle of the board.
+
+- Blocked robber-roll pulse boundary (2026-07-31):
+  - `Tile.js` owns the robber wrapper's resting horizontal offset. Keep
+    `robberPulse` scale-only in `Board.css`; putting `translateX(-60%)` in the
+    child image animation applies a second left shift during blocked rolls.
+
+- Replay analysis-panel presentation boundary (2026-07-31):
+  - Replay stays step-only. Use single chevrons for event steps and double
+    chevrons for turn jumps; desktop icon controls carry real tooltips and
+    accessible names, while the touch tray keeps `Event` / `Turn` words.
+  - The phone compact dock belongs at the safe-area bottom instead of above the
+    whole seated cockpit. In a player perspective it occupies the read-only
+    status/timer part of the command row and leaves the existing Log/Chat
+    segment exposed and tappable. The expanded replay tray remains transient
+    and deliberately overlays the cockpit and board.
+  - Two short player names may use the compact Board/player segmented control.
+    Three or four players, or either long name, use the full-width select.
+  - Score history is a closed-by-default disclosure. Keep `chartOpen` in replay
+    session state so opening/closing Results or stepping the timeline does not
+    reset the user's choice.
