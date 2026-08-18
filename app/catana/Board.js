@@ -18,7 +18,11 @@ import {
 import { TileTypes } from "./types";
 import { buildRenderMaps } from "./utils/renderMaps";
 import { buildPlayerViewMap } from "./utils/playerView";
-import { resolveRobberPlacementMotionMode } from "./utils/robberPlacementMotion";
+import {
+  getRobberPlacementPresentationState,
+  resolveRobberPlacementMotionMode
+} from "./utils/robberPlacementMotion";
+import { shouldSuppressBuildActions } from "./utils/passiveBuildMode";
 import { isDocumentHidden } from "./utils/visibility";
 import { getBuildPickupPieceType } from "./utils/playerAction";
 import {
@@ -137,6 +141,7 @@ export function CatanBoard({
   });
   const [suppressBuildHighlights, setSuppressBuildHighlights] = useState(false);
   const [localPendingCityNodeId, setLocalPendingCityNodeId] = useState(null);
+  const [pendingRobberPlacement, setPendingRobberPlacement] = useState(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [hasCoarsePointer, setHasCoarsePointer] = useState(false);
 
@@ -209,6 +214,10 @@ export function CatanBoard({
   );
 
   const [placePiecePayload, isPlacePieceActive] = useEffectState("placePiece");
+  const suppressBuildActions = shouldSuppressBuildActions({
+    commitPending: suppressBuildHighlights,
+    placementEffectActive: isPlacePieceActive
+  });
   const activeCityPlacementId =
     isPlacePieceActive && placePiecePayload?.pieceType === "city"
       ? Number(placePiecePayload.id)
@@ -224,6 +233,18 @@ export function CatanBoard({
       setLocalPendingCityNodeId(null);
     }
   }, [localPendingCityNodeId, activeCityPlacementId]);
+
+  const robberPlacementPresentation = getRobberPlacementPresentationState({
+    isPlacementActive: isRobberPlacementActive,
+    pendingPlacement: pendingRobberPlacement,
+    authoritativeTileId: G.core?.robberTileId
+  });
+
+  useEffect(() => {
+    if (robberPlacementPresentation.handoffComplete) {
+      setPendingRobberPlacement(null);
+    }
+  }, [robberPlacementPresentation.handoffComplete]);
 
   useEffect(() => {
     if (isBuildPickupActive) {
@@ -475,6 +496,11 @@ export function CatanBoard({
   //for displaying actionNodes based on stage the player is in (e.g. moving robber)
   //NOT for building road, as this is not a stage
   useEffect(() => {
+    if (pendingRobberPlacement != null) {
+      setRobberTiles((prev) => (prev.length ? [] : prev));
+      return;
+    }
+
     if (isRobberPlacementActive) {
       setRobberTiles(getValidRobberTiles(G));
       return;
@@ -486,7 +512,7 @@ export function CatanBoard({
     setRobberTargetElementsByTileId((prev) =>
       Object.keys(prev).length ? {} : prev
     );
-  }, [isRobberPlacementActive, G]);
+  }, [isRobberPlacementActive, pendingRobberPlacement, G]);
 
   useEffect(() => {
     if (isBuildPickupActive) {
@@ -539,6 +565,30 @@ export function CatanBoard({
       tileId: payload.tileId,
       centerX,
       centerY
+    });
+  }, []);
+
+  const handleRobberPlace = useCallback(
+    (tileId) => {
+      if (resolvedRobberPlacementMotionMode === "playful") {
+        setPendingRobberPlacement({ tileId, settled: false });
+      }
+      moves.moveRobber(tileId);
+    },
+    [moves, resolvedRobberPlacementMotionMode]
+  );
+
+  const handleRobberPreviewSettled = useCallback((tileId) => {
+    setPendingRobberPlacement((currentPlacement) => {
+      if (
+        currentPlacement == null ||
+        String(currentPlacement.tileId) !== String(tileId) ||
+        currentPlacement.settled
+      ) {
+        return currentPlacement;
+      }
+
+      return { ...currentPlacement, settled: true };
     });
   }, []);
 
@@ -664,7 +714,11 @@ export function CatanBoard({
           hasNodeHover={hoveredTiles.length > 0}
           isFlashing={flashingTiles.includes(tile.id)}
           isBlockedFlashing={blockedFlashingTiles.includes(tile.id)}
-          hasRobber={tile.id == G.core?.robberTileId}
+          hasRobber={
+            tile.id == G.core?.robberTileId &&
+            String(tile.id) !==
+              String(robberPlacementPresentation.hiddenStaticTileId)
+          }
           showOriginRobber={
             isRobberPlacementActive && tile.id == G.core?.robberTileId
           }
@@ -672,6 +726,7 @@ export function CatanBoard({
           showRobberHoverGhost={resolvedRobberPlacementMotionMode === "minimal"}
           onRobberTargetHoverChange={handleRobberTargetHoverChange}
           onRobberTargetRegister={handleRobberTargetRegister}
+          onPlaceRobber={handleRobberPlace}
           moves={moves}
           themeId={themeId}
         />
@@ -757,7 +812,7 @@ export function CatanBoard({
   //we only need to do this if it's the player's turn
   
   {
-    !suppressBuildHighlights &&
+    !suppressBuildActions &&
       (() => {
         const showPlacementNodes = isPlacementSettlementStage;
         const showMainNodes =
@@ -824,7 +879,7 @@ export function CatanBoard({
 
   //editable edges e.g placing road during initial placement
   {
-    !suppressBuildHighlights &&
+    !suppressBuildActions &&
     isPlacementRoadStage &&
       G.valids.edges.map((edgeId, x) => {
         const renderEdge = edgeRenderById[edgeId];
@@ -857,7 +912,7 @@ export function CatanBoard({
   }
 
   {
-    !suppressBuildHighlights &&
+    !suppressBuildActions &&
       passiveBuildEnabled &&
       passiveBuildableEdges.map((edgeId) => {
         const renderEdge = edgeRenderById[edgeId];
@@ -887,7 +942,7 @@ export function CatanBoard({
   }
 
   {
-    !suppressBuildHighlights &&
+    !suppressBuildActions &&
       passiveBuildEnabled &&
       passiveSettlementNodes.map((nodeId) => {
         const renderNode = nodeRenderById[String(nodeId)];
@@ -921,7 +976,7 @@ export function CatanBoard({
   }
 
   {
-    !suppressBuildHighlights &&
+    !suppressBuildActions &&
       passiveBuildEnabled &&
       passiveCityNodes.map((nodeId) => {
         const renderNode = nodeRenderById[String(nodeId)];
@@ -955,7 +1010,7 @@ export function CatanBoard({
       });
   }
 
-  if (!suppressBuildHighlights) {
+  if (!suppressBuildActions) {
     buildableRoads.map((edgeId, x) => {
       const renderEdge = edgeRenderById[edgeId];
       if (!renderEdge) {
@@ -1032,10 +1087,10 @@ export function CatanBoard({
           ref={placementLayerRef}
           className="absolute inset-0 pointer-events-none z-30"
         />
-        {isRobberPlacementActive || isBuildPickupActive ? (
+        {robberPlacementPresentation.previewActive || isBuildPickupActive ? (
           <React.Suspense fallback={null}>
             {resolvedRobberPlacementMotionMode === "playful" &&
-            isRobberPlacementActive ? (
+            robberPlacementPresentation.previewActive ? (
               <RobberPlacementPreview
                 active
                 hoveredTarget={hoveredRobberTarget}
@@ -1043,6 +1098,8 @@ export function CatanBoard({
                 landTileCenters={landRobberPreviewTiles}
                 boardTileSize={size}
                 boardViewportScale={boardViewportScale}
+                committedTargetTileId={pendingRobberPlacement?.tileId ?? null}
+                onCommittedTargetSettled={handleRobberPreviewSettled}
                 themeId={themeId}
                 size={size / 1.5}
               />

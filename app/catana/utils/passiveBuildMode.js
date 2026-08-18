@@ -4,6 +4,13 @@ const EXPLICIT_BUILD_ACTIONS = new Set([
   "placeCity"
 ]);
 
+export function shouldSuppressBuildActions({
+  commitPending = false,
+  placementEffectActive = false
+} = {}) {
+  return commitPending || placementEffectActive;
+}
+
 export function isPassiveBuildEnabled({
   playerAction,
   playerID,

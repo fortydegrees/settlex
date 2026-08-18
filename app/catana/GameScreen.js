@@ -76,6 +76,7 @@ import { createResourceDistributionRunner } from "./effects/resourceDistribution
 import { createPiecePlacementRunner } from "./effects/placePiece";
 import { createDevCardPlayRunner } from "./effects/devCardPlay";
 import {
+  advancePlayerResourceSnapshots,
   createCardTransferRunner,
   getRobberStealVisibleResource
 } from "./effects/cardTransfer";
@@ -281,6 +282,7 @@ export function GameScreen(bgioProps) {
   const latestGRef = useRef(bgioProps.G);
   latestGRef.current = bgioProps.G;
   const previousResourcesByPlayerIdRef = useRef(new Map());
+  const currentResourcesByPlayerIdRef = useRef(new Map());
   const deferredLogEntriesRef = useRef([]);
   const effectsBus = useMemo(() => createEffectBus(), []);
   const { width, height } = useWindowSize();
@@ -518,12 +520,14 @@ export function GameScreen(bgioProps) {
   latestPlayerViewMapRef.current = playerViewMap;
 
   useEffect(() => {
-    const next = new Map();
-    Object.values(playerViewMap).forEach((view) => {
-      if (view?.id == null) return;
-      next.set(String(view.id), [...(view.resources ?? [])]);
+    const snapshots = advancePlayerResourceSnapshots({
+      currentResourcesByPlayerId: currentResourcesByPlayerIdRef.current,
+      playerViewMap
     });
-    previousResourcesByPlayerIdRef.current = next;
+    previousResourcesByPlayerIdRef.current =
+      snapshots.previousResourcesByPlayerId;
+    currentResourcesByPlayerIdRef.current =
+      snapshots.currentResourcesByPlayerId;
   }, [playerViewMap]);
 
   const canonicalGameLogEntries = useMemo(
@@ -661,7 +665,14 @@ export function GameScreen(bgioProps) {
   const handleDevCardPlayResolveComplete = useCallback((payload) => {
     releaseKnightDisplayFromPayload(payload);
     emitLargestArmyAwardFromPayload(payload);
-  }, [emitLargestArmyAwardFromPayload, releaseKnightDisplayFromPayload]);
+    if (payload?.cardType === "yearOfPlenty") {
+      handleResourceDistributionComplete();
+    }
+  }, [
+    emitLargestArmyAwardFromPayload,
+    handleResourceDistributionComplete,
+    releaseKnightDisplayFromPayload
+  ]);
 
   useEffect(() => {
     if (isReplay) {
