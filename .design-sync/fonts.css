@@ -1,0 +1,47 @@
+/*
+ * Brand typography for the synced design system.
+ *
+ * SettleHex loads Outfit through `next/font/google` in app/layout.js, so the
+ * real product renders in Outfit — but Storybook never mounts that layout and
+ * declares no @font-face of its own, so the reference build silently falls back
+ * to a system font. Without this file both the reference and the previews fall
+ * back the same way, the comparison looks clean, and every design built on
+ * claude.ai/design would ship in the wrong typeface.
+ *
+ * The .ttf files are the repo's own (public/fonts), served by Storybook via
+ * staticDirs. The family stack matches .storybook/preview.js exactly.
+ */
+
+@font-face {
+  font-family: "Outfit";
+  src: url("../public/fonts/Outfit-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("../public/fonts/Outfit-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Outfit";
+  src: url("../public/fonts/Outfit-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * Applies the product's body font to designs. Previews already receive this
+ * stack inline from the Storybook decorator; this rule is what carries it into
+ * the designs the agent builds, which see only the styles.css import closure.
+ */
+:root,
+body {
+  font-family: "Outfit", ui-rounded, "Nunito Sans", system-ui, sans-serif;
+}

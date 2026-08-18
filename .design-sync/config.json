@@ -1,0 +1,57 @@
+{
+  "projectId": "57d6a4d1-6dc8-44d9-9d10-67a3c540a2f5",
+  "shape": "storybook",
+  "pkg": "settlex",
+  "globalName": "SettleHex",
+  "entry": "./.design-sync/dist/entry.js",
+  "tsconfig": ".design-sync/tsconfig.sync.json",
+  "srcDir": "app",
+  "cssEntry": ".design-sync/dist/styles.css",
+  "extraFonts": [".design-sync/fonts.css"],
+  "buildCmd": "pnpm -C game-core build && node .design-sync/build-entry.mjs",
+  "storybookConfigDir": ".storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "guidelinesGlob": [],
+  "readmeHeader": ".design-sync/conventions.md",
+  "titleMap": {
+    "AccountPage": "AccountPageView",
+    "AccountMenu": "SystemAccountMenu",
+    "AccountEntry": "AccountEntryModal",
+    "Identity": "IdentityModal",
+    "PublicProfile": "PublicProfileView",
+    "HomepageTopChrome": "SystemTopChrome",
+    "HomepageTitleChrome": "HomeTitleChrome",
+    "Search&Rescue": "SearchingModal",
+    "FriendChallenge": "PendingFriendChallengeScreen",
+    "RecoverySurfaces": "StatusBanner",
+    "GameOver": "GameOverModal",
+    "PostgameSummary": "PostgameOverlay",
+    "ReplayControls": "ReplayStepControls",
+    "Feedbackandcontainers": "Banner",
+    "Fieldsandselectors": "Input",
+    "Overlays": "Dialog",
+    "Visuallanguage": null
+  },
+  "provider": { "component": "SettleHexRoot" },
+  "storyImports": {
+    "shim": ["app/catana/lobby/releaseInfo"]
+  },
+  "overrides": {
+    "AccountEntryModal": { "cardMode": "single", "primaryStory": "SignInOrGuest" },
+    "HomeTitleChrome": { "cardMode": "single", "primaryStory": "SignedOutIdle" },
+    "IdentityModal": {
+      "cardMode": "single",
+      "primaryStory": "ExistingIdentity",
+      "skip": ["product-patterns-account-identity-identity--suggested-identity"]
+    },
+    "ReplayStepControls": { "cardMode": "single", "primaryStory": "StepControlsAtStart" },
+    "MatchAlertDialog": { "cardMode": "single", "primaryStory": "JoinOpenSeat" },
+    "PostgameOverlay": { "cardMode": "single", "primaryStory": "RankedScoreboard" },
+    "ReplayPanel": { "cardMode": "single", "primaryStory": "DesktopPanelOpen" },
+    "StatusBanner": { "cardMode": "single", "primaryStory": "StatusBannerNeutral" },
+    "SystemAccountMenu": { "cardMode": "single", "primaryStory": "SignedOut" },
+    "SystemTopChrome": { "cardMode": "single", "primaryStory": "SignedOut" },
+    "AccountPageView": { "cardMode": "column" },
+    "PublicProfileView": { "cardMode": "column" }
+  }
+}

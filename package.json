@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@9.13.2",
+  "types": ".design-sync/entry.d.ts",
   "scripts": {
     "predev": "pnpm -C game-core build",
     "prestorybook": "pnpm -C game-core build",
