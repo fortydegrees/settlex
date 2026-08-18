@@ -320,6 +320,13 @@ function runCityUpgradeAnimation({
     });
 }
 
+export const shouldUseCityUpgradeReplacementAnimation = ({
+  viewerPlayerId,
+  actorPlayerId
+} = {}) =>
+  viewerPlayerId == null ||
+  String(actorPlayerId) !== String(viewerPlayerId);
+
 export function createPiecePlacementRunner({
   getLayerEl,
   getLayout,
@@ -440,9 +447,10 @@ export function createPiecePlacementRunner({
         dropPx
       });
       const viewerPlayerId = getViewerPlayerId?.();
-      const isRemoteCityUpgrade =
-        viewerPlayerId != null &&
-        String(payload.playerId) !== String(viewerPlayerId);
+      const isRemoteCityUpgrade = shouldUseCityUpgradeReplacementAnimation({
+        viewerPlayerId,
+        actorPlayerId: payload.playerId
+      });
 
       if (isRemoteCityUpgrade) {
         const settlementEl = createSettlementEl({

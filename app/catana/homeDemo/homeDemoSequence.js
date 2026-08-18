@@ -443,6 +443,27 @@ export function getHomeDemoVisiblePlayerIds(scenes = HOME_DEMO_SCENES) {
   );
 }
 
+export function prepareHomeDemoEventState(state, event) {
+  if (event?.type !== "place-city") return state;
+
+  const nodeId = event.target?.nodeId;
+  const currentBuilding = state?.buildingsByNodeId?.[nodeId];
+  if (
+    nodeId == null ||
+    currentBuilding?.type !== "settlement" ||
+    currentBuilding.playerId !== event.playerId
+  ) {
+    return state;
+  }
+
+  const buildingsByNodeId = { ...state.buildingsByNodeId };
+  delete buildingsByNodeId[nodeId];
+  return {
+    ...state,
+    buildingsByNodeId
+  };
+}
+
 export function applyHomeDemoEvent(state, event) {
   if (!event) return state;
 
