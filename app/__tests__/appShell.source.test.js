@@ -28,7 +28,7 @@ describe("match-alert app shell", () => {
     expect(source).toContain('display: "standalone"');
     expect(source).toContain("background_color:");
     expect(source).toContain("theme_color:");
-    expect(source).toContain('src: "/match-alert-bell.svg"');
+    expect(source).toContain('src: "/icon.svg"');
     expect(source).toContain('sizes: "any"');
     expect(source).toContain('type: "image/svg+xml"');
   });

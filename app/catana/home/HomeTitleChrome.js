@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Fredoka } from "next/font/google";
 import React, { useEffect, useState } from "react";
+import { BETA_PRIMARY_DESCRIPTOR } from "../../metadata.js";
 import { MetaDisclosure } from "../../ui/MetaDisclosure";
 import { publicReleaseInfo } from "../lobby/releaseInfo";
 import { SystemTopChrome } from "./SystemTopChrome";
@@ -397,7 +398,7 @@ function HomeTableBrand({
           Settlehex
         </h1>
         <p className="hidden text-[0.72rem] font-medium leading-none text-[#24506e]/80 sm:block">
-          Free, open-source hex strategy
+          {BETA_PRIMARY_DESCRIPTOR}
         </p>
         <div
           className="hidden items-center gap-2 sm:flex"

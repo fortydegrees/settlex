@@ -9,7 +9,7 @@ export default function manifest() {
     theme_color: "#0ea5e9",
     icons: [
       {
-        src: "/match-alert-bell.svg",
+        src: "/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
       },
