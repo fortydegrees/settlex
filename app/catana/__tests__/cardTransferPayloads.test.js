@@ -5,6 +5,10 @@ import {
   buildMaritimeTradeTransfers,
   buildRobberStealTransfers
 } from "../utils/cardTransferPayloads";
+import {
+  advancePlayerResourceSnapshots,
+  getRobberStealVisibleResource
+} from "../effects/cardTransfer";
 
 describe("cardTransferPayloads", () => {
   it("builds public dev-card purchase transfer payloads", () => {
@@ -98,6 +102,7 @@ describe("cardTransferPayloads", () => {
         toKind: "player",
         fromPlayerId: "1",
         toPlayerId: "0",
+        toElementId: "p0-resources",
         hidden: true,
         cueName: "resource:travel:start"
       }
@@ -112,5 +117,30 @@ describe("cardTransferPayloads", () => {
       resource: "Ore",
       hidden: false
     });
+  });
+
+  it("keeps the committed hand as the previous robber snapshot", () => {
+    const committed = new Map([["0", ["Wood"]]]);
+    const next = advancePlayerResourceSnapshots({
+      currentResourcesByPlayerId: committed,
+      playerViewMap: {
+        "0": { id: "0", resources: ["Wood", "Ore"] }
+      }
+    });
+
+    expect(next.previousResourcesByPlayerId).toBe(committed);
+    expect(next.currentResourcesByPlayerId).toEqual(
+      new Map([["0", ["Wood", "Ore"]]])
+    );
+    expect(
+      getRobberStealVisibleResource({
+        payload: { victimId: "1", thiefId: "0" },
+        viewerPlayerId: "0",
+        previousResourcesByPlayerId: next.previousResourcesByPlayerId,
+        currentPlayerViewMap: {
+          "0": { id: "0", resources: ["Wood", "Ore"] }
+        }
+      })
+    ).toBe("Ore");
   });
 });

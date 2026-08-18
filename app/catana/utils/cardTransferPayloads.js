@@ -48,6 +48,9 @@ export const buildRobberStealTransfers = ({ payload, visibleResource }) => [
     toKind: "player",
     fromPlayerId: payload.victimId,
     toPlayerId: payload.thiefId,
+    ...(visibleResource
+      ? {}
+      : { toElementId: `p${payload.thiefId}-resources` }),
     hidden: !visibleResource,
     cueName: "resource:travel:start"
   }

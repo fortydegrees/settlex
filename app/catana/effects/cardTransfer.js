@@ -90,7 +90,7 @@ const getEndpointPoint = ({ transfer, endpoint, size, getEndpointEl }) => {
   const kind = endpoint === "from" ? transfer.fromKind : transfer.toKind;
   if (kind === "bank" || kind === "discard") return getBankPoint(size);
   const el = getPlayerAnchorEl({ transfer, endpoint, getEndpointEl });
-  return getElementCenter(el, size) ?? getBankPoint(size);
+  return getElementCenter(el, size);
 };
 
 const createCardElement = ({ transfer, themeId }) => {
@@ -150,6 +150,23 @@ const findCountDeltaResource = ({ before = [], after = [], direction }) => {
   return null;
 };
 
+const snapshotPlayerResources = (playerViewMap = {}) => {
+  const snapshot = new Map();
+  Object.values(playerViewMap).forEach((view) => {
+    if (view?.id == null) return;
+    snapshot.set(String(view.id), [...(view.resources ?? [])]);
+  });
+  return snapshot;
+};
+
+export const advancePlayerResourceSnapshots = ({
+  currentResourcesByPlayerId = new Map(),
+  playerViewMap = {}
+} = {}) => ({
+  previousResourcesByPlayerId: currentResourcesByPlayerId,
+  currentResourcesByPlayerId: snapshotPlayerResources(playerViewMap)
+});
+
 export const getRobberStealVisibleResource = ({
   payload,
   viewerPlayerId,
@@ -202,6 +219,7 @@ export function createCardTransferRunner({
         size,
         getEndpointEl
       });
+      if (!from || !to) return;
       const el = createCardElement({ transfer, themeId });
       layer.appendChild(el);
 

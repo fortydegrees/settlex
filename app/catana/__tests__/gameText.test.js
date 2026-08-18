@@ -84,6 +84,27 @@ describe("formatLogEntry", () => {
     ).toBe(false);
   });
 
+  it("formats Year of Plenty as a readable dev-card token", () => {
+    const entry = {
+      type: "dev:play",
+      actorId: "1",
+      data: { cardType: "yearOfPlenty" }
+    };
+
+    expect(formatLogEntry(entry, { "1": "Bren" })).toEqual([
+      expect.objectContaining({ kind: "player", id: "1", name: "Bren" }),
+      { kind: "text", text: " played " },
+      {
+        kind: "devCard",
+        cardType: "yearOfPlenty",
+        label: "Year of Plenty"
+      }
+    ]);
+    expect(formatLogEntryText(entry, { "1": "Bren" })).toBe(
+      "Bren played Year of Plenty"
+    );
+  });
+
   it("skips forced marker entries", () => {
     expect(formatLogEntry({ type: "forced:roll" })).toEqual([]);
     expect(formatLogEntry({ type: "forced:endTurn" })).toEqual([]);
@@ -169,19 +190,21 @@ describe("formatLogEntry", () => {
     ).toBe(true);
   });
 
-  it("formats robber moves with destination details", () => {
-    const tokens = formatLogEntry(
-      {
-        type: "robber:move",
-        actorId: "1",
-        data: { tileResource: "Wood", tileNumber: 8 }
-      },
-      { "1": "Bren" }
-    );
+  it("formats robber destinations as one resource-and-number token", () => {
+    const entry = {
+      type: "robber:move",
+      actorId: "1",
+      data: { tileResource: "Wood", tileNumber: 11 }
+    };
 
-    expect(
-      tokens.some((token) => token.kind === "text" && token.text.includes("to wood 8"))
-    ).toBe(true);
+    expect(formatLogEntry(entry, { "1": "Bren" })).toEqual([
+      expect.objectContaining({ kind: "player", id: "1", name: "Bren" }),
+      { kind: "text", text: " moved the robber to " },
+      { kind: "tileDestination", resource: "Wood", number: 11 }
+    ]);
+    expect(formatLogEntryText(entry, { "1": "Bren" })).toBe(
+      "Bren moved the robber to Wood 11"
+    );
   });
 
   it("formats public steal copy without leaking the resource", () => {

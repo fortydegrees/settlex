@@ -267,6 +267,44 @@ describe("game log moves", () => {
     });
   });
 
+  it("logs the resources granted by Year of Plenty", () => {
+    const context = makeContext({
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "0": "devCardChoice" },
+        numPlayers: 2,
+        turn: 1
+      }
+    });
+    context.G.devCardPlay = {
+      type: "yearOfPlenty",
+      playerId: "0",
+      startedFromStage: "postRoll"
+    };
+    context.G.core.playerStateById["0"].devCards = ["yearOfPlenty"];
+
+    confirmDevCardPlay.move(context, [
+      ResourceType.WOOD,
+      ResourceType.BRICK
+    ]);
+
+    expect(context.G.gameLog.map((entry) => entry.type)).toEqual([
+      "dev:play",
+      "resource:gain"
+    ]);
+    expect(context.G.gameLog[1]).toMatchObject({
+      type: "resource:gain",
+      actorId: "0",
+      data: {
+        resources: {
+          [ResourceType.WOOD]: 1,
+          [ResourceType.BRICK]: 1
+        }
+      }
+    });
+  });
+
   it("logs shortage entries after rolling an understocked resource", () => {
     const context = makeContext({
       G: {
