@@ -14,6 +14,7 @@ import {
   getRobberPreviewLeanAngle,
   isPointOverRobberBoardLand
 } from "./utils/robberPlacementPreviewMotion";
+import { shouldCompleteRobberPlacementHandoff } from "./utils/robberPlacementMotion";
 
 const PREVIEW_SIZE_PX = 56;
 const PREVIEW_HEAD_TRACK_Y_PERCENT = -28;
@@ -76,6 +77,8 @@ export function RobberPlacementPreview({
   landTileCenters = [],
   boardTileSize,
   boardViewportScale = 1,
+  committedTargetTileId = null,
+  onCommittedTargetSettled = null,
   themeId,
   size = PREVIEW_SIZE_PX
 }) {
@@ -92,6 +95,9 @@ export function RobberPlacementPreview({
   const leanVelocityRef = useRef(0);
   const desiredPositionRef = useRef({ x: null, y: null });
   const activeTargetTileIdRef = useRef(null);
+  const committedTargetTileIdRef = useRef(committedTargetTileId);
+  const onCommittedTargetSettledRef = useRef(onCommittedTargetSettled);
+  const completedTargetTileIdRef = useRef(null);
   const lastLockedTargetTileIdRef = useRef(null);
   const effectivePreviewSizeRef = useRef(
     getScaledRobberPreviewSize({
@@ -104,6 +110,14 @@ export function RobberPlacementPreview({
 
   const robberSrc = getThemedSvgPath(themeId, "icon_robber.svg");
   const robberFallbackSrc = getClassicSvgPath("icon_robber.svg");
+
+  useEffect(() => {
+    committedTargetTileIdRef.current = committedTargetTileId;
+    onCommittedTargetSettledRef.current = onCommittedTargetSettled;
+    if (committedTargetTileId == null) {
+      completedTargetTileIdRef.current = null;
+    }
+  }, [committedTargetTileId, onCommittedTargetSettled]);
 
   useEffect(() => {
     effectivePreviewSizeRef.current = getScaledRobberPreviewSize({
@@ -280,6 +294,21 @@ export function RobberPlacementPreview({
           Math.abs(desiredY - nextY) < 0.5 &&
           Math.abs(nextVelocityX) < 5 &&
           Math.abs(nextVelocityY) < 5;
+
+        if (
+          shouldCompleteRobberPlacementHandoff({
+            committedTargetTileId: committedTargetTileIdRef.current,
+            activeTargetTileId: activeTargetTileIdRef.current,
+            previewAtRest: shouldSnapToRest
+          }) &&
+          String(completedTargetTileIdRef.current) !==
+            String(committedTargetTileIdRef.current)
+        ) {
+          completedTargetTileIdRef.current = committedTargetTileIdRef.current;
+          onCommittedTargetSettledRef.current?.(
+            committedTargetTileIdRef.current
+          );
+        }
 
         velocityRef.current = shouldSnapToRest
           ? { x: 0, y: 0 }

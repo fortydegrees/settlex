@@ -115,6 +115,7 @@ function TileImpl({
   showRobberHoverGhost = true,
   onRobberTargetHoverChange,
   onRobberTargetRegister,
+  onPlaceRobber,
   moves,
   themeId,
 }) {
@@ -349,7 +350,7 @@ function TileImpl({
               zIndex: 2,
               //opacity: (hoveredNode ? 1 : 0.5),
             }}
-            onClick={()=>moves.moveRobber(id)}
+            onClick={() => (onPlaceRobber ?? moves.moveRobber)(id)}
             onMouseEnter={(event) => {
               setIsHovered(true);
               onRobberTargetHoverChange?.({

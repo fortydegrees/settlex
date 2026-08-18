@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isPassiveBuildEnabled } from "../utils/passiveBuildMode";
+import {
+  isPassiveBuildEnabled,
+  shouldSuppressBuildActions
+} from "../utils/passiveBuildMode";
 
 const baseCtx = {
   phase: "main",
@@ -82,6 +85,31 @@ describe("isPassiveBuildEnabled", () => {
         ctx: baseCtx,
         corePhase: "normal",
         devCardPlay: { type: "roadBuilding", playerId: "0" }
+      })
+    ).toBe(false);
+  });
+});
+
+describe("build action presentation", () => {
+  it("keeps build targets suppressed for the full placement effect", () => {
+    expect(
+      shouldSuppressBuildActions({
+        commitPending: false,
+        placementEffectActive: true
+      })
+    ).toBe(true);
+
+    expect(
+      shouldSuppressBuildActions({
+        commitPending: true,
+        placementEffectActive: false
+      })
+    ).toBe(true);
+
+    expect(
+      shouldSuppressBuildActions({
+        commitPending: false,
+        placementEffectActive: false
       })
     ).toBe(false);
   });
