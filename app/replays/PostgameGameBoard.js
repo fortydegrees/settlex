@@ -348,9 +348,12 @@ export function PostgameGameBoard(props) {
           victoryTarget,
           open: displaySession.panelOpen,
           mobileOpen: displaySession.mobilePanelOpen,
+          chartOpen: displaySession.chartOpen,
           onOpenChange: (open) => dispatch({ type: "setPanelOpen", open }),
           onMobileOpenChange: (open) =>
             dispatch({ type: "setMobilePanelOpen", open }),
+          onChartOpenChange: (open) =>
+            dispatch({ type: "setChartOpen", open }),
           onPerspectiveChange: (perspectiveId) =>
             dispatch({ type: "setPerspective", perspectiveId }),
           onResultsOpen: () => dispatch({ type: "openResults" }),
