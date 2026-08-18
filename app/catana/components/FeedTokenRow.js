@@ -2,10 +2,25 @@ import React from "react";
 import {
   getClassicResourceIconPath,
   getResourceIconPath,
+  getTilePath,
   handleThemeImageError,
 } from "../theme/themes";
 import { getPlayerNameHex } from "../theme/playerColors";
+import { DEV_CARD_SVGS, DEV_CARD_TEXT } from "./devCardDisplayUtils";
 import { MiniDiceFace } from "./MiniDiceFace";
+
+const TILE_NUMBER_PIPS = {
+  2: "•",
+  3: "••",
+  4: "•••",
+  5: "••••",
+  6: "•••••",
+  8: "•••••",
+  9: "••••",
+  10: "•••",
+  11: "••",
+  12: "•",
+};
 
 export const FeedTokenRow = ({ token, themeId }) => {
   if (!token) return null;
@@ -70,6 +85,33 @@ export const FeedTokenRow = ({ token, themeId }) => {
         );
   }
 
+  if (token.kind === "devCard") {
+    const label =
+      token.label ??
+      DEV_CARD_TEXT[token.cardType]?.name ??
+      String(token.cardType ?? "Dev card");
+    const icon = DEV_CARD_SVGS[token.cardType];
+
+    return React.createElement(
+      "span",
+      {
+        className:
+          "mx-0.5 inline-flex items-center gap-1 align-[-0.3em] font-semibold text-slate-700",
+      },
+      icon
+        ? React.createElement("img", {
+            src: icon,
+            alt: "",
+            title: label,
+            className:
+              "inline-block h-6 w-auto rounded-[2px] object-contain shadow-sm",
+            draggable: false,
+          })
+        : null,
+      React.createElement("span", null, label)
+    );
+  }
+
   if (token.kind === "die") {
     return React.createElement(MiniDiceFace, {
       value: token.value,
@@ -77,6 +119,69 @@ export const FeedTokenRow = ({ token, themeId }) => {
       withShadow: false,
       "aria-label": `Die ${token.value}`,
     });
+  }
+
+  if (token.kind === "tileDestination") {
+    const value = Number(token.number);
+    const isHot = value === 6 || value === 8;
+    const colorClassName = isHot ? "text-red-600" : "text-slate-900";
+    const icon = getResourceIconPath(themeId, token.resource);
+    const iconFallback = getClassicResourceIconPath(token.resource);
+    const tile = getTilePath(themeId, token.resource);
+    const tileFallback = getTilePath("classic", token.resource);
+
+    return React.createElement(
+      "span",
+      {
+        role: "img",
+        "aria-label": `${token.resource} tile, number ${value}`,
+        className:
+          "relative mx-0.5 inline-block h-8 w-7 shrink-0 align-[-0.7em]",
+      },
+      React.createElement("img", {
+        src: tile,
+        alt: "",
+        className: "absolute inset-0 h-full w-full",
+        draggable: false,
+        onError: (event) => handleThemeImageError(event, tileFallback),
+      }),
+      icon
+        ? React.createElement("img", {
+            src: icon,
+            alt: "",
+            className:
+              "absolute left-1/2 top-1 h-3 w-3 -translate-x-1/2",
+            draggable: false,
+            onError: (event) => handleThemeImageError(event, iconFallback),
+          })
+        : React.createElement(
+            "span",
+            { "aria-hidden": "true", className: "text-[10px]" },
+            token.resource
+          ),
+      React.createElement(
+        "span",
+        {
+          "aria-hidden": "true",
+          className: `absolute bottom-[3px] left-1/2 inline-flex h-3.5 w-3.5 -translate-x-1/2 flex-col items-center justify-center rounded-[2px] bg-slate-100 shadow-sm ring-1 ring-slate-300/70 ${colorClassName}`,
+        },
+        React.createElement(
+          "span",
+          {
+            className: "text-[7px] font-black leading-[6px]",
+          },
+          value
+        ),
+        React.createElement(
+          "span",
+          {
+            className:
+              "text-[3px] font-bold leading-[3px] tracking-[-0.08em]",
+          },
+          TILE_NUMBER_PIPS[value] ?? ""
+        )
+      )
+    );
   }
 
   if (token.kind === "text") {

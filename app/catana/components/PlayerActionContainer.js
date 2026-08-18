@@ -345,6 +345,7 @@ export const PlayerActionContainer = ({
               <>
                 <div
                   ref={localResourceRailRef}
+                  id={`p${player.id}-resources`}
                   className="relative flex h-20 items-end pl-4 pr-3"
                 >
                   <div className="mb-4 flex self-end">

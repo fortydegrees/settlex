@@ -32,6 +32,7 @@ import {
 } from "./devCardPresentation.js";
 import { maybeLogGameOver } from "./gameOver.js";
 import { pickRandom } from "./randomChoice.js";
+import { logResourceDistributions } from "./resourceLogging.js";
 import { beginRobberMoveStage } from "./robberMoves.js";
 import { setCurrentPlayerStage } from "./stageControl.js";
 
@@ -239,6 +240,17 @@ export const confirmDevCardPlay = {
       data: { cardType: devPlay.type },
       forced: options?.forced
     });
+    if (devPlay.type === "yearOfPlenty") {
+      logResourceDistributions(
+        G,
+        ctx,
+        (Array.isArray(payload) ? payload : []).map((resource) => ({
+          playerId: playerID,
+          resource
+        })),
+        options
+      );
+    }
     if (devPlay.type === "monopoly") {
       appendGameLog(G, ctx, {
         type: "dev:monopolyResult",

@@ -1,3 +1,5 @@
+import { DEV_CARD_TEXT } from "../components/devCardDisplayUtils";
+
 export const STATUS_TEXT = {
   PREGAME: "Waiting to start",
   ROLLING: "Roll Dice",
@@ -227,7 +229,11 @@ export function formatLogEntry(entry, playerMap = {}) {
     case "dev:play": {
       tokens.push(textToken(" played "));
       if (data.cardType) {
-        tokens.push(textToken(String(data.cardType)));
+        tokens.push({
+          kind: "devCard",
+          cardType: data.cardType,
+          label: DEV_CARD_TEXT[data.cardType]?.name ?? String(data.cardType)
+        });
       } else {
         tokens.push(textToken("a dev card"));
       }
@@ -241,11 +247,12 @@ export function formatLogEntry(entry, playerMap = {}) {
     }
     case "robber:move": {
       if (data.tileResource && data.tileNumber != null) {
-        tokens.push(
-          textToken(
-            ` moved the robber to ${formatResourceName(data.tileResource)} ${data.tileNumber}`
-          )
-        );
+        tokens.push(textToken(" moved the robber to "));
+        tokens.push({
+          kind: "tileDestination",
+          resource: data.tileResource,
+          number: data.tileNumber
+        });
       } else {
         tokens.push(textToken(" moved the robber"));
       }
@@ -363,6 +370,17 @@ export const formatLogTokensToText = (tokens = []) => {
       if (token?.kind === "resource") {
         const separator = tokens[index - 1]?.kind === "resource" ? " " : "";
         return `${separator}${String(token.resource ?? "")}`;
+      }
+      if (token?.kind === "tileDestination") {
+        return `${String(token.resource ?? "")} ${String(token.number ?? "")}`;
+      }
+      if (token?.kind === "devCard") {
+        return String(
+          token.label ??
+            DEV_CARD_TEXT[token.cardType]?.name ??
+            token.cardType ??
+            "dev card"
+        );
       }
       if (token?.kind === "label") {
         return `${String(token.text ?? "")} `;
