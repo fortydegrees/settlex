@@ -9,7 +9,8 @@ import {
   getHomeDemoSceneEvents,
   getHomeDemoSceneSetupEvents,
   getHomeDemoReducedMotionPieceState,
-  getHomeDemoVisiblePlayerIds
+  getHomeDemoVisiblePlayerIds,
+  prepareHomeDemoEventState
 } from "../homeDemo/homeDemoSequence";
 import { buildRenderMaps } from "../utils/renderMaps";
 
@@ -149,6 +150,34 @@ describe("home demo sequence", () => {
       playerId: "home-blue"
     });
     expect(state.buildingsByNodeId[32]).toEqual({
+      nodeId: 32,
+      playerId: "home-blue",
+      type: "city"
+    });
+  });
+
+  it("relinquishes the committed settlement while a city upgrade effect owns its node", () => {
+    const cityEvent = {
+      id: "blue-city-1",
+      type: "place-city",
+      playerId: "home-blue",
+      target: { nodeId: 32 }
+    };
+    const committedState = applyHomeDemoEvent(createHomeDemoPieceState(), {
+      id: "blue-settlement-1",
+      type: "place-settlement",
+      playerId: "home-blue",
+      target: { nodeId: 32 }
+    });
+    const effectOwnedState = prepareHomeDemoEventState(
+      committedState,
+      cityEvent
+    );
+    expect(effectOwnedState.buildingsByNodeId[32]).toBeUndefined();
+    expect(committedState.buildingsByNodeId[32]?.type).toBe("settlement");
+
+    const nextCommittedState = applyHomeDemoEvent(effectOwnedState, cityEvent);
+    expect(nextCommittedState.buildingsByNodeId[32]).toEqual({
       nodeId: 32,
       playerId: "home-blue",
       type: "city"

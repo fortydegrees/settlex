@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { createPiecePlacementRunner } from "../effects/placePiece";
 import {
   PLACE_PIECE_DEFAULT_TUNING,
@@ -18,7 +19,8 @@ import {
   createHomeDemoPieceState,
   getHomeDemoReducedMotionPieceState,
   getHomeDemoSceneEvents,
-  getHomeDemoSceneSetupEvents
+  getHomeDemoSceneSetupEvents,
+  prepareHomeDemoEventState
 } from "./homeDemoSequence";
 
 const HOME_DEMO_PLACE_PIECE_TUNING = Object.freeze({
@@ -181,6 +183,13 @@ export function HomeDemoEffectBridge({
       const queuePlacementEvent = (event, atMs) => {
         const placementDurationMs = getHomeDemoPlacementDurationMs(event);
         queueTimeout(() => {
+          if (event.type === "place-city") {
+            flushSync(() => {
+              onPieceStateChange((current) =>
+                prepareHomeDemoEventState(current, event)
+              );
+            });
+          }
           runPlacement(getPayloadForEvent(event));
         }, atMs);
 
