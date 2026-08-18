@@ -11,6 +11,7 @@ describe("replay session state", () => {
       ...createReplaySessionState({ eventCount: 8, perspectiveId: "1" }),
       eventIndex: 3,
       mobilePanelOpen: true,
+      chartOpen: true,
     };
     const open = replaySessionReducer(start, { type: "openResults" });
     expect(open).toMatchObject({
@@ -28,6 +29,7 @@ describe("replay session state", () => {
       perspectiveId: "1",
       panelOpen: true,
       mobilePanelOpen: true,
+      chartOpen: true,
       resultsOpen: false,
       terminalResultsSeen: false,
     });
@@ -54,6 +56,23 @@ describe("replay session state", () => {
       panelOpen: false,
       resultsOpen: false,
     });
+  });
+
+  it("keeps the score chart disclosure in replay session state", () => {
+    const start = createReplaySessionState({
+      eventCount: 4,
+      perspectiveId: null,
+    });
+
+    const chartOpen = replaySessionReducer(start, {
+      type: "setChartOpen",
+      open: true,
+    });
+
+    expect(chartOpen.chartOpen).toBe(true);
+    expect(
+      replaySessionReducer(chartOpen, { type: "openResults" }).chartOpen
+    ).toBe(true);
   });
 
   it("automatically opens Results once at the terminal event", () => {

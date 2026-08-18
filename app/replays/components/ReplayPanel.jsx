@@ -13,10 +13,14 @@ import { Button } from "../../ui/Button";
 import { Select } from "../../ui/Select";
 import { ReplayScoreChart } from "./ReplayScoreChart";
 import { ReplayStepControls } from "./ReplayStepControls";
-import { getReplayMobileDockClassName } from "./replayPanelLayout";
+import {
+  getReplayMobileDockClassName,
+  getSegmentedReplayPerspectiveOptions,
+  shouldUseSegmentedReplayPerspective,
+} from "./replayPanelLayout";
 
 const replayRestoreClassName =
-  "relative overflow-hidden rounded-[1.15rem] border border-white/[0.38] px-4 py-3 text-sm font-bold text-slate-700 shadow-[0_18px_42px_-28px_rgba(37,99,235,0.28),inset_0_1px_0_rgba(255,255,255,0.28)] ring-1 ring-white/35 transition hover:bg-white/20";
+  "group relative flex h-[2.625rem] w-full items-center overflow-hidden rounded-full border border-white/50 py-0 pl-3.5 pr-1.5 shadow-[0_18px_42px_-28px_rgba(37,99,235,0.34),inset_0_1px_0_rgba(255,255,255,0.42)] ring-1 ring-white/35 transition hover:bg-white/20";
 
 export function ReplayPanel({
   timeline,
@@ -26,8 +30,10 @@ export function ReplayPanel({
   victoryTarget,
   open,
   mobileOpen,
+  chartOpen = false,
   onOpenChange,
   onMobileOpenChange,
+  onChartOpenChange,
   onPerspectiveChange,
   onResultsOpen,
   onPreviousEvent,
@@ -38,6 +44,8 @@ export function ReplayPanel({
 }) {
   const { width, isMeasured } = useWindowSize();
   const isPhoneLayout = isMeasured && width < 640;
+  const eventCount = timeline.events.length;
+  const atEnd = currentEventIndex >= Math.max(eventCount - 1, 0);
   const preserveBoardPointerDown = useCallback((event) => {
     event.preventDefault = () => {};
   }, []);
@@ -51,38 +59,118 @@ export function ReplayPanel({
     onNextTurn,
     onSeek,
   };
-  const perspectiveControl = (
-    <label className="block text-xs font-semibold text-slate-600">
-      <span className="mb-1.5 block">View</span>
-      <Select
-        className="rounded-xl px-3 py-2 text-sm"
-        value={perspectiveId ?? "board"}
-        onChange={(event) =>
-          onPerspectiveChange(
-            event.target.value === "board" ? null : event.target.value
-          )
-        }
-      >
-        <option value="board">Board</option>
-        {timeline.players.map((player) => (
-          <option key={player.id} value={player.id}>
-            {player.name}
-          </option>
-        ))}
-      </Select>
-    </label>
+  const segmentedPerspectiveOptions = getSegmentedReplayPerspectiveOptions(
+    timeline.players
   );
-  const chart = (
+  const useSegmentedPerspective = shouldUseSegmentedReplayPerspective(
+    timeline.players
+  );
+  // Same control, two backdrops: glass over the board on desktop, a light sheet
+  // in the tray. A white-tinted trough disappears on the second, so the tray
+  // takes a slate one and a solid selected pill.
+  const renderPerspectiveControl = (onTray = false) =>
+    useSegmentedPerspective ? (
+      <div
+        className={`flex min-w-0 rounded-xl border p-1 ${
+          onTray
+            ? "border-slate-400/20 bg-slate-400/20"
+            : "border-white/30 bg-white/25"
+        }`}
+        role="group"
+        aria-label="Replay perspective"
+      >
+        {segmentedPerspectiveOptions.map((option) => {
+          const selected = (option.id ?? null) === (perspectiveId ?? null);
+          const selectedClassName = onTray
+            ? "bg-white text-slate-900 shadow-sm"
+            : "bg-white/90 text-slate-900 shadow-sm";
+          const idleClassName = onTray
+            ? "text-slate-600 hover:bg-white/60 hover:text-slate-900"
+            : "text-slate-600 hover:bg-white/40 hover:text-slate-900";
+          return (
+            <button
+              key={option.id ?? "board"}
+              type="button"
+              className={`min-h-11 min-w-0 flex-1 truncate rounded-lg px-2 text-xs font-bold transition-[background-color,color,box-shadow] duration-150 motion-reduce:transition-none sm:min-h-9 ${
+                selected ? selectedClassName : idleClassName
+              }`}
+              onClick={() => onPerspectiveChange(option.id)}
+              aria-pressed={selected}
+            >
+              {option.name}
+            </button>
+          );
+        })}
+      </div>
+    ) : (
+      <label className="block">
+        <span className="sr-only">Replay perspective</span>
+        <Select
+          className="w-full rounded-xl px-3 py-2 text-sm"
+          value={perspectiveId ?? "board"}
+          aria-label="Replay perspective"
+          onChange={(event) =>
+            onPerspectiveChange(
+              event.target.value === "board" ? null : event.target.value
+            )
+          }
+        >
+          <option value="board">Board</option>
+          {timeline.players.map((player) => (
+            <option key={player.id} value={player.id}>
+              {player.name}
+            </option>
+          ))}
+        </Select>
+      </label>
+    );
+  const actorId = currentEvent?.logEntry?.actorId;
+  const actorName =
+    actorId == null
+      ? null
+      : timeline.playerMap?.[String(actorId)]?.name ?? null;
+  const turnText =
+    currentEvent?.turn == null || currentEvent.turn === 0
+      ? "Setup"
+      : `Turn ${currentEvent.turn}`;
+  const turnAndActorText = actorName
+    ? `${turnText} · ${actorName}`
+    : turnText;
+  const eventSummary = (
+    <div className="mt-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="min-w-0 truncate text-[0.6rem] font-extrabold uppercase tracking-[0.16em] text-slate-500">
+          {turnAndActorText}
+        </span>
+        <span className="shrink-0 text-[0.7rem] font-bold tabular-nums text-slate-600">
+          Event {currentEventIndex + 1} of {Math.max(eventCount, 1)}
+        </span>
+      </div>
+      <div
+        className="mt-0.5 min-h-8 text-[1.03rem] font-bold leading-tight text-slate-900 [text-wrap:pretty]"
+        aria-live="polite"
+      >
+        {currentEvent?.label ?? "Initial setup"}
+      </div>
+    </div>
+  );
+  const scoreChart = (
     <ReplayScoreChart
       players={timeline.players}
       scoreSeries={timeline.scoreSeries}
       turnStarts={timeline.turnStarts}
       currentEventIndex={currentEventIndex}
-      eventCount={timeline.events.length}
+      eventCount={eventCount}
       victoryTarget={victoryTarget}
+      perspectiveId={perspectiveId}
       onSeek={onSeek}
     />
   );
+  const onChartToggle = () => onChartOpenChange?.(!chartOpen);
+  // The compact dock hides the rail, so this thin bar is the only cue to how
+  // far through the match the collapsed dock is sitting.
+  const progressPercent =
+    (currentEventIndex / Math.max(eventCount - 1, 1)) * 100;
 
   if (!isMeasured) return null;
 
@@ -90,7 +178,7 @@ export function ReplayPanel({
     <>
       {!isPhoneLayout ? (
         <aside
-          className="pointer-events-auto fixed right-4 top-4 z-[45] w-[min(22rem,calc(100vw-2rem))]"
+          className="pointer-events-auto fixed right-4 top-4 z-[45] w-[min(21rem,calc(100vw-2rem))]"
           data-replay-panel="desktop"
           data-allow-interaction="true"
         >
@@ -106,7 +194,11 @@ export function ReplayPanel({
               <header className={META_PANEL_HEADER_CLASS_NAME}>
                 <span className="text-sm font-bold">Replay</span>
                 <div className="flex items-center gap-1.5">
-                  <Button size="sm" variant="subtle" onClick={onResultsOpen}>
+                  <Button
+                    size="sm"
+                    variant={atEnd ? "accent" : "subtle"}
+                    onClick={onResultsOpen}
+                  >
                     Results
                   </Button>
                   <button
@@ -119,24 +211,41 @@ export function ReplayPanel({
                   </button>
                 </div>
               </header>
-              <div className="relative z-10 min-h-0 overflow-y-auto p-3">
-                {perspectiveControl}
-                <div className="mt-3">
-                  <div className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Turn {currentEvent?.turn ?? "—"}
-                  </div>
-                  <div
-                    className="mt-1 min-h-10 text-sm font-bold leading-5 text-slate-900"
-                    aria-live="polite"
-                  >
-                    {currentEvent?.label ?? "Initial setup"}
-                  </div>
-                </div>
-                <div aria-label="Previous turn and event controls">
+              <div className="relative z-10 shrink-0 px-3.5 pb-3 pt-3">
+                {renderPerspectiveControl()}
+                {eventSummary}
+                <div
+                  className="mt-2"
+                  aria-label="Previous turn and event controls"
+                >
                   <ReplayStepControls {...stepProps} />
                 </div>
-                {chart}
               </div>
+              <button
+                type="button"
+                className={`relative z-10 flex shrink-0 items-center justify-between gap-2 border-t border-white/30 px-3.5 py-2.5 text-left transition hover:bg-white/35 ${
+                  chartOpen ? "bg-white/30" : "bg-white/[0.16]"
+                }`}
+                onClick={onChartToggle}
+                aria-expanded={chartOpen}
+              >
+                <span className="text-[0.78rem] font-extrabold text-slate-900">
+                  Score over time
+                </span>
+                <span
+                  className={`grid h-[1.625rem] w-[1.625rem] place-items-center rounded-[0.55rem] bg-white/50 text-slate-700 transition-transform duration-150 motion-reduce:transition-none ${
+                    chartOpen ? "rotate-180" : ""
+                  }`}
+                  aria-hidden="true"
+                >
+                  <ChevronDownIcon className="h-3.5 w-3.5" />
+                </span>
+              </button>
+              {chartOpen ? (
+                <div className="relative z-10 min-h-0 flex-1 overflow-y-auto border-t border-white/25 bg-white/[0.14] px-3.5 pb-3.5 pt-3">
+                  {scoreChart}
+                </div>
+              ) : null}
             </section>
           ) : (
             <button
@@ -150,9 +259,25 @@ export function ReplayPanel({
                 style={META_PANEL_GLASS_STYLE}
                 aria-hidden="true"
               />
-              <span className="relative z-10 flex items-center gap-2">
-                Replay
-                <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
+              <span className="relative z-10 flex min-w-0 flex-1 items-center gap-2">
+                <span className="shrink-0 text-[0.78rem] font-extrabold text-slate-900">
+                  Replay
+                </span>
+                <span
+                  className="shrink-0 font-bold text-slate-900/30"
+                  aria-hidden="true"
+                >
+                  ·
+                </span>
+                <span className="min-w-0 flex-1 truncate text-left text-[0.78rem] font-semibold text-slate-700">
+                  {turnText} · {currentEvent?.label ?? "Initial setup"}
+                </span>
+                <span
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/60 bg-white/50 text-slate-700 transition group-hover:bg-white"
+                  aria-hidden="true"
+                >
+                  <ChevronDownIcon className="h-4 w-4" />
+                </span>
               </span>
             </button>
           )}
@@ -173,7 +298,9 @@ export function ReplayPanel({
             data-replay-mobile-dock="true"
             data-allow-interaction="true"
           >
-            <div className={`${META_PANEL_FRAME_CLASS_NAME} h-auto p-2`}>
+            <div
+              className={`${META_PANEL_FRAME_CLASS_NAME} pointer-events-auto h-auto bg-blue-100/[0.88] p-2`}
+            >
               <div
                 className="pointer-events-none absolute inset-0 rounded-[inherit]"
                 style={META_PANEL_GLASS_STYLE}
@@ -182,17 +309,30 @@ export function ReplayPanel({
               <div className="relative z-10 flex items-center gap-2">
                 <div className="min-w-0 flex-1 px-2">
                   <div className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Turn {currentEvent?.turn ?? "—"}
+                    {turnText}
                   </div>
                   <div className="truncate text-xs font-bold text-slate-900">
                     {currentEvent?.label ?? "Initial setup"}
                   </div>
+                  <div
+                    className="relative mt-1 h-1 rounded-full bg-white/60"
+                    aria-hidden="true"
+                  >
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full bg-lime-500"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
                 </div>
                 <ReplayStepControls {...stepProps} compact />
                 <Drawer.Trigger asChild>
-                  <Button size="sm" variant="subtle">
-                    Details
-                  </Button>
+                  <button
+                    type="button"
+                    className="grid h-11 w-11 shrink-0 place-items-center rounded-[1rem] border border-white/35 bg-white/18 text-slate-700 transition hover:bg-white/28 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85"
+                    aria-label="Open replay tray"
+                  >
+                    <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
+                  </button>
                 </Drawer.Trigger>
               </div>
             </div>
@@ -209,21 +349,55 @@ export function ReplayPanel({
                 <Drawer.Title className="text-lg font-extrabold text-slate-900">
                   Replay
                 </Drawer.Title>
-                <Button size="sm" variant="subtle" onClick={onResultsOpen}>
-                  Results
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={atEnd ? "accent" : "subtle"}
+                    className="h-11 min-h-11"
+                    onClick={onResultsOpen}
+                  >
+                    Results
+                  </Button>
+                  <Drawer.Close asChild>
+                    <button
+                      type="button"
+                      className="grid h-11 w-11 place-items-center rounded-[1rem] text-slate-600 transition hover:bg-white/28 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85"
+                      aria-label="Close replay tray"
+                    >
+                      <ChevronDownIcon
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </Drawer.Close>
+                </div>
               </div>
               <Drawer.Description className="sr-only">
                 Replay navigation and victory point history.
               </Drawer.Description>
               <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
-                {perspectiveControl}
-                <div className="mt-3">
-                  <div aria-label="Previous turn and event controls">
-                    <ReplayStepControls {...stepProps} />
-                  </div>
+                {renderPerspectiveControl(true)}
+                {eventSummary}
+                <div
+                  className="mt-2"
+                  aria-label="Previous turn and event controls"
+                >
+                  <ReplayStepControls {...stepProps} touchLabels />
                 </div>
-                {chart}
+                <button
+                  type="button"
+                  className="mt-3 flex min-h-[2.9rem] w-full items-center justify-between gap-2 rounded-[0.95rem] border border-slate-400/30 bg-white/70 px-3.5 text-left transition hover:bg-white/85"
+                  onClick={onChartToggle}
+                  aria-expanded={chartOpen}
+                >
+                  <span className="text-sm font-extrabold text-slate-900">
+                    Score over time
+                  </span>
+                  <span className="text-xs font-bold text-slate-500">
+                    {chartOpen ? "Hide" : "Show"}
+                  </span>
+                </button>
+                {chartOpen ? <div className="mt-3">{scoreChart}</div> : null}
               </div>
             </Drawer.Content>
           </Drawer.Portal>

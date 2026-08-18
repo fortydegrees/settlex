@@ -9,6 +9,7 @@ export const createReplaySessionState = ({
   perspectiveId,
   panelOpen: true,
   mobilePanelOpen: false,
+  chartOpen: false,
   resultsOpen: false,
   resultsReturnEventIndex: null,
   resultsReturnPanelOpen: null,
@@ -133,6 +134,9 @@ export const replaySessionReducer = (state, action) => {
   }
   if (action.type === "setMobilePanelOpen") {
     return { ...state, mobilePanelOpen: action.open };
+  }
+  if (action.type === "setChartOpen") {
+    return { ...state, chartOpen: action.open };
   }
   return state;
 };
