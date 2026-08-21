@@ -60,7 +60,14 @@ export const DEFAULT_THEME = {
     shuffle: true,
     randomize: { volume: [0.9, 1.0], rate: [0.95, 1.05] }
   },
-  "turn:start": { src: "/sounds/turn-start.mp3", volume: 0.6, allowWhenHidden: true },
-  "game:win": { src: "/sounds/turn-start.mp3", volume: 0.7 },
-  "game:lose": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.5 }
+  "turn:start": { src: "/sounds/your-turn.mp3", volume: 0.6, allowWhenHidden: true },
+  "turn:end": { src: "/sounds/turn-end.mp3", volume: 0.5 },
+  "game:win": { src: "/sounds/game-win.mp3", volume: 0.7 },
+  "game:lose": { src: "/sounds/game-lose.mp3", volume: 0.6 },
+  "award:claim:road": { src: "/sounds/award-road.mp3", volume: 0.55 },
+  "award:claim:army": { src: "/sounds/award-army.mp3", volume: 0.55 },
+  "discard:required": { src: "/sounds/discard-required.mp3", volume: 0.55, allowWhenHidden: true },
+  "resource:blocked": { src: "/sounds/resource-blocked.mp3", volume: 0.5 },
+  "timer:low": { src: "/sounds/timer-low.mp3", volume: 0.5 },
+  "timer:critical": { src: "/sounds/timer-critical.mp3", volume: 0.6 }
 };

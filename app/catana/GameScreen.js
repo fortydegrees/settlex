@@ -71,6 +71,7 @@ import {
   shouldOfferMatchAlertResume,
 } from "./components/gameOverAlertLifecycle.js";
 import { GameEffects } from "./effects/GameEffects";
+import { LowTimerCue } from "./components/LowTimerCue";
 import { createEffectBus } from "./effects/EffectBus";
 import { createResourceDistributionRunner } from "./effects/resourceDistribution";
 import { createPiecePlacementRunner } from "./effects/placePiece";
@@ -1134,6 +1135,16 @@ export function GameScreen(bgioProps) {
     // Modal will auto-close when phase/state updates
   };
 
+  const discardCueActiveRef = useRef(false);
+  useEffect(() => {
+    const active =
+      Boolean(player) && !isReplay && !isGameOver && needsToDiscard;
+    if (active && !discardCueActiveRef.current) {
+      effectsBus.emit({ type: "cue", payload: { name: "discard:required" } });
+    }
+    discardCueActiveRef.current = active;
+  }, [effectsBus, isGameOver, isReplay, needsToDiscard, player]);
+
   const handleTradeConfirm = (tradeData) => {
     // console.log("Trade:", tradeData);
     // Connect to actual move:
@@ -1906,6 +1917,15 @@ export function GameScreen(bgioProps) {
           gameOverState={gameOverState}
           isWinner={isWinner}
           preloadSounds
+        />
+      )}
+      {!isReplay && (
+        <LowTimerCue
+          effectsBus={effectsBus}
+          timerSnapshot={visibleTimerSnapshot}
+          statusType={gameStatus?.statusType}
+          statusKind={gameStatus?.kind}
+          enabled={!isGameOver}
         />
       )}
 

@@ -64,7 +64,7 @@ describe("match-found attention wiring", () => {
     expect(soundIndex).toBeGreaterThan(attentionIndex);
   });
 
-  it("plays the existing cue at most once, respects mute, and catches autoplay rejection", () => {
+  it("plays the game-start cue at most once, respects mute, and catches autoplay rejection", () => {
     const source = read("app/catana/home/HomeTableClient.js");
     const sound = between(
       source,
@@ -74,7 +74,7 @@ describe("match-found attention wiring", () => {
 
     expect(source).toContain("onMatchFound: playMatchFoundSound");
     expect(sound).toContain('"catana:audioMuted"');
-    expect(sound).toContain('new window.Audio("/sounds/turn-start.mp3")');
+    expect(sound).toContain('new window.Audio("/sounds/game-start.mp3")');
     expect(sound).toContain("playback?.catch");
     expect(sound).toContain("matchFoundSoundPlayedRef.current");
   });

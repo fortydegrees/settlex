@@ -91,6 +91,11 @@ export function GameEffects({
     "distributeCardsFromTile",
     (payload) => {
       bus.emit({ type: "resource:distribution", payload });
+      // The roll hit a paying number but the robber blocked the tile --
+      // pairs with the board's blocked-tile flash.
+      if (payload?.blockedTileIds?.length) {
+        bus.emit({ type: "cue", payload: { name: "resource:blocked" } });
+      }
     },
     [bus]
   );
@@ -163,13 +168,27 @@ export function GameEffects({
     "awardClaimed",
     (payload) => {
       if (!payload) return;
-      bus.emit({
-        type: "award:claim",
-        payload,
-        effectId: payload.effectId
-      });
+      // The visual runner highlights roads, so largest-army claims are
+      // sound-only: they carry no meaningful road set.
+      if (payload.awardType !== "largestArmy") {
+        bus.emit({
+          type: "award:claim",
+          payload,
+          effectId: payload.effectId
+        });
+      }
+      if (
+        payload.playerId != null &&
+        String(payload.playerId) === String(playerID)
+      ) {
+        const cueName =
+          payload.awardType === "largestArmy"
+            ? "award:claim:army"
+            : "award:claim:road";
+        bus.emit({ type: "cue", payload: { name: cueName } });
+      }
     },
-    [bus]
+    [bus, playerID]
   );
 
   useEffectListener(
@@ -225,17 +244,32 @@ export function GameEffects({
   );
 
   useEffect(() => {
+    const prev = turnStartRef.current;
     const decision = getTurnStartCueDecision({
       currentPlayerId,
       playerID,
       phase,
-      prevState: turnStartRef.current
+      prevState: prev
     });
     turnStartRef.current = decision.nextState;
     if (decision.play) {
       bus.emit({ type: "cue", payload: { name: "turn:start" } });
     }
-  }, [bus, currentPlayerId, playerID, phase]);
+    // turn:end mirrors turn:start at the hand-off: fires however the local
+    // turn ended (button, shortcut, or timeout), never into game over.
+    const handedOff =
+      prev.initialized &&
+      prev.phase !== "preGame" &&
+      phase !== "preGame" &&
+      prev.currentPlayerId != null &&
+      String(prev.currentPlayerId) === String(playerID) &&
+      currentPlayerId != null &&
+      String(currentPlayerId) !== String(playerID) &&
+      !gameOverState;
+    if (handedOff) {
+      bus.emit({ type: "cue", payload: { name: "turn:end" } });
+    }
+  }, [bus, currentPlayerId, gameOverState, playerID, phase]);
 
   useEffect(() => {
     const hasGameOver = Boolean(gameOverState);
