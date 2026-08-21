@@ -72,10 +72,19 @@ describe("match-found attention wiring", () => {
       "function HomeTableBoard"
     );
 
-    expect(source).toContain("onMatchFound: playMatchFoundSound");
+    expect(source).toContain("onMatchFound: matchFoundSound.play");
     expect(sound).toContain('"catana:audioMuted"');
     expect(sound).toContain('new window.Audio("/sounds/game-start.mp3")');
     expect(sound).toContain("playback?.catch");
     expect(sound).toContain("matchFoundSoundPlayedRef.current");
+  });
+
+  it("primes the match-found cue while matchmaking is searching", () => {
+    const source = read("app/catana/home/HomeTableClient.js");
+
+    expect(source).toContain('audio.preload = "auto"');
+    expect(source).toContain(
+      'lobby.searchState?.phase === "searching") matchFoundSound.prime()'
+    );
   });
 });

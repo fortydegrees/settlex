@@ -60,21 +60,40 @@ const useBrowserLayoutEffect =
 
 const useMatchFoundSound = () => {
   const matchFoundSoundPlayedRef = useRef(false);
+  const audioRef = useRef(null);
 
-  return useCallback(() => {
+  // Fetch the cue while matchmaking runs so it fires instantly on match
+  // found instead of racing the navigation with a cold network request.
+  const prime = useCallback(() => {
+    if (audioRef.current) return;
+    if (typeof window === "undefined") return;
+    try {
+      if (window.localStorage.getItem("catana:audioMuted") === "true") return;
+      const audio = new window.Audio("/sounds/game-start.mp3");
+      audio.preload = "auto";
+      audioRef.current = audio;
+    } catch (err) {
+      /* Priming is best-effort. */
+    }
+  }, []);
+
+  const play = useCallback(() => {
     if (matchFoundSoundPlayedRef.current) return;
     matchFoundSoundPlayedRef.current = true;
     if (typeof window === "undefined") return;
 
     try {
       if (window.localStorage.getItem("catana:audioMuted") === "true") return;
-      const audio = new window.Audio("/sounds/game-start.mp3");
+      const audio =
+        audioRef.current ?? new window.Audio("/sounds/game-start.mp3");
       const playback = audio.play();
       void playback?.catch?.(() => {});
     } catch (err) {
       /* Match-found sound must never block navigation. */
     }
   }, []);
+
+  return { prime, play };
 };
 
 function useViewportWidth() {
@@ -199,7 +218,7 @@ function HomeErrorBanner({ error, onDismiss }) {
 
 function HomeTableBoard({ initialAccount = null }) {
   const router = useRouter();
-  const playMatchFoundSound = useMatchFoundSound();
+  const matchFoundSound = useMatchFoundSound();
   const viewportWidth = useViewportWidth();
   const { variant: logoVariant, tone: logoTone } = useHomeBrandLogoOptions();
   const isBoardLayoutReady = viewportWidth > 0;
@@ -212,8 +231,11 @@ function HomeTableBoard({ initialAccount = null }) {
   const placementRoadLayerRef = useRef(null);
   const lobby = useLobbyHomeActions({
     initialAccount,
-    onMatchFound: playMatchFoundSound,
+    onMatchFound: matchFoundSound.play,
   });
+  useEffect(() => {
+    if (lobby.searchState?.phase === "searching") matchFoundSound.prime();
+  }, [lobby.searchState?.phase, matchFoundSound]);
   const matchAlerts = useMatchAlerts();
   const handleMatchAlertAction = (action) => {
     if (action === "enable") return matchAlerts.enable();
