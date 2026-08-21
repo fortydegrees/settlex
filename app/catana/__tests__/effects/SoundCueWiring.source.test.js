@@ -52,6 +52,7 @@ describe("family sound-cue wiring", () => {
     const cue = read("../../components/LowTimerCue.js");
 
     expect(screen.match(/<LowTimerCue/g)).toHaveLength(1);
+    expect(screen).toContain("gameStatus?.activePlayerId === player.id");
     expect(cue).toContain("useLiveTurnTimer");
     expect(cue).toContain("isLowTimerAlertActive");
     expect(cue).toContain('"timer:critical"');
