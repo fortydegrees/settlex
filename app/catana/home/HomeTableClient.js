@@ -68,7 +68,7 @@ const useMatchFoundSound = () => {
 
     try {
       if (window.localStorage.getItem("catana:audioMuted") === "true") return;
-      const audio = new window.Audio("/sounds/turn-start.mp3");
+      const audio = new window.Audio("/sounds/game-start.mp3");
       const playback = audio.play();
       void playback?.catch?.(() => {});
     } catch (err) {

@@ -52,5 +52,15 @@ export const logAwardChanges = (G, ctx, previousAwards, options, effects) => {
         forced: Boolean(options?.forced)
       });
     }
+    if (type === "award:largestArmy") {
+      effects?.awardClaimed?.({
+        effectId: `award:largest-army:${nextOwnerId}:turn-${ctx?.turn ?? "unknown"}`,
+        awardType: "largestArmy",
+        playerId: nextOwnerId,
+        previousOwnerId: previousOwnerId ?? null,
+        roadIds: [],
+        forced: Boolean(options?.forced)
+      });
+    }
   });
 };

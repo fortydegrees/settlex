@@ -22,6 +22,41 @@ describe("soundThemes", () => {
     });
   });
 
+  it("maps the SettleHex family cues to their shipped assets", () => {
+    expect(DEFAULT_THEME["turn:start"]).toMatchObject({
+      src: "/sounds/your-turn.mp3",
+      allowWhenHidden: true
+    });
+    expect(DEFAULT_THEME["turn:end"]).toMatchObject({
+      src: "/sounds/turn-end.mp3"
+    });
+    expect(DEFAULT_THEME["game:win"]).toMatchObject({
+      src: "/sounds/game-win.mp3"
+    });
+    expect(DEFAULT_THEME["award:claim:road"]).toMatchObject({
+      src: "/sounds/award-road.mp3"
+    });
+    expect(DEFAULT_THEME["award:claim:army"]).toMatchObject({
+      src: "/sounds/award-army.mp3"
+    });
+    expect(DEFAULT_THEME["discard:required"]).toMatchObject({
+      src: "/sounds/discard-required.mp3",
+      allowWhenHidden: true
+    });
+    expect(DEFAULT_THEME["game:lose"]).toMatchObject({
+      src: "/sounds/game-lose.mp3"
+    });
+    expect(DEFAULT_THEME["resource:blocked"]).toMatchObject({
+      src: "/sounds/resource-blocked.mp3"
+    });
+    expect(DEFAULT_THEME["timer:low"]).toMatchObject({
+      src: "/sounds/timer-low.mp3"
+    });
+    expect(DEFAULT_THEME["timer:critical"]).toMatchObject({
+      src: "/sounds/timer-critical.mp3"
+    });
+  });
+
   it("maps Knight dev-card play cues to conservative existing clips", () => {
     expect(DEFAULT_THEME["devcard:knight:play"]).toMatchObject({
       src: "/sounds/card_woosh.mp3"

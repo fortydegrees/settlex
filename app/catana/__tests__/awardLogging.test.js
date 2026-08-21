@@ -88,7 +88,7 @@ describe("award logging", () => {
     );
   });
 
-  it("logs largest army changes without emitting longest-road effects", () => {
+  it("logs largest army changes and emits a road-free awardClaimed effect", () => {
     const core = createEmptyState(["0", "1"]);
     core.awards.largestArmyOwnerId = "1";
     const G = {
@@ -113,6 +113,13 @@ describe("award logging", () => {
         data: { previousOwnerId: "0" }
       })
     ]);
-    expect(effects.awardClaimed).not.toHaveBeenCalled();
+    expect(effects.awardClaimed).toHaveBeenCalledWith(
+      expect.objectContaining({
+        awardType: "largestArmy",
+        playerId: "1",
+        previousOwnerId: "0",
+        roadIds: []
+      })
+    );
   });
 });
