@@ -5,6 +5,11 @@ description: Use when working on Catana gameplay feel, animations, effects, audi
 
 # Catana Game Feel + Effects
 
+For designing or revising the audio cues themselves (not just wiring them),
+read `docs/agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md` first — it holds
+the shipped sound identity (family grammar, cue inventory), the audition-first
+workflow, and the synthesis kit in `sounds/soundkit/`.
+
 ## Core Principle
 
 Authoritative game or effect events drive presentation. React state, moving

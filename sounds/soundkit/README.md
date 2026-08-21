@@ -1,5 +1,8 @@
 # SettleHex sound kit
 
+Design context lives in `docs/agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md`
+(family grammar, process, wiring architecture) — read it before adding cues.
+
 Deterministic synthesis recipes for the SettleHex sound identity. Every
 shipped cue in `public/sounds/` is rendered from code here — nothing is
 recorded, everything is regenerable and tweakable.

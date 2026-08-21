@@ -1,6 +1,6 @@
 ---
 name: catana-brand
-description: Use when building or reviewing SettleHex/Catana UI. Provides current product direction, brand/taste principles, colors, typography, component patterns, and animation guidance for a consistent game-first aesthetic.
+description: Use when building or reviewing SettleHex/Catana UI or sound. Provides current product direction, brand/taste principles, colors, typography, component patterns, animation guidance, and the sound-identity guide for a consistent game-first aesthetic.
 ---
 
 # Catana Design System

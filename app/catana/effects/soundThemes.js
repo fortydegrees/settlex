@@ -1,3 +1,6 @@
+// Before adding or revising cues, read
+// docs/agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md — the sound identity's
+// grammar, the audition workflow, and the synthesis kit (sounds/soundkit/).
 export const DEFAULT_THEME = {
   "resource:pop:start": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.4 },
   "resource:travel:start": { src: "/sounds/card_woosh.mp3", volume: 0.4 },
