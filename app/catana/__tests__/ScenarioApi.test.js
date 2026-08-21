@@ -6,10 +6,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const routeModulePath = path.resolve(process.cwd(), "app/api/scenarios/route.js");
 
-const loadRouteWithScenarioFiles = async (files) => {
+const loadRouteWithScenarioFiles = async (
+  files,
+  { nodeEnv = "development", createScenariosDir = true } = {}
+) => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "settlex-scenarios-"));
   const scenariosDir = path.join(tempRoot, "app", "catana", "scenarios");
-  fs.mkdirSync(scenariosDir, { recursive: true });
+  if (createScenariosDir) {
+    fs.mkdirSync(scenariosDir, { recursive: true });
+  }
 
   for (const [filename, contents] of Object.entries(files)) {
     fs.writeFileSync(
@@ -19,6 +24,8 @@ const loadRouteWithScenarioFiles = async (files) => {
   }
 
   const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue(tempRoot);
+  const previousNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = nodeEnv;
   vi.resetModules();
 
   const route = await import(`${pathToFileURL(routeModulePath).href}?t=${Date.now()}`);
@@ -28,6 +35,7 @@ const loadRouteWithScenarioFiles = async (files) => {
     tempRoot,
     scenariosDir,
     restore() {
+      process.env.NODE_ENV = previousNodeEnv;
       cwdSpy.mockRestore();
       vi.resetModules();
       fs.rmSync(tempRoot, { recursive: true, force: true });
@@ -111,6 +119,53 @@ describe("scenario API", () => {
       expect(saved).toEqual({
         state: nextState
       });
+    } finally {
+      harness.restore();
+    }
+  });
+
+  it("does not expose scenarios or create scenario storage in production", async () => {
+    const harness = await loadRouteWithScenarioFiles(
+      {},
+      { nodeEnv: "production", createScenariosDir: false }
+    );
+
+    try {
+      const response = await harness.GET();
+
+      expect(response.status).toBe(404);
+      expect(fs.existsSync(harness.scenariosDir)).toBe(false);
+    } finally {
+      harness.restore();
+    }
+  });
+
+  it("does not write scenario files in production", async () => {
+    const harness = await loadRouteWithScenarioFiles(
+      {},
+      { nodeEnv: "production", createScenariosDir: false }
+    );
+
+    try {
+      const request = new Request("http://localhost/api/scenarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "must-not-write",
+          data: {
+            core: {
+              players: ["0", "1"]
+            }
+          }
+        })
+      });
+
+      const response = await harness.POST(request);
+
+      expect(response.status).toBe(404);
+      expect(
+        fs.existsSync(path.join(harness.scenariosDir, "must-not-write.json"))
+      ).toBe(false);
     } finally {
       harness.restore();
     }

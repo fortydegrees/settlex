@@ -4680,3 +4680,24 @@
   - Score history is a closed-by-default disclosure. Keep `chartOpen` in replay
     session state so opening/closing Results or stepping the timeline does not
     reset the user's choice.
+
+- Safari played-development-card rendering boundary (2026-08-21):
+  - Keep the temporary played-card actor at its settled 104x144 render size and
+    park it at `scale: 1`. WebKit can cache the old filtered 52x72 actor before
+    enlarging it to `scale: 2`, making the entire card appear low-resolution.
+  - Preserve visible geometry by halving the old scale values, translating for
+    the 26x36 origin difference, and doubling filter-shadow lengths.
+  - SVG `filter:url(...)` references must point to actual `<filter>` elements.
+    The Knight asset's `#o` is a radial gradient and must only be used as fill.
+  - Road Building and Year of Plenty intentionally author a soft shadow around
+    their `x2`/`+2` text. That localized halo is distinct from whole-card blur.
+
+- Development scenario API boundary (2026-08-21):
+  - `/api/scenarios` is a local authoring tool. Both GET and POST must return
+    `404` unless `NODE_ENV` is exactly `development`.
+  - Keep the production guard ahead of request parsing and filesystem access.
+    Importing or calling the route in production must not create
+    `app/catana/scenarios` or write scenario snapshots.
+  - A root-level `resources` symlink is not a supported build input. Do not
+    ignore or recreate it; `server/__tests__/buildInputs.source.test.js` keeps
+    that machine-local path out of release candidates.

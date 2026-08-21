@@ -23,17 +23,28 @@ const RESOURCE_CARD_FILES_BY_RESOURCE = Object.freeze({
 });
 const CARD_WIDTH = 52;
 const CARD_HEIGHT = 72;
+// Render the temporary actor at its settled size. Safari/WebKit can otherwise
+// rasterize the filtered SVG at 52x72 and enlarge that backing layer at scale 2.
+const PLAYED_CARD_RENDER_MULTIPLIER = 2;
+const PLAYED_CARD_WIDTH = CARD_WIDTH * PLAYED_CARD_RENDER_MULTIPLIER;
+const PLAYED_CARD_HEIGHT = CARD_HEIGHT * PLAYED_CARD_RENDER_MULTIPLIER;
+const PLAYED_CARD_ORIGIN_OFFSET = Object.freeze({
+  x: (PLAYED_CARD_WIDTH - CARD_WIDTH) / 2,
+  y: (PLAYED_CARD_HEIGHT - CARD_HEIGHT) / 2
+});
 const RESOURCE_CARD_WIDTH = 44;
 const RESOURCE_CARD_HEIGHT = 62;
 const CARD_CLASS = "pointer-events-none drop-shadow-xl";
 const RESOURCE_CARD_CLASS = "pointer-events-none drop-shadow-lg";
 const PLAYED_SCALE_BY_PERSPECTIVE = Object.freeze({
-  local: 2,
-  opponent: 2,
-  spectator: 2
+  local: 1,
+  opponent: 1,
+  spectator: 1
 });
+// These values are doubled because the actor scale is halved, preserving the
+// existing visible shadow throughout the animation.
 const FLOAT_SHADOW =
-  "drop-shadow(0 22px 28px rgba(15, 23, 42, 0.42)) drop-shadow(0 8px 10px rgba(15, 23, 42, 0.32))";
+  "drop-shadow(0 44px 56px rgba(15, 23, 42, 0.42)) drop-shadow(0 16px 20px rgba(15, 23, 42, 0.32))";
 const LOCAL_PLAYED_OFFSET = Object.freeze({ x: 0, y: -28 });
 const OPPONENT_REVEAL_PAUSE = 0.3;
 const OPPONENT_FLIP_DURATION = 0.42;
@@ -82,6 +93,18 @@ const getCenterPosition = (rect, width = CARD_WIDTH, height = CARD_HEIGHT) => ({
   y: rect.top + rect.height / 2 - height / 2
 });
 
+const getPlayedActorPosition = (
+  rect,
+  visualWidth = CARD_WIDTH,
+  visualHeight = CARD_HEIGHT
+) => {
+  const position = getCenterPosition(rect, visualWidth, visualHeight);
+  return {
+    x: position.x - PLAYED_CARD_ORIGIN_OFFSET.x,
+    y: position.y - PLAYED_CARD_ORIGIN_OFFSET.y
+  };
+};
+
 const getDevCardFaceSrc = (cardType) =>
   DEV_CARD_FACE_SVGS[cardType] ?? DEV_CARD_BACK_SRC;
 
@@ -90,8 +113,8 @@ const createDevCardElement = (cardType) => {
   el.className = CARD_CLASS;
   el.style.position = "absolute";
   el.style.pointerEvents = "none";
-  el.style.width = `${CARD_WIDTH}px`;
-  el.style.height = `${CARD_HEIGHT}px`;
+  el.style.width = `${PLAYED_CARD_WIDTH}px`;
+  el.style.height = `${PLAYED_CARD_HEIGHT}px`;
   el.style.transformStyle = "preserve-3d";
   el.style.filter = FLOAT_SHADOW;
 
@@ -179,7 +202,7 @@ const runSpentCardExit = ({ el, payload, delay = 0, completeResolve }) => {
     })
     .to(el, {
       y: "-=26",
-      scale: 0.32,
+      scale: 0.32 / PLAYED_CARD_RENDER_MULTIPLIER,
       opacity: 0,
       duration: 0.38,
       ease: "power2.inOut"
@@ -374,18 +397,20 @@ export const getDevCardPlayParkPosition = ({
   parkRect = null
 }) => {
   const playedScale = getDevCardPlayedScale(perspective);
-  const visualHeight = CARD_HEIGHT * playedScale;
+  const visualHeight = PLAYED_CARD_HEIGHT * playedScale;
   const horizontalRect = parkRect ?? sourceRect;
   return {
     x:
       horizontalRect.left +
       horizontalRect.width / 2 -
       CARD_WIDTH / 2 +
-      (perspective === "local" ? LOCAL_PLAYED_OFFSET.x : 0),
+      (perspective === "local" ? LOCAL_PLAYED_OFFSET.x : 0) -
+      PLAYED_CARD_ORIGIN_OFFSET.x,
     y:
-      perspective === "local"
+      (perspective === "local"
         ? sourceRect.top - visualHeight * 0.78 + LOCAL_PLAYED_OFFSET.y
-        : sourceRect.bottom + visualHeight * 0.36
+        : sourceRect.bottom + visualHeight * 0.36) -
+      PLAYED_CARD_ORIGIN_OFFSET.y
   };
 };
 
@@ -461,7 +486,7 @@ export function createDevCardPlayRunner({
       layer.appendChild(el);
       store.current?.set?.(key, { el, payload, perspective });
 
-      const from = getCenterPosition(sourceRect);
+      const from = getPlayedActorPosition(sourceRect);
       const playedScale = getDevCardPlayedScale(perspective);
       const park = getDevCardPlayParkPosition({
         sourceRect,
@@ -473,7 +498,9 @@ export function createDevCardPlayRunner({
         x: from.x,
         y: from.y,
         opacity: 0,
-        scale: perspective === "local" ? 0.92 : 0.78,
+        scale:
+          (perspective === "local" ? 0.92 : 0.78) /
+          PLAYED_CARD_RENDER_MULTIPLIER,
         rotationY: 0
       });
 
@@ -535,8 +562,13 @@ export function createDevCardPlayRunner({
           completeResolve(payload);
           return;
         }
-        const from = getCenterPosition(fallbackRect);
-        gsap.set(el, { x: from.x, y: from.y, opacity: 1, scale: 1 });
+        const from = getPlayedActorPosition(fallbackRect);
+        gsap.set(el, {
+          x: from.x,
+          y: from.y,
+          opacity: 1,
+          scale: 1 / PLAYED_CARD_RENDER_MULTIPLIER
+        });
         layer.appendChild(el);
         store.current?.set?.(key, { el, payload, perspective: "opponent" });
       }
@@ -586,13 +618,22 @@ export function createDevCardPlayRunner({
     if (!actor?.el) {
       const fallbackSource = getSourceEl?.(payload, `p${payload.playerId}-devcards`);
       const fallbackRect = fallbackSource?.getBoundingClientRect?.() ?? targetRect;
-      const from = getCenterPosition(fallbackRect);
-      gsap.set(el, { x: from.x, y: from.y, opacity: 1, scale: 1 });
+      const from = getPlayedActorPosition(fallbackRect);
+      gsap.set(el, {
+        x: from.x,
+        y: from.y,
+        opacity: 1,
+        scale: 1 / PLAYED_CARD_RENDER_MULTIPLIER
+      });
       layer.appendChild(el);
       store.current?.set?.(key, { el, payload, perspective: "opponent" });
     }
 
-    const end = getCenterPosition(targetRect, CARD_WIDTH * 0.52, CARD_HEIGHT * 0.52);
+    const end = getPlayedActorPosition(
+      targetRect,
+      CARD_WIDTH * 0.52,
+      CARD_HEIGHT * 0.52
+    );
     emitCue?.(`devcard:${payload.cardType}:resolve`);
 
     if (motionPolicy === "reduced") {
@@ -607,7 +648,7 @@ export function createDevCardPlayRunner({
       .to(el, {
         x: end.x,
         y: end.y,
-        scale: 0.52,
+        scale: 0.52 / PLAYED_CARD_RENDER_MULTIPLIER,
         opacity: 0.95,
         duration: 0.58,
         ease: "power2.inOut"

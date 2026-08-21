@@ -6,6 +6,17 @@ export const dynamic = "force-dynamic";
 
 const SCENARIOS_DIR = path.join(process.cwd(), 'app', 'catana', 'scenarios');
 
+const isDevelopment = () => process.env.NODE_ENV === 'development';
+
+const unavailableResponse = () =>
+  NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+const ensureScenariosDirectory = () => {
+  if (!fs.existsSync(SCENARIOS_DIR)) {
+    fs.mkdirSync(SCENARIOS_DIR, { recursive: true });
+  }
+};
+
 const isScenarioState = (value) =>
   Boolean(
     value &&
@@ -21,13 +32,11 @@ const extractScenarioState = (value) => {
   return null;
 };
 
-// Ensure directory exists
-if (!fs.existsSync(SCENARIOS_DIR)) {
-  fs.mkdirSync(SCENARIOS_DIR, { recursive: true });
-}
-
 export async function GET() {
+  if (!isDevelopment()) return unavailableResponse();
+
   try {
+    ensureScenariosDirectory();
     const files = fs.readdirSync(SCENARIOS_DIR);
     const scenarios = files
       .filter(file => file.endsWith('.json'))
@@ -59,7 +68,10 @@ export async function GET() {
 }
 
 export async function POST(request) {
+  if (!isDevelopment()) return unavailableResponse();
+
   try {
+    ensureScenariosDirectory();
     const body = await request.json();
     const { name, data } = body;
     const state = extractScenarioState(data);

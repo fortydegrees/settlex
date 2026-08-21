@@ -67,7 +67,7 @@ describe("devCardPlay runner", () => {
     ).toBe("p1-devcards");
   });
 
-  it("parks local and opponent played Knight cards at their enlarged scales", () => {
+  it("parks local and opponent played Knight cards at native played size", () => {
     const sourceRect = { left: 100, top: 200, width: 52, height: 72, bottom: 272 };
     const localPark = getDevCardPlayParkPosition({
       sourceRect,
@@ -78,11 +78,11 @@ describe("devCardPlay runner", () => {
       perspective: "opponent"
     });
 
-    expect(getDevCardPlayedScale("local")).toBe(2);
-    expect(getDevCardPlayedScale("opponent")).toBe(2);
-    expect(localPark.x).toBe(100);
-    expect(localPark.y).toBeLessThan(sourceRect.top - 72);
-    expect(opponentPark.y).toBeGreaterThan(sourceRect.bottom + 48);
+    expect(getDevCardPlayedScale("local")).toBe(1);
+    expect(getDevCardPlayedScale("opponent")).toBe(1);
+    expect(localPark.x).toBe(74);
+    expect(localPark.y).toBeCloseTo(23.68);
+    expect(opponentPark.y).toBeCloseTo(287.84);
   });
 
   it("parks a start actor and resolves it to the Largest Army target", () => {

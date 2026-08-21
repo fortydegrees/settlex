@@ -7561,3 +7561,32 @@
   passed. Every replay story was reviewed in a real browser at desktop
   1440x900 and mobile 390x844; console showed only the pre-existing favicon
   404 and the React `act` deprecation warning.
+
+## Status (2026-08-21, Safari played-development-card sharpness)
+
+- The temporary played-card actor now renders at its settled 104x144 size
+  instead of rendering at 52x72 and being enlarged with `scale: 2`. Scale,
+  origin, position, and shadow values were adjusted proportionally, preserving
+  the existing visible size, path, timings, anchors, and board behavior.
+- Removed the Knight SVG's invalid `filter:url(#o)` reference; `#o` is a radial
+  gradient, not an SVG filter.
+- Verified the exact opponent Knight, Road Building, Year of Plenty, and
+  Monopoly scenarios in the real dev sandbox in Safari and Chrome. The card
+  back and all four faces remain in the same position and are sharp; reset
+  removes the temporary actor and the browser console has no warnings/errors.
+- Focused verification passed: 7 runner/asset tests, changed-file ESLint,
+  `xmllint`, an all-development-card filter-reference scan, and
+  `git diff --check`.
+
+## Status (2026-08-21, production scenario-route hardening)
+
+- Made `/api/scenarios` development-only. Production GET and POST requests now
+  return `404` before parsing input or touching scenario storage.
+- Removed the untracked root `resources` symlink that pointed into the local
+  Pufferlib virtualenv; the target directory was left intact.
+- Added real-handler coverage for production reads, writes, and import-time
+  filesystem side effects. The new assertions were observed failing with
+  `200` responses before the guard and passing afterward.
+- Verification passed: `pnpm verify` (153 engine tests, 265 server tests with 7
+  skipped, all 193 app test files, and lint) plus
+  `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`.
