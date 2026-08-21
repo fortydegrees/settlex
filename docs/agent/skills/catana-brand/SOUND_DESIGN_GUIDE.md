@@ -35,6 +35,13 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
   cue that touches D6. Everything else ends open.
 - **Frequency sets weight.** The more often a cue plays, the shorter and drier
   it is. Your-turn and ticks are near-dry; win/lose carry the reverb tails.
+- **Audio urgency is personal.** Negative/urgent cues fire for the local
+  player only (your award claims, your low clock); shared visuals may cover
+  both players, but sound about someone else's problem is noise.
+- **Game-start plays at match-found in the lobby, not on GameScreen mount** —
+  the lobby click is a fresh autoplay gesture (works from a background tab),
+  the AudioManager needs a pointerdown unlock the game page won't have on
+  refresh/rejoin, and mount-triggered cues would re-fanfare every reconnect.
 - **Scale-degree vocabulary**: low D = home/ground/time · C♯ (leading tone) =
   act now · F natural (minor third) = misfortune/loss · B♭ = lament · the
   octave = victory · repeated notes = herald (reserved for awards) · a pitch
@@ -60,7 +67,7 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
 | award:claim:army | award-army.mp3 | martial ta-ta-ta → held bugle third |
 | discard:required | discard-required.mp3 | "Chromatic Sigh": G–F♯–F, last note sags flat |
 | resource:blocked | resource-blocked.mp3 | payout that deflates (A→F micro-droop) |
-| timer:low / timer:critical | timer-low/critical.mp3 | tick + half-tick per second; critical rises a fourth |
+| timer:low / timer:critical | timer-low/critical.mp3 | tick + half-tick per second; critical rises a fourth; local player's clock only |
 | game:win | game-win.mp3 | "Ta-Da": D–A–B statement → land D5 → crown D6 |
 | game:lose | game-lose.mp3 | exact mirror: D–G–F falling → settle → sink |
 
