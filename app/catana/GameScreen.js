@@ -1925,7 +1925,13 @@ export function GameScreen(bgioProps) {
           timerSnapshot={visibleTimerSnapshot}
           statusType={gameStatus?.statusType}
           statusKind={gameStatus?.kind}
-          enabled={!isGameOver}
+          // Tick only for the local player's own clock -- the visual alert
+          // still covers the opponent's turn, but audio urgency is personal.
+          enabled={
+            !isGameOver &&
+            player?.id != null &&
+            gameStatus?.activePlayerId === player.id
+          }
         />
       )}
 
