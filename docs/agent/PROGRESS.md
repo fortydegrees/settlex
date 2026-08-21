@@ -7590,3 +7590,17 @@
 - Verification passed: `pnpm verify` (153 engine tests, 265 server tests with 7
   skipped, all 193 app test files, and lint) plus
   `SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1 pnpm build`.
+
+## Status (2026-08-11, production game-server Node import repair)
+
+- Reproduced the Oracle `infra-game-1` crash locally with Node's real module
+  loader: the server game definition exited with `ERR_UNSUPPORTED_DIR_IMPORT`
+  on `boardgame.io/core`.
+- Changed the five `INVALID_MOVE` imports to the package's explicit CommonJS
+  file and added a plain-Node server-game import regression test. The test was
+  observed failing with the production error before the change and passing
+  afterward.
+- Verification: server suite passed 266 tests with 7 PostgreSQL-dependent
+  skips; Catana suite passed 814 tests; `git diff --check` passed. A local
+  Node 20 Docker-image check was unavailable because the OrbStack Docker daemon
+  was not running.
