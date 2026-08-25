@@ -37,9 +37,9 @@
 
 1. Add a failing topology test using a real deterministic Catana duel snapshot fixture.
 2. Derive native tile IDs from website cube coordinates using the standard pointy-hex basis; derive vertex IDs by named corner incidence and edge IDs by mapped endpoints.
-3. Derive port slots from mapped native port vertex pairs and website `portsByNodeId`.
-4. Reject nonstandard, incomplete, ambiguous, or non-bijective topologies.
-5. Prove all 19 tiles, 54 vertices, 72 edges, 9 ports, tile rings, adjacency, and edge endpoints are preserved.
+3. Prove the standard website port pattern cannot preserve the native port incidence and record the required V2-only board-source boundary.
+4. Reject nonstandard, incomplete, ambiguous, or non-bijective land topologies.
+5. Prove all 19 tiles, 54 vertices, 72 edges, tile rings, adjacency, and edge endpoints are preserved.
 6. Run the topology test and commit.
 
 ## Task 3: Import authoritative state and reproduce native legality/observation
@@ -105,6 +105,8 @@
 
 - Modify `lib/server/matches/botMatch.js`
 - Modify `lib/server/matches/createMatchForAccount.js`
+- Modify `lib/shared/catanaGameModes.js`
+- Modify `app/catana/gameSetup/boardSources.js`
 - Modify `app/api/matches/create/handler.js`
 - Modify `app/catana/lobby/useLobbyHomeActions.js`
 - Modify `app/catana/home/HomeTableClient.js`
@@ -115,11 +117,12 @@
 
 1. Add failing match tests for allowlisted bot keys, V2 metadata/display name, default Puffer compatibility, and disabled V2 rejection.
 2. Add failing lobby/UI behavior tests for the feature-gated action and `botKey` request payload.
-3. Centralize bot descriptors and feature-flag resolution in `botMatch.js`.
-4. Thread `botKey` through bot-match creation and preserve existing cleanup behavior.
-5. Add the existing-style **Play SettleGraph V2** action only when `NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=1` and send `botKey: "settlegraph-v2"`.
-6. Preserve all unrelated dirty matchmaking edits and verify the owning story on desktop and phone widths.
-7. Run targeted app/server tests and commit only integration changes.
+3. Add a tested SettleGraph V2 board source that preserves the chosen duel land board and port-resource multiset while projecting ports onto the exact native-contract boundary edges.
+4. Centralize bot descriptors, V2 board-source selection, and feature-flag resolution in `botMatch.js`.
+5. Thread `botKey` through bot-match creation and preserve existing cleanup behavior.
+6. Add the existing-style **Play SettleGraph V2** action only when `NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=1` and send `botKey: "settlegraph-v2"`.
+7. Preserve all unrelated dirty matchmaking edits and verify the owning story on desktop and phone widths.
+8. Run targeted app/server tests and commit only integration changes.
 
 ## Task 7: Schedule forced discard and validate reducer execution
 

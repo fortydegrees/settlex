@@ -22,6 +22,8 @@ The accepted CTNN file remains outside this repository and read-only. The integr
 
 The live Catana board and the native environment use different tile, vertex, and edge numbering. The website also represents edges as vertex-pair strings, while the native codec uses fixed ordinal edge IDs. Therefore JavaScript must not construct observation-v2 or legal masks, and the existing Puffer state adapter is not reusable for V2 semantics.
 
+The land graph has an exact orientation-preserving permutation, but the standard website port-edge pattern is not graph-isomorphic to the native port-edge pattern: only three of nine port edges align under the direct orientation and no board symmetry aligns all nine. Mapping only current port ownership would make future settlement value, vertex port features, and bank-trade legality diverge from the sealed contract.
+
 The product integration will pin the proven native codec, rules, observation, model loader, and game-state types in a small product-owned Rust crate. A Rust snapshot adapter will translate the complete authoritative server state into the native environment, including a fixed topology permutation proved by incidence tests.
 
 ## Architecture
@@ -44,7 +46,9 @@ The direct policy is the initial playable contract. Equal-search is deliberately
 
 ### Topology and state translation
 
-The adapter owns static bijections for website-to-native tiles, vertices, edges, and ports. Contract tests prove that every tile ring, edge endpoint, harbor attachment, and adjacency relation is preserved.
+The adapter owns static bijections for website-to-native tiles, vertices, and edges. Contract tests prove that every tile ring, edge endpoint, and adjacency relation is preserved.
+
+SettleGraph V2 matches use a dedicated board-source projection. It keeps the selected standard duel land tiles, numbers, provenance, and randomized port-resource multiset, but attaches the nine port tiles to the boundary edges corresponding exactly to the native topology's port slots. The projection is selected only in V2 match setup; ordinary duel, matchmaking, friend, and Puffer games retain their current board sources. The worker rejects a V2 snapshot whose port attachments do not match the native contract.
 
 The imported snapshot covers:
 
