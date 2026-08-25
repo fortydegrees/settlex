@@ -271,6 +271,11 @@ function HomeTableBoard({ initialAccount = null }) {
       return;
     }
 
+    if (mode === "bot-v2") {
+      lobby.actions.playBot("settlegraph-v2");
+      return;
+    }
+
     if (mode === "friend") {
       lobby.actions.playFriend();
     }

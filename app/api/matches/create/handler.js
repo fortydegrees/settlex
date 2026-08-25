@@ -6,6 +6,7 @@ import {
 } from "../../../../lib/server/matches/createMatchForAccount.js";
 import { resolveMatchCreationMode } from "../../../../lib/server/matches/gameModeSetupData.js";
 import { readOptionalMatchmakingMutationToken } from "../../../../lib/server/matches/matchmakingMutation.js";
+import { isBotEnabled } from "../../../../lib/server/matches/botMatch.js";
 import { writeMatchCredentialCookie } from "../../../../lib/server/session/matchCredentialCookie.js";
 
 const unauthorizedResponse = () =>
@@ -23,6 +24,7 @@ export const createMatchCreateRoute =
     createBotMatchForAccount:
       createBotMatchForAccountImpl = createBotMatchForAccount,
     createMatchForAccount: createMatchForAccountImpl = createMatchForAccount,
+    isBotEnabled: isBotEnabledImpl = isBotEnabled,
   } = {}) =>
   async (request) => {
     try {
@@ -44,6 +46,16 @@ export const createMatchCreateRoute =
         payload?.opponentType === "bot"
           ? createBotMatchForAccountImpl
           : createMatchForAccountImpl;
+      const botKey = payload?.botKey ?? "puffer";
+      if (
+        payload?.opponentType === "bot" &&
+        !isBotEnabledImpl(botKey)
+      ) {
+        throw Object.assign(
+          new Error("SettleGraph V2 is not enabled on this server."),
+          { status: 503 }
+        );
+      }
       const mutationIdentity =
         payload?.opponentType === "bot"
           ? {}
@@ -61,6 +73,7 @@ export const createMatchCreateRoute =
         account: sessionAccount.account,
         numPlayers: creationMode.numPlayers,
         setupData: creationMode.setupData,
+        ...(payload?.opponentType === "bot" ? { botKey } : {}),
         ...mutationIdentity,
       });
 
