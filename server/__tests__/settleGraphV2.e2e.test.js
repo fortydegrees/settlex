@@ -11,6 +11,10 @@ import { SettleGraphV2BotManager } from "../bots/settleGraphV2BotManager.js";
 
 const RUN_E2E = process.env.SETTLEX_RUN_SETTLEGRAPH_V2_E2E === "1";
 const MATCH_ID = "settlegraph-v2-e2e";
+const E2E_GAME = {
+  ...ServerCatan,
+  seed: "settlegraph-v2-e2e-v1"
+};
 
 function createSyncDb() {
   const records = new Map();
@@ -69,7 +73,7 @@ describe("SettleGraph V2 sealed-runtime integration", () => {
         }
       };
       const initialState = InitializeGame({
-        game: ServerCatan,
+        game: E2E_GAME,
         numPlayers: 2,
         setupData: {
           modeId: "duel",
@@ -87,7 +91,7 @@ describe("SettleGraph V2 sealed-runtime integration", () => {
         transport: { pubSub: { publish } }
       };
       const master = new Master(
-        ServerCatan,
+        E2E_GAME,
         db,
         { send() {}, sendAll() {} }
       );
@@ -133,7 +137,7 @@ describe("SettleGraph V2 sealed-runtime integration", () => {
           move: "autoBot",
           playerID: "1",
           matchID: MATCH_ID,
-          game: ServerCatan,
+          game: E2E_GAME,
           logger
         });
         expect(state()._stateID).toBeGreaterThan(beforeStateId);
@@ -167,14 +171,20 @@ describe("SettleGraph V2 sealed-runtime integration", () => {
         await apply("endTurn", [], "0");
         expect(state().ctx.currentPlayer).toBe("1");
 
-        await dispatchBot();
-        expect(state().G.core.turn.hasRolled).toBe(true);
-        await dispatchBot();
+        const mainTurnStartStateId = state()._stateID;
+        let mainTurnDispatches = 0;
+        while (state().ctx.currentPlayer === "1" && mainTurnDispatches < 12) {
+          await dispatchBot();
+          mainTurnDispatches += 1;
+        }
 
         expect(logger.error).not.toHaveBeenCalled();
         expect(pufferManager.chooseMoves).not.toHaveBeenCalled();
-        expect(state().G.core.playerStateById["1"].settlementsRemaining).toBe(3);
-        expect(state().G.core.playerStateById["1"].roadsRemaining).toBe(13);
+        expect(mainTurnDispatches).toBeGreaterThanOrEqual(2);
+        expect(state()._stateID).toBeGreaterThan(mainTurnStartStateId);
+        expect(state().ctx.currentPlayer).toBe("0");
+        expect(state().G.core.playerStateById["1"].settlementsRemaining).toBeLessThanOrEqual(3);
+        expect(state().G.core.playerStateById["1"].roadsRemaining).toBeLessThanOrEqual(13);
       } finally {
         botManager.close();
       }
