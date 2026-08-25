@@ -95,3 +95,30 @@ fn rejects_a_topology_that_cannot_preserve_shared_vertex_incidence() {
         "unexpected error: {error}"
     );
 }
+
+#[test]
+fn requires_v2_matches_to_use_the_native_contract_port_edges() {
+    let map = TopologyMap::from_land_tiles(&standard_website_land_tiles()).expect("topology map");
+    let standard_website_ports = [
+        [48, 49],
+        [50, 51],
+        [46, 45],
+        [35, 37],
+        [24, 10],
+        [9, 8],
+        [4, 3],
+        [16, 17],
+        [26, 40],
+    ];
+
+    let error = map
+        .validate_native_port_edges(&standard_website_ports)
+        .expect_err("standard port incidence must be rejected for V2");
+    assert!(
+        error.contains("port-edge contract"),
+        "unexpected error: {error}"
+    );
+
+    map.validate_native_port_edges(&map.native_port_website_vertices())
+        .expect("projected V2 ports preserve the native contract");
+}

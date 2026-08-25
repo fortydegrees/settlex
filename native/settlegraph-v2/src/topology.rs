@@ -61,7 +61,7 @@ impl TopologyMap {
         let mut native_to_website_vertex = [-1; NUM_VERTICES];
         let mut website_to_native_tile = BTreeMap::new();
 
-        for native_tile in 0..NUM_TILES {
+        for (native_tile, mapped_website_tile) in native_to_website_tile.iter_mut().enumerate() {
             let center = native.tile_centers[native_tile];
             let website_tile = by_native_center.get(&center).ok_or_else(|| {
                 format!("website topology is missing native tile center {center:?}")
@@ -75,7 +75,7 @@ impl TopologyMap {
                     website_tile.id
                 ));
             }
-            native_to_website_tile[native_tile] = website_tile.id;
+            *mapped_website_tile = website_tile.id;
 
             for (corner, website_vertex) in website_tile.nodes.iter().copied().enumerate() {
                 let native_vertex = native.tile_vertices[native_tile][corner] as usize;
@@ -183,5 +183,24 @@ impl TopologyMap {
                 self.native_to_website_vertex[b as usize],
             ]
         })
+    }
+
+    pub fn validate_native_port_edges(&self, website_ports: &[[i32; 2]]) -> Result<(), String> {
+        let expected: BTreeSet<_> = self
+            .native_port_website_vertices()
+            .into_iter()
+            .map(|[a, b]| canonical_edge(a, b))
+            .collect();
+        let received: BTreeSet<_> = website_ports
+            .iter()
+            .map(|[a, b]| canonical_edge(*a, *b))
+            .collect();
+
+        if website_ports.len() != NUM_PORTS || received != expected {
+            return Err(format!(
+                "website port-edge contract mismatch: expected {expected:?}, received {received:?}"
+            ));
+        }
+        Ok(())
     }
 }

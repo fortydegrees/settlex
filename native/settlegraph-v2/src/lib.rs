@@ -8,6 +8,9 @@ use catan_env_contract::{
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
+pub mod decision;
+pub mod protocol;
+pub mod snapshot;
 pub mod topology;
 
 pub const EXPECTED_CTNN_SHA256: &str =
