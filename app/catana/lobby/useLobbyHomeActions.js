@@ -1161,9 +1161,10 @@ export function useLobbyHomeActions({
     }
   }, [ensureAccountSession, persistJoinedSeat, router]);
 
-  const playAgainstBot = useCallback(async () => {
+  const playAgainstBot = useCallback(async (botKey = "puffer") => {
+    const isSettleGraphV2 = botKey === "settlegraph-v2";
     setError("");
-    setActiveActionId("bot");
+    setActiveActionId(isSettleGraphV2 ? "bot-v2" : "bot");
 
     try {
       const account = await ensureGeneratedGuestAccount();
@@ -1176,7 +1177,7 @@ export function useLobbyHomeActions({
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ modeId: "duel", opponentType: "bot" })
+          body: JSON.stringify({ modeId: "duel", opponentType: "bot", botKey })
         }
       });
 
