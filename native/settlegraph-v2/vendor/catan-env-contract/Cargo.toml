@@ -1,0 +1,8 @@
+[package]
+name = "catan-env-contract"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+catan-core = { path = "../catan-core" }
+sha2 = "0.10"
