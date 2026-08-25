@@ -16,6 +16,44 @@ const createGeneratedSource = ({ id, boardConfigId, generatorFamily, generatorVe
     generatorVersion
   });
 
+const SETTLEGRAPH_V2_PORT_PROJECTION_ID = "settlegraph-v2-native-ports-v1";
+
+const SETTLEGRAPH_V2_PORT_LAYOUT = Object.freeze([
+  Object.freeze({ coordinate: [1, 2, -3], direction: "NORTHEAST", nodes: [35, 36] }),
+  Object.freeze({ coordinate: [2, 1, -3], direction: "NORTHWEST", nodes: [46, 52] }),
+  Object.freeze({ coordinate: [3, -1, -2], direction: "NORTHEAST", nodes: [50, 51] }),
+  Object.freeze({ coordinate: [3, -3, 0], direction: "EAST", nodes: [48, 49] }),
+  Object.freeze({ coordinate: [1, -3, 2], direction: "SOUTHEAST", nodes: [40, 26] }),
+  Object.freeze({ coordinate: [-1, -2, 3], direction: "SOUTHWEST", nodes: [16, 28] }),
+  Object.freeze({ coordinate: [-2, -1, 3], direction: "SOUTHEAST", nodes: [2, 3] }),
+  Object.freeze({ coordinate: [-3, 1, 2], direction: "SOUTHWEST", nodes: [5, 8] }),
+  Object.freeze({ coordinate: [-3, 3, 0], direction: "WEST", nodes: [12, 13] })
+]);
+
+const projectSettleGraphV2Ports = (tiles) => {
+  const ports = tiles.filter(({ type }) => type === "Port");
+  if (ports.length !== SETTLEGRAPH_V2_PORT_LAYOUT.length) {
+    throw new Error(
+      `SettleGraph V2 requires ${SETTLEGRAPH_V2_PORT_LAYOUT.length} ports; received ${ports.length}`
+    );
+  }
+  let portIndex = 0;
+  return tiles.map((entry) => {
+    if (entry.type !== "Port") return entry;
+    const layout = SETTLEGRAPH_V2_PORT_LAYOUT[portIndex];
+    portIndex += 1;
+    return {
+      ...entry,
+      coordinate: [...layout.coordinate],
+      tile: {
+        ...entry.tile,
+        direction: layout.direction,
+        nodes: [...layout.nodes]
+      }
+    };
+  });
+};
+
 export const BOARD_SOURCES = Object.freeze({
   [BOARD_SOURCE_IDS.DUEL_FAIR_OFFICIAL_V1]: Object.freeze({
     id: BOARD_SOURCE_IDS.DUEL_FAIR_OFFICIAL_V1,
@@ -23,6 +61,14 @@ export const BOARD_SOURCES = Object.freeze({
     boardConfigId: DUEL_FAIR_BOARD_CATALOG.boardConfigId,
     boardConfig: resolveBoardConfig(DUEL_FAIR_BOARD_CATALOG.boardConfigId),
     catalog: DUEL_FAIR_BOARD_CATALOG
+  }),
+  [BOARD_SOURCE_IDS.SETTLEGRAPH_V2_NATIVE_V1]: Object.freeze({
+    id: BOARD_SOURCE_IDS.SETTLEGRAPH_V2_NATIVE_V1,
+    kind: "catalog-projection",
+    boardConfigId: DUEL_FAIR_BOARD_CATALOG.boardConfigId,
+    boardConfig: resolveBoardConfig(DUEL_FAIR_BOARD_CATALOG.boardConfigId),
+    catalog: DUEL_FAIR_BOARD_CATALOG,
+    projectionId: SETTLEGRAPH_V2_PORT_PROJECTION_ID
   }),
   [BOARD_SOURCE_IDS.GENERATED_OFFICIAL_SPIRAL_V1]: createGeneratedSource({
     id: BOARD_SOURCE_IDS.GENERATED_OFFICIAL_SPIRAL_V1,
@@ -73,25 +119,33 @@ export const materializeBoardSource = ({ boardSourceId, rng }) => {
   assertRng(rng);
   const source = resolveBoardSource(boardSourceId);
 
-  if (source.kind === "catalog") {
+  if (source.kind === "catalog" || source.kind === "catalog-projection") {
     const { index, seed } = selectCatalogEntry({
       randomValue: rng(),
       seeds: source.catalog.seeds
     });
+    const provenance = {
+      sourceKind: "catalog",
+      catalogId: source.catalog.id,
+      catalogRank: index + 1,
+      seed,
+      generatorFamily: source.catalog.generatorFamily,
+      generatorVersion: source.catalog.generatorVersion,
+      evaluatorVersion: source.catalog.evaluatorVersion,
+      evaluatorIdentity: source.catalog.evaluatorIdentity
+    };
+    const generatedTiles = generateBoard(source.boardConfig, makeDeterministicRng(seed));
     return {
       boardSourceId: source.id,
       boardConfigId: source.boardConfigId,
-      boardProvenance: Object.freeze({
-        sourceKind: "catalog",
-        catalogId: source.catalog.id,
-        catalogRank: index + 1,
-        seed,
-        generatorFamily: source.catalog.generatorFamily,
-        generatorVersion: source.catalog.generatorVersion,
-        evaluatorVersion: source.catalog.evaluatorVersion,
-        evaluatorIdentity: source.catalog.evaluatorIdentity
-      }),
-      tiles: generateBoard(source.boardConfig, makeDeterministicRng(seed))
+      boardProvenance: Object.freeze(
+        source.projectionId
+          ? { ...provenance, projectionId: source.projectionId }
+          : provenance
+      ),
+      tiles: source.projectionId
+        ? projectSettleGraphV2Ports(generatedTiles)
+        : generatedTiles
     };
   }
 

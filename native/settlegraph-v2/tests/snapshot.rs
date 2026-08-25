@@ -352,15 +352,16 @@ fn imports_setup_and_exposes_only_initial_settlement_actions() {
     value["G"]["gameLog"] = json!([]);
     value["G"]["gameLogSeq"] = json!(0);
     value["ctx"]["turn"] = json!(0);
-    value["ctx"]["currentPlayer"] = json!("0");
+    value["ctx"]["currentPlayer"] = json!("1");
     value["ctx"]["phase"] = json!("placement");
-    value["ctx"]["activePlayers"] = json!({ "0": "placementSettlement" });
+    value["ctx"]["playOrder"] = json!(["0", "1", "1", "0"]);
+    value["ctx"]["activePlayers"] = json!({ "1": "placementSettlement" });
 
     let snapshot: WebsiteSnapshot = serde_json::from_value(value).expect("setup snapshot");
-    let imported = import_snapshot(&snapshot, "0").expect("import setup snapshot");
+    let imported = import_snapshot(&snapshot, "1").expect("import setup snapshot");
 
     assert_eq!(imported.game.game_phase, GamePhase::SetupForward);
-    assert_eq!(imported.game.current_player(), 0);
+    assert_eq!(imported.game.current_player(), 1);
     assert!(imported.action_mask[..54].iter().any(|legal| *legal));
     assert!(imported.action_mask[54..].iter().all(|legal| !*legal));
 }

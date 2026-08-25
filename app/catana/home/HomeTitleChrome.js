@@ -144,7 +144,7 @@ export function useHomeBrandLogoOptions() {
   return options;
 }
 
-export const SYSTEM_ACTIONS = [
+export const buildSystemActions = ({ settleGraphV2Enabled = false } = {}) => [
   {
     id: "queue",
     label: "Play Online",
@@ -170,6 +170,20 @@ export const SYSTEM_ACTIONS = [
     iconClassName: "border-white/36 bg-white/30 text-slate-900",
     badgeClassName: "bg-white/34 text-slate-900",
   },
+  ...(settleGraphV2Enabled
+    ? [{
+        id: "bot-v2",
+        label: "Play V2 Bot",
+        subtitle: "Sealed SettleGraph",
+        badge: "V2",
+        icon: CpuChipIcon,
+        variant: "accent",
+        buttonClassName:
+          "border-lime-200/75 bg-[linear-gradient(180deg,rgba(163,230,53,0.98),rgba(101,163,13,0.94))] text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.36),0_12px_26px_rgba(77,124,15,0.13)]",
+        iconClassName: "border-white/36 bg-white/30 text-slate-900",
+        badgeClassName: "bg-white/34 text-slate-900",
+      }]
+    : []),
   {
     id: "friend",
     label: "Play a Friend",
@@ -183,6 +197,11 @@ export const SYSTEM_ACTIONS = [
     badgeClassName: "bg-white/54 text-slate-900",
   },
 ];
+
+export const SYSTEM_ACTIONS = buildSystemActions({
+  settleGraphV2Enabled:
+    process.env.NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2 === "1",
+});
 
 function HexClusterGlyph({ filterId }) {
   const hexPoints =
@@ -479,7 +498,7 @@ function HomeMetaChrome({
 function SystemActionButton({ action, disabled, isActive, onSelectMode }) {
   const Icon = action.icon;
   const activeLabel =
-    action.id === "bot"
+    action.id.startsWith("bot")
       ? "Starting..."
       : action.id === "friend"
       ? "Creating..."
@@ -534,10 +553,16 @@ export function HomeGameModeDock({
   isBusy,
   activeActionId,
   onSelectMode,
+  actions = SYSTEM_ACTIONS,
 }) {
+  const hasFourActions = actions.length === 4;
   return (
-    <section className="catana-hud-glass pointer-events-auto absolute inset-x-3 bottom-3 z-30 mx-auto grid max-w-[55rem] grid-cols-1 gap-1.5 rounded-[1.35rem] p-1.5 sm:inset-x-4 sm:bottom-6 sm:grid-cols-[1.2fr_1fr_1fr] sm:gap-2">
-      {SYSTEM_ACTIONS.map((action) => (
+    <section className={`catana-hud-glass pointer-events-auto absolute inset-x-3 bottom-3 z-30 mx-auto grid grid-cols-1 gap-1.5 rounded-[1.35rem] p-1.5 sm:inset-x-4 sm:bottom-6 sm:gap-2 ${
+      hasFourActions
+        ? "max-w-[66rem] sm:grid-cols-4"
+        : "max-w-[55rem] sm:grid-cols-[1.2fr_1fr_1fr]"
+    }`}>
+      {actions.map((action) => (
         <SystemActionButton
           key={action.id}
           action={action}
@@ -574,6 +599,7 @@ export function HomeTitleChrome({
   releaseInfo = publicReleaseInfo,
   releaseOpen,
   onReleaseOpenChange,
+  systemActions = SYSTEM_ACTIONS,
 }) {
   return (
     <>
@@ -604,6 +630,7 @@ export function HomeTitleChrome({
         isBusy={isBusy}
         activeActionId={activeActionId}
         onSelectMode={onSelectMode}
+        actions={systemActions}
       />
     </>
   );

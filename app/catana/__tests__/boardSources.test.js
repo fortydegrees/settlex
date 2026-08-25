@@ -41,6 +41,44 @@ describe("Catana board sources", () => {
     });
   });
 
+  it("projects only V2 port attachments onto the pinned native contract", () => {
+    const standard = materializeBoardSource({
+      boardSourceId: BOARD_SOURCE_IDS.DUEL_FAIR_OFFICIAL_V1,
+      rng: () => 0
+    });
+    const settleGraph = materializeBoardSource({
+      boardSourceId: BOARD_SOURCE_IDS.SETTLEGRAPH_V2_NATIVE_V1,
+      rng: () => 0
+    });
+
+    expect(settleGraph.boardSourceId).toBe("settlegraph-v2-native-v1");
+    expect(settleGraph.tiles.filter(({ type }) => type === "Land"))
+      .toEqual(standard.tiles.filter(({ type }) => type === "Land"));
+    expect(settleGraph.tiles.filter(({ type }) => type === "Port").map(({ tile }) => tile.resource))
+      .toEqual(standard.tiles.filter(({ type }) => type === "Port").map(({ tile }) => tile.resource));
+    expect(settleGraph.tiles.filter(({ type }) => type === "Port").map(({ coordinate, tile }) => ({
+      coordinate,
+      direction: tile.direction,
+      nodes: tile.nodes
+    }))).toEqual([
+      { coordinate: [1, 2, -3], direction: "NORTHEAST", nodes: [35, 36] },
+      { coordinate: [2, 1, -3], direction: "NORTHWEST", nodes: [46, 52] },
+      { coordinate: [3, -1, -2], direction: "NORTHEAST", nodes: [50, 51] },
+      { coordinate: [3, -3, 0], direction: "EAST", nodes: [48, 49] },
+      { coordinate: [1, -3, 2], direction: "SOUTHEAST", nodes: [40, 26] },
+      { coordinate: [-1, -2, 3], direction: "SOUTHWEST", nodes: [16, 28] },
+      { coordinate: [-2, -1, 3], direction: "SOUTHEAST", nodes: [2, 3] },
+      { coordinate: [-3, 1, 2], direction: "SOUTHWEST", nodes: [5, 8] },
+      { coordinate: [-3, 3, 0], direction: "WEST", nodes: [12, 13] }
+    ]);
+    expect(settleGraph.boardProvenance).toMatchObject({
+      sourceKind: "catalog",
+      catalogId: "duel-fair-official-v1",
+      seed: DUEL_FAIR_BOARD_CATALOG.seeds[0],
+      projectionId: "settlegraph-v2-native-ports-v1"
+    });
+  });
+
   it.each([-0.01, 1, Number.NaN])(
     "rejects invalid catalog random value %s",
     (randomValue) => {
