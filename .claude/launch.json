@@ -1,0 +1,57 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "settlex-3d-theme-worktree",
+      "url": "http://localhost:3210"
+    },
+    {
+      "name": "soundkit-audition",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8123",
+        "-d",
+        "/private/tmp/claude-501/-Users-david-coding-settlex/9d91b9c3-54ba-45d8-84c9-b987228a60c4/scratchpad/soundkit"
+      ],
+      "port": 8123
+    },
+    {
+      "name": "stylized-water-board",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "/Users/david/coding/settlex/.worktrees/stylized-water",
+        "dev",
+        "-p",
+        "3211"
+      ],
+      "port": 3211
+    },
+    {
+      "name": "lagoon-board",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "/Users/david/coding/settlex/.worktrees/lagoon",
+        "dev",
+        "-p",
+        "3212"
+      ],
+      "port": 3212
+    },
+    {
+      "name": "realistic-3d-board",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "/Users/david/coding/settlex/.worktrees/realistic-3d-theme",
+        "dev",
+        "-p",
+        "3210"
+      ],
+      "port": 3210
+    }
+  ]
+}
