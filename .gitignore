@@ -16,6 +16,7 @@ node_modules/
 # production
 /build
 /game-core/dist
+/native/settlegraph-v2/target/
 
 # AI training artifacts
 ai/pufferlib/runs*/
