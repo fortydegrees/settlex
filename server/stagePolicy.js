@@ -27,6 +27,7 @@ const BOT_ACTION_STAGE_KEYS = new Set([
   "placement:road",
   "main:preRoll",
   "main:postRoll",
+  "main:robberDiscard",
   "main:moveRobber",
   "main:roadBuilding",
   "main:devCardChoice"

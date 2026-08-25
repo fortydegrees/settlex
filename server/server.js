@@ -7,7 +7,7 @@ import { createTimerPubSub } from "./timers/timerPubSub.js"
 import { DisconnectPresenceManager } from "./presence/DisconnectPresenceManager.js"
 import { IdlePresenceManager } from "./presence/IdlePresenceManager.js"
 import { acknowledgeIdle } from "./presence/acknowledgeIdle.js"
-import { createPufferBotManagerFromEnv } from "./bots/pufferBotManager.js"
+import { createBotManagerFromEnv } from "./bots/BotManager.js"
 import { dispatchMatchUpdate } from "./dispatch/dispatchMatchUpdate.js"
 import { getPool } from "../lib/server/db/getPool.js"
 import { ArchiveManager } from "./archive/ArchiveManager.js"
@@ -21,7 +21,7 @@ const DEFAULT_BOT_MOVE_DELAY_MS = 450
 const DEFAULT_FINISHED_MATCH_CLEANUP_GRACE_MS = 300_000
 
 let serverInstance
-const botManager = createPufferBotManagerFromEnv()
+const botManager = createBotManagerFromEnv()
 
 const applyCors = (ctx) => {
   ctx.set("Access-Control-Allow-Origin", "*")

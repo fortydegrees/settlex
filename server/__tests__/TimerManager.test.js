@@ -255,6 +255,72 @@ describe("TimerManager", () => {
     });
   });
 
+  it("schedules only the first serial discard actor when that seat is a bot", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({
+      dispatch,
+      botMoveDelayMs: 250,
+      isBotPlayer: ({ playerID }) => ["1", "2"].includes(playerID)
+    });
+
+    manager.onState("match-1", {
+      _stateID: 9,
+      G: {
+        core: {
+          turn: {
+            phase: "robberDiscard",
+            pendingDiscards: ["1", "2"]
+          }
+        }
+      },
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "1": "robberDiscard", "2": "robberDiscard" },
+        turn: 1
+      }
+    });
+
+    vi.advanceTimersByTime(250);
+
+    expect(dispatch).toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoBot",
+      playerID: "1"
+    });
+    expect(dispatch).not.toHaveBeenCalledWith({
+      matchID: "match-1",
+      move: "autoBot",
+      playerID: "2"
+    });
+  });
+
+  it("waits for a human who is first in serial discard order", () => {
+    const dispatch = vi.fn();
+    const manager = new TimerManager({
+      dispatch,
+      botMoveDelayMs: 250,
+      isBotPlayer: ({ playerID }) => playerID === "2"
+    });
+
+    manager.onState("match-1", {
+      _stateID: 9,
+      G: { core: { turn: { phase: "robberDiscard", pendingDiscards: ["1", "2"] } } },
+      ctx: {
+        phase: "main",
+        currentPlayer: "0",
+        activePlayers: { "1": "robberDiscard", "2": "robberDiscard" },
+        turn: 1
+      }
+    });
+
+    vi.advanceTimersByTime(250);
+
+    expect(dispatch).not.toHaveBeenCalledWith(
+      expect.objectContaining({ move: "autoBot" })
+    );
+  });
+
   it("pauses turn timer while stage timer runs, then resumes", () => {
     const dispatch = vi.fn();
     const manager = new TimerManager({ dispatch });

@@ -177,11 +177,24 @@ fn validate_contract(snapshot: &WebsiteSnapshot) -> Result<(), String> {
     let game = &snapshot.game;
     let core = &game.core;
     let rules = &core.ruleset;
-    if snapshot.ctx.num_players != 2
-        || core.players != ["0".to_owned(), "1".to_owned()]
-        || snapshot.ctx.play_order != core.players
-    {
+    if snapshot.ctx.num_players != 2 || core.players != ["0".to_owned(), "1".to_owned()] {
         return Err("SettleGraph V2 requires website seats [\"0\", \"1\"]".to_owned());
+    }
+    let expected_play_order = if snapshot.ctx.phase == "placement" || core.phase == "placement" {
+        vec![
+            "0".to_owned(),
+            "1".to_owned(),
+            "1".to_owned(),
+            "0".to_owned(),
+        ]
+    } else {
+        core.players.clone()
+    };
+    if snapshot.ctx.play_order != expected_play_order {
+        return Err(format!(
+            "SettleGraph V2 received unexpected website play order {:?}",
+            snapshot.ctx.play_order
+        ));
     }
     if game.mode_id != "duel" || game.ruleset_id != "duel" {
         return Err("SettleGraph V2 requires the duel mode and duel ruleset".to_owned());
@@ -393,13 +406,21 @@ pub fn import_snapshot(
     let core = &snapshot.game.core;
     let players = &core.players;
     let actor = seat_of(players, actor_id)?;
-    let current_player = seat_of(players, &core.turn.current_player_id)?;
+    let core_current_player = seat_of(players, &core.turn.current_player_id)?;
     let context_player = seat_of(players, &snapshot.ctx.current_player)?;
-    if current_player != context_player {
+    let is_setup = snapshot.ctx.phase == "placement" || core.phase == "placement";
+    if !is_setup && core_current_player != context_player {
         return Err(format!(
-            "website core/context current-player mismatch: {current_player} != {context_player}"
+            "website core/context current-player mismatch: {core_current_player} != {context_player}"
         ));
     }
+    // Catana's authoritative setup actor lives in ctx.currentPlayer; the core
+    // turn owner stays at seat zero until normal play begins.
+    let current_player = if is_setup {
+        context_player
+    } else {
+        core_current_player
+    };
 
     let (topology_map, tile_resources, tile_numbers, port_types) =
         import_topology_and_board(snapshot)?;

@@ -124,12 +124,15 @@ export class PufferBotManager {
       return [{ move: "readyUp", args: [] }];
     }
 
-    if (state?.ctx?.currentPlayer !== String(playerID)) {
-      return [];
+    if (stageKey === "main:robberDiscard") {
+      const firstPending = state?.G?.core?.turn?.pendingDiscards?.[0];
+      return String(firstPending) === String(playerID)
+        ? [{ move: "autoDiscard", args: [] }]
+        : [];
     }
 
-    if (stageKey === "main:robberDiscard") {
-      return [{ move: "autoDiscard", args: [] }];
+    if (state?.ctx?.currentPlayer !== String(playerID)) {
+      return [];
     }
 
     if (stageKey === "main:devCardChoice") {

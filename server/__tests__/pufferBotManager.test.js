@@ -56,6 +56,23 @@ describe("PufferBotManager", () => {
     expect(moves).toEqual([{ move: "autoDiscard", args: [] }]);
   });
 
+  it("can auto-discard for a bot seat that is not the turn owner", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["1"] });
+    const state = createState({
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "1": "robberDiscard" },
+      turn: 4
+    });
+    state.G.core.phase = "normal";
+    state.G.core.turn.currentPlayerId = "0";
+    state.G.core.turn.phase = "robberDiscard";
+    state.G.core.turn.pendingDiscards = ["1"];
+
+    const moves = await manager.chooseMoves(state, "1");
+    expect(moves).toEqual([{ move: "autoDiscard", args: [] }]);
+  });
+
   it("uses autoResolveDevCard for forced dev-card choices", async () => {
     const manager = new PufferBotManager({ botPlayerIds: ["0"] });
     const state = createState({

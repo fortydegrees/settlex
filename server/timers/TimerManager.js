@@ -360,6 +360,26 @@ export class TimerManager {
       return;
     }
 
+    if (stage === "main:robberDiscard") {
+      const playerID = getStagePlayers(state, stage)[0];
+      if (
+        playerID == null ||
+        !this.isBotPlayer({ matchID, playerID: String(playerID), state })
+      ) {
+        this.clearAllBotDispatches(record);
+        return;
+      }
+      this.clearAllBotDispatches(record);
+      this.scheduleBotDispatch(
+        matchID,
+        record,
+        stage,
+        stateID,
+        String(playerID)
+      );
+      return;
+    }
+
     const playerID = state.ctx?.currentPlayer;
     if (playerID == null) {
       this.clearAllBotDispatches(record);

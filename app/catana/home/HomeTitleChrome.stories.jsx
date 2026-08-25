@@ -14,6 +14,7 @@ import {
 import { publicReleaseInfo } from "../lobby/releaseInfo";
 import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
 import {
+  buildSystemActions,
   HomeTitleChrome,
   SYSTEM_ACTIONS,
 } from "./HomeTitleChrome";
@@ -134,6 +135,25 @@ export const ClaimedStartingPuffer = {
     hasIdentity: true,
     matchAlertDisplay: matchAlertFixtures.active,
     activeActionId: "bot",
+  },
+};
+
+export const SettleGraphV2Available = {
+  args: {
+    identity: savedIdentity,
+    accountStatus: "claimed",
+    hasIdentity: true,
+    matchAlertDisplay: matchAlertFixtures.active,
+    activeActionId: null,
+    systemActions: buildSystemActions({ settleGraphV2Enabled: true }),
+  },
+  play: async ({ canvasElement, args }) => {
+    const screen = within(canvasElement);
+    args.onSelectMode.mockClear();
+    await userEvent.click(
+      screen.getByRole("button", { name: /Play V2 Bot/ })
+    );
+    expect(args.onSelectMode).toHaveBeenCalledWith("bot-v2");
   },
 };
 
