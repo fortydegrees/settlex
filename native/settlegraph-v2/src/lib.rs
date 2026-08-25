@@ -8,6 +8,8 @@ use catan_env_contract::{
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
+pub mod topology;
+
 pub const EXPECTED_CTNN_SHA256: &str =
     "072906d17077f1ed3fa4e9254999a8920ec243bdda3ab42575258492b58465c8";
 pub const EXPECTED_CONTRACT_SHA256: &str =
