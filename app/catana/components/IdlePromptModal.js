@@ -32,7 +32,7 @@ export function IdlePromptModal({
         </Button>
       }
     >
-      <div className="text-xs font-semibold uppercase tracking-widest text-rose-700">
+      <div className="text-sm font-semibold text-rose-700">
         Idle Warning
       </div>
       <p className="mt-3 text-sm text-slate-700">

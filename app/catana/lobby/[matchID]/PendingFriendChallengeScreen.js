@@ -40,11 +40,11 @@ function ChallengeSeat({ label, seat, fallback }) {
   const displayName = sanitizeDisplayName(seat?.name) || fallback;
 
   return (
-    <div className="rounded-[1.05rem] border border-white/46 bg-white/55 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.48)]">
-      <div className="text-[0.62rem] font-black uppercase tracking-[0.18em] text-slate-500">
+    <div className="settlex-ui-inset min-w-0 px-4 py-3">
+      <div className="settlex-ui-label">
         {label}
       </div>
-      <div className="mt-1 truncate text-base font-black text-slate-900">
+      <div className="mt-1 break-words text-base font-semibold text-slate-900">
         {displayName}
       </div>
     </div>
@@ -140,13 +140,13 @@ export function PendingFriendChallengeScreen({
       <div className="absolute inset-0 bg-white/[0.08] backdrop-blur-[2px]" />
 
       <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-8">
-        <Panel bodyClassName="p-5 sm:p-6 md:p-8" className="w-full">
+        <Panel bodyClassName="p-5 sm:p-6" className="w-full">
           <div className="grid gap-6 md:grid-cols-[1fr_1.05fr] md:items-center">
             <div>
-              <div className="text-[0.68rem] font-black uppercase tracking-[0.28em] text-lime-700">
+              <div className="settlex-ui-label">
                 Settlehex game
               </div>
-              <h1 className="mt-2 text-3xl font-black leading-none text-slate-950 sm:text-4xl">
+              <h1 className="mt-2 text-2xl font-semibold leading-tight text-slate-900 sm:text-[1.75rem]">
                 {title}
               </h1>
               <p className="mt-3 max-w-md text-sm font-semibold leading-relaxed text-slate-700">
@@ -177,23 +177,23 @@ export function PendingFriendChallengeScreen({
               ) : null}
             </div>
 
-            <div className="rounded-[1.25rem] border border-white/46 bg-white/60 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] backdrop-blur-xl sm:p-5">
+            <div className="min-w-0 border-t border-blue-100 pt-6 md:border-l md:border-t-0 md:pl-6 md:pt-0">
               {isInviter ? (
                 <div className="grid gap-4">
-                  <label className="grid gap-1.5 text-sm font-black text-slate-700">
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
                     Invite link
-                    <div className="flex overflow-hidden rounded-[1rem] border border-white/58 bg-white/64 shadow-inner">
+                    <div className="flex gap-2">
                       <input
                         readOnly
                         value={absoluteChallengeUrl}
-                        className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm font-bold text-slate-800 outline-none"
+                        className="settlex-ui-field min-w-0 flex-1"
                         aria-label="Invite link"
                       />
                       <Button
                         type="button"
                         variant="secondary"
                         size="md"
-                        className="rounded-none border-0"
+                        className="shrink-0"
                         onClick={copyInvite}
                       >
                         {copyStatus || "Copy"}
@@ -234,7 +234,7 @@ export function PendingFriendChallengeScreen({
                 </div>
               ) : (
                 <form className="grid gap-4" onSubmit={onJoin}>
-                  <label className="grid gap-1.5 text-sm font-black text-slate-700">
+                  <label className="grid gap-2 text-sm font-medium text-slate-700">
                     Username
                     <Input
                       value={playerName}
@@ -242,7 +242,7 @@ export function PendingFriendChallengeScreen({
                       placeholder="Player"
                       autoComplete="nickname"
                       maxLength={28}
-                      className="text-center text-base font-black"
+                      className="text-center text-base font-semibold"
                     />
                   </label>
                   <Button
@@ -265,7 +265,7 @@ export function PendingFriendChallengeScreen({
                 </form>
               )}
 
-              <div className="mt-4 border-t border-white/58 pt-4 text-center text-[0.72rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+              <div className="mt-4 break-all border-t border-blue-100 pt-4 text-center text-xs font-medium text-slate-600">
                 Game {matchID}
               </div>
             </div>

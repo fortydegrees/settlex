@@ -90,6 +90,13 @@ export const MatchFound = {
   },
 };
 
+export const RescueError = {
+  args: {
+    searchElapsedSeconds: 35,
+    matchAlertError: "Match alerts could not be enabled. Check your connection and try again.",
+  },
+};
+
 export const StartingPuffer = {
   args: {
     searchState: null,

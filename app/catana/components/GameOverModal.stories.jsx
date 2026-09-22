@@ -184,6 +184,24 @@ export const ActionPending = {
   },
 };
 
+export const DenseResumeError = {
+  args: {
+    ...winnerProps,
+    subtitle: "Victory Points: 10",
+    scoreboard: [
+      { id: "0", name: "TheLongestHarbourTraderName28", color: "orange", vp: 10, isWinner: true },
+      { id: "1", name: "AnotherLongHarbourTraderName", color: "teal", vp: 8 },
+      { id: "2", name: "RoadScholar", color: "purple", vp: 7 },
+      { id: "3", name: "HarbourFox", color: "green", vp: 6 },
+    ],
+    showMatchAlertResume: true,
+    matchAlertResumeError: "Match alerts could not be resumed. Try again or continue without alerts.",
+    onWatchReplay: fn(),
+    onRetryMatchAlertResume: fn(),
+    onContinueWithoutMatchAlerts: fn(),
+  },
+};
+
 export const Mobile = {
   args: {
     ...loserProps,

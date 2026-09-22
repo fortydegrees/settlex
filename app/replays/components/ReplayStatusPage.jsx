@@ -41,8 +41,8 @@ export function ReplayStatusPage({ matchID, status }) {
       className="grid min-h-screen place-items-center p-6"
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
-      <section className="w-full max-w-md rounded-[1.4rem] border border-white/60 bg-blue-100/90 p-6 text-center shadow-2xl ring-1 ring-white/40 backdrop-blur-2xl">
-        <h1 className="text-2xl font-extrabold text-slate-900">{title}</h1>
+      <section className="settlex-ui-pane w-full max-w-md p-5 text-center sm:p-6">
+        <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
         <p className="mt-2 text-sm font-medium text-slate-600">
           {description}
         </p>

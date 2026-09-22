@@ -43,6 +43,10 @@ export const NoProfile = {};
 
 export const GuestProfile = { args: { account: guestAccount } };
 
+export const LongUsername = {
+  args: { account: { ...guestAccount, currentUsername: "TheLongestHarbourTraderName28" } },
+};
+
 export const ClaimedProfile = { args: { account: claimedAccount } };
 
 export const MissingCredentials = {

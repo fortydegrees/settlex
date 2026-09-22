@@ -90,22 +90,20 @@ export function ReplayStepControls({
   const atStart = currentEventIndex <= 0;
   const atEnd = currentEventIndex >= finalEventIndex;
   const iconOnly = !compact && !touchLabels;
-  // `cn` concatenates rather than merges, so a bare `rounded-xl` here loses to
-  // the variant's own `rounded-[1.2rem]` on stylesheet order alone. The design
-  // asks for a 12px corner on all four controls, so force it.
+  // Shared buttons own corner geometry; replay owns the compact arrangement.
   const eventButtonClassName = compact
-    ? "h-11 min-h-11 w-11 !rounded-[1rem] p-0"
+    ? "h-11 min-h-[2.75rem] w-11 !p-0"
     : touchLabels
-      ? "h-11 min-h-11 min-w-0 flex-1 !rounded-xl px-1 text-[0.7rem]"
-      : "h-10 min-h-10 min-w-0 flex-1 !rounded-xl px-2";
+      ? "h-11 min-h-[2.75rem] min-w-0 flex-1 px-1 text-xs"
+      : "h-11 min-h-[2.75rem] min-w-0 flex-1 px-2";
   // Ghost resting state is fully transparent, which leaves the turn jumps
   // reading as loose glyphs beside the raised event buttons. The design gives
   // them a faint fill so they still read as squares one step down the hierarchy.
   // The tray sits on a near-opaque light sheet where a 20% white fill vanishes,
   // so it takes a heavier fill and a slate hairline instead.
   const turnButtonClassName = touchLabels
-    ? "h-11 min-h-11 min-w-0 flex-1 !rounded-xl !border-slate-400/30 !bg-white/70 px-1 text-[0.7rem]"
-    : "h-10 min-h-10 w-10 shrink-0 !rounded-xl !border-white/40 !bg-white/20 p-0";
+    ? "h-11 min-h-[2.75rem] min-w-0 flex-1 !border-slate-400/30 !bg-white/70 px-1 text-xs"
+    : "h-11 min-h-[2.75rem] w-11 shrink-0 !border-white/40 !bg-white/20 !p-0";
 
   return (
     <div
@@ -137,7 +135,7 @@ export function ReplayStepControls({
               ))}
             </div>
             <input
-              className={`relative z-10 m-0 h-[1.375rem] w-full cursor-pointer appearance-none rounded-full bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 ${railThumbClassName}`}
+              className={`relative z-10 m-0 h-[1.375rem] w-full cursor-pointer appearance-none rounded-full bg-transparent settlex-ui-focus ${railThumbClassName}`}
               type="range"
               min="0"
               max={finalEventIndex}
