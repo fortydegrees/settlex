@@ -1,8 +1,6 @@
 use catan_core::game::{Action, CatanGame, GamePhase, TurnPhase};
 use catan_core::trading::get_bank_trade_rate;
-use catan_env_contract::{
-    decode_action, encode_obs_v2, fill_action_mask, SettleGraphScratch, NUM_ACTIONS, OBS_V2_DIM,
-};
+use catan_env_contract::{decode_action, fill_action_mask, SettleGraphScratch, NUM_ACTIONS};
 use serde::Serialize;
 use serde_json::{json, Value};
 
@@ -242,11 +240,11 @@ impl DecisionEngine {
         actor: usize,
         mask: &[bool; NUM_ACTIONS],
     ) -> Result<(usize, f32), String> {
-        let mut observation = [0.0; OBS_V2_DIM];
-        encode_obs_v2(game, actor, &mut observation);
-        let value = self
-            .net
-            .forward_raw(&observation, &mut self.scratch, &mut self.logits)?;
+        let mut observation = self.net.new_observation();
+        observation.encode(game, actor);
+        let value =
+            self.net
+                .forward_raw(observation.as_ref(), &mut self.scratch, &mut self.logits)?;
         let action = select_highest_legal(&self.logits, mask)
             .ok_or_else(|| "SettleGraph V2 produced no legal action".to_owned())?;
         Ok((action, value))
@@ -275,11 +273,8 @@ impl DecisionEngine {
             });
         }
 
-        let value =
-            self.net
-                .forward_raw(&imported.observation, &mut self.scratch, &mut self.logits)?;
-        let action_id = select_highest_legal(&self.logits, &imported.action_mask)
-            .ok_or_else(|| "SettleGraph V2 produced no legal action".to_owned())?;
+        let (action_id, value) =
+            self.choose_game(&imported.game, imported.actor, &imported.action_mask)?;
         let action = decode_action(&imported.game, action_id);
         let planned_moves = plan_for_action(&imported.game, &imported.topology, &action)?;
         if planned_moves.is_empty() {

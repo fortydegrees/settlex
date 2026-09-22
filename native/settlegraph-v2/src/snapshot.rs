@@ -280,6 +280,14 @@ fn import_topology_and_board(snapshot: &WebsiteSnapshot) -> Result<ImportedBoard
                 website.tile.number
             )
         })?;
+        let number = tile_numbers[native_tile];
+        if (resource == "Desert" && number != 0)
+            || (resource != "Desert" && (!(2..=12).contains(&number) || number == 7))
+        {
+            return Err(format!(
+                "website land tile {website_id} has invalid production number {number}"
+            ));
+        }
     }
 
     let expected_ports = topology_map.native_port_website_vertices();

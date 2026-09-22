@@ -15,6 +15,19 @@ fn read_response(reader: &mut BufReader<std::process::ChildStdout>) -> Value {
 }
 
 #[test]
+fn worker_rejects_search_arguments_without_loading_a_model() {
+    for unsupported in ["--search", "--thinking"] {
+        let output = Command::new(env!("CARGO_BIN_EXE_settlegraph-v2-worker"))
+            .args(["--model", "/does/not/exist.ctnn", unsupported, "maximum"])
+            .output()
+            .expect("run worker argument parser");
+        assert!(!output.status.success());
+        let stderr = String::from_utf8(output.stderr).expect("worker stderr UTF-8");
+        assert!(stderr.contains("unknown worker argument"), "{stderr}");
+    }
+}
+
+#[test]
 #[ignore = "requires the external sealed CTNN-v2 artifact"]
 fn worker_preflights_once_and_returns_correlated_health_and_errors() {
     let model =
@@ -46,6 +59,16 @@ fn worker_preflights_once_and_returns_correlated_health_and_errors() {
     assert_eq!(error["id"], "bad-1");
     assert_eq!(error["ok"], false);
     assert!(error["error"].as_str().unwrap().contains("playerId"));
+
+    writeln!(stdin, r#"{{"id":"search-1","mode":"search"}}"#).unwrap();
+    stdin.flush().unwrap();
+    let unsupported = read_response(&mut stdout);
+    assert_eq!(unsupported["id"], "search-1");
+    assert_eq!(unsupported["ok"], false);
+    assert!(unsupported["error"]
+        .as_str()
+        .unwrap()
+        .contains("unsupported worker mode"));
 
     child.kill().expect("stop worker");
     child.wait().expect("reap worker");
