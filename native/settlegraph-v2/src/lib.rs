@@ -15,6 +15,8 @@ pub mod topology;
 
 pub const EXPECTED_CTNN_SHA256: &str =
     "072906d17077f1ed3fa4e9254999a8920ec243bdda3ab42575258492b58465c8";
+pub const INCUMBENT_005_CTNN_SHA256: &str =
+    "382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca";
 pub const EXPECTED_CONTRACT_SHA256: &str =
     "a64b9d0daaa3bb6f60f0c0c42bfc52b53ba4a4672263b85d899805323bc97e55";
 
@@ -57,16 +59,31 @@ pub fn runtime_contract() -> RuntimeContract {
 
 pub fn load_verified_model(path: &Path) -> Result<VerifiedModel, String> {
     let bytes = fs::read(path)
-        .map_err(|error| format!("cannot read sealed CTNN-v2 {}: {error}", path.display()))?;
+        .map_err(|error| format!("cannot read sealed CTNN {}: {error}", path.display()))?;
     let sha256 = lowercase_hex(&Sha256::digest(&bytes));
-    if sha256 != EXPECTED_CTNN_SHA256 {
-        return Err(format!(
-            "sealed CTNN-v2 SHA-256 mismatch: expected {EXPECTED_CTNN_SHA256}, received {sha256}"
-        ));
-    }
+    let expected_version = match sha256.as_str() {
+        EXPECTED_CTNN_SHA256 => 2,
+        INCUMBENT_005_CTNN_SHA256 => 3,
+        _ => {
+            return Err(format!(
+                "sealed CTNN SHA-256 mismatch: expected approved V2 or 005, received {sha256}"
+            ))
+        }
+    };
 
     let net = SettleGraphNet::from_bytes(&bytes)?;
-    let contract = runtime_contract();
+    if net.observation_version() != expected_version {
+        return Err(format!(
+            "sealed model observation version mismatch: hash requires V{expected_version}, header reports V{}",
+            net.observation_version()
+        ));
+    }
+    let mut contract = runtime_contract();
+    contract.observation_version = net.observation_version();
+    contract.observation_dim = net.observation_dim();
+    if expected_version == 3 {
+        contract.model_kind = "SettleGraph/CTNN-v3";
+    }
     if contract.contract_sha256 != EXPECTED_CONTRACT_SHA256 {
         return Err(format!(
             "native SettleGraph contract SHA-256 mismatch: expected {EXPECTED_CONTRACT_SHA256}, received {}",

@@ -195,6 +195,7 @@ pub struct WebsiteGameLogEntry {
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct WorkerRequest {
     pub id: String,
     #[serde(default = "default_worker_mode")]

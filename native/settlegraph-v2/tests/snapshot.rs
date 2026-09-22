@@ -230,6 +230,31 @@ fn base_snapshot() -> WebsiteSnapshot {
 }
 
 #[test]
+fn rejects_invalid_public_tile_numbers_before_inference() {
+    for number in [1, 7, 13] {
+        let mut snapshot = base_snapshot();
+        snapshot.game.tiles[0].tile.number = Some(number);
+        let error = import_snapshot(&snapshot, "1")
+            .err()
+            .expect("invalid production number must fail");
+        assert!(error.contains("invalid production number"), "{error}");
+    }
+
+    let mut snapshot = base_snapshot();
+    let desert = snapshot
+        .game
+        .tiles
+        .iter_mut()
+        .find(|tile| tile.tile.resource.as_deref() == Some("Desert"))
+        .expect("desert tile");
+    desert.tile.number = Some(6);
+    let error = import_snapshot(&snapshot, "1")
+        .err()
+        .expect("numbered desert must fail");
+    assert!(error.contains("invalid production number"), "{error}");
+}
+
+#[test]
 fn imports_post_roll_state_history_ports_observation_and_legality() {
     let imported = import_snapshot(&base_snapshot(), "1").expect("import post-roll snapshot");
     let state = &imported.game.state;

@@ -3,6 +3,7 @@
 pub mod codec;
 pub mod obs;
 pub mod obs_v2;
+pub mod obs_v3;
 pub mod settlegraph_contract;
 pub mod settlegraph_net;
 

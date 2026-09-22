@@ -1,4 +1,4 @@
-//! Dependency-free CTNN-v2 inference for the structured SettleGraph network.
+//! Dependency-free CTNN-v2/v3 inference for the structured SettleGraph network.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -7,8 +7,10 @@ use catan_core::board::{NUM_EDGES, NUM_TILES, NUM_VERTICES};
 
 use crate::codec::NUM_ACTIONS;
 use crate::obs_v2::OBS_V2_DIM;
+use crate::obs_v3::{OBS_V3_DIM, TILE_TOKEN_CATEGORIES};
 use crate::settlegraph_contract::{
-    action_descriptors, settlegraph_contract_sha256, topology_contract, LocationKind,
+    action_descriptors, settlegraph_contract_sha256, topology_contract, ActionDescriptor,
+    LocationKind,
 };
 
 const ENTITY: usize = 64;
@@ -79,6 +81,89 @@ impl<'a> Reader<'a> {
     }
 }
 
+fn dot_fixed_16(left: &[f32], right: &[f32]) -> f32 {
+    debug_assert_eq!(left.len(), right.len());
+    let mut accumulators = [0.0f32; 16];
+    let mut left_chunks = left.chunks_exact(16);
+    let mut right_chunks = right.chunks_exact(16);
+    for (left_chunk, right_chunk) in left_chunks.by_ref().zip(right_chunks.by_ref()) {
+        for lane in 0..16 {
+            accumulators[lane] += left_chunk[lane] * right_chunk[lane];
+        }
+    }
+    let mut tail = 0.0;
+    for (&left, &right) in left_chunks.remainder().iter().zip(right_chunks.remainder()) {
+        tail += left * right;
+    }
+    accumulators[0]
+        + accumulators[1]
+        + accumulators[2]
+        + accumulators[3]
+        + accumulators[4]
+        + accumulators[5]
+        + accumulators[6]
+        + accumulators[7]
+        + accumulators[8]
+        + accumulators[9]
+        + accumulators[10]
+        + accumulators[11]
+        + accumulators[12]
+        + accumulators[13]
+        + accumulators[14]
+        + accumulators[15]
+        + tail
+}
+
+fn rmsnorm_dot_fixed_16(
+    weight: &[f32],
+    input: &[f32],
+    norm_weight: &[f32],
+    inverse_rms: f32,
+) -> f32 {
+    debug_assert_eq!(weight.len(), input.len());
+    debug_assert_eq!(input.len(), norm_weight.len());
+    let mut accumulators = [0.0f32; 16];
+    let mut weight_chunks = weight.chunks_exact(16);
+    let mut input_chunks = input.chunks_exact(16);
+    let mut norm_chunks = norm_weight.chunks_exact(16);
+    for ((weight_chunk, input_chunk), norm_chunk) in weight_chunks
+        .by_ref()
+        .zip(input_chunks.by_ref())
+        .zip(norm_chunks.by_ref())
+    {
+        for lane in 0..16 {
+            accumulators[lane] +=
+                weight_chunk[lane] * input_chunk[lane] * inverse_rms * norm_chunk[lane];
+        }
+    }
+    let mut tail = 0.0;
+    for ((&weight, &input), &norm_weight) in weight_chunks
+        .remainder()
+        .iter()
+        .zip(input_chunks.remainder())
+        .zip(norm_chunks.remainder())
+    {
+        tail += weight * input * inverse_rms * norm_weight;
+    }
+    accumulators[0]
+        + accumulators[1]
+        + accumulators[2]
+        + accumulators[3]
+        + accumulators[4]
+        + accumulators[5]
+        + accumulators[6]
+        + accumulators[7]
+        + accumulators[8]
+        + accumulators[9]
+        + accumulators[10]
+        + accumulators[11]
+        + accumulators[12]
+        + accumulators[13]
+        + accumulators[14]
+        + accumulators[15]
+        + tail
+}
+
 #[derive(Debug)]
 struct Dense {
     input: usize,
@@ -107,11 +192,7 @@ impl Dense {
         debug_assert_eq!(output.len(), self.output);
         for (row, value) in output.iter_mut().enumerate() {
             let weights = &self.weight[row * self.input..(row + 1) * self.input];
-            let mut sum = self.bias[row];
-            for (&weight, &input) in weights.iter().zip(input) {
-                sum += weight * input;
-            }
-            *value = sum;
+            *value = self.bias[row] + dot_fixed_16(weights, input);
         }
     }
 
@@ -120,11 +201,12 @@ impl Dense {
         debug_assert_eq!(output.len(), self.output);
         for (row, value) in output.iter_mut().enumerate() {
             let weights = &self.weight[row * self.input..(row + 1) * self.input];
-            let mut sum = self.bias[row];
-            for (&weight, &input) in weights.iter().zip(a.iter().chain(b).chain(c)) {
-                sum += weight * input;
-            }
-            *value = sum;
+            let a_end = a.len();
+            let b_end = a_end + b.len();
+            *value = self.bias[row]
+                + dot_fixed_16(&weights[..a_end], a)
+                + dot_fixed_16(&weights[a_end..b_end], b)
+                + dot_fixed_16(&weights[b_end..], c);
         }
     }
 
@@ -143,11 +225,8 @@ impl Dense {
             .recip();
         for (row, target) in output.iter_mut().enumerate() {
             let weights = &self.weight[row * self.input..(row + 1) * self.input];
-            let mut sum = self.bias[row];
-            for ((&weight, &input), &norm) in weights.iter().zip(input).zip(norm_weight) {
-                sum += weight * input * inverse_rms * norm;
-            }
-            *target += scale * sum;
+            *target += scale
+                * (self.bias[row] + rmsnorm_dot_fixed_16(weights, input, norm_weight, inverse_rms));
         }
     }
 }
@@ -366,6 +445,8 @@ impl Default for SettleGraphScratch {
 /// Parsed CTNN-v2 model with typed matrices matching the Python state layout.
 pub struct SettleGraphNet {
     contract_sha256: [u8; 32],
+    observation_version: u32,
+    observation_dim: usize,
     tile_encoder: Dense,
     vertex_encoder: Dense,
     edge_encoder: Dense,
@@ -406,9 +487,14 @@ impl SettleGraphNet {
             reader.u32("block count")?,
             reader.u32("relation width")?,
         ];
+        let observation_dim = match header[0] {
+            2 => OBS_V2_DIM,
+            3 => OBS_V3_DIM,
+            version => return Err(format!("CTNN-v2 header mismatch: unsupported SettleGraph version {version}")),
+        };
         let expected = [
-            2,
-            OBS_V2_DIM as u32,
+            header[0],
+            observation_dim as u32,
             NUM_ACTIONS as u32,
             ENTITY as u32,
             GLOBAL as u32,
@@ -491,7 +577,7 @@ impl SettleGraphNet {
             }
         }
 
-        let mut probe = [0.0; OBS_V2_DIM];
+        let mut probe = vec![0.0; observation_dim];
         for value in &mut probe {
             *value = reader.f32("probe observation")?;
         }
@@ -504,7 +590,8 @@ impl SettleGraphNet {
             return Err("CTNN-v2 has extra trailing bytes".to_owned());
         }
 
-        let tile_encoder = Dense::take(&mut tensors, "tile_encoder.0", ENTITY, 10)?;
+        let tile_width = if header[0] == 3 { 21 } else { 10 };
+        let tile_encoder = Dense::take(&mut tensors, "tile_encoder.0", ENTITY, tile_width)?;
         let vertex_encoder = Dense::take(&mut tensors, "vertex_encoder.0", ENTITY, 16)?;
         let edge_encoder = Dense::take(&mut tensors, "edge_encoder.0", ENTITY, 6)?;
         let player_encoder = Dense::take(&mut tensors, "player_encoder.0", ENTITY, 44)?;
@@ -543,6 +630,8 @@ impl SettleGraphNet {
 
         let net = Self {
             contract_sha256,
+            observation_version: header[0],
+            observation_dim,
             tile_encoder,
             vertex_encoder,
             edge_encoder,
@@ -586,8 +675,202 @@ impl SettleGraphNet {
         self.contract_sha256
     }
 
+    pub fn observation_version(&self) -> u32 {
+        self.observation_version
+    }
+
+    pub fn observation_dim(&self) -> usize {
+        self.observation_dim
+    }
+
+    pub fn new_observation(&self) -> crate::obs_v3::SettleGraphObservation {
+        use crate::obs_v3::{SettleGraphObservation, OBS_V3_DIM};
+        match self.observation_version {
+            2 => SettleGraphObservation::V2([0.0; OBS_V2_DIM]),
+            3 => SettleGraphObservation::V3([0.0; OBS_V3_DIM]),
+            _ => unreachable!("loader validates observation version"),
+        }
+    }
+
     pub fn new_scratch(&self) -> SettleGraphScratch {
         SettleGraphScratch::default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const PARITY_TOLERANCE: f32 = 2e-4;
+
+    fn fixture(len: usize, seed: usize) -> Vec<f32> {
+        (0..len)
+            .map(|index| {
+                let value = ((index * 17 + seed * 11) % 29) as f32 - 14.0;
+                value / (seed + 3) as f32
+            })
+            .collect()
+    }
+
+    fn scalar_dot(left: &[f32], right: &[f32]) -> f32 {
+        left.iter()
+            .zip(right)
+            .fold(0.0, |sum, (&left, &right)| sum + left * right)
+    }
+
+    fn scalar_dense_forward(dense: &Dense, input: &[f32]) -> Vec<f32> {
+        (0..dense.output)
+            .map(|row| {
+                dense.bias[row]
+                    + scalar_dot(
+                        &dense.weight[row * dense.input..(row + 1) * dense.input],
+                        input,
+                    )
+            })
+            .collect()
+    }
+
+    fn scalar_dense_forward_three(dense: &Dense, a: &[f32], b: &[f32], c: &[f32]) -> Vec<f32> {
+        let mut input = Vec::with_capacity(a.len() + b.len() + c.len());
+        input.extend_from_slice(a);
+        input.extend_from_slice(b);
+        input.extend_from_slice(c);
+        scalar_dense_forward(dense, &input)
+    }
+
+    fn scalar_dense_rmsnorm_add(
+        dense: &Dense,
+        input: &[f32],
+        norm_weight: &[f32],
+        scale: f32,
+        output: &mut [f32],
+    ) {
+        let square_sum = input.iter().map(|value| value * value).sum::<f32>();
+        let inverse_rms = (square_sum / dense.input as f32 + RMS_EPSILON)
+            .sqrt()
+            .recip();
+        for (row, target) in output.iter_mut().enumerate() {
+            let weights = &dense.weight[row * dense.input..(row + 1) * dense.input];
+            let sum = dense.bias[row]
+                + weights
+                    .iter()
+                    .zip(input)
+                    .zip(norm_weight)
+                    .fold(0.0, |sum, ((&weight, &input), &norm)| {
+                        sum + weight * input * inverse_rms * norm
+                    });
+            *target += scale * sum;
+        }
+    }
+
+    fn assert_parity(actual: &[f32], expected: &[f32]) {
+        assert_eq!(actual.len(), expected.len());
+        for (&actual, &expected) in actual.iter().zip(expected) {
+            assert!(actual.is_finite());
+            assert!(expected.is_finite());
+            assert!(
+                (actual - expected).abs() <= PARITY_TOLERANCE,
+                "actual={actual}, expected={expected}"
+            );
+        }
+    }
+
+    #[test]
+    fn fixed_lane_dot_matches_scalar_reference_within_parity_tolerance() {
+        for (len, seed) in [(7, 1), (16, 2), (37, 3), (64, 4), (128, 5)] {
+            let left = fixture(len, seed);
+            let right = fixture(len, seed + 7);
+            let expected = scalar_dot(&left, &right);
+            let actual = dot_fixed_16(&left, &right);
+            assert!(actual.is_finite());
+            assert!((actual - expected).abs() <= PARITY_TOLERANCE);
+            assert_eq!(actual.to_bits(), dot_fixed_16(&left, &right).to_bits());
+        }
+    }
+
+    #[test]
+    fn dense_forward_matches_scalar_reference_within_parity_tolerance() {
+        let dense = Dense {
+            input: 64,
+            output: 3,
+            weight: fixture(3 * 64, 2),
+            bias: fixture(3, 9),
+        };
+        let input = fixture(64, 5);
+        let expected = scalar_dense_forward(&dense, &input);
+        let mut actual = vec![0.0; dense.output];
+        dense.forward(&input, &mut actual);
+        assert_parity(&actual, &expected);
+        let mut repeated = vec![0.0; dense.output];
+        dense.forward(&input, &mut repeated);
+        assert_eq!(
+            actual
+                .iter()
+                .map(|value| value.to_bits())
+                .collect::<Vec<_>>(),
+            repeated
+                .iter()
+                .map(|value| value.to_bits())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn dense_forward_three_matches_scalar_reference_within_parity_tolerance() {
+        let dense = Dense {
+            input: 121,
+            output: 2,
+            weight: fixture(2 * 121, 6),
+            bias: fixture(2, 3),
+        };
+        let a = fixture(64, 1);
+        let b = fixture(44, 2);
+        let c = fixture(13, 4);
+        let expected = scalar_dense_forward_three(&dense, &a, &b, &c);
+        let mut actual = vec![0.0; dense.output];
+        dense.forward_three(&a, &b, &c, &mut actual);
+        assert_parity(&actual, &expected);
+        let mut repeated = vec![0.0; dense.output];
+        dense.forward_three(&a, &b, &c, &mut repeated);
+        assert_eq!(
+            actual
+                .iter()
+                .map(|value| value.to_bits())
+                .collect::<Vec<_>>(),
+            repeated
+                .iter()
+                .map(|value| value.to_bits())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn dense_rmsnorm_add_matches_scalar_reference_within_parity_tolerance() {
+        let dense = Dense {
+            input: 37,
+            output: 3,
+            weight: fixture(3 * 37, 7),
+            bias: fixture(3, 8),
+        };
+        let input = fixture(37, 2);
+        let norm_weight = fixture(37, 9);
+        let mut expected = fixture(3, 5);
+        scalar_dense_rmsnorm_add(&dense, &input, &norm_weight, 0.75, &mut expected);
+        let mut actual = fixture(3, 5);
+        dense.add_rmsnorm_scaled(&input, &norm_weight, 0.75, &mut actual);
+        assert_parity(&actual, &expected);
+        let mut repeated = fixture(3, 5);
+        dense.add_rmsnorm_scaled(&input, &norm_weight, 0.75, &mut repeated);
+        assert_eq!(
+            actual
+                .iter()
+                .map(|value| value.to_bits())
+                .collect::<Vec<_>>(),
+            repeated
+                .iter()
+                .map(|value| value.to_bits())
+                .collect::<Vec<_>>()
+        );
     }
 }
 
@@ -1078,7 +1361,7 @@ fn run_block(block: &SettleGraphBlock, scratch: &mut SettleGraphScratch) {
 }
 
 impl SettleGraphNet {
-    fn encode_observation(&self, obs: &[f32; OBS_V2_DIM], scratch: &mut SettleGraphScratch) {
+    fn encode_observation(&self, obs: &[f32], scratch: &mut SettleGraphScratch) {
         let topology = topology_contract();
         for tile in 0..NUM_TILES {
             scratch.work64[..8].copy_from_slice(&obs[tile * 8..tile * 8 + 8]);
@@ -1088,8 +1371,16 @@ impl SettleGraphNet {
                 .count();
             scratch.work64[8] = degree as f32 / 6.0;
             scratch.work64[9] = f32::from(degree < 6);
+            let tile_width = if self.observation_version == 3 {
+                for (index, token) in TILE_TOKEN_CATEGORIES.iter().enumerate() {
+                    scratch.work64[10 + index] = f32::from(obs[OBS_V2_DIM + tile] == f32::from(*token));
+                }
+                21
+            } else {
+                10
+            };
             self.tile_encoder
-                .forward(&scratch.work64[..10], row_mut(&mut scratch.tile, tile));
+                .forward(&scratch.work64[..tile_width], row_mut(&mut scratch.tile, tile));
             silu(row_mut(&mut scratch.tile, tile));
         }
         for vertex in 0..NUM_VERTICES {
@@ -1194,8 +1485,12 @@ impl SettleGraphNet {
         silu(&mut scratch.global);
     }
 
-    fn build_action_keys(&self, scratch: &mut SettleGraphScratch) {
-        for (action, descriptor) in action_descriptors().iter().enumerate() {
+    fn build_action_keys(
+        &self,
+        scratch: &mut SettleGraphScratch,
+        descriptors: &[ActionDescriptor; NUM_ACTIONS],
+    ) {
+        for (action, descriptor) in descriptors.iter().enumerate() {
             let key = row_mut(&mut scratch.action_keys, action);
             key.fill(0.0);
             match descriptor.location_kind {
@@ -1243,15 +1538,13 @@ impl SettleGraphNet {
         }
     }
 
-    pub fn forward_raw(
+    fn forward_raw_prevalidated(
         &self,
-        obs: &[f32; OBS_V2_DIM],
+        obs: &[f32],
         scratch: &mut SettleGraphScratch,
         logits: &mut [f32; NUM_ACTIONS],
-    ) -> Result<f32, String> {
-        if obs.iter().any(|value| !value.is_finite()) {
-            return Err("SettleGraph observation contains a non-finite value".to_owned());
-        }
+        descriptors: &[ActionDescriptor; NUM_ACTIONS],
+    ) -> f32 {
         self.encode_observation(obs, scratch);
         for block in &self.blocks {
             run_block(block, scratch);
@@ -1267,9 +1560,9 @@ impl SettleGraphNet {
         self.policy_context
             .second
             .forward(&scratch.work128, &mut scratch.global_messages[..ENTITY]);
-        self.build_action_keys(scratch);
+        self.build_action_keys(scratch, descriptors);
         let mut active_family = usize::MAX;
-        for (action, descriptor) in action_descriptors().iter().enumerate() {
+        for (action, descriptor) in descriptors.iter().enumerate() {
             let family = descriptor.family as usize;
             if family != active_family {
                 scratch.work128[..ENTITY].copy_from_slice(&scratch.global_messages[..ENTITY]);
@@ -1285,11 +1578,10 @@ impl SettleGraphNet {
                     .forward(&scratch.work64, &mut scratch.work128[..65]);
                 active_family = family;
             }
-            let dot = scratch.work128[..ENTITY]
-                .iter()
-                .zip(row(&scratch.action_keys, action))
-                .map(|(query, key)| query * key)
-                .sum::<f32>();
+            let dot = dot_fixed_16(
+                &scratch.work128[..ENTITY],
+                row(&scratch.action_keys, action),
+            );
             logits[action] = scratch.work128[ENTITY] + dot / 8.0 + self.action_bias[action];
         }
 
@@ -1303,10 +1595,67 @@ impl SettleGraphNet {
         self.value_head
             .second
             .forward(&scratch.work128, &mut scratch.work64[..1]);
-        let value = scratch.work64[0].tanh();
+        scratch.work64[0].tanh()
+    }
+
+    fn validate_observation(&self, obs: &[f32]) -> Result<(), String> {
+        if obs.len() != self.observation_dim {
+            return Err(format!("SettleGraph V{} observation must have {} floats, received {}", self.observation_version, self.observation_dim, obs.len()));
+        }
+        if obs.iter().any(|value| !value.is_finite()) {
+            return Err("SettleGraph observation contains a non-finite value".to_owned());
+        }
+        if self.observation_version == 3 && obs[OBS_V2_DIM..].iter().any(|value| {
+            !TILE_TOKEN_CATEGORIES.iter().any(|token| *value == f32::from(*token))
+        }) {
+            return Err("SettleGraph V3 observation contains an invalid tile token ID".to_owned());
+        }
+        Ok(())
+    }
+
+    pub fn forward_raw(
+        &self,
+        obs: &[f32],
+        scratch: &mut SettleGraphScratch,
+        logits: &mut [f32; NUM_ACTIONS],
+    ) -> Result<f32, String> {
+        self.validate_observation(obs)?;
+        let value = self.forward_raw_prevalidated(obs, scratch, logits, action_descriptors());
         if !value.is_finite() || logits.iter().any(|logit| !logit.is_finite()) {
             return Err("SettleGraph forward produced a non-finite output".to_owned());
         }
         Ok(value)
+    }
+
+    pub fn forward_many_raw<T: AsRef<[f32]>>(
+        &self,
+        observations: &[T],
+        scratches: &mut [SettleGraphScratch],
+        logits: &mut [[f32; NUM_ACTIONS]],
+        values: &mut [f32],
+    ) -> Result<(), String> {
+        let lanes = observations.len();
+        if scratches.len() != lanes || logits.len() != lanes || values.len() != lanes {
+            return Err("SettleGraph multi-state slices must have equal length".to_owned());
+        }
+        for observation in observations {
+            self.validate_observation(observation.as_ref())?;
+        }
+
+        let descriptors = action_descriptors();
+        for lane in 0..lanes {
+            values[lane] = self.forward_raw_prevalidated(
+                observations[lane].as_ref(),
+                &mut scratches[lane],
+                &mut logits[lane],
+                descriptors,
+            );
+        }
+        if values.iter().any(|value| !value.is_finite())
+            || logits.iter().flatten().any(|logit| !logit.is_finite())
+        {
+            return Err("SettleGraph forward produced a non-finite output".to_owned());
+        }
+        Ok(())
     }
 }
