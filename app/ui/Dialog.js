@@ -19,10 +19,10 @@ export function Dialog({
     <BaseDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Portal>
         <BaseDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_32%),rgba(15,23,42,0.42)] backdrop-blur-sm" />
-        <BaseDialog.Viewport className="settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center px-4">
+        <BaseDialog.Viewport className="settlex-ui-dialog-viewport settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
           <BaseDialog.Popup
             className={cn(
-              "settlex-ui-dialog-popup w-full rounded-[1.65rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(239,246,255,0.76))] p-6 shadow-[0_34px_90px_-44px_rgba(15,23,42,0.72)]",
+              "settlex-ui-pane settlex-ui-dialog-popup settlex-ui-dialog-surface w-full",
               maxWidthClassName,
               className
             )}
@@ -32,7 +32,7 @@ export function Dialog({
             </BaseDialog.Title>
 
             {description ? (
-              <BaseDialog.Description className="mt-3 text-sm text-slate-700">
+              <BaseDialog.Description className="mt-2 text-sm leading-6 text-slate-600">
                 {description}
               </BaseDialog.Description>
             ) : null}
@@ -41,7 +41,7 @@ export function Dialog({
               <div className={cn("mt-5", bodyClassName)}>{children}</div>
             ) : null}
 
-            {actions ? <div className="mt-5 flex justify-end gap-2">{actions}</div> : null}
+            {actions ? <div className="mt-6 flex flex-wrap justify-end gap-2">{actions}</div> : null}
           </BaseDialog.Popup>
         </BaseDialog.Viewport>
       </BaseDialog.Portal>

@@ -31,10 +31,10 @@ export function AlertDialog({
     <BaseAlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseAlertDialog.Portal>
         <BaseAlertDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_32%),rgba(15,23,42,0.42)] backdrop-blur-sm" />
-        <BaseAlertDialog.Viewport className="settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center px-4">
+        <BaseAlertDialog.Viewport className="settlex-ui-dialog-viewport settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
           <BaseAlertDialog.Popup
             className={cn(
-              "settlex-ui-dialog-popup w-full max-w-md rounded-[1.65rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(239,246,255,0.76))] p-6 shadow-[0_34px_90px_-44px_rgba(15,23,42,0.72)]",
+              "settlex-ui-pane settlex-ui-dialog-popup settlex-ui-dialog-surface w-full max-w-md",
               className
             )}
           >
@@ -43,12 +43,12 @@ export function AlertDialog({
             </BaseAlertDialog.Title>
 
             {description ? (
-              <BaseAlertDialog.Description className="mt-3 text-sm text-slate-700">
+              <BaseAlertDialog.Description className="mt-2 text-sm leading-6 text-slate-600">
                 {description}
               </BaseAlertDialog.Description>
             ) : null}
 
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
               <Button variant="ghost" onClick={handleCancel}>
                 {cancelLabel}
               </Button>

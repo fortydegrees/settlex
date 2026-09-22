@@ -3,20 +3,151 @@
 @tailwind utilities;
 
 :root {
-  --settlex-ui-radius-panel: 1.75rem;
-  --settlex-ui-radius-control: 1rem;
+  --settlex-ui-radius-small: .5rem;
+  --settlex-ui-radius-panel: 1.375rem;
+  --settlex-ui-radius-control: .875rem;
   --settlex-ui-radius-pill: 999px;
+  --settlex-ui-space-1: .25rem;
+  --settlex-ui-space-2: .5rem;
+  --settlex-ui-space-3: .75rem;
+  --settlex-ui-space-4: 1rem;
+  --settlex-ui-space-6: 1.5rem;
+  --settlex-ui-space-8: 2rem;
+  --settlex-ui-space-12: 3rem;
+  --settlex-ui-text-primary: #0f172a;
+  --settlex-ui-text-secondary: #475569;
+  --settlex-ui-text-muted: #64748b;
+  --settlex-ui-surface-pane: rgb(255 255 255 / .88);
+  --settlex-ui-surface-hud: rgb(255 255 255 / .58);
+  --settlex-ui-surface-solid: #f8fbff;
+  --settlex-ui-surface-inset: rgb(219 234 254 / .45);
+  --settlex-ui-focus: #2563eb;
   --settlex-ui-duration-fast: 140ms;
   --settlex-ui-duration-dialog: 220ms;
-  --settlex-ui-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --settlex-ui-duration-exit: 160ms;
+  --settlex-ui-ease-standard: cubic-bezier(.2, .9, .24, 1);
   --settlex-ui-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --settlex-ui-z-dialog: 80;
   --settlex-ui-z-popover: 90;
   --settlex-ui-z-tooltip: 100;
   --settlex-ui-z-status: 120;
   --settlex-ui-shadow-panel:
-    0 24px 60px rgba(15, 23, 42, 0.18),
-    0 10px 22px rgba(15, 23, 42, 0.12);
+    inset 0 1px 0 #fff,
+    0 16px 40px -24px rgb(30 64 175 / .28),
+    0 2px 6px rgb(30 64 175 / .06);
+}
+
+@layer components {
+  .settlex-ui-pane,
+  .settlex-ui-hud {
+    border: 1px solid rgb(255 255 255 / .85);
+    border-radius: var(--settlex-ui-radius-panel);
+    background: var(--settlex-ui-surface-solid);
+    box-shadow: var(--settlex-ui-shadow-panel);
+    color: var(--settlex-ui-text-primary);
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .settlex-ui-pane {
+      background: var(--settlex-ui-surface-pane);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      backdrop-filter: blur(24px) saturate(1.5);
+    }
+    .settlex-ui-hud {
+      background: var(--settlex-ui-surface-hud);
+      -webkit-backdrop-filter: blur(18px) saturate(1.5);
+      backdrop-filter: blur(18px) saturate(1.5);
+    }
+  }
+
+  .settlex-ui-inset {
+    border-radius: var(--settlex-ui-radius-small);
+    background: var(--settlex-ui-surface-inset);
+    box-shadow: none;
+  }
+  .settlex-ui-label {
+    font-size: .8125rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--settlex-ui-text-secondary);
+  }
+  .settlex-ui-heading {
+    font-size: 1.125rem;
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--settlex-ui-text-primary);
+  }
+  .settlex-ui-focus:focus-visible,
+  .settlex-ui-field:focus-visible {
+    outline: 2px solid var(--settlex-ui-focus);
+    outline-offset: 3px;
+  }
+  .settlex-ui-button {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--settlex-ui-space-2);
+    overflow: hidden;
+    cursor: pointer;
+    white-space: nowrap;
+    border: 1px solid rgb(255 255 255 / .6);
+    border-radius: var(--settlex-ui-radius-control);
+    font-weight: 600;
+    --settlex-ui-button-base: #cbd5e1;
+    box-shadow: 0 2px 0 var(--settlex-ui-button-base), inset 0 1px 0 rgb(255 255 255 / .4);
+    transition: transform var(--settlex-ui-duration-fast) var(--settlex-ui-ease-standard), box-shadow var(--settlex-ui-duration-fast), background-color var(--settlex-ui-duration-fast);
+    transition-timing-function: var(--settlex-ui-ease-standard);
+  }
+  .settlex-ui-button-primary { background: #a3e635; color: #25400b; --settlex-ui-button-base: #65a30d; }
+  .settlex-ui-button-secondary { background: #fff; color: #0f172a; }
+  .settlex-ui-button-accent { background: #fbbf24; color: #422006; --settlex-ui-button-base: #d97706; }
+  .settlex-ui-button-danger { background: #be123c; color: #fff; --settlex-ui-button-base: #881337; }
+  .settlex-ui-button-ghost,
+  .settlex-ui-button-subtle { color: #334155; border-color: transparent; box-shadow: none; }
+  .settlex-ui-button-ghost { background: transparent; }
+  .settlex-ui-button-subtle { background: var(--settlex-ui-surface-inset); }
+  .settlex-ui-button:hover:not(:disabled) { transform: translateY(-1px); }
+  .settlex-ui-button-ghost:hover:not(:disabled),
+  .settlex-ui-button-subtle:hover:not(:disabled) { background: rgb(219 234 254 / .7); transform: none; }
+  .settlex-ui-button:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+  .settlex-ui-button-ghost:active:not(:disabled),
+  .settlex-ui-button-subtle:active:not(:disabled) { transform: none; }
+  .settlex-ui-button:disabled { cursor: not-allowed; background: #e2e8f0; color: #64748b; border-color: #cbd5e1; box-shadow: none; }
+  .settlex-ui-button:disabled > [aria-hidden="true"] { display: none; }
+  .settlex-ui-field {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--settlex-ui-radius-control);
+    background: rgb(255 255 255 / .92);
+    padding: .75rem 1rem;
+    font-size: .9375rem;
+    color: var(--settlex-ui-text-primary);
+    transition: border-color var(--settlex-ui-duration-fast) var(--settlex-ui-ease-standard);
+  }
+  .settlex-ui-field::placeholder { color: var(--settlex-ui-text-muted); }
+  .settlex-ui-field[aria-invalid="true"] { border-color: #be123c; }
+  .settlex-ui-field:disabled { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
+  .settlex-ui-dialog-viewport { padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
+  .settlex-ui-dialog-surface { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 1.5rem; }
+  .settlex-ui-popover { max-width: calc(100vw - 2rem); max-height: var(--available-height, calc(100dvh - 2rem)); overflow-y: auto; border-radius: var(--settlex-ui-radius-control); }
+  .settlex-ui-tooltip { border-radius: var(--settlex-ui-radius-small); }
+  .settlex-ui-overlay-motion { transition: opacity var(--settlex-ui-duration-fast), transform var(--settlex-ui-duration-fast); transition-timing-function: var(--settlex-ui-ease-standard); }
+  .settlex-ui-overlay-motion[data-starting-style],
+  .settlex-ui-overlay-motion[data-ending-style] { opacity: 0; transform: translateY(4px); }
+  @media (max-width: 480px) { .settlex-ui-dialog-surface { padding: 1.25rem; } }
+  @media (prefers-reduced-transparency: reduce) {
+    .settlex-ui-pane, .settlex-ui-hud { background: var(--settlex-ui-surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .settlex-ui-button, .settlex-ui-field, .settlex-ui-overlay-motion { transition: none; }
+    .settlex-ui-button:hover:not(:disabled),
+    .settlex-ui-button:active:not(:disabled),
+    .settlex-ui-overlay-motion[data-starting-style],
+    .settlex-ui-overlay-motion[data-ending-style] { transform: none; }
+  }
 }
 
 .settlex-ui-root {
@@ -64,7 +195,7 @@
 }
 
 .settlex-ui-dialog-backdrop {
-  animation: settlex-ui-backdrop-in var(--settlex-ui-duration-dialog) ease-out
+  animation: settlex-ui-backdrop-in var(--settlex-ui-duration-dialog) var(--settlex-ui-ease-standard)
     both;
 }
 
@@ -75,13 +206,15 @@
 }
 
 .settlex-ui-dialog-backdrop[data-ending-style] {
+  animation-duration: var(--settlex-ui-duration-exit);
   animation-name: settlex-ui-backdrop-out;
-  animation-timing-function: ease-in;
+  animation-timing-function: var(--settlex-ui-ease-standard);
 }
 
 .settlex-ui-dialog-popup[data-ending-style] {
+  animation-duration: var(--settlex-ui-duration-exit);
   animation-name: settlex-ui-dialog-out;
-  animation-timing-function: ease-in;
+  animation-timing-function: var(--settlex-ui-ease-standard);
 }
 
 @keyframes settlex-ui-backdrop-in {
