@@ -32,6 +32,24 @@ ownership, scope, and coverage only.
 | Postgame & Replay | Replay score chart | `app/replays/components/ReplayScoreChart.jsx` | Replay panel | Multi-player; selected event; keyboard seek | Timeline helpers/component | Hover; click; keyboard seek | Both | Covered | None |
 | Postgame & Replay | Replay panel | `app/replays/components/ReplayPanel.jsx` | Replay | Desktop open; desktop collapsed; mobile closed; mobile open | Component | Rail/drawer transition; normal/reduced reviewed | 1440×900 desktop; 390×844 mobile reviewed | Covered | Desktop rail and mobile drawer are deliberate breakpoint-specific variants |
 
+## Clarity visual-system pass — 2026-09-22
+
+This isolated branch applies shared Clarity recipes through the production owners
+above, not a parallel mockup component library. The wordmark is provisional and
+does not define UI type or control shapes. Exact sampled states, verification
+limits and integration boundaries are in `CLARITY_UI_REVIEW.md`.
+
+New review states include homepage `ClarityIdle`, `ClarityFourModesIdle` and
+`ClarityV2Starting`; account menu `ClarityLongNameRecovery`; account/public profile
+`LongUsername`; search/rescue `RescueError`; open room `LongNamesAndServer`;
+game over `DenseResumeError`; and postgame summary `LongPlayerNames`.
+
+The shared foundations story demonstrates pane/HUD/inset materials and actual
+spacing/radius tokens. Existing standard controls supply the interaction owners.
+Desktop/mobile screenshots and reduced-motion/transparency checks support this
+pass; historical coverage below is not automatically a fresh test of every state.
+No live auth, matchmaking, push subscription or production deployment was tested.
+
 ## Motion and viewport review — 2026-07-29
 
 - Overlay motion was reviewed in `components-overlays--account-dialog-motion`,
