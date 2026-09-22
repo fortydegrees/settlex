@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   EnvelopeIcon,
   LockClosedIcon,
-  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "../../ui/Button";
 import { Dialog } from "../../ui/Dialog";
@@ -55,7 +54,7 @@ function getPlayCopy(intent, name) {
 
 function ProviderIcon({ provider }) {
   return (
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[0.85rem] bg-white/72 text-sm font-black text-slate-800 ring-1 ring-white/70">
+    <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center text-sm font-bold text-slate-600">
       {provider === "discord" ? "D" : "G"}
     </span>
   );
@@ -64,7 +63,7 @@ function ProviderIcon({ provider }) {
 function AuthModeToggle({ value, onChange }) {
   return (
     <div
-      className="grid grid-cols-2 gap-1 rounded-full bg-white/48 p-1 ring-1 ring-white/64"
+      className="settlex-ui-inset grid grid-cols-2 gap-1 p-1"
       aria-label="Email auth mode"
     >
       {[
@@ -74,7 +73,8 @@ function AuthModeToggle({ value, onChange }) {
         <button
           key={mode}
           type="button"
-          className={`rounded-full px-3 py-2 text-sm font-black transition ${
+          aria-pressed={value === mode}
+          className={`settlex-ui-focus min-h-[2.75rem] rounded-lg px-3 py-2 text-sm font-semibold ${
             value === mode
               ? "bg-white text-slate-900 shadow-sm"
               : "text-slate-600 hover:bg-white/48 hover:text-slate-900"
@@ -147,15 +147,11 @@ function AccountAuthForm({
 
   return (
     <div className="grid gap-4">
-      <div className="rounded-[1.25rem] border border-white/44 bg-white/42 p-3 text-sm font-semibold leading-relaxed text-slate-700">
-        {copy.description}
-      </div>
-
       {authOptions.emailPassword ? (
         <form className="grid gap-3" onSubmit={handleEmailSubmit}>
           <AuthModeToggle value={authMode} onChange={setAuthMode} />
 
-          <label className="grid gap-1.5 text-sm font-black text-slate-700">
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
             Email
             <span className="relative">
               <EnvelopeIcon
@@ -173,7 +169,7 @@ function AccountAuthForm({
             </span>
           </label>
 
-          <label className="grid gap-1.5 text-sm font-black text-slate-700">
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
             Password
             <span className="relative">
               <LockClosedIcon
@@ -207,7 +203,7 @@ function AccountAuthForm({
       ) : null}
 
       {socialProviders.length > 0 ? (
-        <div className="grid gap-2 border-t border-white/50 pt-4">
+        <div className="grid gap-2 border-t border-slate-200/80 pt-4">
           {socialProviders.map((provider) => (
             <Button
               key={provider}
@@ -241,7 +237,7 @@ function AccountAuthForm({
       ) : null}
 
       {status ? (
-        <div className="rounded-[1.1rem] bg-white/62 px-4 py-3 text-sm font-semibold text-slate-700 ring-1 ring-white/70">
+        <div role="status" className="settlex-ui-inset px-4 py-3 text-sm text-slate-700">
           {status}
         </div>
       ) : null}
@@ -264,7 +260,7 @@ function AvatarPreview({
       open={isPickerOpen}
       onOpenChange={onAvatarPreviewClick}
       triggerAriaLabel="Change avatar and color"
-      triggerClassName="group mx-auto flex flex-col items-center outline-none"
+      triggerClassName="settlex-ui-focus group mx-auto flex flex-col items-center rounded-lg"
       triggerContent={
         <>
           <span
@@ -276,7 +272,7 @@ function AvatarPreview({
               className="absolute bottom-2 h-2 w-10 rounded-full bg-black/18 blur-[1px]"
             />
           </span>
-          <span className="mt-2 text-[0.68rem] font-black uppercase tracking-[0.13em] text-slate-500">
+          <span className="mt-2 text-xs font-medium text-slate-600">
             Optional
           </span>
         </>
@@ -284,7 +280,7 @@ function AvatarPreview({
       className="w-[19rem] p-4"
     >
       <div className="text-center">
-        <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-slate-500">
+        <div className="text-sm font-semibold text-slate-700">
           Avatar and color
         </div>
         <div className="mt-3">
@@ -299,7 +295,6 @@ function AvatarPreview({
           value={color}
           onChange={onColorChange}
           className="mt-3 gap-x-4 gap-y-4"
-          swatchClassName="h-9 w-9"
         />
       </div>
     </Popover>
@@ -355,7 +350,7 @@ function PlayUsernameForm({
   };
 
   return (
-    <form className="grid gap-5" onSubmit={handleSubmit}>
+    <form className="grid gap-4" onSubmit={handleSubmit}>
       <div className="grid gap-3 text-center">
         <AvatarPreview
           emoji={emoji}
@@ -363,12 +358,12 @@ function PlayUsernameForm({
           onEmojiChange={setEmoji}
           onColorChange={(nextColor) => setColor(normalizePlayerColorId(nextColor))}
         />
-        <p className="mx-auto max-w-[19rem] text-sm font-semibold leading-relaxed text-slate-700">
+        <p className="mx-auto max-w-[19rem] text-sm leading-relaxed text-slate-600">
           This creates a guest profile on this browser. You can save it later.
         </p>
       </div>
 
-      <label className="grid gap-1.5 text-sm font-black text-slate-700">
+      <label className="grid gap-2 text-sm font-medium text-slate-700">
         Username
         <Input
           ref={inputRef}
@@ -378,14 +373,14 @@ function PlayUsernameForm({
           placeholder="Username"
           autoComplete="nickname"
           maxLength={28}
-          className="text-center text-base font-black"
+          className="text-center text-base font-semibold"
         />
       </label>
 
       <Button
         type="submit"
         size="lg"
-        className="w-full"
+        className="w-full whitespace-normal break-words"
         disabled={!trimmedName || submitting}
       >
         {submitting ? "Creating profile..." : copy.cta}
@@ -403,7 +398,7 @@ function PlayUsernameForm({
       </Button>
 
       {status ? (
-        <div className="rounded-[1.1rem] bg-white/62 px-4 py-3 text-sm font-semibold text-rose-700 ring-1 ring-rose-200/70">
+        <div role="alert" className="rounded-[var(--settlex-ui-radius-control)] bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-200/70">
           {status}
         </div>
       ) : null}
@@ -455,19 +450,14 @@ export function AccountEntryModal({
           onSwitchToAuth={onSwitchToAuth}
         />
       ) : (
-        <div className="grid gap-5">
-          <div className="mx-auto grid h-16 w-16 place-items-center rounded-[1.25rem] bg-lime-500/90 text-white shadow-[0_20px_42px_-30px_rgba(63,98,18,0.95)] ring-4 ring-white/75">
-            <UserCircleIcon className="h-9 w-9" aria-hidden="true" />
-          </div>
-          <AccountAuthForm
-            mode={mode}
-            authOptions={authOptions}
-            onEmailSignIn={onEmailSignIn}
-            onEmailSignUp={onEmailSignUp}
-            onSignInProvider={onSignInProvider}
-            onContinueAsGuest={onContinueAsGuest}
-          />
-        </div>
+        <AccountAuthForm
+          mode={mode}
+          authOptions={authOptions}
+          onEmailSignIn={onEmailSignIn}
+          onEmailSignUp={onEmailSignUp}
+          onSignInProvider={onSignInProvider}
+          onContinueAsGuest={onContinueAsGuest}
+        />
       )}
     </Dialog>
   );

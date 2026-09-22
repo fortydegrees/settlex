@@ -21,10 +21,6 @@ const BRAND_WORDMARK_FONT_FAMILY = brandWordmarkFont.style.fontFamily;
 
 const SYSTEM_STATUS_ITEMS = [
   {
-    label: "4 online",
-    tone: "online",
-  },
-  {
     label: "Beta",
     tone: "beta",
   },
@@ -416,7 +412,7 @@ function HomeTableBrand({
         >
           Settlehex
         </h1>
-        <p className="hidden text-[0.72rem] font-medium leading-none text-[#24506e]/80 sm:block">
+        <p className="hidden text-xs font-medium leading-5 text-slate-700 sm:block">
           {BETA_PRIMARY_DESCRIPTOR}
         </p>
         <div
@@ -426,7 +422,7 @@ function HomeTableBrand({
           {SYSTEM_STATUS_ITEMS.map((item) => (
             <span
               key={item.label}
-              className="inline-flex items-center gap-1.5 text-[0.62rem] font-bold uppercase tracking-[0.11em] text-[#24506e]/80"
+              className="inline-flex items-center gap-2 text-xs font-medium text-slate-600"
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
@@ -467,16 +463,16 @@ function HomeMetaChrome({
         ariaLabel={`Show release notes for ${releaseInfo.releaseLabel}`}
         align="start"
         sideOffset={10}
-        triggerClassName="px-0 py-0 text-[0.82rem] font-bold text-white/80 drop-shadow-[0_1px_1px_rgba(15,23,42,0.2)] decoration-white/0 transition hover:-translate-y-0.5 hover:text-white hover:decoration-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 active:translate-y-0 motion-reduce:transition-none"
+        triggerClassName="settlex-ui-focus min-h-[2.75rem] px-0 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:underline"
         panelClassName="w-[min(22rem,calc(100vw-1.5rem))] p-4"
       >
-        <div className="text-[0.63rem] font-bold uppercase tracking-[0.22em] text-slate-500">
+        <div className="text-xs font-medium text-slate-600">
           Latest update
         </div>
         <h2 className="mt-1 text-base font-bold text-slate-900">
           {releaseInfo.releaseLabel} · {releaseInfo.title}
         </h2>
-        <ul className="mt-3 space-y-2 text-xs font-bold leading-relaxed text-slate-700">
+        <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700">
           {releaseHighlights.map((highlight) => (
             <li key={highlight} className="flex gap-2">
               <span
@@ -487,7 +483,7 @@ function HomeMetaChrome({
             </li>
           ))}
         </ul>
-        <div className="mt-3 border-t border-slate-200/80 pt-3 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-slate-500">
+        <div className="mt-3 border-t border-slate-200/80 pt-3 text-xs text-slate-600">
           Build {releaseInfo.buildShaShort}
         </div>
       </MetaDisclosure>
@@ -508,7 +504,7 @@ function SystemActionButton({ action, disabled, isActive, onSelectMode }) {
   return (
     <button
       type="button"
-      className={`group relative isolate inline-flex min-h-[4.05rem] w-full cursor-pointer items-center justify-between overflow-hidden rounded-[1.05rem] border px-3.5 text-left font-bold tracking-[0.01em] transition-[transform,filter,box-shadow,border-color] duration-[var(--settlex-ui-duration-fast)] hover:-translate-y-0.5 hover:brightness-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 active:translate-y-0 disabled:cursor-wait disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:brightness-100 motion-reduce:transition-none sm:min-h-[4.25rem] sm:px-4 ${action.buttonClassName}`}
+      className={`settlex-ui-button settlex-ui-focus settlex-ui-button-${action.variant} min-h-[4rem] w-full px-4 text-left sm:min-h-[4.5rem]`}
       disabled={disabled}
       onClick={() => onSelectMode(action.id)}
     >
@@ -520,20 +516,20 @@ function SystemActionButton({ action, disabled, isActive, onSelectMode }) {
       ) : null}
       <span className="flex w-full items-center justify-between gap-3">
         <span
-          className={`grid h-10 w-10 shrink-0 place-items-center rounded-[0.88rem] border sm:h-11 sm:w-11 sm:rounded-[0.95rem] ${action.iconClassName}`}
+          className="grid h-8 w-8 shrink-0 place-items-center"
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-6 w-6" aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-base font-bold leading-none sm:text-lg">
+          <span className="block truncate text-base font-semibold leading-5">
             {label}
           </span>
-          <span className="mt-1 block truncate text-[0.7rem] font-semibold opacity-75 sm:text-xs">
+          <span className="mt-1 block truncate text-xs font-medium opacity-80">
             {action.subtitle}
           </span>
         </span>
         <span
-          className={`grid h-10 min-w-10 shrink-0 place-items-center rounded-[0.88rem] px-2 text-sm font-bold sm:h-11 sm:min-w-11 sm:rounded-[0.95rem] ${action.badgeClassName}`}
+          className="grid min-w-[1.5rem] shrink-0 place-items-center text-xs font-semibold"
         >
           {isActive ? (
             <span
@@ -557,9 +553,9 @@ export function HomeGameModeDock({
 }) {
   const hasFourActions = actions.length === 4;
   return (
-    <section className={`catana-hud-glass pointer-events-auto absolute inset-x-3 bottom-3 z-30 mx-auto grid grid-cols-1 gap-1.5 rounded-[1.35rem] p-1.5 sm:inset-x-4 sm:bottom-6 sm:gap-2 ${
+    <section aria-label="Choose a game mode" className={`pointer-events-auto absolute inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 mx-auto grid grid-cols-1 gap-3 sm:bottom-6 ${
       hasFourActions
-        ? "max-w-[66rem] sm:grid-cols-4"
+        ? "max-w-[66rem] sm:grid-cols-2 lg:grid-cols-4"
         : "max-w-[55rem] sm:grid-cols-[1.2fr_1fr_1fr]"
     }`}>
       {actions.map((action) => (

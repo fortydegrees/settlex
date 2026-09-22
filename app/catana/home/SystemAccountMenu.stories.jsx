@@ -58,6 +58,15 @@ export const SignedOut = {
 
 export const GuestAlertsOff = {};
 
+export const ClarityLongNameRecovery = {
+  args: {
+    ...savedArgs,
+    identity: { ...savedIdentity, name: "ExtraordinarilyBoldTraderYM" },
+    matchAlertDisplay: matchAlertFixtures.pausedResumable,
+    matchAlertError: matchAlertErrors.humanGamePaused,
+  },
+};
+
 export const GuestAlertsPausedResumeAvailable = {
   args: {
     ...guestArgs,

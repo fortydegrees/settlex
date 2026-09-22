@@ -44,7 +44,6 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
         <IconButton
           aria-label="Previous emoji"
           onClick={() => navigate(-1)}
-          className="backdrop-blur-sm"
         >
           &#8249;
         </IconButton>
@@ -53,26 +52,26 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
           open={isOpen}
           onOpenChange={setIsOpen}
           triggerAriaLabel="Browse emoji options"
-          triggerClassName="group relative flex flex-col items-center"
+          triggerClassName="settlex-ui-focus group relative flex flex-col items-center rounded-lg"
           triggerContent={
             <>
               <span
                 className={`relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.4rem] bg-gradient-to-t ring-4 ring-white shadow-[0_20px_36px_-24px_rgba(15,23,42,0.5)] ${colorGradient || ""}`}
               >
                 <span
-                  className="relative z-10 block"
+                  className="relative z-10 block motion-reduce:!animate-none"
                   style={{ animation: "emojiBounce 2s ease-in-out infinite" }}
                 >
                   <span
                     key={slideKey}
-                    className="block text-5xl"
+                    className="block text-5xl motion-reduce:!animate-none"
                     style={{ animation: slideAnim, display: "inline-block" }}
                   >
                     {value}
                   </span>
                 </span>
                 <div
-                  className="absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-full"
+                  className="absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-full motion-reduce:!animate-none"
                   style={{
                     background:
                       "radial-gradient(ellipse, rgba(0,0,0,0.25) 0%, transparent 70%)",
@@ -80,8 +79,8 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
                   }}
                 />
               </span>
-              <span className="mt-1.5 block text-[10px] font-medium text-slate-500 opacity-0 transition-opacity group-hover:opacity-100">
-                tap to browse
+              <span className="mt-2 block text-xs font-medium text-slate-600">
+                Browse emoji
               </span>
             </>
           }
@@ -97,7 +96,7 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
                   onChange(emojiOption);
                   setIsOpen(false);
                 }}
-                className="h-12 w-12 rounded-[1rem] p-0 text-2xl"
+                className="h-12 w-12 !p-0 text-2xl"
               >
                 {emojiOption}
               </Button>
@@ -108,7 +107,6 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
         <IconButton
           aria-label="Next emoji"
           onClick={() => navigate(1)}
-          className="backdrop-blur-sm"
         >
           &#8250;
         </IconButton>
@@ -164,8 +162,8 @@ export function IdentityModal({
       description="Choose the emoji, color, and name you want to take into the match."
       maxWidthClassName="max-w-sm"
     >
-      <form onSubmit={handleSubmit}>
-        <div className="mt-1">
+      <form className="grid gap-4" onSubmit={handleSubmit}>
+        <div>
           <EmojiPicker
             value={emoji}
             onChange={setEmoji}
@@ -177,25 +175,27 @@ export function IdentityModal({
           options={PLAYER_COLOR_PICKER_OPTIONS}
           value={color}
           onChange={setColor}
-          className="mt-6"
         />
 
-        <Input
-          ref={inputRef}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          aria-label="Player name"
-          placeholder="Your name"
-          autoComplete="nickname"
-          maxLength={28}
-          className="mt-6 text-center text-sm font-semibold"
-        />
+        <label className="grid gap-2 text-sm font-medium text-slate-700">
+          Player name
+          <Input
+            ref={inputRef}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            aria-label="Player name"
+            placeholder="Your name"
+            autoComplete="nickname"
+            maxLength={28}
+            className="text-center text-base font-semibold"
+          />
+        </label>
 
         <Button
           type="submit"
           disabled={!name.trim()}
           size="lg"
-          className="mt-4 w-full"
+          className="w-full"
         >
           Let&apos;s go!
         </Button>

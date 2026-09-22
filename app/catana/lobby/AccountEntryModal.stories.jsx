@@ -37,6 +37,36 @@ export const SignInOrGuest = { args: { mode: "auth-first" } };
 
 export const SaveGuestProfile = { args: { mode: "save-profile" } };
 
+export const CreateAccount = {
+  args: { mode: "auth-first" },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await userEvent.click(await screen.findByRole("button", { name: "Create account" }));
+    expect(screen.getByLabelText("Password")).toHaveAttribute("autocomplete", "new-password");
+  },
+};
+
+export const ProviderError = {
+  args: {
+    mode: "auth-first",
+    onSignInProvider: fn(async () => { throw new Error("Unable to start sign in. Please try again."); }),
+  },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await userEvent.click(await screen.findByRole("button", { name: "Continue with Google" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Unable to start sign in."));
+  },
+};
+
+export const ProviderPending = {
+  args: { mode: "auth-first", onSignInProvider: fn(() => new Promise(() => {})) },
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await userEvent.click(await screen.findByRole("button", { name: "Continue with Discord" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Opening discord..." })).toBeDisabled());
+  },
+};
+
 export const ChooseOnlineIdentity = {
   args: {
     mode: "play-username",
