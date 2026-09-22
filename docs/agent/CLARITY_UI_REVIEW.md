@@ -1,8 +1,8 @@
 # Clarity UI first-pass review
 
-Status: first-pass implementation and local verification complete; independent
-review in progress on an isolated branch. Nothing has been pushed, merged or
-deployed.
+Status: first-pass implementation, local verification and independent review
+complete on an isolated branch. Ready for user visual feedback; nothing has been
+pushed, merged or deployed.
 
 ## Intent and boundaries
 
@@ -82,7 +82,8 @@ not new product states or invented user data.
 
 ## Automated verification
 
-Fresh combined check after the product-surface commit:
+Fresh combined check after the product-surface commit, repeated after the final
+shared Button alignment correction:
 
 ```sh
 pnpm exec vitest run app/catana/__tests__/SystemAccountMenu.test.js app/__tests__/replayPanel.test.js app/__tests__/replaySessionState.test.js app/__tests__/replayNavigation.test.js app/__tests__/replayScoreChart.test.js --reporter=dot
@@ -95,6 +96,19 @@ Results: **5 files / 28 tests passed**; all changed JS/JSX and Storybook preview
 lint clean; whitespace check clean. Existing lockfile dependencies were installed
 offline and `pnpm -C game-core build` passed before the focused checks. No new
 dependencies or source-grep tests were added.
+
+## Independent review
+
+The foundation, homepage/account and product-shell tasks each passed their
+spec/quality review. Whole-branch review (`28b42ec..fa30a19`) found no critical or
+important issues and one minor Button alignment regression: the full-width inner
+wrapper centered content even when a caller requested left alignment. Commit
+`f7323ea` makes alignment inherit from the outer button and adds a focused
+`ContentAlignment` story. Manual checks confirm center/start/end/space-between,
+horizontal icons/text, left-aligned provider rows and centered default actions.
+The scoped fix review confirmed the finding addressed with no new issues. No
+findings are deferred. The branch remains separate for user visual judgment and
+later authorized reconciliation with main.
 
 ## Verification limits and integration
 
@@ -112,6 +126,9 @@ dependencies or source-grep tests were added.
   toolchain warnings; this task does not change dependencies.
 - The local sandbox toolbar overlays some top HUD content by design. The shared
   material review does not claim a whole-game layout or accessibility audit.
+- Foundations Storybook accessibility result: 0 violations, 20 passes, 1 incomplete
+  rule. The incomplete contrast rule cannot determine gradient backgrounds; this
+  is not a complete automated contrast pass.
 - Some hidden-browser screenshots at larger-than-native dimensions tiled or
   mis-scaled. Final visual judgments use settled captures within supported bounds,
   supplemented by actual DOM geometry. These capture artifacts are not UI defects.
@@ -125,3 +142,6 @@ dependencies or source-grep tests were added.
 - Optional four-mode story: `composed-surfaces-lobby-matchmaking-homepage-title-chrome--clarity-four-modes-idle`
 
 These addresses require the task-owned local dev servers to remain running.
+The homepage and Storybook catalog tabs are deliberately preserved for review;
+temporary viewport/media emulation was cleared. Original Claude reference tabs
+remain untouched. No separate standalone browser process was created.

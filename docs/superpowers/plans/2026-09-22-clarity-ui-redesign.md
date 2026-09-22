@@ -44,10 +44,10 @@ override deliberately, not by accidental CSS load order.
 
 **Verification shape:** Presentation/manual with existing behavioral smoke.
 
-- [ ] Read approved spec, existing primitive implementations and stories. Parent
+- [x] Read approved spec, existing primitive implementations and stories. Parent
   has captured foundation and sign-in baseline. No new interaction pattern is
   needed; reuse Base UI ownership and existing recipes.
-- [ ] Add semantic tokens/recipes, including this geometry contract:
+- [x] Add semantic tokens/recipes, including this geometry contract:
   ```css
   :root {
     --settlex-ui-radius-small: .5rem;
@@ -65,17 +65,17 @@ override deliberately, not by accidental CSS load order.
   ```
   Add text/surface/shadow/focus/motion tokens following the spec. Background and
   edge recipes must work without blur. Do not globally restyle bespoke game code.
-- [ ] Replace conflicting arbitrary primitive styling with shared recipes. Button
+- [x] Replace conflicting arbitrary primitive styling with shared recipes. Button
   content wrapper must align icon+text horizontally and preserve full-width
   consumers. Keep all variants/sizes, disabled and sheen props. Primary text must
   have contrast on lime, danger on rose. Quiet controls should not have CTA depth.
-- [ ] Make Dialog and AlertDialog fit short screens with scrollable content and
+- [x] Make Dialog and AlertDialog fit short screens with scrollable content and
   safe padding; preserve Base UI focus/dismissal/ending-style lifecycle. Standard
   fields and popovers share corners/focus. Preserve native select semantics.
-- [ ] Update foundations story to visibly demonstrate real spacing tokens,
+- [x] Update foundations story to visibly demonstrate real spacing tokens,
   corner roles, pane versus HUD, type, motion and actual primitive states. Add
   named `ClarityControls` story if combined focus/disabled/error coverage helps.
-- [ ] Parent checks desktop/mobile component states on port 6011. Run targeted
+- [x] Parent checks desktop/mobile component states on port 6011. Run targeted
   lint on owned JS/JSX; existing tests only where relevant. Include commands and
   outputs in report. Commit owned files and self-review the diff.
 
@@ -91,9 +91,9 @@ account/recovery actions. Do not edit `HomeTableClient` or matchmaking models.
 
 **Verification shape:** Presentation/manual. Parent owns live browser checks.
 
-- [ ] Inspect current composition and existing stories, read design spec. Parent
+- [x] Inspect current composition and existing stories, read design spec. Parent
   captures homepage and account-menu baseline before this task's edits.
-- [ ] Remove outer glass mode tray while retaining a semantic dock and existing
+- [x] Remove outer glass mode tray while retaining a semantic dock and existing
   responsive mode order. Use 12px grouping and shared button/edge treatment;
   preserve idle/pending/disabled. Three and four modes must fit. Skeleton:
   ```jsx
@@ -103,19 +103,19 @@ account/recovery actions. Do not edit `HomeTableClient` or matchmaking models.
   ```
   This is a structural guide, not replacement code: keep actual grid breakpoints,
   safe areas, widths and attributes appropriate to the current component.
-- [ ] Refine title/account/utility hierarchy. Keep wordmark identity/font; do not
+- [x] Refine title/account/utility hierarchy. Keep wordmark identity/font; do not
   create a replacement logo. Use independent UI type language. Avoid forcing
   white small text onto the light-blue background. Keep utility controls 44px.
-- [ ] Simplify sign-in composition: one explanation, form mode selector, labeled
+- [x] Simplify sign-in composition: one explanation, form mode selector, labeled
   fields, primary submit, provider actions, guest alternative. Do not remove any
   auth mode, provider, recovery/error or pending branch. Reuse Button/Input.
-- [ ] Give identity and menu surfaces the same spacing and pane treatment; retain
+- [x] Give identity and menu surfaces the same spacing and pane treatment; retain
   emoji/color identity and all callbacks. Remove decorative nested surfaces and
   heavy micro-labels without hiding important state information.
-- [ ] Add named no-auto-action `ClarityIdle` homepage story for stable review.
+- [x] Add named no-auto-action `ClarityIdle` homepage story for stable review.
   Existing play functions keep behavioral assertions. Add a long-name/dense menu
   story if absent. Parent checks 1440x900, 390x844, 375x667.
-- [ ] Run owned-file lint and `pnpm exec vitest run
+- [x] Run owned-file lint and `pnpm exec vitest run
   app/catana/__tests__/SystemAccountMenu.test.js --reporter=dot`. Record result,
   request parent visual review, commit only owned files, write task report.
 
@@ -137,10 +137,10 @@ Do not edit `GameScreen`, mobile command/state model or board/effect code.
 
 **Verification shape:** Presentation/manual plus existing replay regression tests.
 
-- [ ] Inspect exact existing owners using `rg --files` before editing. Read spec,
+- [x] Inspect exact existing owners using `rg --files` before editing. Read spec,
   UI catalog and relevant stories. Write a surface coverage list in the report,
   including inherited-only surfaces so no coverage is invented.
-- [ ] Migrate page-local glass/radius/type drift to shared recipes. Prefer simple
+- [x] Migrate page-local glass/radius/type drift to shared recipes. Prefer simple
   inset grouping/dividers over nested independently blurred panels. Use real
   existing state/copy; never simplify away pending/error/recovery branches.
   Typical composition:
@@ -150,17 +150,17 @@ Do not edit `GameScreen`, mobile command/state model or board/effect code.
     <div className="mt-4 space-y-3">{existingContent}</div>
   </div>
   ```
-- [ ] Normalize status/action hierarchy for matchmaking, profiles, room seats and
+- [x] Normalize status/action hierarchy for matchmaking, profiles, room seats and
   postgame. Keep long names/links wrapping safely and controls usable on phones.
-- [ ] Update `.catana-hud-glass` material through shared HUD tokens. Preserve
+- [x] Update `.catana-hud-glass` material through shared HUD tokens. Preserve
   warning/danger state meaning, joined shapes, player colors and bespoke action
   styles. Do not spread dense pane fill across the board.
-- [ ] Inspect replay/meta-shell style owner and align outer pane/type/corners
+- [x] Inspect replay/meta-shell style owner and align outer pane/type/corners
   only. Do not alter chart, selected event, perspective, keyboard seek or drawer
   behavior. Keep paused/manual event-first navigation.
-- [ ] Parent verifies named Storybook states at desktop/mobile and 2D sandbox
+- [x] Parent verifies named Storybook states at desktop/mobile and 2D sandbox
   HUD if available. Request specific checks; do not create own browser session.
-- [ ] Run owned-file lint and existing `app/__tests__/replayPanel.test.js`,
+- [x] Run owned-file lint and existing `app/__tests__/replayPanel.test.js`,
   `replaySessionState.test.js`, `replayNavigation.test.js`, `replayScoreChart.test.js`.
   Commit owned files and write report with coverage and remaining integration risks.
 
@@ -173,18 +173,23 @@ requires a named state. Parent coordinates fixes through owning implementers.
 **Interfaces:** Deliver branch, usable local preview, real coverage matrix and
 explicit main-checkout overlaps. No deployment or integration.
 
-- [ ] Review primitives; homepage idle/pending/three+four modes; account guest,
+- [x] Review primitives; homepage idle/pending/three+four modes; account guest,
   claimed, error/pending; matchmaking rescue; friend/open room; recovery;
   postgame winner/loser; replay desktop/mobile/perspective. Check 1440x900,
   390x844, and touched short/tall phone states.
-- [ ] Exercise keyboard focus/escape/restoration, fields, disabled controls and
+- [x] Exercise keyboard focus/escape/restoration, fields, disabled controls and
   relevant Storybook play assertions. Emulate reduced motion through browser
   tools. Inspect no-overflow, errors and console. Static/2D preview only.
-- [ ] Capture screenshots of the implemented surfaces. Keep preview for user
+- [x] Capture screenshots of the implemented surfaces. Keep preview for user
   review, close test-only tabs and reset viewport override. No live 3D preview.
-- [ ] Run touched-file lint and focused behavioral suites; document commands and
+- [x] Run touched-file lint and focused behavioral suites; document commands and
   results. Do not claim an unrun full suite, production build or live integration.
-- [ ] Record shared rules, visual evidence, any unverified states, wordmark
+- [x] Record shared rules, visual evidence, any unverified states, wordmark
   boundary and main-checkout overlapping files. Update progress/catalog notes.
-- [ ] Obtain whole-branch review, resolve important findings through implementer,
+- [x] Obtain whole-branch review, resolve important findings through implementer,
   commit final docs, leave isolated branch for user visual feedback.
+
+Completion: all tasks reviewed; whole-branch review's one minor Button alignment
+finding fixed in `f7323ea` and scoped re-review cleared. Exact sampled evidence and
+limits are in `docs/agent/CLARITY_UI_REVIEW.md`. Branch/worktree and local previews
+are retained. No merge, push or deploy.

@@ -1,6 +1,6 @@
 # PROGRESS
 
-## Status (2026-09-22, isolated Clarity redesign — review)
+## Status (2026-09-22, isolated Clarity redesign — first pass ready)
 - Approved scope and implementation plan are in `docs/superpowers/`; work is
   isolated on `codex/clarity-ui-redesign` from committed baseline `28b42ec`.
 - Added shared 8/14/22px corners, spacing/material/type/focus/motion recipes and
@@ -11,8 +11,9 @@
 - Rendered checks cover desktop/phone states, long names, short-phone scrolling,
   keyboard dismissal/focus restoration, reduced motion/transparency, and real 2D
   homepage/game surfaces. The board and manual replay workflow remain unchanged.
-- Combined account-menu/replay checks passed: 5 files / 28 tests. Changed-file
-  lint and whitespace checks passed. Independent reviews are in progress.
+- Combined account-menu/replay checks passed: 5 files / 28 tests, repeated after
+  the final Button alignment fix. Changed-file lint and whitespace checks passed.
+  All task reviews and the whole-branch review/fix re-review are clear.
 - `CLARITY_UI_REVIEW.md` records exact sampled coverage, unverified live flows
   and known overlaps with main. No push, merge or deployment; original-checkout
   independent work was not edited by this task. Wordmark remains provisional.
