@@ -21,6 +21,17 @@ export default meta;
 
 export const Playground = { args: { variant: "primary", size: "md" } };
 
+export const ContentAlignment = {
+  render: () => (
+    <div className="grid w-72 gap-3">
+      <Button><PlusIcon className="h-5 w-5" /><span>Default centered</span></Button>
+      <Button variant="secondary" className="justify-start"><PlusIcon className="h-5 w-5" /><span>Start aligned</span></Button>
+      <Button variant="secondary" className="justify-end"><PlusIcon className="h-5 w-5" /><span>End aligned</span></Button>
+      <Button variant="secondary" className="justify-between"><PlusIcon className="h-5 w-5" /><span>Space between</span></Button>
+    </div>
+  ),
+};
+
 export const ProductionVariants = {
   render: () => (
     <div className="flex flex-wrap gap-3">
