@@ -36,6 +36,19 @@ export const SummaryRows = {
   },
 };
 
+export const LongPlayerNames = {
+  args: {
+    scoreboard: completedPostgameFixture.scoreboard.map((player, index) => ({
+      ...player,
+      name: ["TheLongestHarbourTraderName28", "AnotherLongHarbourTraderName", "Puffer 3"][index],
+    })),
+    summary: completedPostgameFixture.summary.map((row) => ({
+      ...row,
+      value: row.label === "Winner" ? "TheLongestHarbourTraderName28" : row.value,
+    })),
+  },
+};
+
 export const FinalScoresUnavailable = {
   args: {
     scoreboard: [],

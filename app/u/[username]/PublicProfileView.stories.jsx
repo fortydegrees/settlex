@@ -66,6 +66,15 @@ export default meta;
 
 export const EmptyRecentMatches = {};
 
+export const LongUsername = {
+  args: {
+    profile: {
+      ...historyProfile,
+      account: { ...account, currentUsername: "TheLongestHarbourTraderName28" },
+    },
+  },
+};
+
 export const RecentMatchHistory = {
   args: {
     profile: historyProfile,

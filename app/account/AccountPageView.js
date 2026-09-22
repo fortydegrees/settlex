@@ -100,13 +100,13 @@ export function AccountPageView({
       className="min-h-screen px-4 py-10 text-slate-800"
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
-      <div className="mx-auto max-w-xl rounded-3xl bg-white/35 p-6 shadow-xl ring-1 ring-white/50 backdrop-blur-sm">
+      <div className="settlex-ui-pane mx-auto max-w-xl p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
+          <div className="min-w-0">
+            <p className="settlex-ui-label">
               Settlehex account
             </p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">
+            <h1 className="mt-2 break-words text-2xl font-semibold text-slate-900">
               {profileCopy.title}
             </h1>
             <p className="mt-2 text-sm text-slate-700">
@@ -115,7 +115,7 @@ export function AccountPageView({
           </div>
           <Link
             href="/"
-            className="rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-md ring-1 ring-white/70"
+            className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] shrink-0 px-4 py-2 text-sm"
           >
             Back
           </Link>
@@ -124,7 +124,7 @@ export function AccountPageView({
         {authOptions.emailPassword ? (
           <form className="mt-6 grid gap-3" onSubmit={handleEmailAuth}>
             <div
-              className="grid grid-cols-2 gap-1 rounded-full bg-white/45 p-1 ring-1 ring-white/60"
+              className="settlex-ui-inset grid grid-cols-2 gap-2 p-1"
               aria-label="Email auth mode"
             >
               {[
@@ -136,14 +136,13 @@ export function AccountPageView({
                   type="button"
                   variant={authMode === mode ? "secondary" : "ghost"}
                   size="sm"
-                  className="rounded-full shadow-none"
                   onClick={() => setAuthMode(mode)}
                 >
                   {label}
                 </Button>
               ))}
             </div>
-            <label className="grid gap-1.5 text-sm font-bold text-slate-700">
+            <label className="grid gap-2 text-sm font-medium text-slate-700">
               Email
               <Input
                 type="email"
@@ -153,7 +152,7 @@ export function AccountPageView({
                 placeholder="you@example.com"
               />
             </label>
-            <label className="grid gap-1.5 text-sm font-bold text-slate-700">
+            <label className="grid gap-2 text-sm font-medium text-slate-700">
               Password
               <Input
                 type="password"
@@ -177,7 +176,7 @@ export function AccountPageView({
         ) : null}
 
         {socialProviders.length > 0 ? (
-          <div className="mt-5 grid gap-2 border-t border-white/45 pt-5">
+          <div className="mt-6 grid gap-2 border-t border-blue-100 pt-6">
             {socialProviders.map((provider) => (
               <Button
                 key={provider}
@@ -197,7 +196,7 @@ export function AccountPageView({
         ) : null}
 
         {statusMessage ? (
-          <div className="mt-4 rounded-2xl bg-white/70 px-4 py-3 text-sm text-slate-700 ring-1 ring-white/70">
+          <div className="settlex-ui-inset mt-4 break-words px-4 py-3 text-sm text-slate-700">
             {statusMessage}
           </div>
         ) : null}

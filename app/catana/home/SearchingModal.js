@@ -50,16 +50,16 @@ export function SearchingModal({
       : `1v1 · ${timeStr}`;
 
   return (
-    <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center bg-sky-700/[0.18] p-4 backdrop-blur-md">
-      <div className="w-full max-w-sm rounded-[1.45rem] border border-white/[0.42] bg-white/[0.76] p-5 text-center shadow-[0_28px_80px_-35px_rgba(15,23,42,0.65)] backdrop-blur-xl">
-        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[1.15rem] bg-lime-500 text-base font-black text-white shadow-[0_18px_38px_-28px_rgba(63,98,18,0.9)]">
+    <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center overflow-y-auto bg-sky-700/[0.18] p-4 backdrop-blur-md">
+      <div className="settlex-ui-pane max-h-full w-full max-w-sm overflow-y-auto p-5 text-center sm:p-6">
+        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[var(--settlex-ui-radius-control)] bg-lime-200 text-base font-bold text-lime-900">
           Sx
         </div>
-        <h2 className="text-2xl font-black text-slate-900">{title}</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">{title}</h2>
         <p className="mt-1 text-sm font-semibold text-slate-600">{subtitle}</p>
         {showRescue ? (
           <div className="mt-4 grid gap-3">
-            <p className="text-left text-xs font-medium leading-relaxed text-slate-600">
+            <p className="text-left text-sm leading-relaxed text-slate-600">
               SettleHex is still in beta, so it can take a little while to find
               another player. You can keep your place here, or turn on Match
               alerts and come back when someone is looking.

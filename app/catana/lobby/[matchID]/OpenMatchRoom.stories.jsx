@@ -113,6 +113,20 @@ export const Loading = {
   },
 };
 
+export const LongNamesAndServer = {
+  args: {
+    matchID: "room-with-a-long-generated-identifier",
+    gameServer: "https://game.settlehex.test/a-long-deployment-server-path",
+    match: {
+      ...openMatch,
+      players: [
+        { ...openMatch.players[0], name: "TheLongestHarbourTraderName28" },
+        ...openMatch.players.slice(1),
+      ],
+    },
+  },
+};
+
 export const JoinPending = {
   args: {
     joinPending: true,

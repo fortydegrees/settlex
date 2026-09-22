@@ -10,11 +10,11 @@ export function PostgameOverlay({
   onClose,
 }) {
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center bg-blue-900/45 backdrop-blur-sm">
-      <div className="w-full max-w-4xl rounded-xl bg-blue-200/95 p-6 shadow-2xl ring-2 ring-slate-300">
+    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-blue-900/45 p-4 backdrop-blur-sm">
+      <div className="settlex-ui-pane max-h-full w-full max-w-4xl overflow-y-auto p-5 sm:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-xs uppercase tracking-[0.3em] text-slate-600">
+            <div className="settlex-ui-label">
               Postgame
             </div>
             <div className="mt-2 text-2xl font-semibold text-slate-800">
@@ -24,14 +24,14 @@ export function PostgameOverlay({
           <div className="flex gap-2">
             <button
               type="button"
-              className="rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md hover:bg-lime-600"
+              className="settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
               onClick={onWatchReplay}
             >
               Watch replay
             </button>
             <button
               type="button"
-              className="rounded-lg bg-slate-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-700"
+              className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
               onClick={onClose}
             >
               Close
@@ -39,31 +39,31 @@ export function PostgameOverlay({
           </div>
         </div>
 
-        <div className="mt-4 min-h-[220px] rounded-lg bg-white/40 p-4">
+        <div className="mt-6">
           <div className="space-y-3">
             {scoreboard.length > 0 ? (
               scoreboard.map((player, index) => (
                 <div
                   key={player.id}
-                  className={`flex items-center justify-between rounded-lg p-3 ${
+                  className={`flex items-center justify-between gap-3 rounded-[var(--settlex-ui-radius-small)] p-3 ${
                     index === 0
                       ? "bg-yellow-100 ring-1 ring-yellow-300"
-                      : "bg-white/60"
+                      : "settlex-ui-inset"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-slate-500">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="shrink-0 text-base font-semibold text-slate-500">
                       #{index + 1}
                     </span>
                     <div
-                      className="h-8 w-8 rounded-full"
+                      className="h-8 w-8 shrink-0 rounded-full"
                       style={{ backgroundColor: getSwatchColor(player.color) }}
                     />
-                    <span className="font-medium text-slate-800">
+                    <span className="min-w-0 break-words font-medium text-slate-800">
                       {player.name || `Player ${player.id}`}
                     </span>
                   </div>
-                  <span className="text-lg font-bold text-slate-700">
+                  <span className="shrink-0 text-lg font-semibold text-slate-700">
                     {player.vp} VP
                   </span>
                 </div>
@@ -75,14 +75,14 @@ export function PostgameOverlay({
             )}
 
             {summary.length > 0 ? (
-              <div className="mt-4 rounded-lg bg-white/60 p-3">
+              <div className="mt-4 border-t border-blue-100 pt-4">
                 {summary.map((row) => (
                   <div
                     key={row.label}
-                    className="flex justify-between text-sm text-slate-700"
+                    className="flex justify-between gap-4 py-1 text-sm text-slate-700"
                   >
-                    <span className="font-medium">{row.label}</span>
-                    <span className="tabular-nums">{row.value}</span>
+                    <span className="shrink-0 font-medium">{row.label}</span>
+                    <span className="min-w-0 break-words text-right tabular-nums">{row.value}</span>
                   </div>
                 ))}
               </div>

@@ -17,11 +17,11 @@ export function InterruptedDuelRecovery({
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
       <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-10">
-        <Panel bodyClassName="p-6 md:p-8">
-          <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-700">
+        <Panel bodyClassName="p-5 sm:p-6">
+          <div className="settlex-ui-label">
             Match update
           </div>
-          <h1 className="mt-3 text-3xl font-bold text-slate-900 drop-shadow-sm">
+          <h1 className="mt-3 text-2xl font-semibold text-slate-900">
             Duel interrupted
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-700">

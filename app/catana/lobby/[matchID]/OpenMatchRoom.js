@@ -6,7 +6,6 @@ import { Button } from "../../../ui/Button";
 import { Input } from "../../../ui/Input";
 import { Panel } from "../../../ui/Panel";
 import { Select } from "../../../ui/Select";
-import { GlassPillButton } from "../../components/GlassPillButton";
 import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import { sanitizeDisplayName } from "../../utils/playerIdentity";
 
@@ -42,25 +41,25 @@ export function OpenMatchRoom({
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
       <div className="mx-auto w-full max-w-4xl px-4 py-10">
-        <Panel bodyClassName="p-6 md:p-8">
+        <Panel bodyClassName="p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-[0.3em] text-slate-700">
+            <div className="min-w-0">
+              <div className="settlex-ui-label">
                 Settlehex Room
               </div>
-              <h1 className="mt-2 text-2xl font-bold text-slate-900 drop-shadow-sm">
+              <h1 className="mt-2 break-all text-2xl font-semibold text-slate-900">
                 {matchID}
               </h1>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link
                   href="/"
-                  className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
+                  className="settlex-ui-focus inline-flex min-h-[2.75rem] items-center text-sm font-medium text-blue-700 underline underline-offset-4"
                 >
                   Back to lobby
                 </Link>
                 <Link
                   href="/account"
-                  className="text-sm font-semibold text-slate-800 underline decoration-white/60 hover:decoration-white"
+                  className="settlex-ui-focus inline-flex min-h-[2.75rem] items-center text-sm font-medium text-blue-700 underline underline-offset-4"
                 >
                   Account
                 </Link>
@@ -69,13 +68,13 @@ export function OpenMatchRoom({
 
             <div className="flex flex-wrap gap-2">
               {hasTakenSeats ? (
-                <GlassPillButton onClick={onSpectate}>
+                <Button variant="secondary" size="sm" onClick={onSpectate}>
                   Spectate
-                </GlassPillButton>
+                </Button>
               ) : null}
-              <GlassPillButton onClick={onRefresh} disabled={isLoadingMatch}>
+              <Button variant="secondary" size="sm" onClick={onRefresh} disabled={isLoadingMatch}>
                 {isLoadingMatch ? "Refreshing…" : "Refresh"}
-              </GlassPillButton>
+              </Button>
             </div>
           </div>
 
@@ -89,12 +88,13 @@ export function OpenMatchRoom({
           ) : null}
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <Panel title="Join Seat">
+            <section className="min-w-0">
+              <h2 className="settlex-ui-heading mb-4">Join Seat</h2>
               <form className="space-y-3" onSubmit={onJoin}>
                 <div>
                   <label
                     htmlFor="open-match-player-name"
-                    className="block text-xs font-semibold uppercase tracking-widest text-slate-700"
+                    className="settlex-ui-label block"
                   >
                     Player name
                   </label>
@@ -114,7 +114,7 @@ export function OpenMatchRoom({
                 <div>
                   <label
                     htmlFor="open-match-seat"
-                    className="block text-xs font-semibold uppercase tracking-widest text-slate-700"
+                    className="settlex-ui-label block"
                   >
                     Seat
                   </label>
@@ -143,7 +143,9 @@ export function OpenMatchRoom({
                 >
                   {joinPending ? "Joining…" : "Join & Play"}
                 </Button>
-                <GlassPillButton
+                <Button
+                  variant="secondary"
+                  className="w-full whitespace-normal"
                   type="button"
                   onClick={onFillBots}
                   disabled={
@@ -153,15 +155,16 @@ export function OpenMatchRoom({
                   {botFillPending
                     ? "Adding Bots…"
                     : "Fill Open Seats With Bots"}
-                </GlassPillButton>
-                <div className="text-xs text-slate-700/80">
+                </Button>
+                <div className="break-all text-xs text-slate-600">
                   Game server:{" "}
                   <span className="font-mono">{gameServer}</span>
                 </div>
               </form>
-            </Panel>
+            </section>
 
-            <Panel title="Seats">
+            <section className="min-w-0 border-t border-blue-100 pt-6 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+              <h2 className="settlex-ui-heading mb-4">Seats</h2>
               {isLoadingMatch && !match ? (
                 <div className="h-24 animate-pulse rounded-lg bg-white/40 ring-1 ring-white/40 motion-reduce:animate-none" />
               ) : null}
@@ -175,16 +178,16 @@ export function OpenMatchRoom({
                     return (
                       <div
                         key={seat.id}
-                        className={`flex items-center justify-between rounded-lg px-3 py-2 ring-1 ${
+                        className={`settlex-ui-inset flex items-center justify-between gap-3 px-3 py-3 ${
                           taken
-                            ? "bg-white/60 text-slate-800 ring-white/60"
-                            : "bg-white/40 text-slate-700 ring-white/40"
+                            ? "text-slate-800"
+                            : "text-slate-600"
                         }`}
                       >
-                        <div className="text-sm font-semibold">
+                        <div className="shrink-0 text-sm font-medium">
                           Seat {Number(seat.id) + 1}
                         </div>
-                        <div className="text-sm">
+                        <div className="min-w-0 break-words text-right text-sm">
                           {taken ? displayName : "Open"}
                         </div>
                       </div>
@@ -192,11 +195,11 @@ export function OpenMatchRoom({
                   })}
                 </div>
               ) : (
-                <div className="rounded-lg bg-white/40 p-4 text-sm text-slate-700">
+                <div className="settlex-ui-inset p-4 text-sm text-slate-700">
                   Match details unavailable.
                 </div>
               )}
-            </Panel>
+            </section>
           </div>
         </Panel>
       </div>

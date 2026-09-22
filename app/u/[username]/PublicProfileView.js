@@ -30,13 +30,13 @@ const renderStatCard = (stat) =>
     {
       key: stat.label,
       className:
-        "rounded-2xl bg-white/35 p-4 shadow-lg ring-1 ring-white/40 backdrop-blur-sm",
+        "settlex-ui-inset p-4",
     },
     h(
       "p",
       {
         className:
-          "text-xs font-semibold uppercase tracking-[0.18em] text-slate-600",
+          "settlex-ui-label min-h-[2.5rem] sm:min-h-0",
       },
       stat.label
     ),
@@ -55,12 +55,12 @@ const renderRecentMatch = (match) =>
     {
       key: match.archivedMatchId,
       className:
-        "flex flex-col gap-3 rounded-2xl bg-white/65 p-4 shadow-lg ring-1 ring-white/60 sm:flex-row sm:items-center sm:justify-between",
+        "settlex-ui-inset flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between",
     },
     h(
       "div",
       {
-        className: "space-y-1",
+        className: "min-w-0 space-y-1",
       },
       h(
         "p",
@@ -87,7 +87,7 @@ const renderRecentMatch = (match) =>
       "a",
       {
         className:
-          "inline-flex items-center justify-center rounded-full bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md transition-colors hover:bg-lime-600",
+          "settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] shrink-0 px-4 py-2 text-sm",
         href: `/g/${encodeURIComponent(match.bgioMatchId)}`,
       },
       "Watch replay"
@@ -112,7 +112,7 @@ export function PublicProfileView({ profile }) {
         "section",
         {
           className:
-            "rounded-3xl bg-blue-200/95 p-6 shadow-xl ring-2 ring-white/60 backdrop-blur-sm",
+            "settlex-ui-pane p-5 sm:p-6",
         },
         h(
           "div",
@@ -123,13 +123,13 @@ export function PublicProfileView({ profile }) {
           h(
             "div",
             {
-              className: "flex items-center gap-4",
+              className: "flex min-w-0 items-center gap-4",
             },
             h(
               "div",
               {
                 className:
-                  "flex h-20 w-20 items-center justify-center rounded-3xl bg-white/70 text-4xl shadow-lg ring-1 ring-white/70",
+                  "flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-3xl ring-1 ring-white/70",
                 style: { backgroundColor: account.avatarColor },
               },
               h(
@@ -143,20 +143,20 @@ export function PublicProfileView({ profile }) {
             h(
               "div",
               {
-                className: "space-y-1",
+                className: "min-w-0 space-y-1",
               },
               h(
                 "p",
                 {
                   className:
-                    "text-xs font-semibold uppercase tracking-[0.24em] text-slate-600",
+                    "settlex-ui-label",
                 },
                 "Public profile"
               ),
               h(
                 "h1",
                 {
-                  className: "text-4xl font-bold text-slate-900",
+                  className: "break-words text-2xl font-semibold text-slate-900 sm:text-[1.75rem]",
                 },
                 account.currentUsername
               ),
@@ -173,7 +173,7 @@ export function PublicProfileView({ profile }) {
             "p",
             {
               className:
-                "rounded-full bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-lg ring-1 ring-white/70",
+                "text-sm font-medium text-slate-600",
             },
             `${summary.wins} win${summary.wins === 1 ? "" : "s"} from ${
               summary.totalGames
@@ -184,7 +184,7 @@ export function PublicProfileView({ profile }) {
       h(
         "section",
         {
-          className: "grid gap-4 sm:grid-cols-3",
+          className: "settlex-ui-pane grid grid-cols-3 gap-2 p-3 sm:gap-4 sm:p-4",
         },
         statCards(summary).map(renderStatCard)
       ),
@@ -192,7 +192,7 @@ export function PublicProfileView({ profile }) {
         "section",
         {
           className:
-            "rounded-3xl bg-white/35 p-6 shadow-xl ring-1 ring-white/40 backdrop-blur-sm",
+            "settlex-ui-pane p-5 sm:p-6",
         },
         h(
           "div",
@@ -206,14 +206,14 @@ export function PublicProfileView({ profile }) {
               "p",
               {
                 className:
-                  "text-xs font-semibold uppercase tracking-[0.24em] text-slate-600",
+                  "settlex-ui-label",
               },
               "Recent matches"
             ),
             h(
               "h2",
               {
-                className: "mt-1 text-2xl font-bold text-slate-900",
+                className: "settlex-ui-heading mt-1",
               },
               "Finished games"
             )
@@ -224,7 +224,7 @@ export function PublicProfileView({ profile }) {
               "p",
               {
                 className:
-                  "mt-6 rounded-2xl bg-white/55 p-4 text-sm text-slate-600 shadow-sm ring-1 ring-white/60",
+                  "settlex-ui-inset mt-6 p-4 text-sm text-slate-600",
               },
               "No finished games yet."
             )

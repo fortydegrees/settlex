@@ -8,9 +8,9 @@ import {
 
 const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
 const replayReadyClassName =
-  "rounded-lg bg-lime-500 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-lime-600";
+  "settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm";
 const replayDisabledClassName =
-  "cursor-not-allowed rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm";
+  replayReadyClassName;
 
 export function GameOverModal({
   title,
@@ -65,11 +65,11 @@ export function GameOverModal({
   }, [isWinner, shouldFireConfetti, onConfettiFired]);
 
   return (
-    <div className="relative w-full max-w-xl rounded-xl bg-blue-200/95 p-8 shadow-2xl ring-2 ring-slate-300 backdrop-blur-sm">
+    <div className="settlex-ui-pane relative max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto p-5 sm:p-6">
       <button
         onClick={actions.close}
         disabled={matchAlertResume.pending}
-        className="absolute right-4 top-4 text-slate-500 hover:text-slate-700 text-2xl font-bold disabled:cursor-wait disabled:text-slate-400"
+        className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus absolute right-2 top-2 h-11 w-11 text-2xl disabled:cursor-wait"
         aria-label="Close"
       >
         ×
@@ -77,28 +77,28 @@ export function GameOverModal({
 
       <div className="text-center">
         <div className="text-4xl mb-2">🏆</div>
-        <div className="text-xs uppercase tracking-[0.3em] text-slate-600">
+        <div className="settlex-ui-label">
           Game Over
         </div>
-        <div className="mt-2 text-3xl font-bold text-slate-800 drop-shadow-sm">
+        <div className="mt-2 break-words text-2xl font-semibold text-slate-900">
           {title}
         </div>
         <div className="mt-1 text-sm text-slate-600">{subtitle}</div>
       </div>
 
-      <div className="mt-5 rounded-lg bg-gradient-to-br from-yellow-100 to-yellow-200 p-4 shadow-md ring-2 ring-yellow-400">
+      <div className="mt-5 rounded-[var(--settlex-ui-radius-small)] bg-amber-100 p-4 ring-1 ring-amber-300">
         {winner ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <div
-                className="w-10 h-10 rounded-full shadow-inner"
+                className="h-10 w-10 shrink-0 rounded-full"
                 style={{ backgroundColor: getSwatchColor(winner.color) }}
               />
-              <span className="text-xl font-bold text-slate-800">
+              <span className="min-w-0 break-words text-lg font-semibold text-slate-800">
                 {winner.name || `Player ${winner.id}`}
               </span>
             </div>
-            <span className="text-2xl font-bold text-yellow-700">
+            <span className="shrink-0 text-xl font-semibold text-amber-800">
               {winner.vp} VP
             </span>
           </div>
@@ -112,16 +112,16 @@ export function GameOverModal({
           {secondaryRows.map((row) => (
             <div
               key={row.id}
-              className="bg-white/60 rounded-lg px-4 py-2 shadow-sm flex items-center gap-2"
+              className="settlex-ui-inset flex min-w-0 max-w-full items-center gap-2 px-4 py-3"
             >
               <div
-                className="w-6 h-6 rounded-full"
+                className="h-6 w-6 shrink-0 rounded-full"
                 style={{ backgroundColor: getSwatchColor(row.color) }}
               />
-              <span className="font-medium text-slate-700">
+              <span className="min-w-0 break-words font-medium text-slate-700">
                 {row.name || `Player ${row.id}`}
               </span>
-              <span className="text-slate-500 font-semibold">
+              <span className="shrink-0 text-slate-600 font-semibold">
                 {row.vp} VP
               </span>
             </div>
@@ -130,8 +130,8 @@ export function GameOverModal({
       )}
 
       {matchAlertResume.visible ? (
-        <div className="mt-5 rounded-lg bg-white/60 p-3 text-left shadow-sm ring-1 ring-white/70">
-          <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-slate-700">
+        <div className="settlex-ui-inset mt-5 p-3 text-left">
+          <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-3 text-sm font-medium text-slate-700">
             <input
               type="checkbox"
               checked={matchAlertResume.checked}
@@ -139,7 +139,7 @@ export function GameOverModal({
               onChange={(event) =>
                 onMatchAlertResumeCheckedChange?.(event.target.checked)
               }
-              className="h-4 w-4 rounded border-slate-300 text-lime-600 focus:ring-lime-500"
+              className="settlex-ui-focus h-4 w-4 shrink-0 rounded border-slate-300 text-lime-600"
             />
             <span>{matchAlertResume.label}</span>
           </label>
@@ -154,7 +154,7 @@ export function GameOverModal({
                   type="button"
                   onClick={actions.retryMatchAlertResume}
                   disabled={matchAlertResume.pending}
-                  className="rounded-lg bg-lime-500 px-3 py-1.5 text-sm font-bold text-white shadow-sm hover:bg-lime-600 disabled:cursor-wait disabled:bg-slate-300"
+                  className="settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
                 >
                   {matchAlertResume.pending ? "Retrying…" : "Retry"}
                 </button>
@@ -162,7 +162,7 @@ export function GameOverModal({
                   type="button"
                   onClick={actions.continueWithoutMatchAlerts}
                   disabled={matchAlertResume.pending}
-                  className="rounded-lg bg-slate-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-700 disabled:cursor-wait disabled:bg-slate-300"
+                  className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] whitespace-normal px-4 py-2 text-sm"
                 >
                   Continue without alerts
                 </button>
@@ -192,7 +192,7 @@ export function GameOverModal({
         ) : null}
         {onViewSummary ? (
           <button
-            className="rounded-lg bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-white/85 disabled:cursor-wait disabled:text-slate-400"
+            className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
             onClick={actions.viewPostgame}
             disabled={matchAlertResume.pending}
           >
@@ -200,14 +200,14 @@ export function GameOverModal({
           </button>
         ) : null}
         <button
-          className="rounded-lg bg-slate-600 hover:bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm disabled:cursor-wait disabled:bg-slate-300"
+          className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
           onClick={actions.lobby}
           disabled={matchAlertResume.pending}
         >
           {matchAlertResume.pending ? "Returning…" : "Return to Lobby"}
         </button>
         <button
-          className="rounded-lg bg-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 disabled:cursor-wait disabled:text-slate-400"
+          className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
           onClick={actions.close}
           disabled={matchAlertResume.pending}
         >
