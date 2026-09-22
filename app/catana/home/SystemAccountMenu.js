@@ -74,14 +74,14 @@ export function SystemAccountMenu({
       <button
         type="button"
         aria-label="Sign in"
-        className="catana-hud-glass catana-hud-glass--compact group inline-flex min-h-[2.86rem] items-center gap-2 rounded-full px-3.5 text-left text-sm font-bold text-white transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 active:translate-y-0 motion-reduce:transition-none sm:min-h-[3rem] sm:px-4"
+        className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] gap-2 px-4 text-sm"
         onClick={onOpenSignIn}
       >
         <UserCircleIcon
-          className="h-5 w-5 shrink-0 text-white/95 drop-shadow-[0_1px_1px_rgba(15,23,42,0.22)]"
+          className="h-5 w-5 shrink-0"
           aria-hidden="true"
         />
-        <span className="drop-shadow-[0_1px_1px_rgba(15,23,42,0.24)]">
+        <span>
           Sign in
         </span>
       </button>
@@ -95,28 +95,28 @@ export function SystemAccountMenu({
       align="end"
       sideOffset={8}
       triggerAriaLabel="Open account menu"
-      triggerClassName="catana-hud-glass catana-hud-glass--compact group inline-flex min-h-[2.86rem] max-w-[2.86rem] items-center gap-2 overflow-hidden rounded-full p-[3px] text-left font-semibold text-white transition hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transition-none sm:min-h-[3rem] sm:w-auto sm:max-w-[13rem] sm:p-1 sm:pr-2.5"
+      triggerClassName="settlex-ui-pane settlex-ui-focus inline-flex min-h-[2.75rem] max-w-[3rem] items-center gap-2 overflow-hidden rounded-full p-1 text-left font-semibold text-slate-800 sm:w-auto sm:max-w-[13rem] sm:pr-3"
       triggerContent={
         <>
           {avatar}
           <span className="hidden min-w-0 flex-1 sm:block">
-            <span className="block max-w-[7.3rem] truncate text-[0.82rem] font-semibold leading-none text-white drop-shadow-[0_1px_1px_rgba(15,23,42,0.3)]">
+            <span className="block max-w-[7.3rem] truncate text-sm font-semibold leading-5">
               {displayName}
             </span>
           </span>
           <ChevronDownIcon
-            className="hidden h-4 w-4 shrink-0 text-white/78 sm:block"
+            className="hidden h-4 w-4 shrink-0 text-slate-600 sm:block"
             aria-hidden="true"
           />
         </>
       }
-      className="w-56 p-1.5"
+      className="w-64 p-3"
     >
       <div
-        className="border-b border-slate-200/72 px-2.5 pb-2.5 pt-1.5"
+        className="mb-2 border-b border-slate-200/80 px-2 pb-3"
         role="none"
       >
-        <div className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-slate-500">
+        <div className="text-xs font-medium text-slate-600">
           {isGuestProfile ? "Playing as guest" : "Signed in as"}
         </div>
         <div className="mt-1 flex min-w-0 items-center gap-2">
@@ -125,7 +125,7 @@ export function SystemAccountMenu({
           >
             {displayEmoji}
           </span>
-          <span className="min-w-0 truncate text-sm font-bold text-slate-900">
+          <span className="min-w-0 break-words text-sm font-semibold text-slate-900">
             {displayName}
           </span>
         </div>
@@ -138,13 +138,13 @@ export function SystemAccountMenu({
               key={item.action}
               type="button"
               role="menuitem"
-              className="group/item flex min-h-10 items-center gap-2.5 rounded-[0.9rem] px-2.5 text-left transition hover:bg-white/52 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85"
+              className="settlex-ui-focus flex min-h-[2.75rem] items-center gap-3 rounded-lg px-2 text-left hover:bg-blue-100/60"
               onClick={() => handleMenuItem(item.action)}
             >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[0.74rem] bg-sky-100/72 text-slate-700 transition group-hover/item:bg-white/70">
+              <span className="grid h-6 w-6 shrink-0 place-items-center text-slate-600">
                 <Icon className="h-4 w-4" aria-hidden="true" />
               </span>
-              <span className="min-w-0 truncate text-[0.86rem] font-bold text-slate-900">
+              <span className="min-w-0 text-sm font-medium text-slate-900">
                 {item.label}
               </span>
             </button>

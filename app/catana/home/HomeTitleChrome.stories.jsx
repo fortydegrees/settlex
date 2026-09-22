@@ -30,7 +30,7 @@ const callbacks = {
 };
 
 function HomeTitleChromeHarness(args) {
-  const initialActionId = SYSTEM_ACTIONS.some(
+  const initialActionId = (args.systemActions ?? SYSTEM_ACTIONS).some(
     (action) => action.id === args.activeActionId
   )
     ? args.activeActionId
@@ -93,6 +93,19 @@ const meta = {
 };
 
 export default meta;
+
+export const ClarityIdle = {};
+
+export const ClarityFourModesIdle = {
+  args: { systemActions: buildSystemActions({ settleGraphV2Enabled: true }) },
+};
+
+export const ClarityV2Starting = {
+  args: {
+    systemActions: buildSystemActions({ settleGraphV2Enabled: true }),
+    activeActionId: "bot-v2",
+  },
+};
 
 export const SignedOutIdle = {
   play: async ({ canvasElement, args }) => {
