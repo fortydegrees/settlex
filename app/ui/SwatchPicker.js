@@ -34,11 +34,11 @@ export function SwatchPicker({
             aria-pressed={isActive}
             onClick={() => onChange(option.id)}
             className={cn(
-              "h-11 w-11 cursor-pointer rounded-full transition-transform duration-[var(--settlex-ui-duration-fast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-sky-300/80 motion-reduce:transition-none",
+              "settlex-ui-focus h-11 w-11 cursor-pointer rounded-full transition-transform duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none",
               option.swatch,
               isActive
-                ? "scale-[1.08] ring-2 ring-white ring-offset-2 ring-offset-sky-300/80"
-                : "ring-1 ring-white/40 hover:scale-105",
+                ? "ring-2 ring-slate-700 ring-offset-2 ring-offset-white"
+                : "ring-1 ring-white/60 hover:ring-slate-500",
               swatchClassName
             )}
           />

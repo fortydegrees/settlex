@@ -33,7 +33,7 @@ export function Tooltip({
         >
           <BaseTooltip.Popup
             className={cn(
-              "rounded-[0.85rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(219,234,254,0.86))] px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.52)] backdrop-blur-xl transition-[opacity,transform] duration-[var(--settlex-ui-duration-fast)] data-[ending-style]:scale-[0.96] data-[ending-style]:opacity-0 data-[starting-style]:scale-[0.96] data-[starting-style]:opacity-0 motion-reduce:transition-none",
+              "settlex-ui-pane settlex-ui-tooltip settlex-ui-overlay-motion px-3 py-2 text-xs font-medium text-slate-700",
               className
             )}
           >

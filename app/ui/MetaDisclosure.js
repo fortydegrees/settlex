@@ -24,7 +24,7 @@ export function MetaDisclosure({
         sideOffset={sideOffset}
         triggerAriaLabel={ariaLabel}
         triggerClassName={cn(
-          "rounded-[0.35rem] px-1 py-0.5 text-[0.68rem] font-semibold leading-none text-white/60 underline-offset-4 decoration-white/0 transition-[color,text-decoration-color] duration-[var(--settlex-ui-duration-fast)] hover:text-white/90 hover:underline hover:decoration-white/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 motion-reduce:transition-none",
+          "settlex-ui-focus min-h-[2.75rem] rounded-[var(--settlex-ui-radius-small)] px-1 text-xs font-medium leading-none text-slate-600 underline-offset-4 transition-colors duration-[var(--settlex-ui-duration-fast)] hover:text-slate-900 hover:underline motion-reduce:transition-none",
           triggerClassName
         )}
         triggerContent={<span>{label}</span>}
