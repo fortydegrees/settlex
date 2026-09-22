@@ -54,7 +54,7 @@ export const Button = React.forwardRef(function Button(
           className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(120deg,transparent_20%,rgba(255,255,255,0.24)_45%,transparent_70%)] opacity-0 animate-[settlex-ui-cta-shimmer_3.4s_linear_infinite] motion-reduce:animate-none"
         />
       ) : null}
-      <span className="relative z-10 inline-flex w-full min-w-0 items-center justify-center gap-2">{children}</span>
+      <span className="relative z-10 inline-flex w-full min-w-0 items-center [justify-content:inherit] gap-2">{children}</span>
     </button>
   );
 });
