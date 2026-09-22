@@ -1,5 +1,22 @@
 # PROGRESS
 
+## Status (2026-09-22, isolated Clarity redesign — review)
+- Approved scope and implementation plan are in `docs/superpowers/`; work is
+  isolated on `codex/clarity-ui-redesign` from committed baseline `28b42ec`.
+- Added shared 8/14/22px corners, spacing/material/type/focus/motion recipes and
+  updated existing production primitives. No new dependencies or behavior layer.
+- Homepage now uses separate mode actions without the outer tray; account entry
+  has one explanation and coherent controls. Account/profile, matchmaking,
+  recovery, postgame and replay shell consume the same rules.
+- Rendered checks cover desktop/phone states, long names, short-phone scrolling,
+  keyboard dismissal/focus restoration, reduced motion/transparency, and real 2D
+  homepage/game surfaces. The board and manual replay workflow remain unchanged.
+- Combined account-menu/replay checks passed: 5 files / 28 tests. Changed-file
+  lint and whitespace checks passed. Independent reviews are in progress.
+- `CLARITY_UI_REVIEW.md` records exact sampled coverage, unverified live flows
+  and known overlaps with main. No push, merge or deployment; original-checkout
+  independent work was not edited by this task. Wordmark remains provisional.
+
 ## Status (2026-07-28, one account per match seat)
 - Added a server-authoritative public-join guard so one authenticated account
   cannot occupy both human seats in the same match.

@@ -1,5 +1,18 @@
 # NOTES
 
+- Clarity design boundary (2026-09-22):
+- The approved modern smooth-glass direction uses Outfit for UI. The existing
+  Fredoka wordmark is provisional, retained without redesign and not a constraint
+  on control shapes or typography. Do not use the wordmark as a visual-system spec.
+- Shared `settlex-ui-*` recipes in `app/globals.css` own pane/HUD/inset, type,
+  focus and control treatment. Pane is denser than HUD; nested groups should not
+  acquire independent blur/shadows. Keep existing interaction owners and bespoke
+  joined game geometry. Details: approved Clarity spec in `docs/superpowers/specs/`.
+- Storybook must import production HUD material and apply Outfit to body portals,
+  not only the story wrapper. Recheck the real 2D surface as well as isolated stories.
+- The isolated branch starts from committed main, not its uncommitted homepage and
+  matchmaking changes. Integration requires explicit reconciliation, not overwrite.
+
 - Match seat ownership boundary (2026-07-28):
 - One authenticated account may own at most one occupied human seat per match.
   Enforce this from live match metadata inside the app-owned per-match mutation
