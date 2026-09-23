@@ -1,5 +1,21 @@
 # PROGRESS
 
+## Status (2026-09-23, SettleGraph checkpoint 005 production candidate)
+- Added an explicit `Play Bot 005` homepage action behind the existing opt-in
+  V2 deployment flag. The generic `Play vs Bot` action continues to use Puffer.
+- Integrated the native V3/1464-observation direct-play runtime and pinned the
+  external research artifact by SHA-256; model bytes stay outside Git and both
+  production images.
+- Production Compose mounts `/srv/settlex-models` read-only. Deployment builds
+  both images and runs a model/worker preflight before replacing app containers.
+- Preserved the previously approved release badge copy. The public build ID is
+  generated from the deployed commit, so its seven-character suffix is current.
+- Verified 005 parity on 256 reference probes, direct-play game progression,
+  Rust tests, focused integration tests, `pnpm verify`, both production image
+  builds (web with Bot 005 enabled), and the desktop/mobile Storybook action.
+- Production model provisioning and the thorough GitHub Actions deployment
+  remain pending.
+
 ## Status (2026-09-23, quieter signed-out account pill)
 - Removed the homepage Sign in pill's outer cast shadow at all widths while
   retaining its white rim, face, full rounding, 44px hit area and interactions.

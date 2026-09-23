@@ -193,6 +193,48 @@ describe("deployment file wiring", () => {
     const dockerignore = readRepoFile(".dockerignore");
 
     expect(dockerignore).toMatch(/^\.env\.prod$/m);
+    expect(dockerignore).toMatch(/^\*\*\/\*\.ctnn$/m);
+  });
+
+  it("pins and packages only the verified direct-play Bot 005 runtime", () => {
+    const model = JSON.parse(readRepoFile("release", "bot-model.json"));
+    const gameDockerfile = readRepoFile("Dockerfile.game");
+    const compose = readRepoFile("infra", "docker-compose.prod.yml");
+    const startup = readRepoFile("infra", "scripts", "start-game.sh");
+
+    expect(model).toEqual({
+      checkpoint: "005",
+      sha256: "382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca",
+      observationVersion: 3,
+      observationDim: 1464,
+      actionCount: 299,
+      relativePath: "incumbent-005/model.ctnn",
+      mode: "direct",
+    });
+    expect(gameDockerfile).toContain("FROM rust:1.85.1-bookworm AS native");
+    expect(gameDockerfile).toContain("cargo build --release --locked");
+    expect(gameDockerfile).toContain("/usr/local/bin/settlegraph-v2-worker");
+    expect(gameDockerfile).toContain('CMD ["sh", "infra/scripts/start-game.sh"]');
+    expect(compose).toContain("SETTLEX_SETTLEGRAPH_V2_ENABLED");
+    expect(compose).toContain("SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models");
+    expect(compose).toContain("read_only: true");
+    expect(compose).toContain("create_host_path: false");
+    expect(startup.indexOf("check-production-bot.mjs")).toBeLessThan(
+      startup.indexOf("server/server.js")
+    );
+  });
+
+  it("builds the homepage Bot 005 action from the same deployment flag", () => {
+    const webDockerfile = readRepoFile("Dockerfile.web");
+    const compose = readRepoFile("infra", "docker-compose.prod.yml");
+    const exampleEnv = readRepoFile(".env.example");
+
+    expect(webDockerfile).toContain("ARG SETTLEX_SETTLEGRAPH_V2_ENABLED=0");
+    expect(webDockerfile).toContain(
+      "ENV NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=$SETTLEX_SETTLEGRAPH_V2_ENABLED"
+    );
+    expect(compose).toContain("SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}");
+    expect(exampleEnv).toContain("NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=0");
   });
 
   it("keeps local compose limited to postgres", () => {
@@ -275,8 +317,16 @@ describe("deployment file wiring", () => {
     expect(script).toContain("scripts/release/read-release-notes.mjs");
     expect(script).toContain("release/release-notes.json");
     expect(script).toContain("Could not determine SETTLEX_RELEASE_VERSION.");
-    expect(script).toContain('docker compose -f "$COMPOSE_FILE" up -d --build web game');
-    expect(script).toContain('docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate');
+    expect(script).toContain('docker compose --env-file .env.prod -f "$COMPOSE_FILE" "$@"');
+    const buildIndex = script.indexOf('compose build web game');
+    const botPreflightIndex = script.indexOf(
+      'compose run --rm --no-deps game node scripts/bots/check-production-bot.mjs'
+    );
+    const serviceSwapIndex = script.indexOf('compose up -d --no-build web game');
+    expect(buildIndex).toBeGreaterThanOrEqual(0);
+    expect(botPreflightIndex).toBeGreaterThan(buildIndex);
+    expect(serviceSwapIndex).toBeGreaterThan(botPreflightIndex);
+    expect(script).toContain('compose exec -T web pnpm db:migrate');
     expect(script).toContain("curl --fail");
     expect(script).toContain("https://settlehex.com");
   });
@@ -284,10 +334,10 @@ describe("deployment file wiring", () => {
   it("recreates the proxy before reloading its synced Caddyfile", () => {
     const { result, commands } = runProductionDeployWithRecordedCommands();
     const proxyStart = commands.indexOf(
-      "docker compose -f infra/docker-compose.prod.yml up -d --force-recreate proxy --remove-orphans"
+      "docker compose --env-file .env.prod -f infra/docker-compose.prod.yml up -d --force-recreate proxy --remove-orphans"
     );
     const caddyReload = commands.indexOf(
-      "docker compose -f infra/docker-compose.prod.yml exec -T -w /etc/caddy proxy caddy reload --config /etc/caddy/Caddyfile"
+      "docker compose --env-file .env.prod -f infra/docker-compose.prod.yml exec -T -w /etc/caddy proxy caddy reload --config /etc/caddy/Caddyfile"
     );
 
     expect(result.status).toBe(0);
@@ -326,6 +376,7 @@ describe("deployment file wiring", () => {
     expect(script).toContain("BETTER_AUTH_SECRET");
     expect(script).toContain("VAPID_PUBLIC_KEY");
     expect(script).toContain("pg_dump");
+    expect(script).toContain('docker compose --env-file .env.prod -f "$COMPOSE_FILE"');
     expect(script).toContain("infra/scripts/deploy-prod.sh");
     expect(script).toContain("curl --fail");
     expect(script).toContain("https://settlehex.com");

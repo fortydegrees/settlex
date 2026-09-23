@@ -89,11 +89,12 @@ PUBLIC_APP_URL=http://localhost:3000 \
 pnpm dev
 ```
 
-Open `http://localhost:3000`, choose **Play V2 Bot**, and play normally. The
+Open `http://localhost:3000`, choose **Play Bot 005**, and play normally. The
 default worker path is
 `native/settlegraph-v2/target/release/settlegraph-v2-worker`; override it with
-`SETTLEX_SETTLEGRAPH_V2_WORKER`. The existing three-action homepage and all
-ordinary matches remain unchanged when the flags are absent.
+`SETTLEX_SETTLEGRAPH_V2_WORKER`. Puffer remains available as **Play vs Bot**.
+The Bot 005 action appears only when the public and server feature flags are
+enabled.
 
 When finished, stop the two foreground processes and remove the disposable
 container/network (the named local database volume remains):
@@ -109,6 +110,8 @@ timeout, snapshot, and response failures are logged with match/seat context;
 an already-created match uses Puffer for that decision so it cannot deadlock,
 and the native client preflights again after a worker restart.
 
-Model bytes are not tracked by Git. Release packaging is a separate concern:
-it must provide an immutable read-only model mount and the release worker, then
-run the release checks before any approved deployment.
+Model bytes are not tracked by Git or copied into Docker layers. Production
+mounts the verified artifact read-only from `/srv/settlex-models`, and the game
+container checks its pinned SHA and V3 contract before starting. The integration
+is an explicitly labelled beta option; it does not change the research
+promotion record or qualify the model's value output.

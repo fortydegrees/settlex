@@ -12,7 +12,7 @@ fn model_path() -> String {
 #[test]
 #[ignore = "requires external sealed 005 artifact and authenticated reference probes"]
 fn incumbent_005_matches_research_outputs_and_legal_choices() {
-    let model = load_verified_model(Path::new(&model_path())).expect("load promoted 005");
+    let model = load_verified_model(Path::new(&model_path())).expect("load checkpoint 005");
     assert_eq!(model.sha256, INCUMBENT_005_CTNN_SHA256);
     assert_eq!(model.contract.model_kind, "SettleGraph/CTNN-v3");
     assert_eq!(model.contract.observation_version, 3);

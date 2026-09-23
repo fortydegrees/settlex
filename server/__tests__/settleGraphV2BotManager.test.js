@@ -120,7 +120,7 @@ describe("BotManager routing", () => {
       players: {
         "0": { name: "Ada", data: {} },
         "1": {
-          name: "[BOT] SettleGraph V2",
+          name: "[BOT] SettleGraph 005",
           data: { isBot: true, botKey: "settlegraph-v2" }
         }
       }

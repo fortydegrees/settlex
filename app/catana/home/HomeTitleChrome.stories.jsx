@@ -107,7 +107,7 @@ export const ClarityFourModesIdle = {
   args: { systemActions: buildSystemActions({ settleGraphV2Enabled: true }) },
 };
 
-export const ClarityV2Starting = {
+export const ClarityBot005Starting = {
   args: {
     systemActions: buildSystemActions({ settleGraphV2Enabled: true }),
     activeActionId: "bot-v2",
@@ -158,7 +158,7 @@ export const ClaimedStartingPuffer = {
   },
 };
 
-export const SettleGraphV2Available = {
+export const Bot005Available = {
   args: {
     identity: savedIdentity,
     accountStatus: "claimed",
@@ -171,7 +171,7 @@ export const SettleGraphV2Available = {
     const screen = within(canvasElement);
     args.onSelectMode.mockClear();
     await userEvent.click(
-      screen.getByRole("button", { name: /Play V2 Bot/ })
+      screen.getByRole("button", { name: /Play Bot 005/ })
     );
     expect(args.onSelectMode).toHaveBeenCalledWith("bot-v2");
   },

@@ -1,3 +1,9 @@
+FROM rust:1.85.1-bookworm AS native
+
+WORKDIR /build
+COPY native/settlegraph-v2 ./
+RUN cargo build --release --locked && strip target/release/settlegraph-v2-worker
+
 FROM node:20-bookworm-slim AS base
 
 ENV PNPM_HOME=/pnpm
@@ -7,15 +13,18 @@ RUN corepack enable && corepack prepare pnpm@9.13.2 --activate
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY next.config.js ./
 COPY game-core/package.json game-core/package.json
 COPY patches patches
 RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm -C game-core build
+COPY --from=native /build/target/release/settlegraph-v2-worker /usr/local/bin/settlegraph-v2-worker
 
 ENV NODE_ENV=production
+ENV SETTLEX_SETTLEGRAPH_V2_WORKER=/usr/local/bin/settlegraph-v2-worker
 
 EXPOSE 8000 8080
 
-CMD ["node", "server/server.js"]
+CMD ["sh", "infra/scripts/start-game.sh"]

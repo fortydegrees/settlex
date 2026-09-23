@@ -71,14 +71,20 @@ export SETTLEX_BUILD_SHA
 export SETTLEX_BUILD_DATE
 export SETTLEX_RELEASE_VERSION
 
-docker compose -f "$COMPOSE_FILE" up -d postgres
-docker compose -f "$COMPOSE_FILE" up -d --build web game
-docker compose -f "$COMPOSE_FILE" up -d --force-recreate proxy --remove-orphans
-docker compose -f "$COMPOSE_FILE" exec -T -w /etc/caddy proxy \
+compose() {
+  docker compose --env-file .env.prod -f "$COMPOSE_FILE" "$@"
+}
+
+compose up -d postgres
+compose build web game
+compose run --rm --no-deps game node scripts/bots/check-production-bot.mjs
+compose up -d --no-build web game
+compose up -d --force-recreate proxy --remove-orphans
+compose exec -T -w /etc/caddy proxy \
   caddy reload --config /etc/caddy/Caddyfile
 
-if docker compose -f "$COMPOSE_FILE" exec -T web node -e "const pkg=require('./package.json'); process.exit(pkg.scripts && pkg.scripts['db:migrate'] ? 0 : 1)"; then
-  docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate
+if compose exec -T web node -e "const pkg=require('./package.json'); process.exit(pkg.scripts && pkg.scripts['db:migrate'] ? 0 : 1)"; then
+  compose exec -T web pnpm db:migrate
 else
   echo "Skipping db:migrate because the script is not defined yet."
 fi

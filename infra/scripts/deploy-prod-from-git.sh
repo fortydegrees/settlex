@@ -105,8 +105,8 @@ backup_database() {
   backup_path="${backup_dir}/prod-before-${short_sha}-$(date -u +"%Y%m%dT%H%M%SZ").sql"
 
   mkdir -p "$backup_dir"
-  docker compose -f "$COMPOSE_FILE" up -d postgres
-  docker compose -f "$COMPOSE_FILE" exec -T postgres \
+  docker compose --env-file .env.prod -f "$COMPOSE_FILE" up -d postgres
+  docker compose --env-file .env.prod -f "$COMPOSE_FILE" exec -T postgres \
     pg_dump -U "$postgres_user" "$postgres_db" > "$backup_path"
   echo "Wrote database backup: ${backup_path}"
 }
@@ -128,6 +128,6 @@ export SETTLEX_BUILD_DATE="${SETTLEX_BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ"
 
 infra/scripts/deploy-prod.sh
 
-docker compose -f "$COMPOSE_FILE" ps
+docker compose --env-file .env.prod -f "$COMPOSE_FILE" ps
 curl --fail --silent --show-error --location "$HEALTH_URL" >/dev/null
 echo "Live health check passed: ${HEALTH_URL}"

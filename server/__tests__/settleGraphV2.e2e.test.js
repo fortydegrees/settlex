@@ -42,7 +42,7 @@ function createSyncDb() {
   };
 }
 
-describe("SettleGraph V2 sealed-runtime integration", () => {
+describe("SettleGraph 005 sealed-runtime integration", () => {
   it.runIf(RUN_E2E)(
     "plays setup and a main-turn action through Master, router, native worker, and sealed model",
     async () => {
@@ -62,7 +62,7 @@ describe("SettleGraph V2 sealed-runtime integration", () => {
           },
           "1": {
             id: 1,
-            name: "[BOT] SettleGraph V2",
+            name: "[BOT] SettleGraph 005",
             credentials: "bot-secret",
             data: {
               participantType: "bot",

@@ -1,5 +1,23 @@
 # NOTES
 
+- SettleGraph checkpoint 005 opt-in production release (2026-09-23):
+  - This release adds a separate `Play Bot 005` action. The generic `Play vs Bot`
+    action stays on Puffer; checkpoint 005 is a direct-play beta integration,
+    not a research promotion or value-qualified model claim.
+  - Keep the model external at `/srv/settlex-models/incumbent-005/model.ctnn`
+    with SHA-256
+    `382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca`.
+    Mount the directory read-only at `/opt/settlex/models`; never add `.ctnn`
+    bytes to Git or the production image.
+  - Set `SETTLEX_SETTLEGRAPH_V2_ENABLED=1` in `.env.prod`. Compose passes this
+    same flag to the Next build and both server/client paths. Before replacing
+    app containers, deploy builds web/game images and runs
+    `scripts/bots/check-production-bot.mjs`, which checks the model hash and
+    V3 worker contract. Keep the runtime fail-closed at startup.
+  - The model artifact's research record remains `production_selected_artifact`
+    false and `deployment_authorized` false; the user's separate product-release
+    authorization does not alter those research records or the incumbent.
+
 - Homepage play-button state correction (2026-09-23):
   - `HomeModeButton.module.css` owns the play dock hover/press geometry. Shared
     `settlex-ui-button` hover had no visual delta; use a small 2px lift and

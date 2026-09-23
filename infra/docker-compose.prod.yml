@@ -25,6 +25,7 @@ services:
         SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
         SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
         SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
+        SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
     depends_on:
       postgres:
         condition: service_healthy
@@ -36,6 +37,7 @@ services:
       NEXT_PUBLIC_SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
       NEXT_PUBLIC_SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
       NEXT_PUBLIC_SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
+      SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
     expose:
       - "3000"
     restart: unless-stopped
@@ -52,6 +54,16 @@ services:
     environment:
       NODE_ENV: production
       SETTLEX_BOT_MOVE_DELAY_MS: ${SETTLEX_BOT_MOVE_DELAY_MS:-450}
+      SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
+      SETTLEX_SETTLEGRAPH_V2_MODEL: /opt/settlex/models/incumbent-005/model.ctnn
+      SETTLEX_SETTLEGRAPH_V2_WORKER: /usr/local/bin/settlegraph-v2-worker
+    volumes:
+      - type: bind
+        source: ${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}
+        target: /opt/settlex/models
+        read_only: true
+        bind:
+          create_host_path: false
     expose:
       - "8000"
       - "8080"
