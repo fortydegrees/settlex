@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { Button } from "../../ui/Button";
 import { StatusBanner } from "../components/StatusBanner";
+import { markGameStartTransition } from "../effects/gameStartTransition.js";
 import { HomeDemoBoardPoster } from "../homeDemo/HomeDemoBoardPoster";
 import { createHomeDemoPieceState } from "../homeDemo/homeDemoSequence";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
@@ -58,12 +59,11 @@ const LazyIdentityModal = React.lazy(() =>
 const useBrowserLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-const useMatchFoundSound = () => {
-  const matchFoundSoundPlayedRef = useRef(false);
+const useGameStartSound = () => {
   const audioRef = useRef(null);
 
-  // Fetch the cue while matchmaking runs so it fires instantly on match
-  // found instead of racing the navigation with a cold network request.
+  // Fetch the cue before navigation so GameScreen can play it from cache
+  // when the real board commits, rather than at the match-found event.
   const prime = useCallback(() => {
     if (audioRef.current) return;
     if (typeof window === "undefined") return;
@@ -77,23 +77,11 @@ const useMatchFoundSound = () => {
     }
   }, []);
 
-  const play = useCallback(() => {
-    if (matchFoundSoundPlayedRef.current) return;
-    matchFoundSoundPlayedRef.current = true;
-    if (typeof window === "undefined") return;
-
-    try {
-      if (window.localStorage.getItem("catana:audioMuted") === "true") return;
-      const audio =
-        audioRef.current ?? new window.Audio("/sounds/game-start.mp3");
-      const playback = audio.play();
-      void playback?.catch?.(() => {});
-    } catch (err) {
-      /* Match-found sound must never block navigation. */
-    }
+  const queue = useCallback((matchID) => {
+    markGameStartTransition({ matchID });
   }, []);
 
-  return { prime, play };
+  return { prime, queue };
 };
 
 function useViewportWidth() {
@@ -218,7 +206,7 @@ function HomeErrorBanner({ error, onDismiss }) {
 
 function HomeTableBoard({ initialAccount = null }) {
   const router = useRouter();
-  const matchFoundSound = useMatchFoundSound();
+  const gameStartSound = useGameStartSound();
   const viewportWidth = useViewportWidth();
   const { variant: logoVariant, tone: logoTone } = useHomeBrandLogoOptions();
   const isBoardLayoutReady = viewportWidth > 0;
@@ -231,11 +219,11 @@ function HomeTableBoard({ initialAccount = null }) {
   const placementRoadLayerRef = useRef(null);
   const lobby = useLobbyHomeActions({
     initialAccount,
-    onMatchFound: matchFoundSound.play,
+    onGameStartTransition: gameStartSound.queue,
   });
   useEffect(() => {
-    if (lobby.searchState?.phase === "searching") matchFoundSound.prime();
-  }, [lobby.searchState?.phase, matchFoundSound]);
+    if (lobby.searchState?.phase === "searching") gameStartSound.prime();
+  }, [gameStartSound, lobby.searchState?.phase]);
   const matchAlerts = useMatchAlerts();
   const handleMatchAlertAction = (action) => {
     if (action === "enable") return matchAlerts.enable();
@@ -262,11 +250,13 @@ function HomeTableBoard({ initialAccount = null }) {
 
   const handleSelectMode = (mode) => {
     if (mode === "queue") {
+      gameStartSound.prime();
       lobby.actions.playOnline();
       return;
     }
 
     if (mode === "bot") {
+      gameStartSound.prime();
       lobby.actions.playBot();
       return;
     }
@@ -396,6 +386,7 @@ function HomeTableBoard({ initialAccount = null }) {
         matchAlertError={matchAlerts.error}
         onMatchAlertAction={handleMatchAlertAction}
         isPufferTransitionPending={lobby.isPufferTransitionPending}
+        isSearchCancelPending={lobby.isSearchCancelPending}
         onCancel={lobby.overlays.cancelSearch}
         onPlayPuffer={lobby.actions.playPufferFromSearch}
       />

@@ -18,38 +18,39 @@ const between = (source, start, end) =>
   source.slice(source.indexOf(start), source.indexOf(end));
 
 describe("useLobbyHomeActions matchmaking rescue", () => {
-  it("does not announce when ordinary play joins an existing duel", () => {
-    const playSource = between(
-      readHook(),
-      "const play = useCallback",
-      "const createFriendChallenge"
-    );
-    const existingDuelBranch = between(
-      playSource,
-      "if (openMatch)",
-      "const account = await ensureAccountSession"
-    );
+  it("marks a committed match for board-ready audio before navigation", () => {
+    const commitGameStartNavigation = lobbyActions.commitGameStartNavigation;
+    expect(commitGameStartNavigation).toBeTypeOf("function");
+    if (typeof commitGameStartNavigation !== "function") return;
 
-    expect(existingDuelBranch).toContain("createdNewPublicDuel: false");
-    expect(existingDuelBranch).not.toContain("scheduleMatchAnnouncement");
-  });
+    const events = [];
+    const matchID = commitGameStartNavigation({
+      created: {
+        matchID: "puffer-match",
+        playerID: "1",
+        playerCredentials: "puffer-credentials",
+      },
+      account: { currentUsername: "Ada" },
+      persistJoinedSeat: (seat) => events.push(["persist", seat]),
+      markGameStart: (targetMatchID) =>
+        events.push(["mark", targetMatchID]),
+      navigate: (href) => events.push(["navigate", href]),
+    });
 
-  it("marks and schedules only a genuinely new public duel", () => {
-    const playSource = between(
-      readHook(),
-      "const play = useCallback",
-      "const createFriendChallenge"
-    );
-    const createdDuelBranch = playSource.slice(
-      playSource.indexOf('route: "/api/matches/create"')
-    );
-
-    expect(createdDuelBranch).toContain("createdNewPublicDuel: true");
-    expect(createdDuelBranch).toContain(
-      "Create succeeded but returned no credentials."
-    );
-    expect(createdDuelBranch).toContain("scheduleMatchAnnouncement({");
-    expect(createdDuelBranch).toContain("requestAnnouncement");
+    expect(matchID).toBe("puffer-match");
+    expect(events).toEqual([
+      [
+        "persist",
+        {
+          matchID: "puffer-match",
+          playerID: "1",
+          credentials: "puffer-credentials",
+          playerName: "Ada",
+        },
+      ],
+      ["mark", "puffer-match"],
+      ["navigate", "/g/puffer-match"],
+    ]);
   });
 
   it("clears delayed announcements for every queue-ending transition", () => {
@@ -82,22 +83,6 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     expect(cancelSource).toContain("clearScheduledMatchAnnouncement");
     expect(pufferSource).toContain("clearScheduledMatchAnnouncement");
     expect(source).toContain("announcedMatchIDRef.current = null");
-  });
-
-  it("invalidates stale async work on cancel, match-found, and unmount", () => {
-    const source = readHook();
-    const pollingSource = between(
-      source,
-      "const poll = async () =>",
-      "const id = setInterval(poll, 1500)"
-    );
-
-    expect(source).toContain("const searchGenerationRef = useRef(0)");
-    expect(source).toContain("mountedRef.current = true");
-    expect(source).toContain("advanceSearchGeneration(searchGenerationRef)");
-    expect(pollingSource).toContain("finishSearchPoll({");
-    expect(pollingSource).toContain("unresolvedSearchMutationRef.current");
-    expect(source).toContain("commitSearchSeat({");
   });
 
   it("keeps announcement results independent from polling state", () => {
@@ -137,94 +122,6 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     expect(pufferSource).toContain("cancelSearch");
     expect(pufferSource).toContain("playAgainstBot");
     expect(source).toContain("playPufferFromSearch,");
-  });
-
-  it("keeps the queue active whenever an authoritative leave cannot be confirmed", () => {
-    const source = readHook();
-    const cancelSource = between(
-      source,
-      "const cancelSearch = useCallback",
-      "const playPufferFromSearch"
-    );
-
-    expect(cancelSource).toContain("reconcileSearchDeparture");
-    expect(cancelSource).toContain("still queued");
-    expect(cancelSource).toContain("return false");
-    expect(cancelSource).toContain("setSearchState((current) =>");
-    expect(cancelSource).not.toContain("preserveOnLeaveFailure");
-  });
-
-  it("enters a duel instead of cancelling when the opponent has already joined", () => {
-    const source = readHook();
-    const leaveSource = between(
-      source,
-      "const leaveSearchSeat = useCallback",
-      "const recoverMatchmakingSeats"
-    );
-    const cancelSource = between(
-      source,
-      "const cancelSearch = useCallback",
-      "const playPufferFromSearch"
-    );
-
-    expect(source).toContain("code: details?.code");
-    expect(leaveSource).toContain('intent: "matchmaking_cancel"');
-    expect(cancelSource).toContain('departure.reason === "match_found"');
-    expect(cancelSource).toContain("router.push(`/g/${matchID}`)");
-  });
-
-  it("treats an interrupted join mutation as unsafe for a Puffer transition", () => {
-    const source = readHook();
-    const joinSource = between(
-      source,
-      "const joinRoom = useCallback",
-      "const play = useCallback"
-    );
-    const requestIndex = joinSource.indexOf('route: "/api/matches/join"');
-    const unsafeIndex = joinSource.indexOf("seatRequestStarted = true");
-
-    expect(joinSource).toContain("let seatRequestStarted = false");
-    expect(unsafeIndex).toBeGreaterThan(-1);
-    expect(unsafeIndex).toBeLessThan(requestIndex);
-    expect(joinSource).toContain("return !seatRequestStarted");
-    expect(joinSource).toContain("createMatchmakingMutationIdentity");
-    expect(joinSource).toContain("unresolvedSearchMutationRef.current = mutation");
-    expect(joinSource).toContain("requestedCredentials: mutation.credentials");
-    expect(joinSource).toContain("matchmakingRequestId: mutation.requestId");
-    expect(joinSource.indexOf("setSearchState((current)")).toBeLessThan(requestIndex);
-  });
-
-  it("marks create unsafe before the server mutation can outlive cancellation", () => {
-    const source = readHook();
-    const playSource = between(
-      source,
-      "const play = useCallback",
-      "const createFriendChallenge"
-    );
-    const createRequestIndex = playSource.indexOf('route: "/api/matches/create"');
-    const unsafeIndex = playSource.indexOf("operationSafeToTransition = false");
-
-    expect(unsafeIndex).toBeGreaterThan(-1);
-    expect(unsafeIndex).toBeLessThan(createRequestIndex);
-    expect(playSource).toContain("createMatchmakingMutationIdentity");
-    expect(playSource).toContain("unresolvedSearchMutationRef.current = mutation");
-    expect(playSource).toContain("requestedCredentials: mutation.credentials");
-    expect(playSource).toContain("matchmakingRequestId: mutation.requestId");
-  });
-
-  it("authoritatively reconciles an unresolved mutation on every later cancel", () => {
-    const source = readHook();
-    const cancelSource = between(
-      source,
-      "const cancelSearch = useCallback",
-      "const playPufferFromSearch"
-    );
-
-    expect(source).toContain("const unresolvedSearchMutationRef = useRef(null)");
-    expect(source).toContain('route: "/api/matches/recover"');
-    expect(cancelSource).toContain("reconcileUnresolvedSearchMutation");
-    expect(cancelSource).toContain("unresolvedSearchMutationRef.current");
-    expect(cancelSource).toContain("return false");
   });
 
   it("keeps the lobby busy for the full Puffer transition", () => {

@@ -4722,3 +4722,117 @@
     `boardgame.io/dist/cjs/core.js` file.
   - Keep `server/__tests__/nodeRuntimeImport.test.js` as the focused executable
     regression check for that runtime boundary.
+
+- Game-start and public matchmaking boundary (2026-08-22):
+  - Game-start is a fresh-game board cue, not a match-found lobby cue. Prime
+    the file before navigation, arm a short-lived match-scoped transition only
+    after credentials are committed, then consume and play it atomically in
+    GameEffects when the real board mounts. A consumed/absent marker keeps
+    refresh, reconnect, replay, and direct-link mounts silent.
+  - The homepage public-search contract is one command:
+    `POST /api/matches/matchmake` with an account-scoped request ID and proposed
+    seat credentials. The server alone chooses join or create under the public
+    mode lock. Do not reintroduce a client `/matches/open` preflight or make the
+    homepage choose `/matches/join`, `/matches/create`, or a player ID.
+  - Active public-search cancellation uses the same identity with
+    `DELETE /api/matches/matchmake`; it is not a seat-based leave. Send it
+    immediately even when the POST response is pending. A short-lived database
+    tombstone makes DELETE-before-POST safe and keeps a delayed request from
+    creating a ghost seat.
+  - Public matchmaking, explicit public joins, and request cancellation share
+    the public-mode advisory lock; operations that mutate an existing duel then
+    take that duel's lock. Live `player.name` is occupancy authority. If Cancel
+    observes two occupied human seats, it must return `match_found`, preserve
+    credentials, and enter the duel rather than remove either participant.
+  - Creating the waiting duel must not grant first placement. Choose the
+    creator's seat server-side when a new public duel is created, just as a
+    friend-challenge inviter's seat is chosen server-side. Public matchmaking
+    uses `crypto.randomInt` under the existing mode lock; retries retain their
+    authoritative seat and joiners still take the live open seat.
+
+- SettleGraph V2 product boundary (2026-08-25):
+  - Keep V2 observation, legality, topology, inference, and action semantics in
+    `native/settlegraph-v2`; JavaScript owns only process correlation,
+    allowlisted reducer dispatch, match routing, and fallback.
+  - V2 is not a Puffer/Champion model swap. Select it with persisted bot key
+    `settlegraph-v2`, server flag `SETTLEX_SETTLEGRAPH_V2_ENABLED=1`, and public
+    flag `NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=1`. With flags absent, the current
+    product and Puffer path are unchanged.
+  - Only V2 matches use board source `settlegraph-v2-native-v1`. It reuses the
+    fair-duel catalog land selection and port-resource sequence but projects
+    ports onto native-contract edges; the worker rejects any other attachment.
+  - Catana placement exposes `ctx.playOrder` as the exact snake sequence
+    `0,1,1,0`, and `ctx.currentPlayer` is the setup actor while
+    `G.core.turn.currentPlayerId` remains seat zero. Normal play requires the
+    core/context actor fields to agree.
+  - Forced discards are serial in the native engine. Bot scheduling targets
+    only the first `pendingDiscards` seat and waits when that seat is human;
+    the next bot is scheduled after the authoritative state removes the human.
+  - The accepted CTNN remains external and hash-pinned. Do not copy it into the
+    repo, modify training or Champion registry state, or add it to a production
+    image without a separately approved release/mount decision.
+
+- Production idle acknowledgement proxy boundary (2026-08-26):
+  - Boardgame.io mounts custom `server.router` HTTP routes on the lobby API
+    listener when `server.run` uses a separate `lobbyConfig.apiPort`.
+  - Caddy must send only the public custom `/timer*` and `/idle*` handlers to
+    `game:8080`; `/socket.io*` remains on `game:8000`, and the unauthenticated
+    Boardgame.io `/games` lobby API must remain private behind the Next server.
+  - Updating a bind-mounted Caddyfile does not activate it in the existing
+    production container. `deploy-prod.sh` must run a graceful `caddy reload`
+    after bringing up `proxy`, before reporting the deploy healthy.
+  - `NEXT_PUBLIC_GAME_SERVER_ORIGIN` configures the live Socket.IO transport.
+    In local development, it must not redirect timer/idle HTTP calls away from
+    the separate `:8080` API listener. Production may reuse the configured
+    public origin because Caddy unifies both listeners on settlehex.com.
+  - Production health checks must cover every public routing branch after the
+    reload: a same-origin Next API, Socket.IO polling, and `OPTIONS` against
+    both custom `/timer` and `/idle` routes. A homepage-only health check does
+    not prove client APIs are reachable.
+
+- Local robber placement handoff (2026-08-26):
+  - `Board` intentionally removes legal robber click targets after a commit to
+    prevent double submission. `RobberPlacementPreview` must therefore retain
+    the committed target independently; target unregistration must not return
+    a pending preview to pointer-following.
+  - Prefer the last viewport-space target for the committed tile so board
+    pan/zoom transforms remain reflected. The land-tile center is the fallback
+    when no live or retained target geometry is available.
+
+- Monopoly game-log presentation (2026-08-26):
+  - Keep Monopoly result amounts in the same repeated resource-token grammar as
+    gain, discard, and maritime-trade entries. Do not add a redundant numeric
+    count beside the icons.
+  - Keep the dev-card label on the surrounding sentence baseline. Offset the
+    larger card image independently rather than vertically aligning the entire
+    icon-and-label token as a flex box.
+  - A zero-card Monopoly claim reads `claimed no` plus one icon for the selected
+    resource so the row does not end with a dangling `claimed`.
+
+- Homepage ambient demo visibility playback (2026-09-14):
+  - Keep the existing scene generator and semantic placement runner. The
+    homepage bridge owns a small pausable visible-time scheduler for starts,
+    commits, and scene resets.
+  - On hide, commit any started-but-uncommitted event and cancel only the
+    bridge's transient GSAP placements. On return, resume the remaining delays;
+    do not let browser-throttled timers catch up in a burst.
+  - `createPiecePlacementRunner` remains callable for live gameplay and exposes
+    `cancelAll()` only for its owning surface. Never pause GSAP's global
+    timeline for this ambient-only lifecycle.
+
+- Homepage ambient demo layout and scene loops (2026-09-23):
+  - Viewport size changes must update the placement runner's layout lookup
+    without recreating the runner or resetting the scene scheduler.
+  - Temporary GSAP placements use pixel coordinates. On a layout change,
+    settle started events into board state and cancel their temporary elements
+    in a layout effect so the committed pieces follow the resized board.
+  - Scene event IDs repeat on later cycles; clear the commit dedupe set at each
+    scene start so a long-open tab continues committing placements.
+
+- Player username character boundary (2026-09-22):
+  - `accounts.current_username` is the canonical human player/display name.
+    All create and update paths must pass through `normalizeUsername`, which
+    accepts only `[A-Za-z0-9_]` after trimming and keeps the 28-character cap.
+  - Keep matching `pattern`, `title`, and `required` constraints on every
+    editable username form, but treat server normalization as authoritative.
+    Internal bot display names are not account usernames and may retain spaces.

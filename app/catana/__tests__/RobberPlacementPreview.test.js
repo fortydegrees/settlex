@@ -20,7 +20,6 @@ describe("RobberPlacementPreview", () => {
     const contents = fs.readFileSync(previewPath, "utf8");
     expect(contents).toContain("hoveredTarget");
     expect(contents).toContain("magneticTargets");
-    expect(contents).toContain("getMagneticRobberTarget");
   });
 
   it("renders a separate board shadow and gates it on land-hex hit testing", () => {

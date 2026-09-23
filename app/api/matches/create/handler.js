@@ -37,6 +37,12 @@ export const createMatchCreateRoute =
       }
 
       const payload = await request.json();
+      if (payload?.matchmaking === true) {
+        throw Object.assign(
+          new Error("Public matchmaking must use /api/matches/matchmake."),
+          { status: 400 }
+        );
+      }
       const creationMode = resolveMatchCreationMode({
         modeId: payload?.modeId,
         numPlayers: Number(payload?.numPlayers) || 2,

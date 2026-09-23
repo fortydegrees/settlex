@@ -7622,3 +7622,194 @@
   skips; Catana suite passed 814 tests; `git diff --check` passed. A local
   Node 20 Docker-image check was unavailable because the OrbStack Docker daemon
   was not running.
+
+## Status (2026-08-22, board-ready game start and matchmaking recovery)
+
+- Corrected the game-start semantic boundary: lobby transitions now arm a
+  short-lived, match-scoped marker, and the real GameScreen audio effect
+  consumes it when the board mounts. The asset is still primed before
+  navigation, but match-found itself is silent. Direct links, refreshes, and
+  reconnects have no marker and do not replay the cue.
+- Replaced the homepage's list/join/create decision tree with one authenticated
+  `POST /api/matches/matchmake` command. The server performs join-or-create
+  under a public-mode advisory lock and returns the actual assigned seat, so
+  simultaneous seekers converge on one duel without either client selecting a
+  room or seat.
+- Replaced seat-based homepage cleanup with request-scoped
+  `DELETE /api/matches/matchmake`. Cancel no longer waits behind the original
+  POST response. The server serializes Cancel with matchmaking and explicit
+  public joins, removes only a still-waiting request-owned seat, and returns a
+  filled duel as `match_found` so the client enters it instead of breaking it.
+- Added short-lived PostgreSQL cancellation tombstones keyed by account, mode,
+  and request ID. This makes Cancel safe in both arrival orders: a DELETE that
+  reaches the server before a delayed POST prevents that POST from creating a
+  ghost waiting seat; a DELETE that arrives second removes or preserves the
+  authoritative seat according to live occupancy.
+- Behavior-first regressions cover the locked matchmaker, dynamic seat
+  assignment, single-use game-start transition, audio-boundary consumption,
+  and cancellation decisions. Browser verification forced two isolated
+  clients through the old empty-queue race: both issued only the new POST,
+  reached the same match, and received different player IDs. With a POST
+  response held for 60 seconds, DELETE still returned `200` and restored the
+  enabled Play Online button while the POST remained pending. The complementary
+  late-Cancel race entered the just-filled duel. The Puffer path loaded the
+  board, requested `game-start.mp3` with `200`, consumed the marker, and
+  recorded WebAudio buffer starts without an autoplay warning.
+
+## Status (2026-08-24, public matchmaking placement fairness)
+
+- Reproduced the queue-order advantage at the server coordinator boundary:
+  the first seeker created the duel without a `creatorSeatId`, so match
+  creation defaulted that account to seat `0`, which owns first placement.
+- New public duels now choose the creator's seat with server-side
+  `crypto.randomInt`. The choice is made inside the existing public-mode lock
+  and is applied both for an empty queue and when a listed duel fills before
+  its join lock. Request retries still recover the already-authoritative seat.
+- Added behavior-first regressions that force seat `1` and prove the first and
+  second simultaneous seekers receive seats `1` and `0` respectively, plus
+  coverage for the filled-listed-duel fallback. Each regression was observed
+  failing with seat `0` before its production branch was changed.
+- Verification passed: the focused matchmaking/route matrix passed 19 tests;
+  `pnpm verify` passed 153 engine tests, 277 server tests with 7 expected
+  PostgreSQL skips, all 195 app test files, and lint; `git diff --check` passed.
+
+## Status (2026-08-25, local SettleGraph V2 playable integration)
+
+- Added an isolated Rust NDJSON worker that pins the native SettleGraph/CTNN-v2
+  contract from research commit `a1fdc96a`, verifies the external accepted
+  CTNN hash and embedded probe, imports complete authoritative Catana state,
+  constructs observation-v2/legal masks natively, and returns allowlisted
+  existing SettleX move plans.
+- Added an exact topology projection for V2-only matches. It preserves the
+  selected fair-duel land board and port-resource order while attaching ports
+  to the nine boundary edges used by the sealed native contract. Puffer,
+  friend, matchmaking, and ordinary duel boards are unchanged.
+- Added `botKey` routing, disabled-by-default server/public flags, a fourth
+  existing-style **Play V2 Bot** homepage action, serial forced-discard
+  scheduling, worker restart/timeout handling, and structured Puffer fallback
+  for a mid-match native failure. Disabled creation returns `503`.
+- The real sealed-model E2E advanced a Boardgame.io match through readiness,
+  both V2 setup placements, a human opening turn, the V2 roll, and a V2 main
+  decision through `Master` without Puffer fallback. Rust contract, topology,
+  state, action, worker, client, route, timer, and match-bootstrap coverage is
+  included. No training files, sealed artifacts, Champion registry, push,
+  production package, or deployment was changed.
+- Exact local build, run, smoke, flag, artifact, and remaining deployment
+  instructions live in `native/settlegraph-v2/README.md`.
+
+## Status (2026-08-26, production idle acknowledgement proxy fix)
+
+- Reproduced the live `I'm still here` failure at the public HTTP boundary:
+  `/idle/:matchID/ack` and `/timer/:matchID` returned a bare Caddy `404`.
+- Root cause: Caddy sent the custom game-state paths to the socket/game listener
+  on `game:8000`, while Boardgame.io mounts `server.router` custom HTTP routes
+  on the separately configured lobby API listener at `game:8080`.
+- Caddy now routes only `/timer*` and `/idle*` to `game:8080`; websocket traffic
+  stays on `game:8000`, and `/games` remains unexposed.
+- The production deploy now gracefully reloads Caddy after updating the proxy,
+  ensuring a changed bind-mounted Caddyfile becomes active during that deploy.
+- Added a deployment-config regression for this exact listener split. Focused
+  verification covers the Caddy contract and reload, server route wiring,
+  client origin selection, and idle-warning acknowledgement wiring.
+
+## Status (2026-08-26, browser API boundary audit)
+
+- Inventoried every browser-side `fetch`, injected fetch adapter, Better Auth
+  request, push-subscription operation, service-worker registration, and
+  Boardgame.io Socket.IO connection in the current checkout.
+- Mapped each call to its owning Next route, static asset, socket listener, or
+  custom game-server listener, including method, authentication boundary, CORS,
+  Caddy routing, and ambiguous match-mutation handling.
+- Safe live probes on settlehex.com confirmed all deployed same-origin Next
+  endpoints, Better Auth, the match-alert worker, and the Socket.IO handshake.
+  Only `/timer` and `/idle` failed, matching the already-confirmed Caddy port
+  defect; the unshipped `/api/matches/matchmake` route correctly exists in the
+  local next-release server but not the older production build.
+- A production-shaped local Caddy container proved the corrected routing end to
+  end: web API and Socket.IO returned `200`, timer reached its handler and
+  returned JSON `404` for the synthetic match, and idle preflight returned
+  `204`.
+- Fixed the same split-listener defect in local development: an explicit
+  `NEXT_PUBLIC_GAME_SERVER_ORIGIN=http://localhost:8000` now configures only the
+  game transport, while timer/idle HTTP calls remain on `:8080`.
+- Extended the deploy health check beyond the homepage to probe the Next API,
+  Socket.IO polling, timer preflight, and idle preflight after Caddy reload.
+  This converts the manually discovered routing class into a deploy-blocking
+  executable contract.
+
+## Status (2026-08-26, committed robber preview cleanup)
+
+- Reproduced the local robber-placement leak: committing a tile cleared the
+  interactive targets, which also removed the preview's active destination.
+  The authoritative move succeeded, but the pending preview returned to
+  pointer-following and could never report that its handoff had settled.
+- The preview now resolves a committed destination independently of the live
+  click target. It retains the exact viewport-space target while available and
+  falls back to the committed land-tile center, so pointer movement and board
+  transforms cannot pull it away before cleanup.
+- Added behavior-first coverage for target removal and transformed-board
+  coordinates. The focused robber-placement matrix passed 29 tests, targeted
+  ESLint and `git diff --check` passed, and `/catana/dev/sandbox` at 1280x720
+  moved the authoritative robber from tile 12 to tile 7 with zero placement
+  previews or targets left afterward and no console warnings/errors.
+
+## Status (2026-08-26, Monopoly game-log alignment and resource tokens)
+
+- Monopoly result entries now use the game log's existing icon-per-card grammar,
+  so a two-Wood claim renders as two themed Wood icons without a duplicate count.
+  A zero-card result stays explicit as `claimed no` plus the selected resource
+  icon.
+- Dev-card labels now remain in the sentence's normal inline baseline while only
+  the larger card art receives a vertical offset. This removes the label lift
+  visible beside the Monopoly card.
+- Focused verification passed 34 formatter/token-renderer tests, targeted ESLint,
+  and `git diff --check`. `/catana/dev/sandbox` at 1440x900 rendered the exact
+  Monopoly play/result pair with matched text bounds, two Wood icons, and no
+  console warnings or errors.
+
+## Status (2026-09-14, homepage demo visibility playback)
+
+- Fixed the homepage ambient board's hidden-tab catch-up behavior without
+  changing its curated scenes, seeded procedural events, or placement visuals.
+  The bridge now schedules starts, commits, and resets in visible time, pauses
+  on `visibilitychange`, commits in-flight events before hiding, and resumes
+  with the remaining delay instead of replaying hidden time in a burst.
+- Added runner-owned GSAP cleanup so hiding or unmounting the homepage removes
+  only its transient placement effects; live-game GSAP timelines are not
+  globally paused.
+- Focused verification passed 45 homepage/sequence/effect tests and targeted
+  ESLint. The local 1440x900 homepage rendered the measured board and loaded
+  both homepage demo chunks. A five-second hidden-state browser check produced
+  no placement mutations while hidden and resumed normal cadence; the only
+  console error was the existing unauthenticated `/api/match-alerts` 401.
+
+## Status (2026-09-23, homepage demo resize and scene-loop regression)
+
+- Reproduced a viewport resize resetting the ambient scene: the rendered piece
+  count fell from 12 to 0 before setup restarted. The bridge's placement runner
+  was recreated whenever the measured layout changed, which also recreated its
+  playback effect. Placement animations held fixed pixel coordinates until
+  cleanup, so a resize during a drop could briefly detach a piece from the board.
+- Kept the runner and scene clock stable across layout changes. A layout change
+  now settles any started placement into React board state and cancels its
+  temporary animation before paint; later placements use the latest geometry.
+- Fixed the long-session loop: event IDs repeat when the scene list cycles, so
+  commit deduplication now resets at each new scene. A focused regression test
+  covers reused IDs and interrupted placements committing once.
+- Local browser checks covered desktop resize, compact viewport, and a hidden
+  interval with a resize. The scene did not restart on those resizes; while
+  hidden, the piece count stayed fixed and resumed at normal cadence. The only
+  console error was the unauthenticated `/api/match-alerts` 401.
+
+## Status (2026-09-22, ASCII-only player usernames)
+
+- Tightened the canonical account username boundary to accept only ASCII
+  English letters, numbers, and underscores after trimming; spaces, accented
+  letters, punctuation, emoji, and other Unicode characters now return the
+  existing `400` account-identity error.
+- Added matching native form constraints to the homepage identity picker, open
+  match join form, and friend-challenge join form. Bot display names remain an
+  internal match concern and are unchanged.
+- Added a behavior regression covering accented letters, spaces, punctuation,
+  and emoji. Focused account-service and account-route verification passed 13
+  tests.

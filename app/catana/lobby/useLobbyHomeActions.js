@@ -6,17 +6,21 @@ import { authClient } from "../../../lib/client/authClient";
 import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
 import {
   advanceSearchGeneration,
+  beginSearchCancellation,
   clearScheduledMatchAnnouncement,
-  commitSearchSeat,
   createMatchmakingMutationIdentity,
   finishSearchPoll,
   getSearchElapsedSeconds,
   isSearchGenerationCurrent,
   playPufferAfterLeavingSearch,
-  reconcileSearchDeparture,
-  reconcileUnknownSearchMutation,
+  resolvePublicMatchmakingCancellation,
+  resolvePublicMatchmakingSeat,
   scheduleMatchAnnouncement,
 } from "../matchmaking/matchmakingRescue.js";
+import {
+  buildCancelPublicMatchmakingRequest,
+  buildStartPublicMatchmakingRequest,
+} from "../matchmaking/publicMatchmakingClient.js";
 import { normalizePlayerColorId } from "../theme/playerColors";
 import {
   clearLastActiveMatch,
@@ -111,6 +115,37 @@ export async function runAccountEstablishedLifecycle({
   return account;
 }
 
+export function commitGameStartNavigation({
+  created,
+  account,
+  persistJoinedSeat,
+  markGameStart,
+  navigate,
+} = {}) {
+  const matchID = created?.matchID;
+  if (!matchID) throw new Error("Create succeeded but returned no matchID.");
+  if (!created?.playerCredentials) {
+    throw new Error("Create succeeded but returned no credentials.");
+  }
+
+  const playerID = String(created?.playerID ?? "0");
+  persistJoinedSeat({
+    matchID,
+    playerID,
+    credentials: created.playerCredentials,
+    playerName: account?.currentUsername,
+  });
+
+  try {
+    markGameStart?.(matchID);
+  } catch (err) {
+    /* The board-ready audio marker must never block navigation. */
+  }
+
+  navigate(`/g/${matchID}`);
+  return matchID;
+}
+
 function normalizeMatch(raw) {
   const playersObj = raw?.players || {};
   const players = Object.values(playersObj).sort(
@@ -125,7 +160,7 @@ function normalizeMatch(raw) {
 
 export function useLobbyHomeActions({
   initialAccount = null,
-  onMatchFound = null
+  onGameStartTransition = null
 } = {}) {
   const router = useRouter();
   const {
@@ -150,14 +185,15 @@ export function useLobbyHomeActions({
   const [accountReady, setAccountReady] = useState(false);
   const [searchElapsedSeconds, setSearchElapsedSeconds] = useState(0);
   const [isPufferTransitionPending, setIsPufferTransitionPending] = useState(false);
+  const [isSearchCancelPending, setIsSearchCancelPending] = useState(false);
 
   const pendingActionRef = useRef(null);
   const pendingEntryActionRef = useRef(null);
   const announcementTimerRef = useRef(null);
   const announcedMatchIDRef = useRef(null);
   const searchGenerationRef = useRef(0);
-  const searchOperationPromiseRef = useRef(null);
-  const unresolvedSearchMutationRef = useRef(null);
+  const activeSearchMutationRef = useRef(null);
+  const searchCancelPendingRef = useRef(false);
   const pufferTransitionPendingRef = useRef(false);
   const mountedRef = useRef(true);
   const playerNameRef = useRef(playerName);
@@ -556,7 +592,6 @@ export function useLobbyHomeActions({
     const generation = searchGenerationRef.current;
 
     const poll = async () => {
-      if (unresolvedSearchMutationRef.current) return;
       try {
         const data = await appRequest({
           route: `/api/matches/${searchState.matchID}`
@@ -568,13 +603,14 @@ export function useLobbyHomeActions({
             searchGenerationRef,
             generation,
             onMatchFound: () => {
+              activeSearchMutationRef.current = null;
               clearScheduledMatchAnnouncement({ announcementTimerRef });
               advanceSearchGeneration(searchGenerationRef);
               tabAttention.request("match-found");
               try {
-                onMatchFound?.();
+                onGameStartTransition?.(searchState.matchID);
               } catch (err) {
-                /* Match-found sound is best-effort. */
+                /* The board-ready audio marker is best-effort. */
               }
               setSearchState((current) =>
                 current && current.matchID === searchState.matchID
@@ -592,7 +628,7 @@ export function useLobbyHomeActions({
 
     const id = setInterval(poll, 1500);
     return () => clearInterval(id);
-  }, [onMatchFound, router, searchState]);
+  }, [onGameStartTransition, router, searchState]);
 
   useEffect(() => {
     if (!challengeState?.matchID || challengeState.phase !== "waiting") return;
@@ -692,237 +728,21 @@ export function useLobbyHomeActions({
     return createGeneratedGuestAccount();
   }, [createGeneratedGuestAccount, ensureAccountSession]);
 
-  const leaveSearchSeat = useCallback(async ({
-    matchID,
-    playerID,
-    credentials
-  }) => {
-    if (!matchID || playerID == null || !credentials) return false;
-
-    await appRequest({
-      route: "/api/matches/leave",
-      init: {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          matchID,
-          playerID,
-          credentials,
-          intent: "matchmaking_cancel"
-        })
-      }
-    });
-    return true;
+  const cancelPublicSearchRequest = useCallback(async (mutation) => {
+    const response = await appRequest(
+      buildCancelPublicMatchmakingRequest({
+        modeId: mutation.modeId,
+        requestId: mutation.requestId,
+        requestedCredentials: mutation.credentials,
+      })
+    );
+    return resolvePublicMatchmakingCancellation(response);
   }, []);
-
-  const recoverMatchmakingSeats = useCallback(async (requestId) => {
-    const result = await appRequest({
-      route: "/api/matches/recover",
-      init: {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestId })
-      }
-    });
-    return result?.seats ?? [];
-  }, []);
-
-  const reconcileUnresolvedSearchMutation = useCallback(async () => {
-    const mutation = unresolvedSearchMutationRef.current;
-    if (!mutation) return { released: true, reason: "none", seats: [] };
-    const departure = await reconcileUnknownSearchMutation({
-      mutation,
-      accountId: mutation.accountId ?? currentAccount?.id,
-      recoverSeats: recoverMatchmakingSeats,
-      leaveSeat: leaveSearchSeat,
-      loadMatch: (matchID) =>
-        appRequest({ route: `/api/matches/${matchID}` })
-    });
-    if (departure.released && unresolvedSearchMutationRef.current === mutation) {
-      unresolvedSearchMutationRef.current = null;
-    }
-    return departure;
-  }, [currentAccount?.id, leaveSearchSeat, recoverMatchmakingSeats]);
-
-  const joinRoom = useCallback(
-    async ({ matchID, playerID, onError, searchGeneration = null }) => {
-      if (!matchID) return;
-
-      let seatRequestStarted = false;
-      let account = null;
-      let mutation = null;
-      setError("");
-      try {
-        account = await ensureAccountSession();
-        if (
-          searchGeneration != null &&
-          !isSearchGenerationCurrent({
-            searchGenerationRef,
-            generation: searchGeneration
-          })
-        ) {
-          return true;
-        }
-        if (!account?.id) {
-          throw new Error("Pick a username first.");
-        }
-
-        if (searchGeneration != null) {
-          mutation = {
-            ...createMatchmakingMutationIdentity(),
-            accountId: account.id,
-            matchID,
-            playerID: String(playerID)
-          };
-          unresolvedSearchMutationRef.current = mutation;
-          setSearchState((current) =>
-            current
-              ? {
-                  ...current,
-                  matchID,
-                  playerID: String(playerID),
-                  createdNewPublicDuel: false
-                }
-              : current
-          );
-        }
-
-        seatRequestStarted = true;
-        const joined = await appRequest({
-          route: "/api/matches/join",
-          init: {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              matchID,
-              playerID: String(playerID),
-              ...(mutation
-                ? {
-                    matchmakingRequestId: mutation.requestId,
-                    requestedCredentials: mutation.credentials
-                  }
-                : {})
-            })
-          }
-        });
-
-        const credentials = joined?.playerCredentials;
-        if (!credentials)
-          throw new Error("Join succeeded but returned no credentials.");
-        if (mutation) mutation.credentials = credentials;
-
-        const seat = {
-          matchID,
-          playerID: String(playerID),
-          credentials
-        };
-        if (searchGeneration == null) {
-          persistJoinedSeat({
-            ...seat,
-            playerName: account.currentUsername
-          });
-          router.push(`/g/${matchID}`);
-          return true;
-        }
-
-        const outcome = await commitSearchSeat({
-          searchGenerationRef,
-          generation: searchGeneration,
-          seat,
-          leaveSeat: leaveSearchSeat,
-          preserve: () => {
-            if (mutation) unresolvedSearchMutationRef.current = mutation;
-            persistJoinedSeat({
-              ...seat,
-              playerName: account.currentUsername
-            });
-            if (mountedRef.current) {
-              setSearchState({
-                matchID,
-                playerID: String(playerID),
-                startedAt: Date.now(),
-                phase: "searching",
-                createdNewPublicDuel: false
-              });
-              setError(
-                "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
-              );
-            }
-          },
-          commit: () => {
-            if (unresolvedSearchMutationRef.current === mutation) {
-              unresolvedSearchMutationRef.current = null;
-            }
-            persistJoinedSeat({
-              ...seat,
-              playerName: account.currentUsername
-            });
-            router.push(`/g/${matchID}`);
-          }
-        });
-        if (
-          outcome.cleaned &&
-          unresolvedSearchMutationRef.current === mutation
-        ) {
-          unresolvedSearchMutationRef.current = null;
-        }
-        return outcome.committed || outcome.cleaned;
-      } catch (err) {
-        if (
-          searchGeneration != null &&
-          !isSearchGenerationCurrent({
-            searchGenerationRef,
-            generation: searchGeneration
-          })
-        ) {
-          return !seatRequestStarted;
-        }
-        if (mutation) {
-          const departure = await reconcileUnknownSearchMutation({
-            mutation,
-            accountId: account?.id,
-            recoverSeats: recoverMatchmakingSeats,
-            leaveSeat: leaveSearchSeat,
-            loadMatch: (targetMatchID) =>
-              appRequest({ route: `/api/matches/${targetMatchID}` })
-          });
-          if (departure.released) {
-            if (unresolvedSearchMutationRef.current === mutation) {
-              unresolvedSearchMutationRef.current = null;
-            }
-            setError(err?.message || "Failed to join room.");
-            onError?.(err);
-            return true;
-          }
-          setError(
-            "Still checking whether your online request finished. Try Cancel again before starting Puffer."
-          );
-          return false;
-        }
-        setError(err?.message || "Failed to join room.");
-        onError?.(err);
-        return false;
-      }
-    },
-    [
-      ensureAccountSession,
-      leaveSearchSeat,
-      persistJoinedSeat,
-      recoverMatchmakingSeats,
-      router
-    ]
-  );
 
   const play = useCallback(async () => {
     const startedAt = Date.now();
     const generation = advanceSearchGeneration(searchGenerationRef);
-    let settleSearchOperation;
-    let operationSafeToTransition = true;
     let mutation = null;
-    const searchOperation = new Promise((resolve) => {
-      settleSearchOperation = resolve;
-    });
-    searchOperationPromiseRef.current = searchOperation;
     clearScheduledMatchAnnouncement({ announcementTimerRef });
     announcedMatchIDRef.current = null;
     setSearchElapsedSeconds(0);
@@ -937,36 +757,6 @@ export function useLobbyHomeActions({
     });
 
     try {
-      const data = await appRequest({
-        route: "/api/matches/open?modeId=duel"
-      });
-      if (
-        !isSearchGenerationCurrent({ searchGenerationRef, generation })
-      ) {
-        return;
-      }
-      const allMatches = (data?.matches || []).map(normalizeMatch);
-      const openMatch = allMatches.find(
-        (match) =>
-          match.players.length === 2 &&
-          match.players.some((player) => player.name) &&
-          match.players.some((player) => !player.name)
-      );
-
-      if (openMatch) {
-        setSearchState((current) =>
-          current ? { ...current, createdNewPublicDuel: false } : current
-        );
-        const openSeat = openMatch.players.find((player) => !player.name);
-        operationSafeToTransition = await joinRoom({
-          matchID: openMatch.matchID,
-          playerID: String(openSeat.id),
-          onError: () => setSearchState(null),
-          searchGeneration: generation
-        });
-        return;
-      }
-
       const account = await ensureAccountSession();
       if (
         !isSearchGenerationCurrent({ searchGenerationRef, generation })
@@ -977,94 +767,72 @@ export function useLobbyHomeActions({
         throw new Error("Pick a username first.");
       }
 
-      operationSafeToTransition = false;
       mutation = {
         ...createMatchmakingMutationIdentity(),
         accountId: account.id,
+        modeId: "duel",
         matchID: null,
-        playerID: "0"
+        playerID: null
       };
-      unresolvedSearchMutationRef.current = mutation;
-      const created = await appRequest({
-        route: "/api/matches/create",
-        init: {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            modeId: "duel",
-            matchmakingRequestId: mutation.requestId,
-            requestedCredentials: mutation.credentials
-          })
-        }
-      });
+      activeSearchMutationRef.current = mutation;
+      const created = await appRequest(
+        buildStartPublicMatchmakingRequest({
+          modeId: mutation.modeId,
+          requestId: mutation.requestId,
+          requestedCredentials: mutation.credentials,
+        })
+      );
 
-      const matchID = created?.matchID;
-      if (!matchID) throw new Error("Create succeeded but returned no matchID.");
-      if (!created?.playerCredentials) {
-        throw new Error("Create succeeded but returned no credentials.");
-      }
-      mutation.matchID = matchID;
-      mutation.credentials = created.playerCredentials;
-
-      const seat = {
+      const resolvedSeat = resolvePublicMatchmakingSeat(created);
+      const {
         matchID,
-        playerID: "0",
-        credentials: created.playerCredentials
-      };
-      const outcome = await commitSearchSeat({
-        searchGenerationRef,
-        generation,
-        seat,
-        leaveSeat: leaveSearchSeat,
-        preserve: () => {
-          unresolvedSearchMutationRef.current = mutation;
-          persistJoinedSeat({
-            ...seat,
-            playerName: account.currentUsername
-          });
-          if (mountedRef.current) {
-            setSearchState({
-              matchID,
-              playerID: "0",
-              startedAt,
-              phase: "searching",
-              createdNewPublicDuel: true
-            });
-            setError(
-              "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
-            );
-          }
-        },
-        commit: () => {
-          if (unresolvedSearchMutationRef.current === mutation) {
-            unresolvedSearchMutationRef.current = null;
-          }
-          persistJoinedSeat({
-            ...seat,
-            playerName: account.currentUsername
-          });
-          setSearchState({
-            matchID,
-            playerID: "0",
-            startedAt,
-            phase: "searching",
-            createdNewPublicDuel: true
-          });
-          scheduleMatchAnnouncement({
-            matchID,
-            announcementTimerRef,
-            announcedMatchIDRef,
-            requestAnnouncement
-          });
-        }
-      });
-      operationSafeToTransition = outcome.committed || outcome.cleaned;
-      if (
-        outcome.cleaned &&
-        unresolvedSearchMutationRef.current === mutation
-      ) {
-        unresolvedSearchMutationRef.current = null;
+        playerID,
+        credentials,
+        createdNewPublicDuel,
+      } = resolvedSeat;
+      mutation.matchID = matchID;
+      mutation.playerID = playerID;
+      mutation.credentials = credentials;
+
+      if (!isSearchGenerationCurrent({ searchGenerationRef, generation })) {
+        return;
       }
+
+      if (createdNewPublicDuel) {
+        persistJoinedSeat({
+          matchID,
+          playerID,
+          credentials,
+          playerName: account.currentUsername
+        });
+        setSearchState({
+          matchID,
+          playerID,
+          startedAt,
+          phase: "searching",
+          createdNewPublicDuel: true
+        });
+        scheduleMatchAnnouncement({
+          matchID,
+          announcementTimerRef,
+          announcedMatchIDRef,
+          requestAnnouncement
+        });
+        return;
+      }
+
+      activeSearchMutationRef.current = null;
+      commitGameStartNavigation({
+        created: {
+          matchID,
+          playerID,
+          playerCredentials: credentials,
+        },
+        account,
+        persistJoinedSeat,
+        markGameStart: onGameStartTransition,
+        navigate: (href) => router.push(href),
+      });
     } catch (err) {
       if (
         !isSearchGenerationCurrent({ searchGenerationRef, generation })
@@ -1073,19 +841,30 @@ export function useLobbyHomeActions({
       }
       clearScheduledMatchAnnouncement({ announcementTimerRef });
       if (mutation) {
-        const departure = await reconcileUnknownSearchMutation({
-          mutation,
-          accountId: mutation.accountId,
-          recoverSeats: recoverMatchmakingSeats,
-          leaveSeat: leaveSearchSeat,
-          loadMatch: (matchID) =>
-            appRequest({ route: `/api/matches/${matchID}` })
-        });
-        operationSafeToTransition = departure.released;
-        if (departure.released) {
-          if (unresolvedSearchMutationRef.current === mutation) {
-            unresolvedSearchMutationRef.current = null;
-          }
+        let cancellation;
+        try {
+          cancellation = await cancelPublicSearchRequest(mutation);
+        } catch {
+          cancellation = { released: false, reason: "uncertain", matchFound: null };
+        }
+        if (cancellation.reason === "match_found") {
+          activeSearchMutationRef.current = null;
+          commitGameStartNavigation({
+            created: {
+              matchID: cancellation.matchFound.matchID,
+              playerID: cancellation.matchFound.playerID,
+              playerCredentials: cancellation.matchFound.credentials,
+            },
+            account,
+            persistJoinedSeat,
+            markGameStart: onGameStartTransition,
+            navigate: (href) => router.push(href),
+          });
+          return;
+        }
+        if (cancellation.released) {
+          activeSearchMutationRef.current = null;
+          setActiveActionId(null);
           advanceSearchGeneration(searchGenerationRef);
           setSearchState(null);
           setSearchElapsedSeconds(0);
@@ -1097,24 +876,23 @@ export function useLobbyHomeActions({
         );
         return;
       }
+      setActiveActionId(null);
       advanceSearchGeneration(searchGenerationRef);
       setSearchState(null);
       setSearchElapsedSeconds(0);
       setError(err?.message || "Matchmaking failed.");
     } finally {
-      setActiveActionId(null);
-      settleSearchOperation(operationSafeToTransition);
-      if (searchOperationPromiseRef.current === searchOperation) {
-        searchOperationPromiseRef.current = null;
+      if (isSearchGenerationCurrent({ searchGenerationRef, generation })) {
+        setActiveActionId(null);
       }
     }
   }, [
     ensureAccountSession,
-    joinRoom,
-    leaveSearchSeat,
+    cancelPublicSearchRequest,
+    onGameStartTransition,
     persistJoinedSeat,
-    recoverMatchmakingSeats,
-    requestAnnouncement
+    requestAnnouncement,
+    router
   ]);
 
   const createFriendChallenge = useCallback(async () => {
@@ -1181,26 +959,19 @@ export function useLobbyHomeActions({
         }
       });
 
-      const matchID = created?.matchID;
-      if (!matchID) throw new Error("Create succeeded but returned no matchID.");
-      if (!created?.playerCredentials) {
-        throw new Error("Create succeeded but returned no credentials.");
-      }
-
-      persistJoinedSeat({
-        matchID,
-        playerID: "0",
-        credentials: created?.playerCredentials,
-        playerName: account.currentUsername
+      commitGameStartNavigation({
+        created,
+        account,
+        persistJoinedSeat,
+        markGameStart: onGameStartTransition,
+        navigate: (href) => router.push(href),
       });
-
-      router.push(`/g/${matchID}`);
     } catch (err) {
       setError(err?.message || "Failed to start bot match.");
     } finally {
       setActiveActionId(null);
     }
-  }, [ensureGeneratedGuestAccount, persistJoinedSeat, router]);
+  }, [ensureGeneratedGuestAccount, onGameStartTransition, persistJoinedSeat, router]);
 
   const cancelChallengeInvite = useCallback(async () => {
     if (!challengeState) {
@@ -1238,41 +1009,22 @@ export function useLobbyHomeActions({
   }, [challengeState]);
 
   const cancelSearch = useCallback(async () => {
-    const enterFoundMatch = (matchID) => {
-      if (!matchID) return false;
-      unresolvedSearchMutationRef.current = null;
-      setError("");
-      setSearchState((current) =>
-        current ? { ...current, matchID, phase: "matchFound" } : current
-      );
-      tabAttention.request("match-found");
-      try {
-        onMatchFound?.();
-      } catch (err) {
-        /* Match-found sound is best-effort. */
-      }
-      router.push(`/g/${matchID}`);
-      return true;
-    };
-
-    const pendingSearchOperation = searchOperationPromiseRef.current;
-    const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
-    clearScheduledMatchAnnouncement({ announcementTimerRef });
-    const safeToTransition = pendingSearchOperation
-      ? await pendingSearchOperation
-      : true;
     if (
-      !isSearchGenerationCurrent({
-        searchGenerationRef,
-        generation: cancellationGeneration
+      !beginSearchCancellation({
+        searchCancelPendingRef,
+        onPendingChange: (pending) => {
+          if (mountedRef.current) setIsSearchCancelPending(pending);
+        },
+        clearActiveAction: () => setActiveActionId(null),
       })
     ) {
       return false;
     }
 
-    const unresolvedMutation = unresolvedSearchMutationRef.current;
-    if (unresolvedMutation) {
-      const departure = await reconcileUnresolvedSearchMutation();
+    try {
+      const mutationAtCancellation = activeSearchMutationRef.current;
+      const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
+      clearScheduledMatchAnnouncement({ announcementTimerRef });
       if (
         !isSearchGenerationCurrent({
           searchGenerationRef,
@@ -1281,117 +1033,73 @@ export function useLobbyHomeActions({
       ) {
         return false;
       }
-      if (departure.reason === "match_found") {
-        enterFoundMatch(
-          departure.seats?.[0]?.matchID ?? unresolvedMutation.matchID
-        );
-        return false;
+
+      const mutation = activeSearchMutationRef.current ?? mutationAtCancellation;
+      if (!mutation) {
+        setSearchState(null);
+        setSearchElapsedSeconds(0);
+        return true;
       }
-      if (!departure.released) {
-        setError(
-          "Still checking whether your online request finished. Try Cancel again before starting Puffer."
-        );
+
+      let cancellation;
+      try {
+        cancellation = await cancelPublicSearchRequest(mutation);
+      } catch {
+        cancellation = { released: false, reason: "uncertain", matchFound: null };
+      }
+
+      if (cancellation.reason === "match_found") {
+        const { matchID, playerID, credentials } = cancellation.matchFound;
+        activeSearchMutationRef.current = null;
+        setError("");
         setSearchState((current) =>
-          current ?? {
-            matchID: unresolvedMutation.matchID,
-            playerID: unresolvedMutation.playerID,
-            startedAt: Date.now(),
-            phase: "searching",
-            createdNewPublicDuel: false
-          }
+          current ? { ...current, matchID, playerID, phase: "matchFound" } : current
         );
+        tabAttention.request("match-found");
+        commitGameStartNavigation({
+          created: {
+            matchID,
+            playerID,
+            playerCredentials: credentials,
+          },
+          account: currentAccount,
+          persistJoinedSeat,
+          markGameStart: onGameStartTransition,
+          navigate: (href) => router.push(href),
+        });
         return false;
       }
 
-      const activeMatch = readLastActiveMatch(window.localStorage);
-      if (
-        departure.seats.some(
-          (seat) =>
-            activeMatch?.matchID === seat.matchID &&
-            activeMatch?.playerID === String(seat.playerID)
-        )
-      ) {
-        clearLastActiveMatch(window.localStorage);
-      }
-      setSearchState(null);
-      setSearchElapsedSeconds(0);
-      return true;
-    }
-
-    if (!searchState) {
-      return safeToTransition;
-    }
-    if (!searchState.matchID || searchState.playerID == null) {
-      if (!safeToTransition) {
+      if (!cancellation.released) {
         setError(
-          "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
+          "Could not confirm that your public search was cancelled. Try Cancel again before starting Puffer."
         );
         setSearchState((current) => (current ? { ...current } : current));
         return false;
       }
+
+      activeSearchMutationRef.current = null;
+      const activeMatch = readLastActiveMatch(window.localStorage);
+      if (
+        activeMatch?.matchID === mutation.matchID &&
+        activeMatch?.playerID === String(mutation.playerID)
+      ) {
+        clearLastActiveMatch(window.localStorage);
+      }
+
       setSearchState(null);
       setSearchElapsedSeconds(0);
       return true;
+    } finally {
+      searchCancelPendingRef.current = false;
+      if (mountedRef.current) setIsSearchCancelPending(false);
     }
-
-    const credentials = window.localStorage.getItem(
-      getCredentialsStorageKey({
-        matchID: searchState.matchID,
-        playerID: searchState.playerID
-      })
-    );
-    const seat = {
-      matchID: searchState.matchID,
-      playerID: searchState.playerID,
-      credentials
-    };
-    const departure = await reconcileSearchDeparture({
-      seat,
-      accountId: currentAccount?.id,
-      leaveSeat: leaveSearchSeat,
-      loadMatch: (matchID) =>
-        appRequest({ route: `/api/matches/${matchID}` })
-    });
-    if (
-      !isSearchGenerationCurrent({
-        searchGenerationRef,
-        generation: cancellationGeneration
-      })
-    ) {
-      return false;
-    }
-
-    if (departure.reason === "match_found") {
-      enterFoundMatch(searchState.matchID);
-      return false;
-    }
-
-    if (!departure.released) {
-      setError(
-        "Could not confirm that you left the public queue. You’re still queued; try Cancel again."
-      );
-      setSearchState((current) => (current ? { ...current } : current));
-      return false;
-    }
-
-    const activeMatch = readLastActiveMatch(window.localStorage);
-    if (
-      activeMatch?.matchID === searchState.matchID &&
-      activeMatch?.playerID === String(searchState.playerID)
-    ) {
-      clearLastActiveMatch(window.localStorage);
-    }
-
-    setSearchState(null);
-    setSearchElapsedSeconds(0);
-    return true;
   }, [
-    currentAccount?.id,
-    leaveSearchSeat,
-    onMatchFound,
-    reconcileUnresolvedSearchMutation,
+    currentAccount,
+    cancelPublicSearchRequest,
+    onGameStartTransition,
+    persistJoinedSeat,
     router,
-    searchState
   ]);
 
   const playPufferFromSearch = useCallback(async () => {
@@ -1508,6 +1216,7 @@ export function useLobbyHomeActions({
     searchState,
     searchElapsedSeconds,
     isPufferTransitionPending,
+    isSearchCancelPending,
     createdNewPublicDuel: Boolean(searchState?.createdNewPublicDuel),
     playPufferFromSearch,
     challengeState,

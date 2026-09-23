@@ -96,7 +96,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
       "span",
       {
         className:
-          "mx-0.5 inline-flex items-center gap-1 align-[-0.3em] font-semibold text-slate-700",
+          "mx-0.5 whitespace-nowrap font-semibold text-slate-700",
       },
       icon
         ? React.createElement("img", {
@@ -104,7 +104,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
             alt: "",
             title: label,
             className:
-              "inline-block h-6 w-auto rounded-[2px] object-contain shadow-sm",
+              "mr-1 inline-block h-6 w-auto align-[-0.35em] rounded-[2px] object-contain shadow-sm",
             draggable: false,
           })
         : null,

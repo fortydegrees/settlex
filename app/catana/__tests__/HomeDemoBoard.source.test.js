@@ -150,7 +150,7 @@ describe("Home demo board source", () => {
     expect(rootSource).toContain("<HomeTableClient initialAccount={initialAccount} />");
     expect(source).toContain("initialAccount");
     expect(source).toContain("useLobbyHomeActions({");
-    expect(source).toContain("onMatchFound: matchFoundSound.play");
+    expect(source).toContain("onGameStartTransition: gameStartSound.queue");
     expect(source).toContain("useLobbyHomeActions");
     expect(source).toContain("isBoardLayoutReady");
     expect(source).toContain("useBrowserLayoutEffect");
