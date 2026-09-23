@@ -73,7 +73,7 @@ export SETTLEX_RELEASE_VERSION
 
 docker compose -f "$COMPOSE_FILE" up -d postgres
 docker compose -f "$COMPOSE_FILE" up -d --build web game
-docker compose -f "$COMPOSE_FILE" up -d proxy --remove-orphans
+docker compose -f "$COMPOSE_FILE" up -d --force-recreate proxy --remove-orphans
 docker compose -f "$COMPOSE_FILE" exec -T -w /etc/caddy proxy \
   caddy reload --config /etc/caddy/Caddyfile
 

@@ -281,10 +281,10 @@ describe("deployment file wiring", () => {
     expect(script).toContain("https://settlehex.com");
   });
 
-  it("gracefully reloads Caddy after updating the proxy service", () => {
+  it("recreates the proxy before reloading its synced Caddyfile", () => {
     const { result, commands } = runProductionDeployWithRecordedCommands();
     const proxyStart = commands.indexOf(
-      "docker compose -f infra/docker-compose.prod.yml up -d proxy --remove-orphans"
+      "docker compose -f infra/docker-compose.prod.yml up -d --force-recreate proxy --remove-orphans"
     );
     const caddyReload = commands.indexOf(
       "docker compose -f infra/docker-compose.prod.yml exec -T -w /etc/caddy proxy caddy reload --config /etc/caddy/Caddyfile"
