@@ -108,6 +108,9 @@ export function OpenMatchRoom({
                       placeholder="Visitor"
                       autoComplete="nickname"
                       maxLength={28}
+                      pattern="[A-Za-z0-9_]+"
+                      title="Use English letters, numbers, and underscores only."
+                      required
                     />
                   </div>
                 </div>

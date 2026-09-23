@@ -50,7 +50,7 @@ export const createMatchJoinRoute =
       const payload = await request.json();
       const participantType =
         payload?.participantType === "bot" ? "bot" : "human";
-      const outcome = await withMatchMutationLockImpl({
+      const matchMutation = {
         matchID: payload?.matchID,
         run: async () => {
           const liveMatch = await getLiveMatchImpl({
@@ -169,6 +169,10 @@ export const createMatchJoinRoute =
 
           return { result };
         },
+      };
+      const outcome = await withMatchMutationLockImpl({
+        matchID: "public-matchmaking:duel",
+        run: () => withMatchMutationLockImpl(matchMutation),
       });
 
       if (outcome?.response) return outcome.response;

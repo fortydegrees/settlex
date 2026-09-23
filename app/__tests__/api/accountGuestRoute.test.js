@@ -184,7 +184,7 @@ describe("account guest API route", () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: "Ada Lovelace",
+          username: "Ada_Lovelace",
           avatarEmoji: "🧠",
           avatarColor: "violet",
         }),
@@ -199,10 +199,10 @@ describe("account guest API route", () => {
 
     expect(updateResponse.status).toBe(200);
     expect(updated.account.id).toBe(created.account.id);
-    expect(updated.account.currentUsername).toBe("Ada Lovelace");
+    expect(updated.account.currentUsername).toBe("Ada_Lovelace");
     expect(state.accounts).toHaveLength(1);
     expect(state.usernameHistory).toHaveLength(2);
-    expect(meJson.account.currentUsername).toBe("Ada Lovelace");
+    expect(meJson.account.currentUsername).toBe("Ada_Lovelace");
   });
 
   it("clears the guest session cookie on logout", async () => {

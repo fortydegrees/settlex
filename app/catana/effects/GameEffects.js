@@ -7,6 +7,7 @@ import { registerEffects } from "./registry";
 import { EffectLayer } from "./EffectLayer";
 import { DEFAULT_TURN_START_STATE, getTurnStartCueDecision } from "./turnStartCue";
 import { buildDiceRollTimeline } from "./diceRollTimeline";
+import { playGameStartTransition } from "./gameStartTransition.js";
 
 export function GameEffects({
   effects = {},
@@ -18,6 +19,7 @@ export function GameEffects({
   gameOverState,
   isWinner,
   audioSettings,
+  gameStartMatchID = null,
   preloadSounds = false
 }) {
   const localBus = useMemo(() => createEffectBus(), []);
@@ -30,6 +32,7 @@ export function GameEffects({
   const haptics = useMemo(() => createHapticManager({ bus }), [bus]);
   const turnStartRef = useRef({ ...DEFAULT_TURN_START_STATE });
   const gameOverCueRef = useRef(false);
+  const gameStartCueRef = useRef(false);
 
   const context = useMemo(
     () => ({
@@ -53,6 +56,15 @@ export function GameEffects({
     const cleanup = registerEffects({ bus, effects: handlers });
     return () => cleanup();
   }, [bus, handlers]);
+
+  useEffect(() => {
+    if (gameStartCueRef.current || !gameStartMatchID) return;
+    gameStartCueRef.current = playGameStartTransition({
+      matchID: gameStartMatchID,
+      audio,
+      bus,
+    });
+  }, [audio, bus, gameStartMatchID]);
 
   useEffect(() => {
     const unlock = () => {

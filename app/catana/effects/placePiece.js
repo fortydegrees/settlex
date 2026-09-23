@@ -150,6 +150,10 @@ function getPlacementStartYOffset({
   return -dropPx;
 }
 
+function removeElements(elements) {
+  elements.forEach((element) => element?.remove?.());
+}
+
 function runNodePlacementAnimation({
   pieceEl,
   shadowEl,
@@ -157,19 +161,14 @@ function runNodePlacementAnimation({
   tuning,
   startYOffset,
   emitCue,
-  cueName
+  cueName,
+  createTimeline
 }) {
   gsap.set(pieceEl, { y: startYOffset, scale: 1.04, opacity: 0 });
   gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
   gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 
-  gsap.timeline({
-    onComplete: () => {
-      pieceEl.remove();
-      dustEl.remove();
-      shadowEl.remove();
-    }
-  })
+  createTimeline([pieceEl, dustEl, shadowEl])
     .to(pieceEl, {
       y: 0,
       opacity: 1,
@@ -238,21 +237,15 @@ function runCityUpgradeAnimation({
   tuning,
   liftPx,
   dropPx,
-  emitCue
+  emitCue,
+  createTimeline
 }) {
   gsap.set(settlementEl, { y: 0, scale: 1, opacity: 1 });
   gsap.set(cityEl, { y: -dropPx, scale: 1.04, opacity: 0 });
   gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
   gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 
-  gsap.timeline({
-    onComplete: () => {
-      settlementEl.remove();
-      cityEl.remove();
-      dustEl.remove();
-      shadowEl.remove();
-    }
-  })
+  createTimeline([settlementEl, cityEl, dustEl, shadowEl])
     .to(settlementEl, {
       y: -liftPx,
       scale: tuning.upgradeLiftScale,
@@ -338,7 +331,31 @@ export function createPiecePlacementRunner({
   useBoardSpace = false,
   themeId
 } = {}) {
-  return function run(payload) {
+  const activeEffects = new Set();
+  const createTimeline = (elements) => {
+    const effect = {
+      elements,
+      timeline: null
+    };
+
+    effect.timeline = gsap.timeline({
+      onComplete: () => {
+        activeEffects.delete(effect);
+        removeElements(elements);
+      }
+    });
+    activeEffects.add(effect);
+    return effect.timeline;
+  };
+  const cancelAll = () => {
+    activeEffects.forEach(({ elements, timeline }) => {
+      timeline.kill();
+      removeElements(elements);
+    });
+    activeEffects.clear();
+  };
+
+  const run = (payload) => {
     if (typeof document === "undefined") return;
     if (isDocumentHidden()) return;
     if (!payload) return;
@@ -422,7 +439,8 @@ export function createPiecePlacementRunner({
         tuning,
         startYOffset,
         emitCue,
-        cueName: "build:settlement"
+        cueName: "build:settlement",
+        createTimeline
       });
       return;
     }
@@ -495,7 +513,8 @@ export function createPiecePlacementRunner({
           tuning,
           liftPx: size * tuning.upgradeLiftDistance * scale,
           dropPx,
-          emitCue
+          emitCue,
+          createTimeline
         });
         return;
       }
@@ -527,7 +546,8 @@ export function createPiecePlacementRunner({
         tuning,
         startYOffset,
         emitCue,
-        cueName: "build:city"
+        cueName: "build:city",
+        createTimeline
       });
       return;
     }
@@ -592,13 +612,7 @@ export function createPiecePlacementRunner({
       gsap.set(shadowEl, { scale: tuning.shadowScaleFrom, opacity: 0 });
       gsap.set(dustEl, { scale: tuning.dustScaleFrom, opacity: 0 });
 
-      gsap.timeline({
-        onComplete: () => {
-          roadWrapperEl.remove();
-          dustEl.remove();
-          shadowEl.remove();
-        }
-      })
+      createTimeline([roadWrapperEl, roadInnerEl, dustEl, shadowEl])
         .to(roadWrapperEl, {
           y: 0,
           opacity: 1,
@@ -647,4 +661,7 @@ export function createPiecePlacementRunner({
         });
     }
   };
+
+  run.cancelAll = cancelAll;
+  return run;
 }
