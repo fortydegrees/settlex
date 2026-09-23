@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 COMPOSE_FILE="infra/docker-compose.prod.yml"
 HEALTH_URL="${SETTLEX_HEALTH_URL:-https://settlehex.com}"
+HEALTH_BASE_URL="${HEALTH_URL%/}"
 
 cd "$ROOT_DIR"
 
@@ -73,6 +74,8 @@ export SETTLEX_RELEASE_VERSION
 docker compose -f "$COMPOSE_FILE" up -d postgres
 docker compose -f "$COMPOSE_FILE" up -d --build web game
 docker compose -f "$COMPOSE_FILE" up -d proxy --remove-orphans
+docker compose -f "$COMPOSE_FILE" exec -T -w /etc/caddy proxy \
+  caddy reload --config /etc/caddy/Caddyfile
 
 if docker compose -f "$COMPOSE_FILE" exec -T web node -e "const pkg=require('./package.json'); process.exit(pkg.scripts && pkg.scripts['db:migrate'] ? 0 : 1)"; then
   docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate
@@ -80,5 +83,13 @@ else
   echo "Skipping db:migrate because the script is not defined yet."
 fi
 
-curl --fail --silent --show-error --location "$HEALTH_URL" >/dev/null
+curl --fail --silent --show-error --location "$HEALTH_BASE_URL" >/dev/null
+curl --fail --silent --show-error --location \
+  "$HEALTH_BASE_URL/api/auth/options" >/dev/null
+curl --fail --silent --show-error --location \
+  "$HEALTH_BASE_URL/socket.io/?EIO=4&transport=polling" >/dev/null
+curl --fail --silent --show-error --request OPTIONS \
+  "$HEALTH_BASE_URL/timer/settlex-route-check" >/dev/null
+curl --fail --silent --show-error --request OPTIONS \
+  "$HEALTH_BASE_URL/idle/settlex-route-check/ack" >/dev/null
 echo "Live health check passed: ${HEALTH_URL}"

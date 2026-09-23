@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { createPiecePlacementRunner } from "../effects/placePiece";
 import {
@@ -9,8 +9,13 @@ import {
 } from "../effects/placePieceDefaults";
 import { DEFAULT_THEME_ID } from "../theme/themes";
 import { getBoardLayout } from "../utils/boardLayout";
+import { isDocumentHidden } from "../utils/visibility";
 import useWindowSize from "../utils/useWindowSize";
 import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";
+import {
+  createHomeDemoEventProgress,
+  createPausableTimeoutScheduler
+} from "./homeDemoPlayback";
 import {
   HOME_DEMO_CONFIG,
   HOME_DEMO_SCENES,
@@ -35,6 +40,9 @@ const HOME_DEMO_PLACE_PIECE_TUNING = Object.freeze({
   easeSettle: "back.out(1.45)",
   easeSettleRoad: "back.out(1.35)"
 });
+const useBrowserLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 function useReducedMotion() {
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -115,6 +123,8 @@ export function HomeDemoEffectBridge({
   const { width, height, isMeasured } = useWindowSize();
   const reducedMotion = useReducedMotion();
   const cycleIndexRef = useRef(0);
+  const currentLayoutRef = useRef(null);
+  const settleActivePlacementsRef = useRef(null);
 
   const resolveLayout = useCallback(() => {
     if (!isMeasured || !width || !height) return null;
@@ -129,6 +139,10 @@ export function HomeDemoEffectBridge({
     };
   }, [centerYOffset, height, isMeasured, reservedHeight, width]);
 
+  useBrowserLayoutEffect(() => {
+    currentLayoutRef.current = resolveLayout;
+  }, [resolveLayout]);
+
   const runPlacement = useMemo(
     () =>
       createPiecePlacementRunner({
@@ -136,7 +150,7 @@ export function HomeDemoEffectBridge({
           payload?.pieceType === "road"
             ? placementRoadLayerRef.current
             : placementLayerRef.current,
-        getLayout: resolveLayout,
+        getLayout: () => currentLayoutRef.current?.(),
         getTiles: () => HOME_DEMO_BOARD_PRESET.tiles,
         getPlayerColor: (playerId) =>
           HOME_DEMO_PLAYER_COLORS[playerId] ?? "red",
@@ -148,10 +162,13 @@ export function HomeDemoEffectBridge({
     [
       placementLayerRef,
       placementRoadLayerRef,
-      resolveLayout,
       themeId
     ]
   );
+
+  useBrowserLayoutEffect(() => {
+    settleActivePlacementsRef.current?.();
+  }, [centerYOffset, height, reservedHeight, width]);
 
   useEffect(() => {
     if (reducedMotion) {
@@ -161,16 +178,37 @@ export function HomeDemoEffectBridge({
     if (!isMeasured) return undefined;
 
     let cancelled = false;
-    const timers = [];
+    const scheduler = createPausableTimeoutScheduler({
+      initiallyPaused: isDocumentHidden()
+    });
+    const progress = createHomeDemoEventProgress((event) => {
+      onPieceStateChange((current) => applyHomeDemoEvent(current, event));
+    });
+    const settleActivePlacements = () => {
+      progress.settleStarted();
+      runPlacement.cancelAll?.();
+    };
+    settleActivePlacementsRef.current = settleActivePlacements;
 
-    const queueTimeout = (fn, delayMs) => {
-      const timerId = window.setTimeout(() => {
-        if (!cancelled) fn();
-      }, delayMs);
-      timers.push(timerId);
+    const handleVisibilityChange = () => {
+      if (isDocumentHidden()) {
+        scheduler.pause();
+        settleActivePlacements();
+        return;
+      }
+
+      scheduler.resume();
     };
 
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const queueTimeout = (fn, delayMs) =>
+      scheduler.schedule(() => {
+        if (!cancelled && !isDocumentHidden()) fn();
+      }, delayMs);
+
     const runCycle = () => {
+      progress.beginScene();
       const cycleIndex = cycleIndexRef.current;
       const scene = HOME_DEMO_SCENES[cycleIndex % HOME_DEMO_SCENES.length];
       const setupEvents = getHomeDemoSceneSetupEvents(scene);
@@ -190,11 +228,12 @@ export function HomeDemoEffectBridge({
               );
             });
           }
+          progress.start(event);
           runPlacement(getPayloadForEvent(event));
         }, atMs);
 
         queueTimeout(() => {
-          onPieceStateChange((current) => applyHomeDemoEvent(current, event));
+          progress.commit(event);
         }, atMs + Math.max(0, placementDurationMs - HOME_DEMO_CONFIG.commitLeadMs));
       };
 
@@ -219,7 +258,10 @@ export function HomeDemoEffectBridge({
 
     return () => {
       cancelled = true;
-      timers.forEach((timer) => window.clearTimeout(timer));
+      settleActivePlacementsRef.current = null;
+      scheduler.clear();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      runPlacement.cancelAll?.();
     };
   }, [isMeasured, onPieceStateChange, reducedMotion, runPlacement]);
 

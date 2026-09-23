@@ -175,7 +175,7 @@ describe("formatLogEntry", () => {
     ).toBe(true);
   });
 
-  it("formats monopoly result entries", () => {
+  it("formats monopoly claims as one resource token per stolen card", () => {
     const tokens = formatLogEntry(
       {
         type: "dev:monopolyResult",
@@ -185,9 +185,34 @@ describe("formatLogEntry", () => {
       { "1": "Bren" }
     );
 
+    expect(tokens[1]).toEqual({ kind: "text", text: " claimed " });
     expect(
-      tokens.some((token) => token.kind === "text" && token.text.includes("claimed 8 sheep"))
-    ).toBe(true);
+      tokens.filter(
+        (token) => token.kind === "resource" && token.resource === "Sheep"
+      )
+    ).toHaveLength(8);
+    expect(
+      tokens.some(
+        (token) => token.kind === "text" && /8|sheep/i.test(token.text)
+      )
+    ).toBe(false);
+  });
+
+  it("keeps zero-card monopoly claims readable", () => {
+    expect(
+      formatLogEntry(
+        {
+          type: "dev:monopolyResult",
+          actorId: "1",
+          data: { resource: "Sheep", amountStolen: 0 }
+        },
+        { "1": "Bren" }
+      )
+    ).toEqual([
+      expect.objectContaining({ kind: "player", id: "1", name: "Bren" }),
+      { kind: "text", text: " claimed no " },
+      { kind: "resource", resource: "Sheep" }
+    ]);
   });
 
   it("formats robber destinations as one resource-and-number token", () => {

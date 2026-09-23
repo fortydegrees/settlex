@@ -1916,6 +1916,7 @@ export function GameScreen(bgioProps) {
           phase={bgioProps.ctx?.phase}
           gameOverState={gameOverState}
           isWinner={isWinner}
+          gameStartMatchID={matchID}
           preloadSounds
         />
       )}
