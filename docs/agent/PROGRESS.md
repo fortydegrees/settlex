@@ -1,6 +1,6 @@
 # PROGRESS
 
-## Status (2026-09-23, SettleGraph checkpoint 005 production candidate)
+## Status (2026-09-23, SettleGraph checkpoint 005 production release)
 - Added an explicit `Play Bot 005` homepage action behind the existing opt-in
   V2 deployment flag. The generic `Play vs Bot` action continues to use Puffer.
 - Integrated the native V3/1464-observation direct-play runtime and pinned the
@@ -13,8 +13,16 @@
 - Verified 005 parity on 256 reference probes, direct-play game progression,
   Rust tests, focused integration tests, `pnpm verify`, both production image
   builds (web with Bot 005 enabled), and the desktop/mobile Storybook action.
-- Production model provisioning and the thorough GitHub Actions deployment
-  remain pending.
+- Deployed commit `3cd24f5` to `main` through GitHub Actions run `35928623959`;
+  clean-room verification and the OCI deployment both succeeded.
+- Confirmed the live homepage returns HTTP 200, shows the refreshed wordmark and
+  design, and exposes the separate `Play Bot 005` action. The release panel shows
+  the approved `release 0.9 · Beta version` copy and `BUILD 3cd24f5`.
+- Confirmed the running game container has the opt-in flag enabled, the pinned
+  checkpoint mounted read-only at the configured path with SHA-256
+  `382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca`, and the
+  native worker executable. Local direct-play E2E passed; no production match
+  was created during release verification.
 
 ## Status (2026-09-23, quieter signed-out account pill)
 - Removed the homepage Sign in pill's outer cast shadow at all widths while
