@@ -134,7 +134,7 @@ does not define UI type or control shapes. Exact sampled states, verification
 limits and integration boundaries are in `CLARITY_UI_REVIEW.md`.
 
 New review states include homepage `ClarityIdle`, `ClarityFourModesIdle` and
-`ClarityV2Starting`; account menu `ClarityLongNameRecovery`; account/public profile
+`ClarityBot005Starting`; account menu `ClarityLongNameRecovery`; account/public profile
 `LongUsername`; search/rescue `RescueError`; open room `LongNamesAndServer`;
 game over `DenseResumeError`; and postgame summary `LongPlayerNames`.
 Account entry also has `LongUsername` for maximum-length primary-action wrapping.

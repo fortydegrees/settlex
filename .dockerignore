@@ -21,3 +21,21 @@ ai/pufferlib/python/.venv/
 ai/pufferlib/runs*/
 ai/pufferlib/**/*.pt
 *.egg-info/
+
+# Local native builds and sealed models are never image inputs.
+native/**/target/
+**/*.ctnn
+.env*.local
+.env.prod.*
+backups/
+
+# Reference material and generated design/audio previews are not runtime assets.
+.design-sync/
+.ds-sync/
+ds-bundle/
+storybook-static/
+design/
+docs/
+sounds/
+public/svgs/working/
+public/svgs/colonist/

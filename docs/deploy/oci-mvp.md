@@ -13,6 +13,29 @@ This document covers the MVP deployment shape for Settlex on one OCI Ubuntu VM.
   - `postgres` for the product database
 - Delivery path: GitHub Actions verifies the repo, syncs source to the VM over SSH, and asks the VM to rebuild `web` and `game` locally with Docker Compose
 
+## Bot 005 beta option
+
+The homepage's **Play Bot 005** action uses the direct-play SettleGraph/CTNN-v3
+checkpoint. The ordinary **Play vs Bot** action remains Puffer. Production
+enables the extra action with `SETTLEX_SETTLEGRAPH_V2_ENABLED=1`; the web image
+also needs that value as `NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2` at build time.
+
+The release identity is pinned in `release/bot-model.json`. Keep the 3.8 MB
+model outside Git and Docker images at
+`/srv/settlex-models/incumbent-005/model.ctnn`, with SHA-256
+`382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca`. Compose
+mounts `/srv/settlex-models` read-only into the game container. The Rust worker
+is built from the locked native source in the game image; startup preflight
+checks the exact model hash and V3 contract before the game server listens.
+Pre-provision and verify the artifact before enabling the feature flag. If the
+artifact or worker is missing or mismatched, startup fails closed before any
+Bot 005 match can start. If inference fails during a match, the existing
+recovery path logs the failure and falls back to Puffer for that decision.
+
+The 005 policy is a beta opt-in and direct-play only. Its research manifest
+still marks it as not production-selected, and its value output remains
+unqualified; deploying this website option does not amend that research record.
+
 ## Cutover notes
 
 For the current x86 -> ARM migration:

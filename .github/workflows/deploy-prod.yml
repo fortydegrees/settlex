@@ -50,6 +50,11 @@ jobs:
         env:
           MATCH_ALERT_POSTGRES_URL: postgres://settlehex:settlehex@localhost:5432/settlehex_test
 
+      - name: Build production images
+        run: |
+          docker build -f Dockerfile.game .
+          docker build -f Dockerfile.web --build-arg SETTLEX_SETTLEGRAPH_V2_ENABLED=1 .
+
   deploy:
     needs: verify
     runs-on: ubuntu-latest

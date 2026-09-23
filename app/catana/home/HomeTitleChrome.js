@@ -152,9 +152,9 @@ export const buildSystemActions = ({ settleGraphV2Enabled = false } = {}) => [
   ...(settleGraphV2Enabled
     ? [{
         id: "bot-v2",
-        label: "Play V2 Bot",
+        label: "Play Bot 005",
         icon: CpuChipIcon,
-        badge: "V2",
+        badge: "005",
         variant: "accent",
       }]
     : []),

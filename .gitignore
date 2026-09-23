@@ -28,6 +28,7 @@ ai/pufferlib/**/*.pt
 # misc
 .DS_Store
 *.pem
+*.ctnn
 .logs/
 .worktrees/
 .superpowers/
