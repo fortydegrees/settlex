@@ -1,16 +1,15 @@
 "use client";
 
-import {
-  CpuChipIcon,
-  LinkIcon,
-  UserGroupIcon,
-} from "@heroicons/react/24/outline";
+import { CpuChipIcon, LinkIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import { Fredoka } from "next/font/google";
 import React, { useEffect, useState } from "react";
-import { BETA_PRIMARY_DESCRIPTOR } from "../../metadata.js";
 import { MetaDisclosure } from "../../ui/MetaDisclosure";
+import { BrandWordmark } from "../../ui/DisplayText";
 import { publicReleaseInfo } from "../lobby/releaseInfo";
+import skyTextStyles from "./HomeSkyText.module.css";
 import { SystemTopChrome } from "./SystemTopChrome";
+import modeStyles from "./HomeModeButton.module.css";
+import brandStyles from "./HomeBrand.module.css";
 
 const brandWordmarkFont = Fredoka({
   subsets: ["latin"],
@@ -19,15 +18,10 @@ const brandWordmarkFont = Fredoka({
 });
 const BRAND_WORDMARK_FONT_FAMILY = brandWordmarkFont.style.fontFamily;
 
-const SYSTEM_STATUS_ITEMS = [
-  {
-    label: "Beta",
-    tone: "beta",
-  },
-];
-
 const HOME_RELEASE_PANEL_HIGHLIGHT_COUNT = 3;
 const BRAND_LOGO_VARIANTS = new Set([
+  "none",
+  "settlement",
   "sx",
   "sx-balanced-x",
   "sx-small-x",
@@ -118,7 +112,7 @@ const BRAND_LOGO_TONE_IDS = new Set(Object.keys(BRAND_LOGO_TONES));
 
 export function useHomeBrandLogoOptions() {
   const [options, setOptions] = useState({
-    variant: "sx",
+    variant: "none",
     tone: DEFAULT_BRAND_LOGO_TONE,
   });
 
@@ -130,7 +124,7 @@ export function useHomeBrandLogoOptions() {
     setOptions({
       variant: BRAND_LOGO_VARIANTS.has(requestedVariant)
         ? requestedVariant
-        : "sx",
+        : "none",
       tone: BRAND_LOGO_TONE_IDS.has(requestedTone)
         ? requestedTone
         : DEFAULT_BRAND_LOGO_TONE,
@@ -144,53 +138,32 @@ export const buildSystemActions = ({ settleGraphV2Enabled = false } = {}) => [
   {
     id: "queue",
     label: "Play Online",
-    subtitle: "1v1 matchmaking",
-    badge: "1v1",
     icon: UserGroupIcon,
+    badge: "1v1",
     variant: "primary",
-    sheen: true,
-    buttonClassName:
-      "border-lime-200/70 bg-[linear-gradient(180deg,rgba(132,204,22,0.98),rgba(101,163,13,0.94))] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.32),0_12px_26px_rgba(77,124,15,0.16)]",
-    iconClassName: "border-white/28 bg-white/16 text-white",
-    badgeClassName: "bg-white/24 text-white",
   },
   {
     id: "bot",
     label: "Play vs Bot",
-    subtitle: "Puffer is ready",
-    badge: "AI",
     icon: CpuChipIcon,
+    badge: "AI",
     variant: "accent",
-    buttonClassName:
-      "border-amber-200/75 bg-[linear-gradient(180deg,rgba(251,191,36,0.98),rgba(245,158,11,0.94))] text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.36),0_12px_26px_rgba(180,83,9,0.12)]",
-    iconClassName: "border-white/36 bg-white/30 text-slate-900",
-    badgeClassName: "bg-white/34 text-slate-900",
   },
   ...(settleGraphV2Enabled
     ? [{
         id: "bot-v2",
         label: "Play V2 Bot",
-        subtitle: "Sealed SettleGraph",
-        badge: "V2",
         icon: CpuChipIcon,
+        badge: "V2",
         variant: "accent",
-        buttonClassName:
-          "border-lime-200/75 bg-[linear-gradient(180deg,rgba(163,230,53,0.98),rgba(101,163,13,0.94))] text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.36),0_12px_26px_rgba(77,124,15,0.13)]",
-        iconClassName: "border-white/36 bg-white/30 text-slate-900",
-        badgeClassName: "bg-white/34 text-slate-900",
       }]
     : []),
   {
     id: "friend",
     label: "Play a Friend",
-    subtitle: "Private invite",
-    badge: "+",
     icon: LinkIcon,
+    badge: "+",
     variant: "secondary",
-    buttonClassName:
-      "border-white/45 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(219,234,254,0.52))] text-slate-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.48),0_12px_24px_rgba(37,99,235,0.08)]",
-    iconClassName: "border-white/46 bg-white/42 text-slate-800",
-    badgeClassName: "bg-white/54 text-slate-900",
   },
 ];
 
@@ -394,48 +367,36 @@ function SettlehexLogoMark({
 
 function HomeTableBrand({
   compact = false,
-  logoVariant = "sx",
+  logoVariant = "none",
   logoTone = DEFAULT_BRAND_LOGO_TONE,
 }) {
   return (
-    <header className="absolute left-4 top-4 z-30 flex items-start gap-2.5 sm:left-7 sm:top-7 sm:gap-3.5">
-      <SettlehexLogoMark
-        compact={compact}
-        variant={logoVariant}
-        tone={logoTone}
-      />
-      <div className="grid gap-1.5">
+    <header className={brandStyles.brand}>
+      {logoVariant !== "none" && <span className={brandStyles.mark} aria-hidden="true">
+        {logoVariant === "settlement" ? (
+          // The shipped game-piece SVG is already sized; no raster optimization needed.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src="/svgs/pieces/settlement_orange.svg"
+            alt=""
+            width="64"
+            height="72"
+            className={brandStyles.settlement}
+          />
+        ) : (
+          <SettlehexLogoMark compact={compact} variant={logoVariant} tone={logoTone} />
+        )}
+      </span>}
+      <div className="grid gap-ui-0.5">
         <h1
-          className={`${brandWordmarkFont.className} ${
-            compact ? "text-[2.22rem]" : "text-[2.3rem] sm:text-[3.18rem]"
-          } font-semibold leading-[0.9] text-[#143f60] drop-shadow-[0_1px_0_rgba(255,255,255,0.22)]`}
+          className={brandStyles.heading}
+          aria-label="SettleHex"
         >
-          Settlehex
+          <BrandWordmark />
         </h1>
-        <p className="hidden text-xs font-medium leading-5 text-slate-700 sm:block">
-          {BETA_PRIMARY_DESCRIPTOR}
+        <p className={`type-section sm:type-title text-center sm:text-left ${skyTextStyles.support} ${brandStyles.subtitle}`}>
+          1v1 Settlers of Catan
         </p>
-        <div
-          className="hidden items-center gap-2 sm:flex"
-          aria-label="Table status"
-        >
-          {SYSTEM_STATUS_ITEMS.map((item) => (
-            <span
-              key={item.label}
-              className="inline-flex items-center gap-2 text-xs font-medium text-slate-600"
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  item.tone === "online"
-                    ? "bg-lime-500 shadow-[0_0_0_3px_rgba(132,204,22,0.18)]"
-                    : "bg-amber-400 shadow-[0_0_0_3px_rgba(251,191,36,0.16)]"
-                }`}
-                aria-hidden="true"
-              />
-              {item.label}
-            </span>
-          ))}
-        </div>
       </div>
     </header>
   );
@@ -463,27 +424,27 @@ function HomeMetaChrome({
         ariaLabel={`Show release notes for ${releaseInfo.releaseLabel}`}
         align="start"
         sideOffset={10}
-        triggerClassName="settlex-ui-focus min-h-[2.75rem] px-0 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:underline"
-        panelClassName="w-[min(22rem,calc(100vw-1.5rem))] p-4"
+        triggerClassName={`select-none px-ui-0 py-ui-2 ${skyTextStyles.release}`}
+        panelClassName="!w-[min(22rem,calc(100vw-1.5rem))]"
       >
-        <div className="text-xs font-medium text-slate-600">
+        <div className="type-caption text-ink-secondary">
           Latest update
         </div>
-        <h2 className="mt-1 text-base font-bold text-slate-900">
+        <h2 className="mt-ui-1 type-section text-ink-primary">
           {releaseInfo.releaseLabel} · {releaseInfo.title}
         </h2>
-        <ul className="mt-3 space-y-2 text-sm leading-relaxed text-slate-700">
+        <ul className="mt-ui-3 space-y-ui-2 type-body-small text-ink-secondary">
           {releaseHighlights.map((highlight) => (
-            <li key={highlight} className="flex gap-2">
+            <li key={highlight} className="flex gap-ui-2">
               <span
                 aria-hidden="true"
-                className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-lime-500 shadow-[0_0_0_3px_rgba(132,204,22,0.16)]"
+                className="settlex-ui-metadata-dot settlex-ui-metadata-dot-positive mt-ui-1.5 h-1.5 w-1.5 shrink-0"
               />
               <span>{highlight}</span>
             </li>
           ))}
         </ul>
-        <div className="mt-3 border-t border-slate-200/80 pt-3 text-xs text-slate-600">
+        <div className="mt-ui-3 border-t border-edge-subtle pt-ui-3 type-code-caption text-ink-secondary">
           Build {releaseInfo.buildShaShort}
         </div>
       </MetaDisclosure>
@@ -504,41 +465,27 @@ function SystemActionButton({ action, disabled, isActive, onSelectMode }) {
   return (
     <button
       type="button"
-      className={`settlex-ui-button settlex-ui-focus settlex-ui-button-${action.variant} min-h-[4rem] w-full px-4 text-left sm:min-h-[4.5rem]`}
+      className={`settlex-ui-button settlex-ui-focus settlex-ui-button-${action.variant} ${modeStyles.button}`}
       disabled={disabled}
+      data-active={isActive ? "true" : undefined}
       onClick={() => onSelectMode(action.id)}
     >
-      {action.sheen ? (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 animate-[settlex-ui-cta-shimmer_3.6s_linear_infinite] rounded-[inherit] bg-[linear-gradient(120deg,transparent_20%,rgba(255,255,255,0.22)_45%,transparent_70%)] opacity-0 motion-reduce:animate-none"
-        />
-      ) : null}
-      <span className="flex w-full items-center justify-between gap-3">
-        <span
-          className="grid h-8 w-8 shrink-0 place-items-center"
-        >
-          <Icon className="h-6 w-6" aria-hidden="true" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-base font-semibold leading-5">
-            {label}
-          </span>
-          <span className="mt-1 block truncate text-xs font-medium opacity-80">
-            {action.subtitle}
-          </span>
-        </span>
-        <span
-          className="grid min-w-[1.5rem] shrink-0 place-items-center text-xs font-semibold"
-        >
+      <span className={modeStyles.content}>
+        <span className={modeStyles.icon}>
           {isActive ? (
             <span
               aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none"
+              className="h-4 w-4 animate-spin rounded-pill border-2 border-current border-t-transparent motion-reduce:animate-none"
             />
+          ) : Icon ? (
+            <Icon className={modeStyles.symbol} aria-hidden="true" />
           ) : (
-            action.badge
+            action.tileLabel
           )}
+        </span>
+        <span className={modeStyles.label}>{label}</span>
+        <span className={modeStyles.marker} aria-hidden={action.badge === "+"}>
+          {action.badge}
         </span>
       </span>
     </button>
@@ -553,10 +500,10 @@ export function HomeGameModeDock({
 }) {
   const hasFourActions = actions.length === 4;
   return (
-    <section aria-label="Choose a game mode" className={`pointer-events-auto absolute inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 mx-auto grid grid-cols-1 gap-3 sm:bottom-6 ${
+    <section aria-label="Choose a game mode" className={`pointer-events-auto absolute inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 mx-auto grid grid-cols-1 gap-ui-2.5 select-none max-[639px]:max-w-[23.5rem] sm:bottom-6 lg:gap-ui-3 ${
       hasFourActions
-        ? "max-w-[66rem] sm:grid-cols-2 lg:grid-cols-4"
-        : "max-w-[55rem] sm:grid-cols-[1.2fr_1fr_1fr]"
+        ? `max-w-[66rem] sm:grid-cols-2 lg:grid-cols-4 ${modeStyles.fourModes}`
+        : "max-w-[53.75rem] md:grid-cols-3"
     }`}>
       {actions.map((action) => (
         <SystemActionButton
@@ -590,7 +537,7 @@ export function HomeTitleChrome({
   isBusy = false,
   activeActionId = null,
   onSelectMode,
-  logoVariant = "sx",
+  logoVariant = "none",
   logoTone = DEFAULT_BRAND_LOGO_TONE,
   releaseInfo = publicReleaseInfo,
   releaseOpen,

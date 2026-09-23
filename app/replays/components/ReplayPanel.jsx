@@ -20,7 +20,7 @@ import {
 } from "./replayPanelLayout";
 
 const replayRestoreClassName =
-  "settlex-ui-hud settlex-ui-focus group relative flex min-h-[2.75rem] w-full items-center overflow-hidden rounded-[var(--settlex-ui-radius-control)] py-0 pl-3.5 pr-1.5 transition hover:bg-white/70";
+  "settlex-ui-hud settlex-ui-focus group relative flex min-h-[2.75rem] w-full items-center overflow-hidden rounded-control py-ui-0 pl-ui-3.5 pr-ui-1.5 transition hover:bg-surface-hover";
 
 export function ReplayPanel({
   timeline,
@@ -65,35 +65,20 @@ export function ReplayPanel({
   const useSegmentedPerspective = shouldUseSegmentedReplayPerspective(
     timeline.players
   );
-  // Same control, two backdrops: glass over the board on desktop, a light sheet
-  // in the tray. A white-tinted trough disappears on the second, so the tray
-  // takes a slate one and a solid selected pill.
-  const renderPerspectiveControl = (onTray = false) =>
+  const renderPerspectiveControl = () =>
     useSegmentedPerspective ? (
       <div
-        className={`flex min-w-0 rounded-xl border p-1 ${
-          onTray
-            ? "border-slate-400/20 bg-slate-400/20"
-            : "border-white/30 bg-white/25"
-        }`}
+        className="settlex-ui-inset flex min-w-0 rounded-pill p-ui-1"
         role="group"
         aria-label="Replay perspective"
       >
         {segmentedPerspectiveOptions.map((option) => {
           const selected = (option.id ?? null) === (perspectiveId ?? null);
-          const selectedClassName = onTray
-            ? "bg-white text-slate-900 shadow-sm"
-            : "bg-white/90 text-slate-900 shadow-sm";
-          const idleClassName = onTray
-            ? "text-slate-600 hover:bg-white/60 hover:text-slate-900"
-            : "text-slate-600 hover:bg-white/40 hover:text-slate-900";
           return (
             <button
               key={option.id ?? "board"}
               type="button"
-              className={`settlex-ui-focus min-h-[2.75rem] min-w-0 flex-1 truncate rounded-lg px-2 text-xs font-semibold transition-[background-color,color,box-shadow] duration-150 motion-reduce:transition-none ${
-                selected ? selectedClassName : idleClassName
-              }`}
+              className="settlex-ui-segment settlex-ui-focus min-h-[2.75rem] min-w-0 flex-1 truncate rounded-pill px-ui-1 type-caption transition-[background-color,color,box-shadow] duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none"
               onClick={() => onPerspectiveChange(option.id)}
               aria-pressed={selected}
             >
@@ -106,7 +91,7 @@ export function ReplayPanel({
       <label className="block">
         <span className="sr-only">Replay perspective</span>
         <Select
-          className="w-full px-3 py-2 text-sm"
+          className="w-full"
           value={perspectiveId ?? "board"}
           aria-label="Replay perspective"
           onChange={(event) =>
@@ -137,17 +122,17 @@ export function ReplayPanel({
     ? `${turnText} · ${actorName}`
     : turnText;
   const eventSummary = (
-    <div className="mt-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="min-w-0 truncate text-xs font-medium text-slate-600">
+    <div className="mt-ui-3">
+      <div className="flex items-baseline justify-between gap-ui-3">
+        <span className="min-w-0 truncate type-caption text-ink-secondary">
           {turnAndActorText}
         </span>
-        <span className="shrink-0 text-[0.7rem] font-bold tabular-nums text-slate-600">
+        <span className="shrink-0 type-caption tabular-nums text-ink-secondary">
           Event {currentEventIndex + 1} of {Math.max(eventCount, 1)}
         </span>
       </div>
       <div
-        className="mt-1 min-h-[2rem] text-base font-semibold leading-snug text-slate-900 [text-wrap:pretty]"
+        className="mt-ui-1 min-h-[2rem] type-action text-ink-primary [text-wrap:pretty]"
         aria-live="polite"
       >
         {currentEvent?.label ?? "Initial setup"}
@@ -192,8 +177,8 @@ export function ReplayPanel({
                 aria-hidden="true"
               />
               <header className={META_PANEL_HEADER_CLASS_NAME}>
-                <span className="text-sm font-bold">Replay</span>
-                <div className="flex items-center gap-1.5">
+                <span className="type-action-small">Replay</span>
+                <div className="flex items-center gap-ui-1.5">
                   <Button
                     size="sm"
                     variant={atEnd ? "accent" : "subtle"}
@@ -203,7 +188,7 @@ export function ReplayPanel({
                   </Button>
                   <button
                     type="button"
-                    className="settlex-ui-focus grid h-11 w-11 place-items-center rounded-[var(--settlex-ui-radius-control)] text-slate-600 transition hover:bg-white/35 hover:text-slate-900"
+                    className="settlex-ui-focus grid h-11 w-11 place-items-center rounded-control text-ink-secondary transition hover:bg-surface-hover hover:text-ink-primary"
                     onClick={() => onOpenChange(false)}
                     aria-label="Minimize replay panel"
                   >
@@ -211,11 +196,11 @@ export function ReplayPanel({
                   </button>
                 </div>
               </header>
-              <div className="relative z-10 shrink-0 px-3.5 pb-3 pt-3">
+              <div className="relative z-10 shrink-0 px-ui-3.5 pb-ui-3 pt-ui-3">
                 {renderPerspectiveControl()}
                 {eventSummary}
                 <div
-                  className="mt-2"
+                  className="mt-ui-2"
                   aria-label="Previous turn and event controls"
                 >
                   <ReplayStepControls {...stepProps} />
@@ -223,17 +208,17 @@ export function ReplayPanel({
               </div>
               <button
                 type="button"
-                className={`relative z-10 flex shrink-0 items-center justify-between gap-2 border-t border-white/30 px-3.5 py-2.5 text-left transition hover:bg-white/35 ${
-                  chartOpen ? "bg-white/30" : "bg-white/[0.16]"
+                className={`relative z-10 flex shrink-0 items-center justify-between gap-ui-2 border-t border-edge-subtle px-ui-3.5 py-ui-2.5 text-left transition hover:bg-surface-hover ${
+                  chartOpen ? "bg-surface-hover" : "bg-decoration-fill"
                 }`}
                 onClick={onChartToggle}
                 aria-expanded={chartOpen}
               >
-                <span className="text-sm font-semibold text-slate-900">
+                <span className="type-action-small text-ink-primary">
                   Score over time
                 </span>
                 <span
-                  className={`grid h-[1.625rem] w-[1.625rem] place-items-center rounded-[0.55rem] bg-white/50 text-slate-700 transition-transform duration-150 motion-reduce:transition-none ${
+                  className={`grid h-[1.625rem] w-[1.625rem] place-items-center rounded-small bg-surface-hover text-ink-secondary transition-transform duration-150 motion-reduce:transition-none ${
                     chartOpen ? "rotate-180" : ""
                   }`}
                   aria-hidden="true"
@@ -242,7 +227,7 @@ export function ReplayPanel({
                 </span>
               </button>
               {chartOpen ? (
-                <div className="relative z-10 min-h-0 flex-1 overflow-y-auto border-t border-white/25 bg-white/[0.14] px-3.5 pb-3.5 pt-3">
+                <div className="relative z-10 min-h-0 flex-1 overflow-y-auto border-t border-edge-subtle bg-decoration-fill px-ui-3.5 pb-ui-3.5 pt-ui-3">
                   {scoreChart}
                 </div>
               ) : null}
@@ -259,21 +244,21 @@ export function ReplayPanel({
                 style={META_PANEL_GLASS_STYLE}
                 aria-hidden="true"
               />
-              <span className="relative z-10 flex min-w-0 flex-1 items-center gap-2">
-                <span className="shrink-0 text-sm font-semibold text-slate-900">
+              <span className="relative z-10 flex min-w-0 flex-1 items-center gap-ui-2">
+                <span className="shrink-0 type-action-small text-ink-primary">
                   Replay
                 </span>
                 <span
-                  className="shrink-0 font-bold text-slate-900/30"
+                  className="shrink-0 type-action-small text-ink-muted"
                   aria-hidden="true"
                 >
                   ·
                 </span>
-                <span className="min-w-0 flex-1 truncate text-left text-[0.78rem] font-semibold text-slate-700">
+                <span className="min-w-0 flex-1 truncate text-left type-caption text-ink-secondary">
                   {turnText} · {currentEvent?.label ?? "Initial setup"}
                 </span>
                 <span
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/60 bg-white/50 text-slate-700 transition group-hover:bg-white"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-pill border border-edge-subtle bg-surface-hover text-ink-secondary transition group-hover:bg-surface-selected"
                   aria-hidden="true"
                 >
                   <ChevronDownIcon className="h-4 w-4" />
@@ -299,27 +284,27 @@ export function ReplayPanel({
             data-allow-interaction="true"
           >
             <div
-              className={`${META_PANEL_FRAME_CLASS_NAME} pointer-events-auto h-auto p-2`}
+              className={`${META_PANEL_FRAME_CLASS_NAME} pointer-events-auto h-auto p-ui-2`}
             >
               <div
                 className="pointer-events-none absolute inset-0 rounded-[inherit]"
                 style={META_PANEL_GLASS_STYLE}
                 aria-hidden="true"
               />
-              <div className="relative z-10 flex items-center gap-2">
-                <div className="min-w-0 flex-1 px-2">
-                  <div className="text-xs font-medium text-slate-600">
+              <div className="relative z-10 flex items-center gap-ui-2">
+                <div className="min-w-0 flex-1 px-ui-2">
+                  <div className="type-caption text-ink-secondary">
                     {turnText}
                   </div>
-                  <div className="truncate text-xs font-bold text-slate-900">
+                  <div className="truncate type-caption text-ink-primary">
                     {currentEvent?.label ?? "Initial setup"}
                   </div>
                   <div
-                    className="relative mt-1 h-1 rounded-full bg-white/60"
+                    className="relative mt-ui-1 h-1 rounded-pill bg-surface-hover"
                     aria-hidden="true"
                   >
                     <div
-                      className="absolute inset-y-0 left-0 rounded-full bg-lime-500"
+                      className="absolute inset-y-0 left-0 rounded-pill settlex-ui-replay-progress"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
@@ -328,7 +313,7 @@ export function ReplayPanel({
                 <Drawer.Trigger asChild>
                   <button
                     type="button"
-                    className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus grid h-11 w-11 shrink-0 place-items-center text-slate-700"
+                    className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus grid h-11 w-11 shrink-0 place-items-center text-ink-secondary"
                     aria-label="Open replay tray"
                   >
                     <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
@@ -340,16 +325,16 @@ export function ReplayPanel({
 
           <Drawer.Portal>
             <Drawer.Content
-              className="settlex-ui-pane fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-b-none p-4 outline-none motion-reduce:!animate-none motion-reduce:!transition-none motion-reduce:!duration-0"
+              className="settlex-ui-pane fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-b-none p-ui-4 outline-none motion-reduce:!animate-none motion-reduce:!transition-none motion-reduce:!duration-0"
               onPointerDownOutside={preserveBoardPointerDown}
               data-allow-interaction="true"
             >
-              <Drawer.Handle className="!mx-auto !mb-3 !mt-0 !h-1.5 !w-14 !rounded-full !bg-slate-500/36" />
-              <div className="flex items-center justify-between gap-3">
-                <Drawer.Title className="text-lg font-semibold text-slate-900">
+              <Drawer.Handle className="!mx-auto !mb-ui-3 !mt-ui-0 !h-1.5 !w-14 !rounded-pill settlex-ui-replay-handle" />
+              <div className="flex items-center justify-between gap-ui-3">
+                <Drawer.Title className="type-section text-ink-primary">
                   Replay
                 </Drawer.Title>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-ui-2">
                   <Button
                     size="sm"
                     variant={atEnd ? "accent" : "subtle"}
@@ -361,7 +346,7 @@ export function ReplayPanel({
                   <Drawer.Close asChild>
                     <button
                       type="button"
-                      className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus grid h-11 w-11 place-items-center text-slate-600"
+                      className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus grid h-11 w-11 place-items-center text-ink-secondary"
                       aria-label="Close replay tray"
                     >
                       <ChevronDownIcon
@@ -375,29 +360,29 @@ export function ReplayPanel({
               <Drawer.Description className="sr-only">
                 Replay navigation and victory point history.
               </Drawer.Description>
-              <div className="mt-3 min-h-0 flex-1 overflow-y-auto">
-                {renderPerspectiveControl(true)}
+              <div className="mt-ui-3 min-h-0 flex-1 overflow-y-auto">
+                {renderPerspectiveControl()}
                 {eventSummary}
                 <div
-                  className="mt-2"
+                  className="mt-ui-2"
                   aria-label="Previous turn and event controls"
                 >
                   <ReplayStepControls {...stepProps} touchLabels />
                 </div>
                 <button
                   type="button"
-                  className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus mt-3 flex min-h-[2.75rem] w-full items-center justify-between gap-2 px-3.5 text-left"
+                  className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus mt-ui-3 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-2 px-ui-3.5 text-left"
                   onClick={onChartToggle}
                   aria-expanded={chartOpen}
                 >
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="type-action-small text-ink-primary">
                     Score over time
                   </span>
-                  <span className="text-xs font-bold text-slate-500">
+                  <span className="type-caption text-ink-muted">
                     {chartOpen ? "Hide" : "Show"}
                   </span>
                 </button>
-                {chartOpen ? <div className="mt-3">{scoreChart}</div> : null}
+                {chartOpen ? <div className="mt-ui-3">{scoreChart}</div> : null}
               </div>
             </Drawer.Content>
           </Drawer.Portal>

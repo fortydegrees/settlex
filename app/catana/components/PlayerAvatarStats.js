@@ -36,7 +36,7 @@ export const PlayerAvatarStats = ({
   statsPanelClassName = "",
   avatarClassName = "",
   showStatsPanelNameplate = true,
-  statsPanelChildrenClassName = "flex min-w-0 flex-1 items-center justify-center gap-x-3",
+  statsPanelChildrenClassName = "flex min-w-0 flex-1 items-center justify-center gap-x-ui-3",
 }) => {
   const playerId = player?.id ?? null;
   const currentRoadLength = useMemo(
@@ -85,14 +85,14 @@ export const PlayerAvatarStats = ({
     String(player.name ?? player.username ?? `Player ${player.id}`).trim() ||
     `Player ${player.id}`;
   const statsPanelBaseClassName = hasExtendedStatsPanel
-    ? "catana-hud-glass catana-hud-glass--compact relative -ml-4 flex h-20 min-w-[17.75rem] items-center rounded-l-none rounded-r-[1.35rem] border-l-0 py-1 pl-8 pr-4"
-    : "catana-hud-glass catana-hud-glass--compact -ml-4 flex h-20 items-center gap-x-2 rounded-l-none rounded-r-[1.35rem] border-l-0 px-3 pl-8";
+    ? "catana-hud-glass catana-hud-glass--compact relative -ml-ui-4 flex h-20 min-w-[17.75rem] items-center rounded-l-none rounded-r-panel border-l-0 py-ui-1 pl-ui-8 pr-ui-4"
+    : "catana-hud-glass catana-hud-glass--compact -ml-ui-4 flex h-20 items-center gap-x-ui-2 rounded-l-none rounded-r-panel border-l-0 px-ui-3 pl-ui-8";
   const vpBadgeClassName =
     hasExtendedStatsPanel && showStatsPanelNameplate
       ? "catana-hud-vp-badge absolute bottom-0 right-0 z-20 translate-x-1/2 translate-y-1/2 transform"
       : "catana-hud-vp-badge absolute right-0 top-0 z-10 -translate-y-1/2 translate-x-1/2 transform";
   const statsBlock = (
-    <div className="flex shrink-0 flex-col gap-y-1">
+    <div className="flex shrink-0 flex-col gap-y-ui-1">
       <div className="flex items-center" id={`p${player.id}-longest-road`}>
         <div className="w-8 h-8 flex items-center justify-center">
           <Image
@@ -104,8 +104,8 @@ export const PlayerAvatarStats = ({
           />
         </div>
         <span
-          className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
-            hasLongestRoad ? "text-yellow-400 font-bold" : "text-white"
+          className={`w-6 text-center drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
+            hasLongestRoad ? "type-hud-award-desktop-earned text-ink-hud-award" : "type-hud-award-desktop text-ink-hud-on-glass"
           }`}
         >
           {currentRoadLength}
@@ -122,8 +122,8 @@ export const PlayerAvatarStats = ({
           />
         </div>
         <span
-          className={`w-6 text-center text-xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
-            hasLargestArmy ? "text-yellow-400 font-bold" : "text-white"
+          className={`w-6 text-center drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
+            hasLargestArmy ? "type-hud-award-desktop-earned text-ink-hud-award" : "type-hud-award-desktop text-ink-hud-on-glass"
           }`}
         >
           {currentArmySize}
@@ -147,7 +147,7 @@ export const PlayerAvatarStats = ({
               </span>
             )}
             <div
-              className={`relative z-10 h-20 w-20 rounded-[1.15rem] bg-gradient-to-t ring-4 ring-white shadow-[0_18px_34px_-24px_rgba(15,23,42,0.58)] flex justify-center items-center text-6xl ${
+              className={`catana-hud-avatar relative z-10 h-20 w-20 bg-gradient-to-t ring-4 flex justify-center items-center text-6xl ${
                 isSeatWarning ? "seat-disconnected-avatar" : ""
               } ${avatarColor} ${isActive ? "avatar-active-glow" : ""} ${avatarClassName}`}
             >
@@ -193,7 +193,7 @@ export const PlayerAvatarStats = ({
               <span className="flex w-full items-center">
                 {statsBlock}
                 <span
-                  className="mx-4 h-14 w-px shrink-0 rounded-full bg-sky-200/45 shadow-[1px_0_0_rgba(255,255,255,0.32)]"
+                  className="catana-hud-divider mx-ui-4 h-14 w-px shrink-0 rounded-pill"
                   aria-hidden={true}
                 />
                 <span className={statsPanelChildrenClassName}>
@@ -207,7 +207,7 @@ export const PlayerAvatarStats = ({
         </span>
       </div>
       {isSeatWarning ? (
-        <span className="absolute left-1/2 top-full mt-2 inline-flex min-w-[7rem] -translate-x-1/2 items-center justify-center gap-0 rounded-full bg-rose-100 px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.03em] text-rose-700 ring-1 ring-rose-200 shadow-sm whitespace-nowrap">
+        <span className="catana-hud-presence absolute left-1/2 top-full mt-ui-2 inline-flex min-w-[7rem] -translate-x-1/2 items-center justify-center gap-ui-0 rounded-pill px-ui-2.5 py-ui-0.5 type-hud-presence whitespace-nowrap">
           <span>{presenceLabel}</span>
           {presenceTimerText ? (
             <span className="inline-block min-w-[2rem] tabular-nums text-right">

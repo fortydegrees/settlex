@@ -59,16 +59,16 @@ export function SearchingModal({
       : `1v1 · ${timeStr}`;
 
   return (
-    <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center overflow-y-auto bg-sky-700/[0.18] p-4 backdrop-blur-md">
-      <div className="settlex-ui-pane max-h-full w-full max-w-sm overflow-y-auto p-5 text-center sm:p-6">
-        <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[var(--settlex-ui-radius-control)] bg-lime-200 text-base font-bold text-lime-900">
+    <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center overflow-y-auto bg-surface-search-scrim p-ui-4 backdrop-blur-md">
+      <div className="settlex-ui-pane max-h-full w-full max-w-sm overflow-y-auto p-ui-5 text-center sm:p-ui-6">
+        <div className="mx-auto mb-ui-3 grid h-14 w-14 place-items-center rounded-control bg-surface-positive type-action text-ink-positive">
           Sx
         </div>
-        <h2 className="text-2xl font-semibold text-slate-900">{title}</h2>
-        <p className="mt-1 text-sm font-semibold text-slate-600">{subtitle}</p>
+        <h2 className="type-title text-ink-primary">{title}</h2>
+        <p className="mt-ui-1 type-action-small text-ink-secondary">{subtitle}</p>
         {showRescue ? (
-          <div className="mt-4 grid gap-3">
-            <p className="text-left text-sm leading-relaxed text-slate-600">
+          <div className="mt-ui-4 grid gap-ui-3">
+            <p className="text-left type-body-small text-ink-secondary">
               SettleHex is still in beta, so it can take a little while to find
               another player. You can keep your place here, or turn on Match
               alerts and come back when someone is looking.
@@ -93,7 +93,7 @@ export function SearchingModal({
           <Button
             variant="secondary"
             size="md"
-            className={`${showRescue ? "mt-2" : "mt-4"} w-full`}
+            className={`${showRescue ? "mt-ui-2" : "mt-ui-4"} w-full`}
             disabled={cancelPresentation.disabled}
             onClick={() => void onCancel()}
           >
@@ -104,7 +104,7 @@ export function SearchingModal({
           <Button
             variant="ghost"
             size="sm"
-            className="mt-1 w-full text-xs text-slate-600"
+            className="mt-ui-1 w-full"
             disabled={isPufferTransitionPending}
             onClick={onPlayPuffer}
           >

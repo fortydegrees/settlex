@@ -4,6 +4,9 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 
 ## Entry Points
 
+- `docs/agent/DESIGN_SYSTEM.md`: current enforced foundation contract and staged
+  migration boundaries. Use complete `type-*` roles, semantic colours and
+  `*-ui-*` spacing; do not introduce new typography fragments or raw corners.
 - `.agents/skills/catana-design/SKILL.md`: active routing skill for SettleHex/Catana design, restyling, and visual review work.
 - `docs/agent/skills/catana-brand/SKILL.md`: current product direction plus brand, component, color, typography, and motion rules. Read this before building or restyling Catana UI.
 - `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md`: checklist for one-off visual audits and pre-redesign critique.
@@ -13,6 +16,9 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 - `app/catana/components/README.md`: component and HUD context. Use before editing shared Catana components.
 - `app/catana/dev/sidebar-connection/`: scratch surface for left meta rail and dock/panel connector geometry.
 - `app/catana/dev/ui/`: standard UI showcase for shared product-surface primitives.
+- `docs/agent/UI_CATALOG.md`: production component ownership and the current
+  Clarity ButtonFamily/Foundations reference. Its approved role-based corner and
+  shared-material rules supersede older ad hoc button snippets in the brand guide.
 - `docs/agent/TESTING_NOTES.md`: verification matrix and future test backlog.
 - `docs/agent/NOTES.md`: detailed accumulated decisions. Search it for the specific surface before changing a repeated UI pattern.
 

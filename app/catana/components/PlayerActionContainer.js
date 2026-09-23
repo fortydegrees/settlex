@@ -54,15 +54,18 @@ export const CardIcon = ({
   };
   const iconSrc = getResourceIconPath(themeId, resource);
   const iconFallback = getClassicResourceIconPath(resource);
+  const Container = onResourceClick ? "button" : "div";
 
   return (
-    <div
-      className={`flex items-center ${isLast ? "" : "mr-6"} ${onResourceClick ? "cursor-pointer" : ""}`}
+    <Container
+      className={`flex items-center ${isLast ? "" : "mr-ui-6"} ${onResourceClick ? "cursor-pointer settlex-ui-focus" : ""}`}
       id={`p${player}-${resource}`}
+      type={onResourceClick ? "button" : undefined}
+      aria-label={onResourceClick ? `Trade ${resource}` : undefined}
       onClick={onResourceClick ? handleClick : undefined}
       
     >
-      <div className="w-7 text-center leading-none select-none text-white mr-1 text-3xl drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+      <div className="w-7 text-center select-none text-ink-hud-on-glass mr-ui-1 type-hud-resource-desktop drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
         <AnimatedCount
           value={resourceCount}
           className="resource-dock-count"
@@ -76,7 +79,7 @@ export const CardIcon = ({
         draggable={false}
         onError={(event) => handleThemeImageError(event, iconFallback)}
       />
-    </div>
+    </Container>
   );
 };
 
@@ -313,7 +316,7 @@ export const PlayerActionContainer = ({
   }, [endTurnEnabled, moves, readOnly, setBuildPickup, setPlayerAction]);
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 pointer-events-none px-4">
+    <div className="fixed bottom-ui-4 left-0 right-0 pointer-events-none px-ui-4">
       <div className="relative flex items-end">
         <div
           ref={playerHudRef}
@@ -340,15 +343,15 @@ export const PlayerActionContainer = ({
               !isSeatWarning && isOverLimit ? "catana-hud-glass--danger" : ""
             }
             showStatsPanelNameplate={false}
-            statsPanelChildrenClassName="flex min-w-0 flex-1 items-center justify-start gap-x-3"
+            statsPanelChildrenClassName="flex min-w-0 flex-1 items-center justify-start gap-x-ui-3"
             statsPanelChildren={
               <>
                 <div
                   ref={localResourceRailRef}
                   id={`p${player.id}-resources`}
-                  className="relative flex h-20 items-end pl-4 pr-3"
+                  className="relative flex h-20 items-end pl-ui-4 pr-ui-3"
                 >
-                  <div className="mb-4 flex self-end">
+                  <div className="mb-ui-4 flex self-end">
                     {Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE).map((resource) => {
                       const canQuickTrade = canQuickTradeResource(resource);
                       return (
@@ -384,7 +387,7 @@ export const PlayerActionContainer = ({
                   {showDevCardBay && (
                     <>
                       <span
-                        className="ml-0 mr-4 mb-3 h-14 w-px shrink-0 rounded-full bg-sky-200/45 shadow-[1px_0_0_rgba(255,255,255,0.32)]"
+                        className="catana-hud-divider ml-ui-0 mr-ui-4 mb-ui-3 h-14 w-px shrink-0 rounded-pill"
                         aria-hidden={true}
                       />
                       <DevCardDisplay

@@ -39,22 +39,22 @@ export default function Example() {
     <DndProvider backend={HTML5Backend}>
       <div style={{ background: CATANA_TABLE_BACKGROUND }}>
         <div className="flex">
-          {/* White Box for Controls */}
-          <div className="w-1/5 bg-gray-300 p-4 bg-opacity-50 flex flex-col items-center">
-            <span className="mt-0 mb-4">Resource Tiles</span>
-            <div className="grid grid-cols-2 gap-8 inline-block">
+          {/* Standard control chrome; tile and piece geometry stays in its own components. */}
+          <div className="settlex-ui-pane flex w-1/5 flex-col items-center p-ui-4">
+            <span className="type-section mb-ui-4 text-ink-primary">Resource Tiles</span>
+            <div className="grid grid-cols-2 gap-ui-8 inline-block">
               {STANDARD_RESOURCES.map((resource) => {
                 return <Tile key={resource} resource={resource} draggable />;
               })}
             </div>
-            <span className="mt-4 mb-4">Other Tiles</span>
-            <div className="grid grid-cols-2 gap-8 inline-block">
+            <span className="type-section mb-ui-4 mt-ui-4 text-ink-primary">Other Tiles</span>
+            <div className="grid grid-cols-2 gap-ui-8 inline-block">
               {SPECIAL_TILES.map((resource) => {
                 return <Tile key={resource} resource={resource} draggable />;
               })}
             </div>
-            <span className="mt-8 mb-4">Pieces</span>
-            <div className="grid grid-cols-3 gap-12 gap-y-4 inline-block">
+            <span className="type-section mb-ui-4 mt-ui-8 text-ink-primary">Pieces</span>
+            <div className="grid grid-cols-3 gap-ui-12 gap-y-ui-4 inline-block">
               {PLAYER_COLORS.map((color) => {
                 const COLOR_PIECES = PIECE_SVGS(color)
                 return Object.entries(COLOR_PIECES).map((piece)=>{

@@ -1,5 +1,8 @@
 import React, { useEffect } from "react";
 import confetti from "canvas-confetti";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Button } from "../../ui/Button";
+import { DisplayText } from "../../ui/DisplayText";
 import { getPlayerNameHex } from "../theme/playerColors.js";
 import {
   createGameOverModalActionHandlers,
@@ -7,10 +10,6 @@ import {
 } from "./gameOverAlertLifecycle.js";
 
 const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
-const replayReadyClassName =
-  "settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm";
-const replayDisabledClassName =
-  replayReadyClassName;
 
 export function GameOverModal({
   title,
@@ -65,63 +64,71 @@ export function GameOverModal({
   }, [isWinner, shouldFireConfetti, onConfettiFired]);
 
   return (
-    <div className="settlex-ui-pane relative max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto p-5 sm:p-6">
+    <div className="settlex-ui-pane relative max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto p-ui-5 sm:p-ui-6">
       <button
         onClick={actions.close}
         disabled={matchAlertResume.pending}
-        className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus absolute right-2 top-2 h-11 w-11 text-2xl disabled:cursor-wait"
+        className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus absolute right-2 top-2 h-11 w-11 disabled:cursor-wait"
         aria-label="Close"
       >
-        ×
+        <span className="relative z-10">
+          <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+        </span>
       </button>
 
       <div className="text-center">
-        <div className="text-4xl mb-2">🏆</div>
+        <div className="settlex-ui-celebration-glyph mb-ui-2">🏆</div>
         <div className="settlex-ui-label">
           Game Over
         </div>
-        <div className="mt-2 break-words text-2xl font-semibold text-slate-900">
-          {title}
-        </div>
-        <div className="mt-1 text-sm text-slate-600">{subtitle}</div>
+        {isWinner ? (
+          <DisplayText as="div" variant="celebration" className="mt-ui-2 break-words text-ink-primary">
+            {title}
+          </DisplayText>
+        ) : (
+          <div className="mt-ui-2 break-words type-title text-ink-primary">
+            {title}
+          </div>
+        )}
+        <div className="mt-ui-1 type-body-small text-ink-secondary">{subtitle}</div>
       </div>
 
-      <div className="mt-5 rounded-[var(--settlex-ui-radius-small)] bg-amber-100 p-4 ring-1 ring-amber-300">
+      <div className="mt-ui-5 rounded-small settlex-ui-winner p-ui-4">
         {winner ? (
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
+          <div className="flex items-center justify-between gap-ui-3">
+            <div className="flex min-w-0 items-center gap-ui-3">
               <div
-                className="h-10 w-10 shrink-0 rounded-full"
+                className="h-10 w-10 shrink-0 rounded-pill"
                 style={{ backgroundColor: getSwatchColor(winner.color) }}
               />
-              <span className="min-w-0 break-words text-lg font-semibold text-slate-800">
+              <span className="min-w-0 break-words type-section text-ink-primary">
                 {winner.name || `Player ${winner.id}`}
               </span>
             </div>
-            <span className="shrink-0 text-xl font-semibold text-amber-800">
+            <span className="shrink-0 type-section text-ink-highlight">
               {winner.vp} VP
             </span>
           </div>
         ) : (
-          <div className="text-sm text-slate-600">Final scores unavailable.</div>
+          <div className="type-body-small text-ink-secondary">Final scores unavailable.</div>
         )}
       </div>
 
       {secondaryRows.length > 0 && (
-        <div className="mt-4 flex flex-wrap justify-center gap-3">
+        <div className="mt-ui-4 flex flex-wrap justify-center gap-ui-3">
           {secondaryRows.map((row) => (
             <div
               key={row.id}
-              className="settlex-ui-inset flex min-w-0 max-w-full items-center gap-2 px-4 py-3"
+              className="settlex-ui-inset flex min-w-0 max-w-full items-center gap-ui-2 px-ui-4 py-ui-3"
             >
               <div
-                className="h-6 w-6 shrink-0 rounded-full"
+                className="h-6 w-6 shrink-0 rounded-pill"
                 style={{ backgroundColor: getSwatchColor(row.color) }}
               />
-              <span className="min-w-0 break-words font-medium text-slate-700">
+              <span className="min-w-0 break-words type-label text-ink-secondary">
                 {row.name || `Player ${row.id}`}
               </span>
-              <span className="shrink-0 text-slate-600 font-semibold">
+              <span className="shrink-0 type-action-small text-ink-secondary">
                 {row.vp} VP
               </span>
             </div>
@@ -130,8 +137,8 @@ export function GameOverModal({
       )}
 
       {matchAlertResume.visible ? (
-        <div className="settlex-ui-inset mt-5 p-3 text-left">
-          <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-3 text-sm font-medium text-slate-700">
+        <div className="settlex-ui-inset mt-ui-5 p-ui-3 text-left">
+          <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-ui-3 type-label text-ink-secondary">
             <input
               type="checkbox"
               checked={matchAlertResume.checked}
@@ -139,80 +146,76 @@ export function GameOverModal({
               onChange={(event) =>
                 onMatchAlertResumeCheckedChange?.(event.target.checked)
               }
-              className="settlex-ui-focus h-4 w-4 shrink-0 rounded border-slate-300 text-lime-600"
+              className="settlex-ui-checkbox settlex-ui-focus h-4 w-4 shrink-0"
             />
             <span>{matchAlertResume.label}</span>
           </label>
 
           {matchAlertResume.error ? (
-            <div className="mt-3 rounded-lg bg-rose-50 p-3 ring-1 ring-rose-200">
-              <p className="text-sm font-medium text-rose-700" role="alert">
+            <div className="mt-ui-3 settlex-ui-inline-error p-ui-3">
+              <p className="type-label text-ink-danger" role="alert">
                 {matchAlertResume.error}
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
+              <div className="mt-ui-3 flex flex-wrap gap-ui-2">
+                <Button
                   type="button"
                   onClick={actions.retryMatchAlertResume}
                   disabled={matchAlertResume.pending}
-                  className="settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
+                  variant="primary" size="sm"
                 >
                   {matchAlertResume.pending ? "Retrying…" : "Retry"}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={actions.continueWithoutMatchAlerts}
                   disabled={matchAlertResume.pending}
-                  className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] whitespace-normal px-4 py-2 text-sm"
+                  variant="secondary" size="sm"
                 >
                   Continue without alerts
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-2 sm:grid-cols-2">
+      <div className="mt-ui-6 grid gap-ui-2 sm:grid-cols-2">
         {onWatchReplay ? (
-          <button
+          <Button
             disabled={
               replayStatus === "loading" || matchAlertResume.pending
             }
             onClick={actions.watchReplay}
-            className={
-              replayStatus === "loading"
-                ? replayDisabledClassName
-                : replayReadyClassName
-            }
+            size="sm"
           >
             {replayStatus === "error" ? "Retry replay" : replayStatus === "loading"
               ? "Preparing replay..."
               : "Replay"}
-          </button>
+          </Button>
         ) : null}
         {onViewSummary ? (
-          <button
-            className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
+          <Button
+            variant="secondary" size="sm"
             onClick={actions.viewPostgame}
             disabled={matchAlertResume.pending}
           >
             Match summary
-          </button>
+          </Button>
         ) : null}
-        <button
-          className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
+        <Button
+          variant="secondary" size="sm"
           onClick={actions.lobby}
           disabled={matchAlertResume.pending}
         >
           {matchAlertResume.pending ? "Returning…" : "Return to Lobby"}
-        </button>
-        <button
-          className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus min-h-[2.75rem] px-4 py-2 text-sm"
+        </Button>
+        <Button
+          variant="ghost" size="sm"
           onClick={actions.close}
           disabled={matchAlertResume.pending}
         >
           Close
-        </button>
+        </Button>
       </div>
     </div>
   );

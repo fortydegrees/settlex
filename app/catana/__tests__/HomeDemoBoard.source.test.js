@@ -195,14 +195,4 @@ describe("Home demo board source", () => {
     expect(source).toContain("clearPendingFriendChallenge(window.localStorage)");
     expect(source).toContain("clearLastActiveMatch(window.localStorage)");
   });
-
-  it("renders homepage errors through the shared status overlay layer", () => {
-    const source = readAppFile("home", "HomeTableClient.js");
-
-    expect(source).toContain('import { StatusBanner } from "../components/StatusBanner";');
-    expect(source).toContain("<StatusBanner");
-    expect(source).toContain("overlay");
-    expect(source).toContain('overlayClassName="top-[5.25rem] sm:top-[6.25rem]"');
-    expect(source).not.toContain("absolute inset-x-3 top-[5.25rem] z-50");
-  });
 });

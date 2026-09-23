@@ -40,7 +40,7 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
 
   return (
     <div className="relative flex flex-col items-center">
-      <div className="relative flex items-center gap-4">
+      <div className="relative flex items-center gap-ui-4">
         <IconButton
           aria-label="Previous emoji"
           onClick={() => navigate(-1)}
@@ -52,11 +52,11 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
           open={isOpen}
           onOpenChange={setIsOpen}
           triggerAriaLabel="Browse emoji options"
-          triggerClassName="settlex-ui-focus group relative flex flex-col items-center rounded-lg"
+          triggerClassName="settlex-ui-focus group relative flex flex-col items-center rounded-small"
           triggerContent={
             <>
               <span
-                className={`relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.4rem] bg-gradient-to-t ring-4 ring-white shadow-[0_20px_36px_-24px_rgba(15,23,42,0.5)] ${colorGradient || ""}`}
+                className={`settlex-ui-avatar-preview relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-panel bg-gradient-to-t ${colorGradient || ""}`}
               >
                 <span
                   className="relative z-10 block motion-reduce:!animate-none"
@@ -64,28 +64,26 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
                 >
                   <span
                     key={slideKey}
-                    className="block text-5xl motion-reduce:!animate-none"
+                    className="block motion-reduce:!animate-none"
                     style={{ animation: slideAnim, display: "inline-block" }}
                   >
                     {value}
                   </span>
                 </span>
                 <div
-                  className="absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-full motion-reduce:!animate-none"
+                  className="settlex-ui-emoji-shadow absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-pill motion-reduce:!animate-none"
                   style={{
-                    background:
-                      "radial-gradient(ellipse, rgba(0,0,0,0.25) 0%, transparent 70%)",
                     animation: "emojiShadow 2s ease-in-out infinite",
                   }}
                 />
               </span>
-              <span className="mt-2 block text-xs font-medium text-slate-600">
+              <span className="mt-ui-2 block type-caption text-ink-secondary">
                 Browse emoji
               </span>
             </>
           }
         >
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-4 gap-ui-1.5">
             {EMOJI_OPTIONS.map((emojiOption) => (
               <Button
                 key={emojiOption}
@@ -96,9 +94,9 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
                   onChange(emojiOption);
                   setIsOpen(false);
                 }}
-                className="h-12 w-12 !p-0 text-2xl"
+                className="h-12 w-12 !p-0"
               >
-                {emojiOption}
+                <span className="settlex-ui-emoji-option">{emojiOption}</span>
               </Button>
             ))}
           </div>
@@ -162,7 +160,7 @@ export function IdentityModal({
       description="Choose the emoji, color, and name you want to take into the match."
       maxWidthClassName="max-w-sm"
     >
-      <form className="grid gap-4" onSubmit={handleSubmit}>
+      <form className="grid gap-ui-4" onSubmit={handleSubmit}>
         <div>
           <EmojiPicker
             value={emoji}
@@ -177,7 +175,7 @@ export function IdentityModal({
           onChange={setColor}
         />
 
-        <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <label className="grid gap-ui-2 type-label text-ink-secondary">
           Player name
           <Input
             ref={inputRef}
@@ -190,7 +188,7 @@ export function IdentityModal({
             pattern="[A-Za-z0-9_]+"
             title="Use English letters, numbers, and underscores only."
             required
-            className="text-center text-base font-semibold"
+            className="text-center"
           />
         </label>
 

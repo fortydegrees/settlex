@@ -8,4 +8,4 @@ export const META_PANEL_GLASS_STYLE = {
 };
 
 export const META_PANEL_HEADER_CLASS_NAME =
-  "relative z-10 flex min-h-[2.75rem] shrink-0 items-center justify-between gap-2 border-b border-white/60 px-3.5 text-slate-700";
+  "relative z-10 flex min-h-[2.75rem] shrink-0 items-center justify-between gap-ui-2 border-b border-decoration-edge px-ui-3.5 type-action-small text-ink-secondary";

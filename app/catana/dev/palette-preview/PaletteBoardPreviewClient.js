@@ -341,23 +341,23 @@ export function PaletteBoardPreviewClient() {
   const palette = PALETTES[selectedPaletteId] || PALETTES.C;
 
   return (
-    <main className="min-h-screen px-4 py-6 text-slate-900 sm:px-6">
-      <div className="mx-auto max-w-[1320px] rounded-[20px] border border-white/50 bg-white/70 p-5 shadow-[0_28px_60px_rgba(15,23,42,0.2)] backdrop-blur-md">
-        <h1 className="text-[clamp(1.4rem,2.7vw,2.1rem)] font-extrabold tracking-[0.02em]">
+    <main className="min-h-screen px-ui-4 py-ui-6 text-ink-primary sm:px-ui-6">
+      <div className="settlex-ui-pane mx-auto max-w-[1320px] p-ui-5">
+        <h1 className="type-page">
           Palette Row + Board Preview
         </h1>
-        <p className="mb-3 mt-2 text-[0.95rem] text-slate-700">
+        <p className="mb-ui-3 mt-ui-2 type-body-small text-ink-secondary">
           Pick Option C/B/A/D/E, toggle number tokens, and preview both the resource row and a full 19-hex board.
         </p>
 
-        <section className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-2.5 rounded-xl border border-white/60 bg-white/65 p-3">
-          <div className="grid gap-1.5">
-            <label htmlFor="palette-select" className="text-[0.76rem] font-bold uppercase tracking-[0.08em] text-slate-700">
+        <section className="settlex-ui-inset mb-ui-3 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-ui-2.5 p-ui-3">
+          <div className="grid gap-ui-1.5">
+            <label htmlFor="palette-select" className="type-label text-ink-secondary">
               Palette Option
             </label>
             <select
               id="palette-select"
-              className="w-full rounded-lg border border-slate-300/80 bg-white/90 px-2.5 py-1.5 text-[0.9rem]"
+              className="settlex-ui-field w-full"
               value={selectedPaletteId}
               onChange={(event) => setSelectedPaletteId(event.target.value)}
             >
@@ -369,29 +369,29 @@ export function PaletteBoardPreviewClient() {
             </select>
           </div>
 
-          <div className="grid grid-cols-[auto_1fr] items-end gap-2">
+          <div className="grid grid-cols-[auto_1fr] items-end gap-ui-2">
             <input
               id="show-number-tokens"
               type="checkbox"
-              className="h-4 w-4 accent-green-600"
+              className="settlex-ui-checkbox h-4 w-4"
               checked={showNumberTokens}
               onChange={(event) => setShowNumberTokens(event.target.checked)}
             />
-            <label htmlFor="show-number-tokens" className="text-[0.9rem] font-semibold text-slate-800">
+            <label htmlFor="show-number-tokens" className="type-label text-ink-primary">
               Show number tokens
             </label>
           </div>
         </section>
 
-        <p className="mb-3 text-[0.86rem] leading-[1.35] text-slate-700">
+        <p className="mb-ui-3 type-caption text-ink-secondary">
           {palette.name}. {palette.note} Number tokens {showNumberTokens ? "enabled" : "disabled"}.
         </p>
 
-        <section className="rounded-xl border border-white/60 bg-white/60 p-3">
-          <h2 className="mb-2.5 text-[1.04rem] font-bold">Selected Resource Row</h2>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5">
+        <section className="settlex-ui-inset p-ui-3">
+          <h2 className="mb-ui-2.5 type-section">Selected Resource Row</h2>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-ui-2.5">
             {ROW_RESOURCE_ORDER.map((resourceKey) => (
-              <article key={`row-card-${resourceKey}`} className="rounded-xl border border-white/80 bg-white/85 p-2 shadow-[0_8px_18px_rgba(15,23,42,0.12)]">
+              <article key={`row-card-${resourceKey}`} className="settlex-ui-pane p-ui-2">
                 <TileFrame
                   colors={palette.resources[resourceKey]}
                   svgKey={`row-${selectedPaletteId}-${resourceKey}`}
@@ -399,7 +399,7 @@ export function PaletteBoardPreviewClient() {
                   number={ROW_SAMPLE_NUMBERS[resourceKey]}
                   showNumberTokens={showNumberTokens}
                 />
-                <p className="mt-2 text-center text-[0.86rem] font-bold capitalize text-slate-900">
+                <p className="type-label mt-ui-2 text-center capitalize text-ink-primary">
                   {resourceKey}
                 </p>
               </article>
@@ -407,8 +407,8 @@ export function PaletteBoardPreviewClient() {
           </div>
         </section>
 
-        <section className="mt-3 rounded-xl border border-white/60 bg-white/60 p-3">
-          <h2 className="mb-2.5 text-[1.04rem] font-bold">Board Preview (19 Hexes)</h2>
+        <section className="settlex-ui-inset mt-ui-3 p-ui-3">
+          <h2 className="mb-ui-2.5 type-section">Board Preview (19 Hexes)</h2>
           <div className="boardScroll">
             <div className="boardRoot">
               {boardRows.map((rowTiles, rowIndex) => (

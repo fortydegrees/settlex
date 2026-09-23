@@ -277,10 +277,10 @@ function ControlButton({ children, isSelected, onClick }) {
       type="button"
       onClick={onClick}
       className={joinClassNames(
-        "rounded-full px-4 py-2 text-sm font-semibold transition",
+        "settlex-ui-focus type-action-small rounded-pill px-ui-4 py-ui-2 transition",
         isSelected
-          ? "bg-white/85 text-slate-800 shadow-md ring-1 ring-white/80"
-          : "bg-white/18 text-white/90 ring-1 ring-white/35 hover:bg-white/26"
+          ? "settlex-ui-button settlex-ui-button-secondary"
+          : "settlex-dev-console-button settlex-dev-console-button-secondary"
       )}
     >
       {children}
@@ -290,15 +290,15 @@ function ControlButton({ children, isSelected, onClick }) {
 
 function StudyShell({ study, children }) {
   return (
-    <section className="flex flex-col gap-4 rounded-[30px] bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur-sm">
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <span className="rounded-full bg-lime-300 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.25em] text-lime-950">
+    <section className="settlex-dev-console-panel flex flex-col gap-ui-4 p-ui-4">
+      <div className="space-y-ui-2">
+        <div className="flex items-center gap-ui-3">
+          <span className="type-caption rounded-pill bg-surface-positive px-ui-3 py-ui-1 uppercase text-ink-positive">
             {study.label}
           </span>
-          <h2 className="text-xl font-bold text-white">{study.name}</h2>
+          <h2 className="type-section text-ink-console-primary">{study.name}</h2>
         </div>
-        <p className="max-w-2xl text-sm leading-6 text-blue-50/88">
+        <p className="max-w-2xl type-body-small text-ink-console-secondary">
           {study.note}
         </p>
       </div>
@@ -311,23 +311,23 @@ function StudyShell({ study, children }) {
 function MockLogBody() {
   return (
     <div className="flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-2">
-        <div className="space-y-2 text-sm">
+      <div className="min-h-0 flex-1 overflow-y-auto px-ui-4 pt-ui-2">
+        <div className="space-y-ui-2 type-body-small">
           {LOG_ENTRIES.map((entry, index) => (
             <div
               key={entry.id}
               className={joinClassNames(
-                "space-y-2 break-words pb-3 text-sm leading-5 text-slate-800",
+                "space-y-ui-2 break-words pb-ui-3 type-body-small text-ink-primary",
                 index === LOG_ENTRIES.length - 1
                   ? ""
                   : "border-b border-white/35"
               )}
             >
               <div>
-                <span className={joinClassNames("font-semibold", entry.tone)}>
+                <span className={joinClassNames("type-label", entry.tone)}>
                   {entry.text}
                 </span>
-                <span className="text-slate-800/80">{entry.suffix}</span>
+                <span className="text-ink-secondary">{entry.suffix}</span>
               </div>
             </div>
           ))}
@@ -341,16 +341,16 @@ function MockChatBody() {
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1">
-        <div className="h-full overflow-y-auto px-3">
-          <div className="space-y-1.5 py-1.5 text-sm">
-            <div className="break-words text-sm leading-5 text-slate-800">
+        <div className="h-full overflow-y-auto px-ui-3">
+          <div className="space-y-ui-1.5 py-ui-1.5 type-body-small">
+            <div className="break-words type-body-small text-ink-primary">
               No messages yet.
             </div>
           </div>
         </div>
       </div>
-      <div className="border-t border-white/35 bg-white/35 backdrop-blur-sm">
-        <div className="bg-white/50 px-2.5 py-1.5 text-sm text-slate-500 shadow-inner ring-1 ring-white/50">
+      <div className="border-t border-edge-subtle bg-surface-hover">
+        <div className="settlex-ui-inset type-body-small px-ui-2.5 py-ui-1.5 text-ink-muted">
           Message...
         </div>
       </div>
@@ -377,7 +377,7 @@ function PanelCard({ panelId }) {
 function HeaderedPanelCard({ panelId, title }) {
   return (
     <div className="relative flex h-full flex-col overflow-hidden rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text">
-      <div className="bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 select-none">
+      <div className="bg-white/50 border-b border-white/40 px-ui-4 py-ui-2 type-caption uppercase text-ink-secondary select-none">
         {title}
       </div>
       <div
@@ -395,7 +395,7 @@ function HeaderedPanelCard({ panelId, title }) {
 function SideTabPanelContent({ panelId, title }) {
   return (
     <div className="relative flex h-full flex-col overflow-hidden rounded-[18px] select-text">
-      <div className="bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700 select-none">
+      <div className="bg-white/50 border-b border-white/40 px-ui-4 py-ui-2 type-caption uppercase text-ink-secondary select-none">
         {title}
       </div>
       <div
@@ -417,7 +417,7 @@ function ShellActionButton({ Icon, onClick }) {
       onClick={onClick}
       className="absolute left-0 top-0 z-30 flex h-[72px] w-[72px] items-center justify-center rounded-[18px] bg-transparent focus:outline-none"
     >
-      <Icon className="h-8 w-8 text-slate-700" strokeWidth={1.8} />
+      <Icon className="h-8 w-8 text-ink-secondary" strokeWidth={1.8} />
     </button>
   );
 }
@@ -516,7 +516,7 @@ function TaperedConnectedRow({ panel, isOpen, onToggle }) {
           />
         </svg>
         <div
-          className="absolute left-[92px] top-[24px] text-xs font-semibold uppercase tracking-widest text-slate-700"
+          className="type-caption absolute left-[92px] top-[24px] uppercase text-ink-secondary"
           style={{
             opacity: labelOpacity,
             transform: labelTransform,
@@ -624,7 +624,7 @@ function SideTabConnectedRow({ panel, isOpen, nextIsOpen, onToggle }) {
           top: `${SIDE_TAB_BUTTON_CLOSED_TOP}px`
         }}
       >
-        <panel.Icon className="h-8 w-8 text-slate-700" strokeWidth={1.8} />
+        <panel.Icon className="h-8 w-8 text-ink-secondary" strokeWidth={1.8} />
       </button>
 
       <div
@@ -658,8 +658,8 @@ function VariantStage({ study, openIds, onToggle }) {
 
         <div
           className={joinClassNames(
-            "relative z-10 flex flex-col px-6 pb-8",
-            study.id === "side-tab" ? "gap-0 pt-[52px]" : "gap-5 pt-6"
+            "relative z-10 flex flex-col px-ui-6 pb-ui-8",
+            study.id === "side-tab" ? "gap-0 pt-[52px]" : "gap-ui-5 pt-ui-6"
           )}
         >
           {PANEL_ORDER.map((panel, index) => {
@@ -706,17 +706,17 @@ export function SidebarConnectionClient() {
   }, [openIds]);
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-8 text-white">
-      <div className="mx-auto flex max-w-[1500px] flex-col gap-8">
-        <header className="space-y-4">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-200/80">
+    <main className="settlex-dev-console min-h-screen px-ui-6 py-ui-8">
+      <div className="mx-auto flex max-w-[1500px] flex-col gap-ui-8">
+        <header className="space-y-ui-4">
+          <div className="space-y-ui-2">
+            <p className="type-caption uppercase text-ink-console-muted">
               Catana Dev Mockups
             </p>
-            <h1 className="text-4xl font-bold tracking-tight">
+            <h1 className="type-page">
               Connected Desktop Dock Studies
             </h1>
-            <p className="max-w-3xl text-base leading-7 text-slate-300">
+            <p className="max-w-3xl type-body text-ink-console-secondary">
               Fresh experiments for making the left dock feel genuinely tied to
               the panel it opens. These mockups ignore the current sidebar code
               and focus on one thing: whether the connection reads clearly at a
@@ -724,7 +724,7 @@ export function SidebarConnectionClient() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-ui-3">
             <ControlButton
               isSelected={selectionLabel === "Both open"}
               onClick={() => setOpenIds(["log", "chat"])}
@@ -749,21 +749,21 @@ export function SidebarConnectionClient() {
             >
               Dock only
             </ControlButton>
-            <div className="ml-2 flex items-center gap-2 text-sm text-slate-300">
-              <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
+            <div className="ml-ui-2 flex items-center gap-ui-2 type-body-small text-ink-console-secondary">
+              <span className="type-caption rounded-pill bg-surface-console-panel px-ui-3 py-ui-1 text-ink-console-secondary">
                 Live toggle
               </span>
               <button
                 type="button"
                 onClick={() => toggle("log")}
-                className="rounded-full bg-white/14 px-3 py-1 ring-1 ring-white/20 transition hover:bg-white/22"
+                className="settlex-dev-console-button settlex-dev-console-button-secondary px-ui-3 py-ui-1"
               >
                 Toggle log
               </button>
               <button
                 type="button"
                 onClick={() => toggle("chat")}
-                className="rounded-full bg-white/14 px-3 py-1 ring-1 ring-white/20 transition hover:bg-white/22"
+                className="settlex-dev-console-button settlex-dev-console-button-secondary px-ui-3 py-ui-1"
               >
                 Toggle chat
               </button>
@@ -771,7 +771,7 @@ export function SidebarConnectionClient() {
           </div>
         </header>
 
-        <div className="grid gap-6 xl:grid-cols-2">
+        <div className="grid gap-ui-6 xl:grid-cols-2">
           {STUDIES.map((study) => (
             <VariantStage
               key={study.id}

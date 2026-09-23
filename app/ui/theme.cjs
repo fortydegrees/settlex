@@ -1,0 +1,130 @@
+// Canonical foundation values. Tailwind emits these as CSS custom properties
+// and complete type-role utilities. Existing Tailwind defaults are untouched.
+const spaces = { 0: '0px', 0.5: '.125rem', 1: '.25rem', 1.5: '.375rem', 2: '.5rem', 2.5: '.625rem', 3: '.75rem', 3.5: '.875rem', 4: '1rem', 5: '1.25rem', 6: '1.5rem', 7: '1.75rem', 8: '2rem', 10: '2.5rem', 12: '3rem', 14: '3.5rem', 16: '4rem' };
+const radii = { small: '.5rem', control: '.875rem', panel: '1.375rem', pill: '999px' };
+const colours = {
+  'text-primary': '#0f172a', 'text-secondary': '#475569', 'text-muted': '#64748b',
+  'text-danger': '#be123c', 'text-brand': '#143f60', 'text-link': '#1d4ed8',
+  'text-home-chrome': 'rgb(255 255 255 / .93)', 'text-home-chrome-muted': 'rgb(255 255 255 / .8)',
+  'text-positive': '#365314', 'surface-positive': '#d9f99d',
+  'text-highlight': '#92400e', 'surface-winner': '#fef3c7', 'border-winner': '#fcd34d',
+  'text-hud-roll': '#451a03',
+  'text-hud-on-glass': '#fff', 'text-hud-on-glass-muted': 'rgb(255 255 255 / .72)',
+  'text-hud-on-glass-faint': 'rgb(255 255 255 / .55)', 'text-hud-feed': '#1e293b',
+  'text-hud-award': '#facc15',
+  'text-hud-strip-active': 'rgba(255,255,255,.96)',
+  'text-hud-strip-low': 'rgba(255,241,242,.98)',
+  'text-hud-control-standby': 'rgba(219,234,254,.32)',
+  'text-hud-control-active': 'rgba(255,255,255,.9)',
+  'text-hud-badge-default': '#334155', 'text-hud-badge-danger': '#e11d48',
+  'text-console-primary': '#f1f5f9', 'text-console-secondary': '#cbd5e1',
+  'text-console-muted': '#94a3b8',
+  'surface-console': '#0f172a', 'surface-console-panel': 'rgb(30 41 59 / .6)',
+  'surface-console-inset': 'rgb(15 23 42 / .72)',
+  'border-console': '#475569',
+  'text-hud-count-gain-start': 'rgb(187 247 208)', 'text-hud-count-gain-peak': 'rgb(134 239 172)',
+  'text-hud-count-loss-start': 'rgb(254 205 211)', 'text-hud-count-loss-peak': 'rgb(251 113 133)',
+  'surface-hud-badge-default': '#eff6ff', 'surface-hud-badge-danger': '#ffe4e6',
+  'border-hud-danger-avatar': '#fda4af',
+  'surface-game-scrim': 'rgb(30 58 138 / .42)',
+  'chart-grid': 'rgb(100 116 139 / .2)', 'chart-cursor': '#f59e0b',
+  'surface-pane': 'rgb(255 255 255 / .88)', 'surface-hud': 'rgb(255 255 255 / .58)',
+  'surface-solid': '#f8fbff', 'surface-inset': 'rgb(219 234 254 / .45)',
+  'surface-selected': '#fff', 'surface-hover': 'rgb(255 255 255 / .48)',
+  'surface-search-scrim': 'rgb(3 105 161 / .18)',
+  'decoration-fill': 'rgb(255 255 255 / .18)', 'decoration-wash': 'rgb(255 255 255 / .08)',
+  'decoration-ring': 'rgb(255 255 255 / .28)', 'decoration-edge': 'rgb(255 255 255 / .38)',
+  'border-default': '#cbd5e1', 'border-subtle': 'rgb(203 213 225 / .6)',
+  'feedback-neutral-face': '#eff6ff', 'feedback-neutral-border': '#dbeafe', 'feedback-neutral-marker': '#0284c7',
+  'feedback-danger-face': '#fff1f2', 'feedback-danger-border': '#fecdd3', 'feedback-danger-marker': '#e11d48',
+  'feedback-danger-ink': '#be123c', 'feedback-danger-body': '#9f1239',
+  focus: '#2563eb',
+};
+const typography = {
+  body: { size: '.9375rem', weight: 400, line: '1.5', tracking: '0em' },
+  'body-small': { size: '.875rem', weight: 400, line: '1.5', tracking: '0em' },
+  label: { size: '.875rem', weight: 500, line: '1.428571', tracking: '0em' },
+  caption: { size: '.8125rem', weight: 500, line: '1.4', tracking: '0em' },
+  'code-caption': { size: '.8125rem', weight: 400, line: '1.4', tracking: '0em', family: 'code' },
+  'chart-tick': { size: '.625rem', weight: 700, line: '1.2', tracking: '0em' },
+  section: { size: '1.125rem', weight: 600, line: '1.4', tracking: '0em' },
+  title: { size: '1.5rem', weight: 700, line: '1.333333', tracking: '0em' },
+  page: { size: '2rem', weight: 700, line: '1.125', tracking: '-.02em' },
+  'action-small': { size: '.875rem', weight: 600, line: '1.428571', tracking: '0em' },
+  action: { size: '1rem', weight: 600, line: '1.5', tracking: '0em' },
+  'action-large': { size: '1.125rem', weight: 600, line: '1.555556', tracking: '0em' },
+  'home-action': { size: '.96875rem', weight: 700, line: '1', tracking: '-.015em' },
+  'home-action-wide': { size: '1.125rem', weight: 700, line: '1', tracking: '-.015em' },
+  'home-marker': { size: '1rem', weight: 600, line: '1', tracking: 'normal' },
+  'home-marker-wide': { size: '1rem', weight: 600, line: '1', tracking: 'normal' },
+  'home-icon-label': { size: '.75rem', weight: 600, line: '1.5', tracking: 'normal' },
+  'home-icon-label-wide': { size: '.84375rem', weight: 600, line: '1.5', tracking: 'normal' },
+  'hud-primary': { size: '1.28rem', weight: 900, line: '1.5', tracking: '0em' },
+  'hud-primary-compact': { size: '1.14rem', weight: 900, line: '1.5', tracking: '0em' },
+  'hud-timer': { size: '1rem', weight: 900, line: '1', tracking: '0em' },
+  'hud-timer-compact': { size: '.9rem', weight: 900, line: '1', tracking: '0em' },
+  'hud-timer-desktop': { size: '.95rem', weight: 600, line: '1.5', tracking: '.01em' },
+  'hud-status': { size: '.95rem', weight: 600, line: '1.25', tracking: '0em' },
+  'hud-status-compact': { size: '.8rem', weight: 600, line: '1.25', tracking: '0em' },
+  'hud-status-desktop': { size: '.9rem', weight: 600, line: '1.25', tracking: '0em' },
+  'hud-resource': { size: '.95rem', weight: 600, line: '1', tracking: '0em' },
+  'hud-resource-wide': { size: '1rem', weight: 600, line: '1', tracking: '0em' },
+  'hud-resource-desktop': { size: '1.875rem', weight: 400, line: '1', tracking: '0em' },
+  'hud-award': { size: '1.08rem', weight: 400, line: '1.5', tracking: '0em' },
+  'hud-award-earned': { size: '1.08rem', weight: 700, line: '1.5', tracking: '0em' },
+  'hud-award-desktop': { size: '1.25rem', weight: 400, line: '1.5', tracking: '0em' },
+  'hud-award-desktop-earned': { size: '1.25rem', weight: 700, line: '1.5', tracking: '0em' },
+  'hud-nameplate': { size: '.875rem', weight: 700, line: '1.45rem', tracking: '.01em' },
+  'hud-vp': { size: '1.12rem', weight: 750, line: '1', tracking: '0em' },
+  'hud-vp-mobile': { size: '.78rem', weight: 600, line: '1', tracking: '0em' },
+  'hud-piece-count': { size: '.76rem', weight: 700, line: '1', tracking: '0em' },
+  'hud-presence': { size: '11px', weight: 600, line: '1.4', tracking: '.03em' },
+  'hud-stack-count': { size: '.75rem', weight: 600, line: '1', tracking: '0em' },
+  'hud-tray-count': { size: '.7rem', weight: 600, line: '1', tracking: '0em' },
+  'hud-card-copy': { size: '.68rem', weight: 800, line: '1', tracking: '0em' },
+  'hud-tooltip-title': { size: '.875rem', weight: 700, line: '1.2', tracking: '0em' },
+  'hud-tooltip-body': { size: '.75rem', weight: 500, line: '1.2', tracking: '0em' },
+  display: { size: 'clamp(2rem, 5vw, 3rem)', weight: 900, line: '1.1', tracking: '0em', family: 'display' },
+  celebration: { size: 'clamp(2rem, 10vw, 3rem)', weight: 900, line: '1.15', tracking: '0em', family: 'display' },
+};
+// One registry is consumed by Tailwind and the policy checker. Misspelled
+// semantic utility names must fail validation, not silently produce no CSS.
+const colourUtilities = {
+  ink: { primary: 'var(--settlex-ui-text-primary)', secondary: 'var(--settlex-ui-text-secondary)', muted: 'var(--settlex-ui-text-muted)', danger: 'var(--settlex-ui-text-danger)', brand: 'var(--settlex-ui-text-brand)', link: 'var(--settlex-ui-text-link)', positive: 'var(--settlex-ui-text-positive)', highlight: 'var(--settlex-ui-text-highlight)', 'hud-roll': 'var(--settlex-ui-text-hud-roll)', 'hud-on-glass': 'var(--settlex-ui-text-hud-on-glass)', 'hud-on-glass-muted': 'var(--settlex-ui-text-hud-on-glass-muted)', 'hud-award': 'var(--settlex-ui-text-hud-award)', 'hud-badge-default': 'var(--settlex-ui-text-hud-badge-default)', 'hud-badge-danger': 'var(--settlex-ui-text-hud-badge-danger)', 'console-primary': 'var(--settlex-ui-text-console-primary)', 'console-secondary': 'var(--settlex-ui-text-console-secondary)', 'console-muted': 'var(--settlex-ui-text-console-muted)' },
+  surface: { solid: 'var(--settlex-ui-surface-solid)', inset: 'var(--settlex-ui-surface-inset)', selected: 'var(--settlex-ui-surface-selected)', hover: 'var(--settlex-ui-surface-hover)', positive: 'var(--settlex-ui-surface-positive)', 'search-scrim': 'var(--settlex-ui-surface-search-scrim)', 'game-scrim': 'var(--settlex-ui-surface-game-scrim)', 'hud-badge-default': 'var(--settlex-ui-surface-hud-badge-default)', 'hud-badge-danger': 'var(--settlex-ui-surface-hud-badge-danger)', console: 'var(--settlex-ui-surface-console)', 'console-panel': 'var(--settlex-ui-surface-console-panel)', 'console-inset': 'var(--settlex-ui-surface-console-inset)' },
+  'console-edge': { DEFAULT: 'var(--settlex-ui-border-console)' },
+  decoration: { fill: 'var(--settlex-ui-decoration-fill)', wash: 'var(--settlex-ui-decoration-wash)', ring: 'var(--settlex-ui-decoration-ring)', edge: 'var(--settlex-ui-decoration-edge)' },
+  edge: { DEFAULT: 'var(--settlex-ui-border-default)', subtle: 'var(--settlex-ui-border-subtle)' },
+};
+const variables = {
+  '--settlex-ui-font-ui': 'var(--font-outfit, Outfit, sans-serif)',
+  '--settlex-ui-font-code': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  '--settlex-ui-font-display': '"SettleHex Display", var(--settlex-ui-font-ui)',
+  '--settlex-ui-duration-fast': '140ms', '--settlex-ui-duration-dialog': '220ms', '--settlex-ui-duration-exit': '160ms',
+  '--settlex-ui-ease-standard': 'cubic-bezier(.2, .9, .24, 1)', '--settlex-ui-ease-bounce': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+  '--settlex-ui-z-dialog': '80', '--settlex-ui-z-popover': '90', '--settlex-ui-z-tooltip': '100', '--settlex-ui-z-status': '120',
+  '--settlex-ui-shadow-panel': 'inset 0 1px 0 #fff, 0 16px 40px -24px rgb(30 64 175 / .28), 0 2px 6px rgb(30 64 175 / .06)',
+  '--settlex-ui-shadow-selected': '0 1px 2px rgb(15 23 42 / .08)',
+  '--settlex-ui-avatar-preview-glyph': '3rem',
+  '--settlex-ui-avatar-profile-glyph': '2rem',
+  '--settlex-ui-avatar-small-glyph': '.875rem',
+  '--settlex-ui-avatar-header-glyph': '1.125rem',
+  '--settlex-ui-avatar-header-wide-glyph': '1.25rem',
+  '--settlex-ui-emoji-option-glyph': '1.5rem',
+  '--settlex-ui-celebration-glyph': '2.25rem',
+  '--settlex-ui-hud-control-inset': '.45rem',
+};
+for (const [name, value] of Object.entries(spaces)) variables[`--settlex-ui-space-${name.replace('.', '-')}`] = value;
+for (const [name, value] of Object.entries(radii)) variables[`--settlex-ui-radius-${name}`] = value;
+for (const [name, value] of Object.entries(colours)) variables[`--settlex-ui-${name}`] = value;
+const typeStyles = {};
+for (const [role, type] of Object.entries(typography)) {
+  for (const [property, value] of Object.entries(type)) variables[`--settlex-ui-type-${role}-${property}`] = String(value);
+  typeStyles[`.type-${role}`] = {
+    fontFamily: `var(--settlex-ui-font-${type.family ?? 'ui'})`,
+    fontSize: `var(--settlex-ui-type-${role}-size)`, fontWeight: `var(--settlex-ui-type-${role}-weight)`,
+    lineHeight: `var(--settlex-ui-type-${role}-line)`, letterSpacing: `var(--settlex-ui-type-${role}-tracking)`,
+  };
+}
+
+module.exports = { spaces, radii, colours, colourUtilities, typography, variables, typeStyles };

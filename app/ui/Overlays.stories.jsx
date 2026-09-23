@@ -53,8 +53,8 @@ function PopoverHarness() {
       triggerAriaLabel="Open example menu"
       triggerContent="Open example menu"
     >
-      <div role="menu" aria-label="Example menu" className="grid gap-1">
-        <button type="button" role="menuitem" className="rounded-lg px-2 py-1.5 text-left text-sm hover:bg-white/60">
+      <div role="menu" aria-label="Example menu" className="grid gap-ui-1">
+        <button type="button" role="menuitem" className="rounded-control px-ui-2 py-ui-1.5 text-left type-body-small hover:bg-surface-hover">
           Edit profile
         </button>
       </div>
@@ -66,15 +66,15 @@ function MetaDisclosureHarness() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div className="rounded-[1.35rem] bg-sky-500/80 p-5">
+    <div className="settlex-ui-hud p-ui-5">
       <MetaDisclosure
         open={open}
         onOpenChange={setOpen}
         label="release 4"
         ariaLabel="Show example release notes"
       >
-        <h2 className="text-sm font-bold">Release notes</h2>
-        <p className="mt-2 text-sm leading-6">Match alerts now stay quieter until they matter.</p>
+        <h2 className="type-action-small">Release notes</h2>
+        <p className="mt-ui-2 type-body-small">Match alerts now stay quieter until they matter.</p>
       </MetaDisclosure>
     </div>
   );

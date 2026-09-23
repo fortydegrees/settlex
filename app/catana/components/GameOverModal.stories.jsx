@@ -114,6 +114,17 @@ export const Loser = {
   },
 };
 
+export const WinnerMobile = {
+  parameters: { viewport: { defaultViewport: "catanaMobile" } },
+};
+
+export const WinnerUnsupportedCopy = {
+  args: { title: "You win! 🎉" },
+  parameters: {
+    docs: { description: { story: "An unsupported character keeps the whole heading in Outfit, avoiding mixed display and UI letters." } },
+  },
+};
+
 export const FinishedHumanMatch = {
   args: {
     ...winnerProps,
@@ -200,6 +211,17 @@ export const DenseResumeError = {
     onRetryMatchAlertResume: fn(),
     onContinueWithoutMatchAlerts: fn(),
   },
+};
+
+export const ReplayPreparing = {
+  args: { ...winnerProps, onWatchReplay: fn(), replayStatus: "loading" },
+  play: async ({ canvasElement }) => {
+    expect(await within(canvasElement).findByRole("button", { name: "Preparing replay..." })).toBeDisabled();
+  },
+};
+
+export const ReplayFailed = {
+  args: { ...winnerProps, onWatchReplay: fn(), replayStatus: "error" },
 };
 
 export const Mobile = {

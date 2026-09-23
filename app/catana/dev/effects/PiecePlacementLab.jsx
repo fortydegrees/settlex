@@ -19,10 +19,10 @@ const COLOR_OPTIONS = [
 ];
 
 const createRangeField = (label, value, setValue, min, max, step = 0.01) => (
-  <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+  <label className="type-label flex flex-col text-ink-console-muted">
     {label}
     <input
-      className="mt-1"
+      className="mt-ui-1"
       type="range"
       min={min}
       max={max}
@@ -30,7 +30,7 @@ const createRangeField = (label, value, setValue, min, max, step = 0.01) => (
       value={value}
       onChange={(event) => setValue(Number(event.target.value))}
     />
-    <span className="text-sm text-slate-200">{value}</span>
+    <span className="type-body-small text-ink-console-primary">{value}</span>
   </label>
 );
 
@@ -95,23 +95,23 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
   const targetMax = pieceType === "road" ? Math.max(edgeIds.length - 1, 0) : Math.max(nodeIds.length - 1, 0);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(260px,360px)_1fr]">
-      <section className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800/60 p-3">
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+    <div className="grid gap-ui-6 lg:grid-cols-[minmax(260px,360px)_1fr]">
+      <section className="flex max-h-[70vh] flex-col gap-ui-4 overflow-y-auto settlex-dev-console-panel p-ui-3">
+        <div className="flex flex-wrap items-end gap-ui-3">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Seed
             <input
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+              className="mt-ui-1 settlex-dev-console-field"
               type="number"
               value={seed}
               onChange={(event) => setSeed(event.target.value)}
             />
           </label>
 
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Piece
             <select
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+              className="mt-ui-1 settlex-dev-console-field"
               value={pieceType}
               onChange={(event) => {
                 setPieceType(event.target.value);
@@ -123,10 +123,10 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
             </select>
           </label>
 
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Player Color
             <select
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+              className="mt-ui-1 settlex-dev-console-field"
               value={playerColor}
               onChange={(event) => setPlayerColor(event.target.value)}
             >
@@ -138,21 +138,21 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
             </select>
           </label>
 
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             {pieceType === "road" ? "Edge" : "Node"} Index
             <input
-              className="mt-1"
+              className="mt-ui-1"
               type="range"
               min="0"
               max={targetMax}
               value={Math.min(targetIndex, targetMax)}
               onChange={(event) => setTargetIndex(Number(event.target.value))}
             />
-            <span className="text-sm text-slate-200">{Math.min(targetIndex, targetMax)}</span>
+            <span className="type-body-small text-ink-console-primary">{Math.min(targetIndex, targetMax)}</span>
           </label>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-ui-3 md:grid-cols-2">
           {createRangeField("Drop Distance", tuning.dropDistance, (value) =>
             setTuning((prev) => ({ ...prev, dropDistance: value })), 0, 1.5, 0.05
           )}
@@ -213,50 +213,50 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
           {createRangeField("Road Squish Y", tuning.roadSquishScaleY, (value) =>
             setTuning((prev) => ({ ...prev, roadSquishScaleY: value })), 0.85, 1.1, 0.01
           )}
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Ease Drop
             <input
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+              className="mt-ui-1 settlex-dev-console-field"
               value={tuning.easeDrop}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeDrop: event.target.value }))}
             />
           </label>
-        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+        <label className="type-label flex flex-col text-ink-console-muted">
           Ease Dust
           <input
-            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+            className="mt-ui-1 settlex-dev-console-field"
             value={tuning.easeDust}
             onChange={(event) => setTuning((prev) => ({ ...prev, easeDust: event.target.value }))}
           />
         </label>
-        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+        <label className="type-label flex flex-col text-ink-console-muted">
           Ease Shadow
           <input
-            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+            className="mt-ui-1 settlex-dev-console-field"
             value={tuning.shadowEase}
             onChange={(event) => setTuning((prev) => ({ ...prev, shadowEase: event.target.value }))}
           />
         </label>
-        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+        <label className="type-label flex flex-col text-ink-console-muted">
           Ease Squish
           <input
-            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+            className="mt-ui-1 settlex-dev-console-field"
               value={tuning.easeSquish}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeSquish: event.target.value }))}
             />
           </label>
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Ease Settle (Settlement)
             <input
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+              className="mt-ui-1 settlex-dev-console-field"
               value={tuning.easeSettle}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeSettle: event.target.value }))}
             />
           </label>
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Ease Settle (Road)
             <input
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+              className="mt-ui-1 settlex-dev-console-field"
               value={tuning.easeSettleRoad}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeSettleRoad: event.target.value }))}
             />
@@ -264,11 +264,11 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
         </div>
       </section>
 
-      <section className="relative flex min-w-0 flex-col gap-4 rounded-lg border border-slate-700 bg-slate-800/40 p-6">
+      <section className="relative flex min-w-0 flex-col gap-ui-4 settlex-dev-console-panel p-ui-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-200">Preview</h2>
+          <h2 className="type-section text-ink-console-primary">Preview</h2>
           <button
-            className="rounded bg-lime-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-lime-400"
+            className="settlex-dev-console-button"
             onClick={handleReplay}
             type="button"
           >
@@ -278,7 +278,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
         <div className="relative flex items-center justify-center">
           <div
             ref={boardRef}
-            className="relative rounded-xl border border-dashed border-slate-600 bg-slate-900/60"
+            className="relative rounded-control border border-dashed border-console-edge bg-surface-console-inset"
             style={boardStyle}
           />
         </div>

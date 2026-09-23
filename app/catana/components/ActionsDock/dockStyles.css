@@ -9,19 +9,19 @@
     align-items: flex-end;
     height: 58px;
     display: flex;
-    padding: 10px;
-    padding-bottom: 16px;
-    gap: 24px;
+    padding: var(--settlex-ui-space-2-5);
+    padding-bottom: var(--settlex-ui-space-4);
+    gap: var(--settlex-ui-space-6);
     /* background-color: rgba(0, 0, 0, 0.92); */
     box-sizing: content-box;
-    border-radius: 12px;
+    border-radius: var(--settlex-ui-radius-control);
     transform-origin: center bottom;
   }
 
   .dock-card {
     appearance: none;
     -webkit-appearance: none;
-    border-radius: 12px;
+    border-radius: var(--settlex-ui-radius-control);
      /* border: solid 1px rgba(255, 255, 255, 0.7); */
     /* background-color: #262626; */
 
@@ -43,14 +43,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: var(--settlex-ui-space-1);
   }
   
   .dock-dot {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
-    background-color: #fff;
+    border-radius: var(--settlex-ui-radius-pill);
+    background-color: var(--settlex-ui-surface-selected);
   }
   
 .card {

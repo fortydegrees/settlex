@@ -40,11 +40,11 @@ function ChallengeSeat({ label, seat, fallback }) {
   const displayName = sanitizeDisplayName(seat?.name) || fallback;
 
   return (
-    <div className="settlex-ui-inset min-w-0 px-4 py-3">
+    <div className="settlex-ui-inset min-w-0 px-ui-4 py-ui-3">
       <div className="settlex-ui-label">
         {label}
       </div>
-      <div className="mt-1 break-words text-base font-semibold text-slate-900">
+      <div className="mt-ui-1 break-words type-action text-ink-primary">
         {displayName}
       </div>
     </div>
@@ -58,7 +58,7 @@ function ChallengeStatusBanner({ error, expiresAt, nowMs }) {
         variant="danger"
         title="Challenge error"
         body={error}
-        className="mt-4"
+        className="mt-ui-4"
       />
     );
   }
@@ -68,7 +68,7 @@ function ChallengeStatusBanner({ error, expiresAt, nowMs }) {
       variant="neutral"
       title="Private invite"
       body={<ChallengeExpiryCountdown expiresAt={expiresAt} nowMs={nowMs} />}
-      className="mt-4"
+      className="mt-ui-4"
     />
   );
 }
@@ -127,33 +127,33 @@ export function PendingFriendChallengeScreen({
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden text-slate-900"
+      className="relative min-h-screen overflow-hidden text-ink-primary"
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
       <div
         className="absolute inset-0 opacity-35 blur-[1px]"
         aria-hidden="true"
       >
-        <div className="absolute left-1/2 top-1/2 aspect-square w-[min(82vw,42rem)] -translate-x-1/2 -translate-y-1/2 rounded-full border-[2rem] border-white/28 shadow-[0_0_0_1px_rgba(255,255,255,0.36),0_28px_90px_-40px_rgba(15,23,42,0.62)]" />
-        <div className="absolute left-1/2 top-1/2 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[2.2rem] border border-white/38 bg-white/18" />
+        <div className="absolute left-1/2 top-1/2 aspect-square w-[min(82vw,42rem)] -translate-x-1/2 -translate-y-1/2 rounded-pill border-[length:var(--settlex-ui-space-8)] border-decoration-ring shadow-[0_0_0_1px_rgba(255,255,255,0.36),0_28px_90px_-40px_rgba(15,23,42,0.62)]" />
+        <div className="absolute left-1/2 top-1/2 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-panel border border-decoration-edge bg-decoration-fill" />
       </div>
-      <div className="absolute inset-0 bg-white/[0.08] backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-decoration-wash backdrop-blur-[2px]" />
 
-      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl items-center px-4 py-8">
-        <Panel bodyClassName="p-5 sm:p-6" className="w-full">
-          <div className="grid gap-6 md:grid-cols-[1fr_1.05fr] md:items-center">
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl items-center px-ui-4 py-ui-8">
+        <Panel bodyClassName="p-ui-5 sm:p-ui-6" className="w-full">
+          <div className="grid gap-ui-6 md:grid-cols-[1fr_1.05fr] md:items-center">
             <div>
               <div className="settlex-ui-label">
                 Settlehex game
               </div>
-              <h1 className="mt-2 text-2xl font-semibold leading-tight text-slate-900 sm:text-[1.75rem]">
+              <h1 className="mt-ui-2 type-title text-ink-primary">
                 {title}
               </h1>
-              <p className="mt-3 max-w-md text-sm font-semibold leading-relaxed text-slate-700">
+              <p className="mt-ui-3 max-w-md type-body-small text-ink-secondary">
                 {subtitle}
               </p>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="mt-ui-5 grid gap-ui-3 sm:grid-cols-2">
                 <ChallengeSeat
                   label="Host"
                   seat={inviterSeat}
@@ -177,12 +177,12 @@ export function PendingFriendChallengeScreen({
               ) : null}
             </div>
 
-            <div className="min-w-0 border-t border-blue-100 pt-6 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+            <div className="min-w-0 border-t border-edge-subtle pt-ui-6 md:border-l md:border-t-0 md:pl-ui-6 md:pt-0">
               {isInviter ? (
-                <div className="grid gap-4">
-                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                <div className="grid gap-ui-4">
+                  <label className="grid gap-ui-2 type-label text-ink-secondary">
                     Invite link
-                    <div className="flex gap-2">
+                    <div className="flex gap-ui-2">
                       <input
                         readOnly
                         value={absoluteChallengeUrl}
@@ -212,7 +212,7 @@ export function PendingFriendChallengeScreen({
                   </Button>
                 </div>
               ) : isExpired ? (
-                <div className="grid gap-3">
+                <div className="grid gap-ui-3">
                   <Button
                     type="button"
                     size="lg"
@@ -233,8 +233,8 @@ export function PendingFriendChallengeScreen({
                   </Button>
                 </div>
               ) : (
-                <form className="grid gap-4" onSubmit={onJoin}>
-                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                <form className="grid gap-ui-4" onSubmit={onJoin}>
+                  <label className="grid gap-ui-2 type-label text-ink-secondary">
                     Username
                     <Input
                       value={playerName}
@@ -245,7 +245,7 @@ export function PendingFriendChallengeScreen({
                       pattern="[A-Za-z0-9_]+"
                       title="Use English letters, numbers, and underscores only."
                       required
-                      className="text-center text-base font-semibold"
+                      className="text-center"
                     />
                   </label>
                   <Button
@@ -268,7 +268,7 @@ export function PendingFriendChallengeScreen({
                 </form>
               )}
 
-              <div className="mt-4 break-all border-t border-blue-100 pt-4 text-center text-xs font-medium text-slate-600">
+              <div className="mt-ui-4 break-all border-t border-edge-subtle pt-ui-4 text-center type-caption text-ink-secondary">
                 Game {matchID}
               </div>
             </div>

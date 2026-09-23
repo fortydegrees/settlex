@@ -64,14 +64,14 @@ function RevealComparisonLane({
   onComplete
 }) {
   return (
-    <section className="relative min-h-[560px] overflow-hidden rounded-lg border border-slate-700 bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.24),_rgba(37,99,235,0.14)_42%,_rgba(15,23,42,0.82)_100%)]">
+    <section className="relative min-h-[560px] overflow-hidden rounded-panel border border-console-edge bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.24),_rgba(37,99,235,0.14)_42%,_rgba(15,23,42,0.82)_100%)]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.16),_rgba(255,255,255,0)_72%)]" />
 
       <div className="absolute left-4 top-4 z-10">
-        <div className="text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
+        <div className="type-caption uppercase text-ink-console-muted">
           {title}
         </div>
-        <div className="mt-1 max-w-[16rem] text-sm font-medium text-slate-200/85">
+        <div className="type-body-small mt-ui-1 max-w-[16rem] text-ink-console-secondary">
           {description}
         </div>
       </div>
@@ -81,12 +81,12 @@ function RevealComparisonLane({
         className="absolute left-1/2 top-[22%] h-20 w-20 -translate-x-1/2 rounded-full border border-dashed border-white/30 bg-white/5"
       />
 
-      <div className="pointer-events-none absolute left-1/2 top-[22%] -translate-x-1/2 translate-y-24 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/45">
+      <div className="type-caption pointer-events-none absolute left-1/2 top-[22%] -translate-x-1/2 translate-y-24 uppercase text-ink-console-muted">
         Reveal Apex
       </div>
 
-      <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 items-end gap-4">
-        <div className="rounded-lg bg-blue-200/45 p-4 shadow-xl ring-1 ring-white/30 backdrop-blur-sm">
+      <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 items-end gap-ui-4">
+        <div className="rounded-lg bg-blue-200/45 p-ui-4 shadow-xl ring-1 ring-white/30 backdrop-blur-sm">
           <Dock>
             <div ref={dockCardRef}>
               <DockCard
@@ -186,12 +186,12 @@ export function DevCardRevealLab({ emitCue }) {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <section className="flex flex-col gap-4 rounded-lg border border-slate-700 bg-slate-800/60 p-4">
-        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+    <div className="grid gap-ui-6 lg:grid-cols-[320px_1fr]">
+      <section className="flex flex-col gap-ui-4 settlex-dev-console-panel p-ui-4">
+        <label className="type-label flex flex-col text-ink-console-muted">
           Card Type
           <select
-            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+            className="mt-ui-1 settlex-dev-console-field"
             value={selectedCardType}
             onChange={(event) => {
               setSelectedCardType(event.target.value);
@@ -206,13 +206,13 @@ export function DevCardRevealLab({ emitCue }) {
           </select>
         </label>
 
-        <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-3 text-sm text-slate-300">
+        <div className="settlex-dev-console-inset p-ui-3 type-body-small text-ink-console-secondary">
           Replay both reveal variants together to compare the older midpoint
           turn against the newer 3D GSAP flip.
         </div>
 
         <button
-          className="rounded bg-lime-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-lime-400"
+          className="settlex-dev-console-button"
           type="button"
           onClick={replayBoth}
         >
@@ -220,8 +220,8 @@ export function DevCardRevealLab({ emitCue }) {
         </button>
       </section>
 
-      <section className="relative overflow-hidden rounded-lg border border-slate-700 bg-slate-900/45 p-4">
-        <div className="grid gap-4 lg:grid-cols-2">
+      <section className="relative overflow-hidden settlex-dev-console-panel p-ui-4">
+        <div className="grid gap-ui-4 lg:grid-cols-2">
           <RevealComparisonLane
             title="Old Midpoint"
             description="Single visible card turns edge-on, swaps art, then turns back."
@@ -277,7 +277,7 @@ export function DevCardRevealLab({ emitCue }) {
           />
         </div>
 
-        <div className="pointer-events-none absolute bottom-3 right-4 text-[11px] font-medium uppercase tracking-[0.24em] text-white/40">
+        <div className="pointer-events-none absolute bottom-3 right-4 type-caption uppercase text-ink-console-muted">
           Dev Card Motion Comparison
         </div>
       </section>

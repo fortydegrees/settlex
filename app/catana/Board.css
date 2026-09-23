@@ -138,9 +138,6 @@
   }
 }
 
-.hover-opacity:hover {
-  background-color: lightyellow; /* Adjust the desired opacity value on hover */
-}
 
 @keyframes flash {
 	0% {transform:translateX(0%);}

@@ -20,7 +20,7 @@ const stepCallbacks = {
 
 const stepControlsStage = (props) => (
   <div className="mx-auto flex min-h-screen w-full max-w-md items-center px-4 py-8">
-    <section className="w-full rounded-[1.4rem] border border-white/60 bg-blue-100/90 p-5 shadow-2xl ring-1 ring-white/40 backdrop-blur-2xl">
+    <section className="settlex-ui-pane w-full p-ui-5">
       <ReplayStepControls
         {...props}
         turnStarts={replayTimeline.turnStarts}
@@ -83,6 +83,10 @@ export const ReplayUnavailable = {
   ),
 };
 
+export const ActiveMatch = {
+  render: () => <ReplayStatusPage matchID="storybook-replay" status="active" />,
+};
+
 export const ReplayScoreTimeline = {
   args: {
     currentEventIndex: 2,
@@ -92,7 +96,7 @@ export const ReplayScoreTimeline = {
   },
   render: (args) => (
     <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-8">
-      <section className="w-full rounded-[1.4rem] border border-white/60 bg-blue-100/90 p-5 shadow-2xl ring-1 ring-white/40 backdrop-blur-2xl">
+      <section className="settlex-ui-pane w-full p-ui-5">
         <ReplayScoreChart
           {...args}
           players={replayTimeline.players}

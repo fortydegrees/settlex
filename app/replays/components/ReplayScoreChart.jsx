@@ -15,8 +15,6 @@ import { getPlayerNameHex } from "../../catana/theme/playerColors";
 const FALLBACK_COLORS = ["#f59e0b", "#3b82f6", "#22c55e", "#a855f7"];
 const PLOT_LEFT = 30;
 const PLOT_RIGHT = 8;
-const CHART_CLIP_HATCH =
-  "repeating-linear-gradient(135deg, rgba(148,163,184,0.26) 0 6px, rgba(148,163,184,0.1) 6px 12px)";
 
 const getPlayerChartColor = (player, playerIndex) =>
   getPlayerNameHex(player.color) ??
@@ -156,7 +154,7 @@ export function ReplayScoreChart({
   return (
     <section aria-label="Victory points over the replay">
       <div
-        className="relative h-40 w-full cursor-pointer"
+        className="settlex-ui-focus relative h-40 w-full cursor-pointer"
         data-replay-score-chart="true"
         role="slider"
         tabIndex={0}
@@ -178,7 +176,7 @@ export function ReplayScoreChart({
             accessibilityLayer
           >
             <CartesianGrid
-              stroke="rgba(100,116,139,0.2)"
+              stroke="var(--settlex-ui-chart-grid)"
               vertical={false}
             />
             <XAxis
@@ -190,7 +188,7 @@ export function ReplayScoreChart({
               tickFormatter={(eventIndex) =>
                 `T${turnByEventIndex[eventIndex] ?? ""}`
               }
-              tick={{ fill: "#64748b", fontSize: 10, fontWeight: 700 }}
+              tick={{ className: "settlex-ui-chart-tick" }}
               axisLine={false}
               tickLine={false}
             />
@@ -199,14 +197,14 @@ export function ReplayScoreChart({
               allowDataOverflow
               domain={[0, maxScore]}
               ticks={yTicks}
-              tick={{ fill: "#64748b", fontSize: 10, fontWeight: 700 }}
+              tick={{ className: "settlex-ui-chart-tick" }}
               axisLine={false}
               tickLine={false}
               width={30}
             />
             <ReferenceLine
               x={currentEventIndex}
-              stroke="#f59e0b"
+              stroke="var(--settlex-ui-chart-cursor)"
               strokeWidth={2}
             />
             {players.map((player, playerIndex) => (
@@ -227,26 +225,25 @@ export function ReplayScoreChart({
         </ResponsiveContainer>
         <div
           data-replay-chart-clip="true"
-          className="pointer-events-none absolute inset-y-0"
+          className="settlex-ui-replay-future pointer-events-none absolute inset-y-0"
           style={{
             ...getReplayChartClipStyle({ currentEventIndex, eventCount }),
-            backgroundImage: CHART_CLIP_HATCH,
           }}
           aria-hidden="true"
         />
       </div>
 
-      <ul className="mt-2.5 space-y-0.5 text-xs text-slate-800">
+      <ul className="mt-ui-2.5 space-y-ui-0.5 type-caption text-ink-secondary">
         {players.map((player, playerIndex) => {
           const isPerspective =
             (player.id ?? null) === (perspectiveId ?? null);
           return (
             <li
               key={player.id}
-              className="flex min-h-[1.375rem] min-w-0 items-center gap-2"
+              className="flex min-h-[1.375rem] min-w-0 items-center gap-ui-2"
             >
               <span
-                className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                className="h-2.5 w-2.5 shrink-0 rounded-pill"
                 style={{
                   backgroundColor: getPlayerChartColor(player, playerIndex),
                 }}
@@ -254,12 +251,12 @@ export function ReplayScoreChart({
               />
               <span
                 className={`min-w-0 flex-1 truncate ${
-                  isPerspective ? "font-extrabold" : "font-semibold"
+                  isPerspective ? "type-action-small text-ink-primary" : "type-label"
                 }`}
               >
                 {player.name}
               </span>
-              <span className="shrink-0 font-extrabold tabular-nums text-slate-900">
+              <span className="shrink-0 type-action-small tabular-nums text-ink-primary">
                 {currentScores[player.id] ?? "—"} VP
               </span>
             </li>

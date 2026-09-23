@@ -8,6 +8,7 @@ import {
 import { Button } from "../../ui/Button";
 import { Dialog } from "../../ui/Dialog";
 import { Input } from "../../ui/Input";
+import { EmailAuthModeToggle } from "../../account/EmailAuthModeToggle";
 import { Popover } from "../../ui/Popover";
 import { SwatchPicker } from "../../ui/SwatchPicker";
 import {
@@ -17,6 +18,7 @@ import {
 } from "../theme/playerColors";
 import { EmojiPicker } from "./IdentityModal";
 import { buildSuggestedGuestIdentity } from "./playerIdentityStorage";
+import styles from "./AccountEntryModal.module.css";
 
 const AUTH_PROVIDER_LABELS = Object.freeze({
   discord: "Continue with Discord",
@@ -25,15 +27,14 @@ const AUTH_PROVIDER_LABELS = Object.freeze({
 
 const MODE_COPY = Object.freeze({
   "auth-first": {
-    title: "Sign in or play as guest",
-    description:
-      "Use email or a provider to keep your profile across devices, or keep playing as a guest.",
+    title: "Sign in",
+    description: null,
     submit: "Sign in",
   },
   "save-profile": {
     title: "Save this profile",
     description:
-      "Attach email or a provider so this username and profile are recoverable later.",
+      "Keep your username and progress across devices.",
     submit: "Sign in",
   },
 });
@@ -54,37 +55,9 @@ function getPlayCopy(intent, name) {
 
 function ProviderIcon({ provider }) {
   return (
-    <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center text-sm font-bold text-slate-600">
+    <span aria-hidden="true" className="grid h-5 w-5 shrink-0 place-items-center type-action-small text-ink-secondary">
       {provider === "discord" ? "D" : "G"}
     </span>
-  );
-}
-
-function AuthModeToggle({ value, onChange }) {
-  return (
-    <div
-      className="settlex-ui-inset grid grid-cols-2 gap-1 p-1"
-      aria-label="Email auth mode"
-    >
-      {[
-        ["signIn", "Sign in"],
-        ["signUp", "Create account"],
-      ].map(([mode, label]) => (
-        <button
-          key={mode}
-          type="button"
-          aria-pressed={value === mode}
-          className={`settlex-ui-focus min-h-[2.75rem] rounded-lg px-3 py-2 text-sm font-semibold ${
-            value === mode
-              ? "bg-white text-slate-900 shadow-sm"
-              : "text-slate-600 hover:bg-white/48 hover:text-slate-900"
-          }`}
-          onClick={() => onChange(mode)}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
   );
 }
 
@@ -146,16 +119,16 @@ function AccountAuthForm({
   };
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-ui-4">
       {authOptions.emailPassword ? (
-        <form className="grid gap-3" onSubmit={handleEmailSubmit}>
-          <AuthModeToggle value={authMode} onChange={setAuthMode} />
+        <form className="grid gap-ui-3" onSubmit={handleEmailSubmit}>
+          <EmailAuthModeToggle value={authMode} onChange={setAuthMode} />
 
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
+          <label className="grid gap-ui-2 type-label text-ink-secondary">
             Email
             <span className="relative">
               <EnvelopeIcon
-                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted"
                 aria-hidden="true"
               />
               <Input
@@ -164,16 +137,16 @@ function AccountAuthForm({
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@example.com"
-                className="pl-10"
+                className="pl-ui-10"
               />
             </span>
           </label>
 
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
+          <label className="grid gap-ui-2 type-label text-ink-secondary">
             Password
             <span className="relative">
               <LockClosedIcon
-                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted"
                 aria-hidden="true"
               />
               <Input
@@ -182,7 +155,7 @@ function AccountAuthForm({
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="Password"
-                className="pl-10"
+                className="pl-ui-10"
               />
             </span>
           </label>
@@ -203,7 +176,7 @@ function AccountAuthForm({
       ) : null}
 
       {socialProviders.length > 0 ? (
-        <div className="grid gap-2 border-t border-slate-200/80 pt-4">
+        <div className="grid gap-ui-2 border-t border-edge-subtle pt-ui-4">
           {socialProviders.map((provider) => (
             <Button
               key={provider}
@@ -237,7 +210,7 @@ function AccountAuthForm({
       ) : null}
 
       {status ? (
-        <div role="status" className="settlex-ui-inset px-4 py-3 text-sm text-slate-700">
+        <div role="status" className="settlex-ui-inset px-ui-4 py-ui-3 type-body-small text-ink-secondary">
           {status}
         </div>
       ) : null}
@@ -260,30 +233,30 @@ function AvatarPreview({
       open={isPickerOpen}
       onOpenChange={onAvatarPreviewClick}
       triggerAriaLabel="Change avatar and color"
-      triggerClassName="settlex-ui-focus group mx-auto flex flex-col items-center rounded-lg"
+      triggerClassName="settlex-ui-focus group mx-auto flex flex-col items-center rounded-small"
       triggerContent={
         <>
           <span
-            className={`relative grid h-20 w-20 place-items-center overflow-hidden rounded-[1.45rem] bg-gradient-to-br ${colorOption.gradient} text-5xl shadow-[0_20px_42px_-28px_rgba(15,23,42,0.68)] ring-4 ring-white/80 transition group-hover:-translate-y-0.5 motion-reduce:transition-none`}
+            className={`settlex-ui-avatar-preview relative grid h-20 w-20 place-items-center overflow-hidden rounded-panel bg-gradient-to-br ${colorOption.gradient} transition group-hover:-translate-y-0.5 motion-reduce:transition-none`}
           >
             {emoji}
             <span
               aria-hidden="true"
-              className="absolute bottom-2 h-2 w-10 rounded-full bg-black/18 blur-[1px]"
+              className="settlex-ui-avatar-preview-shadow absolute bottom-2 h-2 w-10 rounded-pill blur-[1px]"
             />
           </span>
-          <span className="mt-2 text-xs font-medium text-slate-600">
+          <span className="mt-ui-2 type-caption text-ink-secondary">
             Optional
           </span>
         </>
       }
-      className="w-[19rem] p-4"
+      className="w-[19rem] p-ui-4"
     >
       <div className="text-center">
-        <div className="text-sm font-semibold text-slate-700">
+        <div className="type-action-small text-ink-secondary">
           Avatar and color
         </div>
-        <div className="mt-3">
+        <div className="mt-ui-3">
           <EmojiPicker
             value={emoji}
             onChange={onEmojiChange}
@@ -294,7 +267,7 @@ function AvatarPreview({
           options={PLAYER_COLOR_PICKER_OPTIONS}
           value={color}
           onChange={onColorChange}
-          className="mt-3 gap-x-4 gap-y-4"
+          className="mt-ui-3 gap-x-ui-4 gap-y-ui-4"
         />
       </div>
     </Popover>
@@ -350,20 +323,20 @@ function PlayUsernameForm({
   };
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit}>
-      <div className="grid gap-3 text-center">
+    <form className="grid gap-ui-4" onSubmit={handleSubmit}>
+      <div className="grid gap-ui-3 text-center">
         <AvatarPreview
           emoji={emoji}
           color={color}
           onEmojiChange={setEmoji}
           onColorChange={(nextColor) => setColor(normalizePlayerColorId(nextColor))}
         />
-        <p className="mx-auto max-w-[19rem] text-sm leading-relaxed text-slate-600">
+        <p className="mx-auto max-w-[19rem] type-body-small text-ink-secondary">
           This creates a guest profile on this browser. You can save it later.
         </p>
       </div>
 
-      <label className="grid gap-2 text-sm font-medium text-slate-700">
+      <label className="grid gap-ui-2 type-label text-ink-secondary">
         Username
         <Input
           ref={inputRef}
@@ -373,14 +346,14 @@ function PlayUsernameForm({
           placeholder="Username"
           autoComplete="nickname"
           maxLength={28}
-          className="text-center text-base font-semibold"
+          className="text-center"
         />
       </label>
 
       <Button
         type="submit"
         size="lg"
-        className="w-full whitespace-normal break-words"
+        className={`w-full whitespace-normal break-words ${styles.playAction}`}
         disabled={!trimmedName || submitting}
       >
         {submitting ? "Creating profile..." : copy.cta}
@@ -398,7 +371,7 @@ function PlayUsernameForm({
       </Button>
 
       {status ? (
-        <div role="alert" className="rounded-[var(--settlex-ui-radius-control)] bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-200/70">
+        <div role="alert" className="settlex-ui-inline-error px-ui-4 py-ui-3 type-body-small">
           {status}
         </div>
       ) : null}
@@ -440,7 +413,7 @@ export function AccountEntryModal({
       title={copy.title}
       description={copy.description}
       maxWidthClassName="max-w-md"
-      className="p-5 sm:p-6"
+      className={`p-ui-5 sm:p-ui-6 ${styles.entry}`}
     >
       {isPlayMode ? (
         <PlayUsernameForm

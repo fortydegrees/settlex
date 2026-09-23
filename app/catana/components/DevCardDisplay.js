@@ -85,11 +85,11 @@ const DevCardTooltipContent = ({ item }) => {
 
   return (
     <span className="block max-w-[12rem] text-center">
-      <span className="block text-sm font-bold text-slate-800">
+      <span className="block type-hud-tooltip-title text-ink-primary">
         {text.name}
         {countLabel}
       </span>
-      <span className="mt-0.5 block text-xs font-medium leading-snug text-slate-600">
+      <span className="mt-ui-0.5 block type-hud-tooltip-body text-ink-secondary">
         {text.description}
       </span>
     </span>
@@ -119,7 +119,7 @@ const DevCardDockItem = ({
   return (
     <Tooltip
       label={<DevCardTooltipContent item={item} />}
-      className="devcard-tooltip px-2.5 py-1.5"
+      className="devcard-tooltip px-ui-2.5 py-ui-1.5"
       side="top"
       sideOffset={14}
       triggerAriaLabel={`${text.name}. ${text.description}`}

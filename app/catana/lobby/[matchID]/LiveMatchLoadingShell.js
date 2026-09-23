@@ -6,14 +6,14 @@ export function LiveMatchLoadingShell() {
     "div",
     {
       className:
-        "min-h-screen overflow-hidden text-slate-900",
+        "min-h-screen overflow-hidden text-ink-primary",
       style: { background: CATANA_TABLE_BACKGROUND },
     },
     h(
       "div",
       {
         className:
-          "mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4 py-8",
+          "mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-ui-4 py-ui-8",
       },
       h(
         "div",
@@ -39,27 +39,27 @@ export function LiveMatchLoadingShell() {
             "div",
             {
               className:
-                "rounded-2xl bg-white/78 px-6 py-4 text-center shadow-xl ring-1 ring-white/80 backdrop-blur-sm",
+                "settlex-ui-pane px-ui-6 py-ui-4 text-center",
             },
             h(
               "div",
               {
                 className:
-                  "text-xs font-semibold uppercase tracking-[0.24em] text-slate-600",
+                  "type-action-small text-ink-secondary",
               },
               "Live Match"
             ),
             h(
               "div",
               {
-                className: "mt-2 text-xl font-bold text-slate-900",
+                className: "mt-ui-2 type-title text-ink-primary",
               },
               "Connecting to live match"
             ),
             h(
               "div",
               {
-                className: "mt-2 text-sm text-slate-700",
+                className: "mt-ui-2 type-body-small text-ink-secondary",
               },
               "Syncing the board and player seat."
             )

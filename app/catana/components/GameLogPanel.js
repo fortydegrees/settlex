@@ -9,9 +9,9 @@ const GameLogPanelComponent = ({
   themeId,
   activeEntryKey = null,
   onEntrySelect,
-  headerClassName = "bg-white/50 border-b border-white/40 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700",
-  rootClassName = "fixed left-4 bottom-4 w-72 md:w-80 xl:w-96 z-30 pointer-events-auto",
-  panelClassName = "flex h-[20vh] xl:h-[24vh] flex-col rounded-lg bg-white/25 shadow-lg ring-1 ring-white/30 backdrop-blur-sm select-text overflow-hidden",
+  headerClassName = "settlex-ui-feed-header px-ui-4 py-ui-2 type-action-small text-ink-secondary",
+  rootClassName = "fixed left-ui-4 bottom-ui-4 w-72 md:w-80 xl:w-96 z-30 pointer-events-auto",
+  panelClassName = "settlex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col select-text overflow-hidden",
 }) => {
   const formattedEntries = useMemo(
     () =>
@@ -45,19 +45,19 @@ const GameLogPanelComponent = ({
       headerClassName={headerClassName}
       autoScrollIdleMs={12000}
       trackPanelInteraction
-      contentWrapClassName="min-h-0 flex-1 pb-4"
+      contentWrapClassName="min-h-0 flex-1 pb-ui-4"
       scrollClassName="feed-panel-scroll game-log-scroll"
       fadeClassName="feed-panel-fade game-log-fade"
       entryClassName="feed-panel-entry"
-      contentClassName="space-y-2 text-sm pt-2"
+      contentClassName="space-y-ui-2 type-body-small pt-ui-2"
       renderRow={(entry) => (
         <div
-          className={`game-log-entry break-words rounded-lg px-1.5 py-0.5 text-sm leading-5 ${
+          className={`game-log-entry settlex-ui-focus break-words rounded-small px-ui-1.5 py-ui-0.5 type-body-small ${
             entry.isActive
-              ? "bg-amber-100/75 ring-1 ring-amber-300/70"
+              ? "settlex-ui-feed-current"
               : ""
           } ${
-            entry.isServerEntry ? "italic text-slate-600" : "text-slate-800"
+            entry.isServerEntry ? "italic text-ink-secondary" : "text-ink-primary"
           }`}
           role={onEntrySelect ? "button" : undefined}
           tabIndex={onEntrySelect ? 0 : undefined}

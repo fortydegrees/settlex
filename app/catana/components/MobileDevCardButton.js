@@ -52,7 +52,7 @@ export function MobileDevCardButton({
   const previewSrc = previewType ? DEV_CARD_SVGS[previewType] : DEV_CARD_BACK_SVG;
   const showStack = totalCount > 1;
   const buttonClassName = [
-    "relative flex h-[3.6rem] w-[2.85rem] shrink-0 items-center justify-center overflow-visible rounded-[0.85rem] bg-transparent p-0 transition duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 active:scale-[0.98]",
+    "mobile-devcard-button relative flex h-[3.6rem] w-[2.85rem] shrink-0 items-center justify-center overflow-visible rounded-control bg-transparent p-ui-0 transition duration-150 ease-out active:scale-[0.98]",
     isOpen ? "" : "hover:brightness-105",
   ]
     .filter(Boolean)
@@ -74,11 +74,11 @@ export function MobileDevCardButton({
     >
       {isOpen ? (
         <span
-          className="relative flex h-[2.65rem] w-[1.75rem] items-center justify-center rounded-[0.7rem] border border-white/[0.24] bg-white/[0.1] shadow-[0_10px_18px_-14px_rgba(15,23,42,0.78)]"
+          className="mobile-devcard-collapse-handle relative flex h-[2.65rem] w-[1.75rem] items-center justify-center rounded-small border"
           data-mobile-devcard-collapse-handle="true"
         >
           <span
-            className="h-2.5 w-2.5 rotate-45 border-l-2 border-t-2 border-white/82"
+            className="mobile-devcard-collapse-chevron h-2.5 w-2.5 rotate-45 border-l-2 border-t-2"
             aria-hidden="true"
           />
         </span>

@@ -34,7 +34,7 @@ export function Popover({
         >
           <BasePopover.Popup
             className={cn(
-              "settlex-ui-pane settlex-ui-popover settlex-ui-overlay-motion w-max p-3",
+              "settlex-ui-pane settlex-ui-popover settlex-ui-overlay-motion w-max p-ui-3",
               className
             )}
           >

@@ -40,7 +40,7 @@ export function StatusBanner({
   return createPortal(
     <div
       className={cn(
-        "pointer-events-none fixed inset-x-0 top-3 settlex-ui-layer-status flex justify-center px-4",
+        "pointer-events-none fixed inset-x-0 top-3 settlex-ui-layer-status flex justify-center px-ui-4",
         overlayClassName
       )}
     >

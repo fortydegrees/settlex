@@ -19,7 +19,7 @@ export function SwatchPicker({
   return (
     <div
       className={cn(
-        "mx-auto grid w-fit grid-cols-4 place-items-center gap-x-6 gap-y-5 py-3",
+        "mx-auto grid w-fit grid-cols-4 place-items-center gap-x-ui-6 gap-y-ui-5 py-ui-3",
         className
       )}
     >
@@ -34,11 +34,8 @@ export function SwatchPicker({
             aria-pressed={isActive}
             onClick={() => onChange(option.id)}
             className={cn(
-              "settlex-ui-focus h-11 w-11 cursor-pointer rounded-full transition-transform duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none",
+              "settlex-ui-swatch settlex-ui-focus h-11 w-11 cursor-pointer rounded-pill transition-transform duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none",
               option.swatch,
-              isActive
-                ? "ring-2 ring-slate-700 ring-offset-2 ring-offset-white"
-                : "ring-1 ring-white/60 hover:ring-slate-500",
               swatchClassName
             )}
           />

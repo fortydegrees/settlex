@@ -95,6 +95,19 @@ export const RecentMatchHistory = {
   },
 };
 
+export const LongHistoryLabels = {
+  args: {
+    profile: {
+      ...historyProfile,
+      account: { ...account, currentUsername: "TheLongestHarbourTraderName28" },
+      recentMatches: recentMatches.map((match) => ({
+        ...match,
+        gameName: "SettleHex — a long archived match label for a crowded history row",
+      })),
+    },
+  },
+};
+
 export const Mobile = {
   args: {
     profile: historyProfile,

@@ -30,7 +30,7 @@ export function AlertDialog({
   return (
     <BaseAlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseAlertDialog.Portal>
-        <BaseAlertDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_32%),rgba(15,23,42,0.42)] backdrop-blur-sm" />
+        <BaseAlertDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 backdrop-blur-sm" />
         <BaseAlertDialog.Viewport className="settlex-ui-dialog-viewport settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
           <BaseAlertDialog.Popup
             className={cn(
@@ -38,17 +38,17 @@ export function AlertDialog({
               className
             )}
           >
-            <BaseAlertDialog.Title className="text-2xl font-bold text-slate-900">
+            <BaseAlertDialog.Title className="type-title text-ink-primary">
               {title}
             </BaseAlertDialog.Title>
 
             {description ? (
-              <BaseAlertDialog.Description className="mt-2 text-sm leading-6 text-slate-600">
+              <BaseAlertDialog.Description className="mt-ui-2 type-body-small text-ink-secondary">
                 {description}
               </BaseAlertDialog.Description>
             ) : null}
 
-            <div className="mt-6 flex flex-wrap justify-end gap-2">
+            <div className="mt-ui-6 flex flex-wrap justify-end gap-ui-2">
               <Button variant="ghost" onClick={handleCancel}>
                 {cancelLabel}
               </Button>

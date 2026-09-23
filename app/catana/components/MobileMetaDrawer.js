@@ -4,13 +4,13 @@ import { Drawer } from "vaul";
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
 const drawerContentClassName =
-  "fixed inset-x-0 bottom-0 z-[65] mx-auto flex h-[min(52vh,26rem)] min-h-[15rem] w-full max-w-[28rem] flex-col overflow-hidden rounded-t-[1.55rem] border border-white/[0.56] bg-[linear-gradient(180deg,rgba(219,234,254,0.94),rgba(191,219,254,0.86))] shadow-[0_-28px_70px_-38px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.46)] ring-1 ring-white/35 backdrop-blur-2xl outline-none select-text";
+  "settlex-ui-pane settlex-ui-feed-drawer fixed inset-x-0 bottom-0 z-[65] mx-auto flex h-[min(52vh,26rem)] min-h-[15rem] w-full max-w-[28rem] flex-col overflow-hidden outline-none select-text";
 const drawerTabClassName =
-  "catana-mobile-feed-control rounded-[0.95rem] border px-3 py-2 text-sm font-extrabold transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transition-none";
+  "settlex-ui-feed-tab settlex-ui-focus min-h-[2.75rem] rounded-pill px-ui-3 py-ui-2 type-action-small transition-colors duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none";
 const drawerTabActiveClassName =
-  "border-white/[0.78] bg-white/[0.72] text-slate-800 shadow-[0_10px_24px_-20px_rgba(15,23,42,0.66),inset_0_1px_0_rgba(255,255,255,0.58)]";
+  "settlex-ui-feed-tab-selected";
 const drawerTabIdleClassName =
-  "border-white/[0.38] bg-white/[0.26] text-slate-700 hover:border-white/[0.58] hover:bg-white/[0.4]";
+  "text-ink-secondary hover:bg-surface-hover";
 
 export function MobileMetaDrawer({
   activePanel,
@@ -53,9 +53,9 @@ export function MobileMetaDrawer({
           data-meta-mobile-drawer="true"
           data-allow-interaction="true"
         >
-          <div className="border-b border-white/30 bg-white/[0.18] px-3 pb-2.5 pt-2.5">
+          <div className="settlex-ui-feed-header px-ui-3 pb-ui-2.5 pt-ui-2.5">
             <div className="relative flex items-center justify-center">
-              <Drawer.Handle className="!my-0 !h-1.5 !w-14 !rounded-full !bg-slate-500/36" />
+              <Drawer.Handle className="settlex-ui-feed-handle !my-ui-0 !h-1.5 !w-14" />
             </div>
 
             <Drawer.Title className="sr-only">Game feed</Drawer.Title>
@@ -67,7 +67,7 @@ export function MobileMetaDrawer({
             </Drawer.Description>
 
             <div
-              className="mt-2 grid grid-cols-2 gap-2"
+              className="mt-ui-2 grid grid-cols-2 gap-ui-2"
               role="tablist"
               aria-label="Game feed tabs"
             >

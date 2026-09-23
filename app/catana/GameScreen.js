@@ -64,6 +64,7 @@ import { GlassPillButton } from "./components/GlassPillButton";
 import { LeftMetaRail } from "./components/LeftMetaRail";
 import { StatusBanner } from "./components/StatusBanner";
 import { IdlePromptModal } from "./components/IdlePromptModal";
+import { GameRulesDialog, GameSettingsDialog } from "./components/GameInfoDialogs";
 import { GameOverOverlay } from "./components/GameOverOverlay";
 import {
   runGameOverLobbyAction,
@@ -103,8 +104,6 @@ import {
 import {
   DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
 } from "./utils/robberPlacementMotion";
-import { Button } from "../ui/Button";
-import { Dialog } from "../ui/Dialog";
 import { IconButton } from "../ui/IconButton";
 import { Tooltip, TooltipProvider } from "../ui/Tooltip";
 import { Howler } from "howler";
@@ -181,7 +180,7 @@ const loadDeferredGameSurfaces = () =>
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const topUtilityButtonClassName =
-  "h-10 w-10 border-white/[0.32] bg-white/[0.24] text-slate-700/90 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.38)] backdrop-blur-md hover:border-white/[0.42] hover:bg-white/[0.34] hover:text-slate-800 sm:h-12 sm:w-12 [&_svg]:opacity-[0.85] hover:[&_svg]:opacity-100";
+  "settlex-ui-game-utility h-10 w-10 sm:h-12 sm:w-12";
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
@@ -1719,13 +1718,13 @@ export function GameScreen(bgioProps) {
 
       <TooltipProvider delay={0}>
         <div
-          className="fixed left-3 top-3 z-40 hidden sm:flex items-center gap-1.5 sm:left-4 sm:top-4 sm:gap-2"
+          className="fixed left-3 top-3 z-40 hidden sm:flex items-center gap-ui-1.5 sm:left-4 sm:top-4 sm:gap-ui-2"
           data-game-utility-cluster="true"
           data-allow-interaction="true"
         >
           <Tooltip label={isMuted ? "Unmute audio" : "Mute audio"}>
             <IconButton
-              variant="secondary"
+              variant="utility"
               size="md"
               onClick={handleToggleMute}
               className={topUtilityButtonClassName}
@@ -1741,7 +1740,7 @@ export function GameScreen(bgioProps) {
           </Tooltip>
           <Tooltip label="Game settings">
             <IconButton
-              variant="secondary"
+              variant="utility"
               size="md"
               onClick={() => setShowGameSettings(true)}
               className={`hidden sm:inline-flex ${topUtilityButtonClassName}`}
@@ -1753,7 +1752,7 @@ export function GameScreen(bgioProps) {
           </Tooltip>
           <Tooltip label="Game rules">
             <IconButton
-              variant="secondary"
+              variant="utility"
               size="md"
               onClick={() => setShowGameRules(true)}
               className={`hidden sm:inline-flex ${topUtilityButtonClassName}`}
@@ -1828,83 +1827,19 @@ export function GameScreen(bgioProps) {
         isPhoneLayout={isPhoneLayout}
       />
 
-      <Dialog
+      <GameSettingsDialog
         open={showGameSettings}
         onOpenChange={setShowGameSettings}
-        title="Game settings"
-        description="Local controls for this match."
-        maxWidthClassName="max-w-sm"
-        actions={
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => setShowGameSettings(false)}
-            data-allow-interaction="true"
-          >
-            Close
-          </Button>
-        }
-      >
-        <div className="space-y-3 text-sm text-slate-700">
-          <div className="rounded-[1rem] border border-white/55 bg-white/36 px-4 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <span className="font-semibold text-slate-900">Audio</span>
-              <span className="font-semibold text-slate-700">
-                {isMuted ? "Muted" : "On"}
-              </span>
-            </div>
-            <Button
-              variant={isMuted ? "primary" : "secondary"}
-              size="sm"
-              className="mt-3 w-full"
-              onClick={handleToggleMute}
-              data-allow-interaction="true"
-            >
-              {isMuted ? "Unmute audio" : "Mute audio"}
-            </Button>
-          </div>
-          <div className="rounded-[1rem] border border-white/55 bg-white/36 px-4 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <span className="font-semibold text-slate-900">Theme</span>
-              <span className="font-semibold capitalize text-slate-700">
-                {themeId}
-              </span>
-            </div>
-          </div>
-        </div>
-      </Dialog>
+        isMuted={isMuted}
+        onToggleMute={handleToggleMute}
+        themeId={themeId}
+      />
 
-      <Dialog
+      <GameRulesDialog
         open={showGameRules}
         onOpenChange={setShowGameRules}
-        title="Game rules"
-        description="Current match configuration."
-        maxWidthClassName="max-w-md"
-        actions={
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => setShowGameRules(false)}
-            data-allow-interaction="true"
-          >
-            Close
-          </Button>
-        }
-      >
-        <dl className="grid gap-2 text-sm">
-          {gameRulesRows.map(([label, value]) => (
-            <div
-              key={label}
-              className="flex items-center justify-between gap-4 rounded-[1rem] border border-white/55 bg-white/36 px-4 py-3"
-            >
-              <dt className="font-semibold text-slate-900">{label}</dt>
-              <dd className="text-right font-semibold text-slate-700">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </Dialog>
+        rows={gameRulesRows}
+      />
 
       {!isReplay && (
         <GameEffects
@@ -2013,7 +1948,7 @@ TODO: accurately colour it
 
       {bottomOpponent ? (
         <div
-          className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center px-4"
+          className="pointer-events-none fixed inset-x-0 bottom-ui-4 z-30 flex justify-center px-ui-4"
           data-neutral-viewer-bottom-player="true"
           style={{
             transform: playfieldCenterOffsetX
@@ -2114,8 +2049,8 @@ TODO: accurately colour it
         <div
           className={
             isPhoneLayout
-              ? "pointer-events-none fixed inset-x-0 top-11 z-30 flex flex-col items-center gap-2 px-14"
-              : "pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-3 px-4"
+              ? "pointer-events-none fixed inset-x-0 top-11 z-30 flex flex-col items-center gap-ui-2 px-ui-14"
+              : "pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-ui-3 px-ui-4"
           }
           style={{
             transform: playfieldCenterOffsetX
@@ -2124,7 +2059,7 @@ TODO: accurately colour it
           }}
         >
           {displayedOpponents.length > 0 && (
-            <div className="pointer-events-auto flex items-start gap-4">
+            <div className="pointer-events-auto flex items-start gap-ui-4">
               {displayedOpponents.map((opponent) => (
                 <OpponentPlayerBox
                   key={opponent.id}

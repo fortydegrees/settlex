@@ -12,11 +12,11 @@ import { Popover } from "../../ui/Popover";
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
 const menuItemClassName =
-  "flex w-full items-center justify-between gap-3 rounded-[1rem] border px-3 py-2.5 text-left text-sm font-bold transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.985] motion-reduce:transition-none";
+  "settlex-ui-game-menu-item settlex-ui-focus flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control border px-ui-3 py-ui-2.5 text-left type-action-small transition-colors duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none";
 const neutralItemClassName =
-  "border-white/[0.42] bg-white/[0.34] text-slate-800 hover:border-white/[0.62] hover:bg-white/[0.5]";
+  "settlex-ui-game-menu-item-neutral";
 const dangerItemClassName =
-  "border-rose-200/70 bg-rose-100/62 text-rose-700 hover:border-rose-200/90 hover:bg-rose-100/82";
+  "settlex-ui-game-menu-item-danger";
 const iconClassName = "h-5 w-5 shrink-0";
 
 function MobileMatchMenuItem({
@@ -38,12 +38,12 @@ function MobileMatchMenuItem({
       aria-label={ariaLabel}
       data-allow-interaction="true"
     >
-      <span className="flex min-w-0 items-center gap-2.5">
+      <span className="flex min-w-0 items-center gap-ui-2.5">
         {icon}
         <span className="truncate">{label}</span>
       </span>
       {detail ? (
-        <span className="shrink-0 text-xs font-extrabold uppercase tracking-[0.12em] text-slate-500">
+        <span className="shrink-0 type-caption text-ink-muted">
           {detail}
         </span>
       ) : null}
@@ -97,14 +97,14 @@ export function MobileMatchMenu({
       align="end"
       sideOffset={8}
       triggerAriaLabel="Open match menu"
-      triggerClassName="flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.44] bg-white/[0.3] text-slate-800 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.48),inset_0_1px_0_rgba(255,255,255,0.28)] backdrop-blur-xl transition-[background-color,border-color,transform] duration-150 ease-out active:scale-[0.96] hover:border-white/[0.62] hover:bg-white/[0.44] motion-reduce:transition-none"
+      triggerClassName="settlex-ui-button settlex-ui-button-secondary settlex-ui-button-utility settlex-ui-game-utility h-11 w-11"
       triggerContent={
         <EllipsisHorizontalIcon className="h-5 w-5" aria-hidden="true" />
       }
-      className="w-[15.75rem] border-white/[0.48] bg-[linear-gradient(180deg,rgba(219,234,254,0.94),rgba(191,219,254,0.84))] p-2.5 shadow-[0_24px_58px_-34px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.38)]"
+      className="!w-[15.75rem]"
     >
       <div
-        className="flex flex-col gap-1.5"
+        className="flex flex-col gap-ui-1.5"
         data-mobile-match-menu="true"
         data-allow-interaction="true"
       >
@@ -135,7 +135,7 @@ export function MobileMatchMenu({
         />
         {canResign ? (
           <>
-            <div className="my-1 h-px bg-white/[0.34]" aria-hidden="true" />
+            <div className="my-ui-1 h-px bg-edge-subtle" aria-hidden="true" />
             <MobileMatchMenuItem
               icon={<FlagIcon className={iconClassName} aria-hidden="true" />}
               label="Resign match"

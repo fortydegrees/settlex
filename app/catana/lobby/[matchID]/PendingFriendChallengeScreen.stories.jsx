@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { expect, fn, waitFor, within } from "@storybook/test";
 import { PendingFriendChallengeScreen } from "./PendingFriendChallengeScreen";
 
@@ -39,6 +40,10 @@ const meta = {
   title: "Composed Surfaces/Lobby & Matchmaking/Friend Challenge",
   component: PendingFriendChallengeScreen,
   parameters: { layout: "fullscreen" },
+  render: function Render(args) {
+    const [playerName, setPlayerName] = useState(args.playerName);
+    return <PendingFriendChallengeScreen {...args} playerName={playerName} setPlayerName={name => { setPlayerName(name); args.setPlayerName(name); }} />;
+  },
   args: baseArgs,
   argTypes: {
     mode: { control: false },
@@ -55,6 +60,17 @@ const meta = {
 export default meta;
 
 export const Inviter = { args: { mode: "inviter" } };
+
+export const LongNamesAndLink = {
+  args: {
+    mode: "inviter",
+    matchID: "friend-duel-with-a-long-generated-identifier",
+    challengeUrl: "/g/friend-duel-with-a-long-generated-identifier",
+    match: { players: [{ id: 0, name: "TheLongestHarbourTraderName28" }, { id: 1, name: null }] },
+  },
+};
+
+export const CancelPending = { args: { mode: "inviter", cancelPending: true } };
 
 const expectStableCountdown = async (canvasElement) => {
   const screen = within(canvasElement.ownerDocument.body);

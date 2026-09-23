@@ -1,0 +1,23 @@
+/* Ambient copy sits directly on the title screen's blue field. Keep the
+   play controls and the still-provisional wordmark on their own materials. */
+.support,
+.quiet,
+.nav,
+.release {
+  text-shadow: 0 1px 2px rgb(17 69 112 / .55);
+}
+
+.support,
+.nav { color: var(--settlex-ui-text-home-chrome); }
+.quiet { color: var(--settlex-ui-text-home-chrome-muted); }
+
+.link {
+  color: inherit;
+  transition: color var(--settlex-ui-duration-fast) ease-out;
+}
+.link:hover { color: var(--settlex-ui-text-hud-on-glass); }
+
+/* MetaDisclosure supplies its generic ink utilities, so its homepage trigger
+   alone needs to override those without changing the shared component. */
+.release { color: var(--settlex-ui-text-home-chrome-muted) !important; }
+.release:hover { color: var(--settlex-ui-text-hud-on-glass) !important; }

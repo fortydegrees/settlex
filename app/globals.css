@@ -2,42 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --settlex-ui-radius-small: .5rem;
-  --settlex-ui-radius-panel: 1.375rem;
-  --settlex-ui-radius-control: .875rem;
-  --settlex-ui-radius-pill: 999px;
-  --settlex-ui-space-1: .25rem;
-  --settlex-ui-space-2: .5rem;
-  --settlex-ui-space-3: .75rem;
-  --settlex-ui-space-4: 1rem;
-  --settlex-ui-space-6: 1.5rem;
-  --settlex-ui-space-8: 2rem;
-  --settlex-ui-space-12: 3rem;
-  --settlex-ui-text-primary: #0f172a;
-  --settlex-ui-text-secondary: #475569;
-  --settlex-ui-text-muted: #64748b;
-  --settlex-ui-surface-pane: rgb(255 255 255 / .88);
-  --settlex-ui-surface-hud: rgb(255 255 255 / .58);
-  --settlex-ui-surface-solid: #f8fbff;
-  --settlex-ui-surface-inset: rgb(219 234 254 / .45);
-  --settlex-ui-focus: #2563eb;
-  --settlex-ui-duration-fast: 140ms;
-  --settlex-ui-duration-dialog: 220ms;
-  --settlex-ui-duration-exit: 160ms;
-  --settlex-ui-ease-standard: cubic-bezier(.2, .9, .24, 1);
-  --settlex-ui-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --settlex-ui-z-dialog: 80;
-  --settlex-ui-z-popover: 90;
-  --settlex-ui-z-tooltip: 100;
-  --settlex-ui-z-status: 120;
-  --settlex-ui-shadow-panel:
-    inset 0 1px 0 #fff,
-    0 16px 40px -24px rgb(30 64 175 / .28),
-    0 2px 6px rgb(30 64 175 / .06);
+@font-face {
+  font-family: 'SettleHex Display';
+  src: url('/fonts/settlehex-display/SettleHexJStudy-Black.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
 }
 
+/* Foundation variables and complete type roles are emitted from ui/theme.cjs.
+   No global h1/p/body reset: legacy game geometry keeps its existing metrics. */
+
 @layer components {
+  /* Dev-only dark consoles keep their controls legible beside effect stages. */
+  .settlex-dev-console { background: var(--settlex-ui-surface-console); color: var(--settlex-ui-text-console-primary); }
+  .settlex-dev-console-panel { border: 1px solid var(--settlex-ui-border-console); border-radius: var(--settlex-ui-radius-panel); background: var(--settlex-ui-surface-console-panel); }
+  .settlex-dev-console-inset { border: 1px solid var(--settlex-ui-border-console); border-radius: var(--settlex-ui-radius-small); background: var(--settlex-ui-surface-console-inset); }
+  .settlex-dev-console-field { @apply type-body-small; min-height: 36px; border: 1px solid var(--settlex-ui-border-console); border-radius: var(--settlex-ui-radius-small); background: var(--settlex-ui-surface-console); padding: var(--settlex-ui-space-1) var(--settlex-ui-space-2); color: var(--settlex-ui-text-console-primary); }
+  .settlex-dev-console-field:focus-visible,
+  .settlex-dev-console-file:focus-visible,
+  .settlex-dev-console-button:focus-visible { outline: 2px solid var(--settlex-ui-focus); outline-offset: 2px; }
+  .settlex-dev-console-field:disabled,
+  .settlex-dev-console-file:disabled,
+  .settlex-dev-console-button:disabled { cursor: not-allowed; opacity: .5; }
+  .settlex-dev-console-file { @apply type-body-small; color: var(--settlex-ui-text-console-secondary); }
+  .settlex-dev-console-file::file-selector-button { @apply type-action-small; margin-right: var(--settlex-ui-space-3); border: 0; border-radius: var(--settlex-ui-radius-small); background: var(--settlex-ui-border-console); padding: var(--settlex-ui-space-1) var(--settlex-ui-space-3); color: var(--settlex-ui-text-console-primary); cursor: pointer; }
+  .settlex-dev-console-button { @apply type-action-small; border-radius: var(--settlex-ui-radius-control); background: var(--settlex-ui-surface-positive); padding: var(--settlex-ui-space-2) var(--settlex-ui-space-4); color: var(--settlex-ui-text-primary); transition: filter var(--settlex-ui-duration-fast); }
+  .settlex-dev-console-button:hover:not(:disabled) { filter: brightness(1.08); }
+  .settlex-dev-console-button-secondary { background: var(--settlex-ui-border-console); color: var(--settlex-ui-text-console-primary); }
+  .settlex-ui-dialog-backdrop { background: radial-gradient(circle at top, rgb(255 255 255 / .12), transparent 32%), rgb(15 23 42 / .42); }
+  .settlex-ui-button-sheen { background: linear-gradient(120deg, transparent 20%, rgb(255 255 255 / .24) 45%, transparent 70%); }
+  .settlex-ui-swatch { box-shadow: 0 0 0 1px rgb(255 255 255 / .6); }
+  .settlex-ui-swatch:hover { box-shadow: 0 0 0 1px var(--settlex-ui-text-muted); }
+  .settlex-ui-swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--settlex-ui-surface-selected), 0 0 0 4px var(--settlex-ui-text-secondary); }
+  .settlex-ui-banner-neutral { background: var(--settlex-ui-feedback-neutral-face); border-color: var(--settlex-ui-feedback-neutral-border); --banner-marker: var(--settlex-ui-feedback-neutral-marker); --banner-title: var(--settlex-ui-text-primary); --banner-body: var(--settlex-ui-text-secondary); }
+  .settlex-ui-banner-danger { background: var(--settlex-ui-feedback-danger-face); border-color: var(--settlex-ui-feedback-danger-border); --banner-marker: var(--settlex-ui-feedback-danger-marker); --banner-title: var(--settlex-ui-feedback-danger-ink); --banner-body: var(--settlex-ui-feedback-danger-body); }
+  .settlex-ui-banner-marker { background: var(--banner-marker); }
+  .settlex-ui-banner-title { color: var(--banner-title); }
+  .settlex-ui-banner-body { color: var(--banner-body); }
+  .settlex-ui-inline-error { border-radius: var(--settlex-ui-radius-control); background: var(--settlex-ui-feedback-danger-face); color: var(--settlex-ui-feedback-danger-ink); box-shadow: 0 0 0 1px var(--settlex-ui-feedback-danger-border); }
+  .settlex-ui-avatar-preview { font-size: var(--settlex-ui-avatar-preview-glyph); box-shadow: 0 20px 42px -28px rgb(15 23 42 / .68); outline: 4px solid rgb(255 255 255 / .8); }
+  .settlex-ui-avatar-preview-shadow { background: rgb(0 0 0 / .18); }
+  /* Emoji are graphics, not prose roles; these recipes own their glyph sizing. */
+  .settlex-ui-avatar { font-size: var(--settlex-ui-avatar-small-glyph); line-height: 1; box-shadow: 0 0 0 1px rgb(255 255 255 / .7), 0 10px 20px -16px rgb(15 23 42 / .7); }
+  .settlex-ui-avatar-header { font-size: var(--settlex-ui-avatar-header-glyph); }
+  .settlex-ui-avatar-profile { font-size: var(--settlex-ui-avatar-profile-glyph); line-height: 1; box-shadow: 0 0 0 1px rgb(255 255 255 / .7); }
+  @media (min-width: 640px) { .settlex-ui-avatar-header { font-size: var(--settlex-ui-avatar-header-wide-glyph); } }
+  .settlex-ui-emoji-option { font-size: var(--settlex-ui-emoji-option-glyph); line-height: 1; }
+  .settlex-ui-celebration-glyph { font-size: var(--settlex-ui-celebration-glyph); line-height: 1.111111; }
+  .settlex-ui-metadata-dot { border-radius: var(--settlex-ui-radius-pill); background: var(--metadata-dot-face); box-shadow: 0 0 0 3px var(--metadata-dot-halo); }
+  .settlex-ui-metadata-dot-positive { --metadata-dot-face: #84cc16; --metadata-dot-halo: rgb(132 204 22 / .16); }
+  .settlex-ui-metadata-dot-beta { --metadata-dot-face: #fbbf24; --metadata-dot-halo: rgb(251 191 36 / .16); }
+  .settlex-ui-winner { background: var(--settlex-ui-surface-winner); box-shadow: 0 0 0 1px var(--settlex-ui-border-winner); }
+  .settlex-ui-checkbox { border-radius: 4px; border-color: var(--settlex-ui-border-default); accent-color: var(--settlex-ui-text-positive); }
+  /* Replay owns plotted geometry; these recipes own its visual materials. */
+  .settlex-ui-chart-tick { @apply type-chart-tick; fill: var(--settlex-ui-text-muted); }
+  .settlex-ui-replay-future { background-image: repeating-linear-gradient(135deg, rgb(148 163 184 / .26) 0 6px, rgb(148 163 184 / .1) 6px 12px); }
+  .settlex-ui-replay-track { background: rgb(255 255 255 / .5); box-shadow: inset 0 1px 2px rgb(15 23 42 / .14); }
+  .settlex-ui-replay-progress { background: linear-gradient(180deg, #a3e635, #84cc16); }
+  .settlex-ui-replay-marker { background: rgb(255 255 255 / .8); }
+  .settlex-ui-replay-handle { background: rgb(100 116 139 / .36) !important; }
+  .settlex-ui-replay-range::-webkit-slider-runnable-track { background: transparent; }
+  .settlex-ui-replay-range::-moz-range-track { background: transparent; }
+  .settlex-ui-replay-range::-webkit-slider-thumb { appearance: none; width: 17px; height: 17px; border: 3px solid white; border-radius: var(--settlex-ui-radius-pill); background: #fbbf24; cursor: pointer; box-shadow: 0 6px 16px -8px rgb(15 23 42 / .5); }
+  .settlex-ui-replay-range::-moz-range-thumb { width: 17px; height: 17px; border: 3px solid white; border-radius: var(--settlex-ui-radius-pill); background: #fbbf24; cursor: pointer; box-shadow: 0 6px 16px -8px rgb(15 23 42 / .5); }
+  .settlex-ui-emoji-shadow { background: radial-gradient(ellipse, rgb(0 0 0 / .25) 0%, transparent 70%); }
+  .settlex-ui-display,
+  .settlex-ui-wordmark { font-synthesis: none; }
+  .settlex-ui-wordmark { font-family: var(--settlex-ui-font-display); font-weight: 900; font-kerning: none; letter-spacing: normal; white-space: nowrap; }
+  .settlex-ui-wordmark > span > span { display: inline-block; }
+  .settlex-ui-wordmark > span > span:nth-child(1) { margin-right: -.0189333333em; }
+  .settlex-ui-wordmark > span > span:nth-child(2) { margin-right: -.04em; }
+  .settlex-ui-wordmark > span > span:nth-child(3) { margin-right: -.064em; }
+  .settlex-ui-wordmark > span > span:nth-child(4) { margin-right: -.032em; }
+  .settlex-ui-wordmark > span > span:nth-child(5) { margin-right: -.024em; }
+  .settlex-ui-wordmark > span > span:nth-child(6) { margin-right: -.048em; }
+  .settlex-ui-wordmark > span > span:nth-child(7) { margin-right: -.024em; }
+  .settlex-ui-wordmark > span > span:nth-child(8) { margin-right: -.0538em; }
+  .settlex-ui-brand-heading { font-size: 2.3rem; line-height: .9; color: var(--settlex-ui-text-brand); }
+  .settlex-ui-brand-heading-compact { font-size: 2.22rem; }
+  @media (min-width: 640px) { .settlex-ui-brand-heading:not(.settlex-ui-brand-heading-compact) { font-size: 3.18rem; } }
+  .settlex-ui-segment { color: var(--settlex-ui-text-secondary); }
+  .settlex-ui-segment:hover:not(:disabled) { background: var(--settlex-ui-surface-hover); }
+  .settlex-ui-segment[aria-pressed="true"] { background: var(--settlex-ui-surface-selected); color: var(--settlex-ui-text-primary); box-shadow: var(--settlex-ui-shadow-selected); }
+  .settlex-ui-segment:disabled { opacity: .5; cursor: not-allowed; }
   .settlex-ui-pane,
   .settlex-ui-hud {
     border: 1px solid rgb(255 255 255 / .85);
@@ -65,16 +113,37 @@
     background: var(--settlex-ui-surface-inset);
     box-shadow: none;
   }
+  /* Feed content shares product roles while its desktop/mobile hosts own layout. */
+  .settlex-ui-feed-header { border-bottom: 1px solid var(--settlex-ui-decoration-edge); background: var(--settlex-ui-surface-hover); }
+  .settlex-ui-feed-footer { border-top: 1px solid var(--settlex-ui-decoration-ring); background: var(--settlex-ui-decoration-fill); }
+  .settlex-ui-feed-composer { background: var(--settlex-ui-surface-pane); color: var(--settlex-ui-text-primary); box-shadow: inset 0 0 0 1px var(--settlex-ui-border-subtle); transition: background-color var(--settlex-ui-duration-fast) var(--settlex-ui-ease-standard); }
+  .settlex-ui-feed-composer::placeholder { color: var(--settlex-ui-text-muted); }
+  .settlex-ui-feed-composer:disabled { background: var(--settlex-ui-surface-inset); color: var(--settlex-ui-text-muted); cursor: not-allowed; }
+  .settlex-ui-feed-current { background: var(--settlex-ui-surface-winner); box-shadow: 0 0 0 1px var(--settlex-ui-border-winner); }
+  /* Secondary game chrome shares the product rules, with lighter over-board glass. */
+  .settlex-ui-feed-drawer { border-radius: var(--settlex-ui-radius-panel) var(--settlex-ui-radius-panel) 0 0; }
+  .settlex-ui-feed-tab-selected { background: var(--settlex-ui-surface-selected); color: var(--settlex-ui-text-primary); box-shadow: var(--settlex-ui-shadow-selected); }
+  .settlex-ui-feed-handle { border-radius: var(--settlex-ui-radius-pill) !important; background: var(--settlex-ui-text-muted) !important; opacity: .4; }
+  .settlex-ui-feed-minimize:hover,
+  .settlex-ui-feed-frame:hover > .settlex-ui-feed-restore { background: var(--settlex-ui-surface-solid); }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .settlex-ui-feed-minimize:hover,
+    .settlex-ui-feed-frame:hover > .settlex-ui-feed-restore { background: var(--settlex-ui-surface-pane); }
+  }
+  .settlex-ui-feed-frame[role="button"]:focus-visible,
+  .settlex-ui-feed-minimize:focus-visible,
+  .settlex-ui-feed-tab:focus-visible { outline: 2px solid var(--settlex-ui-focus); outline-offset: -3px; }
+  .settlex-ui-game-menu-item { border-color: var(--settlex-ui-border-subtle); }
+  .settlex-ui-game-menu-item-neutral { background: var(--settlex-ui-surface-hover); color: var(--settlex-ui-text-primary); }
+  .settlex-ui-game-menu-item-neutral:hover { background: var(--settlex-ui-surface-selected); }
+  .settlex-ui-game-menu-item-danger { border-color: var(--settlex-ui-feedback-danger-border); background: var(--settlex-ui-feedback-danger-face); color: var(--settlex-ui-text-danger); }
+  .settlex-ui-game-menu-item-danger:hover { border-color: var(--settlex-ui-text-danger); }
   .settlex-ui-label {
-    font-size: .8125rem;
-    line-height: 1.4;
-    font-weight: 500;
+    @apply type-caption;
     color: var(--settlex-ui-text-secondary);
   }
   .settlex-ui-heading {
-    font-size: 1.125rem;
-    line-height: 1.4;
-    font-weight: 600;
+    @apply type-section;
     color: var(--settlex-ui-text-primary);
   }
   .settlex-ui-focus:focus-visible,
@@ -92,38 +161,108 @@
     overflow: hidden;
     cursor: pointer;
     white-space: nowrap;
-    border: 1px solid rgb(255 255 255 / .6);
+    border: 0;
     border-radius: var(--settlex-ui-radius-control);
     font-weight: 600;
-    --settlex-ui-button-base: #cbd5e1;
-    box-shadow: 0 2px 0 var(--settlex-ui-button-base), inset 0 1px 0 rgb(255 255 255 / .4);
+    --settlex-ui-button-face: #fff;
+    --settlex-ui-button-ink: var(--settlex-ui-text-primary);
+    --settlex-ui-button-highlight: rgb(255 255 255 / .95);
+    --settlex-ui-button-base: rgb(9 42 80 / .18);
+    --settlex-ui-button-shadow: rgb(6 34 66 / .45);
+    --settlex-ui-button-icon: rgb(14 26 43 / .07);
+    --settlex-ui-button-marker: color-mix(in srgb, currentColor 80%, transparent);
+    --settlex-ui-button-disabled-face: #e2e8f0;
+    --settlex-ui-button-hover-wash: transparent;
+    background: var(--settlex-ui-button-face);
+    color: var(--settlex-ui-button-ink);
+    box-shadow: inset 0 1px 0 var(--settlex-ui-button-highlight), 0 2px 0 var(--settlex-ui-button-base), 0 8px 16px -12px var(--settlex-ui-button-shadow);
     transition: transform var(--settlex-ui-duration-fast) var(--settlex-ui-ease-standard), box-shadow var(--settlex-ui-duration-fast), background-color var(--settlex-ui-duration-fast);
     transition-timing-function: var(--settlex-ui-ease-standard);
   }
-  .settlex-ui-button-primary { background: #a3e635; color: #25400b; --settlex-ui-button-base: #65a30d; }
-  .settlex-ui-button-secondary { background: #fff; color: #0f172a; }
-  .settlex-ui-button-accent { background: #fbbf24; color: #422006; --settlex-ui-button-base: #d97706; }
-  .settlex-ui-button-danger { background: #be123c; color: #fff; --settlex-ui-button-base: #881337; }
+  .settlex-ui-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--settlex-ui-button-hover-wash);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--settlex-ui-duration-fast) ease-out;
+  }
+  /* One material palette for compact controls and the larger play dock.
+     Geometry and depth belong to the surface; colours do not fork by caller. */
+  .settlex-ui-button-primary {
+    --settlex-ui-button-icon: rgb(255 255 255 / .2);
+    --settlex-ui-button-face: linear-gradient(180deg, #97e026, #71b613);
+    --settlex-ui-button-ink: #fff;
+    --settlex-ui-button-highlight: rgb(255 255 255 / .42);
+    --settlex-ui-button-base: #4f8410;
+    --settlex-ui-button-shadow: rgb(63 105 8 / .6);
+    --settlex-ui-button-hover-wash: rgb(255 255 255 / .1);
+  }
+  .settlex-ui-button-secondary {
+    --settlex-ui-button-face: linear-gradient(180deg, rgb(255 255 255 / .97), rgb(227 240 255 / .95));
+    --settlex-ui-button-ink: #0e1a2b;
+    --settlex-ui-button-hover-wash: rgb(89 152 220 / .12);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    backdrop-filter: blur(28px) saturate(160%);
+  }
+  .settlex-ui-button-accent {
+    --settlex-ui-button-icon: rgb(255 255 255 / .36);
+    --settlex-ui-button-marker: #78350f;
+    --settlex-ui-button-face: linear-gradient(180deg, #fcc433, #eda30f);
+    --settlex-ui-button-ink: #3d2708;
+    --settlex-ui-button-highlight: rgb(255 255 255 / .5);
+    --settlex-ui-button-base: #b4700a;
+    --settlex-ui-button-shadow: rgb(146 64 14 / .5);
+    --settlex-ui-button-hover-wash: rgb(255 255 255 / .1);
+  }
+  .settlex-ui-button-danger {
+    --settlex-ui-button-face: #be123c;
+    --settlex-ui-button-ink: #fff;
+    --settlex-ui-button-base: #881337;
+    --settlex-ui-button-shadow: rgb(136 19 55 / .35);
+  }
+  /* Floating account/utility chrome is optical glass, not a compact play tile. */
+  .settlex-ui-button-utility {
+    --settlex-ui-button-face: var(--settlex-ui-surface-pane);
+    --settlex-ui-button-hover-wash: transparent;
+    border-radius: var(--settlex-ui-radius-pill);
+    box-shadow: inset 0 1px 0 var(--settlex-ui-button-highlight), 0 0 0 1px rgb(255 255 255 / .72), 0 12px 26px -12px var(--settlex-ui-button-shadow);
+  }
+  .settlex-ui-game-utility {
+    --settlex-ui-button-face: var(--settlex-ui-surface-solid);
+    --settlex-ui-button-ink: var(--settlex-ui-text-secondary);
+    box-shadow: var(--settlex-ui-shadow-panel);
+  }
+  .settlex-ui-game-utility:hover:not(:disabled) { --settlex-ui-button-face: var(--settlex-ui-surface-solid); --settlex-ui-button-ink: var(--settlex-ui-text-primary); }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .settlex-ui-game-utility { --settlex-ui-button-face: var(--settlex-ui-surface-hud); }
+    .settlex-ui-game-utility:hover:not(:disabled) { --settlex-ui-button-face: var(--settlex-ui-surface-pane); }
+  }
   .settlex-ui-button-ghost,
   .settlex-ui-button-subtle { color: #334155; border-color: transparent; box-shadow: none; }
   .settlex-ui-button-ghost { background: transparent; }
   .settlex-ui-button-subtle { background: var(--settlex-ui-surface-inset); }
-  .settlex-ui-button:hover:not(:disabled) { transform: translateY(-1px); }
+  .settlex-ui-button:hover:not(:disabled) { transform: none; }
+  .settlex-ui-button:hover:not(:disabled)::before { opacity: 1; }
   .settlex-ui-button-ghost:hover:not(:disabled),
   .settlex-ui-button-subtle:hover:not(:disabled) { background: rgb(219 234 254 / .7); transform: none; }
-  .settlex-ui-button:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+  .settlex-ui-button:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 1px 0 var(--settlex-ui-button-highlight), 0 1px 0 var(--settlex-ui-button-base); }
+  .settlex-ui-button-utility:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 1px 0 var(--settlex-ui-button-highlight), 0 0 0 1px rgb(255 255 255 / .72); }
   .settlex-ui-button-ghost:active:not(:disabled),
-  .settlex-ui-button-subtle:active:not(:disabled) { transform: none; }
-  .settlex-ui-button:disabled { cursor: not-allowed; background: #e2e8f0; color: #64748b; border-color: #cbd5e1; box-shadow: none; }
+  .settlex-ui-button-subtle:active:not(:disabled) { transform: none; box-shadow: none; }
+  .settlex-ui-button:disabled { cursor: not-allowed; background: #e2e8f0; color: #64748b; border-color: #cbd5e1; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .settlex-ui-button:disabled > [aria-hidden="true"] { display: none; }
   .settlex-ui-field {
+    @apply type-body;
     width: 100%;
     min-height: 44px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--settlex-ui-border-default);
     border-radius: var(--settlex-ui-radius-control);
     background: rgb(255 255 255 / .92);
-    padding: .75rem 1rem;
-    font-size: .9375rem;
+    padding: var(--settlex-ui-space-3) var(--settlex-ui-space-4);
     color: var(--settlex-ui-text-primary);
     transition: border-color var(--settlex-ui-duration-fast) var(--settlex-ui-ease-standard);
   }
@@ -131,20 +270,29 @@
   .settlex-ui-field[aria-invalid="true"] { border-color: #be123c; }
   .settlex-ui-field:disabled { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
   .settlex-ui-dialog-viewport { padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
-  .settlex-ui-dialog-surface { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 1.5rem; }
+  .settlex-ui-dialog-surface { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: var(--settlex-ui-space-6); }
   .settlex-ui-popover { max-width: calc(100vw - 2rem); max-height: var(--available-height, calc(100dvh - 2rem)); overflow-y: auto; border-radius: var(--settlex-ui-radius-control); }
   .settlex-ui-tooltip { border-radius: var(--settlex-ui-radius-small); }
   .settlex-ui-overlay-motion { transition: opacity var(--settlex-ui-duration-fast), transform var(--settlex-ui-duration-fast); transition-timing-function: var(--settlex-ui-ease-standard); }
   .settlex-ui-overlay-motion[data-starting-style],
   .settlex-ui-overlay-motion[data-ending-style] { opacity: 0; transform: translateY(4px); }
-  @media (max-width: 480px) { .settlex-ui-dialog-surface { padding: 1.25rem; } }
+  @media (max-width: 480px) { .settlex-ui-dialog-surface { padding: var(--settlex-ui-space-5); } }
   @media (prefers-reduced-transparency: reduce) {
+    .settlex-ui-feed-frame:hover > .settlex-ui-feed-restore,
+    .settlex-ui-feed-minimize:hover,
+    .settlex-ui-game-menu-item-neutral,
+    .settlex-ui-feed-tab:not([aria-selected="true"]):hover { background: var(--settlex-ui-surface-solid); }
+    .settlex-ui-feed-header, .settlex-ui-feed-footer, .settlex-ui-feed-composer, .settlex-ui-feed-composer:disabled { background: var(--settlex-ui-surface-solid); }
     .settlex-ui-pane, .settlex-ui-hud { background: var(--settlex-ui-surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .settlex-ui-button-secondary:not(:disabled) { background: var(--settlex-ui-surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
   }
   @media (prefers-reduced-motion: reduce) {
+    .settlex-ui-feed-composer { transition: none; }
     .settlex-ui-button, .settlex-ui-field, .settlex-ui-overlay-motion { transition: none; }
+    .settlex-ui-button::before { transition: none; }
     .settlex-ui-button:hover:not(:disabled),
     .settlex-ui-button:active:not(:disabled),
+    .settlex-ui-button-utility:active:not(:disabled),
     .settlex-ui-overlay-motion[data-starting-style],
     .settlex-ui-overlay-motion[data-ending-style] { transform: none; }
   }

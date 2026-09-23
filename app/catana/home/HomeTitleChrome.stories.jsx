@@ -49,7 +49,7 @@ function HomeTitleChromeHarness(args) {
         {...args}
         activeActionId={activeActionId}
         isBusy={activeActionId != null}
-        releaseInfo={publicReleaseInfo}
+        releaseInfo={args.releaseInfo ?? publicReleaseInfo}
         releaseOpen={releaseOpen}
         onReleaseOpenChange={setReleaseOpen}
         onSelectMode={(mode) => {
@@ -95,6 +95,13 @@ const meta = {
 export default meta;
 
 export const ClarityIdle = {};
+
+export const OutlinedTextOnly = {
+  args: { logoVariant: "none" },
+  parameters: {
+    docs: { description: { story: "Approved C treatment: white J lettering with a fine blue edge, without a settlement icon. The title moves below the account controls on phones." } },
+  },
+};
 
 export const ClarityFourModesIdle = {
   args: { systemActions: buildSystemActions({ settleGraphV2Enabled: true }) },
@@ -212,5 +219,21 @@ export const Mobile = {
   },
   parameters: {
     viewport: { defaultViewport: "catanaMobile" },
+  },
+};
+
+export const LongReleaseNotes = {
+  args: {
+    releaseOpen: true,
+    releaseInfo: {
+      ...publicReleaseInfo,
+      title: "A longer release title with several improvements across the table",
+      highlights: [
+        "Long release-note copy should wrap comfortably without crowding the metadata marker or the panel edge.",
+        "This is a Storybook layout fixture, not a production release announcement.",
+        "The third highlight keeps the bottom build label reachable on shorter desktop viewports.",
+        "This fourth fixture highlight should stay outside the three-highlight preview.",
+      ],
+    },
   },
 };

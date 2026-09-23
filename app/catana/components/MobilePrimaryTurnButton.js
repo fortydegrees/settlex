@@ -126,11 +126,11 @@ export function MobilePrimaryTurnButton({
     <button
       type="button"
       className={joinClassNames(
-        "mobile-primary-turn-button relative flex h-[3.85rem] w-full touch-none items-center justify-center overflow-hidden rounded-[1.35rem] border px-6 text-[1.28rem] font-black tracking-normal shadow-[0_20px_38px_-24px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.46)] transition-[transform,filter,opacity] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-white/80 active:scale-[0.985] max-[380px]:h-[3.25rem] max-[380px]:text-[1.14rem]",
+        "mobile-primary-turn-button relative flex h-[3.85rem] w-full touch-none items-center justify-center overflow-hidden border px-ui-6 type-hud-primary transition-[transform,filter,opacity] duration-150 ease-out active:scale-[0.985] max-[380px]:h-[3.25rem] max-[380px]:type-hud-primary-compact",
         isRoll &&
-          "mobile-primary-turn-button--roll border-yellow-100/70 bg-[linear-gradient(180deg,rgba(254,230,138,0.98),rgba(250,204,21,0.96))] text-amber-950",
+          "mobile-primary-turn-button--roll",
         isEndTurn &&
-          "mobile-primary-turn-button--end-turn border-lime-100/65 bg-[linear-gradient(180deg,rgba(181,238,82,0.98),rgba(101,198,38,0.96))] text-white",
+          "mobile-primary-turn-button--end-turn",
         !isEnabled && "cursor-not-allowed opacity-55"
       )}
       aria-label={ariaLabel}
@@ -150,13 +150,13 @@ export function MobilePrimaryTurnButton({
       {isEndTurn ? (
         <span
           className={joinClassNames(
-            "pointer-events-none absolute inset-y-0 left-0 w-full origin-left bg-[linear-gradient(90deg,rgba(255,255,255,0.18),rgba(255,255,255,0.56),rgba(236,253,245,0.34))] shadow-[inset_-18px_0_24px_-22px_rgba(255,255,255,0.9)] transition-transform ease-linear",
+            "mobile-primary-turn-button__hold pointer-events-none absolute inset-y-0 left-0 w-full origin-left transition-transform ease-linear",
             isHolding ? "scale-x-100" : "scale-x-0 duration-100"
           )}
           style={isHolding ? { transitionDuration: `${END_TURN_HOLD_MS}ms` } : null}
           aria-hidden="true"
         >
-          <span className="absolute inset-y-0 right-0 w-8 bg-white/42 blur-[10px]" />
+          <span className="mobile-primary-turn-button__hold-glint absolute inset-y-0 right-0 w-8 blur-[10px]" />
         </span>
       ) : null}
       <span className="relative z-10">{label}</span>

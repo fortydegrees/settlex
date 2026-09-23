@@ -4,19 +4,19 @@ import { cn } from "./cn";
 const VARIANT_STYLES = {
   neutral: {
     container:
-      "border-blue-100 bg-blue-50",
+      "settlex-ui-banner-neutral",
     indicator:
-      "bg-sky-600",
-    title: "text-slate-900",
-    body: "text-slate-700",
+      "settlex-ui-banner-marker",
+    title: "settlex-ui-banner-title",
+    body: "settlex-ui-banner-body",
   },
   danger: {
     container:
-      "border-rose-200 bg-rose-50",
+      "settlex-ui-banner-danger",
     indicator:
-      "bg-rose-600",
-    title: "text-rose-700",
-    body: "text-rose-800",
+      "settlex-ui-banner-marker",
+    title: "settlex-ui-banner-title",
+    body: "settlex-ui-banner-body",
   },
 };
 
@@ -33,29 +33,29 @@ export function Banner({
   return (
     <div
       className={cn(
-        `flex flex-col gap-3 rounded-[var(--settlex-ui-radius-control)] border px-4 ${
-          hasBody ? "py-3" : "py-2.5"
-        } text-slate-800 sm:flex-row sm:items-start`,
+        `flex flex-col gap-ui-3 rounded-control border px-ui-4 ${
+          hasBody ? "py-ui-3" : "py-ui-2.5"
+        } text-ink-primary sm:flex-row sm:items-start`,
         styles.container,
         className
       )}
     >
-      <div className="flex min-w-0 flex-1 items-start gap-4">
+      <div className="flex min-w-0 flex-1 items-start gap-ui-4">
         <span
           aria-hidden="true"
-          className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", styles.indicator)}
+          className={cn("mt-ui-1.5 h-2 w-2 shrink-0 rounded-pill", styles.indicator)}
         />
 
         <div className="min-w-0 flex-1">
-          <div className={cn("text-sm font-semibold tracking-[0.01em]", styles.title)}>
+          <div className={cn("type-action-small", styles.title)}>
             {title}
           </div>
-          {hasBody ? <div className={cn("mt-0.5 text-sm", styles.body)}>{body}</div> : null}
+          {hasBody ? <div className={cn("mt-ui-0.5 type-body-small", styles.body)}>{body}</div> : null}
         </div>
       </div>
 
       {actions ? (
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:[&>*]:w-auto [&>*]:w-full">
+        <div className="flex w-full flex-col gap-ui-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:[&>*]:w-auto [&>*]:w-full">
           {actions}
         </div>
       ) : null}
