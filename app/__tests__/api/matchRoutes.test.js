@@ -174,6 +174,169 @@ describe("match API routes", () => {
     expect(createMatchForAccount).toHaveBeenCalledTimes(1);
   });
 
+  it("atomically matches public seekers and returns whichever seat the server assigned", async () => {
+    const {
+      createPublicMatchmakingRoute,
+      createPublicMatchmakingCancelRoute,
+    } = await loadRoute("matchmake", "handler.js");
+    const getSessionAccount = vi.fn().mockResolvedValue({
+      account: {
+        id: "acct_2",
+        currentUsername: "Grace",
+        avatarEmoji: "🐡",
+        avatarColor: "lime",
+      },
+    });
+    const matchmakePublicMatchForAccount = vi.fn().mockResolvedValue({
+      matchID: "waiting_duel",
+      playerID: "1",
+      playerCredentials: "joined-secret",
+      createdNewPublicDuel: false,
+    });
+    const POST = createPublicMatchmakingRoute({
+      getSessionAccount,
+      matchmakePublicMatchForAccount,
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/matches/matchmake", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({
+          modeId: "duel",
+          requestId: "r".repeat(48),
+          requestedCredentials: "c".repeat(48),
+        }),
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(
+      expect.objectContaining({
+        matchID: "waiting_duel",
+        playerID: "1",
+        createdNewPublicDuel: false,
+      })
+    );
+    expect(matchmakePublicMatchForAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        account: expect.objectContaining({ id: "acct_2" }),
+        modeId: "duel",
+        numPlayers: 2,
+        matchmakingRequestId: "r".repeat(48),
+        requestedCredentials: "c".repeat(48),
+      })
+    );
+    expect(response.headers.get("set-cookie")).toContain("joined-secret");
+
+    const missingIdentity = await POST(
+      new Request("http://localhost/api/matches/matchmake", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({ modeId: "duel" }),
+      })
+    );
+    expect(missingIdentity.status).toBe(400);
+
+    expect(createPublicMatchmakingCancelRoute).toBeTypeOf("function");
+    if (typeof createPublicMatchmakingCancelRoute !== "function") return;
+    const cancelPublicMatchmakingForAccount = vi.fn().mockResolvedValue({
+      status: "cancelled",
+      seats: [{ matchID: "waiting_duel", playerID: "0" }],
+    });
+    const DELETE = createPublicMatchmakingCancelRoute({
+      getSessionAccount,
+      cancelPublicMatchmakingForAccount,
+    });
+    const cancelled = await DELETE(
+      new Request("http://localhost/api/matches/matchmake", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({
+          modeId: "duel",
+          requestId: "r".repeat(48),
+          requestedCredentials: "c".repeat(48),
+        }),
+      })
+    );
+
+    expect(cancelled.status).toBe(200);
+    expect(await cancelled.json()).toEqual({
+      status: "cancelled",
+      seats: [{ matchID: "waiting_duel", playerID: "0" }],
+    });
+    expect(cancelPublicMatchmakingForAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        account: expect.objectContaining({ id: "acct_2" }),
+        modeId: "duel",
+        matchmakingRequestId: "r".repeat(48),
+        requestedCredentials: "c".repeat(48),
+      })
+    );
+    expect(cancelled.headers.get("set-cookie")).toContain("Max-Age=0");
+
+    cancelPublicMatchmakingForAccount.mockResolvedValueOnce({
+      status: "match_found",
+      matchID: "filled_duel",
+      playerID: "0",
+      playerCredentials: "c".repeat(48),
+    });
+    const matchFound = await DELETE(
+      new Request("http://localhost/api/matches/matchmake", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({
+          modeId: "duel",
+          requestId: "r".repeat(48),
+          requestedCredentials: "c".repeat(48),
+        }),
+      })
+    );
+    expect(matchFound.status).toBe(200);
+    expect(matchFound.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(matchFound.headers.get("set-cookie")).toContain("c".repeat(48));
+  });
+
+  it("rejects public matchmaking on the generic create endpoint", async () => {
+    const { createMatchCreateRoute } = await loadRoute("create", "handler.js");
+    const createMatchForAccount = vi.fn();
+    const matchmakePublicMatchForAccount = vi.fn();
+    const POST = createMatchCreateRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: { id: "acct_1", currentUsername: "Ada" },
+      }),
+      createMatchForAccount,
+      matchmakePublicMatchForAccount,
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/matches/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({ modeId: "duel", matchmaking: true }),
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(createMatchForAccount).not.toHaveBeenCalled();
+    expect(matchmakePublicMatchForAccount).not.toHaveBeenCalled();
+  });
+
   it("requires a current session for join and leave, and proxies match metadata reads", async () => {
     const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
     const { createMatchLeaveRoute } = await loadRoute("leave", "handler.js");
@@ -354,7 +517,13 @@ describe("match API routes", () => {
         credentials: "secret_join",
       })
     );
-    expect(withMatchMutationLock).toHaveBeenCalledTimes(3);
+    expect(withMatchMutationLock).toHaveBeenCalledTimes(5);
+    expect(withMatchMutationLock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        matchID: "public-matchmaking:duel",
+        run: expect.any(Function),
+      })
+    );
     expect(withMatchMutationLock).toHaveBeenCalledWith(
       expect.objectContaining({
         matchID: "match_1",
@@ -677,13 +846,64 @@ describe("match API routes", () => {
       error: "You are already seated in this match.",
       code: "ACCOUNT_ALREADY_SEATED",
     });
-    expect(order).toEqual(["lock:start", "read", "lock:end"]);
+    expect(order).toEqual([
+      "lock:start",
+      "lock:start",
+      "read",
+      "lock:end",
+      "lock:end",
+    ]);
     expect(reserveAlertsBeforeHumanJoin).not.toHaveBeenCalled();
     expect(joinMatchForAccount).not.toHaveBeenCalled();
     expect(withMatchMutationLock).toHaveBeenCalledWith({
       matchID: "match_1",
       run: expect.any(Function),
     });
+  });
+
+  it("serializes an explicit public join with matchmaking cancellation", async () => {
+    const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
+    const lockKeys = [];
+    const JOIN = createMatchJoinRoute({
+      getSessionAccount: vi.fn().mockResolvedValue({
+        account: { id: "acct_2", currentUsername: "Grace" },
+      }),
+      getLiveMatch: vi.fn().mockResolvedValue({
+        matchID: "public_duel",
+        metadata: { setupData: { modeId: "duel" } },
+        players: {
+          0: {
+            id: 0,
+            name: "Ada",
+            data: { participantType: "human", accountId: "acct_1" },
+          },
+          1: { id: 1, name: "" },
+        },
+      }),
+      joinMatchForAccount: vi.fn().mockResolvedValue({
+        playerID: "1",
+        playerCredentials: "join-secret",
+      }),
+      reserveAlertsBeforeHumanJoin: vi.fn().mockResolvedValue(null),
+      withMatchMutationLock: async ({ matchID, run }) => {
+        lockKeys.push(matchID);
+        return run();
+      },
+    });
+
+    const response = await JOIN(
+      new Request("http://localhost/api/matches/join", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: "settlehex_session=a.b",
+        },
+        body: JSON.stringify({ matchID: "public_duel", playerID: "1" }),
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(lockKeys).toEqual(["public-matchmaking:duel", "public_duel"]);
   });
 
   it("does not allow the public join route into a private bot-intent match", async () => {

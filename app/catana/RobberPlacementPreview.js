@@ -10,9 +10,9 @@ import {
   getRobberPreviewViewportScale,
   getScaledRobberPreviewSize,
   getLockedRobberPreviewPosition,
-  getMagneticRobberTarget,
   getRobberPreviewLeanAngle,
-  isPointOverRobberBoardLand
+  isPointOverRobberBoardLand,
+  resolveRobberPreviewTarget
 } from "./utils/robberPlacementPreviewMotion";
 import { shouldCompleteRobberPlacementHandoff } from "./utils/robberPlacementMotion";
 
@@ -95,6 +95,7 @@ export function RobberPlacementPreview({
   const leanVelocityRef = useRef(0);
   const desiredPositionRef = useRef({ x: null, y: null });
   const activeTargetTileIdRef = useRef(null);
+  const retainedTargetRef = useRef(null);
   const committedTargetTileIdRef = useRef(committedTargetTileId);
   const onCommittedTargetSettledRef = useRef(onCommittedTargetSettled);
   const completedTargetTileIdRef = useRef(null);
@@ -132,17 +133,19 @@ export function RobberPlacementPreview({
       return;
     }
 
-    let selectedTarget = hasValidCenter(hoveredTarget) ? hoveredTarget : null;
-    if (!selectedTarget) {
-      selectedTarget = getMagneticRobberTarget({
-        pointerX: pointerRef.current.x,
-        pointerY: pointerRef.current.y,
-        targets: getViewportTargetCenters(magneticTargets),
-        activeTargetTileId: activeTargetTileIdRef.current
-      });
-    }
+    const selectedTarget = resolveRobberPreviewTarget({
+      committedTargetTileId: committedTargetTileIdRef.current,
+      hoveredTarget: hasValidCenter(hoveredTarget) ? hoveredTarget : null,
+      retainedTarget: retainedTargetRef.current,
+      pointerX: pointerRef.current.x,
+      pointerY: pointerRef.current.y,
+      targets: getViewportTargetCenters(magneticTargets),
+      landTileCenters,
+      activeTargetTileId: activeTargetTileIdRef.current
+    });
 
     activeTargetTileIdRef.current = selectedTarget?.tileId ?? null;
+    retainedTargetRef.current = selectedTarget;
     if (selectedTarget) {
       desiredPositionRef.current =
         getLockedRobberPreviewPosition({
@@ -208,6 +211,7 @@ export function RobberPlacementPreview({
       setHasPosition(false);
       lastLockedTargetTileIdRef.current = null;
       activeTargetTileIdRef.current = null;
+      retainedTargetRef.current = null;
       currentPositionRef.current = { x: null, y: null };
       desiredPositionRef.current = { x: null, y: null };
       velocityRef.current = { x: 0, y: 0 };

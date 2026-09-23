@@ -131,6 +131,36 @@ export function getMagneticRobberTarget({
   return null;
 }
 
+export function resolveRobberPreviewTarget({
+  committedTargetTileId = null,
+  hoveredTarget = null,
+  retainedTarget = null,
+  pointerX,
+  pointerY,
+  targets = [],
+  landTileCenters = [],
+  activeTargetTileId = null
+} = {}) {
+  if (committedTargetTileId != null) {
+    return [hoveredTarget, retainedTarget, ...targets, ...landTileCenters].find(
+      (target) =>
+        hasFiniteCenter(target) &&
+        String(target.tileId) === String(committedTargetTileId)
+    ) ?? null;
+  }
+
+  if (hasFiniteCenter(hoveredTarget)) {
+    return hoveredTarget;
+  }
+
+  return getMagneticRobberTarget({
+    pointerX,
+    pointerY,
+    targets,
+    activeTargetTileId
+  });
+}
+
 export function getRobberPreviewLeanAngle(
   velocityX,
   maxLeanDegrees = ROBBER_PREVIEW_MAX_LEAN_DEGREES

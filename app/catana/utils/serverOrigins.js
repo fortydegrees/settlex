@@ -8,14 +8,14 @@ const getWindowLocation = () => {
 
 export const getLobbyServerOrigin = () => {
   const configuredOrigin = getConfiguredOrigin();
-  if (configuredOrigin) return configuredOrigin;
-
   const location = getWindowLocation();
-  if (!location) return "http://localhost:8080";
 
   if (process.env.NODE_ENV === "production") {
-    return location.origin;
+    if (configuredOrigin) return configuredOrigin;
+    if (location) return location.origin;
   }
+
+  if (!location) return "http://localhost:8080";
 
   return `${location.protocol}//${location.hostname}:8080`;
 };

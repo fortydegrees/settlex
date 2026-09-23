@@ -57,6 +57,66 @@ const runProductionDeployPreflight = (env) => {
   }
 };
 
+const runProductionDeployWithRecordedCommands = () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "settlex-deploy-commands-")
+  );
+  const scriptDir = path.join(tempRoot, "infra", "scripts");
+  const binDir = path.join(tempRoot, "bin");
+  const commandLog = path.join(tempRoot, "commands.log");
+  fs.mkdirSync(scriptDir, { recursive: true });
+  fs.mkdirSync(binDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(scriptDir, "deploy-prod.sh"),
+    readRepoFile("infra", "scripts", "deploy-prod.sh"),
+    { mode: 0o755 }
+  );
+  fs.writeFileSync(
+    path.join(tempRoot, ".env.prod"),
+    `${Object.entries(validDeploymentEnv)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n")}\n`
+  );
+  fs.writeFileSync(
+    path.join(binDir, "docker"),
+    `#!/usr/bin/env bash
+printf 'docker %s\\n' "$*" >> "$SETTLEX_COMMAND_LOG"
+if [[ "$*" == *"exec -T web node -e"* ]]; then
+  exit 1
+fi
+`,
+    { mode: 0o755 }
+  );
+  fs.writeFileSync(
+    path.join(binDir, "curl"),
+    `#!/usr/bin/env bash
+printf 'curl %s\\n' "$*" >> "$SETTLEX_COMMAND_LOG"
+`,
+    { mode: 0o755 }
+  );
+
+  try {
+    const result = spawnSync("bash", ["infra/scripts/deploy-prod.sh"], {
+      cwd: tempRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PATH: `${binDir}${path.delimiter}${process.env.PATH}`,
+        SETTLEX_BUILD_SHA: "test-build",
+        SETTLEX_BUILD_DATE: "2026-08-26T00:00:00Z",
+        SETTLEX_RELEASE_VERSION: "4",
+        SETTLEX_COMMAND_LOG: commandLog,
+      },
+    });
+    const commands = fs.existsSync(commandLog)
+      ? fs.readFileSync(commandLog, "utf8")
+      : "";
+    return { result, commands };
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+};
+
 const expectPatchFilesAvailableBeforeInstall = (dockerfile) => {
   const patchCopyIndex = dockerfile.indexOf("COPY patches patches");
   const installIndex = dockerfile.indexOf("RUN pnpm install --frozen-lockfile");
@@ -191,13 +251,16 @@ describe("deployment file wiring", () => {
     expect(caddyfile).toContain("/socket.io");
   });
 
-  it("never exposes the boardgame.io lobby API publicly", () => {
+  it("routes only custom game-state handlers to the lobby listener", () => {
     const caddyfile = readRepoFile("infra", "Caddyfile");
 
-    // The lobby REST API (create/join/list matches) has no auth of its own;
-    // all lobby operations must flow through the Next API server-side.
+    expect(caddyfile).toContain("@gameState path /timer* /idle*");
+    expect(caddyfile).toContain("reverse_proxy @gameState game:8080");
+    expect(caddyfile.match(/game:8080/g) ?? []).toHaveLength(1);
+
+    // The Boardgame.io lobby REST API (create/join/list matches) has no auth of
+    // its own; only the named custom handlers may reach the lobby listener.
     expect(caddyfile).not.toContain("/games");
-    expect(caddyfile).not.toContain("game:8080");
   });
 
   it("rebuilds app services on the server and migrates after boot", () => {
@@ -216,6 +279,36 @@ describe("deployment file wiring", () => {
     expect(script).toContain('docker compose -f "$COMPOSE_FILE" exec -T web pnpm db:migrate');
     expect(script).toContain("curl --fail");
     expect(script).toContain("https://settlehex.com");
+  });
+
+  it("gracefully reloads Caddy after updating the proxy service", () => {
+    const { result, commands } = runProductionDeployWithRecordedCommands();
+    const proxyStart = commands.indexOf(
+      "docker compose -f infra/docker-compose.prod.yml up -d proxy --remove-orphans"
+    );
+    const caddyReload = commands.indexOf(
+      "docker compose -f infra/docker-compose.prod.yml exec -T -w /etc/caddy proxy caddy reload --config /etc/caddy/Caddyfile"
+    );
+
+    expect(result.status).toBe(0);
+    expect(proxyStart).toBeGreaterThanOrEqual(0);
+    expect(caddyReload).toBeGreaterThan(proxyStart);
+  });
+
+  it("probes every public production listener after reloading Caddy", () => {
+    const { result, commands } = runProductionDeployWithRecordedCommands();
+    const curlCommands = commands
+      .split("\n")
+      .filter((command) => command.startsWith("curl "));
+
+    expect(result.status).toBe(0);
+    expect(curlCommands).toEqual([
+      "curl --fail --silent --show-error --location https://settlehex.com",
+      "curl --fail --silent --show-error --location https://settlehex.com/api/auth/options",
+      "curl --fail --silent --show-error --location https://settlehex.com/socket.io/?EIO=4&transport=polling",
+      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/timer/settlex-route-check",
+      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/idle/settlex-route-check/ack",
+    ]);
   });
 
   it("provides a fast git-based production deploy lane", () => {

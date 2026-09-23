@@ -38,10 +38,12 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
 - **Audio urgency is personal.** Negative/urgent cues fire for the local
   player only (your award claims, your low clock); shared visuals may cover
   both players, but sound about someone else's problem is noise.
-- **Game-start plays at match-found in the lobby, not on GameScreen mount** —
-  the lobby click is a fresh autoplay gesture (works from a background tab),
-  the AudioManager needs a pointerdown unlock the game page won't have on
-  refresh/rejoin, and mount-triggered cues would re-fanfare every reconnect.
+- **Game-start belongs to a fresh board load, not match-found** — the homepage
+  primes the asset and a successful match commit arms a short-lived,
+  match-scoped transition. GameEffects consumes that marker atomically when
+  the real GameScreen mounts. Refresh, reconnect, replay, and direct-link
+  mounts have no marker, so they stay silent. Native autoplay remains
+  best-effort, especially in a background tab, and must never block the board.
 - **Scale-degree vocabulary**: low D = home/ground/time · C♯ (leading tone) =
   act now · F natural (minor third) = misfortune/loss · B♭ = lament · the
   octave = victory · repeated notes = herald (reserved for awards) · a pitch
@@ -60,7 +62,7 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
 
 | Cue key | Asset | Gesture |
 |---|---|---|
-| (lobby match-found hook) | game-start.mp3 | Glasslift: pluck run → bloom → hanging B |
+| game:start | game-start.mp3 | Glasslift: pluck run → bloom → hanging B |
 | turn:start | your-turn.mp3 | D→A quote + low tap, featherweight |
 | turn:end | turn-end.mp3 | "Full Stop": one muted low-D dot, quietest cue |
 | award:claim:road | award-road.mp3 | fanfare walking 5-6-7-8, panning L→R |
@@ -74,9 +76,10 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
 Wiring lives in `app/catana/effects/soundThemes.js` (theme map; unknown cue
 names no-op; `allowWhenHidden` for cues that must reach background tabs) and
 emitters in `GameEffects.js` (bgio-effect listeners and state-transition
-effects), `GameScreen.js` (discard prompt), `components/LowTimerCue.js` (owns
-its own ticker so GameScreen never re-renders), and the lobby match-found hook
-in `home/HomeTableClient.js`. Card transfers support a per-transfer `cueName`
+effects plus fresh-board game-start consumption), `GameScreen.js` (discard
+prompt and live match identity), `components/LowTimerCue.js` (owns its own
+ticker so GameScreen never re-renders), and the transition arming/preload path
+in `home/HomeTableClient.js` and `lobby/useLobbyHomeActions.js`. Card transfers support a per-transfer `cueName`
 override (`effects/cardTransfer.js`) — the route for premixed woosh+glyph
 variants.
 Tests: `__tests__/effects/soundThemes.test.js` (mapping assertions) and

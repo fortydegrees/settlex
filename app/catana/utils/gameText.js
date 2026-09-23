@@ -241,8 +241,15 @@ export function formatLogEntry(entry, playerMap = {}) {
     }
     case "dev:monopolyResult": {
       const amountStolen = Number(data.amountStolen ?? 0);
-      const resourceName = formatResourceName(data.resource);
-      tokens.push(textToken(` claimed ${amountStolen} ${resourceName}`));
+      if (amountStolen > 0) {
+        tokens.push(textToken(" claimed "));
+        tokens.push(
+          ...resourceTokensFromMap({ [data.resource]: amountStolen })
+        );
+      } else {
+        tokens.push(textToken(" claimed no "));
+        tokens.push({ kind: "resource", resource: data.resource });
+      }
       break;
     }
     case "robber:move": {

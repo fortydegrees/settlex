@@ -2,14 +2,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   advanceSearchGeneration,
+  beginSearchCancellation,
   clearScheduledMatchAnnouncement,
   commitSearchSeat,
   createMatchmakingMutationIdentity,
   finishSearchPoll,
   getMatchmakingRescueStage,
+  getSearchCancelPresentation,
   getSearchElapsedSeconds,
   playPufferAfterLeavingSearch,
   reconcileUnknownSearchMutation,
+  resolvePublicMatchmakingCancellation,
+  resolvePublicMatchmakingSeat,
   scheduleMatchAnnouncement,
 } from "../matchmakingRescue.js";
 import * as matchmakingRescue from "../matchmakingRescue.js";
@@ -143,6 +147,75 @@ describe("matchmaking rescue timing", () => {
   });
 });
 
+describe("search cancellation feedback", () => {
+  it("releases the homepage busy action when cancellation begins", () => {
+    const searchCancelPendingRef = { current: false };
+    const events = [];
+
+    expect(
+      beginSearchCancellation({
+        searchCancelPendingRef,
+        onPendingChange: (pending) => events.push(["pending", pending]),
+        clearActiveAction: () => events.push(["active", null]),
+      })
+    ).toBe(true);
+    expect(events).toEqual([
+      ["pending", true],
+      ["active", null],
+    ]);
+    expect(
+      beginSearchCancellation({
+        searchCancelPendingRef,
+        onPendingChange: () => events.push(["duplicate"]),
+      })
+    ).toBe(false);
+  });
+
+  it("reports cancellation while the server resolves the request race", () => {
+    expect(
+      getSearchCancelPresentation({ isSearchCancelPending: true })
+    ).toEqual({ disabled: true, label: "Cancelling..." });
+  });
+
+  it.each(["cancelled", "not_found"])(
+    "treats server-confirmed %s as a released queue request",
+    (status) => {
+      expect(resolvePublicMatchmakingCancellation({ status, seats: [] })).toEqual({
+        released: true,
+        reason: status,
+        matchFound: null,
+      });
+    }
+  );
+
+  it("keeps and enters a filled duel returned by late cancellation", () => {
+    expect(
+      resolvePublicMatchmakingCancellation({
+        status: "match_found",
+        matchID: "filled-duel",
+        playerID: "0",
+        playerCredentials: "seeker-credentials",
+      })
+    ).toEqual({
+      released: false,
+      reason: "match_found",
+      matchFound: {
+        matchID: "filled-duel",
+        playerID: "0",
+        credentials: "seeker-credentials",
+      },
+    });
+  });
+
+  it("keeps queue ownership sticky for an unrecognized cancellation response", () => {
+    expect(resolvePublicMatchmakingCancellation({ status: "pending" })).toEqual({
+      released: false,
+      reason: "uncertain",
+      matchFound: null,
+    });
+  });
+});
+
 describe("Puffer rescue ordering", () => {
   it("awaits leaving the waiting duel before creating Puffer", async () => {
     const sequence = [];
@@ -243,6 +316,22 @@ describe("Puffer rescue ordering", () => {
 });
 
 describe("search lifecycle ownership", () => {
+  it("uses the public-matchmaking seat assigned by the atomic server response", () => {
+    expect(
+      resolvePublicMatchmakingSeat({
+        matchID: "shared-duel",
+        playerID: "1",
+        playerCredentials: "joined-secret",
+        createdNewPublicDuel: false,
+      })
+    ).toEqual({
+      matchID: "shared-duel",
+      playerID: "1",
+      credentials: "joined-secret",
+      createdNewPublicDuel: false,
+    });
+  });
+
   it("creates independent secure request and credential tokens", () => {
     let next = 0;
     const cryptoImpl = {

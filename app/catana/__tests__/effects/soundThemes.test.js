@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME } from "../../effects/soundThemes";
 
 describe("soundThemes", () => {
+  it("routes board-ready game-start through the shared audio manager", () => {
+    expect(DEFAULT_THEME["game:start"]).toEqual({
+      src: "/sounds/game-start.mp3",
+      volume: 0.7,
+      allowWhenHidden: true,
+    });
+  });
+
   it("uses selected dice-roll-test lead-ins with baseline throw clips for dice rolls", () => {
     expect(DEFAULT_THEME["dice:roll"]).toMatchObject({
       leadIn: {

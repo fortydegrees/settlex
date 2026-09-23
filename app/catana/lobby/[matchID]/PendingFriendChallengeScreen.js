@@ -242,6 +242,9 @@ export function PendingFriendChallengeScreen({
                       placeholder="Player"
                       autoComplete="nickname"
                       maxLength={28}
+                      pattern="[A-Za-z0-9_]+"
+                      title="Use English letters, numbers, and underscores only."
+                      required
                       className="text-center text-base font-black"
                     />
                   </label>

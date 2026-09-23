@@ -188,6 +188,9 @@ export function IdentityModal({
           placeholder="Your name"
           autoComplete="nickname"
           maxLength={28}
+          pattern="[A-Za-z0-9_]+"
+          title="Use English letters, numbers, and underscores only."
+          required
           className="mt-6 text-center text-sm font-semibold"
         />
 

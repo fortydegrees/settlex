@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../ui/Button";
 import { MatchAlertControl } from "../matchAlerts/MatchAlertControl";
-import { getMatchmakingRescueStage } from "../matchmaking/matchmakingRescue.js";
+import {
+  getMatchmakingRescueStage,
+  getSearchCancelPresentation,
+} from "../matchmaking/matchmakingRescue.js";
 
 export function SearchingModal({
   searchState,
@@ -12,6 +15,7 @@ export function SearchingModal({
   matchAlertLoading = false,
   matchAlertError = "",
   isPufferTransitionPending,
+  isSearchCancelPending = false,
   onMatchAlertAction,
   onCancel,
   onPlayPuffer
@@ -32,6 +36,11 @@ export function SearchingModal({
       : `0:${String(secs).padStart(2, "0")}`;
   const isStartingPuffer = isPufferTransitionPending && !searchState;
   const isMatchFound = searchState?.phase === "matchFound";
+  const cancelPresentation = getSearchCancelPresentation({
+    isMatchFound,
+    isPufferTransitionPending,
+    isSearchCancelPending,
+  });
   const rescueStage = getMatchmakingRescueStage(searchElapsedSeconds);
   const showRescue =
     Boolean(searchState) &&
@@ -85,10 +94,10 @@ export function SearchingModal({
             variant="secondary"
             size="md"
             className={`${showRescue ? "mt-2" : "mt-4"} w-full`}
-            disabled={isMatchFound || isPufferTransitionPending}
+            disabled={cancelPresentation.disabled}
             onClick={() => void onCancel()}
           >
-            {isMatchFound ? "Loading board..." : "Cancel"}
+            {cancelPresentation.label}
           </Button>
         ) : null}
         {searchState && !isMatchFound && rescueStage === "puffer" ? (

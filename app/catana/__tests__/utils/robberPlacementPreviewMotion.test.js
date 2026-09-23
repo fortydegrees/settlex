@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import * as robberPlacementPreviewMotion from "../../utils/robberPlacementPreviewMotion";
 import {
   getScaledRobberPreviewSize,
   getLockedRobberPreviewPosition,
@@ -12,6 +13,34 @@ import {
 } from "../../utils/robberPlacementPreviewMotion";
 
 describe("robberPlacementPreviewMotion", () => {
+  it("keeps a committed robber destination after its interactive target is removed", () => {
+    const target = robberPlacementPreviewMotion.resolveRobberPreviewTarget?.({
+      committedTargetTileId: 9,
+      hoveredTarget: null,
+      pointerX: 420,
+      pointerY: 360,
+      targets: [],
+      landTileCenters: [
+        { tileId: 4, centerX: 100, centerY: 100 },
+        { tileId: 9, centerX: 190, centerY: 130 }
+      ]
+    });
+
+    expect(target).toEqual({ tileId: 9, centerX: 190, centerY: 130 });
+  });
+
+  it("retains the committed target's viewport position while the board is transformed", () => {
+    const target = robberPlacementPreviewMotion.resolveRobberPreviewTarget?.({
+      committedTargetTileId: 9,
+      hoveredTarget: null,
+      retainedTarget: { tileId: 9, centerX: 318, centerY: 244 },
+      targets: [],
+      landTileCenters: [{ tileId: 9, centerX: 190, centerY: 130 }]
+    });
+
+    expect(target).toEqual({ tileId: 9, centerX: 318, centerY: 244 });
+  });
+
   it("does not snap the robber until the pointer is inside the robber target hit area", () => {
     const target = getMagneticRobberTarget({
       pointerX: 121,

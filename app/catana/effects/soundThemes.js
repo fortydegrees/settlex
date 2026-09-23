@@ -2,6 +2,11 @@
 // docs/agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md — the sound identity's
 // grammar, the audition workflow, and the synthesis kit (sounds/soundkit/).
 export const DEFAULT_THEME = {
+  "game:start": {
+    src: "/sounds/game-start.mp3",
+    volume: 0.7,
+    allowWhenHidden: true
+  },
   "resource:pop:start": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.4 },
   "resource:travel:start": { src: "/sounds/card_woosh.mp3", volume: 0.4 },
   "build:settlement": { src: "/sounds/settle.mp3", volume: 0.6 },

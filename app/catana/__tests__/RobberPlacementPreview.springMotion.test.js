@@ -11,7 +11,6 @@ describe("RobberPlacementPreview spring motion", () => {
   it("uses magnetic target selection with a spring loop", () => {
     const contents = fs.readFileSync(previewPath, "utf8");
     expect(contents).toContain("magneticTargets");
-    expect(contents).toContain("getMagneticRobberTarget");
     expect(contents).toContain("requestAnimationFrame");
     expect(contents).toContain("PREVIEW_HEAD_TRACK_Y_PERCENT");
     expect(contents).toContain("PREVIEW_HEAD_ROTATION_ORIGIN");

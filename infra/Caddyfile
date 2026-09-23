@@ -5,8 +5,7 @@
   reverse_proxy @gameSocket game:8000
 
   @gameState path /timer* /idle*
-  reverse_proxy @gameState game:8000
+  reverse_proxy @gameState game:8080
 
   reverse_proxy web:3000
 }
-

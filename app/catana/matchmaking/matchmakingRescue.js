@@ -39,6 +39,83 @@ export function getSearchElapsedSeconds(startedAt, now = Date.now()) {
   return Math.max(0, Math.floor((now - startedAt) / 1000));
 }
 
+export function beginSearchCancellation({
+  searchCancelPendingRef,
+  onPendingChange,
+  clearActiveAction,
+} = {}) {
+  if (!searchCancelPendingRef || searchCancelPendingRef.current) return false;
+  searchCancelPendingRef.current = true;
+  onPendingChange?.(true);
+  clearActiveAction?.();
+  return true;
+}
+
+export function getSearchCancelPresentation({
+  isMatchFound = false,
+  isPufferTransitionPending = false,
+  isSearchCancelPending = false,
+} = {}) {
+  if (isMatchFound) return { disabled: true, label: "Loading board..." };
+  if (isSearchCancelPending) return { disabled: true, label: "Cancelling..." };
+  return {
+    disabled: Boolean(isPufferTransitionPending),
+    label: "Cancel",
+  };
+}
+
+export function resolvePublicMatchmakingSeat(created) {
+  if (!created?.matchID) {
+    throw new Error("Matchmaking succeeded but returned no matchID.");
+  }
+  if (created?.playerID == null) {
+    throw new Error("Matchmaking succeeded but returned no playerID.");
+  }
+  if (!created?.playerCredentials) {
+    throw new Error("Matchmaking succeeded but returned no credentials.");
+  }
+
+  return {
+    matchID: created.matchID,
+    playerID: String(created.playerID),
+    credentials: created.playerCredentials,
+    createdNewPublicDuel: Boolean(created.createdNewPublicDuel),
+  };
+}
+
+export function resolvePublicMatchmakingCancellation(result) {
+  if (result?.status === "cancelled" || result?.status === "not_found") {
+    return {
+      released: true,
+      reason: result.status,
+      matchFound: null,
+    };
+  }
+
+  if (
+    result?.status === "match_found" &&
+    result?.matchID &&
+    result?.playerID != null &&
+    result?.playerCredentials
+  ) {
+    return {
+      released: false,
+      reason: "match_found",
+      matchFound: {
+        matchID: result.matchID,
+        playerID: String(result.playerID),
+        credentials: result.playerCredentials,
+      },
+    };
+  }
+
+  return {
+    released: false,
+    reason: "uncertain",
+    matchFound: null,
+  };
+}
+
 export function advanceSearchGeneration(searchGenerationRef) {
   searchGenerationRef.current += 1;
   return searchGenerationRef.current;

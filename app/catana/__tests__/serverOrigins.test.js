@@ -31,6 +31,7 @@ afterEach(() => {
 
 describe("serverOrigins", () => {
   it("uses the configured public origin for lobby and game clients", async () => {
+    process.env.NODE_ENV = "production";
     process.env.NEXT_PUBLIC_GAME_SERVER_ORIGIN = "https://settlex.example";
 
     const { getGameServerOrigin, getLobbyServerOrigin } =
@@ -56,8 +57,8 @@ describe("serverOrigins", () => {
     expect(getGameServerOrigin()).toBe("http://145.241.244.120");
   });
 
-  it("keeps split dev ports locally when no explicit origin is configured", async () => {
-    delete process.env.NEXT_PUBLIC_GAME_SERVER_ORIGIN;
+  it("keeps the local API listener separate from the configured game transport", async () => {
+    process.env.NEXT_PUBLIC_GAME_SERVER_ORIGIN = "http://localhost:8000";
     process.env.NODE_ENV = "development";
     setWindowLocation({
       origin: "http://localhost:3000",
