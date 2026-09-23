@@ -129,7 +129,8 @@ export function useLocalPlayerDockModel({
     () => [
       {
         name: "trade",
-        action: onTradeClick,
+        // DockCard sends launch geometry; only resource quick-trade supplies a preset.
+        action: () => onTradeClick?.(),
         img: getThemedSvgPath(themeId, "icon_trade.svg"),
         fallbackImg: getClassicSvgPath("icon_trade.svg"),
         count: 0,

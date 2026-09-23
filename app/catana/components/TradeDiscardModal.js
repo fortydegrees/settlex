@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useId } from "react";
+import { Button } from "../../ui/Button";
 import { STANDARD_RESOURCES, ResourceType } from "../types";
 import {
   bestTradeRate,
@@ -35,6 +36,7 @@ export const TradeDiscardModal = ({
   // Format: { [ResourceType]: number }
   const [selected, setSelected] = useState({});
   const [selectedReceive, setSelectedReceive] = useState({});
+  const titleId = useId();
 
   const isDiscard = mode === "discard";
   const isTrade = mode === "trade";
@@ -233,25 +235,25 @@ export const TradeDiscardModal = ({
     : "Select a Resource to Claim";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 pointer-events-auto">
-      <div className="bg-blue-200 bg-opacity-90 backdrop-blur-sm rounded-lg shadow-xl ring-2 ring-slate-300 p-6 w-[500px] max-w-full flex flex-col gap-4">
+    <div className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog settlex-ui-dialog-viewport fixed inset-0 flex items-center justify-center pointer-events-auto">
+      <div role="dialog" aria-labelledby={titleId} className="settlex-ui-pane settlex-ui-dialog-surface w-[520px] max-w-full max-h-full flex flex-col gap-ui-4">
         
         {/* Header */}
-        <h2 className="text-2xl font-bold text-center text-slate-800 drop-shadow-sm">
+        <h2 id={titleId} className="type-title text-center text-ink-primary">
           {title}
         </h2>
 
         {/* Content */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-ui-4">
           
           {/* GIVE SECTION */}
           {(isDiscard || isTrade) && (
             <div
-              className={`bg-white bg-opacity-40 rounded p-4 ${
+              className={`settlex-ui-inset p-ui-4 ${
                 isTrade ? "order-2" : ""
               }`}
             >
-              <h3 className="font-semibold text-lg mb-2 text-slate-700">
+              <h3 className="type-section mb-ui-2 text-ink-primary">
                 {isDiscard
                   ? "Select Cards to Discard"
                   : `Give ${
@@ -260,7 +262,7 @@ export const TradeDiscardModal = ({
                         : ""
                     }`}
               </h3>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] gap-ui-2">
                 {STANDARD_RESOURCES.map((res) => {
                   const count = playerResourceCounts[res] || 0;
                   const selectedCount = selected[res] || 0;
@@ -280,7 +282,7 @@ export const TradeDiscardModal = ({
                         isDisabled ? "opacity-40 grayscale" : ""
                       }`}
                     >
-                      <div className="relative mb-1">
+                      <div className="relative mb-ui-1">
                         <img
                           src={getResourceIconPath(themeId, res)}
                           alt={res}
@@ -293,27 +295,27 @@ export const TradeDiscardModal = ({
                             )
                           }
                         />
-                        <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        <span className="absolute -top-ui-2 -right-ui-2 bg-surface-selected text-ink-primary type-caption rounded-pill h-5 min-w-5 px-ui-0.5 flex items-center justify-center">
                           {available}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1 bg-slate-100 rounded-full px-1 shadow-inner">
+                      <div className="settlex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
                         <button
                           onClick={() => decrement(res)}
                           aria-label={`Decrease give ${res}`}
-                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-red-600 font-bold disabled:opacity-30"
+                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
                           disabled={selectedCount === 0}
                         >
                           -
                         </button>
-                        <span className="w-4 text-center font-medium text-sm">
+                        <span className="w-4 text-center type-label text-ink-primary">
                           {selectedCount}
                         </span>
                         <button
                           onClick={() => increment(res, available)}
                           aria-label={`Increase give ${res}`}
-                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-green-600 font-bold disabled:opacity-30"
+                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
                           disabled={
                             (isTrade
                               ? selectedCount + getTradeRate(res) > available
@@ -335,9 +337,9 @@ export const TradeDiscardModal = ({
 
           {/* RECEIVE SECTION (Trade Only) */}
           {isTrade && (
-            <div className="bg-white bg-opacity-40 rounded p-4 order-1">
-              <h3 className="font-semibold text-lg mb-2 text-slate-700">Receive</h3>
-              <div className="grid grid-cols-5 gap-2">
+            <div className="settlex-ui-inset p-ui-4 order-1">
+              <h3 className="type-section mb-ui-2 text-ink-primary">Receive</h3>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] gap-ui-2">
                 {STANDARD_RESOURCES.map((res) => {
                     const available = bankFinite
                       ? bankResourceCounts[res] || 0
@@ -353,7 +355,7 @@ export const TradeDiscardModal = ({
                           isDisabled ? "opacity-40 grayscale" : ""
                         }`}
                       >
-                        <div className="relative mb-1">
+                        <div className="relative mb-ui-1">
                           <img
                             src={getResourceIconPath(themeId, res)}
                             alt={res}
@@ -367,28 +369,28 @@ export const TradeDiscardModal = ({
                             }
                           />
                           {bankFinite && (
-                            <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            <span className="absolute -top-ui-2 -right-ui-2 bg-surface-selected text-ink-primary type-caption rounded-pill h-5 min-w-5 px-ui-0.5 flex items-center justify-center">
                               {available}
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-1 bg-slate-100 rounded-full px-1 shadow-inner">
+                        <div className="settlex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
                           <button
                             onClick={() => decrement(res, "receive")}
                             aria-label={`Decrease receive ${res}`}
-                            className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-red-600 font-bold disabled:opacity-30"
+                            className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
                             disabled={selectedCount === 0}
                           >
                             -
                           </button>
-                          <span className="w-4 text-center font-medium text-sm">
+                          <span className="w-4 text-center type-label text-ink-primary">
                             {selectedCount}
                           </span>
                           <button
                             onClick={() => increment(res, available, "receive")}
                             aria-label={`Increase receive ${res}`}
-                            className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-green-600 font-bold disabled:opacity-30"
+                            className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
                             disabled={
                               totalSelectedReceive >= tradeReceiveCapacity ||
                               selectedCount >= available ||
@@ -407,11 +409,11 @@ export const TradeDiscardModal = ({
 
           {/* DEV CARD SELECT SECTION */}
           {isDevYop && (
-            <div className="bg-white bg-opacity-40 rounded p-4">
-              <h3 className="font-semibold text-lg mb-2 text-slate-700">
+            <div className="settlex-ui-inset p-ui-4">
+              <h3 className="type-section mb-ui-2 text-ink-primary">
                 Select Two Resources
               </h3>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] gap-ui-2">
                 {STANDARD_RESOURCES.map((res) => {
                   const selectedCount = selected[res] || 0;
                   const available = isDevYop
@@ -432,7 +434,7 @@ export const TradeDiscardModal = ({
                         isDisabled ? "opacity-40 grayscale" : ""
                       }`}
                     >
-                      <div className="relative mb-1">
+                      <div className="relative mb-ui-1">
                         <img
                           src={getResourceIconPath(themeId, res)}
                           alt={res}
@@ -446,28 +448,28 @@ export const TradeDiscardModal = ({
                           }
                         />
                         {isDevYop && bankFinite && showYearOfPlentyBankCounts && (
-                          <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          <span className="absolute -top-ui-2 -right-ui-2 bg-surface-selected text-ink-primary type-caption rounded-pill h-5 min-w-5 px-ui-0.5 flex items-center justify-center">
                             {available}
                           </span>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 bg-slate-100 rounded-full px-1 shadow-inner">
+                      <div className="settlex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
                         <button
                           onClick={() => decrement(res)}
                           aria-label={`Decrease selection ${res}`}
-                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-red-600 font-bold disabled:opacity-30"
+                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
                           disabled={selectedCount === 0}
                         >
                           -
                         </button>
-                        <span className="w-4 text-center font-medium text-sm">
+                        <span className="w-4 text-center type-label text-ink-primary">
                           {selectedCount}
                         </span>
                         <button
                           onClick={() => increment(res, available)}
                           aria-label={`Increase selection ${res}`}
-                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-green-600 font-bold disabled:opacity-30"
+                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
                           disabled={disableIncrement || isDisabled}
                         >
                           +
@@ -481,11 +483,11 @@ export const TradeDiscardModal = ({
           )}
 
           {isDevMonopoly && (
-            <div className="bg-white bg-opacity-40 rounded p-4">
-              <h3 className="font-semibold text-lg mb-2 text-slate-700">
+            <div className="settlex-ui-inset p-ui-4">
+              <h3 className="type-section mb-ui-2 text-ink-primary">
                 Select a Resource
               </h3>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] gap-ui-2">
                 {STANDARD_RESOURCES.map((res) => {
                   const isSelected = (selected[res] || 0) > 0;
 
@@ -494,10 +496,10 @@ export const TradeDiscardModal = ({
                       key={res}
                       onClick={() => increment(res, 1)}
                       aria-label={`Claim ${res}`}
-                      className={`flex flex-col items-center p-2 rounded transition-all ${
+                      className={`settlex-ui-focus flex flex-col items-center p-ui-2 rounded-small transition-all ${
                         isSelected
-                          ? "bg-green-200 ring-2 ring-green-500 shadow-md scale-105"
-                          : "hover:bg-white hover:bg-opacity-50"
+                          ? "bg-surface-positive ring-2 ring-ink-positive shadow-sm scale-105"
+                          : "hover:bg-surface-hover"
                       }`}
                     >
                       <img
@@ -521,18 +523,18 @@ export const TradeDiscardModal = ({
 
           {/* SUMMARY / STATUS */}
           {isDiscard && (
-            <div className="text-center font-medium text-slate-700">
-              Selected: <span className={totalSelected === requiredDiscardCount ? "text-green-700 font-bold" : "text-red-700"}>{totalSelected}</span> / {requiredDiscardCount}
+            <div className="text-center type-body-small text-ink-secondary">
+              Selected: <span className={totalSelected === requiredDiscardCount ? "text-ink-positive type-action-small" : "text-ink-danger type-action-small"}>{totalSelected}</span> / {requiredDiscardCount}
             </div>
           )}
           {isDevMode && (
-            <div className="text-center font-medium text-slate-700">
+            <div className="text-center type-body-small text-ink-secondary">
               Selected:{" "}
               <span
                 className={
                   totalSelected === devMaxSelections
-                    ? "text-green-700 font-bold"
-                    : "text-red-700"
+                    ? "text-ink-positive type-action-small"
+                    : "text-ink-danger type-action-small"
                 }
               >
                 {totalSelected}
@@ -541,7 +543,7 @@ export const TradeDiscardModal = ({
             </div>
           )}
           {isTrade && (
-            <div className="text-center font-medium text-slate-700">
+            <div className="text-center type-body-small text-ink-secondary">
               {tradeReceiveCountResult.ok ? (
                 <>
                   Receive:{" "}
@@ -549,8 +551,8 @@ export const TradeDiscardModal = ({
                     className={
                       totalSelectedReceive === tradeReceiveCapacity &&
                       tradeReceiveCapacity > 0
-                        ? "text-green-700 font-bold"
-                        : "text-red-700"
+                        ? "text-ink-positive type-action-small"
+                        : "text-ink-danger type-action-small"
                     }
                   >
                     {totalSelectedReceive}
@@ -558,7 +560,7 @@ export const TradeDiscardModal = ({
                   / {tradeReceiveCapacity}
                 </>
               ) : (
-                <span className="text-red-700">
+                <span className="text-ink-danger">
                   Offer must fill complete trade chunks.
                 </span>
               )}
@@ -568,27 +570,18 @@ export const TradeDiscardModal = ({
         </div>
 
         {/* Footer Buttons */}
-        <div className="flex justify-end gap-3 mt-2">
-           {/* Only show Cancel if not forced discard? Or maybe always allow 'cancel' to just close modal but game is stuck until they do it? 
-               For discard phase, usually you CANT cancel avoiding the discard, but for UI/UX maybe just hiding the modal is fine. 
-               Let's keep it simple. */}
+        <div className="flex justify-end gap-ui-3 mt-ui-2">
           {onCancel && (
-            <button 
+            <Button variant="secondary" size="sm"
               onClick={onCancel}
-              className="px-4 py-2 rounded bg-slate-400 text-white font-semibold hover:bg-slate-500 shadow-sm"
             >
               Cancel
-            </button>
+            </Button>
           )}
           
-          <button 
+          <Button variant="primary" size="sm"
             onClick={handleConfirm}
             disabled={!canConfirm}
-            className={`px-6 py-2 rounded font-bold text-white shadow-md transition-all ${
-              canConfirm 
-                ? 'bg-green-500 hover:bg-green-600 hover:scale-105' 
-                : 'bg-slate-400 cursor-not-allowed opacity-70'
-            }`}
           >
             {isDiscard
               ? "Discard"
@@ -597,7 +590,7 @@ export const TradeDiscardModal = ({
                 : isDevMonopoly
                   ? "Claim"
                   : "Confirm"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

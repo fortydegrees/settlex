@@ -2,6 +2,8 @@ import { useState } from "react";
 import { fn } from "@storybook/test";
 import { replayTimeline } from "../../catana/dev/storybook/replayFixtures";
 import { ReplayPanel } from "./ReplayPanel";
+import { useReplayNavigation } from "../useReplayNavigation";
+import { getPreviousTurnEventIndex, getNextTurnEventIndex } from "../replayTimeline";
 
 const callbacks = {
   onResultsOpen: fn(),
@@ -56,10 +58,8 @@ function ReplayPanelHarness({
   const [mobileOpen, setMobileOpen] = useState(initialMobileOpen);
   const [perspectiveId, setPerspectiveId] = useState(initialPerspectiveId);
   const [chartOpen, setChartOpen] = useState(initialChartOpen);
-  const currentEventIndex = Math.min(
-    initialEventIndex,
-    timeline.events.length - 1
-  );
+  const navigation = useReplayNavigation({ eventCount: timeline.events.length, initialEventIndex });
+  const currentEventIndex = navigation.eventIndex;
 
   return (
     <main className="min-h-screen">
@@ -77,6 +77,17 @@ function ReplayPanelHarness({
         onChartOpenChange={setChartOpen}
         onPerspectiveChange={setPerspectiveId}
         {...callbacks}
+        onPreviousEvent={() => { callbacks.onPreviousEvent(); navigation.previous(); }}
+        onNextEvent={() => { callbacks.onNextEvent(); navigation.next(); }}
+        onSeek={(index) => { callbacks.onSeek(index); navigation.seek(index); }}
+        onPreviousTurn={() => {
+          callbacks.onPreviousTurn();
+          navigation.seek(getPreviousTurnEventIndex(currentEventIndex, timeline.turnStarts));
+        }}
+        onNextTurn={() => {
+          callbacks.onNextTurn();
+          navigation.seek(getNextTurnEventIndex(currentEventIndex, timeline.turnStarts, timeline.events.length - 1));
+        }}
       />
     </main>
   );
@@ -188,4 +199,14 @@ export const MobileDrawerOpen = {
   parameters: {
     viewport: { defaultViewport: "catanaMobile" },
   },
+};
+
+export const MobileChartExpanded = {
+  ...MobileDrawerOpen,
+  args: { ...MobileDrawerOpen.args, initialChartOpen: true },
+};
+
+export const MobileFourPlayersLongNames = {
+  ...MobileChartExpanded,
+  render: (args) => <ReplayPanelHarness {...args} timeline={fourPlayerTimeline} />,
 };

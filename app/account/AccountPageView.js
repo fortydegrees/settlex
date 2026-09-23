@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import { EmailAuthModeToggle } from "./EmailAuthModeToggle";
 import { CATANA_TABLE_BACKGROUND } from "../catana/theme/backgrounds";
 
 const AUTH_PROVIDER_LABELS = Object.freeze({
@@ -97,52 +98,34 @@ export function AccountPageView({
 
   return (
     <main
-      className="min-h-screen px-4 py-10 text-slate-800"
+      className="min-h-screen px-ui-4 py-ui-10 text-ink-primary"
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
-      <div className="settlex-ui-pane mx-auto max-w-xl p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="settlex-ui-pane mx-auto max-w-xl p-ui-5 sm:p-ui-6">
+        <div className="flex items-start justify-between gap-ui-4">
           <div className="min-w-0">
             <p className="settlex-ui-label">
               Settlehex account
             </p>
-            <h1 className="mt-2 break-words text-2xl font-semibold text-slate-900">
+            <h1 className="mt-ui-2 break-words type-title text-ink-primary">
               {profileCopy.title}
             </h1>
-            <p className="mt-2 text-sm text-slate-700">
+            <p className="mt-ui-2 type-body-small text-ink-secondary">
               {profileCopy.description}
             </p>
           </div>
           <Link
             href="/"
-            className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] shrink-0 px-4 py-2 text-sm"
+            className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] shrink-0 px-ui-4 py-ui-2 type-action-small"
           >
             Back
           </Link>
         </div>
 
         {authOptions.emailPassword ? (
-          <form className="mt-6 grid gap-3" onSubmit={handleEmailAuth}>
-            <div
-              className="settlex-ui-inset grid grid-cols-2 gap-2 p-1"
-              aria-label="Email auth mode"
-            >
-              {[
-                ["signIn", "Sign in"],
-                ["signUp", "Create account"]
-              ].map(([mode, label]) => (
-                <Button
-                  key={mode}
-                  type="button"
-                  variant={authMode === mode ? "secondary" : "ghost"}
-                  size="sm"
-                  onClick={() => setAuthMode(mode)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
+          <form className="mt-ui-6 grid gap-ui-3" onSubmit={handleEmailAuth}>
+            <EmailAuthModeToggle value={authMode} onChange={setAuthMode} />
+            <label className="grid gap-ui-2 type-label text-ink-secondary">
               Email
               <Input
                 type="email"
@@ -152,7 +135,7 @@ export function AccountPageView({
                 placeholder="you@example.com"
               />
             </label>
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
+            <label className="grid gap-ui-2 type-label text-ink-secondary">
               Password
               <Input
                 type="password"
@@ -176,7 +159,7 @@ export function AccountPageView({
         ) : null}
 
         {socialProviders.length > 0 ? (
-          <div className="mt-6 grid gap-2 border-t border-blue-100 pt-6">
+          <div className="mt-ui-6 grid gap-ui-2 border-t border-edge-subtle pt-ui-6">
             {socialProviders.map((provider) => (
               <Button
                 key={provider}
@@ -196,7 +179,7 @@ export function AccountPageView({
         ) : null}
 
         {statusMessage ? (
-          <div className="settlex-ui-inset mt-4 break-words px-4 py-3 text-sm text-slate-700">
+          <div className="settlex-ui-inset mt-ui-4 break-words px-ui-4 py-ui-3 type-body-small text-ink-secondary">
             {statusMessage}
           </div>
         ) : null}

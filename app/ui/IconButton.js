@@ -27,7 +27,7 @@ export const IconButton = React.forwardRef(function IconButton(
       variant={variant}
       aria-label={ariaLabel}
       className={cn(
-        "!min-h-0 shrink-0 rounded-full !p-0 text-lg leading-none [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0",
+        "!min-h-0 shrink-0 rounded-pill !p-0 type-action-large [&_svg]:h-5 [&_svg]:w-5 [&_svg]:shrink-0",
         SIZE_STYLES[size] ?? SIZE_STYLES.md,
         className
       )}

@@ -144,3 +144,11 @@ export const JoinError = {
     error: "That seat was just taken. Refresh and choose another.",
   },
 };
+
+export const NoOpenSeats = {
+  args: {
+    openSeats: [],
+    playerID: "",
+    match: { ...openMatch, players: openMatch.players.map((seat, index) => ({ ...seat, name: `Trader ${index + 1}` })) },
+  },
+};

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { fn, userEvent, within } from "@storybook/test";
 import { EmojiPicker, IdentityModal } from "./IdentityModal";
 
@@ -31,14 +32,15 @@ export const EmptyName = {
   },
 };
 
+export const LongUsername = {
+  args: { ...ExistingIdentity.args, initialName: "TheLongestHarbourTraderName28" },
+};
+
 export const EmojiBrowser = {
-  render: () => (
-    <EmojiPicker
-      value="😉"
-      onChange={fn()}
-      colorGradient="from-teal-300 to-teal-600"
-    />
-  ),
+  render: function Render() {
+    const [value, setValue] = useState("😉");
+    return <EmojiPicker value={value} onChange={setValue} colorGradient="from-teal-300 to-teal-600" />;
+  },
 };
 
 export const Mobile = {

@@ -205,6 +205,8 @@ export const DockCard = ({ action }) => {
     <div className="dock-card-container">
       <animated.button
         ref={cardRef}
+        type="button"
+        aria-label={action.name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (first) => first.toUpperCase())}
         className={`catana-hud-dock-card dock-card ${
           action.enabled ? "enabled" : ""
         } ${action.selected ? "selected" : ""}`}

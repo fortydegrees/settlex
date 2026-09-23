@@ -38,14 +38,7 @@ const desktopFeedCollapsedHeight = "3.5rem";
 const desktopFeedStackGap = "0.5rem";
 const desktopFeedSlotClassName =
   "transition-[width,height,opacity,transform,border-radius] [will-change:width,height,opacity,transform] motion-reduce:transition-none";
-const desktopFeedRestoreFrameClassName =
-  "border-white/50 shadow-[0_20px_44px_-28px_rgba(15,23,42,0.44),inset_0_1px_0_rgba(255,255,255,0.42)] ring-white/45";
-const desktopFeedRestoreGlassLayerStyle = {
-  background:
-    "linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.1)), linear-gradient(90deg, rgba(255,255,255,0.28), rgba(191,219,254,0.18), rgba(147,197,253,0.12))",
-  backdropFilter: "blur(18px) saturate(1.16)",
-  WebkitBackdropFilter: "blur(18px) saturate(1.16)",
-};
+
 const desktopFeedPanelClassName =
   "flex h-full min-h-0 flex-col overflow-hidden bg-transparent select-text";
 const desktopFeedHeaderClassName = "sr-only";
@@ -280,13 +273,13 @@ function DesktopFeedFrame({
     "section",
     {
       className: joinClassNames(
-        "group pointer-events-auto relative",
+        "settlex-ui-feed-frame group pointer-events-auto relative",
         desktopFeedSlotClassName,
         getDesktopFeedSlotSizeClassName(phase),
         getDesktopFeedSlotMotionClassName(phase),
         !isRestoreButton
-          ? "overflow-hidden rounded-[1.15rem] opacity-100 translate-y-0"
-          : "overflow-visible rounded-[1.15rem] opacity-95 translate-y-0.5 cursor-pointer hover:scale-[1.035] hover:opacity-100 active:translate-y-0 active:scale-[0.96] focus:outline-none"
+          ? "overflow-hidden rounded-panel opacity-100 translate-y-0"
+          : "overflow-visible rounded-panel opacity-95 translate-y-0.5 cursor-pointer hover:scale-[1.035] hover:opacity-100 active:translate-y-0 active:scale-[0.96] focus:outline-none"
       ),
       role: isRestoreButton ? "button" : undefined,
       tabIndex: isRestoreButton ? 0 : undefined,
@@ -310,34 +303,29 @@ function DesktopFeedFrame({
         className: joinClassNames(
           META_PANEL_FRAME_CLASS_NAME,
           "transition-[border-color,box-shadow] duration-150 ease-out motion-reduce:transition-none",
-          isRestoreButton ? desktopFeedRestoreFrameClassName : null,
-          isRestoreButton
-            ? "group-hover:border-white/70 group-hover:shadow-[0_22px_46px_-28px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.55)] group-hover:ring-white/50 group-active:ring-white/60"
-            : null
+          isRestoreButton ? "settlex-ui-feed-restore" : null
         ),
       },
       React.createElement("div", {
         className: "pointer-events-none absolute inset-0 rounded-[inherit]",
-        style: isRestoreButton
-          ? desktopFeedRestoreGlassLayerStyle
-          : META_PANEL_GLASS_STYLE,
+        style: META_PANEL_GLASS_STYLE,
         "aria-hidden": "true",
       }),
       React.createElement("div", {
         className:
-          "pointer-events-none absolute inset-0 rounded-[inherit] bg-white/0 transition-colors duration-150 ease-out group-hover:bg-white/[0.08] group-active:bg-white/[0.1] motion-reduce:transition-none",
+          "pointer-events-none absolute inset-0 rounded-[inherit] bg-transparent transition-colors duration-150 ease-out group-hover:bg-decoration-wash group-active:bg-decoration-fill motion-reduce:transition-none",
         "aria-hidden": "true",
       }),
       React.createElement(
         "div",
         {
           className: joinClassNames(
-            "relative z-10 flex shrink-0 items-center justify-between overflow-hidden text-slate-700 transition-[height,background-color,border-color] duration-150 ease-out motion-reduce:transition-none",
+            "relative z-10 flex shrink-0 items-center justify-between overflow-hidden text-ink-secondary transition-[height,background-color,border-color] duration-150 ease-out motion-reduce:transition-none",
             shouldShowHeaderDetails
-              ? "h-11 gap-2.5 px-3.5"
-              : "h-14 gap-3 px-4",
+              ? "h-11 gap-ui-2.5 px-ui-3.5"
+              : "h-14 gap-ui-3 px-ui-4",
             shouldShowHeaderDetails
-              ? "cursor-pointer border-b border-white/30 bg-white/25 hover:bg-white/40 focus:outline-none active:bg-white/30"
+              ? "settlex-ui-feed-header settlex-ui-feed-minimize cursor-pointer"
               : "border-b border-transparent bg-transparent"
           ),
           role: shouldShowHeaderDetails ? "button" : undefined,
@@ -359,13 +347,13 @@ function DesktopFeedFrame({
         React.createElement(
           "div",
           {
-            className: "flex min-w-0 items-center gap-2.5",
+            className: "flex min-w-0 items-center gap-ui-2.5",
           },
           React.cloneElement(panel.icon, {
             className: joinClassNames(
               desktopButtonIconClassName,
               isRestoreButton
-                ? "text-slate-800 drop-shadow-[0_1px_0_rgba(255,255,255,0.22)] transition duration-150 ease-out group-hover:scale-110 group-hover:text-slate-900"
+                ? "text-ink-secondary transition duration-150 ease-out group-hover:scale-110 group-hover:text-ink-primary motion-reduce:transform-none"
                 : null
             ),
           }),
@@ -373,7 +361,7 @@ function DesktopFeedFrame({
             "span",
             {
               className: joinClassNames(
-                "truncate text-sm font-bold text-slate-700 transition-[max-width,opacity,transform] duration-150 ease-out motion-reduce:transition-none",
+                "truncate type-action-small text-ink-secondary transition-[max-width,opacity,transform] duration-150 ease-out motion-reduce:transition-none",
                 shouldShowHeaderDetails
                   ? "max-w-[11rem] translate-x-0 opacity-100"
                   : "max-w-0 -translate-x-1 opacity-0"
@@ -403,7 +391,7 @@ function DesktopFeedFrame({
           "span",
           {
             className:
-              "pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap rounded-[0.85rem] border border-white/40 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(219,234,254,0.86))] px-3 py-1.5 text-xs font-semibold text-slate-700 opacity-0 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.52)] backdrop-blur-xl transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-none",
+              "settlex-ui-pane settlex-ui-tooltip pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap px-ui-3 py-ui-1.5 type-caption text-ink-secondary opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none",
             "aria-hidden": "true",
             "data-meta-feed-tooltip": panel.id,
           },

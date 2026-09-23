@@ -1,6 +1,17 @@
 {
-  "currentVersion": 5,
+  "currentVersion": 6,
   "releases": [
+    {
+      "version": 6,
+      "label": "release 0.11",
+      "date": "2026-09-23",
+      "title": "Beta version",
+      "approved": false,
+      "highlights": [
+        "Updated SettleHex wordmark and refreshed design across the homepage, gameplay, accounts, and replays.",
+        "beta version! please report any bugs you find!"
+      ]
+    },
     {
       "version": 5,
       "label": "release 0.10",

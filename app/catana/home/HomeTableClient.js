@@ -8,8 +8,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Button } from "../../ui/Button";
-import { StatusBanner } from "../components/StatusBanner";
 import { markGameStartTransition } from "../effects/gameStartTransition.js";
 import { HomeDemoBoardPoster } from "../homeDemo/HomeDemoBoardPoster";
 import { createHomeDemoPieceState } from "../homeDemo/homeDemoSequence";
@@ -21,6 +19,7 @@ import {
   HomeTitleChrome,
   useHomeBrandLogoOptions,
 } from "./HomeTitleChrome";
+import { HomeErrorBanner } from "./HomeErrorBanner";
 import { SearchingModal } from "./SearchingModal";
 import "../components/hudGlass.css";
 
@@ -107,7 +106,7 @@ function FullBoardLayer({
   onBoardMeasuredChange,
 }) {
   return (
-    <div className="pointer-events-none absolute inset-0 z-0">
+    <div className="pointer-events-none absolute inset-0 z-0 select-none">
       <React.Suspense fallback={null}>
         <LazyHomeDemoBoard
           pieceState={pieceState}
@@ -126,6 +125,7 @@ function FullBoardLayer({
 function HomeTableSurface({
   pieceState,
   isCompact,
+  isPhone,
   boardRef,
   placementLayerRef,
   placementRoadLayerRef,
@@ -153,8 +153,8 @@ function HomeTableSurface({
       {isBoardLayoutReady && isHomeDemoReady ? (
         <FullBoardLayer
           pieceState={pieceState}
-          reservedHeight={isCompact ? 276 : 158}
-          centerYOffset={isCompact ? -56 : 0}
+          reservedHeight={isPhone ? 360 : isCompact ? 276 : 158}
+          centerYOffset={isPhone ? -44 : isCompact ? -56 : 0}
           boardRef={boardRef}
           placementLayerRef={placementLayerRef}
           placementRoadLayerRef={placementRoadLayerRef}
@@ -181,26 +181,6 @@ function HomeTableSurface({
         onSelectMode={onSelectMode}
       />
     </>
-  );
-}
-
-function HomeErrorBanner({ error, onDismiss }) {
-  if (!error) return null;
-
-  return (
-    <StatusBanner
-      overlay
-      overlayClassName="top-[5.25rem] sm:top-[6.25rem]"
-      variant="danger"
-      title="Lobby error"
-      body={error}
-      className="max-w-md"
-      actions={
-        <Button variant="secondary" size="sm" onClick={onDismiss}>
-          Dismiss
-        </Button>
-      }
-    />
   );
 }
 
@@ -303,12 +283,13 @@ function HomeTableBoard({ initialAccount = null }) {
 
   return (
     <main
-      className="fixed inset-0 overflow-hidden text-slate-900"
+      className="fixed inset-0 overflow-hidden text-ink-primary"
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
       <HomeTableSurface
         pieceState={pieceState}
         isCompact={isCompact}
+        isPhone={isBoardLayoutReady && viewportWidth < 640}
         boardRef={boardRef}
         placementLayerRef={placementLayerRef}
         placementRoadLayerRef={placementRoadLayerRef}

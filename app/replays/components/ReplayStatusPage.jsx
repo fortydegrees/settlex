@@ -38,22 +38,22 @@ export function ReplayStatusPage({ matchID, status }) {
 
   return (
     <main
-      className="grid min-h-screen place-items-center p-6"
+      className="grid min-h-screen place-items-center p-ui-6"
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
-      <section className="settlex-ui-pane w-full max-w-md p-5 text-center sm:p-6">
-        <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
-        <p className="mt-2 text-sm font-medium text-slate-600">
+      <section className="settlex-ui-pane w-full max-w-md p-ui-5 text-center sm:p-ui-6">
+        <h1 className="type-title text-ink-primary">{title}</h1>
+        <p className="mt-ui-2 type-body-small text-ink-secondary">
           {description}
         </p>
         {status === "preparing" ? (
-          <p className="mt-3 text-xs font-bold text-slate-500">
+          <p className="mt-ui-3 type-caption text-ink-muted">
             {canPoll
               ? `Checking… ${attempt + 1}/10`
               : "Automatic checks finished."}
           </p>
         ) : null}
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
+        <div className="mt-ui-5 grid gap-ui-2 sm:grid-cols-2">
           {status !== "active" ? (
             <Button
               variant="primary"

@@ -75,14 +75,14 @@ const ChatIcon = ({ className = mobileMetaButtonIconClassName } = {}) => (
 
 const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
   <div
-    className="mobile-command-row__feed-trigger grid h-[3.85rem] grid-cols-2 overflow-hidden rounded-[1.15rem] border border-white/[0.42] bg-white/[0.22] text-slate-800 shadow-[0_14px_30px_-24px_rgba(15,23,42,0.58),inset_0_1px_0_rgba(255,255,255,0.32)] backdrop-blur-xl max-[380px]:h-[3.25rem]"
+    className="mobile-command-row__feed-trigger grid h-[3.85rem] grid-cols-2 overflow-hidden border max-[380px]:h-[3.25rem]"
     data-mobile-meta-feed-trigger="true"
     data-allow-interaction="true"
   >
     <button
       type="button"
-      className={`catana-mobile-feed-control flex items-center justify-center border-r border-white/[0.24] transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
-        activePanel === "log" ? "bg-white/[0.5]" : "hover:bg-white/[0.24]"
+      className={`catana-mobile-feed-control flex items-center justify-center border-r transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
+        activePanel === "log" ? "catana-mobile-feed-control--active" : ""
       }`}
       onClick={() => onOpen?.("log")}
       aria-label="Open game log"
@@ -93,7 +93,7 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
     <button
       type="button"
       className={`catana-mobile-feed-control flex items-center justify-center transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
-        activePanel === "chat" ? "bg-white/[0.5]" : "hover:bg-white/[0.24]"
+        activePanel === "chat" ? "catana-mobile-feed-control--active" : ""
       }`}
       onClick={() => onOpen?.("chat")}
       aria-label="Open chat"
@@ -122,12 +122,12 @@ const MobileCommandTimerBox = ({
   return (
     <div
       className={joinClassNames(
-        "mobile-command-row__timer flex h-[3.85rem] min-w-0 items-center justify-center rounded-[1.15rem] border px-2 text-center text-[1rem] font-black leading-none tabular-nums shadow-[0_16px_34px_-24px_rgba(15,23,42,0.56),inset_0_1px_0_rgba(255,255,255,0.26)] backdrop-blur-xl max-[380px]:h-[3.25rem] max-[380px]:text-[0.9rem]",
+        "mobile-command-row__timer flex h-[3.85rem] min-w-0 items-center justify-center border px-ui-2 text-center type-hud-timer tabular-nums max-[380px]:h-[3.25rem] max-[380px]:type-hud-timer-compact",
         hasTimerText
-          ? "border-white/[0.38] bg-white/[0.22] text-white"
-          : "border-white/[0.22] bg-white/[0.1] text-white/55",
+          ? "mobile-command-row__timer--available"
+          : "mobile-command-row__timer--unavailable",
         hasTimerText && isLowTimerAlertActive
-          ? "border-rose-200/75 bg-rose-400/[0.32] text-white ring-1 ring-rose-200/60"
+          ? "mobile-command-row__timer--low"
           : null
       )}
       data-mobile-command-timer="true"
@@ -154,7 +154,7 @@ const copyTriggerRect = (triggerRect) => {
 const MobileStatChip = ({ id, iconSrc, label, value, isAwarded }) => (
   <span
     id={id}
-    className="flex min-w-[2.95rem] items-center justify-start gap-0.5 leading-none"
+    className="flex min-w-[2.95rem] items-center justify-start gap-ui-0.5"
     aria-label={`${label}: ${value}`}
   >
     <img
@@ -165,8 +165,8 @@ const MobileStatChip = ({ id, iconSrc, label, value, isAwarded }) => (
     />
     <AnimatedCount
       value={value}
-      className={`w-5 text-center text-[1.08rem] drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
-        isAwarded ? "text-yellow-400 font-bold" : "text-white"
+      className={`w-5 text-center drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] ${
+        isAwarded ? "type-hud-award-earned text-ink-hud-award" : "type-hud-award text-ink-hud-on-glass"
       }`}
       ariaLabel={`${label}: ${value}`}
     />
@@ -192,7 +192,7 @@ const MobileResourceCount = ({
         draggable={false}
         onError={(event) => handleThemeImageError(event, iconFallback)}
       />
-      <span className="text-[0.95rem] font-semibold leading-none text-white drop-shadow-[0_1px_1px_rgba(15,23,42,0.48)] min-[400px]:text-[1rem]">
+      <span className="type-hud-resource text-ink-hud-on-glass drop-shadow-[0_1px_1px_rgba(15,23,42,0.48)] min-[400px]:type-hud-resource-wide">
         <AnimatedCount
           value={count}
           className="resource-dock-count"
@@ -207,7 +207,7 @@ const MobileResourceCount = ({
       <button
         type="button"
         id={`p${playerId}-${resource}`}
-        className="flex min-w-[1.9rem] flex-col items-center justify-end gap-0.5 rounded-[0.75rem] px-0.5 py-1 transition hover:bg-white/14 focus:outline-none focus:ring-2 focus:ring-white/75 min-[400px]:min-w-[2.2rem]"
+        className="mobile-resource-count-trigger flex min-w-[1.9rem] flex-col items-center justify-end gap-ui-0.5 rounded-small px-ui-0.5 py-ui-1 transition min-[400px]:min-w-[2.2rem]"
         onClick={() => onResourceClick(resource)}
         aria-label={`Trade ${resource}`}
         data-allow-interaction="true"
@@ -220,7 +220,7 @@ const MobileResourceCount = ({
   return (
     <span
       id={`p${playerId}-${resource}`}
-      className="flex min-w-[1.9rem] flex-col items-center justify-end gap-0.5 px-0.5 py-1 min-[400px]:min-w-[2.2rem]"
+      className="flex min-w-[1.9rem] flex-col items-center justify-end gap-ui-0.5 px-ui-0.5 py-ui-1 min-[400px]:min-w-[2.2rem]"
     >
       {content}
     </span>
@@ -422,18 +422,18 @@ export function MobilePlayerCockpit({
   );
 
   return (
-    <div className="mobile-player-cockpit-shell pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.6rem+env(safe-area-inset-bottom))] lg:hidden">
-      <div className="pointer-events-auto mx-auto flex w-full max-w-[28rem] flex-col gap-2">
+    <div className="mobile-player-cockpit-shell pointer-events-none fixed inset-x-0 bottom-0 z-40 px-ui-3 pb-[calc(0.6rem+env(safe-area-inset-bottom))] lg:hidden">
+      <div className="pointer-events-auto mx-auto flex w-full max-w-[28rem] flex-col gap-ui-2">
         <div
           className="mobile-player-cockpit flex flex-col"
           data-mobile-player-cockpit="true"
           data-allow-interaction="true"
         >
           <div
-            className={`relative flex h-[3.15rem] items-end justify-center gap-4 overflow-visible transition-[margin,transform] duration-200 ease-out ${
+            className={`relative flex h-[3.15rem] items-end justify-center gap-ui-4 overflow-visible transition-[margin,transform] duration-200 ease-out ${
               isDevTrayOpen
-                ? "z-[70] -mb-5"
-                : "z-20 -mb-5"
+                ? "z-[70] -mb-ui-5"
+                : "z-20 -mb-ui-5"
             }`}
             data-mobile-action-dock={isDevTrayOpen ? "dev-tray-open" : "closed"}
           >
@@ -443,10 +443,10 @@ export function MobilePlayerCockpit({
           </div>
 
           <div
-            className={`mobile-player-inventory relative flex min-w-0 flex-col rounded-[1.25rem] border px-2.5 pb-2.5 pt-5 backdrop-blur-2xl transition-[background-color,border-color,box-shadow,padding] duration-200 ease-out ${
+            className={`mobile-player-inventory relative flex min-w-0 flex-col border px-ui-2.5 pb-ui-2.5 pt-ui-5 transition-[background-color,border-color,box-shadow,padding] duration-200 ease-out ${
               isOverLimit
-                ? "border-rose-300/80 bg-rose-400/[0.3] shadow-[0_18px_46px_-26px_rgba(190,18,60,0.68),0_0_0_1px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_0_24px_rgba(244,63,94,0.18)] ring-1 ring-rose-200/65"
-                : "border-white/[0.28] bg-white/[0.14] shadow-[0_18px_42px_-30px_rgba(15,23,42,0.72),inset_0_1px_0_rgba(255,255,255,0.24)]"
+                ? "mobile-player-inventory--danger"
+                : ""
             } ${isActive ? "mobile-player-inventory--active" : ""}`}
             data-mobile-inventory-tone={isOverLimit ? "danger" : "default"}
           >
@@ -456,7 +456,7 @@ export function MobilePlayerCockpit({
               <div
                 className={`grid w-full transition-[grid-template-rows,opacity,margin] duration-200 ease-out ${
                   isDevTrayOpen
-                    ? "mb-1 grid-rows-[1fr] opacity-100"
+                    ? "mb-ui-1 grid-rows-[1fr] opacity-100"
                     : "mb-0 grid-rows-[0fr] opacity-0"
                 }`}
                 data-mobile-devcard-expander={isDevTrayOpen ? "open" : "closed"}
@@ -474,7 +474,7 @@ export function MobilePlayerCockpit({
               </div>
             ) : null}
 
-            <div className="flex w-full min-w-0 items-center gap-1.5 min-[400px]:gap-2.5">
+            <div className="flex w-full min-w-0 items-center gap-ui-1.5 min-[400px]:gap-ui-2.5">
             <div className="relative flex shrink-0 items-center">
               {isActive ? (
                 <span className="absolute left-[-1.1rem] top-1/2 -translate-y-1/2">
@@ -482,17 +482,17 @@ export function MobilePlayerCockpit({
                 </span>
               ) : null}
               <div
-                className={`relative flex h-[3.65rem] w-[3.65rem] items-center justify-center rounded-[0.9rem] bg-gradient-to-t text-[2.45rem] ring-2 ${
+                className={`mobile-player-avatar relative flex h-[3.65rem] w-[3.65rem] items-center justify-center bg-gradient-to-t text-[2.45rem] ring-2 ${
                   isSeatWarning ? "seat-disconnected-avatar" : ""
                 } ${
                   isOverLimit
-                    ? "ring-rose-300 shadow-[0_16px_32px_-20px_rgba(190,18,60,0.82),0_0_0_1px_rgba(255,255,255,0.28)]"
-                    : "ring-white shadow-[0_16px_30px_-24px_rgba(15,23,42,0.68)]"
+                    ? "mobile-player-avatar--danger"
+                    : ""
                 } ${avatarColor}`}
                 data-mobile-avatar-tone={isOverLimit ? "danger" : "default"}
               >
                 {player.emoji || "🤠"}
-                <span className="absolute left-0 top-0 z-10 flex h-5 min-w-5 -translate-x-[35%] -translate-y-1/2 transform items-center justify-center rounded-full border border-sky-200/65 bg-slate-50/95 px-1 text-[0.78rem] font-semibold leading-none text-slate-800 shadow-[0_0_0_2px_rgba(255,255,255,0.56),0_8px_16px_-14px_rgba(15,23,42,0.72)]">
+                <span className="mobile-player-vp-badge absolute left-0 top-0 z-10 flex h-5 min-w-5 -translate-x-[35%] -translate-y-1/2 transform items-center justify-center rounded-pill border px-ui-1 type-hud-vp-mobile">
                   <AnimatedCount
                     value={mobileVpDisplay}
                     className="player-vp-count"
@@ -506,7 +506,7 @@ export function MobilePlayerCockpit({
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col gap-1 pr-0">
+            <div className="flex shrink-0 flex-col gap-ui-1 pr-ui-0">
               <MobileStatChip
                 id={`p${player.id}-longest-road`}
                 iconSrc="/svgs/icon_longest_road.svg"
@@ -524,13 +524,13 @@ export function MobilePlayerCockpit({
             </div>
 
             <span
-              className="-ml-1 h-10 w-px shrink-0 rounded-full bg-sky-100/35 shadow-[1px_0_0_rgba(255,255,255,0.2)]"
+              className="mobile-player-divider -ml-ui-1 h-10 w-px shrink-0 rounded-pill"
               aria-hidden={true}
             />
 
             <div
               id={`p${player.id}-resources`}
-              className="flex min-w-0 flex-1 items-end justify-around gap-0 min-[400px]:gap-0.5"
+              className="flex min-w-0 flex-1 items-end justify-around gap-ui-0 min-[400px]:gap-ui-0.5"
             >
               {RESOURCE_ORDER.map((resource) => (
                 <MobileResourceCount
@@ -564,7 +564,7 @@ export function MobilePlayerCockpit({
 
         {showCommandRow ? (
           <div
-            className="grid grid-cols-[5.75rem_minmax(0,1fr)_4rem] gap-1.5 min-[400px]:grid-cols-[6.25rem_minmax(0,1fr)_4rem] min-[400px]:gap-2"
+            className="grid grid-cols-[5.75rem_minmax(0,1fr)_4rem] gap-ui-1.5 min-[400px]:grid-cols-[6.25rem_minmax(0,1fr)_4rem] min-[400px]:gap-ui-2"
             data-mobile-command-row="true"
           >
             <MobileMetaFeedTrigger
@@ -592,11 +592,11 @@ export function MobilePlayerCockpit({
               />
             ) : (
               <div
-                className="mobile-command-row__status flex h-[3.85rem] min-w-0 items-center justify-center rounded-[1.15rem] border border-white/[0.38] bg-white/[0.2] px-3 text-center text-[0.95rem] font-semibold leading-tight text-white shadow-[0_16px_34px_-24px_rgba(15,23,42,0.56),inset_0_1px_0_rgba(255,255,255,0.26)] backdrop-blur-xl max-[380px]:h-[3.25rem] max-[380px]:text-[0.8rem]"
+                className="mobile-command-row__status flex h-[3.85rem] min-w-0 items-center justify-center border px-ui-3 text-center type-hud-status max-[380px]:h-[3.25rem] max-[380px]:type-hud-status-compact"
                 data-mobile-command-status="true"
                 data-allow-interaction="true"
               >
-                <span className="flex min-w-0 max-w-full items-center justify-center gap-2 drop-shadow-[0_1px_1px_rgba(15,23,42,0.45)]">
+                <span className="flex min-w-0 max-w-full items-center justify-center gap-ui-2 drop-shadow-[0_1px_1px_rgba(15,23,42,0.45)]">
                   <span className="min-w-0 overflow-hidden whitespace-normal [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
                     {passiveCommandLabel}
                   </span>
@@ -606,7 +606,7 @@ export function MobilePlayerCockpit({
                         {` / Rolled ${passiveCommandDice[0]} and ${passiveCommandDice[1]}`}
                       </span>
                       <span
-                        className="inline-flex shrink-0 items-center gap-1"
+                        className="inline-flex shrink-0 items-center gap-ui-1"
                         aria-hidden="true"
                       >
                         {passiveCommandDice.map((die, index) => (

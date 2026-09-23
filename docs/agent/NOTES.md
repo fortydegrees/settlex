@@ -1,5 +1,247 @@
 # NOTES
 
+- Homepage play-button state correction (2026-09-23):
+  - `HomeModeButton.module.css` owns the play dock hover/press geometry. Shared
+    `settlex-ui-button` hover had no visual delta; use a small 2px lift and
+    matching base/shadow increase for enabled mode actions. Exclude `:active`
+    from hover so a held button still sinks instead of staying lifted.
+  - `useLobbyHomeActions` disables all mode choices while one starts; keep that
+    duplicate-request gate. The shared disabled recipe flattened every face to
+    pale grey. The scoped mode-button disabled recipe restores each original
+    palette, softens only inactive choices to 78%, and leaves the active spinner
+    at full strength using `data-active`. The marker colours stay intact.
+  - Reduced motion keeps the hover shadow cue but removes the lift. Storybook
+    `ClarityIdle`, `ClaimedStartingPuffer`, and `ClaimedCreatingFriend` are the
+    fast visual references for these states.
+
+- Completed global Clarity migration (2026-09-23):
+  - Current ledger is 292 occurrences / 44 files, not unfinished ordinary chrome.
+    UI_STYLE_EXCEPTIONS documents board/card graphics, player data, joined layout
+    and deliberate art studies. Do not mechanically normalize these values.
+  - Complete type-hud roles preserve compact metrics. Home action/icon/marker
+    roles preserve the approved buttons; Outfit remains normal UI and custom
+    display text stays opt-in. Dark effects controls use shared console materials.
+  - Semantic colours must exist in theme.cjs. Slash-opacity forms do not compile
+    with this configuration; use a named material. Policy rejects raw accents and
+    inline type/font/space/radius variable overrides as well as literal classes.
+  - Avatar shadow recipes must compose Tailwind ring and ring-offset shadows;
+    border-color alone does not colour a ring. Keep the warning rim on inactive
+    over-limit opponents; active-turn glow behavior remains unchanged.
+  - Generic DockCard Trade passes animation geometry. Adapt it to a zero-argument
+    onTradeClick; resource quick-trade still passes the resource string. Do not
+    mistake launch geometry for a resource preset. Hook regressions cover both.
+  - TradeDiscardModal preserves forced/dev-card cancellation policy and is named
+    role=dialog, but is not focus-trapped; do not add aria-modal without fixing
+    actual focus behavior. Its auto-fit grid fits two columns at 320px and five
+    at desktop; capped height scrolls instead of clipping phone actions.
+  - Legacy board-editor generator omits resource on empty tiles; Board then sends
+    undefined resource to EditableTile/useDrag. This preexisting prototype crash
+    is separate work, not hidden by the passing production build.
+  - Full verify, production build and Storybook build passed. Stop the 3011 dev
+    server before production build because both own .next; restore afterward.
+    No remote enforcement settings or deployment changed. See completion review
+    for exact logs, warnings, browser samples and remaining accessibility limits.
+
+- Game settings/rules foundations (2026-09-23):
+  - Ledger 1,937 / 61 files; 36 removed, no growth. GameInfoDialogs has no tracked
+    findings. GameScreen retains six unrelated layout-spacing findings.
+  - Use existing 8px inset rows inside the 22px Dialog pane; row labels use
+    action-small, values label, and dialog actions retain normal 14px controls.
+    Both type roles are 14px/20px; values are 500 weight, labels 600.
+  - GameScreen still owns open flags, blocking-modal calculation, mute state/
+    persistence and seven rule rows. The presentational module forwards callbacks.
+  - Story toggles are local state only; do not change live audio preferences for
+    routine visual QA. Phone menu and desktop utilities were checked in sandbox.
+  - Long custom rule identifiers wrap at 320px without horizontal overflow. The
+    shared Dialog auto-focuses Close and can initially scroll to the bottom on
+    short screens; scrolling restores the heading. That existing focus policy
+    was not changed by this presentation pass.
+
+- Game chrome foundations (2026-09-23):
+  - Current ledger 1,973 / 61 files; 104 removed, no added exceptions. The feed
+    hosts and phone match menu now have zero tracked findings.
+  - Use utility-pill shape with game-utility HUD density over the board; denser
+    pane for the phone popover/drawer. Feed panels use 22px corners; phone drawer
+    keeps its bottom edge square. It retains its 52vh/26rem height cap.
+  - Feed tabs and menu rows have explicit min-h-[2.75rem] (44px); this checkout's
+    Tailwind does not emit min-h-11. Shared type-action-small means 14px/600/20px.
+  - Preserve desktop feed 210/190ms phase timers and geometry. Do not replace them
+    with unrelated global motion durations. Keyboard focus on clipped headers/tabs
+    uses an inset outline; restore tooltips also reveal on keyboard focus.
+  - Phone menu explicitly overrides Popover's w-max using !w-[15.75rem]. Menu
+    callbacks close first, Resign still follows canResign. Story actions are local.
+  - Glass hover recipes need supports-gated backgrounds as well as opaque
+    reduced-transparency overrides; otherwise hovering defeats the no-blur fallback.
+  - The existing outside board drag still pans and dismisses the drawer. No
+    dismissal/wiring change in this appearance migration. Vaul still logs its
+    description warning despite the existing explicit description ID; separate
+    accessibility wiring work should address that, not a source-only style test.
+  - Local previews restarted on 3011/6011. Initial Next chunk-load error cleared
+    on reload after compilation; no application-code fix was needed.
+
+- Shared Log/Chat feed foundations (2026-09-22):
+  - Current ledger 2,077 / 65 files, 104 removed. FeedPanel, ChatPanel and
+    GameLogPanel have no tracked findings. FeedTokenRow retains 14 miniature
+    tile/card graphic findings; keep those distinct from UI prose typography.
+  - Use body-small for transcript prose, action-small for inline player/card
+    names and label for the compact composer. Its 12px/8px token padding and
+    20px line height preserve the existing ~36px height inside the game HUD.
+  - Feed recipes own materials, not placement. LeftMetaRail and MobileMetaDrawer
+    still override frame/header layout and are NOT fully migrated by this pass.
+  - Successful local sends still force chat to the bottom; neither formatting,
+    replay selection nor FeedPanelScrollState behavior changed. GameFeeds stories
+    send to local fixture state only, never the live transport.
+  - Disabled composer needs an explicit reduced-transparency selector so its
+    :disabled background cannot override the opaque fallback.
+  - Phone QA observed that an outside board drag pans the board and dismisses
+    the open feed. Existing MobileMetaDrawer sets dismissible=true and replaces
+    the outside event's preventDefault with a no-op. This conflicts with older
+    notes saying the tray stays open; its behavior was not changed here and
+    should be reviewed separately before a drawer migration.
+
+- Public-profile/homepage metadata foundations (2026-09-22):
+  - Current ledger 2,181 / 68 files, 102 findings removed. Profile and top-nav
+    consumers have no tracked findings. Avatar colour stays data; optional logo
+    artwork, unused exported action-style metadata and approved home-button CSS
+    remain explicit inventory, not silently accepted new exemptions.
+  - Profile names use Outfit `type-title`, statistics `type-page`, history names
+    `type-action-small`, prose `type-body-small`; profile emoji is a separate
+    central 32px graphic role. Never apply the partial custom face to usernames.
+  - Release panels need an explicit caller-owned width: shared Popover's `w-max`
+    otherwise wins over normal width utility classes. LongReleaseNotes reproduced
+    a ~714px panel; scoped important 22rem width gives 352px, keeping normal
+    Popover max-height/scroll behavior. Global Popover was not changed.
+  - LongHistoryLabels and LongReleaseNotes are layout fixtures; production data,
+    date/result formatting, encoded game URLs and three-highlight cap are intact.
+    A pre-existing homepage tab held stale classes until reload; check the actual
+    DOM before claiming local previews have the latest migration.
+
+- Recovery/postgame/replay foundation migration (2026-09-22):
+  - Current ledger: 2,283 / 70 files. Keep player-colour expressions and the
+    replay drawer's flat bottom as explicit data/geometry findings; do not add
+    broad exemptions to make the remaining count zero.
+  - Replay axes use full `type-chart-tick` (10px/700/1.2), not caller font
+    fragments. This small data-label role is not for prose or ordinary controls.
+    Rail/thumb/hatching materials live in globals.css; 17px thumb and 30px/8px
+    plot insets remain coupled to existing replay geometry helpers.
+  - Replay perspective buttons retain their selection semantics and name-limit/
+    select fallback while using the existing segment material. At 21rem panel
+    width, `px-ui-1` keeps the short-name fixture untruncated at caption size.
+  - Result Button replacements must preserve pending gates, replay retry copy,
+    alert resume callbacks and confetti ownership. Custom celebration font stays.
+  - ReplayPanel stories use `useReplayNavigation` plus the production turn
+    helpers. This is interactive fixture evidence, not archived-board/live-flow
+    verification; never remove spoiler tests on the strength of a screenshot.
+
+- Account/lobby foundation migration (2026-09-22):
+  - Account menu, identity, match-alert control, search, friend invitation and
+    open-room consumers now have no tracked styling debt. The shrink-only ledger
+    is 2,645 occurrences / 77 files; remaining recovery, postgame/replay, other
+    product chrome and bespoke game UI are separate migration slices.
+  - Technical metadata uses the complete `type-code-caption` role. Emoji glyphs
+    are graphics: size them through the shared avatar/emoji recipes on a child,
+    not a partial font override on Button. Player-colour gradients remain intact.
+  - Keep production lifecycle callbacks untouched during presentation migration.
+    Storybook mocks need controlled local state for input/emoji checks. Empty
+    input was verified with keyboard deletion after automated empty-fill failed
+    to clear the DOM value; this did not justify an application change.
+
+- Enforced Clarity foundations (2026-09-22):
+  - Current implementation contract: `DESIGN_SYSTEM.md`; canonical values in
+    `app/ui/theme.cjs`, materials in `globals.css`. A `type-*` role owns family,
+    size, weight, line height and tracking; HTML heading level is independent.
+    Consumers choose role, tone and layout instead of individual type fragments.
+  - Next's `--font-outfit` must be registered on `html`, alongside the root
+    foundation aliases. A body-only variable resolves too late and can silently
+    use a locally installed fallback. Storybook mirrors the root/portal scope.
+  - Complete-role shared controls and account forms are the first migrated slice.
+    Existing board/HUD coordinates and Tailwind defaults are not redefined.
+    The no-new-drift policy has a counted, shrink-only legacy ledger; its pass
+    does not prove whole-site migration, visual correctness or accessibility.
+  - Shared `DisplayText` protects the partial Black/900 custom face with a
+    whole-string Outfit fallback. `celebration` is a complete responsive role;
+    the fitted wordmark is the explicit exception, not the normal h1/UI font.
+  - The separate wordmark task owns `HomeBrand.module.css` and homepage lockup;
+    it is an approved recipe-owner exception. Preserve its responsive fit.
+
+- Shared Clarity control family (2026-09-22, supersedes local material trials):
+  - Corners follow role, not size or importance: 8px icon tiles/insets, 14px
+    play/form controls and inputs, 22px panels, full rounding for standalone
+    account/header utilities and the auth segmented selector. A pill is still a
+    button; it is not a synonym for secondary. Use `Button variant="utility"`
+    for floating utility chrome, not a caller-specific rounding override.
+  - `app/globals.css` owns button face, ink, highlight, base and shadow palettes.
+    HomeModeButton consumes them while retaining its approved dimensions,
+    stronger depth, leading icons, left-aligned labels and trailing markers.
+    All three homepage buttons' computed appearance matched the pre-refactor
+    baseline. Standard form buttons share the material with compact depth.
+  - AccountEntryModal now centers headings, drops the redundant sign-in intro,
+    shortens save-profile copy and inherits shared primary styling; its CSS
+    module only handles heading alignment and long-username wrapping. Labels
+    and field values remain left-aligned. Auth handlers are unchanged.
+  - Storybook `Components/Actions/Button/ButtonFamily` uses the actual account
+    trigger, play dock and account modal together. `EmailOnly` records the local
+    sign-in configuration. EmailSubmitting waits for dialog initial focus before
+    typing; otherwise autofocus could interrupt the synthetic email after one
+    character. Pending/validation/provider stories remain real UI with mocked
+    external callbacks, not live sign-in verification.
+  - The approved white-on-bright-lime treatment remains a contrast limitation,
+    including compact primary buttons. This is not an accessibility sign-off;
+    do not silently darken the chosen face or switch its ink again.
+
+- Two-ended homepage buttons (2026-09-22, latest refinement):
+  - User rejected the single-ended trials and confirmed restoring icons on the
+    left plus markers on the right. Use Heroicons UserGroupIcon (three avatars),
+    CpuChipIcon and LinkIcon in the shaded left tiles; show 1v1, AI and + as
+    plain trailing text without shaded backgrounds. V2 keeps its V2 marker.
+    Keep labels left-aligned and subtitles absent. Do not let label length move
+    the tiles or reintroduce centring offsets.
+  - User preferred this restored balance and called Bot's palette perfect.
+    Freeze Bot/V2's deep-brown foreground, warm-brown marker and pale icon tile.
+    Both dark Online marker trials (#1a2e05 and #124b12) were rejected beside
+    the white title/icon. Latest trial derives Online/Friend markers from their
+    foreground at 80% strength: soft white for 1v1, softened navy for +. This
+    follows Bot's primary/secondary hierarchy without forcing identical inks.
+    Markers remain unboxed, 16px desktop / 14px phone; disabled markers inherit
+    neutral text. Button faces, icon tiles and layouts are unchanged. This is a
+    local palette refinement, not a component refactor or accessibility pass.
+  - Keep 2a faces, shadows, label type, equal widths and 72px/66px heights.
+    Tile-to-text gaps are 20px desktop / 16px phone and dense four-mode
+    desktop; the existing button padding provides the fixed left inset.
+    Existing pending spinner replaces the leading tile's contents; mode handlers
+    and pending labels are unchanged. V2 uses the chip and retains its V2 label.
+  - This supersedes the single-tile-only trials; it does not change the compact
+    username dialog or the shared button system.
+
+- Button-family comparison (2026-09-22):
+  - User approved centring the single-line homepage labels between the equal
+    icon/badge tiles, keeping the 2a palette, dimensions and equal columns.
+    Removing subtitles had exposed the old left-biased text-block alignment.
+  - Username entry now previews the same primary gradient/white type/top light
+    and 3px base on its existing compact Button, with a smaller shadow and no
+    icon/badge tiles. This applies to the existing online/friend username form;
+    other auth actions and global Button recipes are unchanged.
+  - Keep this trial scoped in AccountEntryModal.module.css until the hierarchy
+    is accepted. Sharing material does not mean all controls need homepage size
+    or decoration. Existing low-contrast lime/white caveat still applies.
+
+- Homepage mode-button refinement (2026-09-22):
+  - User feedback identifies the board tiles and settlements as the visual source:
+    translate their lit faces, colour and depth into UI without literal textures.
+    The provisional wordmark is not the source of the system.
+  - The darker-green reinterpretation was rejected. User explicitly chose the
+    actual "homepage under 2a" styling with equal widths and no subtitles.
+    `HomeModeButton.module.css` ports its bright lime/amber gradients, white
+    friend face, light inset tiles, glyphs, 3px coloured base, top highlight,
+    shadows, 18px desktop / 15.5px phone labels and 90ms press treatment.
+    Do not darken the green or add a full outline as a silent contrast fix.
+  - Retain the useful mode badges and existing handlers/pending/focus behavior.
+    No filler descriptions, extra shimmer, shared Button changes or board changes.
+    Reference sizes are 72px desktop / 66px phone; phone spacing is 10px.
+  - White on bright lime retains the reference's low contrast. This is an explicit
+    visual-review trade-off, not an accessibility pass; resolve it separately and
+    openly rather than quietly replacing the chosen palette again.
+
 - Clarity design boundary (2026-09-22):
 - The approved modern smooth-glass direction uses Outfit for UI. The existing
   Fredoka wordmark is provisional, retained without redesign and not a constraint
@@ -4722,6 +4964,52 @@
     `boardgame.io/dist/cjs/core.js` file.
   - Keep `server/__tests__/nodeRuntimeImport.test.js` as the focused executable
     regression check for that runtime boundary.
+
+
+- Approved J Black integration boundary (2026-09-22): use the unchanged v0.4 partial display font for the fitted live-text wordmark and deliberate display moments. HomeBrand.module.css owns responsive title placement: actual settlement on desktop, centered text below account controls on phones. Keep ordinary UI and arbitrary player-name result titles in Outfit. GameOverModal opts into DisplayText variant="celebration" only for the local winner, with whole-string coverage fallback. The shared foundation task owns font/type tokens; avoid recreating consumer-specific --settlex-ui-type-* overrides. Original e and general font kerning remain unchanged; logo spacing stays separately fitted. This integration is in the Clarity worktree and has not been deployed.
+- Wordmark follow-up (2026-09-23): the user selected treatment C without the icon, superseding the desktop-settlement default above. HomeBrand.module.css scopes the near-white fill and fine blue edge to the homepage wordmark. After full-size review, the stroke was reduced to 1.5px desktop / 1px phone and the solid lower shadow replaced by a small translucent edge. Paint the stroke behind the fill to preserve the letterforms. The default logo variant is now `none`; explicit legacy logo query variants remain available for comparison. Desktop copy follows the title at its existing left inset; mobile remains centered below account controls. No global font/type-role changes or deployment.
+- Homepage subtitle (2026-09-23): use `1v1 Settlers of Catan` in the shared Outfit title role on desktop (24px) and section role on phones (18px); the user rejected caption-sized text and removed the Beta line. Use a 2px grid gap below the wordmark, reduced from 6px to bring the subtitle closer. At 640px and above, inset the subtitle by .125em (3px) to optically align its straight leading 1 with the curved S. Keep the subtitle centered with the phone wordmark without an inset. Below 640px, live board and static poster reserve 360px of UI height and use a -44px center offset so the top ports clear the subtitle on short phones. The former 276/-56 compact board values remain for 640-759px tablets. Search/share metadata retains its longer explanatory description; this is homepage display copy only.
+
+- Clarity button-material follow-up (2026-09-23): green/amber play faces retain
+  their shaded tile material; the shared secondary face now has an equally
+  restrained blue-white gradient instead of flat white. Colour feedback is a
+  light overlay owned by the shared button variants. Large homepage play
+  buttons add the role-specific lift using the shared fast duration and a
+  gentler ease-out; compact form actions remain stationary, and utility pills
+  keep their distinct glass material. Reduced motion removes the lift and
+  transition without removing the hover colour cue.
+
+- Homepage sky-copy correction (2026-09-23): top links, descriptor, Beta and
+  the release trigger use light ink over the blue title field, not the generic
+  dark product-text role. Keep the small shadow local to those ambient labels;
+  do not change the light utility button or the release panel's dark-on-light
+  content. The custom wordmark colour remains a separate unsettled decision.
+
+- Homepage phone-proportion/selection boundary (2026-09-23): keep the signed-out
+  utility pill's smaller-phone shadow quieter without changing the global pill
+  recipe. On larger phones the stacked play dock may stop at 376px instead of
+  spanning the full 430px viewport; preserve the current button height and
+  palette. The trailing `type-home-marker` is 16px on phones, with the same
+  16px wide role on desktop. Disable native selection only for the decorative
+  board, title and action controls; ordinary links and dialog content remain
+  selectable.
+
+- Signed-out homepage account pill follow-up (2026-09-23): the earlier
+  smaller-phone shadow reduction is superseded. The local signed-out trigger
+  now keeps only its inset highlight and 1px white rim, with no outer cast
+  shadow at any width. Keep the shared utility material and signed-in account
+  trigger unchanged; this is a controlled visual trial, not a global button
+  recipe change.
+
+- Feedback-action boundary (2026-09-23): `HomeErrorBanner` now owns the exact
+  production lobby-error composition and its Storybook state. Its lone Dismiss
+  uses shared `subtle`, matching the flat quiet-action language of panel Refresh.
+  Reconnect keeps `ghost` Dismiss because it is paired with a prominent Rejoin
+  match action. Do not flatten or raise every button by label alone; choose
+  emphasis by action hierarchy. The previous source-grep overlay assertion was
+  removed because it pinned the former file location; the rendered Storybook
+  state now checks the real component and Dismiss callback. This pass did not
+  alter match recovery behavior.
 
 - Game-start and public matchmaking boundary (2026-08-22):
   - Game-start is a fresh-game board cue, not a match-found lobby cue. Prime

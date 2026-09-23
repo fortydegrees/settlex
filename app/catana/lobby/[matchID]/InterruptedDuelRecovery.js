@@ -16,15 +16,15 @@ export function InterruptedDuelRecovery({
       className="min-h-screen"
       style={{ background: CATANA_TABLE_BACKGROUND }}
     >
-      <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-10">
-        <Panel bodyClassName="p-5 sm:p-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-ui-4 py-ui-10">
+        <Panel bodyClassName="p-ui-5 sm:p-ui-6">
           <div className="settlex-ui-label">
             Match update
           </div>
-          <h1 className="mt-3 text-2xl font-semibold text-slate-900">
+          <h1 className="mt-ui-3 type-title text-ink-primary">
             Duel interrupted
           </h1>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
+          <p className="mt-ui-3 type-body-small text-ink-secondary">
             The other player left before the duel could begin. You can return
             to the lobby or look for another opponent now.
           </p>
@@ -33,10 +33,10 @@ export function InterruptedDuelRecovery({
               variant="danger"
               title="Couldn’t leave the duel"
               body={error}
-              className="mt-5"
+              className="mt-ui-5"
             />
           ) : null}
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-ui-6 flex flex-col gap-ui-3 sm:flex-row">
             <Button
               variant="secondary"
               className="w-full"

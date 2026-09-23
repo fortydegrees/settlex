@@ -1,5 +1,437 @@
 # PROGRESS
 
+## Status (2026-09-23, quieter signed-out account pill)
+- Removed the homepage Sign in pill's outer cast shadow at all widths while
+  retaining its white rim, face, full rounding, 44px hit area and interactions.
+  The shared utility-button recipe and signed-in account trigger are unchanged.
+- Compared the live homepage at 1440x900 and 390x844. This is a local visual
+  trial in the Clarity worktree, not a production deployment.
+
+## Status (2026-09-23, homepage subtitle)
+- Tightened the wordmark/subtitle gap from 6px to 2px, lifting the subtitle
+  4px on desktop and phones while retaining its horizontal alignment.
+- Added a 3px desktop subtitle inset for optical alignment with the curved S;
+  phone copy retains its centered alignment without an inset. Checked at
+  1440x900 and 390x844; focused lint and UI policy passed.
+- Replaced the long homepage descriptor with `1v1 Settlers of Catan`, visible at every size:
+  24px on desktop and 18px, centered, on phones. Removed the Beta status line.
+- Added phone board clearance for the subtitle, keeping the live board and
+  pre-hydration poster aligned. Desktop/tablet board geometry is unchanged.
+- Checked the real homepage at 1440x900, 390x844 and 375x667. Focused Next lint
+  and `pnpm ui:check` passed. Local Clarity changes only.
+
+## Status (2026-09-23, lighter wordmark edge)
+- Reduced the C wordmark stroke from 2px to 1.5px on desktop and from 1.5px to
+  1px on phones. Replaced the solid blue lower shadow with a smaller translucent
+  edge; the font, spacing and placement are unchanged.
+- Checked the live homepage at 1440x900, 390x844 and 375x667. `pnpm ui:check`
+  passed. This remains a local Clarity change.
+
+## Status (2026-09-23, outlined text-only wordmark)
+- Applied the selected C treatment to the homepage: original J Black lettering
+  in near-white with a fine blue edge, without the settlement icon by default.
+- Kept the desktop title at the left inset and the phone title centered below
+  account controls. The fitted spacing and font asset remain unchanged.
+- Checked `/catana/dev/home-table` at 1440x900, 390x844 and 375x667: no horizontal
+  overflow, title/account clearance intact, and no browser errors or warnings.
+- Focused Next lint and `pnpm ui:check` passed. Added `OutlinedTextOnly` to the
+  existing title-chrome Storybook stories. Local Clarity checkout only.
+
+## Status (2026-09-23, feedback-action hierarchy)
+- The homepage lobby-error banner now uses the shared flat `subtle` Dismiss
+  action instead of a raised `secondary` action. The real banner is cataloged
+  as `LobbyErrorDismiss` in Storybook with a callback interaction check.
+- Removed a source-text assertion tied to the banner's former file location;
+  the Storybook state now exercises the production composition and callback.
+- Audited other banner Dismiss actions: reconnect's `ghost` Dismiss remains
+  appropriate beside its stronger Rejoin match action. No global button
+  material or gameplay state flow changed.
+- Checked the rendered Storybook state at desktop and 390px phone width.
+
+## Status (2026-09-23, homepage phone proportions and selection)
+- Softened the signed-out utility pill's shadow only at 390px and narrower;
+  its glass face, 44px hit area and desktop treatment are unchanged.
+- Capped the stacked mode dock at 376px on larger phones and raised its
+  trailing-marker role from 14px to 16px. The 375px dock still fills its
+  available width; desktop columns and the shared button palette are unchanged.
+- Suppressed native text selection on the decorative home board, poster,
+  wordmark and controls. Normal links and dialog text retain browser selection.
+- Checked the live route at 375x667, 430x932 and 1440x900, including Cmd+A,
+  board drag, and the Sign in dialog. Local preview only; no deployment.
+
+## Status (2026-09-23, homepage sky-copy tone)
+- Restored a light homepage-specific tone for top links, the short descriptor,
+  Beta status and the release trigger. Those elements had inherited generic
+  dark ink during the Clarity migration despite the earlier sky-chrome
+  direction. A restrained blue shadow keeps the small copy readable on the
+  lighter part of the title background.
+- Kept the wordmark, Sign in pill, mode buttons and release popover contents on
+  their existing materials. Checked the real homepage at 1440x900 and 390x844,
+  including the opened release popover.
+
+## Status (2026-09-23, play-button material and hover follow-up)
+- The shared secondary action face now shades from white to pale blue, so
+  `Play a Friend` and compact secondary actions use the same light tile
+  material as the existing green/amber button family. Utility pills keep
+  their separate glass recipe.
+- Shared green, amber and secondary actions now gain a restrained colour wash
+  on hover. The homepage dock retains its tactile 2px lift, but it uses the
+  shared 140ms fast duration with ease-out instead of the abrupt 90ms curve.
+- Checked the real homepage and the production ButtonFamily/starting stories,
+  including the stacked phone layout and reduced-motion hover behavior.
+
+## Status (2026-09-23, homepage play-button interaction repair)
+- Restored a 2px hover lift and matching depth on the three play actions; their
+  existing press depth still sinks when held. Reduced-motion hover changes only
+  the shadow, with no movement.
+- Busy mode selection still disables every action against duplicate requests.
+  Disabled actions now retain their green/amber/white materials; inactive modes
+  soften to 78% opacity while the selected mode remains fully coloured.
+- Verified idle hover/press and Bot/Friend starting states in the live local
+  browser and production-composed Storybook stories. No action handlers or
+  game rules changed; this remains local to the Clarity worktree.
+
+## Status (2026-09-23, global Clarity migration complete locally)
+- Finished ordinary production/developer chrome: resource selection, compact
+  HUD, loading, home materials and developer consoles now share enforced roles.
+  Storybook uses production owners and includes meaningful interaction states.
+- Styling ledger is 292 occurrences / 44 files, down 1,645 this pass and 2,796
+  since adoption. Every retained artwork/data/geometry family has an explicit
+  rationale in UI_STYLE_EXCEPTIONS; no new debt or broad directory exemptions.
+- Tightened semantic colour, opacity, inline foundation override and accent
+  checks. Full verify passes: 29 policy/display, 153 engine, 279 server tests
+  (8 skipped), 194 app test files, clean ESLint. Production and Storybook builds
+  pass. Final independent review and scoped re-review are clean.
+- Desktop/phone manual state matrix and developer controls checked; exact
+  375x667 cockpit anchors/metrics preserved. A preexisting Trade callback payload
+  bug found during QA was repaired narrowly with three regression tests.
+- Known limits: approved lime/white contrast, existing focus/description warnings,
+  no live multiplayer/physical-device certification; unrelated legacy board-editor
+  undefined-resource crash blocks that prototype's runtime sign-off.
+- Final evidence and scope are in CLARITY_UI_REVIEW. Preview servers/tabs retained,
+  temporary QA tabs closed and overrides reset. No dependencies, authoritative
+  rules, commit, push, deployment or remote branch-protection changes.
+
+## Status (2026-09-23, game settings/rules foundations)
+- Extracted the two production dialog compositions into GameInfoDialogs; their
+  state, audio handler and rule-row derivation remain in GameScreen unchanged.
+- Reused shared Dialog/Button/inset recipes, complete type roles, semantic inks
+  and spacing. Rule values wrap in equal columns; no new primitive or exceptions.
+- Added four Game Info Dialogs stories: audio on/muted, standard/custom rules.
+  Local callbacks, ordered values, Close/Escape and trigger focus return are checked.
+- Removed 36 findings: 1,937 remain in 61 files, 1,151 fewer than adoption.
+- Verified actual desktop/phone sandbox entry points, Storybook states, long
+  identifiers at 320x568 and reduced effects. 28 targeted tests, lint/policy and
+  diff checks pass; independent read-only review found no actionable issues.
+- No game behavior, persisted audio preference, board geometry, dependencies,
+  commit, push or deployment changes. Other gameplay dialogs remain to migrate.
+
+## Status (2026-09-23, game feed/utility chrome foundations)
+- Migrated desktop feed frames/headers/tooltips, phone feed drawer and match menu,
+  and the three GameScreen utility overrides to shared material, shape, ink,
+  complete type roles and spacing. HUD stays lighter than the off-board pane.
+- Added five Game Chrome stories using the production owners, with local menu
+  callback/close, spectator/replay restriction, tab/send/Escape and read-only checks.
+- Removed 104 findings, with no growth: 1,973 remain across 61 files (1,115 fewer
+  than adoption). MobileMatchMenu, MobileMetaDrawer, LeftMetaRail and
+  metaPanelChrome now have no tracked findings.
+- Fresh verification: 4 existing targeted tests, 24 policy/display tests, full
+  lint/policy, five rendered stories and integrated sandbox at 1440x900,
+  375x667, 390x844 and 430x932. Desktop feed rectangles remain unchanged.
+- Read-only review found an unsupported-blur fallback gap; solid defaults now
+  precede supports-gated glass. Keyboard focus and reduced effects checked.
+- Preserved game state/callbacks, preferences, feed transition timers, board and
+  action dock geometry, and existing outside-drag drawer dismissal. This is not
+  exhaustive gameplay/device sign-off. No deployment, commit, push or dependencies.
+
+## Status (2026-09-22, shared Log/Chat feed foundations)
+- Migrated the four shared feed components' prose, spacing, corners and input/
+  selection materials. Player colours and miniature dice/card/tile art remain
+  separate from prose roles. Desktop/mobile host geometry and wiring unchanged.
+- Added six production-faithful Game Feeds stories, including local send/clear,
+  read-only, long-message and keyboard-selectable replay states.
+- Removed 104 tracked findings: 2,077 remain across 65 files (1,011 fewer than
+  the initial inventory). No new exemptions; 14 retained feed findings are art.
+- Fresh checks: 51 feed/format/scroll tests plus 24 policy/display-font tests;
+  full lint/policy/diff checks clean; desktop/phone Storybook and integrated
+  sandbox checks. Temporary QA tab closed and overrides reset. Independent read-only
+  review found no blocking issues; disabled reduced-transparency specificity
+  was tightened. Exact checks and limits are in CLARITY_UI_REVIEW.md.
+- Board/action dock, mobile drawer, desktop rail, lifecycle and turn behavior
+  were not changed. No production build/deploy, dependencies, commit or push.
+
+## Status (2026-09-22, public-profile and homepage metadata foundations)
+- Migrated public profile, top navigation, descriptor/status and release-note
+  presentation to complete typography roles, semantic ink, spacing and corners.
+  Profile data, replay hrefs, account/mode actions and wordmark remain unchanged.
+- Added LongHistoryLabels and LongReleaseNotes stories. Long release copy exposed
+  an existing Popover width conflict; fixed at the homepage call site only.
+- Removed 102 tracked findings: 2,181 remain across 68 files. PublicProfileView
+  and SystemTopChrome have zero tracked findings; explicit legacy artwork/action
+  metadata and untouched mode-button internals remain inventoried.
+- Fresh checks: 29 targeted tests, full lint/policy and diff checks passed;
+  independent review found no actionable issues. Desktop/phone, keyboard focus,
+  pending controls and reduced effects checked; actual homepage preview refreshed
+  and verified. See CLARITY_UI_REVIEW.md for exact coverage and limits.
+- No gameplay/HUD change, dependencies, commit, push, merge or deployment.
+
+## Status (2026-09-22, recovery/postgame/replay foundations)
+- Migrated eleven presentation consumers across recovery, finished-match UI and
+  replay to complete type roles, semantic inks, token spacing and shared corner/
+  material recipes. Result actions now use Button; unavailable-game navigation
+  preserves Link. Replay keeps its native range, chart/seek calculations,
+  spoiler filtering, player identity and mobile/desktop layout ownership.
+- Added idle pending/error, long unavailable ID, replay preparing/failed/active
+  and expanded mobile/four-player stories. The panel fixture now uses existing
+  navigation helpers so seek/event/turn controls visibly update cursor and score.
+- Removed 362 policy findings: 2,283 remain across 70 files. The five retained
+  findings in this slice are data-derived player colours and flat drawer-bottom
+  geometry. No checker exemptions or ledger growth were added.
+- Fresh verification: 64 targeted tests and full lint/policy passed. Desktop
+  1440×900 and phones 375×667, 390×844, 430×932 sampled; checked dense/error/pending
+  states, keyboard seeking, perspective changes, drawer focus return and reduced
+  motion/transparency. Exact coverage and limits: CLARITY_UI_REVIEW.md.
+- Independent review completed; fixed and visually checked the pending-state
+  close icon. Final lint/policy/diff checks passed; temporary QA tab closed and
+  responsive overrides reset, preserving the user's three existing previews.
+- Game HUD/board, homepage controls, wordmark and lifecycle logic untouched.
+  No live providers, full game-state matrix or production sign-off. Existing
+  white-on-lime contrast and tooling deprecation warnings remain; no deployment,
+  dependencies, push or merge.
+
+## Status (2026-09-22, account and lobby foundation migration)
+- Migrated the account menu, identity editor, match-alert control, search/rescue,
+  friend invite and open match room to complete typography roles, semantic tones,
+  shared corners and UI spacing. Added the full code-caption role and central
+  emoji graphic recipes. Production callbacks, state gates and animation timing
+  are unchanged; game/HUD and approved homepage buttons were not edited.
+- Added identity LongUsername, invite LongNamesAndLink/CancelPending and room
+  NoOpenSeats stories. Emoji-browser and invite story harnesses now own local
+  state so controls update visibly. All six migrated consumers have zero tracked
+  findings; removed 210 ledger occurrences, leaving 2,645 across 77 files.
+- Fresh verification: 65 targeted tests, full Next lint, UI policy and diff check
+  passed. Reviewed desktop/phone long-name compositions, invite copy and mocked
+  join, room seat selection, loading/pending/errors, empty-name disabled states,
+  emoji/colour selection, Escape focus return and reduced effects. See
+  `CLARITY_UI_REVIEW.md` for the exact sampled scope.
+- No whole-site conformity, live auth/matchmaking or production sign-off claimed.
+  White-on-lime contrast remains open. No dependencies, deploy, push or merge.
+- QA tab closed and viewport/media overrides reset. Original homepage, Claude
+  reference and TypographyRoles review previews remain open.
+
+## Status (2026-09-22, enforced foundations — first migration)
+- Added one canonical foundation module for complete typography roles, spacing,
+  corners and semantic colours. Additive utilities preserve existing Tailwind
+  defaults and board geometry. Migrated shared controls plus account page/modal;
+  both email-auth entry points now reuse the same segmented selector.
+- Added a parsed-source policy check to lint/verify and a non-deploying CI job.
+  The shrink-only legacy ledger is now 2,855 occurrences across 83 files (233
+  fewer than initial inventory), not a claim of whole-site conformity. Remote
+  branch protection has not been changed. See `DESIGN_SYSTEM.md`.
+- Integrated the approved partial display face and whole-string fallback, in
+  coordination with the separate wordmark task. Normal UI stays Outfit. Fixed
+  root font-variable scope and verified the real app loads the bundled font;
+  Storybook now includes portal-font regression and complete-role examples.
+- Fresh verification: 24 policy/font tests + 10 account-menu/game-over tests;
+  full Next lint, policy check, Storybook-preview lint and diff check passed.
+  Desktop/phone account states, auth selection, pending/errors, avatar picker,
+  Escape focus return, reduced motion/transparency and 2D sandbox reviewed.
+  Approved homepage button materials/height and sampled game control geometry
+  match the captured baseline; animation-phase subpixel differences excluded.
+- This is a staged migration, not a full game-screen conversion or live auth/
+  matchmaking/production sign-off. White-on-lime contrast remains unresolved.
+  No dependencies, game rules, deployment, push or merge changed.
+- Temporary QA tabs closed and media/viewport overrides reset. The existing
+  homepage, Claude reference and updated TypographyRoles review tab remain open.
+
+## Status (2026-09-22, shared Clarity control family)
+- Integrated the approved 2a material into shared Button palettes; homepage mode
+  buttons consume the same values without a rendered appearance change. Added
+  utility pills for header/account chrome; form/play controls retain 14px corners,
+  small tiles 8px and panels 22px. Signed-in/out account triggers share the recipe.
+- Simplified and centered account-entry headings, made the auth selector a pill,
+  and removed the local username-submit material fork. Existing auth handlers,
+  provider availability, validation and guest actions are unchanged.
+- Added the production-component ButtonFamily comparison and EmailOnly story;
+  updated foundations and the dev UI showcase. Fixed a Storybook typing race by
+  waiting for dialog initial focus; EmailSubmitting now reaches disabled Working.
+- Browser verification: all three home buttons' computed appearance equals the
+  baseline; desktop family/home; phone family, real home/modal at 375x667;
+  account entry at 390x844 and 375x667; maximum username; create-account,
+  missing-credentials, provider error/pending and email-pending stories. Long-name
+  account menu and friend invite also reviewed at 375x667. Escape restores
+  modal/menu trigger focus. Reduced-effects controls show zero transitions and
+  solid secondary fills with no blur. These are sampled states, not every flow.
+- Targeted ESLint passed; SystemAccountMenu model tests: 1 file / 2 tests passed;
+  `git diff --check` passed. Existing Vite CJS deprecation warning remains.
+  Next CSS HMR produced its known removeChild error during editing; a fresh
+  reload cleared it. No broad suite, live auth or production validation.
+- White-on-lime contrast remains an explicit open limitation. No dependencies,
+  auth protocol, game rules, push, merge or deployment changed. Work remains in
+  the isolated clarity-ui-redesign worktree for review.
+- Temporary QA tab closed and viewport/media overrides reset. Original reference,
+  real homepage and the new ButtonFamily review tab remain open deliberately.
+
+## Status (2026-09-22, foreground-relative mode markers)
+- Preserved the approved Bot/V2 palette. Online and Friend markers now use
+  their own foreground at 80% strength rather than independently selected
+  dark inks. Only local marker colour declarations changed; faces, icon tiles,
+  dimensions, typography and handlers are untouched.
+- Visually checked the real homepage at desktop and 390x844. Compared Bot's
+  computed face, shadow, foreground, tile, marker and type before/after: equal.
+  Storybook's mocked Finding state still uses neutral ink for every disabled
+  marker. CSS-only manual verification; no broad test suite or contrast claim.
+- Temporary test tab closed, viewport reset, original reference and homepage
+  preview retained. No push, merge or deployment.
+
+## Status (2026-09-22, forest-green Online marker)
+- Changed only the Online marker from near-black lime #1a2e05 to forest green
+  #124b12. Other marker colours, white label, button face and layout unchanged.
+- Verified the updated desktop homepage visually. CSS hot replacement showed
+  mini-css-extract-plugin's removeChild error; the fresh reload rendered without
+  the error overlay. No layout/behavior changes or broad test run; diff check
+  passed. Existing preview retained; no new tabs, push or deployment.
+
+## Status (2026-09-22, tonal trailing-marker styling)
+- Enlarged the unboxed markers to 16px desktop / 14px phone and gave them
+  dark green, warm brown and blue-grey inks. Main labels, icons, layout and 2a
+  button faces unchanged. Disabled markers return to the existing neutral ink.
+- Checked real homepage at desktop, 390x844 and 375x667 and four-mode Storybook
+  at 1024x768, including mocked Finding/disabled feedback. No sampled overflow
+  or homepage errors. CSS-only manual checks; no broad suite. Diff check passed.
+- Temporary tab closed and viewport reset; homepage preview/reference retained.
+  No push, merge or deployment.
+
+## Status (2026-09-22, restored icons and plain trailing markers)
+- Restored the three-avatar Online icon and retained chip/link icons in shaded
+  leading tiles. Added plain 1v1 / AI / + trailing markers (V2 for optional V2
+  mode), with no trailing tile backgrounds. Labels stay left-aligned, subtitles
+  absent, and 2a material/dimensions unchanged. No handlers or state-flow edits.
+- Real 2D homepage checked on desktop, 390x844 and 375x667; four-mode Storybook
+  checked at 1024x768. No sampled label overflow or marker overlap; keyboard
+  focus and mocked Finding/disabled feedback verified. No homepage errors
+  observed. Targeted component lint passed; no broad suite or live submission.
+- Diff check passed. Temporary test tab closed and viewport reset; original
+  reference and updated homepage preview retained. No push, merge or deployment.
+
+## Status (2026-09-22, left-aligned mode labels)
+- Replaced the rejected centred-label/optical-offset trials with left-aligned
+  labels beside fixed icon tiles. Gaps are 20px desktop and 16px on phone and
+  dense four-mode layouts. All other material, dimensions and behavior unchanged.
+- Visually checked the real 2D homepage on desktop, 390x844 and 375x667, plus
+  four-mode Storybook at 1024x768. Measured consistent 16px gaps on phone/dense
+  layouts with no sampled overflow; no homepage errors observed. CSS-only
+  manual verification; diff check passed. Temporary tab closed and viewport
+  reset; preview/reference retained. No push, merge or deployment.
+
+## Status (2026-09-22, optical mode-label balance)
+- Shifted mode labels 6px left without moving tiles or changing other styling.
+  Before the change, tile-to-text and text-to-right-edge gaps already matched
+  (Online 64.77px on each side at the sampled desktop viewport). This trial
+  responds to perceived rightward bias from whitespace inside the icon tile.
+- Checked the real 2D homepage at desktop, 390x844 and 375x667 and the dense
+  four-mode Storybook at 1024x768; sampled labels fit without overflow. No errors
+  observed on the real-homepage check. CSS-only tuning; no behavior changes or
+  broad test run. Diff check passed. Temporary tab closed, viewport reset;
+  homepage preview and original reference retained. No push or deployment.
+
+## Status (2026-09-22, edge-anchored mode tiles)
+- Supersedes the centred-pair alignment below: each tile now stays at the left
+  padding, while its label centres in the remaining area. Only the local mode
+  button CSS changed; colours, sizes, icons, copy and behavior are unchanged.
+- Visually checked the real 2D homepage at desktop, 390x844, 600x900 and 375x667,
+  plus four-mode Storybook at 1024x768. Measured 16px desktop / 12px phone and
+  dense-row tile insets; sampled labels centre within 0.01px without overflow.
+  Four-mode columns remain equal at 239px; button heights remain 72px/66px.
+- Keyboard focus and mocked Finding/disabled feedback verified in Storybook.
+  No errors observed in the real-homepage check. Styling-only manual checks,
+  not a broad suite or accessibility pass; existing white-on-lime limitation
+  unchanged. No live submission, push, merge or deployment.
+- Diff check passed. Temporary test tab closed and viewport override reset;
+  original 2a reference and updated homepage preview remain open.
+
+## Status (2026-09-22, single leading tile per mode)
+- Removed right-hand badges. Online now has a leading 1v1 tile; Bot and Friend
+  use the earlier chip/link icons. Each tile-and-label pair is centred together.
+  2a colour/material/type, equal button widths and heights remain unchanged;
+  no dialog, global Button, board, handler or state-flow edits in this pass.
+- Real 2D homepage reviewed on desktop, 390x844 and 375x667. Four-mode Storybook
+  reviewed at 1024x768: equal 239px columns, pairs centred within 0.01px, no
+  sampled content overflow. Short-phone board clearance remains intact.
+- Keyboard focus and activation verified in Storybook; Finding/disabled feedback
+  retains a visible spinner in the single leading tile. Reduced motion removes
+  spinner animation and transitions; disabled controls retain no shadow.
+- Targeted component lint and diff checks passed. No new errors observed on the
+  real-homepage check; existing Storybook React act warning remains. Styling-only
+  manual verification, not a broad suite or accessibility pass. Existing
+  white-on-lime contrast limitation unchanged. No live matchmaking or submission.
+- Temporary browser tab closed; original reference and homepage preview retained.
+  Local isolated worktree only; no push, merge or deployment.
+
+## Status (2026-09-22, centred labels and compact 2a dialog comparison)
+- Centred the homepage's single-line labels without changing palette or size.
+  Added a local 2a material override to the username-form primary action, retaining
+  its compact size, existing shared Button/handlers, and quiet secondary action.
+  No global control rollout, auth/state changes or board changes.
+- Browser checked the real 2D homepage on desktop, 390x844 and 375x667, plus the
+  four-mode Storybook at 1024x768. Labels centre within 0.01px, columns remain
+  equal, and sampled text does not overflow. Short-phone board clearance remains.
+- Username dialog checked in Storybook on desktop, 390x844 and 375x667, and over
+  the real homepage. New LongUsername story exercises 28 wide characters; it
+  wraps inside the button. Keyboard focus, empty-name disabled styling,
+  reduced-motion transitions and mocked Creating profile state checked.
+  Homepage keyboard activation still produces Starting/disabled feedback.
+- Targeted lint and git diff checks passed. Storybook's existing React act
+  deprecation warning remains; no new runtime errors observed. No live profile
+  submission or matchmaking, broad suite or accessibility pass performed.
+  White-on-lime contrast remains an acknowledged visual-preview limitation.
+- Local isolated worktree only; no push, merge or deployment.
+
+## Status (2026-09-22, faithful 2a mode-button preview)
+- Replaced the rejected interpretation with the actual recovered 2a desktop/phone
+  styling. Preserved the requested equal widths and removed subtitles; restored
+  exact reference colours, light inset tiles/glyphs, borderless faces, 3px bases,
+  shadow recipes, typography and press timing. Other product controls untouched.
+- Real 2D homepage checked at the current desktop viewport, 390x844 and 375x667;
+  short-phone board clearance preserved. Four-mode Storybook checked at 1024x768:
+  equal 239px columns, no text overflow, keyboard focus and Creating/disabled state.
+  Reduced-motion check: transitions/spinner disabled; disabled shadows remain off.
+- Changed-component lint and diff checks passed. Styling-only verification, not a
+  full test suite or accessibility pass. Known white-on-bright-lime contrast
+  limitation was discussed and intentionally retained for this visual preview.
+- Local isolated worktree only; no push, merge or deployment.
+
+## Status (2026-09-22, single-line mode buttons)
+- Applied follow-up preference: white Play Online text, dark text on amber/white,
+  and no secondary descriptions on any mode. Retained useful 1v1/AI/V2 badges,
+  equal widths and the board-derived edge treatment. Default height is now 72px;
+  short-phone controls remain 64px. No mode handlers or shared primitives changed.
+- Deepened the green to support white type; white labels are 19–20px/700 with
+  gradient endpoint contrasts of 3.09–3.69:1. Smaller badge text uses a darker
+  4.99:1 background; decorative sheen stays on the top rim, away from text.
+- Rendered checks: current desktop homepage and Storybook at 390x844, 375x667
+  and the dense four-column 1024x768 layout; no label overflow in measured states.
+  Keyboard focus and click-to-Finding/disabled feedback verified in Storybook.
+- Changed-component lint and diff checks passed. Presentation/copy-only pass;
+  no broad automated suite, push, merge or deployment.
+
+## Status (2026-09-22, homepage mode-button refinement)
+- Kept the Clarity system and tuned only the homepage mode controls: equal
+  columns, bolder/larger labels, shaded faces, inset icon/badge tiles and a more
+  defined lower edge inspired by the board. No copy or interaction changes.
+- Browser-reviewed the real 2D homepage at 1440x900, 390x844 and 375x667.
+  The short-phone pass caught board overlap; compact 64px buttons restored the
+  board clearance. Measured equal columns and no text overflow at 768px.
+- Storybook four-mode state checked at 1024x768, including the longer V2 subtitle,
+  click-to-pending/disabled state, keyboard focus and reduced-motion styling.
+- Changed-component lint and diff checks passed. No broad test suite run for this
+  presentation-only change. Sampled text/gradient-endpoint contrasts: lime 5.85:1,
+  amber 8.73:1, secondary subtitle 6.92:1; this is not a full accessibility audit.
+- A Next CSS hot-reload `removeChild` error occurred during iteration; a fresh
+  page load cleared the overlay with no new error logged during the fresh-load
+  checks. Existing Storybook React `act` deprecation warnings remain.
+- Local isolated redesign worktree only; nothing pushed, merged or deployed.
+
 ## Status (2026-09-22, isolated Clarity redesign — first pass ready)
 - Approved scope and implementation plan are in `docs/superpowers/`; work is
   isolated on `codex/clarity-ui-redesign` from committed baseline `28b42ec`.
@@ -7622,6 +8054,15 @@
   skips; Catana suite passed 814 tests; `git diff --check` passed. A local
   Node 20 Docker-image check was unavailable because the OrbStack Docker daemon
   was not running.
+
+
+## J Black wordmark integration (2026-09-22)
+
+- Integrated the approved live-webfont wordmark into the Clarity homepage. Desktop uses the actual orange settlement asset; phones center the text below account controls without the icon. HomeBrand.module.css owns this intentional brand layout. The 768px breakpoint uses 48px type to leave room for navigation; desktop uses 64px and short-phone rules preserve board clearance.
+- Built on the concurrent foundation task's unchanged v0.4 WOFF2, BrandWordmark and DisplayText. Existing glyphs, including the preferred original e, are retained. GameOverModal uses the shared celebration variant only for the local winner; player-name result titles remain Outfit. Unsupported characters fall back for the whole heading. Added WinnerMobile and WinnerUnsupportedCopy Storybook states.
+- Browser verification: actual home route at 1440x900, 768x1024, 390x844, 375x667 and 320x568; real win component at desktop, 390x844 and 375x667. Confirmed custom font for all nine wordmark glyphs, full-heading Outfit fallback for unsupported copy, and Outfit for loser/player names. Final shared celebration role confirmed at 48px/55.2px line height with 8px top margin. Homepage logs clean; Storybook retains its ReactDOMTestUtils.act deprecation warning.
+- Validation: 2 targeted Vitest files / 21 tests passed; targeted ESLint and git diff --check passed. WOFF2 SHA-256 matches the approved source exactly; all 30 allowed characters in the coverage helper are present. NBSP is conservatively excluded by that helper. No broad build, physical-device or production validation.
+- Changes are local to codex/clarity-ui-redesign; nothing merged or deployed. Temporary Storybook tabs closed and viewport override reset; the actual homepage preview remains open for review. Captures: /Users/david/.codex/visualizations/2026/09/22/01a0c85b-261f-7ac0-9d61-a343f5676776/wordmark-research/integration/.
 
 ## Status (2026-08-22, board-ready game start and matchmaking recovery)
 

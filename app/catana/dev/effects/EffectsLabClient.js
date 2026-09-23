@@ -140,21 +140,21 @@ export function EffectsLabClient() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-8">
-        <header className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold">Effects Lab</h1>
-          <p className="text-sm text-slate-300">
+    <div className="settlex-dev-console min-h-screen">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-ui-6 px-ui-6 py-ui-8">
+        <header className="flex flex-col gap-ui-2">
+          <h1 className="type-title text-ink-console-primary">Effects Lab</h1>
+          <p className="type-body-small text-ink-console-secondary">
             Dev-only playground for tuning animation parameters without booting the
             full game.
           </p>
         </header>
 
-        <section className="flex flex-wrap items-end gap-4 rounded-lg border border-slate-700 bg-slate-800/60 p-4">
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+        <section className="settlex-dev-console-panel flex flex-wrap items-end gap-ui-4 p-ui-4">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Effect
             <select
-              className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+              className="settlex-dev-console-field mt-ui-1"
               value={selectedId}
               onChange={(event) => setSelectedId(event.target.value)}
             >
@@ -166,10 +166,10 @@ export function EffectsLabClient() {
             </select>
           </label>
 
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Time Scale
             <input
-              className="mt-1"
+              className="mt-ui-1"
               type="range"
               min="0.2"
               max="2"
@@ -177,28 +177,28 @@ export function EffectsLabClient() {
               value={timeScale}
               onChange={(event) => setTimeScale(Number(event.target.value))}
             />
-            <span className="text-sm text-slate-200">{timeScale.toFixed(1)}</span>
+            <span className="type-body-small text-ink-console-secondary">{timeScale.toFixed(1)}</span>
           </label>
 
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Custom Sound
             <input
               ref={fileInputRef}
-              className="mt-1 text-sm text-slate-200 file:mr-3 file:rounded file:border-0 file:bg-slate-700 file:px-3 file:py-1 file:text-xs file:uppercase file:tracking-wide file:text-slate-100"
+              className="settlex-dev-console-file mt-ui-1"
               type="file"
               accept="audio/*"
               disabled={!audioSupported}
               onChange={handleCustomSoundChange}
             />
-            <span className="mt-1 text-sm text-slate-200">
+            <span className="type-body-small mt-ui-1 text-ink-console-secondary">
               {customSound.name || (audioSupported ? "None selected" : "Audio override not available")}
             </span>
           </label>
 
-          <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+          <label className="type-label flex flex-col text-ink-console-muted">
             Audio Delay
             <input
-              className="mt-1"
+              className="mt-ui-1"
               type="range"
               min="0"
               max={MAX_CUSTOM_DELAY_MS}
@@ -207,13 +207,13 @@ export function EffectsLabClient() {
               onChange={(event) => setCustomDelayMs(Number(event.target.value))}
               disabled={!audioSupported}
             />
-            <span className="text-sm text-slate-200">
+            <span className="type-body-small text-ink-console-secondary">
               {(customDelayMs / 1000).toFixed(2)}s
             </span>
           </label>
 
           <button
-            className="rounded bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="settlex-dev-console-button settlex-dev-console-button-secondary"
             type="button"
             onClick={handleClearSound}
             disabled={!customSound.url}
@@ -222,11 +222,11 @@ export function EffectsLabClient() {
           </button>
         </section>
 
-        <section className="relative rounded-lg border border-slate-700 bg-slate-800/40 p-8">
+        <section className="settlex-dev-console-panel relative p-ui-8">
           {selected ? (
             <selected.component layerRef={layerRef} emitCue={emitCue} />
           ) : (
-            <div className="text-sm text-slate-300">No effect selected.</div>
+            <div className="type-body-small text-ink-console-secondary">No effect selected.</div>
           )}
 
           {mounted ? <EffectLayer ref={layerRef} /> : null}

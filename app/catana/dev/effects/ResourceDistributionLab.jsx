@@ -44,33 +44,33 @@ export function ResourceDistributionLab({ layerRef, emitCue }) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <section className="flex flex-wrap items-end gap-4 rounded-lg border border-slate-700 bg-slate-800/60 p-4">
-        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+    <div className="flex flex-col gap-ui-6">
+      <section className="settlex-dev-console-panel flex flex-wrap items-end gap-ui-4 p-ui-4">
+        <label className="type-label flex flex-col text-ink-console-muted">
           Seed
           <input
-            className="mt-1 rounded border border-slate-600 bg-slate-900 px-2 py-1 text-sm text-slate-100"
+            className="settlex-dev-console-field mt-ui-1"
             type="number"
             value={seed}
             onChange={(event) => setSeed(event.target.value)}
           />
         </label>
 
-        <label className="flex flex-col text-xs uppercase tracking-wide text-slate-400">
+        <label className="type-label flex flex-col text-ink-console-muted">
           Cards
           <input
-            className="mt-1"
+            className="mt-ui-1"
             type="range"
             min="1"
             max="10"
             value={count}
             onChange={(event) => setCount(Number(event.target.value))}
           />
-          <span className="text-sm text-slate-200">{count}</span>
+          <span className="type-body-small text-ink-console-secondary">{count}</span>
         </label>
 
         <button
-          className="rounded bg-lime-500 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-lime-400"
+          className="settlex-dev-console-button"
           onClick={handleReplay}
           type="button"
         >
@@ -78,22 +78,22 @@ export function ResourceDistributionLab({ layerRef, emitCue }) {
         </button>
       </section>
 
-      <section className="relative flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800/40 p-8">
+      <section className="settlex-dev-console-panel relative flex items-center justify-center p-ui-8">
         <div
           ref={boardRef}
-          className="relative rounded-xl border border-dashed border-slate-600 bg-slate-900/60"
+          className="relative rounded-control border border-dashed border-console-edge bg-surface-console-inset"
           style={boardStyle}
         />
 
         <div
           id="p0-resources"
-          className="pointer-events-none absolute bottom-6 left-6 flex h-12 w-20 items-center justify-center rounded bg-slate-200 text-xs font-semibold text-slate-900"
+          className="type-label pointer-events-none absolute bottom-6 left-6 flex h-12 w-20 items-center justify-center rounded-small bg-surface-solid text-ink-primary"
         >
           P0
         </div>
         <div
           id="p1-resources"
-          className="pointer-events-none absolute bottom-6 right-6 flex h-12 w-20 items-center justify-center rounded bg-slate-200 text-xs font-semibold text-slate-900"
+          className="type-label pointer-events-none absolute bottom-6 right-6 flex h-12 w-20 items-center justify-center rounded-small bg-surface-solid text-ink-primary"
         >
           P1
         </div>

@@ -9,28 +9,13 @@ import { Button } from "../../ui/Button";
 import { Tooltip, TooltipProvider } from "../../ui/Tooltip";
 import { getReplayRailOffset } from "./replayPanelLayout";
 
-const railThumbClassName = [
-  "[&::-webkit-slider-runnable-track]:bg-transparent",
-  "[&::-webkit-slider-thumb]:h-[17px] [&::-webkit-slider-thumb]:w-[17px]",
-  "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full",
-  "[&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-white",
-  "[&::-webkit-slider-thumb]:bg-amber-400 [&::-webkit-slider-thumb]:cursor-pointer",
-  "[&::-webkit-slider-thumb]:shadow-[0_6px_16px_-8px_rgba(15,23,42,0.5)]",
-  "[&::-moz-range-track]:bg-transparent",
-  "[&::-moz-range-thumb]:h-[17px] [&::-moz-range-thumb]:w-[17px]",
-  "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px]",
-  "[&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-amber-400",
-  "[&::-moz-range-thumb]:cursor-pointer",
-  "[&::-moz-range-thumb]:shadow-[0_6px_16px_-8px_rgba(15,23,42,0.5)]",
-].join(" ");
-
 const ReplayChevron = ({ direction, double = false }) => {
   const Icon = direction === "left" ? ChevronLeftIcon : ChevronRightIcon;
 
   return (
     <span
       className={`inline-flex items-center ${
-        double ? "-space-x-2" : ""
+        double ? "-space-x-ui-2" : ""
       }`}
       aria-hidden="true"
     >
@@ -61,7 +46,7 @@ const ReplayControlButton = ({
       onClick={onClick}
       disabled={disabled}
     >
-      <span className="inline-flex items-center justify-center gap-1">
+      <span className="inline-flex items-center justify-center gap-ui-1">
         {textBefore}
         <ReplayChevron direction={direction} double={double} />
         {textAfter}
@@ -92,22 +77,17 @@ export function ReplayStepControls({
   const iconOnly = !compact && !touchLabels;
   // Shared buttons own corner geometry; replay owns the compact arrangement.
   const eventButtonClassName = compact
-    ? "h-11 min-h-[2.75rem] w-11 !p-0"
+    ? "h-11 min-h-[2.75rem] w-11 !p-ui-0"
     : touchLabels
-      ? "h-11 min-h-[2.75rem] min-w-0 flex-1 px-1 text-xs"
-      : "h-11 min-h-[2.75rem] min-w-0 flex-1 px-2";
-  // Ghost resting state is fully transparent, which leaves the turn jumps
-  // reading as loose glyphs beside the raised event buttons. The design gives
-  // them a faint fill so they still read as squares one step down the hierarchy.
-  // The tray sits on a near-opaque light sheet where a 20% white fill vanishes,
-  // so it takes a heavier fill and a slate hairline instead.
+      ? "h-11 min-h-[2.75rem] min-w-0 flex-1 !px-ui-1"
+      : "h-11 min-h-[2.75rem] min-w-0 flex-1 !px-ui-2";
   const turnButtonClassName = touchLabels
-    ? "h-11 min-h-[2.75rem] min-w-0 flex-1 !border-slate-400/30 !bg-white/70 px-1 text-xs"
-    : "h-11 min-h-[2.75rem] w-11 shrink-0 !border-white/40 !bg-white/20 !p-0";
+    ? "h-11 min-h-[2.75rem] min-w-0 flex-1 !px-ui-1"
+    : "h-11 min-h-[2.75rem] w-11 shrink-0 !p-ui-0";
 
   return (
     <div
-      className={compact ? "flex items-center gap-2" : "space-y-3"}
+      className={compact ? "flex items-center gap-ui-2" : "space-y-ui-3"}
       data-replay-step-controls="true"
     >
       {!compact ? (
@@ -115,19 +95,19 @@ export function ReplayStepControls({
           <span className="sr-only">Seek through the match</span>
           <div className="relative flex h-[1.375rem] items-center">
             <div
-              className="pointer-events-none absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-white/50 shadow-[inset_0_1px_2px_rgba(15,23,42,0.14)]"
+              className="pointer-events-none absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-pill settlex-ui-replay-track"
               aria-hidden="true"
             >
               <div
                 data-replay-rail-fill="true"
-                className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(180deg,#a3e635,#84cc16)]"
+                className="absolute inset-y-0 left-0 rounded-pill settlex-ui-replay-progress"
                 style={{ width: getReplayRailOffset(progressRatio) }}
               />
               {turnStarts.slice(1).map((item) => (
                 <span
                   key={`${item.turn}-${item.eventIndex}`}
                   data-replay-turn-marker="true"
-                  className="absolute -bottom-[3px] -top-[3px] w-0.5 -translate-x-1/2 rounded-[2px] bg-white/80"
+                  className="absolute -bottom-[3px] -top-[3px] w-0.5 -translate-x-1/2 rounded-pill settlex-ui-replay-marker"
                   style={{
                     left: getReplayRailOffset(item.eventIndex / railSpan),
                   }}
@@ -135,7 +115,7 @@ export function ReplayStepControls({
               ))}
             </div>
             <input
-              className={`relative z-10 m-0 h-[1.375rem] w-full cursor-pointer appearance-none rounded-full bg-transparent settlex-ui-focus ${railThumbClassName}`}
+              className="settlex-ui-replay-range relative z-10 m-ui-0 h-[1.375rem] w-full cursor-pointer appearance-none rounded-pill bg-transparent settlex-ui-focus"
               type="range"
               min="0"
               max={finalEventIndex}
@@ -148,7 +128,7 @@ export function ReplayStepControls({
       ) : null}
 
       <TooltipProvider delay={300}>
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-ui-2">
           {!compact ? (
             <ReplayControlButton
               label="Previous turn"
@@ -156,7 +136,7 @@ export function ReplayStepControls({
               double
               disabled={atStart}
               onClick={onPreviousTurn}
-              variant="ghost"
+              variant="subtle"
               className={turnButtonClassName}
               textAfter={touchLabels ? "Turn" : null}
               tooltip={iconOnly}
@@ -189,7 +169,7 @@ export function ReplayStepControls({
               double
               disabled={atEnd}
               onClick={onNextTurn}
-              variant="ghost"
+              variant="subtle"
               className={turnButtonClassName}
               textBefore={touchLabels ? "Turn" : null}
               tooltip={iconOnly}

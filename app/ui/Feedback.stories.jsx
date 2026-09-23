@@ -46,7 +46,7 @@ export const PanelWithHeaderAction = {
         title="Open table"
         right={<Button variant="subtle" size="sm">Refresh</Button>}
       >
-        <p className="text-sm leading-6 text-slate-700">
+        <p className="type-body-small text-ink-secondary">
           One seat is open. Join when you’re ready to start the duel.
         </p>
       </Panel>

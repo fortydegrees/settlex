@@ -29,8 +29,8 @@ export const FeedTokenRow = ({ token, themeId }) => {
     const isStrong = token.variant === "strong";
     return React.createElement("div", {
       className: isStrong
-        ? "my-3 h-0.5 w-full bg-slate-400/80"
-        : "my-2 h-px w-full bg-slate-300/70",
+        ? "my-ui-3 h-0.5 w-full bg-ink-muted"
+        : "my-ui-2 h-px w-full bg-edge-subtle",
     });
   }
 
@@ -38,12 +38,12 @@ export const FeedTokenRow = ({ token, themeId }) => {
     const nameColor = token.color ? getPlayerNameHex(token.color) ?? token.color : null;
     return React.createElement(
       "span",
-      { className: "inline-flex items-center gap-1 font-semibold align-baseline" },
+      { className: "inline-flex max-w-full items-center gap-ui-1 type-action-small align-baseline" },
       token.emoji ? React.createElement("span", { "aria-hidden": "true" }, token.emoji) : null,
       React.createElement(
         "span",
         {
-          className: nameColor ? "" : "text-slate-900",
+          className: nameColor ? "min-w-0" : "min-w-0 text-ink-primary",
           style: nameColor ? { color: nameColor } : undefined,
         },
         token.name
@@ -60,7 +60,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
       "span",
       {
         className:
-          "inline-flex rounded-full bg-slate-200/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-700",
+          "inline-flex rounded-pill bg-surface-inset px-ui-2 py-ui-0.5 type-caption text-ink-secondary",
       },
       token.text
     );
@@ -74,13 +74,13 @@ export const FeedTokenRow = ({ token, themeId }) => {
           src: icon,
           alt: "",
           title: token.resource,
-          className: "mx-0.5 inline-block h-4 w-4 align-[-0.125em]",
+          className: "mx-ui-0.5 inline-block h-4 w-4 align-[-0.125em]",
           draggable: false,
           onError: (event) => handleThemeImageError(event, iconFallback),
         })
       : React.createElement(
         "span",
-          { className: "mx-0.5 inline-block" },
+          { className: "mx-ui-0.5 inline-block" },
           token.resource
         );
   }
@@ -96,7 +96,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
       "span",
       {
         className:
-          "mx-0.5 whitespace-nowrap font-semibold text-slate-700",
+          "mx-ui-0.5 inline-flex items-center gap-ui-1 align-[-0.3em] type-action-small text-ink-secondary",
       },
       icon
         ? React.createElement("img", {
@@ -104,7 +104,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
             alt: "",
             title: label,
             className:
-              "mr-1 inline-block h-6 w-auto align-[-0.35em] rounded-[2px] object-contain shadow-sm",
+              "mr-ui-1 inline-block h-6 w-auto align-[-0.35em] rounded-[2px] object-contain shadow-sm",
             draggable: false,
           })
         : null,
@@ -115,7 +115,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
   if (token.kind === "die") {
     return React.createElement(MiniDiceFace, {
       value: token.value,
-      className: "mx-0.5 h-5 w-5 align-[-0.22em]",
+      className: "mx-ui-0.5 h-5 w-5 align-[-0.22em]",
       withShadow: false,
       "aria-label": `Die ${token.value}`,
     });
@@ -136,7 +136,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
         role: "img",
         "aria-label": `${token.resource} tile, number ${value}`,
         className:
-          "relative mx-0.5 inline-block h-8 w-7 shrink-0 align-[-0.7em]",
+          "relative mx-ui-0.5 inline-block h-8 w-7 shrink-0 align-[-0.7em]",
       },
       React.createElement("img", {
         src: tile,
@@ -188,7 +188,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
     return React.createElement(
       "span",
       {
-        className: token.variant === "server" ? "text-slate-600" : undefined,
+        className: token.variant === "server" ? "text-ink-secondary" : undefined,
       },
       token.text
     );

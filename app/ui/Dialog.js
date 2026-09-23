@@ -18,7 +18,7 @@ export function Dialog({
   return (
     <BaseDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Portal>
-        <BaseDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_32%),rgba(15,23,42,0.42)] backdrop-blur-sm" />
+        <BaseDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 backdrop-blur-sm" />
         <BaseDialog.Viewport className="settlex-ui-dialog-viewport settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
           <BaseDialog.Popup
             className={cn(
@@ -27,21 +27,21 @@ export function Dialog({
               className
             )}
           >
-            <BaseDialog.Title className="text-2xl font-bold text-slate-900">
+            <BaseDialog.Title className="type-title text-ink-primary">
               {title}
             </BaseDialog.Title>
 
             {description ? (
-              <BaseDialog.Description className="mt-2 text-sm leading-6 text-slate-600">
+              <BaseDialog.Description className="mt-ui-2 type-body-small text-ink-secondary">
                 {description}
               </BaseDialog.Description>
             ) : null}
 
             {children ? (
-              <div className={cn("mt-5", bodyClassName)}>{children}</div>
+              <div className={cn("mt-ui-5", bodyClassName)}>{children}</div>
             ) : null}
 
-            {actions ? <div className="mt-6 flex flex-wrap justify-end gap-2">{actions}</div> : null}
+            {actions ? <div className="mt-ui-6 flex flex-wrap justify-end gap-ui-2">{actions}</div> : null}
           </BaseDialog.Popup>
         </BaseDialog.Viewport>
       </BaseDialog.Portal>

@@ -32,18 +32,18 @@ export function IdlePromptModal({
         </Button>
       }
     >
-      <div className="text-sm font-semibold text-rose-700">
+      <div className="type-action-small text-ink-danger">
         Idle Warning
       </div>
-      <p className="mt-3 text-sm text-slate-700">
+      <p className="mt-ui-3 type-body-small text-ink-secondary">
         You’ll forfeit in{" "}
-        <span className="tabular-nums font-semibold text-rose-700">
+        <span className="tabular-nums type-action-small text-ink-danger">
           {formatTimer(remainingMs)}
         </span>{" "}
         unless you respond.
       </p>
       {error ? (
-        <p className="mt-3 text-sm font-medium text-rose-700">{error}</p>
+        <p className="mt-ui-3 type-label text-ink-danger">{error}</p>
       ) : null}
     </Dialog>
   );

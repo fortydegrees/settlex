@@ -16,11 +16,11 @@ function MobileDevCardGroupButton({ group, activeCardType, onPlayCard, onClose }
   const isPlayable = group.isPlayable;
   const cardCountLabel = group.count > 1 ? ` x${group.count}` : "";
   const className = [
-    "relative flex min-w-[3.25rem] items-center justify-center rounded-[0.75rem] px-1.5 py-0.5 transition duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
+    "mobile-devcard-group relative flex min-w-[3.25rem] items-center justify-center rounded-small px-ui-1.5 py-ui-0.5 transition duration-150 ease-out",
     isPlayable
-      ? "text-white hover:bg-white/[0.08]"
-      : "text-white/72",
-    isActive ? "ring-2 ring-lime-300/60" : "",
+      ? "mobile-devcard-group--playable"
+      : "mobile-devcard-group--inactive",
+    isActive ? "mobile-devcard-group--active" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -71,12 +71,12 @@ function MobileDevCardGroupButton({ group, activeCardType, onPlayCard, onClose }
               }`}
             />
             {!isPlayable ? (
-              <span className="absolute inset-[2px] rounded-[0.32rem] bg-sky-200/24" />
+              <span className="mobile-devcard-sleep-veil absolute inset-[2px] rounded-[0.32rem]" />
             ) : null}
           </span>
         ))}
         {group.count > 3 ? (
-          <span className="absolute -right-2 -top-2 z-20 flex h-5 min-w-5 items-center justify-center rounded-full border border-sky-200/70 bg-slate-50/95 px-1 text-[0.7rem] font-semibold leading-none text-slate-800 shadow-[0_0_0_2px_rgba(255,255,255,0.42)]">
+          <span className="mobile-devcard-count-badge absolute -right-ui-2 -top-ui-2 z-20 flex h-5 min-w-5 items-center justify-center rounded-pill border px-ui-1 type-hud-tray-count">
             {group.count}
           </span>
         ) : null}
@@ -111,7 +111,7 @@ export function MobileDevCardTray({
 
   return (
     <div
-      className="relative z-10 mx-auto mt-1.5 w-fit min-w-[7.25rem] max-w-full overflow-hidden rounded-[1.05rem] border border-white/[0.16] bg-white/[0.065] px-3 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+      className="mobile-devcard-tray relative z-10 mx-auto mt-ui-1.5 w-fit min-w-[7.25rem] max-w-full overflow-hidden rounded-control border px-ui-3 py-ui-1"
       id="mobile-devcard-tray"
       role="dialog"
       aria-label="Development cards"
@@ -119,7 +119,7 @@ export function MobileDevCardTray({
       data-mobile-devcard-tray="true"
       data-allow-interaction="true"
     >
-      <div className="mx-auto flex w-max max-w-full items-center justify-center gap-5 overflow-x-auto px-0.5 py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto flex w-max max-w-full items-center justify-center gap-ui-5 overflow-x-auto px-ui-0.5 py-ui-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {groups.map((group) => (
           <MobileDevCardGroupButton
             key={group.type}

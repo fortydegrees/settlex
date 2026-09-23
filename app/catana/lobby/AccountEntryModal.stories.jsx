@@ -35,6 +35,10 @@ export default meta;
 
 export const SignInOrGuest = { args: { mode: "auth-first" } };
 
+export const EmailOnly = {
+  args: { mode: "auth-first", authOptions: { emailPassword: true, socialProviders: [] } },
+};
+
 export const SaveGuestProfile = { args: { mode: "save-profile" } };
 
 export const CreateAccount = {
@@ -79,6 +83,13 @@ export const ChooseFriendIdentity = {
   args: { ...ChooseOnlineIdentity.args, intent: "friend" },
 };
 
+export const LongUsername = {
+  args: {
+    ...ChooseOnlineIdentity.args,
+    identity: { name: "WWWWWWWWWWWWWWWWWWWWWWWWWWWW", emoji: "😉", color: "teal" },
+  },
+};
+
 export const MissingCredentials = {
   args: { mode: "auth-first" },
   play: async ({ canvasElement }) => {
@@ -100,6 +111,10 @@ export const EmailSubmitting = {
   },
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body);
+    // Let the dialog finish its initial focus before typing into another field.
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Sign in", pressed: true })).toHaveFocus()
+    );
     await userEvent.type(
       await screen.findByLabelText("Email"),
       "player@example.com"
@@ -108,6 +123,8 @@ export const EmailSubmitting = {
       await screen.findByLabelText("Password"),
       "storybook-password"
     );
+    expect(screen.getByLabelText("Email")).toHaveValue("player@example.com");
+    expect(screen.getByLabelText("Password")).toHaveValue("storybook-password");
     const signInButtons = await screen.findAllByRole("button", {
       name: "Sign in",
     });

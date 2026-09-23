@@ -33,7 +33,7 @@ export function Tooltip({
         >
           <BaseTooltip.Popup
             className={cn(
-              "settlex-ui-pane settlex-ui-tooltip settlex-ui-overlay-motion px-3 py-2 text-xs font-medium text-slate-700",
+              "settlex-ui-pane settlex-ui-tooltip settlex-ui-overlay-motion px-ui-3 py-ui-2 type-caption text-ink-secondary",
               className
             )}
           >

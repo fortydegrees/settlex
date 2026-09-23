@@ -1,0 +1,73 @@
+.brand {
+  position: absolute;
+  top: 1.75rem;
+  left: 1.75rem;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  gap: .875rem;
+  user-select: none;
+}
+
+.mark { flex-shrink: 0; }
+
+.settlement {
+  width: 4rem;
+  height: 4.5rem;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 4px #143f6033);
+}
+
+.heading {
+  margin: 0;
+  color: #f7fcff;
+  font-family: var(--settlex-ui-font-display);
+  font-weight: 900;
+  font-size: 4rem;
+  line-height: 1.08;
+}
+
+/* Paint the edge behind the fill so the original letterforms stay intact. */
+.heading :global(.settlex-ui-wordmark) > span > span {
+  paint-order: stroke fill;
+  -webkit-text-stroke: 1.5px #27628b;
+  text-shadow: 0 .75px 0 rgb(39 98 139 / .45), 0 3px 5px rgb(20 63 96 / .10);
+}
+
+/* Align the subtitle's straight leading 1 with the curved S optically. */
+@media (min-width: 640px) {
+  .subtitle { padding-inline-start: .125em; }
+}
+
+/* Leave room for navigation alongside the brand on smaller desktops/tablets. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .heading { font-size: 3rem; }
+}
+
+/* Keep the title below account controls and above the board on phones. */
+@media (max-width: 639px) {
+  .brand {
+    top: 5rem;
+    left: 1rem;
+    right: 1rem;
+    justify-content: center;
+  }
+
+  .mark { display: none; }
+  .heading { font-size: clamp(2.625rem, 14vw, 3.625rem); }
+
+  .heading :global(.settlex-ui-wordmark) > span > span {
+    -webkit-text-stroke-width: 1px;
+    text-shadow: 0 .5px 0 rgb(39 98 139 / .45);
+  }
+}
+
+@media (max-width: 639px) and (max-height: 740px) {
+  .brand { top: 4.5rem; }
+  .heading { font-size: clamp(2.625rem, 13.333vw, 3.125rem); }
+}
+
+@media (max-width: 639px) and (max-height: 620px) {
+  .brand { top: 4rem; }
+  .heading { font-size: 2.25rem; }
+}

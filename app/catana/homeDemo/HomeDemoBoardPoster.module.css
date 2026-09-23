@@ -11,6 +11,7 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  user-select: none;
   opacity: 1;
   visibility: visible;
   contain: layout paint;
@@ -226,6 +227,14 @@
   .poster {
     --home-poster-reserved-height: 276px;
     --home-poster-center-y-offset: -56px;
+  }
+}
+
+/* Match the live phone board's clearance for the visible brand subtitle. */
+@media (max-width: 639px) {
+  .poster {
+    --home-poster-reserved-height: 360px;
+    --home-poster-center-y-offset: -44px;
   }
 }
 

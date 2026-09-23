@@ -30,7 +30,7 @@ const renderStatCard = (stat) =>
     {
       key: stat.label,
       className:
-        "settlex-ui-inset p-4",
+        "settlex-ui-inset p-ui-4",
     },
     h(
       "p",
@@ -43,7 +43,7 @@ const renderStatCard = (stat) =>
     h(
       "p",
       {
-        className: "mt-2 text-3xl font-bold text-slate-900",
+        className: "mt-ui-2 type-page text-ink-primary",
       },
       stat.value
     )
@@ -55,24 +55,24 @@ const renderRecentMatch = (match) =>
     {
       key: match.archivedMatchId,
       className:
-        "settlex-ui-inset flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between",
+        "settlex-ui-inset flex flex-col gap-ui-3 p-ui-4 sm:flex-row sm:items-center sm:justify-between",
     },
     h(
       "div",
       {
-        className: "min-w-0 space-y-1",
+        className: "min-w-0 space-y-ui-1",
       },
       h(
         "p",
         {
-          className: "text-sm font-semibold text-slate-900",
+          className: "break-words type-action-small text-ink-primary",
         },
         `${match.gameName} · ${match.playerCount} players`
       ),
       h(
         "p",
         {
-          className: "text-sm text-slate-600",
+          className: "type-body-small text-ink-secondary",
         },
         `${
           match.result === "win"
@@ -87,7 +87,7 @@ const renderRecentMatch = (match) =>
       "a",
       {
         className:
-          "settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] shrink-0 px-4 py-2 text-sm",
+          "settlex-ui-button settlex-ui-button-primary settlex-ui-focus min-h-[2.75rem] shrink-0 px-ui-4 py-ui-2 type-action-small",
         href: `/g/${encodeURIComponent(match.bgioMatchId)}`,
       },
       "Watch replay"
@@ -100,36 +100,36 @@ export function PublicProfileView({ profile }) {
   return h(
     "main",
     {
-      className: "min-h-screen px-4 py-10 text-slate-800",
+      className: "min-h-screen px-ui-4 py-ui-10 text-ink-primary",
       style: { background: CATANA_TABLE_BACKGROUND },
     },
     h(
       "div",
       {
-        className: "mx-auto flex max-w-5xl flex-col gap-6",
+        className: "mx-auto flex max-w-5xl flex-col gap-ui-6",
       },
       h(
         "section",
         {
           className:
-            "settlex-ui-pane p-5 sm:p-6",
+            "settlex-ui-pane p-ui-5 sm:p-ui-6",
         },
         h(
           "div",
           {
             className:
-              "flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+              "flex flex-col gap-ui-4 sm:flex-row sm:items-end sm:justify-between",
           },
           h(
             "div",
             {
-              className: "flex min-w-0 items-center gap-4",
+              className: "flex min-w-0 items-center gap-ui-4",
             },
             h(
               "div",
               {
                 className:
-                  "flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-3xl ring-1 ring-white/70",
+                  "settlex-ui-avatar-profile flex h-16 w-16 shrink-0 items-center justify-center rounded-pill",
                 style: { backgroundColor: account.avatarColor },
               },
               h(
@@ -143,7 +143,7 @@ export function PublicProfileView({ profile }) {
             h(
               "div",
               {
-                className: "min-w-0 space-y-1",
+                className: "min-w-0 space-y-ui-1",
               },
               h(
                 "p",
@@ -156,14 +156,14 @@ export function PublicProfileView({ profile }) {
               h(
                 "h1",
                 {
-                  className: "break-words text-2xl font-semibold text-slate-900 sm:text-[1.75rem]",
+                  className: "break-words type-title text-ink-primary",
                 },
                 account.currentUsername
               ),
               h(
                 "p",
                 {
-                  className: "text-sm font-medium text-slate-600",
+                  className: "type-label text-ink-secondary",
                 },
                 `Joined ${formatDate(account.createdAt)}`
               )
@@ -173,7 +173,7 @@ export function PublicProfileView({ profile }) {
             "p",
             {
               className:
-                "text-sm font-medium text-slate-600",
+                "type-label text-ink-secondary",
             },
             `${summary.wins} win${summary.wins === 1 ? "" : "s"} from ${
               summary.totalGames
@@ -184,7 +184,7 @@ export function PublicProfileView({ profile }) {
       h(
         "section",
         {
-          className: "settlex-ui-pane grid grid-cols-3 gap-2 p-3 sm:gap-4 sm:p-4",
+          className: "settlex-ui-pane grid grid-cols-3 gap-ui-2 p-ui-3 sm:gap-ui-4 sm:p-ui-4",
         },
         statCards(summary).map(renderStatCard)
       ),
@@ -192,12 +192,12 @@ export function PublicProfileView({ profile }) {
         "section",
         {
           className:
-            "settlex-ui-pane p-5 sm:p-6",
+            "settlex-ui-pane p-ui-5 sm:p-ui-6",
         },
         h(
           "div",
           {
-            className: "flex items-center justify-between gap-4",
+            className: "flex items-center justify-between gap-ui-4",
           },
           h(
             "div",
@@ -213,7 +213,7 @@ export function PublicProfileView({ profile }) {
             h(
               "h2",
               {
-                className: "settlex-ui-heading mt-1",
+                className: "settlex-ui-heading mt-ui-1",
               },
               "Finished games"
             )
@@ -224,14 +224,14 @@ export function PublicProfileView({ profile }) {
               "p",
               {
                 className:
-                  "settlex-ui-inset mt-6 p-4 text-sm text-slate-600",
+                  "settlex-ui-inset mt-ui-6 p-ui-4 type-body-small text-ink-secondary",
               },
               "No finished games yet."
             )
           : h(
               "div",
               {
-                className: "mt-6 space-y-3",
+                className: "mt-ui-6 space-y-ui-3",
               },
               recentMatches.map(renderRecentMatch)
             )

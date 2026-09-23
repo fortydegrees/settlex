@@ -1,6 +1,7 @@
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { Button } from "../../ui/Button";
 import { UnavailableMatchPage } from "../../g/[matchID]/UnavailableMatchPage";
+import { HomeErrorBanner } from "../home/HomeErrorBanner";
 import { InterruptedDuelRecovery } from "../lobby/[matchID]/InterruptedDuelRecovery";
 import {
   getReconnectStatusBannerProps,
@@ -41,6 +42,21 @@ export const StatusBannerDanger = {
         className="max-w-lg"
       />
     ),
+};
+
+export const LobbyErrorDismiss = {
+  args: {
+    onDismiss: fn(),
+  },
+  render: ({ onDismiss }) => (
+    <HomeErrorBanner error="Invalid origin" onDismiss={onDismiss} />
+  ),
+  play: async ({ canvasElement, args }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    args.onDismiss.mockClear();
+    await userEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+    expect(args.onDismiss).toHaveBeenCalledOnce();
+  },
 };
 
 export const ReconnectStatusRecipe = {
@@ -133,8 +149,25 @@ export const ResignConfirmation = {
   },
 };
 
+export const IdleSubmitting = {
+  ...IdlePrompt,
+  args: { ...IdlePrompt.args, isSubmitting: true },
+  play: async ({ canvasElement }) => {
+    expect(await within(canvasElement.ownerDocument.body).findByRole("button", { name: "Sending…" })).toBeDisabled();
+  },
+};
+
+export const IdleError = {
+  ...IdlePrompt,
+  args: { ...IdlePrompt.args, error: "Could not confirm you are here. Check your connection and try again." },
+};
+
 export const UnavailableMatch = {
   render: () => <UnavailableMatchPage matchID="storybook-unavailable" />,
+};
+
+export const UnavailableLongMatchId = {
+  render: () => <UnavailableMatchPage matchID="storybook-unavailable-very-long-match-identifier-for-wrapping" />,
 };
 
 export const InterruptedDuel = {

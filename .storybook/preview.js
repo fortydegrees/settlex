@@ -14,15 +14,15 @@ const preview = {
       return React.createElement(
         "div",
         {
-          className: `${outfit.className} min-h-screen text-slate-800`,
+          className: `${outfit.className} min-h-screen text-ink-primary`,
           style: {
             background: CATANA_TABLE_BACKGROUND,
-            padding: isFullscreen ? 0 : "2rem",
+            padding: isFullscreen ? 0 : "var(--settlex-ui-space-8)",
           },
         },
         // Base UI portals mount beside the story wrapper, so inherit the
         // production UI face from the preview document as well.
-        React.createElement("style", null, `body { font-family: ${outfit.style.fontFamily}; }`),
+        React.createElement("style", null, `:root { --font-outfit: ${outfit.style.fontFamily}; } body { font-family: ${outfit.style.fontFamily}; }`),
         React.createElement(Story)
       );
     },

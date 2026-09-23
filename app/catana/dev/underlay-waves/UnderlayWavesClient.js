@@ -262,10 +262,10 @@ function SegmentedButton({ active, children, onClick }) {
       type="button"
       onClick={onClick}
       className={cx(
-        "rounded-lg px-3 py-2 text-sm font-bold transition",
+        "settlex-ui-button settlex-ui-focus type-action-small rounded-control px-ui-3 py-ui-2",
         active
-          ? "bg-lime-500 text-white shadow-md"
-          : "bg-white/55 text-slate-700 ring-1 ring-white/50 hover:bg-white/75"
+          ? "settlex-ui-button-primary"
+          : "settlex-ui-button-secondary"
       )}
     >
       {children}
@@ -280,10 +280,10 @@ function ToggleButton({ active, children, onClick }) {
       onClick={onClick}
       aria-pressed={active}
       className={cx(
-        "rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition",
+        "settlex-ui-button settlex-ui-focus type-action-small rounded-pill px-ui-3 py-ui-1.5",
         active
-          ? "bg-amber-400 text-slate-900 shadow-md"
-          : "bg-white/45 text-slate-600 ring-1 ring-white/50 hover:bg-white/65"
+          ? "settlex-ui-button-accent"
+          : "settlex-ui-button-utility"
       )}
     >
       {children}
@@ -411,27 +411,27 @@ export function UnderlayWavesClient() {
   }, [variantId, speed]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(125,211,252,1)_0%,_rgba(59,130,246,1)_46%,_rgba(2,132,199,1)_100%)] text-slate-800">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl gap-5 px-4 py-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:px-6">
-        <aside className="space-y-4 lg:sticky lg:top-5 lg:self-start">
-          <section className="rounded-xl bg-white/70 p-4 shadow-lg ring-1 ring-white/60 backdrop-blur-sm">
-            <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(125,211,252,1)_0%,_rgba(59,130,246,1)_46%,_rgba(2,132,199,1)_100%)] text-ink-primary">
+      <div className="mx-auto grid min-h-screen w-full max-w-7xl gap-ui-5 px-ui-4 py-ui-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:px-ui-6">
+        <aside className="space-y-ui-4 lg:sticky lg:top-5 lg:self-start">
+          <section className="settlex-ui-pane p-ui-4">
+            <div className="type-caption uppercase text-ink-secondary">
               Catana Dev
             </div>
-            <h1 className="mt-2 text-2xl font-bold text-slate-900">
+            <h1 className="mt-ui-2 type-title text-ink-primary">
               Underlay Waves
             </h1>
-            <p className="mt-2 text-sm text-slate-700">
+            <p className="mt-ui-2 type-body-small text-ink-secondary">
               Preview ambient shoreline motion against the generated island
               underlay and a simplified board context.
             </p>
           </section>
 
-          <section className="rounded-xl bg-white/55 p-4 shadow-lg ring-1 ring-white/50 backdrop-blur-sm">
-            <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+          <section className="settlex-ui-pane p-ui-4">
+            <div className="type-section text-ink-primary">
               Variant
             </div>
-            <div className="mt-3 grid gap-2">
+            <div className="mt-ui-3 grid gap-ui-2">
               {WAVE_VARIANTS.map((variant) => (
                 <SegmentedButton
                   key={variant.id}
@@ -442,17 +442,17 @@ export function UnderlayWavesClient() {
                 </SegmentedButton>
               ))}
             </div>
-            <p className="mt-3 text-sm text-slate-700">
+            <p className="mt-ui-3 type-body-small text-ink-secondary">
               {selectedVariant.description}
             </p>
           </section>
 
-          <section className="space-y-4 rounded-xl bg-white/55 p-4 shadow-lg ring-1 ring-white/50 backdrop-blur-sm">
+          <section className="settlex-ui-pane space-y-ui-4 p-ui-4">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+              <div className="type-section text-ink-primary">
                 View
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-ui-3 flex flex-wrap gap-ui-2">
                 <ToggleButton
                   active={showBoard}
                   onClick={() => setShowBoard((current) => !current)}
@@ -476,10 +476,10 @@ export function UnderlayWavesClient() {
               </div>
             </div>
 
-            <label className="block text-xs font-semibold uppercase tracking-widest text-slate-600">
+            <label className="type-label block text-ink-secondary">
               Preview Scale
               <input
-                className="mt-3 w-full accent-lime-500"
+                className="mt-ui-3 w-full accent-ink-positive settlex-ui-focus"
                 type="range"
                 min="0.72"
                 max="1.22"
@@ -487,15 +487,15 @@ export function UnderlayWavesClient() {
                 value={scale}
                 onChange={(event) => setScale(Number(event.target.value))}
               />
-              <span className="mt-1 block text-sm font-semibold normal-case tracking-normal text-slate-800">
+              <span className="mt-ui-1 block type-body-small normal-case text-ink-primary">
                 {scale.toFixed(2)}x
               </span>
             </label>
 
-            <label className="block text-xs font-semibold uppercase tracking-widest text-slate-600">
+            <label className="type-label block text-ink-secondary">
               Motion Speed
               <input
-                className="mt-3 w-full accent-lime-500"
+                className="mt-ui-3 w-full accent-ink-positive settlex-ui-focus"
                 type="range"
                 min="0.4"
                 max="1.8"
@@ -503,14 +503,14 @@ export function UnderlayWavesClient() {
                 value={speed}
                 onChange={(event) => setSpeed(Number(event.target.value))}
               />
-              <span className="mt-1 block text-sm font-semibold normal-case tracking-normal text-slate-800">
+              <span className="mt-ui-1 block type-body-small normal-case text-ink-primary">
                 {speed.toFixed(1)}x
               </span>
             </label>
           </section>
         </aside>
 
-        <section className="min-h-[680px] rounded-xl bg-white/25 p-3 shadow-xl ring-1 ring-white/40 backdrop-blur-sm lg:min-h-0">
+        <section className="settlex-ui-hud min-h-[680px] p-ui-3 lg:min-h-0">
           <div className="relative grid h-full min-h-[640px] place-items-center overflow-hidden rounded-lg bg-sky-500 shadow-inner ring-1 ring-white/40">
             <div
               className="h-[min(84vh,760px)] w-full max-w-[880px]"
