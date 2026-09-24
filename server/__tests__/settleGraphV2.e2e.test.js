@@ -1,4 +1,5 @@
 import path from "node:path";
+import { writeFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { Master } from "boardgame.io/dist/cjs/master.js";
 import { InitializeGame } from "boardgame.io/dist/cjs/internal.js";
@@ -6,7 +7,7 @@ import { dispatchMatchUpdate } from "../dispatch/dispatchMatchUpdate.js";
 import { buildAutoMoveAction } from "../timers/dispatchUtils.js";
 import { ServerCatan } from "../serverGame.js";
 import { BotManager } from "../bots/BotManager.js";
-import { SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
+import { SETTLEGRAPH_006_MODEL_SHA256, SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
 import { SettleGraphV2BotManager } from "../bots/settleGraphV2BotManager.js";
 
 const RUN_E2E = process.env.SETTLEX_RUN_SETTLEGRAPH_V2_E2E === "1";
@@ -42,13 +43,14 @@ function createSyncDb() {
   };
 }
 
-describe("SettleGraph 005 sealed-runtime integration", () => {
+describe("SettleGraph sealed-runtime integration", () => {
   it.runIf(RUN_E2E)(
     "plays setup and a main-turn action through Master, router, native worker, and sealed model",
     async () => {
       const workerPath = process.env.SETTLEX_SETTLEGRAPH_V2_WORKER ??
         path.resolve("native/settlegraph-v2/target/release/settlegraph-v2-worker");
       const modelPath = process.env.SETTLEX_SETTLEGRAPH_V2_MODEL;
+      const expectedModelSha256 = process.env.SETTLEX_EXPECTED_MODEL_SHA256 ?? SETTLEGRAPH_006_MODEL_SHA256;
       expect(modelPath, "SETTLEX_SETTLEGRAPH_V2_MODEL must be set").toBeTruthy();
 
       const metadata = {
@@ -62,7 +64,7 @@ describe("SettleGraph 005 sealed-runtime integration", () => {
           },
           "1": {
             id: 1,
-            name: "[BOT] SettleGraph 005",
+            name: "[BOT] SettleGraph",
             credentials: "bot-secret",
             data: {
               participantType: "bot",
@@ -116,6 +118,7 @@ describe("SettleGraph 005 sealed-runtime integration", () => {
         pufferManager,
         settleGraphV2Manager: new SettleGraphV2BotManager({ client })
       });
+      const nativeDecisions = vi.spyOn(client, "decide");
       const logger = { error: vi.fn() };
 
       const state = () => db.fetch(MATCH_ID, { state: true }).state;
@@ -149,6 +152,8 @@ describe("SettleGraph 005 sealed-runtime integration", () => {
       };
 
       try {
+        const health = await client.start();
+        expect(health.modelSha256).toBe(expectedModelSha256);
         await apply("readyUp", [], "0");
         await dispatchBot();
         expect(state()).toMatchObject({
@@ -185,6 +190,19 @@ describe("SettleGraph 005 sealed-runtime integration", () => {
         expect(state().ctx.currentPlayer).toBe("0");
         expect(state().G.core.playerStateById["1"].settlementsRemaining).toBeLessThanOrEqual(3);
         expect(state().G.core.playerStateById["1"].roadsRemaining).toBeLessThanOrEqual(13);
+        expect(nativeDecisions.mock.calls.length).toBeGreaterThanOrEqual(5);
+        const decisions = await Promise.all(nativeDecisions.mock.results.map(({ value }) => value));
+        expect(decisions.every((decision) => decision.modelSha256 === expectedModelSha256)).toBe(true);
+        if (process.env.SETTLEX_E2E_RECEIPT) {
+          writeFileSync(process.env.SETTLEX_E2E_RECEIPT, JSON.stringify({
+            passed: true, modelSha256: health.modelSha256, contract: health.contract,
+            workerPath, modelPath, boardSourceId: state().G.boardSourceId,
+            setupCompleted: true, mainTurnCompleted: true, mainTurnDispatches,
+            finalStateId: state()._stateID, finalCurrentPlayer: state().ctx.currentPlayer,
+            nativeDecisions: decisions.map(({ stateId, modelSha256, actionIds, plannedMoves }) =>
+              ({ stateId, modelSha256, actionIds, plannedMoves }))
+          }, null, 2) + "\n");
+        }
       } finally {
         botManager.close();
       }

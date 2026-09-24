@@ -1,7 +1,28 @@
 # SettleGraph V2/V3 Native Runtime Provenance
 
 This directory is the product-integration runtime for the original sealed
-SettleGraph V2 bot and checkpoint 005 direct play.
+SettleGraph V2 bot and checkpoints 005/006 direct play.
+
+## Checkpoint 006 product release (24 September 2026)
+
+The manager's subsequent handoff records David's explicit approval to finish
+the website integration and deploy the exact B model below. This scoped release
+selects 006 in the production manifest, read-only model mount and opt-in UI;
+the original 005 artifact and release remain available for rollback. It does
+not qualify the actor value or separate critic for search.
+
+## Checkpoint 006 local integration (24 September 2026)
+
+Exact qualified seed B CTNN SHA-256:
+`299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b`.
+The unchanged full training checkpoint SHA-256 is
+`9b242569e4bfb109d809da0626f0d0a713c1eb1179af3b4b4188731e60bb7b07`.
+Canonical research package: `reports/2026-09-23-incumbent-006-qualification/incumbent-006`
+in settlex-ai. Handoff76 authorized the fixed qualification and local direct
+integration only. Both candidates qualified; A/B remained unresolved, selecting
+B by the predeclared default. The native encoder and network implementation
+below are unchanged. Only the exact approved model allowlist is extended.
+No raw-value search, production manifest change or public deployment is included.
 
 ## Pinned source
 

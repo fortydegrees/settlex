@@ -58,6 +58,47 @@ const health005Response = (id, overrides = {}) => ({
 });
 
 describe("SettleGraphV2Client", () => {
+  it("accepts sealed 006 decisions and rejects a later switch to 005", async () => {
+    const model006 = "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b";
+    let responseModel = model006;
+    const proc = createWorkerStub((request) => request.mode === "health"
+      ? health005Response(request.id, { modelSha256: model006 })
+      : {
+          id: request.id, ok: true, stateId: request.state._stateID,
+          plannedMoves: [{ move: "endTurn", args: [] }],
+          actionIds: [298], modelSha256: responseModel
+        });
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: "/tmp/incumbent-006.ctnn", spawnImpl: () => proc
+    });
+    try {
+      await expect(client.decide({ playerId: "1", state: { _stateID: 42 } }))
+        .resolves.toMatchObject({ modelSha256: model006 });
+      responseModel = SETTLEGRAPH_005_MODEL_SHA256;
+      await expect(client.decide({ playerId: "1", state: { _stateID: 43 } }))
+        .rejects.toThrow("unexpected model identity");
+    } finally {
+      client.close();
+    }
+  });
+
+  it.each([
+    ["shape", { observation_dim: 1445 }],
+    ["observation version", { observation_version: 2 }],
+    ["contract hash", { contract_sha256: "unapproved" }]
+  ])("rejects sealed 006 with a mismatched %s", async (_name, mismatch) => {
+    const health = health005Response("fixture", {
+      modelSha256: "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b"
+    });
+    const proc = createWorkerStub((request) => ({
+      ...health, id: request.id, contract: { ...health.contract, ...mismatch }
+    }));
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: "/tmp/incumbent-006.ctnn", spawnImpl: () => proc
+    });
+    await expect(client.start()).rejects.toThrow("contract mismatch");
+  });
+
   it("accepts 005 health and pins later decisions to that identity", async () => {
     let responseModelSha256 = SETTLEGRAPH_005_MODEL_SHA256;
     const proc = createWorkerStub((request) => request.mode === "health"

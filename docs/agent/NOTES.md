@@ -1,5 +1,29 @@
 # NOTES
 
+- Checkpoint 006 production release (2026-09-24):
+  - The explicitly authorized release selects the exact qualified B artifact,
+    native SHA `299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b`,
+    through the existing V3 direct-inference contract. See the release manifest
+    for the authoritative SHA (and the local integration note below for provenance).
+  - Keep the production manifest, Compose model path and visible 006 labels
+    aligned. Startup rejects any older model even though the worker accepts it
+    for deliberate rollback. Restore the whole 005 release to roll back.
+  - Preserve the original isolated 006 preparation and the external 005 artifact.
+    The generic Puffer mode and current Clarity styling remain available.
+
+- Checkpoint 006 local qualification/integration (2026-09-24):
+  - Both A and B passed fresh official-spiral, matched-peer and random-transfer
+    gates. B is research incumbent006 under the frozen default rule; the A/B
+    interval includes 50%, so B is not proved stronger than A.
+  - Accept only exact B SHA `299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b`
+    with the existing V3/1464 contract. Pin identity across decisions/restarts.
+  - Production remains configured for005; no UI rename, manifest switch or
+    deployment is part of this branch. Local006 can be selected through the
+    existing model environment setting; restart clients when changing models.
+  - Initial headless checks needed `pnpm -C game-core build` in the new checkout.
+    After that prerequisite, setup and a main turn passed for006 and005 with no
+    fallback. Model bytes remain external, and006 is direct inference only.
+
 - SettleGraph checkpoint 005 opt-in production release (2026-09-23):
   - This release adds a separate `Play Bot 005` action. The generic `Play vs Bot`
     action stays on Puffer; checkpoint 005 is a direct-play beta integration,

@@ -1,5 +1,32 @@
 # PROGRESS
 
+## Status (2026-09-24, checkpoint 006 production candidate)
+- Integrated the reviewed ten-file local 006 patch onto the isolated release
+  branch, preserving the 005 deployment record and current Clarity visuals.
+- Selected exact qualified B in the production manifest and read-only mount;
+  renamed the opt-in action/opponent to 006. The public badge retains its
+  previously approved Beta wording, with internal release counter 8.
+- Exact-model preflight, client identity, route, match bootstrap and deployment
+  contracts pass (49 tests), including rejection of 005 as the 006 release.
+- Full verification, native tests/parity/format/clippy, Linux game/web image
+  builds and production preflight pass. Linux gameplay receipts for both 006
+  and 005 record completed setup/main turns and six native decisions each.
+- Desktop and phone action checks pass. Provisioned the exact 006 artifact
+  read-only on OCI; retained the 005 artifact and tagged its running images
+  for rollback. Production deployment and real public gameplay remain pending;
+  value/search semantics are unchanged.
+
+## Status (2026-09-24, checkpoint 006 local integration)
+- Added exact qualified 006 acceptance to the V3 worker and client in isolated
+  branch `codex/settlegraph-006-local`, based on committed 005 adapter `3cd24f5`.
+- Verified 256 research probes, real setup/main-turn dispatch with the release
+  worker, and 005 rollback through the same gameplay path. All 19 native tests,
+  23 focused JS tests, release build, clippy, formatting and changed-file lint pass.
+- Preserved original V2/005 acceptance, the 005 production manifest and UI, and
+  the deployment owner's checkout. No push, commit or public deployment.
+- Canonical research package and local configuration: see
+  `native/settlegraph-v2/LOCAL_006.md`. Search/value use remains unqualified.
+
 ## Status (2026-09-23, SettleGraph checkpoint 005 production release)
 - Added an explicit `Play Bot 005` homepage action behind the existing opt-in
   V2 deployment flag. The generic `Play vs Bot` action continues to use Puffer.
