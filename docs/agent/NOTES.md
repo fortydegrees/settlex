@@ -1,5 +1,12 @@
 # NOTES
 
+- Homepage bot entry correction (2026-09-24):
+  - Keep a single orange `Play vs Bot` action with the existing AI marker.
+    When native SettleGraph is enabled (as in production), this action selects
+    the existing `bot-v2` path and therefore checkpoint 006. Do not add a second
+    checkpoint-labelled action. The flag-off path remains available for local
+    development without a native model.
+
 - Checkpoint 006 production release (2026-09-24):
   - The explicitly authorized release selects the exact qualified B artifact,
     native SHA `299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b`,

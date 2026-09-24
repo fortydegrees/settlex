@@ -1,5 +1,15 @@
 # PROGRESS
 
+## Status (2026-09-24, single production bot action)
+- Replaced the two orange homepage entries with one `Play vs Bot` action.
+  Production selects the existing native SettleGraph path, preserving its
+  pending state and exact checkpoint 006 runtime. The dock has three modes.
+- Updated the homepage stories/catalog; current wordmark, button treatment,
+  engine, native model and match-creation contract are unchanged.
+- Desktop/phone Storybook inspection and manual starting-state interaction pass,
+  as do focused lint and the approved-release checks. No automated suite run
+  for this correction; production build and live entry verification follow.
+
 ## Status (2026-09-24, checkpoint 006 production candidate)
 - Integrated the reviewed ten-file local 006 patch onto the isolated release
   branch, preserving the 005 deployment record and current Clarity visuals.
