@@ -196,19 +196,19 @@ describe("deployment file wiring", () => {
     expect(dockerignore).toMatch(/^\*\*\/\*\.ctnn$/m);
   });
 
-  it("pins and packages only the verified direct-play Bot 005 runtime", () => {
+  it("pins and packages only the verified direct-play Bot 006 runtime", () => {
     const model = JSON.parse(readRepoFile("release", "bot-model.json"));
     const gameDockerfile = readRepoFile("Dockerfile.game");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const startup = readRepoFile("infra", "scripts", "start-game.sh");
 
     expect(model).toEqual({
-      checkpoint: "005",
-      sha256: "382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca",
+      checkpoint: "006",
+      sha256: "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b",
       observationVersion: 3,
       observationDim: 1464,
       actionCount: 299,
-      relativePath: "incumbent-005/model.ctnn",
+      relativePath: "incumbent-006/model.ctnn",
       mode: "direct",
     });
     expect(gameDockerfile).toContain("FROM rust:1.85.1-bookworm AS native");
@@ -219,12 +219,13 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models");
     expect(compose).toContain("read_only: true");
     expect(compose).toContain("create_host_path: false");
+    expect(compose).toContain(`SETTLEX_SETTLEGRAPH_V2_MODEL: /opt/settlex/models/${model.relativePath}`);
     expect(startup.indexOf("check-production-bot.mjs")).toBeLessThan(
       startup.indexOf("server/server.js")
     );
   });
 
-  it("builds the homepage Bot 005 action from the same deployment flag", () => {
+  it("builds the homepage Bot 006 action from the same deployment flag", () => {
     const webDockerfile = readRepoFile("Dockerfile.web");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const exampleEnv = readRepoFile(".env.example");

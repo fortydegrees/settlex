@@ -1,7 +1,7 @@
 # SettleGraph V2/V3 Native Runtime Provenance
 
 This directory is the product-integration runtime for the original sealed
-SettleGraph V2 bot and checkpoint 005 direct play.
+SettleGraph V2 bot and checkpoints 005/006 direct play.
 
 ## Pinned source
 

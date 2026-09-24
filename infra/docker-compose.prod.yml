@@ -55,7 +55,7 @@ services:
       NODE_ENV: production
       SETTLEX_BOT_MOVE_DELAY_MS: ${SETTLEX_BOT_MOVE_DELAY_MS:-450}
       SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
-      SETTLEX_SETTLEGRAPH_V2_MODEL: /opt/settlex/models/incumbent-005/model.ctnn
+      SETTLEX_SETTLEGRAPH_V2_MODEL: /opt/settlex/models/incumbent-006/model.ctnn
       SETTLEX_SETTLEGRAPH_V2_WORKER: /usr/local/bin/settlegraph-v2-worker
     volumes:
       - type: bind

@@ -2,7 +2,7 @@
 
 This crate is the product-owned runtime boundary for the sealed SettleGraph
 bot. It preserves the original CTNN-v2 runtime and adds direct inference for
-checkpoint 005's CTNN-v3 observation. Both models use the same proven native
+checkpoints 005 and 006's CTNN-v3 observation. All models use the same proven native
 game, 299-action codec, state importer, legality mask, and action translation.
 The website sends complete authoritative Boardgame.io snapshots over NDJSON;
 no observation or action semantics are approximated in JavaScript.
@@ -15,6 +15,9 @@ SHA-256: 072906d17077f1ed3fa4e9254999a8920ec243bdda3ab42575258492b58465c8
 
 Checkpoint 005: observation version 3 / 1,464 floats
 SHA-256: 382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca
+
+Checkpoint 006: observation version 3 / 1,464 floats
+SHA-256: 299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b
 ```
 
 V3 appends the 19 canonical public tile numbers to the immutable V2 prefix.
@@ -28,6 +31,11 @@ request fields, and unsupported request modes fail closed. No Colonist or
 research search code is included. The V3 encoder and versioned inference loader
 are pinned to research commit
 `2cee77fa789fc4af8665e0be57e199928a7e965c`; see `PROVENANCE.md`.
+
+For the qualified 006 model, local configuration, exact verification and 005
+rollback, see [LOCAL_006.md](LOCAL_006.md). The production manifest and homepage
+action select 006. The original V2 and checkpoint 005 remain accepted by the worker
+and client for explicit rollback; production preflight requires the release manifest's hash.
 
 ## Build and verify
 
@@ -43,15 +51,20 @@ SETTLEX_INCUMBENT_005_MODEL=/absolute/path/to/incumbent-005/model.ctnn \
 SETTLEX_005_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
 cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test incumbent_005 \
   -- --ignored --nocapture
+SETTLEX_INCUMBENT_006_MODEL=/absolute/path/to/incumbent-006/model.ctnn \
+SETTLEX_006_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
+cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test incumbent_006 \
+  -- --ignored --nocapture
 ```
 
 The external-artifact checks verify the exact file hashes, versioned contracts,
-embedded probes, and all 256 recorded 005 logits, values, and legal argmaxes.
+embedded probes, and all 256 recorded logits, values, and legal argmaxes for each checkpoint.
 
 Run the real Boardgame.io-to-model smoke with:
 
 ```bash
 SETTLEX_RUN_SETTLEGRAPH_V2_E2E=1 \
+SETTLEX_EXPECTED_MODEL_SHA256=<exact-sha-for-the-selected-model> \
 SETTLEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/model.ctnn \
 pnpm vitest run server/__tests__/settleGraphV2.e2e.test.js --reporter=verbose
 ```
@@ -89,11 +102,11 @@ PUBLIC_APP_URL=http://localhost:3000 \
 pnpm dev
 ```
 
-Open `http://localhost:3000`, choose **Play Bot 005**, and play normally. The
+Open `http://localhost:3000`, choose **Play Bot 006**, and play normally. The
 default worker path is
 `native/settlegraph-v2/target/release/settlegraph-v2-worker`; override it with
 `SETTLEX_SETTLEGRAPH_V2_WORKER`. Puffer remains available as **Play vs Bot**.
-The Bot 005 action appears only when the public and server feature flags are
+The Bot 006 action appears only when the public and server feature flags are
 enabled.
 
 When finished, stop the two foreground processes and remove the disposable
