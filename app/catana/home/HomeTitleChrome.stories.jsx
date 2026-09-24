@@ -103,7 +103,7 @@ export const OutlinedTextOnly = {
   },
 };
 
-export const ClarityFourModesIdle = {
+export const ClarityThreeModesIdle = {
   args: { systemActions: buildSystemActions({ settleGraphV2Enabled: true }) },
 };
 
@@ -148,13 +148,14 @@ export const ClaimedCreatingFriend = {
   },
 };
 
-export const ClaimedStartingPuffer = {
+export const ClaimedStartingBot = {
   args: {
     identity: savedIdentity,
     accountStatus: "claimed",
     hasIdentity: true,
     matchAlertDisplay: matchAlertFixtures.active,
-    activeActionId: "bot",
+    systemActions: buildSystemActions({ settleGraphV2Enabled: true }),
+    activeActionId: "bot-v2",
   },
 };
 
@@ -171,7 +172,7 @@ export const Bot006Available = {
     const screen = within(canvasElement);
     args.onSelectMode.mockClear();
     await userEvent.click(
-      screen.getByRole("button", { name: /Play Bot 006/ })
+      screen.getByRole("button", { name: /Play vs Bot/ })
     );
     expect(args.onSelectMode).toHaveBeenCalledWith("bot-v2");
   },
