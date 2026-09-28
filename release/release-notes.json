@@ -1,6 +1,16 @@
 {
-  "currentVersion": 9,
+  "currentVersion": 10,
   "releases": [
+    {
+      "version": 10,
+      "date": "2026-09-28",
+      "title": "Beta version",
+      "approved": true,
+      "highlights": [
+        "beta version! please report any bugs you find!"
+      ],
+      "label": "release 0.9"
+    },
     {
       "version": 9,
       "label": "release 0.9",

@@ -8315,3 +8315,8 @@
 - Added a behavior regression covering accented letters, spaces, punctuation,
   and emoji. Focused account-service and account-route verification passed 13
   tests.
+
+## 2026-09-28 — Plain homepage lettering
+
+- Removed desktop/mobile J wordmark strokes and shadows, plus the homepage subtitle shadow. Preserved lettering, sizing, spacing, colors, and other homepage chrome.
+- Verified at 1440×900 and 390×844 in the real homepage: wordmark stroke 0px and both text shadows none. `pnpm verify` passed (UI policy, engine, server, app suites and lint); release bump check passed. User approved keeping the public release 0.9 / Beta version copy; internal release revision is 10. Release approval and bump checks passed.

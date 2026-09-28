@@ -27,13 +27,6 @@
   line-height: 1.08;
 }
 
-/* Paint the edge behind the fill so the original letterforms stay intact. */
-.heading :global(.settlex-ui-wordmark) > span > span {
-  paint-order: stroke fill;
-  -webkit-text-stroke: 1.5px #27628b;
-  text-shadow: 0 .75px 0 rgb(39 98 139 / .45), 0 3px 5px rgb(20 63 96 / .10);
-}
-
 /* Align the subtitle's straight leading 1 with the curved S optically. */
 @media (min-width: 640px) {
   .subtitle { padding-inline-start: .125em; }
@@ -55,11 +48,6 @@
 
   .mark { display: none; }
   .heading { font-size: clamp(2.625rem, 14vw, 3.625rem); }
-
-  .heading :global(.settlex-ui-wordmark) > span > span {
-    -webkit-text-stroke-width: 1px;
-    text-shadow: 0 .5px 0 rgb(39 98 139 / .45);
-  }
 }
 
 @media (max-width: 639px) and (max-height: 740px) {

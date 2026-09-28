@@ -1,6 +1,5 @@
 /* Ambient copy sits directly on the title screen's blue field. Keep the
    play controls and the still-provisional wordmark on their own materials. */
-.support,
 .quiet,
 .nav,
 .release {
