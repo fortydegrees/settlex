@@ -1,5 +1,8 @@
 # NOTES
 
+## SettleGraph 007 (2026-10-01)
+Keep the exact 007 artifact hash, release manifest, Compose path and match label aligned. This is qualified A-renewal, not a retrained/exported variant. Retain 006 and prior release images for rollback. Do not rerun the completed qualification or treat this direct-policy promotion as authorization for a paid search/training study.
+
 - Homepage bot entry correction (2026-09-24):
   - Keep a single orange `Play vs Bot` action with the existing AI marker.
     When native SettleGraph is enabled (as in production), this action selects

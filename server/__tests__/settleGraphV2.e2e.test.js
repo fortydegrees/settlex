@@ -7,7 +7,7 @@ import { dispatchMatchUpdate } from "../dispatch/dispatchMatchUpdate.js";
 import { buildAutoMoveAction } from "../timers/dispatchUtils.js";
 import { ServerCatan } from "../serverGame.js";
 import { BotManager } from "../bots/BotManager.js";
-import { SETTLEGRAPH_006_MODEL_SHA256, SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
+import { SETTLEGRAPH_007_MODEL_SHA256, SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
 import { SettleGraphV2BotManager } from "../bots/settleGraphV2BotManager.js";
 
 const RUN_E2E = process.env.SETTLEX_RUN_SETTLEGRAPH_V2_E2E === "1";
@@ -50,7 +50,7 @@ describe("SettleGraph sealed-runtime integration", () => {
       const workerPath = process.env.SETTLEX_SETTLEGRAPH_V2_WORKER ??
         path.resolve("native/settlegraph-v2/target/release/settlegraph-v2-worker");
       const modelPath = process.env.SETTLEX_SETTLEGRAPH_V2_MODEL;
-      const expectedModelSha256 = process.env.SETTLEX_EXPECTED_MODEL_SHA256 ?? SETTLEGRAPH_006_MODEL_SHA256;
+      const expectedModelSha256 = process.env.SETTLEX_EXPECTED_MODEL_SHA256 ?? SETTLEGRAPH_007_MODEL_SHA256;
       expect(modelPath, "SETTLEX_SETTLEGRAPH_V2_MODEL must be set").toBeTruthy();
 
       const metadata = {

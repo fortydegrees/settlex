@@ -1,7 +1,22 @@
 # SettleGraph V2/V3 Native Runtime Provenance
 
 This directory is the product-integration runtime for the original sealed
-SettleGraph V2 bot and checkpoints 005/006 direct play.
+SettleGraph V2 bot and checkpoints 005/006/007 direct play.
+
+## Checkpoint 007 promotion (1 October 2026)
+
+David approved starting the recommended exact A-renewal promotion as SettleGraph 007.
+Native SHA: `88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79`.
+Full learner SHA: `3b3cdc9a280abc43ebb8fdc6218d93821cf71d71b14dfc864751c16b348c689e`.
+Canonical package: `/Users/david/coding/settlex-ai/research/reports/2026-10-01-incumbent-007-promotion/incumbent-007`.
+The completed four-branch qualification passed at 2,140/4,096 wins versus 006;
+all frozen peer and transfer conditions passed. Preserve the original study
+exceptions and identity chains. The existing CTNN-v3 runtime, encoder, game,
+codec and direct action selector are unchanged. This change adds the exact
+007 allowlist identity and selects its package in the release configuration.
+006 remains accepted for rollback. Value/search behavior is not qualified.
+See LOCAL_007.md and the canonical promotion report for verification and
+deployment status; this source change alone is not evidence of a live release.
 
 ## Checkpoint 006 product release (24 September 2026)
 

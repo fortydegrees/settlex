@@ -1,9 +1,9 @@
 {
-  "checkpoint": "006",
-  "sha256": "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b",
+  "checkpoint": "007",
+  "sha256": "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79",
   "observationVersion": 3,
   "observationDim": 1464,
   "actionCount": 299,
-  "relativePath": "incumbent-006/model.ctnn",
+  "relativePath": "incumbent-007/model.ctnn",
   "mode": "direct"
 }

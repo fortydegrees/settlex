@@ -1,5 +1,11 @@
 # PROGRESS
 
+## Status (2026-10-01, SettleGraph 007 promotion)
+- Prepared exact qualified A-renewal as SettleGraph 007 in the existing CTNN-v3 direct runtime.
+- Release manifest, read-only mount and match label select 007; existing 006 support remains for rollback.
+- Runtime architecture, homepage action and all research evidence remain unchanged.
+- Verification and deployment status: see native/settlegraph-v2/LOCAL_007.md and the canonical research promotion report. Public deployment has not been performed by this change.
+
 ## Status (2026-09-24, single production bot action)
 - Replaced the two orange homepage entries with one `Play vs Bot` action.
   Production selects the existing native SettleGraph path, preserving its

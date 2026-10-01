@@ -7,6 +7,8 @@ export const SETTLEGRAPH_005_MODEL_SHA256 =
   "382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca";
 export const SETTLEGRAPH_006_MODEL_SHA256 =
   "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b";
+export const SETTLEGRAPH_007_MODEL_SHA256 =
+  "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79";
 export const SETTLEGRAPH_V2_CONTRACT_SHA256 =
   "a64b9d0daaa3bb6f60f0c0c42bfc52b53ba4a4672263b85d899805323bc97e55";
 
@@ -101,12 +103,12 @@ export class SettleGraphV2Client {
   validateHealth(health) {
     const expectedContract = health?.modelSha256 === SETTLEGRAPH_V2_MODEL_SHA256
       ? EXPECTED_CONTRACT
-      : [SETTLEGRAPH_005_MODEL_SHA256, SETTLEGRAPH_006_MODEL_SHA256].includes(health?.modelSha256)
+      : [SETTLEGRAPH_005_MODEL_SHA256, SETTLEGRAPH_006_MODEL_SHA256, SETTLEGRAPH_007_MODEL_SHA256].includes(health?.modelSha256)
         ? INCUMBENT_V3_CONTRACT
         : null;
     if (!expectedContract || (this.modelSha256 && health.modelSha256 !== this.modelSha256)) {
       throw new Error(
-        `SettleGraph V2 model SHA-256 mismatch: expected ${this.modelSha256 ?? "approved V2, 005 or 006"}, received ${health?.modelSha256 ?? "missing"}.`
+        `SettleGraph V2 model SHA-256 mismatch: expected ${this.modelSha256 ?? "approved V2, 005, 006 or 007"}, received ${health?.modelSha256 ?? "missing"}.`
       );
     }
     for (const [key, expected] of Object.entries(expectedContract)) {
