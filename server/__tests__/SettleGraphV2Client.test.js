@@ -58,22 +58,24 @@ const health005Response = (id, overrides = {}) => ({
 });
 
 describe("SettleGraphV2Client", () => {
-  it("accepts sealed 006 decisions and rejects a later switch to 005", async () => {
-    const model006 = "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b";
-    let responseModel = model006;
+  it.each([
+    ["006", "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b"],
+    ["007", "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79"]
+  ])("accepts sealed %s decisions and rejects a later switch to 005", async (checkpoint, modelSha) => {
+    let responseModel = modelSha;
     const proc = createWorkerStub((request) => request.mode === "health"
-      ? health005Response(request.id, { modelSha256: model006 })
+      ? health005Response(request.id, { modelSha256: modelSha })
       : {
           id: request.id, ok: true, stateId: request.state._stateID,
           plannedMoves: [{ move: "endTurn", args: [] }],
           actionIds: [298], modelSha256: responseModel
         });
     const client = new SettleGraphV2Client({
-      workerPath: "/tmp/worker", modelPath: "/tmp/incumbent-006.ctnn", spawnImpl: () => proc
+      workerPath: "/tmp/worker", modelPath: `/tmp/incumbent-${checkpoint}.ctnn`, spawnImpl: () => proc
     });
     try {
       await expect(client.decide({ playerId: "1", state: { _stateID: 42 } }))
-        .resolves.toMatchObject({ modelSha256: model006 });
+        .resolves.toMatchObject({ modelSha256: modelSha });
       responseModel = SETTLEGRAPH_005_MODEL_SHA256;
       await expect(client.decide({ playerId: "1", state: { _stateID: 43 } }))
         .rejects.toThrow("unexpected model identity");
