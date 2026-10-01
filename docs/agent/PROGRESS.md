@@ -4,7 +4,8 @@
 - Prepared exact qualified A-renewal as SettleGraph 007 in the existing CTNN-v3 direct runtime.
 - Release manifest, read-only mount and match label select 007; existing 006 support remains for rollback.
 - Runtime architecture, homepage action and all research evidence remain unchanged.
-- Verification and deployment status: see native/settlegraph-v2/LOCAL_007.md and the canonical research promotion report. Public deployment has not been performed by this change.
+- Deployed with explicit user approval through GitHub Actions run 36838178786 at c7869de. Full verification, Linux game/web builds and live health checks passed. The live single Play vs Bot action created a 007 match; exact native model health, setup and main-turn gameplay passed without fallback. The task-owned match was resigned and browser closed. Public Beta copy is unchanged.
+- The separate Colonist adapter accepts 007, with its rebuilt worker passing one captured legal-move fixture and 22 client checks. Its CLI retains explicit `--model` selection. Details and receipts: canonical research `reports/2026-10-01-incumbent-007-promotion`.
 
 ## Status (2026-09-24, single production bot action)
 - Replaced the two orange homepage entries with one `Play vs Bot` action.

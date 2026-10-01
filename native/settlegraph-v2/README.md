@@ -36,7 +36,7 @@ are pinned to research commit
 `2cee77fa789fc4af8665e0be57e199928a7e965c`; see `PROVENANCE.md`.
 
 For the qualified 007 model, product configuration and 006 rollback, see
-[LOCAL_007.md](LOCAL_007.md). The prepared release manifest selects 007.
+[LOCAL_007.md](LOCAL_007.md). The current release manifest selects 007.
 The original V2, 005 and 006 remain accepted for explicit rollback; production
 preflight requires the release manifest's exact hash. Historical 006 details remain
 in [LOCAL_006.md](LOCAL_006.md).
@@ -86,7 +86,7 @@ Build the release worker, then run the game server:
 
 ```bash
 SETTLEX_SETTLEGRAPH_V2_ENABLED=1 \
-SETTLEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/model.ctnn \
+SETTLEX_SETTLEGRAPH_V2_MODEL=/Users/david/coding/settlex-ai/research/reports/2026-10-01-incumbent-007-promotion/incumbent-007/model.ctnn \
 DATABASE_URL=postgres://settlehex:settlehex@localhost:55432/settlehex \
 pnpm serve
 ```
