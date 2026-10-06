@@ -122,6 +122,7 @@ import {
 import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
 import { getCurrentMatchAlertGameRegistration } from "./matchAlerts/matchAlertProviderActions.js";
 import { tabAttention } from "./utils/tabAttention";
+import { getGamePageTitle } from "./utils/gamePageTitle";
 
 let tradeDiscardModalPromise;
 const loadTradeDiscardModal = () =>
@@ -392,6 +393,9 @@ export function GameScreen(bgioProps) {
       bgioProps.matchMetadata
     ]
   );
+  const pageTitle = getGamePageTitle({ playerID, nameMap, isReplay });
+  useEffect(() => tabAttention.setPageTitle(pageTitle), [pageTitle]);
+
   const hasBotOpponent = useMemo(
     () =>
       mergedMatchData.some(

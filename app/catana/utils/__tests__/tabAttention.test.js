@@ -96,6 +96,81 @@ afterEach(() => {
 });
 
 describe("tabAttention", () => {
+  it("sets a page title and restores the route title on cleanup", async () => {
+    const { documentRef } = createFakeDocument();
+    const controller = await loadController(documentRef);
+
+    const cleanup = controller.setPageTitle("Game vs Puffer · SettleHex");
+    expect(documentRef.title).toBe("Game vs Puffer · SettleHex");
+    cleanup();
+    expect(documentRef.title).toBe("Original route title");
+  });
+
+  it("keeps attention visible while updating the title restored on return", async () => {
+    const { documentRef, children } = createFakeDocument({ hidden: true });
+    const controller = await loadController(documentRef);
+
+    controller.request("your-turn");
+    const attentionTitle = documentRef.title;
+    controller.setPageTitle("Game vs Puffer · SettleHex");
+    expect(documentRef.title).toBe(attentionTitle);
+    expect(children[0].getAttribute("href")).toBe("/match-alert-bell.svg");
+
+    documentRef.hidden = false;
+    documentRef.dispatchVisibilityChange();
+    expect(documentRef.title).toBe("Game vs Puffer · SettleHex");
+    expect(children[0].getAttribute("href")).toBe("/original-icon.svg");
+  });
+
+  it("restores the latest page title when an alert is released while hidden", async () => {
+    const { documentRef } = createFakeDocument({ hidden: true });
+    const controller = await loadController(documentRef);
+
+    controller.request("match-found");
+    controller.setPageTitle("Game vs Alex · SettleHex");
+    controller.release("match-found");
+    expect(documentRef.title).toBe("Game vs Alex · SettleHex");
+  });
+
+  it("does not let an old page cleanup overwrite a newer page title", async () => {
+    const { documentRef } = createFakeDocument();
+    const controller = await loadController(documentRef);
+
+    const cleanup = controller.setPageTitle("Game vs Puffer · SettleHex");
+    controller.setPageTitle("Replay · SettleHex");
+    cleanup();
+    expect(documentRef.title).toBe("Replay · SettleHex");
+  });
+
+  it("cleans up the base title without dismissing an active alert", async () => {
+    const { documentRef } = createFakeDocument({ hidden: true });
+    const controller = await loadController(documentRef);
+
+    const cleanup = controller.setPageTitle("Game vs Puffer · SettleHex");
+    controller.request("your-turn");
+    const attentionTitle = documentRef.title;
+    cleanup();
+    expect(documentRef.title).toBe(attentionTitle);
+    controller.release("your-turn");
+    expect(documentRef.title).toBe("Original route title");
+  });
+
+  it("preserves route metadata that changes during a background alert", async () => {
+    const { documentRef, children } = createFakeDocument({ hidden: true });
+    const controller = await loadController(documentRef);
+    const cleanup = controller.setPageTitle("Game vs Puffer · SettleHex");
+    controller.request("match-found");
+
+    documentRef.title = "Account · SettleHex";
+    cleanup();
+    controller.request("player-looking");
+    documentRef.hidden = false;
+    documentRef.dispatchVisibilityChange();
+
+    expect(documentRef.title).toBe("Account · SettleHex");
+    expect(children[0].getAttribute("href")).toBe("/original-icon.svg");
+  });
+
   it("does not change the title or favicon while the document is visible", async () => {
     const { documentRef, children } = createFakeDocument();
     const icon = children[0];
