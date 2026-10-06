@@ -117,25 +117,8 @@ const formatServerEntry = (entry, playerMap = {}) => {
       }
       return tokens;
     case "server:idle":
-      if (affectedPlayerId != null) {
-        tokens.push(playerToken(String(affectedPlayerId), playerMap));
-      }
-      tokens.push(
-        textToken(" was idle for 2 turns. Response window started.", {
-          variant: "server"
-        })
-      );
-      return tokens;
     case "server:idleAck":
-      if (affectedPlayerId != null) {
-        tokens.push(playerToken(String(affectedPlayerId), playerMap));
-      }
-      tokens.push(
-        textToken(" responded and cleared the idle warning.", {
-          variant: "server"
-        })
-      );
-      return tokens;
+      return [];
     case "server:idleForfeit":
       if (affectedPlayerId != null) {
         tokens.push(playerToken(String(affectedPlayerId), playerMap));
@@ -270,7 +253,12 @@ export function formatLogEntry(entry, playerMap = {}) {
       break;
     }
     case "robber:steal": {
-      tokens.push(textToken(" stole a card"));
+      if (data.resource) {
+        tokens.push(textToken(" stole "));
+        tokens.push({ kind: "resource", resource: data.resource });
+      } else {
+        tokens.push(textToken(" stole a card"));
+      }
       if (data.victimId != null) {
         tokens.push(textToken(" from "));
         tokens.push(playerToken(data.victimId, playerMap));

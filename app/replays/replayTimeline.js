@@ -1,3 +1,4 @@
+import { maskGameLogEntries } from "../catana/utils/gameLogPrivacy.js";
 import { getPublicVictoryPoints } from "@settlex/game-core";
 import {
   formatLogEntryText,
@@ -129,7 +130,7 @@ export const buildReplayTimeline = ({
     for (let logIndex = firstNewEntryIndex; logIndex < gameLog.length; logIndex += 1) {
       const entry = gameLog[logIndex];
       const entryKey = getGameLogEntryKey(entry, logIndex);
-      const label = formatLogEntryText(entry, playerMap);
+      const label = formatLogEntryText(maskGameLogEntries([entry], null)[0], playerMap);
 
       if (!label) {
         pendingDisplayLogKeys.push(entryKey);

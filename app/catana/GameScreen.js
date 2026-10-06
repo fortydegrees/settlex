@@ -29,10 +29,6 @@ import {
   readPresenceSnapshot
 } from "./utils/disconnectPresence";
 import {
-  classifyIncomingGameLogEntries,
-  flushDeferredGameLogEntries
-} from "./utils/gameLogPresentation";
-import {
   buildDevCardBuyTransfer,
   buildDiscardTransfers,
   buildMaritimeTradeTransfers,
@@ -54,7 +50,7 @@ import {
   shouldResetTradeModal
 } from "./utils/turnUiState";
 
-import { EffectsBoardWrapper } from "bgio-effects/react";
+import { EffectsBoardWrapper, useLatestPropsOnEffect } from "bgio-effects/react";
 
 import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { MobilePlayerCockpit } from "./components/MobilePlayerCockpit";
@@ -260,18 +256,13 @@ export function GameScreen(bgioProps) {
   const [showGameRules, setShowGameRules] = useState(false);
   const [mobileMetaPanel, setMobileMetaPanel] = useState(null);
   const [showConnectionBanner, setShowConnectionBanner] = useState(false);
-  const [presentedGameLogEntries, setPresentedGameLogEntries] = useState([]);
-  const [deferredLogEntries, setDeferredLogEntries] = useState([]);
   const [knightDisplayOverrideByPlayerId, setKnightDisplayOverrideByPlayerId] =
     useState({});
-  const [lastSeenGameLogId, setLastSeenGameLogId] = useState(0);
   const [boardViewportScale, setBoardViewportScale] = useState(1);
   const robberPlacementMotionMode = DEFAULT_ROBBER_PLACEMENT_MOTION_MODE;
   const gameOverSeenRef = useRef(false);
   const winnerConfettiSeenRef = useRef(false);
   const hasSeenTransportConnectionRef = useRef(false);
-  const previousIsConnectedRef = useRef(bgioProps.isConnected);
-  const bypassNextGameLogDelayRef = useRef(false);
   const boardRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
@@ -284,7 +275,6 @@ export function GameScreen(bgioProps) {
   latestGRef.current = bgioProps.G;
   const previousResourcesByPlayerIdRef = useRef(new Map());
   const currentResourcesByPlayerIdRef = useRef(new Map());
-  const deferredLogEntriesRef = useRef([]);
   const effectsBus = useMemo(() => createEffectBus(), []);
   const { width, height } = useWindowSize();
   const isPhoneLayout = width > 0 && width < 640;
@@ -531,14 +521,13 @@ export function GameScreen(bgioProps) {
       snapshots.currentResourcesByPlayerId;
   }, [playerViewMap]);
 
+  // The board remains animation-gated, but the feed follows authoritative
+  // props as soon as the effect queue starts (including resource outcomes).
+  const latestLogProps = useLatestPropsOnEffect("*");
   const canonicalGameLogEntries = useMemo(
-    () => (Array.isArray(bgioProps.G?.gameLog) ? bgioProps.G.gameLog : []),
-    [bgioProps.G?.gameLog]
+    () => (Array.isArray(latestLogProps.G?.gameLog) ? latestLogProps.G.gameLog : []),
+    [latestLogProps.G?.gameLog]
   );
-  const canDelayGameLogPresentation =
-    typeof window === "undefined" || typeof window.matchMedia !== "function"
-      ? true
-      : !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const replayLogEntries = Array.isArray(bgioProps.replayLogEntries)
     ? bgioProps.replayLogEntries
     : canonicalGameLogEntries;
@@ -546,14 +535,14 @@ export function GameScreen(bgioProps) {
     () =>
       isReplay
         ? replayLogEntries
-        : mergeVisibleLogEntries(presentedGameLogEntries, [
+        : mergeVisibleLogEntries(canonicalGameLogEntries, [
             ...(disconnectPresence?.events ?? []),
             ...(idlePresence?.events ?? [])
           ]),
     [
       isReplay,
       replayLogEntries,
-      presentedGameLogEntries,
+      canonicalGameLogEntries,
       disconnectPresence,
       idlePresence
     ]
@@ -611,15 +600,6 @@ export function GameScreen(bgioProps) {
     });
     setPendingDevCardReveal(null);
   }, []);
-  const handleResourceDistributionComplete = useCallback(() => {
-    const readyToReveal = flushDeferredGameLogEntries(deferredLogEntriesRef.current);
-    if (readyToReveal.length === 0) return;
-    setPresentedGameLogEntries((currentEntries) => [
-      ...currentEntries,
-      ...readyToReveal
-    ]);
-    setDeferredLogEntries([]);
-  }, []);
   const clearDevCardPlayActors = useCallback(() => {
     devCardPlayActorStoreRef.current.forEach((actor) => {
       actor?.el?.remove?.();
@@ -666,12 +646,8 @@ export function GameScreen(bgioProps) {
   const handleDevCardPlayResolveComplete = useCallback((payload) => {
     releaseKnightDisplayFromPayload(payload);
     emitLargestArmyAwardFromPayload(payload);
-    if (payload?.cardType === "yearOfPlenty") {
-      handleResourceDistributionComplete();
-    }
   }, [
     emitLargestArmyAwardFromPayload,
-    handleResourceDistributionComplete,
     releaseKnightDisplayFromPayload
   ]);
 
@@ -725,16 +701,11 @@ export function GameScreen(bgioProps) {
     setIsAcknowledgingIdle(false);
     setReadySent(false);
     setShowConnectionBanner(false);
-    setPresentedGameLogEntries([]);
-    setDeferredLogEntries([]);
-    setLastSeenGameLogId(0);
     pendingDevCardRevealRef.current = null;
-    deferredLogEntriesRef.current = [];
     setPendingDevCardReveal(null);
     setActiveDevCardReveal(null);
     clearDevCardPlayActors();
     hasSeenTransportConnectionRef.current = false;
-    bypassNextGameLogDelayRef.current = false;
   }, [clearDevCardPlayActors, matchID]);
 
   useEffect(() => {
@@ -747,10 +718,6 @@ export function GameScreen(bgioProps) {
       devCardDisplayRectRef.current = rect;
     }
   }, [width, height]);
-
-  useEffect(() => {
-    deferredLogEntriesRef.current = deferredLogEntries;
-  }, [deferredLogEntries]);
 
   useEffect(() => {
     if (bgioProps.isConnected) {
@@ -770,72 +737,6 @@ export function GameScreen(bgioProps) {
 
     return () => clearTimeout(timeoutId);
   }, [bgioProps.isConnected, isGameOver]);
-
-  useEffect(() => {
-    const justReconnected =
-      bgioProps.isConnected && previousIsConnectedRef.current === false;
-
-    if (justReconnected) {
-      const readyToReveal = flushDeferredGameLogEntries(deferredLogEntriesRef.current);
-      bypassNextGameLogDelayRef.current = true;
-      if (readyToReveal.length > 0) {
-        setPresentedGameLogEntries((currentEntries) => [
-          ...currentEntries,
-          ...readyToReveal
-        ]);
-      }
-      setDeferredLogEntries([]);
-    }
-
-    previousIsConnectedRef.current = bgioProps.isConnected;
-  }, [bgioProps.isConnected]);
-
-  useEffect(() => {
-    if (isReplay) return;
-    const isInitialBackfill =
-      lastSeenGameLogId === 0 &&
-      presentedGameLogEntries.length === 0 &&
-      deferredLogEntries.length === 0 &&
-      canonicalGameLogEntries.length > 0;
-    const isBackfill =
-      bypassNextGameLogDelayRef.current || isInitialBackfill;
-    const classification = classifyIncomingGameLogEntries({
-      entries: canonicalGameLogEntries,
-      lastSeenId: lastSeenGameLogId,
-      canDelay: canDelayGameLogPresentation,
-      isBackfill,
-      hasPendingDeferred: deferredLogEntriesRef.current.length > 0
-    });
-
-    if (classification.visibleNow.length > 0) {
-      setPresentedGameLogEntries((currentEntries) => [
-        ...currentEntries,
-        ...classification.visibleNow
-      ]);
-    }
-
-    if (classification.deferred.length > 0) {
-      setDeferredLogEntries((currentEntries) => [
-        ...currentEntries,
-        ...classification.deferred
-      ]);
-    }
-
-    if (classification.nextLastSeenId !== lastSeenGameLogId) {
-      setLastSeenGameLogId(classification.nextLastSeenId);
-    }
-
-    if (isBackfill) {
-      bypassNextGameLogDelayRef.current = false;
-    }
-  }, [
-    canonicalGameLogEntries,
-    isReplay,
-    lastSeenGameLogId,
-    canDelayGameLogPresentation,
-    presentedGameLogEntries.length,
-    deferredLogEntries.length
-  ]);
 
   useEffect(() => {
     if (
@@ -1365,7 +1266,6 @@ export function GameScreen(bgioProps) {
           getBoardRect: () =>
             boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
           emitCue,
-          onComplete: handleResourceDistributionComplete,
           themeId
         });
 
@@ -1543,7 +1443,6 @@ export function GameScreen(bgioProps) {
     height,
     boardLayoutReservedHeight,
     effectiveColorByPlayerId,
-    handleResourceDistributionComplete,
     handleDevCardPlayResolveComplete,
     freezeKnightDisplayFromPayload,
     leftMetaRailLayoutInset,

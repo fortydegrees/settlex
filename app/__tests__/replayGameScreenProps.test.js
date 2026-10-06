@@ -27,3 +27,16 @@ it("projects the selected historical frame and player perspective", () => {
   expect(props.replayTurn).toBe(7);
   expect(props.moves.rollDice()).toBeUndefined();
 });
+
+it.each([["0", "Ore"], ["1", "Ore"], ["2", undefined], [null, undefined]])(
+  "projects stolen-resource log details for replay perspective %s",
+  (perspectiveId, resource) => {
+    const entries = [{ id: 1, type: "robber:steal", actorId: "0",
+      data: { victimId: "1", resource: "Ore" } }];
+    const props = buildReplayGameScreenProps({
+      event: { state: {}, visibleLogEntries: entries }, perspectiveId
+    });
+    expect(props.replayLogEntries[0].data.resource).toBe(resource);
+    expect(entries[0].data.resource).toBe("Ore");
+  }
+);

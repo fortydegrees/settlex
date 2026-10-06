@@ -91,3 +91,29 @@ describe("player-view masking helper", () => {
     ).toBe(G);
   });
 });
+
+
+describe("stolen-resource log privacy", () => {
+  it.each([
+    ["0", "Ore"], ["1", "Ore"], ["2", undefined],
+    [null, undefined], [undefined, undefined]
+  ])("shows only involved players the resource (viewer %s)", (playerID, resource) => {
+    const G = {
+      ...makeG(),
+      gameLog: [{ id: 1, type: "robber:steal", actorId: "1",
+        data: { victimId: "0", resource: "Ore" } }]
+    };
+    const view = maskPlayerView({ G, ctx: {}, playerID });
+    expect(view.gameLog[0].data.resource).toBe(resource);
+    expect(view.gameLog[0].data.victimId).toBe("0");
+    expect(G.gameLog[0].data.resource).toBe("Ore");
+  });
+
+  it("keeps the spectator feed generic after game over", () => {
+    const G = { ...makeG(), gameLog: [{ id: 1, type: "robber:steal",
+      actorId: "1", data: { victimId: "0", resource: "Ore" } }] };
+    const view = maskPlayerView({ G, ctx: { gameover: { winner: "1" } }, playerID: null });
+    expect(view.gameLog[0].data).toEqual({ victimId: "0" });
+    expect(G.gameLog[0].data.resource).toBe("Ore");
+  });
+});

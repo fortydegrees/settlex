@@ -1,3 +1,4 @@
+import { canPlaceRobber, getRobberVictims } from "@settlex/game-core";
 import { describe, expect, it } from "vitest";
 import {
   SANDBOX_PRESETS,
@@ -36,4 +37,16 @@ describe("Dev sandbox presets", () => {
     });
     expect(metadata.map((player) => player.id)).toEqual(preset.playerIds);
   });
+});
+
+
+it("provides a legal robber target with a nonempty victim hand for feed checks", () => {
+  const G = getSandboxPreset("robber-move").devScenarioState;
+  const playerId = G.core.turn.currentPlayerId;
+  expect(G.tiles.some(({ tile }) =>
+    canPlaceRobber(G.core, G.coreTopology, tile.id) &&
+    getRobberVictims(G.core, G.coreTopology, tile.id, playerId).some((victimId) =>
+      G.core.playerStateById[victimId].resources.length > 0
+    )
+  )).toBe(true);
 });

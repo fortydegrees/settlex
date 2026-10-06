@@ -111,7 +111,10 @@ export const moveRobber = {
       appendGameLog(G, ctx, {
         type: "robber:steal",
         actorId: ctx.currentPlayer,
-        data: { victimId: potentialVictims[0] },
+        data: {
+          victimId: potentialVictims[0],
+          resource: G.core.playerStateById[ctx.currentPlayer].resources.at(-1)
+        },
         forced: options?.forced
       });
       effects?.robberSteal?.({
@@ -198,7 +201,10 @@ export const autoMoveRobber = {
       appendGameLog(G, ctx, {
         type: "robber:steal",
         actorId: ctx.currentPlayer,
-        data: { victimId: selectedVictimId },
+        data: {
+          victimId: selectedVictimId,
+          resource: G.core.playerStateById[ctx.currentPlayer].resources.at(-1)
+        },
         forced: true
       });
       effects?.robberSteal?.({

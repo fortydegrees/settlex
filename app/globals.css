@@ -172,8 +172,10 @@ body {
 .feed-panel-scroll,
 .game-log-scroll {
   scroll-behavior: smooth;
-  scrollbar-width: none;
-  scrollbar-color: rgba(51, 65, 85, 0.45) transparent;
+  /* Keep the gutter fixed; only the thumb changes on hover. */
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
 }
 
 .feed-panel-fade,
@@ -208,7 +210,7 @@ body {
 
 .feed-panel-scroll::-webkit-scrollbar,
 .game-log-scroll::-webkit-scrollbar {
-  width: 0px;
+  width: 8px;
 }
 
 .feed-panel-scroll::-webkit-scrollbar-track,
@@ -232,12 +234,7 @@ body {
 
 .feed-panel-scroll:hover,
 .game-log-scroll:hover {
-  scrollbar-width: thin;
-}
-
-.feed-panel-scroll:hover::-webkit-scrollbar,
-.game-log-scroll:hover::-webkit-scrollbar {
-  width: 8px;
+  scrollbar-color: rgba(51, 65, 85, 0.35) transparent;
 }
 
 .feed-panel-scroll:hover::-webkit-scrollbar-thumb,

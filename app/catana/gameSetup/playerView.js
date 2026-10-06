@@ -1,3 +1,5 @@
+import { maskGameLogEntries } from "../utils/gameLogPrivacy.js";
+
 const HIDDEN = "hidden";
 
 const maskCards = (cards) => (cards || []).map(() => HIDDEN);
@@ -41,9 +43,13 @@ const maskPlayerStateById = (playerStateById, playerID) => {
 };
 
 export const maskPlayerView = ({ G, ctx, playerID }) => {
-  if (ctx.gameover || G.core?.gameOver) return G;
+  const gameLog = maskGameLogEntries(G.gameLog, playerID);
+  if (ctx.gameover || G.core?.gameOver) {
+    return gameLog === G.gameLog ? G : { ...G, gameLog };
+  }
 
   const masked = { ...G };
+  if (gameLog !== G.gameLog) masked.gameLog = gameLog;
 
   if (G.core) {
     masked.core = {
