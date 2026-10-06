@@ -2,7 +2,7 @@
 
 This crate is the product-owned runtime boundary for the sealed SettleGraph
 bot. It preserves the original CTNN-v2 runtime and adds direct inference for
-checkpoints 005, 006 and 007 with CTNN-v3 observations. All models use the same proven native
+checkpoints 005, 006, 007 and 008 with CTNN-v3 observations. All models use the same proven native
 game, 299-action codec, state importer, legality mask, and action translation.
 The website sends complete authoritative Boardgame.io snapshots over NDJSON;
 no observation or action semantics are approximated in JavaScript.
@@ -21,6 +21,9 @@ SHA-256: 299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b
 
 Checkpoint 007: observation version 3 / 1,464 floats
 SHA-256: 88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79
+
+Checkpoint 008: observation version 3 / 1,464 floats
+SHA-256: d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35
 ```
 
 V3 appends the 19 canonical public tile numbers to the immutable V2 prefix.
@@ -35,9 +38,9 @@ research search code is included. The V3 encoder and versioned inference loader
 are pinned to research commit
 `2cee77fa789fc4af8665e0be57e199928a7e965c`; see `PROVENANCE.md`.
 
-For the qualified 007 model, product configuration and 006 rollback, see
-[LOCAL_007.md](LOCAL_007.md). The current release manifest selects 007.
-The original V2, 005 and 006 remain accepted for explicit rollback; production
+For the promoted 008 model, product configuration and 007 rollback, see
+[LOCAL_008.md](LOCAL_008.md). The prepared release manifest selects 008.
+The original V2, 005, 006 and 007 remain accepted for explicit rollback; production
 preflight requires the release manifest's exact hash. Historical 006 details remain
 in [LOCAL_006.md](LOCAL_006.md).
 

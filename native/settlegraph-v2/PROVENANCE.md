@@ -53,3 +53,4 @@ binds it to the expected observation version, then validates the header,
 contract hash, tensor shapes, and embedded forward probe. The website worker is
 direct inference only; packaging the external model and worker is handled by the
 release layer.
+
