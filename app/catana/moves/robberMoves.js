@@ -62,6 +62,7 @@ export const beginRobberMoveStage = (context, options) => {
     skipRobberMoveNoValidTile(context, options);
     return false;
   }
+  G.core.turn.phase = "robberMove";
   setCurrentPlayerStage(context, "moveRobber");
   return true;
 };
