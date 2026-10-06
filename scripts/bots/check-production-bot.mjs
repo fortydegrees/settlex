@@ -1,20 +1,19 @@
 import { pathToFileURL } from "node:url";
 import { SettleGraphV2Client } from "../../server/bots/SettleGraphV2Client.js";
-import { readBotModelSelection } from "../../lib/server/bots/modelSelection.js";
+import { DEFAULT_BOT_WORKER_PATH, readBotModelSelection } from "../../lib/server/bots/modelSelection.js";
 
 export async function checkProductionBot({
   env = process.env,
-  createClient = (options) => new SettleGraphV2Client(options),
+  createClient = (options) => new SettleGraphV2Client({ ...options, logger: { warn: (message) => console.error(message) } }),
 } = {}) {
   if (env.SETTLEX_SETTLEGRAPH_V2_ENABLED !== "1") return { enabled: false };
-  for (const key of ["SETTLEX_SETTLEGRAPH_V2_WORKER"]) {
-    if (!env[key]?.trim()) throw new Error(`${key} is required when the production bot is enabled.`);
-  }
+  const workerPath = env.SETTLEX_SETTLEGRAPH_V2_WORKER ?? DEFAULT_BOT_WORKER_PATH;
+  if (!workerPath.trim()) throw new Error("SETTLEX_SETTLEGRAPH_V2_WORKER cannot be empty.");
   const model = readBotModelSelection({ env });
   const client = createClient({
     modelPath: model.modelPath,
     expectedModel: model,
-    workerPath: env.SETTLEX_SETTLEGRAPH_V2_WORKER,
+    workerPath,
     timeoutMs: 10_000,
   });
   try {

@@ -204,6 +204,7 @@ describe("deployment file wiring", () => {
 
     expect(model).toEqual({
       checkpoint: "008",
+      displayName: "SettleGraph 008",
       sha256: "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35",
       observationVersion: 3,
       observationDim: 1464,
@@ -219,7 +220,9 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models");
     expect(compose).toContain("read_only: true");
     expect(compose).toContain("create_host_path: false");
-    expect(compose).toContain(`SETTLEX_SETTLEGRAPH_V2_MODEL: /opt/settlex/models/${model.relativePath}`);
+    expect(compose).not.toContain("SETTLEX_SETTLEGRAPH_V2_MODEL:");
+    expect(compose.match(/SETTLEX_BOT_MODEL_MANIFEST: \/opt\/settlex\/models\/current.json/g)).toHaveLength(2);
+    expect(compose.match(/read_only: true/g)).toHaveLength(2);
     expect(startup.indexOf("check-production-bot.mjs")).toBeLessThan(
       startup.indexOf("server/server.js")
     );

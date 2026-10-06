@@ -1,9 +1,11 @@
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { checkProductionBot } from "../../scripts/bots/check-production-bot.mjs";
 
 const MODEL_008 = "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35";
 const enabledEnv = {
   SETTLEX_SETTLEGRAPH_V2_ENABLED: "1",
+  SETTLEX_BOT_MODEL_MANIFEST: path.resolve("release/bot-model.json"),
   SETTLEX_SETTLEGRAPH_V2_MODEL: "/models/incumbent-008/model.ctnn",
   SETTLEX_SETTLEGRAPH_V2_WORKER: "/usr/local/bin/settlegraph-v2-worker",
 };

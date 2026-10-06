@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
-import { promoteBotModel } from "../../scripts/bots/promote.mjs";
+import { promoteBotModel, rollbackBotModel } from "../../scripts/bots/promote.mjs";
 
 const roots = [];
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -20,6 +20,14 @@ const health = (sha256, overrides = {}) => ({ modelSha256: sha256, contract: {
 const transport = (result) => () => ({ start: async () => result, close() {} });
 afterEach(() => roots.splice(0).forEach((root) => fs.rmSync(root, { recursive: true, force: true })));
 describe("bot promotion", () => {
+  it("restores the previous selection through a verified rollback command", async () => {
+    const options = fixture();
+    await promoteBotModel({ ...options, checkpoint: "007", createClient: transport(health(options.sha256)) });
+    await promoteBotModel({ ...options, createClient: transport(health(options.sha256)) });
+    await rollbackBotModel({ directory: options.directory, workerPath: options.workerPath, createClient: transport(health(options.sha256)) });
+    expect(JSON.parse(fs.readFileSync(path.join(options.directory, "current.json"))).checkpoint).toBe("007");
+    expect(JSON.parse(fs.readFileSync(path.join(options.directory, "previous.json"))).checkpoint).toBe("008");
+  });
   it("installs immutable bytes and selects them after native health succeeds", async () => {
     const options = fixture();
     await promoteBotModel({ ...options, createClient: transport(health(options.sha256)) });

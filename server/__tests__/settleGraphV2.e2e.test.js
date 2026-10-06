@@ -7,8 +7,10 @@ import { dispatchMatchUpdate } from "../dispatch/dispatchMatchUpdate.js";
 import { buildAutoMoveAction } from "../timers/dispatchUtils.js";
 import { ServerCatan } from "../serverGame.js";
 import { BotManager } from "../bots/BotManager.js";
-import { SETTLEGRAPH_008_MODEL_SHA256, SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
+import { SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
 import { SettleGraphV2BotManager } from "../bots/settleGraphV2BotManager.js";
+
+import { readBotModelSelection } from "../../lib/server/bots/modelSelection.js";
 
 const RUN_E2E = process.env.SETTLEX_RUN_SETTLEGRAPH_V2_E2E === "1";
 const MATCH_ID = "settlegraph-v2-e2e";
@@ -49,8 +51,9 @@ describe("SettleGraph sealed-runtime integration", () => {
     async () => {
       const workerPath = process.env.SETTLEX_SETTLEGRAPH_V2_WORKER ??
         path.resolve("native/settlegraph-v2/target/release/settlegraph-v2-worker");
-      const modelPath = process.env.SETTLEX_SETTLEGRAPH_V2_MODEL;
-      const expectedModelSha256 = process.env.SETTLEX_EXPECTED_MODEL_SHA256 ?? SETTLEGRAPH_008_MODEL_SHA256;
+      const selection = readBotModelSelection();
+      const modelPath = process.env.SETTLEX_SETTLEGRAPH_V2_MODEL ?? selection.modelPath;
+      const expectedModelSha256 = process.env.SETTLEX_EXPECTED_MODEL_SHA256 ?? selection.sha256;
       expect(modelPath, "SETTLEX_SETTLEGRAPH_V2_MODEL must be set").toBeTruthy();
 
       const metadata = {
@@ -111,6 +114,7 @@ describe("SettleGraph sealed-runtime integration", () => {
       };
       const client = new SettleGraphV2Client({
         workerPath,
+        expectedModel: { ...selection, sha256: expectedModelSha256 },
         modelPath,
         timeoutMs: 10_000
       });

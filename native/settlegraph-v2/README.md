@@ -39,7 +39,7 @@ are pinned to research commit
 `2cee77fa789fc4af8665e0be57e199928a7e965c`; see `PROVENANCE.md`.
 
 For the promoted 008 model, product configuration and 007 rollback, see
-[LOCAL_008.md](LOCAL_008.md). The prepared release manifest selects 008.
+[LOCAL_008.md](LOCAL_008.md). The bootstrap release manifest selects 008; active serving selections override it.
 The original V2, 005, 006 and 007 remain accepted for explicit rollback; production
 preflight requires the release manifest's exact hash. Historical 006 details remain
 in [LOCAL_006.md](LOCAL_006.md).
@@ -134,3 +134,7 @@ mounts the verified artifact read-only from `/srv/settlex-models`, and the game
 container checks its pinned SHA and V3 contract before starting. The integration
 is an explicitly labelled beta option; it does not change the research
 promotion record or qualify the model's value output.
+
+## Current model selection
+
+Product startup reads the shared external current.json and supplies `--expected-model-sha256` to the worker. The loader checks those exact bytes before parsing the supported CTNN contract and embedded probe; no new compatible hash needs a runtime source entry. Existing sealed-hash callers remain supported for historical tools/tests. App opponent names come from the same startup selection. See [BOT_MODELS.md](../../docs/agent/BOT_MODELS.md) for install, restart, rollback and initial production adoption.
