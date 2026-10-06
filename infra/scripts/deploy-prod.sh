@@ -75,19 +75,25 @@ compose() {
   docker compose --env-file .env.prod -f "$COMPOSE_FILE" "$@"
 }
 
-compose up -d postgres
+# Build and authenticate the candidate before touching running app services.
 compose build web game
 compose run --rm --no-deps game node scripts/bots/check-production-bot.mjs
+
+compose up -d --wait postgres
+backup_dir="${SETTLEX_DB_BACKUP_DIR:-backups}"
+mkdir -p "$backup_dir"
+backup_path="${backup_dir}/prod-before-$(date -u +"%Y%m%dT%H%M%SZ")-$$.sql"
+(umask 077; compose exec -T postgres \
+  sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > "${backup_path}.tmp")
+mv "${backup_path}.tmp" "$backup_path"
+echo "Wrote database backup: ${backup_path}"
+
+# Apply additive migrations before the new API routes begin serving.
+compose run --rm --no-deps web pnpm db:migrate
 compose up -d --no-build web game
 compose up -d --force-recreate proxy --remove-orphans
 compose exec -T -w /etc/caddy proxy \
   caddy reload --config /etc/caddy/Caddyfile
-
-if compose exec -T web node -e "const pkg=require('./package.json'); process.exit(pkg.scripts && pkg.scripts['db:migrate'] ? 0 : 1)"; then
-  compose exec -T web pnpm db:migrate
-else
-  echo "Skipping db:migrate because the script is not defined yet."
-fi
 
 curl --fail --silent --show-error --location "$HEALTH_BASE_URL" >/dev/null
 curl --fail --silent --show-error --location \

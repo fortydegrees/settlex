@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { createPufferBotManagerFromEnv } from "./pufferBotManager.js";
 import { SettleGraphV2Client } from "./SettleGraphV2Client.js";
 import { SettleGraphV2BotManager } from "./settleGraphV2BotManager.js";
+import { getBotModelSelection } from "../../lib/server/bots/modelSelection.js";
 
 export const BOT_KEYS = Object.freeze({
   PUFFER: "puffer",
@@ -105,7 +106,8 @@ export function createBotManagerFromEnv({ logger = console } = {}) {
       path.resolve(fileDir, "../../native/settlegraph-v2/target/release/settlegraph-v2-worker");
     const client = new SettleGraphV2Client({
       workerPath,
-      modelPath: process.env.SETTLEX_SETTLEGRAPH_V2_MODEL ?? null,
+      modelPath: getBotModelSelection().modelPath,
+      expectedModel: getBotModelSelection(),
       workerCwd: process.env.SETTLEX_SETTLEGRAPH_V2_WORKER_CWD ?? null,
       timeoutMs: process.env.SETTLEX_SETTLEGRAPH_V2_TIMEOUT_MS ?? 3000,
       logger

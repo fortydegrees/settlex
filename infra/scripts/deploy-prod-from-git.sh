@@ -95,6 +95,10 @@ if [ "$has_head" = true ]; then
 fi
 git fetch "$REMOTE" "$BRANCH"
 new_sha="$(git rev-parse "${REMOTE}/${BRANCH}")"
+if [ -n "${SETTLEX_DEPLOY_EXPECTED_SHA:-}" ] && [ "$new_sha" != "$SETTLEX_DEPLOY_EXPECTED_SHA" ]; then
+  echo "Remote branch no longer matches the verified commit; refusing deployment." >&2
+  exit 1
+fi
 
 backup_database() {
   local postgres_user postgres_db backup_dir backup_path short_sha

@@ -93,7 +93,7 @@ import {
   upsertKnightDisplayOverride
 } from "./utils/devCardPlayPresentation";
 import useWindowSize from "./utils/useWindowSize";
-import { getBoardLayout } from "./utils/boardLayout";
+import { getBoardLayout, shouldResetBoardViewport } from "./utils/boardLayout";
 import {
   getLobbyServerOrigin,
 } from "./utils/serverOrigins";
@@ -264,6 +264,8 @@ export function GameScreen(bgioProps) {
   const winnerConfettiSeenRef = useRef(false);
   const hasSeenTransportConnectionRef = useRef(false);
   const boardRef = useRef(null);
+  const boardTransformRef = useRef(null);
+  const settledBoardViewportRef = useRef(null);
   const placementLayerRef = useRef(null);
   const placementRoadLayerRef = useRef(null);
   const devCardDisplayRef = useRef(null);
@@ -276,10 +278,31 @@ export function GameScreen(bgioProps) {
   const previousResourcesByPlayerIdRef = useRef(new Map());
   const currentResourcesByPlayerIdRef = useRef(new Map());
   const effectsBus = useMemo(() => createEffectBus(), []);
-  const { width, height } = useWindowSize();
+  const { width, height, isMeasured } = useWindowSize();
   const isPhoneLayout = width > 0 && width < 640;
   const boardLayoutReservedHeight = isPhoneLayout ? 0 : undefined;
   const leftMetaRailLayoutInset = 0;
+
+  useEffect(() => {
+    if (!isMeasured) return;
+    const nextViewport = { width, height };
+    if (!shouldResetBoardViewport(
+      settledBoardViewportRef.current,
+      nextViewport,
+      window.matchMedia("(pointer: coarse)").matches
+    )) {
+      settledBoardViewportRef.current = nextViewport;
+      return;
+    }
+
+    // Board geometry already follows the viewport. Drop the old camera offset
+    // once resizing settles, keeping the board and in-progress actions mounted.
+    const timeout = window.setTimeout(() => {
+      boardTransformRef.current?.setTransform(0, 0, 1, 0);
+      settledBoardViewportRef.current = nextViewport;
+    }, 150);
+    return () => window.clearTimeout(timeout);
+  }, [width, height, isMeasured]);
   const playfieldCenterOffsetX = 0;
   const moves = bgioProps.moves;
   const isReplay = bgioProps.isReplay === true;
@@ -1579,6 +1602,7 @@ export function GameScreen(bgioProps) {
     >
       {/* board in zoom/pan/pinch wrapper  */}
       <TransformWrapper
+        ref={boardTransformRef}
         minPositionX={-500}
         minPositionY={-200}
         maxPositionX={500}

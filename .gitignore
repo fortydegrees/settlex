@@ -61,6 +61,7 @@ yarn-error.log*
 *.tsbuildinfo
 
 next-env.d.ts
+.local/bot/
 package-lock.json
 storybook-static/
 

@@ -28,6 +28,15 @@ const readRequiredToken = (value, fieldName) => {
   throw Object.assign(new Error(`${fieldName} is required`), { status: 400 });
 };
 
+const resolvePublicMatchmakingMode = (modeId = "duel") => {
+  if (modeId !== "duel") {
+    throw Object.assign(new Error("Public matchmaking supports duel mode only."), {
+      status: 400,
+    });
+  }
+  return resolveMatchCreationMode({ modeId, numPlayers: 2 });
+};
+
 export const createPublicMatchmakingRoute =
   ({
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
@@ -42,10 +51,7 @@ export const createPublicMatchmakingRoute =
       if (!sessionAccount?.account) return unauthorizedResponse();
 
       const payload = await request.json();
-      const creationMode = resolveMatchCreationMode({
-        modeId: payload?.modeId ?? "duel",
-        numPlayers: 2,
-      });
+      const creationMode = resolvePublicMatchmakingMode(payload?.modeId ?? "duel");
       const result = await matchmakePublicMatchForAccountImpl({
         account: sessionAccount.account,
         modeId: creationMode.setupData?.modeId ?? payload?.modeId,
@@ -89,10 +95,7 @@ export const createPublicMatchmakingCancelRoute =
       if (!sessionAccount?.account) return unauthorizedResponse();
 
       const payload = await request.json();
-      const creationMode = resolveMatchCreationMode({
-        modeId: payload?.modeId ?? "duel",
-        numPlayers: 2,
-      });
+      const creationMode = resolvePublicMatchmakingMode(payload?.modeId ?? "duel");
       const result = await cancelPublicMatchmakingForAccountImpl({
         account: sessionAccount.account,
         modeId: creationMode.setupData?.modeId ?? "duel",

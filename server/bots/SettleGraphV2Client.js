@@ -9,6 +9,8 @@ export const SETTLEGRAPH_006_MODEL_SHA256 =
   "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b";
 export const SETTLEGRAPH_007_MODEL_SHA256 =
   "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79";
+export const SETTLEGRAPH_008_MODEL_SHA256 =
+  "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35";
 export const SETTLEGRAPH_V2_CONTRACT_SHA256 =
   "a64b9d0daaa3bb6f60f0c0c42bfc52b53ba4a4672263b85d899805323bc97e55";
 
@@ -32,6 +34,7 @@ export class SettleGraphV2Client {
   constructor({
     workerPath,
     modelPath,
+    expectedModel = null,
     workerCwd,
     timeoutMs = 3000,
     spawnImpl = spawn,
@@ -39,6 +42,7 @@ export class SettleGraphV2Client {
   }) {
     this.workerPath = workerPath;
     this.modelPath = modelPath;
+    this.expectedModel = expectedModel;
     this.workerCwd = workerCwd;
     this.timeoutMs = Math.max(1, Number(timeoutMs) || 3000);
     this.spawnImpl = spawnImpl;
@@ -49,7 +53,7 @@ export class SettleGraphV2Client {
     this.pending = new Map();
     this.nextRequestId = 1;
     this.readyPromise = null;
-    this.modelSha256 = null;
+    this.modelSha256 = expectedModel?.sha256 ?? null;
   }
 
   start() {
@@ -69,9 +73,11 @@ export class SettleGraphV2Client {
       throw new Error("modelPath is required to start SettleGraph V2.");
     }
 
+    const workerArgs = ["--model", this.modelPath];
+    if (this.expectedModel) workerArgs.push("--expected-model-sha256", this.expectedModel.sha256);
     const proc = this.spawnImpl(
       this.workerPath,
-      ["--model", this.modelPath],
+      workerArgs,
       {
         cwd: this.workerCwd,
         stdio: ["pipe", "pipe", "pipe"],
@@ -101,14 +107,16 @@ export class SettleGraphV2Client {
   }
 
   validateHealth(health) {
-    const expectedContract = health?.modelSha256 === SETTLEGRAPH_V2_MODEL_SHA256
+    const expectedContract = this.expectedModel
+      ? (this.expectedModel.observationVersion === 3 ? INCUMBENT_V3_CONTRACT : EXPECTED_CONTRACT)
+      : health?.modelSha256 === SETTLEGRAPH_V2_MODEL_SHA256
       ? EXPECTED_CONTRACT
-      : [SETTLEGRAPH_005_MODEL_SHA256, SETTLEGRAPH_006_MODEL_SHA256, SETTLEGRAPH_007_MODEL_SHA256].includes(health?.modelSha256)
+      : [SETTLEGRAPH_005_MODEL_SHA256, SETTLEGRAPH_006_MODEL_SHA256, SETTLEGRAPH_007_MODEL_SHA256, SETTLEGRAPH_008_MODEL_SHA256].includes(health?.modelSha256)
         ? INCUMBENT_V3_CONTRACT
         : null;
     if (!expectedContract || (this.modelSha256 && health.modelSha256 !== this.modelSha256)) {
       throw new Error(
-        `SettleGraph V2 model SHA-256 mismatch: expected ${this.modelSha256 ?? "approved V2, 005, 006 or 007"}, received ${health?.modelSha256 ?? "missing"}.`
+        `SettleGraph V2 model SHA-256 mismatch: expected ${this.modelSha256 ?? "approved V2, 005, 006, 007 or 008"}, received ${health?.modelSha256 ?? "missing"}.`
       );
     }
     for (const [key, expected] of Object.entries(expectedContract)) {

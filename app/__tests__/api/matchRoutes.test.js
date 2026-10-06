@@ -34,6 +34,47 @@ afterEach(() => {
 });
 
 describe("match API routes", () => {
+  describe.each(["POST", "DELETE"])("public matchmaking %s mode validation", (method) => {
+    const makeHandler = async (service) => {
+      const routes = await loadRoute("matchmake", "handler.js");
+      const dependencies = {
+        getSessionAccount: async () => ({ account: { id: "acct_mode", currentUsername: "Ada" } }),
+        matchmakePublicMatchForAccount: service,
+        cancelPublicMatchmakingForAccount: service,
+      };
+      return method === "POST"
+        ? routes.createPublicMatchmakingRoute(dependencies)
+        : routes.createPublicMatchmakingCancelRoute(dependencies);
+    };
+    const requestForMode = (modeId) => new Request("http://localhost/api/matches/matchmake", {
+      method, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ modeId, requestId: "r".repeat(48), requestedCredentials: "c".repeat(48) }),
+    });
+
+    it.each(["standard-3p", "standard-4p", "unknown-mode", "", 3])(
+      "rejects unsupported mode %s before mutating a seat", async (modeId) => {
+        const service = vi.fn().mockResolvedValue({ status: "cancelled", seats: [] });
+        const handler = await makeHandler(service);
+        const response = await handler(requestForMode(modeId));
+        expect(response.status).toBe(400);
+        expect(await response.json()).toMatchObject({ error: expect.any(String) });
+        expect(service).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each([undefined, "duel"])("accepts default or explicit duel mode %s", async (modeId) => {
+      const result = method === "POST"
+        ? { matchID: "valid-duel", playerID: "0", playerCredentials: "secret", createdNewPublicDuel: true }
+        : { status: "cancelled", seats: [] };
+      const service = vi.fn().mockResolvedValue(result);
+      const handler = await makeHandler(service);
+      const response = await handler(requestForMode(modeId));
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(result);
+      expect(service).toHaveBeenCalledWith(expect.objectContaining({ modeId: "duel" }));
+    });
+  });
+
   it("recovers only the current account's seats for a matchmaking operation", async () => {
     const { createMatchRecoveryRoute } = await loadRoute("recover", "handler.js");
     const getSessionAccount = vi.fn();

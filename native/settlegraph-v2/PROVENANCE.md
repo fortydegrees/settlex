@@ -53,3 +53,7 @@ binds it to the expected observation version, then validates the header,
 contract hash, tensor shapes, and embedded forward probe. The website worker is
 direct inference only; packaging the external model and worker is handled by the
 release layer.
+
+## Supplied model identity — 6 October 2026
+
+The product-owned loader additionally accepts an explicit expected SHA-256 from the selected manifest, checks it before parsing, and validates the existing supported CTNN observation/topology/action contract and embedded probe. Existing sealed-loader entry points remain for historical callers. No vendored inference, game, observation or codec source changed. Product startup pins selected identity through native decisions and restarts; external selection updates require process restarts.

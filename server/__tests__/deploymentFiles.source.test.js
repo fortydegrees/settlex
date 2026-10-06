@@ -57,7 +57,7 @@ const runProductionDeployPreflight = (env) => {
   }
 };
 
-const runProductionDeployWithRecordedCommands = () => {
+const runProductionDeployWithRecordedCommands = ({ preflightExit = 0 } = {}) => {
   const tempRoot = fs.mkdtempSync(
     path.join(os.tmpdir(), "settlex-deploy-commands-")
   );
@@ -81,6 +81,9 @@ const runProductionDeployWithRecordedCommands = () => {
     path.join(binDir, "docker"),
     `#!/usr/bin/env bash
 printf 'docker %s\\n' "$*" >> "$SETTLEX_COMMAND_LOG"
+if [[ "$*" == *"run --rm --no-deps game node scripts/bots/check-production-bot.mjs"* ]]; then
+  exit "$SETTLEX_PREFLIGHT_EXIT"
+fi
 if [[ "$*" == *"exec -T web node -e"* ]]; then
   exit 1
 fi
@@ -106,6 +109,7 @@ printf 'curl %s\\n' "$*" >> "$SETTLEX_COMMAND_LOG"
         SETTLEX_BUILD_DATE: "2026-08-26T00:00:00Z",
         SETTLEX_RELEASE_VERSION: "4",
         SETTLEX_COMMAND_LOG: commandLog,
+        SETTLEX_PREFLIGHT_EXIT: String(preflightExit),
       },
     });
     const commands = fs.existsSync(commandLog)
@@ -127,6 +131,35 @@ const expectPatchFilesAvailableBeforeInstall = (dockerfile) => {
 };
 
 describe("deployment file wiring", () => {
+  it("authenticates the bot before replacing app services", () => {
+    const { result, commands } = runProductionDeployWithRecordedCommands();
+    expect(result.status).toBe(0);
+    const preflight = commands.indexOf("run --rm --no-deps game node scripts/bots/check-production-bot.mjs");
+    const start = commands.indexOf("up -d --no-build web game");
+    expect(preflight).toBeGreaterThanOrEqual(0);
+    expect(start).toBeGreaterThan(preflight);
+  });
+
+  it("backs up and migrates the database before replacing app services", () => {
+    const { result, commands } = runProductionDeployWithRecordedCommands();
+    expect(result.status).toBe(0);
+    const backup = commands.indexOf("pg_dump");
+    const migration = commands.indexOf("run --rm --no-deps web pnpm db:migrate");
+    const start = commands.indexOf("up -d --no-build web game");
+    expect(backup).toBeGreaterThanOrEqual(0);
+    expect(migration).toBeGreaterThan(backup);
+    expect(start).toBeGreaterThan(migration);
+  });
+
+  it("leaves running services alone when the native bot preflight fails", () => {
+    const { result, commands } = runProductionDeployWithRecordedCommands({ preflightExit: 19 });
+    expect(result.status).toBe(19);
+    expect(commands).not.toContain("up -d --no-build web game");
+    expect(commands).not.toContain("up -d --force-recreate proxy");
+    expect(commands).not.toContain("db:migrate");
+    expect(commands).not.toContain("curl ");
+  });
+
   it("declares the Match alerts VAPID runtime contract without example key material", () => {
     const exampleEnv = readRepoFile(".env.example");
 
@@ -196,19 +229,20 @@ describe("deployment file wiring", () => {
     expect(dockerignore).toMatch(/^\*\*\/\*\.ctnn$/m);
   });
 
-  it("pins and packages only the verified direct-play Bot 007 runtime", () => {
+  it("pins and packages only the verified direct-play Bot 008 runtime", () => {
     const model = JSON.parse(readRepoFile("release", "bot-model.json"));
     const gameDockerfile = readRepoFile("Dockerfile.game");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const startup = readRepoFile("infra", "scripts", "start-game.sh");
 
     expect(model).toEqual({
-      checkpoint: "007",
-      sha256: "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79",
+      checkpoint: "008",
+      displayName: "SettleGraph 008",
+      sha256: "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35",
       observationVersion: 3,
       observationDim: 1464,
       actionCount: 299,
-      relativePath: "incumbent-007/model.ctnn",
+      relativePath: "incumbent-008/model.ctnn",
       mode: "direct",
     });
     expect(gameDockerfile).toContain("FROM rust:1.85.1-bookworm AS native");
@@ -219,13 +253,15 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models");
     expect(compose).toContain("read_only: true");
     expect(compose).toContain("create_host_path: false");
-    expect(compose).toContain(`SETTLEX_SETTLEGRAPH_V2_MODEL: /opt/settlex/models/${model.relativePath}`);
+    expect(compose).not.toContain("SETTLEX_SETTLEGRAPH_V2_MODEL:");
+    expect(compose.match(/SETTLEX_BOT_MODEL_MANIFEST: \/opt\/settlex\/models\/current.json/g)).toHaveLength(2);
+    expect(compose.match(/read_only: true/g)).toHaveLength(2);
     expect(startup.indexOf("check-production-bot.mjs")).toBeLessThan(
       startup.indexOf("server/server.js")
     );
   });
 
-  it("builds the homepage Bot 007 action from the same deployment flag", () => {
+  it("builds the homepage Bot 008 action from the same deployment flag", () => {
     const webDockerfile = readRepoFile("Dockerfile.web");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const exampleEnv = readRepoFile(".env.example");
@@ -306,7 +342,7 @@ describe("deployment file wiring", () => {
     expect(caddyfile).not.toContain("/games");
   });
 
-  it("rebuilds app services on the server and migrates after boot", () => {
+  it("rebuilds app services on the server and migrates before boot", () => {
     const script = readRepoFile("infra", "scripts", "deploy-prod.sh");
 
     expect(script).not.toContain("docker compose -f infra/docker-compose.prod.yml pull");
@@ -327,7 +363,7 @@ describe("deployment file wiring", () => {
     expect(buildIndex).toBeGreaterThanOrEqual(0);
     expect(botPreflightIndex).toBeGreaterThan(buildIndex);
     expect(serviceSwapIndex).toBeGreaterThan(botPreflightIndex);
-    expect(script).toContain('compose exec -T web pnpm db:migrate');
+    expect(script).toContain('compose run --rm --no-deps web pnpm db:migrate');
     expect(script).toContain("curl --fail");
     expect(script).toContain("https://settlehex.com");
   });
@@ -425,17 +461,16 @@ describe("deployment file wiring", () => {
     expect(workflow).not.toContain("push:");
     expect(workflow).not.toContain("branches:");
     expect(workflow).toContain("SETTLEX_BUILD_SHA");
-    expect(workflow).toContain("SETTLEX_BUILD_DATE");
-    expect(workflow).toContain("SETTLEX_RELEASE_VERSION");
-    expect(workflow).toContain("node scripts/release/read-release-notes.mjs");
-    expect(workflow).toContain("rsync -az");
-    expect(workflow).toContain("--filter=':- .gitignore'");
+    expect(workflow).toContain("SETTLEX_DEPLOY_EXPECTED_SHA");
+    expect(workflow).toContain("infra/scripts/deploy-prod-from-git.sh");
+    expect(workflow).toContain("docker build -f Dockerfile.game");
+    expect(workflow).toContain("docker build -f Dockerfile.web");
     expect(workflow).not.toContain("docker/setup-qemu-action");
     expect(workflow).not.toContain("docker/setup-buildx-action");
     expect(workflow).not.toContain("ghcr.io");
     expect(workflow).not.toContain("platforms: linux/arm64");
     expect(workflow).not.toContain("docker login ghcr.io");
-    expect(workflow).toContain("infra/scripts/deploy-prod.sh");
+    expect(workflow).toContain("infra/scripts/deploy-prod-from-git.sh");
   });
 
   it("passes release build arguments through production compose", () => {

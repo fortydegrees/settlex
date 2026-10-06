@@ -741,6 +741,7 @@ export function useLobbyHomeActions({
     const startedAt = Date.now();
     const generation = advanceSearchGeneration(searchGenerationRef);
     let mutation = null;
+    let account = null;
     clearScheduledMatchAnnouncement({ announcementTimerRef });
     announcedMatchIDRef.current = null;
     setSearchElapsedSeconds(0);
@@ -755,7 +756,7 @@ export function useLobbyHomeActions({
     });
 
     try {
-      const account = await ensureAccountSession();
+      account = await ensureAccountSession();
       if (
         !isSearchGenerationCurrent({ searchGenerationRef, generation })
       ) {

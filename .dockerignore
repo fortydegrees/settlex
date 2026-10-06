@@ -4,6 +4,7 @@ node_modules
 .worktrees
 .env.prod
 .logs
+.local/bot/
 .pnpm-store/
 .superpowers/
 .claude/

@@ -71,31 +71,11 @@ jobs:
         env:
           OCI_HOST: ${{ secrets.OCI_HOST }}
 
-      - name: Sync deployment files to OCI
-        env:
-          OCI_APP_DIR: ${{ secrets.OCI_APP_DIR }}
-          OCI_HOST: ${{ secrets.OCI_HOST }}
-          OCI_USER: ${{ secrets.OCI_USER }}
-        run: |
-          ssh "$OCI_USER@$OCI_HOST" "mkdir -p '$OCI_APP_DIR'"
-          rsync -az --delete \
-            --filter=':- .gitignore' \
-            --exclude '.git/' \
-            --exclude 'node_modules/' \
-            --exclude '.next/' \
-            --exclude '.env.prod' \
-            ./ "$OCI_USER@$OCI_HOST:$OCI_APP_DIR/"
-
-      - name: Deploy to OCI
+      - name: Deploy the verified Git commit to OCI
         env:
           OCI_APP_DIR: ${{ secrets.OCI_APP_DIR }}
           OCI_HOST: ${{ secrets.OCI_HOST }}
           OCI_USER: ${{ secrets.OCI_USER }}
           SETTLEX_BUILD_SHA: ${{ github.sha }}
         run: |
-          SETTLEX_BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          SETTLEX_RELEASE_VERSION="$(node scripts/release/read-release-notes.mjs)"
-          ssh "$OCI_USER@$OCI_HOST" "
-            cd '$OCI_APP_DIR' &&
-            SETTLEX_BUILD_SHA='$SETTLEX_BUILD_SHA' SETTLEX_BUILD_DATE='$SETTLEX_BUILD_DATE' SETTLEX_RELEASE_VERSION='$SETTLEX_RELEASE_VERSION' infra/scripts/deploy-prod.sh
-          "
+          ssh "$OCI_USER@$OCI_HOST" "cd '$OCI_APP_DIR' && SETTLEX_DEPLOY_EXPECTED_SHA='$SETTLEX_BUILD_SHA' bash -s" < infra/scripts/deploy-prod-from-git.sh

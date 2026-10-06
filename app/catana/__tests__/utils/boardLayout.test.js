@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeDefaultSize, getBoardLayout } from "../../utils/boardLayout";
+import { computeDefaultSize, getBoardLayout, shouldResetBoardViewport } from "../../utils/boardLayout";
 import { getBoardUnderlayFrame } from "../../utils/boardUnderlayLayout";
 import {
   BOARD_UNDERLAY_DESIGN_SIZE,
@@ -7,6 +7,27 @@ import {
 } from "../../utils/boardUnderlayGeometry";
 
 const SQRT3 = Math.sqrt(3);
+
+describe("board viewport resize policy", () => {
+  it.each([
+    ["desktop to phone", { width: 1280, height: 720 }, { width: 390, height: 844 }, false],
+    ["phone to desktop", { width: 390, height: 844 }, { width: 1280, height: 720 }, false],
+    ["phone rotation", { width: 390, height: 844 }, { width: 844, height: 390 }, true],
+    ["desktop height resize", { width: 1280, height: 900 }, { width: 1280, height: 720 }, false],
+  ])("recentres after %s", (_name, previous, next, isCoarsePointer) => {
+    expect(shouldResetBoardViewport(previous, next, isCoarsePointer)).toBe(true);
+  });
+
+  it.each([
+    ["initial measurement", null, { width: 390, height: 844 }, false],
+    ["unchanged viewport", { width: 1280, height: 720 }, { width: 1280, height: 720 }, false],
+    ["phone browser chrome", { width: 390, height: 844 }, { width: 390, height: 780 }, false],
+    ["phone keyboard", { width: 390, height: 844 }, { width: 390, height: 480 }, true],
+    ["landscape touch keyboard", { width: 844, height: 390 }, { width: 844, height: 250 }, true],
+  ])("preserves pan and zoom for %s", (_name, previous, next, isCoarsePointer) => {
+    expect(shouldResetBoardViewport(previous, next, isCoarsePointer)).toBe(false);
+  });
+});
 
 describe("boardLayout", () => {
   it("computes size constrained by height when width is ample", () => {

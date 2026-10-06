@@ -12,6 +12,14 @@ export function computeDefaultSize({ width, height }) {
 
 const DEFAULT_RESERVED_UI_HEIGHT = 144 + 38 + 40;
 
+export function shouldResetBoardViewport(previous, next, isCoarsePointer = false) {
+  if (!previous) return false;
+  if (previous.width !== next.width) return true;
+  // Mobile browser chrome and keyboards change height without changing the
+  // board's layout mode. Preserve the player's zoom/pan for those events.
+  return next.width >= 640 && !isCoarsePointer && previous.height !== next.height;
+}
+
 export function getBoardLayout({
   width,
   height,
