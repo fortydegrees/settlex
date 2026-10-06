@@ -58,7 +58,7 @@ export const createMatchCreateRoute =
         !isBotEnabledImpl(botKey)
       ) {
         throw Object.assign(
-          new Error("Bot 008 is not enabled on this server."),
+          new Error("SettleGraph bot is not enabled on this server."),
           { status: 503 }
         );
       }

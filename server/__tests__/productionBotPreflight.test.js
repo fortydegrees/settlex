@@ -15,7 +15,7 @@ describe("production bot preflight", () => {
     expect(createClient).not.toHaveBeenCalled();
   });
 
-  it.each(["SETTLEX_SETTLEGRAPH_V2_MODEL", "SETTLEX_SETTLEGRAPH_V2_WORKER"])(
+  it.each(["SETTLEX_SETTLEGRAPH_V2_WORKER"])(
     "rejects enabled deployment without %s", async (key) => {
       await expect(checkProductionBot({ env: { ...enabledEnv, [key]: "" } })).rejects.toThrow(key);
     }

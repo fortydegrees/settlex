@@ -34,6 +34,7 @@ export class SettleGraphV2Client {
   constructor({
     workerPath,
     modelPath,
+    expectedModel = null,
     workerCwd,
     timeoutMs = 3000,
     spawnImpl = spawn,
@@ -41,6 +42,7 @@ export class SettleGraphV2Client {
   }) {
     this.workerPath = workerPath;
     this.modelPath = modelPath;
+    this.expectedModel = expectedModel;
     this.workerCwd = workerCwd;
     this.timeoutMs = Math.max(1, Number(timeoutMs) || 3000);
     this.spawnImpl = spawnImpl;
@@ -51,7 +53,7 @@ export class SettleGraphV2Client {
     this.pending = new Map();
     this.nextRequestId = 1;
     this.readyPromise = null;
-    this.modelSha256 = null;
+    this.modelSha256 = expectedModel?.sha256 ?? null;
   }
 
   start() {
@@ -71,9 +73,11 @@ export class SettleGraphV2Client {
       throw new Error("modelPath is required to start SettleGraph V2.");
     }
 
+    const workerArgs = ["--model", this.modelPath];
+    if (this.expectedModel) workerArgs.push("--expected-model-sha256", this.expectedModel.sha256);
     const proc = this.spawnImpl(
       this.workerPath,
-      ["--model", this.modelPath],
+      workerArgs,
       {
         cwd: this.workerCwd,
         stdio: ["pipe", "pipe", "pipe"],
@@ -103,7 +107,9 @@ export class SettleGraphV2Client {
   }
 
   validateHealth(health) {
-    const expectedContract = health?.modelSha256 === SETTLEGRAPH_V2_MODEL_SHA256
+    const expectedContract = this.expectedModel
+      ? (this.expectedModel.observationVersion === 3 ? INCUMBENT_V3_CONTRACT : EXPECTED_CONTRACT)
+      : health?.modelSha256 === SETTLEGRAPH_V2_MODEL_SHA256
       ? EXPECTED_CONTRACT
       : [SETTLEGRAPH_005_MODEL_SHA256, SETTLEGRAPH_006_MODEL_SHA256, SETTLEGRAPH_007_MODEL_SHA256, SETTLEGRAPH_008_MODEL_SHA256].includes(health?.modelSha256)
         ? INCUMBENT_V3_CONTRACT

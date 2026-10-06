@@ -3,13 +3,14 @@ use std::path::PathBuf;
 
 use serde_json::{json, Value};
 use settlegraph_v2::decision::DecisionEngine;
-use settlegraph_v2::load_verified_model;
 use settlegraph_v2::protocol::WorkerRequest;
 use settlegraph_v2::snapshot::import_snapshot;
+use settlegraph_v2::{load_selected_model, load_verified_model};
 
-fn parse_model_path() -> Result<PathBuf, String> {
+fn parse_model_path() -> Result<(PathBuf, Option<String>), String> {
     let mut args = std::env::args().skip(1);
     let mut model = None;
+    let mut expected_sha256 = None;
     while let Some(argument) = args.next() {
         match argument.as_str() {
             "--model" => {
@@ -18,10 +19,18 @@ fn parse_model_path() -> Result<PathBuf, String> {
                     .ok_or_else(|| "--model requires a path".to_owned())?;
                 model = Some(PathBuf::from(value));
             }
+            "--expected-model-sha256" => {
+                expected_sha256 = Some(
+                    args.next()
+                        .ok_or_else(|| "--expected-model-sha256 requires a hash".to_owned())?,
+                );
+            }
             other => return Err(format!("unknown worker argument {other:?}")),
         }
     }
-    model.ok_or_else(|| "settlegraph-v2-worker requires --model <path>".to_owned())
+    model
+        .map(|path| (path, expected_sha256))
+        .ok_or_else(|| "settlegraph-v2-worker requires --model <path>".to_owned())
 }
 
 fn write_response(stdout: &mut impl Write, response: &Value) -> Result<(), String> {
@@ -40,8 +49,11 @@ fn request_id(value: &Value) -> Value {
 }
 
 fn run() -> Result<(), String> {
-    let model_path = parse_model_path()?;
-    let model = load_verified_model(&model_path)?;
+    let (model_path, expected_sha256) = parse_model_path()?;
+    let model = match expected_sha256 {
+        Some(hash) => load_selected_model(&model_path, &hash)?,
+        None => load_verified_model(&model_path)?,
+    };
     let mut engine = DecisionEngine::new(model);
     eprintln!(
         "[settlegraph-v2] ready model={} contract={}",

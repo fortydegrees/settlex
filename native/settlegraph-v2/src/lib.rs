@@ -77,17 +77,47 @@ pub fn load_verified_model(path: &Path) -> Result<VerifiedModel, String> {
         }
     };
 
-    let net = SettleGraphNet::from_bytes(&bytes)?;
-    if net.observation_version() != expected_version {
+    parse_verified_model(bytes, sha256, Some(expected_version))
+}
+
+/// Product selections authenticate the supplied artifact without a per-checkpoint whitelist.
+pub fn load_selected_model(path: &Path, expected_sha256: &str) -> Result<VerifiedModel, String> {
+    if expected_sha256.len() != 64
+        || !expected_sha256
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err("selected model requires a lowercase SHA-256".to_owned());
+    }
+    let bytes = fs::read(path)
+        .map_err(|error| format!("cannot read selected CTNN {}: {error}", path.display()))?;
+    let sha256 = lowercase_hex(&Sha256::digest(&bytes));
+    if sha256 != expected_sha256 {
         return Err(format!(
+            "selected CTNN SHA-256 mismatch: expected {expected_sha256}, received {sha256}"
+        ));
+    }
+    parse_verified_model(bytes, sha256, None)
+}
+
+fn parse_verified_model(
+    bytes: Vec<u8>,
+    sha256: String,
+    expected_version: Option<u32>,
+) -> Result<VerifiedModel, String> {
+    let net = SettleGraphNet::from_bytes(&bytes)?;
+    if let Some(expected_version) = expected_version {
+        if net.observation_version() != expected_version {
+            return Err(format!(
             "sealed model observation version mismatch: hash requires V{expected_version}, header reports V{}",
             net.observation_version()
         ));
+        }
     }
     let mut contract = runtime_contract();
     contract.observation_version = net.observation_version();
     contract.observation_dim = net.observation_dim();
-    if expected_version == 3 {
+    if net.observation_version() == 3 {
         contract.model_kind = "SettleGraph/CTNN-v3";
     }
     if contract.contract_sha256 != EXPECTED_CONTRACT_SHA256 {

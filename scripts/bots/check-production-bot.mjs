@@ -1,19 +1,19 @@
-import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { SettleGraphV2Client } from "../../server/bots/SettleGraphV2Client.js";
-
-const model = JSON.parse(readFileSync(new URL("../../release/bot-model.json", import.meta.url), "utf8"));
+import { readBotModelSelection } from "../../lib/server/bots/modelSelection.js";
 
 export async function checkProductionBot({
   env = process.env,
   createClient = (options) => new SettleGraphV2Client(options),
 } = {}) {
   if (env.SETTLEX_SETTLEGRAPH_V2_ENABLED !== "1") return { enabled: false };
-  for (const key of ["SETTLEX_SETTLEGRAPH_V2_MODEL", "SETTLEX_SETTLEGRAPH_V2_WORKER"]) {
+  for (const key of ["SETTLEX_SETTLEGRAPH_V2_WORKER"]) {
     if (!env[key]?.trim()) throw new Error(`${key} is required when the production bot is enabled.`);
   }
+  const model = readBotModelSelection({ env });
   const client = createClient({
-    modelPath: env.SETTLEX_SETTLEGRAPH_V2_MODEL,
+    modelPath: model.modelPath,
+    expectedModel: model,
     workerPath: env.SETTLEX_SETTLEGRAPH_V2_WORKER,
     timeoutMs: 10_000,
   });

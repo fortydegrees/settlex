@@ -58,6 +58,27 @@ const health005Response = (id, overrides = {}) => ({
 });
 
 describe("SettleGraphV2Client", () => {
+  it("accepts a future compatible hash from selection and passes it to the worker", async () => {
+    const sha256 = "a".repeat(64);
+    const proc = createWorkerStub((request) => health005Response(request.id, { modelSha256: sha256 }));
+    const spawnImpl = vi.fn(() => proc);
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: "/tmp/009.ctnn", spawnImpl,
+      expectedModel: { sha256, observationVersion: 3, observationDim: 1464, actionCount: 299 }
+    });
+    try {
+      await expect(client.start()).resolves.toMatchObject({ modelSha256: sha256 });
+      expect(spawnImpl).toHaveBeenCalledWith("/tmp/worker", ["--model", "/tmp/009.ctnn", "--expected-model-sha256", sha256], expect.any(Object));
+    } finally { client.close(); }
+  });
+  it("rejects an approved older hash when another model is explicitly selected", async () => {
+    const proc = createWorkerStub((request) => health005Response(request.id));
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: "/tmp/009.ctnn", spawnImpl: () => proc,
+      expectedModel: { sha256: "a".repeat(64), observationVersion: 3, observationDim: 1464, actionCount: 299 }
+    });
+    await expect(client.start()).rejects.toThrow("model SHA-256 mismatch");
+  });
   it.each([
     ["006", "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b"],
     ["007", "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79"],

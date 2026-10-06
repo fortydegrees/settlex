@@ -53,7 +53,7 @@ describe("Bot 008 create route", () => {
 
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({
-      error: "Bot 008 is not enabled on this server."
+      error: "SettleGraph bot is not enabled on this server."
     });
     expect(createBotMatchForAccount).not.toHaveBeenCalled();
   });
