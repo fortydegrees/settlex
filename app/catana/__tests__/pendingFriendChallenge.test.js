@@ -6,6 +6,7 @@ import {
   restorePendingFriendChallenge,
   writePendingFriendChallenge
 } from "../utils/pendingFriendChallenge";
+import { ACTIVE_MATCH_STORAGE_KEY } from "../utils/activeMatchStorage";
 
 function createMemoryStorage(initialEntries = {}) {
   const entries = new Map(Object.entries(initialEntries));
@@ -33,6 +34,52 @@ function okJson(payload) {
 }
 
 describe("pendingFriendChallenge", () => {
+  const pendingStorage = (activeMatchID = "m1") => createMemoryStorage({
+    [PENDING_FRIEND_CHALLENGE_STORAGE_KEY]: JSON.stringify({ matchID: "m1", playerID: "0", savedAtMs: 123 }),
+    "catana:lobby:credentials:m1:0": "secret",
+    [ACTIVE_MATCH_STORAGE_KEY]: JSON.stringify({ matchID: activeMatchID, playerID: "0", savedAtMs: 123 }),
+  });
+
+  it.each(["m1", "other-match"])("cancels a pending invite while clearing only its own resume state (%s active)", async (activeMatchID) => {
+    const storage = pendingStorage(activeMatchID);
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce(okJson({ status: "pending" }))
+      .mockResolvedValueOnce(okJson({ canceled: true }));
+
+    expect(await restorePendingFriendChallenge({ storage, fetchImpl, cancelPending: true })).toEqual({ status: "canceled" });
+    expect(readPendingFriendChallenge(storage)).toBeNull();
+    expect(storage.getItem("catana:lobby:credentials:m1:0")).toBeNull();
+    expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).toBe(
+      activeMatchID === "m1" ? null : JSON.stringify({ matchID: activeMatchID, playerID: "0", savedAtMs: 123 })
+    );
+  });
+
+  it.each(["http", "network"])("retains the pending pointer and credentials when cancellation fails (%s)", async (failure) => {
+    const storage = pendingStorage();
+    const fetchImpl = vi.fn().mockResolvedValueOnce(okJson({ status: "pending" }));
+    if (failure === "http") fetchImpl.mockResolvedValueOnce({ ok: false });
+    else fetchImpl.mockRejectedValueOnce(new Error("offline"));
+
+    expect(await restorePendingFriendChallenge({ storage, fetchImpl, cancelPending: true })).toEqual({ status: "cancel-failed" });
+    expect(readPendingFriendChallenge(storage)?.matchID).toBe("m1");
+    expect(storage.getItem("catana:lobby:credentials:m1:0")).toBe("secret");
+    expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).not.toBeNull();
+  });
+
+  it.each(["pending", "http-error", "network-error"])("preserves game credentials when acceptance wins before cancellation (%s lookup)", async (lookup) => {
+    const storage = pendingStorage();
+    const fetchImpl = vi.fn();
+    if (lookup === "pending") fetchImpl.mockResolvedValueOnce(okJson({ status: "pending" }));
+    else if (lookup === "http-error") fetchImpl.mockResolvedValueOnce({ ok: false });
+    else fetchImpl.mockRejectedValueOnce(new Error("offline"));
+    fetchImpl.mockResolvedValueOnce(okJson({ canceled: false, status: "accepted" }));
+
+    expect(await restorePendingFriendChallenge({ storage, fetchImpl, cancelPending: true })).toEqual({ status: "accepted", href: "/g/m1" });
+    expect(readPendingFriendChallenge(storage)).toBeNull();
+    expect(storage.getItem("catana:lobby:credentials:m1:0")).toBe("secret");
+    expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).not.toBeNull();
+  });
+
   it("round-trips the saved pending friend challenge record", () => {
     const storage = createMemoryStorage();
 

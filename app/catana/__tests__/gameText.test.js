@@ -232,6 +232,14 @@ describe("formatLogEntry", () => {
     );
   });
 
+  it("renders a known stolen resource using the feed resource token", () => {
+    const entry = { type: "robber:steal", actorId: "1",
+      data: { victimId: "0", resource: "Ore" } };
+    const players = { "0": "Ada", "1": "Bren" };
+    expect(formatLogEntry(entry, players)).toContainEqual({ kind: "resource", resource: "Ore" });
+    expect(formatLogEntryText(entry, players)).toBe("Bren stole Ore from Ada");
+  });
+
   it("formats public steal copy without leaking the resource", () => {
     const tokens = formatLogEntry(
       {
@@ -376,47 +384,13 @@ describe("formatLogEntry", () => {
     ).toBe(true);
   });
 
-  it("formats server idle entries with response-window copy", () => {
-    const tokens = formatLogEntry(
-      {
-        type: "server:idle",
-        data: { playerId: "1" }
-      },
-      { "1": "Bren" }
-    );
-
-    expect(tokens[0]).toMatchObject({
-      kind: "label",
-      text: "server",
-      variant: "server"
-    });
-    expect(tokens.some((token) => token.kind === "player" && token.id === "1")).toBe(
-      true
-    );
-    expect(
-      tokens.some(
-        (token) =>
-          token.kind === "text" && token.text.includes("idle for 2 turns")
-      )
-    ).toBe(true);
-  });
-
-  it("formats server idle acknowledgement entries", () => {
-    const tokens = formatLogEntry(
-      {
-        type: "server:idleAck",
-        data: { playerId: "1" }
-      },
-      { "1": "Bren" }
-    );
-
-    expect(
-      tokens.some(
-        (token) =>
-          token.kind === "text" && token.text.includes("responded")
-      )
-    ).toBe(true);
-  });
+  it.each(["server:idle", "server:idleAck"])(
+    "omits %s housekeeping from the player-facing feed",
+    (type) => {
+      expect(formatLogEntry({ type, data: { playerId: "1" } }, { "1": "Bren" }))
+        .toEqual([]);
+    }
+  );
 
   it("formats server idle forfeits with loser and winner names", () => {
     const tokens = formatLogEntry(

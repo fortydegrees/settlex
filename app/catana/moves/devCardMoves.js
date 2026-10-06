@@ -71,11 +71,11 @@ const finishDevCardChoice = (context, devPlay) => {
 export const playDevCardStart = {
   move: (context, cardType, options) => {
     const { G, playerID, ctx, effects } = context;
-    if (playerID !== ctx.currentPlayer) return;
-    if (!isDevCardStage(ctx, playerID)) return;
-    if (G.devCardPlay) return;
-    if (cardType === "victoryPoint") return;
-    if (!canPlayDevCard(G.core, playerID, cardType)) return;
+    if (playerID !== ctx.currentPlayer) return INVALID_MOVE;
+    if (!isDevCardStage(ctx, playerID)) return INVALID_MOVE;
+    if (G.devCardPlay) return INVALID_MOVE;
+    if (cardType === "victoryPoint") return INVALID_MOVE;
+    if (!canPlayDevCard(G.core, playerID, cardType)) return INVALID_MOVE;
 
     const currentStage = ctx.activePlayers?.[playerID] ?? "postRoll";
     if (cardType === "knight") {
@@ -118,13 +118,13 @@ export const playDevCardStart = {
 
     if (cardType === "roadBuilding") {
       const player = G.core?.playerStateById?.[playerID];
-      if (!player || player.roadsRemaining <= 0) return;
+      if (!player || player.roadsRemaining <= 0) return INVALID_MOVE;
       const previousRoadsRemaining = player.roadsRemaining;
       const legalEdges = buildableEdges(G.core, G.coreTopology, playerID, {
         initialPlacement: false
       });
       const pendingRoads = Math.min(2, player.roadsRemaining);
-      if (legalEdges.length === 0 || pendingRoads <= 0) return;
+      if (legalEdges.length === 0 || pendingRoads <= 0) return INVALID_MOVE;
       const played = playDevCard(G.core, playerID, "roadBuilding");
       if (!played.ok) {
         console.log(`Invalid play dev card: ${played.error}`);

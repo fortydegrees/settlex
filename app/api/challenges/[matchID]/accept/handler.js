@@ -10,6 +10,7 @@ import {
   resolveFriendChallengeState,
 } from "../../../../../lib/server/matches/friendChallenge.js";
 import { getLiveMatch } from "../../../../../lib/server/matches/getLiveMatch.js";
+import { withMatchMutationLock } from "../../../../../lib/server/matches/matchMutationLock.js";
 import { joinMatchForAccount } from "../../../../../lib/server/matches/joinMatchForAccount.js";
 import { writeMatchCredentialCookie } from "../../../../../lib/server/session/matchCredentialCookie.js";
 
@@ -32,6 +33,7 @@ export const createChallengeAcceptRoute =
   ({
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
     getLiveMatch: getLiveMatchImpl = getLiveMatch,
+    withMatchMutationLock: withMatchMutationLockImpl = withMatchMutationLock,
     joinMatchForAccount: joinMatchForAccountImpl = joinMatchForAccount,
     reserveAlertsBeforeHumanJoin:
       reserveAlertsBeforeHumanJoinImpl = reserveAlertsBeforeHumanJoin,
@@ -53,79 +55,84 @@ export const createChallengeAcceptRoute =
       }
 
       const matchID = params?.matchID;
-      const liveMatch = await getLiveMatchImpl({ matchID });
-      const challengeState = resolveFriendChallengeState(liveMatch, { now: now() });
-
-      if (challengeState.status !== "pending") {
-        return expiredResponse(matchID);
-      }
-
-      if (challengeState.inviterAccountId === sessionAccount.account.id) {
-        return NextResponse.json(
-          { error: "You cannot accept your own challenge." },
-          { status: 403 }
-        );
-      }
-
-      const reservation = await reserveAlertsBeforeHumanJoinImpl({
-        liveMatch,
-        joiningAccountId: sessionAccount.account.id,
-        joiningPlayerId: challengeState.inviteeSeatId,
-        participantType: "human",
+      return await withMatchMutationLockImpl({
         matchID,
-      });
+        run: async () => {
+          const liveMatch = await getLiveMatchImpl({ matchID });
+          const challengeState = resolveFriendChallengeState(liveMatch, { now: now() });
 
-      let joined;
-      try {
-        joined = await joinMatchForAccountImpl({
-          account: sessionAccount.account,
-          matchID,
-          playerID: challengeState.inviteeSeatId,
-        });
-      } catch (error) {
-        if (reservation) {
-          try {
-            await restoreAlertsAfterFailedHumanJoinImpl({
-              reservation,
-              joiningAccountId: sessionAccount.account.id,
-              joiningPlayerId: challengeState.inviteeSeatId,
-              matchID,
-              joinError: error,
-            });
-          } catch (restoreError) {
-            logger.error("Failed to restore match alerts after rejected friend challenge", {
-              matchID,
-              accountId: sessionAccount.account.id,
-              error: restoreError,
-            });
+          if (challengeState.status !== "pending") {
+            return expiredResponse(matchID);
           }
-        }
-        throw error;
-      }
 
-      if (reservation) {
-        try {
-          await finalizeAlertsAfterHumanJoinImpl({ reservation });
-        } catch (finalizeError) {
-          logger.warn("Failed to finalize match alert pause after friend challenge join", {
+          if (challengeState.inviterAccountId === sessionAccount.account.id) {
+            return NextResponse.json(
+              { error: "You cannot accept your own challenge." },
+              { status: 403 }
+            );
+          }
+
+          const reservation = await reserveAlertsBeforeHumanJoinImpl({
+            liveMatch,
+            joiningAccountId: sessionAccount.account.id,
+            joiningPlayerId: challengeState.inviteeSeatId,
+            participantType: "human",
             matchID,
-            accountId: sessionAccount.account.id,
-            error: finalizeError,
           });
-        }
-      }
 
-      const response = NextResponse.json({
-        matchID,
-        playerID: challengeState.inviteeSeatId,
-        playerCredentials: joined?.playerCredentials,
+          let joined;
+          try {
+            joined = await joinMatchForAccountImpl({
+              account: sessionAccount.account,
+              matchID,
+              playerID: challengeState.inviteeSeatId,
+            });
+          } catch (error) {
+            if (reservation) {
+              try {
+                await restoreAlertsAfterFailedHumanJoinImpl({
+                  reservation,
+                  joiningAccountId: sessionAccount.account.id,
+                  joiningPlayerId: challengeState.inviteeSeatId,
+                  matchID,
+                  joinError: error,
+                });
+              } catch (restoreError) {
+                logger.error("Failed to restore match alerts after rejected friend challenge", {
+                  matchID,
+                  accountId: sessionAccount.account.id,
+                  error: restoreError,
+                });
+              }
+            }
+            throw error;
+          }
+
+          if (reservation) {
+            try {
+              await finalizeAlertsAfterHumanJoinImpl({ reservation });
+            } catch (finalizeError) {
+              logger.warn("Failed to finalize match alert pause after friend challenge join", {
+                matchID,
+                accountId: sessionAccount.account.id,
+                error: finalizeError,
+              });
+            }
+          }
+
+          const response = NextResponse.json({
+            matchID,
+            playerID: challengeState.inviteeSeatId,
+            playerCredentials: joined?.playerCredentials,
+          });
+          writeMatchCredentialCookie(response, {
+            matchID,
+            playerID: challengeState.inviteeSeatId,
+            credentials: joined?.playerCredentials,
+          });
+          return response;
+        },
       });
-      writeMatchCredentialCookie(response, {
-        matchID,
-        playerID: challengeState.inviteeSeatId,
-        credentials: joined?.playerCredentials,
-      });
-      return response;
     } catch (error) {
       return errorResponse(error);
     }

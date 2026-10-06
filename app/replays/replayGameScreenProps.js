@@ -1,3 +1,5 @@
+import { maskGameLogEntries } from "../catana/utils/gameLogPrivacy.js";
+
 const ignoreReplayMove = () => undefined;
 
 export const READ_ONLY_REPLAY_MOVES = Object.freeze({
@@ -40,6 +42,6 @@ export const buildReplayGameScreenProps = ({
   isReplay: true,
   replayTurn: event?.turn ?? null,
   replayResultsOpen: resultsOpen,
-  replayLogEntries: event?.visibleLogEntries ?? [],
+  replayLogEntries: maskGameLogEntries(event?.visibleLogEntries ?? [], perspectiveId),
   replayActiveLogEntryKey: event?.logEntryKey ?? null,
 });

@@ -15,9 +15,12 @@ const ATTENTION_TITLES = Object.freeze({
 const activeReasons = new Set();
 let metadataSnapshot = null;
 let listeningDocument = null;
+let pageTitleOwner = null;
 
 const getDocument = () =>
   typeof document === "undefined" ? null : document;
+
+const isAttentionTitle = (title) => Object.values(ATTENTION_TITLES).includes(title);
 
 const removeLink = (link) => {
   if (!link) return;
@@ -44,7 +47,9 @@ const captureMetadata = (documentRef) => {
 const restoreMetadata = (documentRef) => {
   if (!metadataSnapshot) return;
 
-  documentRef.title = metadataSnapshot.title;
+  if (isAttentionTitle(documentRef.title)) {
+    documentRef.title = metadataSnapshot.title;
+  }
   if (metadataSnapshot.createdIconLink) {
     removeLink(metadataSnapshot.createdIconLink);
   } else if (metadataSnapshot.iconLink) {
@@ -59,7 +64,11 @@ const restoreMetadata = (documentRef) => {
 };
 
 const applyAttention = (documentRef, reason) => {
-  if (!metadataSnapshot) captureMetadata(documentRef);
+  if (!metadataSnapshot) {
+    captureMetadata(documentRef);
+  } else if (!isAttentionTitle(documentRef.title)) {
+    metadataSnapshot.title = documentRef.title;
+  }
 
   documentRef.title = ATTENTION_TITLES[reason];
   let iconLink = metadataSnapshot.iconLink ?? metadataSnapshot.createdIconLink;
@@ -103,6 +112,31 @@ const ensureVisibilityListener = () => {
 };
 
 export const tabAttention = Object.freeze({
+  setPageTitle(title) {
+    const documentRef = getDocument();
+    if (!documentRef) return undefined;
+    const previousTitle = metadataSnapshot?.title ?? documentRef.title;
+    const owner = {};
+    pageTitleOwner = owner;
+
+    const applyTitle = (nextTitle) => {
+      // Alerts temporarily own the displayed title; update their restore target.
+      if (metadataSnapshot) metadataSnapshot.title = nextTitle;
+      const reason = documentRef.hidden ? getHighestPriorityReason() : null;
+      documentRef.title = reason ? ATTENTION_TITLES[reason] : nextTitle;
+    };
+    applyTitle(title);
+
+    return () => {
+      if (pageTitleOwner !== owner) return;
+      pageTitleOwner = null;
+      // A route metadata update may already have taken ownership.
+      if (metadataSnapshot && !isAttentionTitle(documentRef.title)) return;
+      if ((metadataSnapshot?.title ?? documentRef.title) !== title) return;
+      applyTitle(previousTitle);
+    };
+  },
+
   request(reason) {
     if (!ATTENTION_REASONS.has(reason)) return;
     ensureVisibilityListener();

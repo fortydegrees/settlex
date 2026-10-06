@@ -5,7 +5,7 @@ import { createAudioManager } from "./AudioManager";
 import { createHapticManager } from "./HapticManager";
 import { registerEffects } from "./registry";
 import { EffectLayer } from "./EffectLayer";
-import { DEFAULT_TURN_START_STATE, getTurnStartCueDecision } from "./turnStartCue";
+import { createTurnStartCueGate, DEFAULT_TURN_START_STATE, getTurnStartCueDecision } from "./turnStartCue";
 import { buildDiceRollTimeline } from "./diceRollTimeline";
 import { playGameStartTransition } from "./gameStartTransition.js";
 
@@ -33,6 +33,13 @@ export function GameEffects({
   const turnStartRef = useRef({ ...DEFAULT_TURN_START_STATE });
   const gameOverCueRef = useRef(false);
   const gameStartCueRef = useRef(false);
+  const localTurnRef = useRef(false);
+  const turnStartGate = useMemo(() => createTurnStartCueGate({
+    emit: () => bus.emit({ type: "cue", payload: { name: "turn:start" } }),
+    isRelevant: () => localTurnRef.current
+  }), [bus]);
+
+  useEffect(() => () => turnStartGate.destroy(), [turnStartGate]);
 
   const context = useMemo(
     () => ({
@@ -63,8 +70,10 @@ export function GameEffects({
       matchID: gameStartMatchID,
       audio,
       bus,
+      onStart: turnStartGate.hold,
+      onComplete: turnStartGate.release,
     });
-  }, [audio, bus, gameStartMatchID]);
+  }, [audio, bus, gameStartMatchID, turnStartGate]);
 
   useEffect(() => {
     const unlock = () => {
@@ -256,16 +265,21 @@ export function GameEffects({
   );
 
   useEffect(() => {
+    localTurnRef.current =
+      currentPlayerId != null && playerID != null &&
+      String(currentPlayerId) === String(playerID) &&
+      phase !== "preGame" && !gameOverState;
     const prev = turnStartRef.current;
     const decision = getTurnStartCueDecision({
       currentPlayerId,
       playerID,
       phase,
+      gameStartPlayed: gameStartCueRef.current,
       prevState: prev
     });
     turnStartRef.current = decision.nextState;
     if (decision.play) {
-      bus.emit({ type: "cue", payload: { name: "turn:start" } });
+      turnStartGate.request();
     }
     // turn:end mirrors turn:start at the hand-off: fires however the local
     // turn ended (button, shortcut, or timeout), never into game over.
@@ -281,7 +295,7 @@ export function GameEffects({
     if (handedOff) {
       bus.emit({ type: "cue", payload: { name: "turn:end" } });
     }
-  }, [bus, currentPlayerId, gameOverState, playerID, phase]);
+  }, [bus, currentPlayerId, gameOverState, playerID, phase, turnStartGate]);
 
   useEffect(() => {
     const hasGameOver = Boolean(gameOverState);

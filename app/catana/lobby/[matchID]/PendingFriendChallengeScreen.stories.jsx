@@ -91,6 +91,10 @@ export const InviteeJoining = {
   play: async ({ canvasElement }) => expectStableCountdown(canvasElement),
 };
 
+export const InviteeUsernameTaken = {
+  args: { mode: "invitee", error: "That username is already taken" },
+};
+
 export const Expired = { args: { mode: "expired" } };
 
 export const ChallengeError = {

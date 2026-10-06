@@ -165,6 +165,8 @@ const createRoadPlacementScenario = () => {
 
 const createRobberMoveScenario = () => {
   const G = createStartedGame(4);
+  // This preset exercises theft even though every fixture player starts at 2 VP.
+  G.core.ruleset.friendlyRobber.enabled = false;
   setNormalTurnState(G, {
     playerId: "0",
     turnPhase: "robberMove",

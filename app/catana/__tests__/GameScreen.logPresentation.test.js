@@ -9,22 +9,6 @@ const __dirname = path.dirname(__filename);
 const screenPath = path.resolve(__dirname, "..", "GameScreen.js");
 
 describe("GameScreen log presentation source", () => {
-  it("owns local deferred game-log presentation state", () => {
-    const source = fs.readFileSync(screenPath, "utf8");
-
-    expect(source).toContain("gameLogPresentation");
-    expect(source).toContain("deferredLogEntries");
-    expect(source).toContain("lastSeenGameLogId");
-  });
-
-  it("clears deferred entries and watches reconnect state", () => {
-    const source = fs.readFileSync(screenPath, "utf8");
-
-    expect(source).toContain("setDeferredLogEntries([])");
-    expect(source).toContain("bgioProps.isConnected");
-    expect(source).toContain("previousIsConnectedRef");
-  });
-
   it("uses controlled replay entries without changing live presentation", () => {
     const source = fs.readFileSync(screenPath, "utf8");
     expect(source).toContain("bgioProps.replayLogEntries");

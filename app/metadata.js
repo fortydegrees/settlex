@@ -60,12 +60,12 @@ export const SITE_METADATA = {
 export const createMatchMetadata = (matchID) => {
   const encodedMatchID = encodeURIComponent(String(matchID ?? ""));
   const matchPath = `/g/${encodedMatchID}`;
-  const title = "Join a SettleHex game";
+  const shareTitle = "Join a SettleHex game";
   const description =
     "Open this link to join a live SettleHex game or watch the replay.";
 
   return {
-    title,
+    title: "Game",
     description,
     alternates: {
       canonical: matchPath,
@@ -73,14 +73,14 @@ export const createMatchMetadata = (matchID) => {
     openGraph: {
       type: "website",
       siteName: BRAND_NAME,
-      title,
+      title: shareTitle,
       description,
       url: matchPath,
       images: [SHARE_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: shareTitle,
       description,
       images: [SHARE_TWITTER_IMAGE],
     },

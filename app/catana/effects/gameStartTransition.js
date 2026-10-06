@@ -47,9 +47,15 @@ export function playGameStartTransition({
   now = Date.now(),
   audio,
   bus,
+  onStart,
+  onComplete,
 } = {}) {
   if (!consumeGameStartTransition({ storage, matchID, now })) return false;
   audio?.unlock?.();
-  bus?.emit?.({ type: "cue", payload: { name: "game:start" } });
+  onStart?.();
+  bus?.emit?.({
+    type: "cue",
+    payload: { name: "game:start", ...(onComplete ? { onComplete } : {}) },
+  });
   return true;
 }

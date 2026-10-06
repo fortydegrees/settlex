@@ -266,3 +266,15 @@ describe("replay client state", () => {
     ]);
   });
 });
+
+it("keeps shared replay timeline summaries generic for stolen cards", async () => {
+  const { buildReplayTimeline } = await import("../replays/replayTimeline.js");
+  const entry = { id: 1, type: "robber:steal", actorId: "0",
+    data: { victimId: "1", resource: "Ore" } };
+  const timeline = buildReplayTimeline({
+    frames: [{ index: 0, state: { G: { gameLog: [entry] }, ctx: {} } }],
+    participants: [{ seatId: "0", name: "Ada" }, { seatId: "1", name: "Bren" }]
+  });
+  expect(timeline.events[1].label).toBe("Ada stole a card from Bren");
+  expect(timeline.events[1].visibleLogEntries[0].data.resource).toBe("Ore");
+});

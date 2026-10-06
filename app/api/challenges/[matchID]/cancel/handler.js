@@ -6,6 +6,7 @@ import {
   resolveFriendChallengeState,
 } from "../../../../../lib/server/matches/friendChallenge.js";
 import { getLiveMatch } from "../../../../../lib/server/matches/getLiveMatch.js";
+import { withMatchMutationLock } from "../../../../../lib/server/matches/matchMutationLock.js";
 import { leaveMatchForAccount } from "../../../../../lib/server/matches/leaveMatchForAccount.js";
 
 const unauthorizedResponse = () =>
@@ -39,6 +40,7 @@ export const createChallengeCancelRoute =
   ({
     getSessionAccount: getSessionAccountImpl = getSessionAccount,
     getLiveMatch: getLiveMatchImpl = getLiveMatch,
+    withMatchMutationLock: withMatchMutationLockImpl = withMatchMutationLock,
     leaveMatchForAccount: leaveMatchForAccountImpl = leaveMatchForAccount,
     now = () => new Date(),
   } = {}) =>
@@ -54,48 +56,53 @@ export const createChallengeCancelRoute =
 
       const matchID = params?.matchID;
       const payload = await safeJson(request);
-      const liveMatch = await getLiveMatchImpl({ matchID });
-
-      if (!isFriendChallengeMatch(liveMatch)) {
-        return NextResponse.json({ matchID, canceled: true, status: "expired" });
-      }
-
-      const friendChallenge = getFriendChallengeData(liveMatch);
-      const challengeState = resolveFriendChallengeState(liveMatch, { now: now() });
-      const inviterAccountId = friendChallenge?.inviterAccountId ?? null;
-      const inviterSeatId = String(friendChallenge?.inviterSeatId ?? "");
-
-      if (inviterAccountId !== sessionAccount.account.id) {
-        return NextResponse.json(
-          { error: "Only the inviter can cancel this challenge." },
-          { status: 403 }
-        );
-      }
-
-      if (!payload?.credentials) {
-        return NextResponse.json({ error: "credentials are required" }, { status: 400 });
-      }
-
-      if (challengeState.status === "accepted") {
-        return NextResponse.json({ matchID, canceled: true, status: "expired" });
-      }
-
-      const inviterPlayer = findPlayerBySeatId(liveMatch, inviterSeatId);
-      if (!isSeatOccupied(inviterPlayer)) {
-        return NextResponse.json({ matchID, canceled: true, status: "expired" });
-      }
-
-      await leaveMatchForAccountImpl({
-        account: sessionAccount.account,
+      return await withMatchMutationLockImpl({
         matchID,
-        playerID: inviterSeatId,
-        credentials: payload.credentials,
-      });
+        run: async () => {
+          const liveMatch = await getLiveMatchImpl({ matchID });
 
-      return NextResponse.json({
-        matchID,
-        playerID: inviterSeatId,
-        canceled: true,
+          if (!isFriendChallengeMatch(liveMatch)) {
+            return NextResponse.json({ matchID, canceled: true, status: "expired" });
+          }
+
+          const friendChallenge = getFriendChallengeData(liveMatch);
+          const challengeState = resolveFriendChallengeState(liveMatch, { now: now() });
+          const inviterAccountId = friendChallenge?.inviterAccountId ?? null;
+          const inviterSeatId = String(friendChallenge?.inviterSeatId ?? "");
+
+          if (inviterAccountId !== sessionAccount.account.id) {
+            return NextResponse.json(
+              { error: "Only the inviter can cancel this challenge." },
+              { status: 403 }
+            );
+          }
+
+          if (challengeState.status === "accepted") {
+            return NextResponse.json({ matchID, canceled: false, status: "accepted" });
+          }
+
+          if (!payload?.credentials) {
+            return NextResponse.json({ error: "credentials are required" }, { status: 400 });
+          }
+
+          const inviterPlayer = findPlayerBySeatId(liveMatch, inviterSeatId);
+          if (!isSeatOccupied(inviterPlayer)) {
+            return NextResponse.json({ matchID, canceled: true, status: "expired" });
+          }
+
+          await leaveMatchForAccountImpl({
+            account: sessionAccount.account,
+            matchID,
+            playerID: inviterSeatId,
+            credentials: payload.credentials,
+          });
+
+          return NextResponse.json({
+            matchID,
+            playerID: inviterSeatId,
+            canceled: true,
+          });
+        },
       });
     } catch (error) {
       return errorResponse(error);

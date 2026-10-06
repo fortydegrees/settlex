@@ -265,3 +265,42 @@ describe("Moves robber flow", () => {
     expect(afterLastDiscard.ctx.activePlayers?.["2"]).not.toBe("robberDiscard");
   });
 });
+
+
+describe("robber steal logging", () => {
+  const makeStealContext = () => {
+    const core = createEmptyState(["0", "1", "2"]);
+    core.phase = "normal";
+    core.turn.phase = "robberMove";
+    core.ruleset.friendlyRobber.enabled = false;
+    core.robberTileId = 99;
+    core.playerStateById["0"].resources = ["Wood"];
+    core.playerStateById["1"].resources = ["Wheat", "Ore"];
+    core.buildingsByNodeId[10] = { ownerId: "1", type: "settlement" };
+    const tiles = [{ coordinate: [0, 0, 0], type: TileTypes.LAND,
+      tile: { id: 1, resource: "Wood", nodes: { NORTH: 10 } } }];
+    return {
+      G: { core, tiles, coreTopology: buildTopology(tiles), gameLog: [], gameLogSeq: 0 },
+      ctx: { currentPlayer: "0", activePlayers: { "0": "moveRobber" } },
+      random: { Number: () => 0.75, Shuffle: (items) => items },
+      events: { setStage: () => {} }, log: { setMetadata: () => {} }
+    };
+  };
+
+  it.each(["manual", "automatic"])("records the actual resource for a %s steal", (mode) => {
+    const context = makeStealContext();
+    if (mode === "manual") moveRobber.move(context, 1);
+    else autoMoveRobber.move(context);
+    expect(context.G.core.playerStateById["0"].resources).toEqual(["Wood", "Ore"]);
+    expect(context.G.core.playerStateById["1"].resources).toEqual(["Wheat"]);
+    expect(context.G.gameLog.find((entry) => entry.type === "robber:steal"))
+      .toMatchObject({ actorId: "0", data: { victimId: "1", resource: "Ore" } });
+  });
+
+  it("does not log a steal when the victim has no resources", () => {
+    const context = makeStealContext();
+    context.G.core.playerStateById["1"].resources = [];
+    moveRobber.move(context, 1);
+    expect(context.G.gameLog.some((entry) => entry.type === "robber:steal")).toBe(false);
+  });
+});

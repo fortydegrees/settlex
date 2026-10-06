@@ -67,6 +67,32 @@ describe("AudioManager", () => {
     expect(audio._debugLastPlay()).toBe("resource:pop:start");
   });
 
+  it("reports cue completion after actual playback ends, not a guessed duration", () => {
+    vi.useFakeTimers();
+    const bus = createEffectBus();
+    const audio = createAudioManager({ bus });
+    const completions = [];
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "game:start", onComplete: () => completions.push("ended") } });
+    vi.advanceTimersByTime(5_000);
+    expect(completions).toEqual([]);
+    howlInstances[0]._trigger("end");
+    expect(completions).toEqual(["ended"]);
+    audio.destroy();
+  });
+
+  it("releases a waiting sequence if playback fails", () => {
+    const bus = createEffectBus();
+    const audio = createAudioManager({ bus });
+    const completions = [];
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "game:start", onComplete: () => completions.push("finished") } });
+    howlInstances[0]._trigger("playerror");
+    howlInstances[0]._trigger("end");
+    expect(completions).toEqual(["finished"]);
+    audio.destroy();
+  });
+
   it("skips cues when document is hidden unless allowed", () => {
     global.document = { hidden: true };
     const bus = createEffectBus();

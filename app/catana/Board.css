@@ -124,7 +124,7 @@
 }
 
 .piece-flash {
-  animation: pieceFlash 0.6s ease-in-out infinite;
+  animation: pieceFlash 1.2s ease-in-out infinite;
 }
 
 @keyframes board-pulse {

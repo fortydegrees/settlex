@@ -92,7 +92,7 @@ describe("SettleHex metadata", () => {
 
     expect(metadata.loadError).toBeUndefined();
     expect(matchMetadata).toMatchObject({
-      title: expect.stringMatching(/SettleHex.*game/i),
+      title: "Game",
       description: expect.stringMatching(/join a live .*game/i),
       alternates: {
         canonical: "/g/m%2F1%3Ffriend%3Dtrue",
