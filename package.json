@@ -28,6 +28,8 @@
     "test:non-app": "pnpm run test:logic && pnpm run test:server",
     "verify": "pnpm ui:check && pnpm test:ui-policy && pnpm run test:logic && pnpm run test:server && pnpm run test:app && pnpm lint",
     "serve": "node server/server.js",
+    "bot:promote": "node scripts/bots/promote.mjs",
+    "bot:check": "SETTLEX_SETTLEGRAPH_V2_ENABLED=1 node scripts/bots/check-production-bot.mjs",
     "preboard:lab:generate": "pnpm -C game-core build",
     "board:lab:generate": "node scripts/duel-board-lab/generate.mjs",
     "preboard:lab:compare": "pnpm -C game-core build",
