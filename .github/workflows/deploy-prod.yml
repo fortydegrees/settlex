@@ -78,4 +78,5 @@ jobs:
           OCI_USER: ${{ secrets.OCI_USER }}
           SETTLEX_BUILD_SHA: ${{ github.sha }}
         run: |
-          ssh "$OCI_USER@$OCI_HOST" "cd '$OCI_APP_DIR' && SETTLEX_DEPLOY_EXPECTED_SHA='$SETTLEX_BUILD_SHA' bash -s" < infra/scripts/deploy-prod-from-git.sh
+          # Read the complete script before execution; Docker must not consume it as stdin.
+          ssh "$OCI_USER@$OCI_HOST" "cd '$OCI_APP_DIR' && SETTLEX_DEPLOY_EXPECTED_SHA='$SETTLEX_BUILD_SHA' bash -c \"\$(cat)\"" < infra/scripts/deploy-prod-from-git.sh
