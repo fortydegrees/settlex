@@ -560,18 +560,16 @@ export function useLobbyHomeActions({
     const restorePendingChallengeState = async () => {
       const restored = await restorePendingFriendChallenge({
         storage: window.localStorage,
-        fetchImpl: fetch
+        fetchImpl: fetch,
+        cancelPending: true,
       });
 
       if (cancelled || !restored) {
         return;
       }
 
-      if (restored.status === "pending") {
-        router.push(
-          restored.challengeState?.challengeUrl ??
-            `/g/${restored.challengeState?.matchID}`
-        );
+      if (restored.status === "cancel-failed") {
+        setError("Couldn't cancel the friend invite. Reload to retry; it may still be active.");
         return;
       }
 

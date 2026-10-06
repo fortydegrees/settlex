@@ -173,6 +173,7 @@ describe("challenge API routes", () => {
     const reserveAlertsBeforeHumanJoin = vi.fn();
     const joinMatchForAccount = vi.fn();
     const ACCEPT = createChallengeAcceptRoute({
+      withMatchMutationLock: async ({ run }) => run(),
       getSessionAccount: vi.fn().mockResolvedValue({
         account: {
           id: "acct_inviter",
@@ -271,6 +272,7 @@ describe("challenge API routes", () => {
     };
 
     const ACCEPT = createChallengeAcceptRoute({
+      withMatchMutationLock: async ({ run }) => run(),
       getSessionAccount,
       getLiveMatch,
       joinMatchForAccount,
@@ -281,6 +283,7 @@ describe("challenge API routes", () => {
       now: () => new Date("2026-04-09T08:02:00.000Z"),
     });
     const CANCEL = createChallengeCancelRoute({
+      withMatchMutationLock: async ({ run }) => run(),
       getSessionAccount,
       getLiveMatch,
       leaveMatchForAccount,

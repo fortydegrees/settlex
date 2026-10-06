@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Client } from "boardgame.io/react";
 import { SocketIO } from "boardgame.io/multiplayer";
@@ -83,11 +83,16 @@ export function MatchPageClient({
   initialLiveMatch,
 }) {
   const router = useRouter();
+  const pendingChallengeDepartureRef = useRef(null);
+  const previousChallengeRouteRef = useRef(null);
+  const autoCancelSentMatchRef = useRef(null);
+  const exitCleanupGenerationRef = useRef(0);
 
   const [playerName, setPlayerName] = useState("Visitor");
   const [match, setMatch] = useState(() => normalizeMatch(initialLiveMatch));
   const [isLoadingMatch, setIsLoadingMatch] = useState(false);
   const [error, setError] = useState("");
+  const [challengeActionError, setChallengeActionError] = useState("");
 
   const [playerID, setPlayerID] = useState(initialPlayerID ?? "");
   const [credentials, setCredentials] = useState(initialCredentials ?? null);
@@ -126,6 +131,14 @@ export function MatchPageClient({
       credentials &&
       String(playerID) === String(pendingChallengeState.inviterSeatId)
   );
+  pendingChallengeDepartureRef.current =
+    isChallengeInviter && pendingChallengeState
+      ? {
+          matchID: pendingChallengeState.matchID,
+          playerID: String(pendingChallengeState.inviterSeatId),
+          credentials,
+        }
+      : null;
 
   const refreshMatch = useCallback(async () => {
     setIsLoadingMatch(true);
@@ -142,6 +155,87 @@ export function MatchPageClient({
       setIsLoadingMatch(false);
     }
   }, [matchID]);
+
+  const refreshPendingChallenge = useCallback(async () => {
+    setChallengeActionError("");
+    await refreshMatch();
+  }, [refreshMatch]);
+
+  const updateChallengePlayerName = useCallback((nextName) => {
+    setPlayerName(nextName);
+    setChallengeActionError("");
+  }, []);
+
+  const requestChallengeCancellationOnExit = useCallback(
+    (challenge = pendingChallengeDepartureRef.current) => {
+      if (
+        !challenge?.credentials ||
+        autoCancelSentMatchRef.current === challenge.matchID
+      ) {
+        return;
+      }
+
+      autoCancelSentMatchRef.current = challenge.matchID;
+      const route = `/api/challenges/${challenge.matchID}/cancel`;
+      const body = JSON.stringify({ credentials: challenge.credentials });
+
+      let queued = false;
+      try {
+        queued = navigator.sendBeacon(
+          route,
+          new Blob([body], { type: "application/json" })
+        );
+      } catch (err) {
+        // Fall back to a keepalive request below.
+      }
+
+      if (!queued) {
+        void fetch(route, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          keepalive: true,
+        }).catch(() => {
+          /* The homepage retries cancellation if the pending pointer remains. */
+        });
+      }
+    }, []
+  );
+
+  useEffect(() => {
+    const previousRoute = previousChallengeRouteRef.current;
+    if (previousRoute?.matchID && previousRoute.matchID !== matchID) {
+      requestChallengeCancellationOnExit(previousRoute.challenge);
+    }
+
+    previousChallengeRouteRef.current = {
+      matchID,
+      challenge: pendingChallengeDepartureRef.current,
+    };
+  }, [
+    credentials,
+    isChallengeInviter,
+    matchID,
+    pendingChallengeState?.matchID,
+    pendingChallengeState?.inviterSeatId,
+    requestChallengeCancellationOnExit,
+  ]);
+
+  useEffect(() => {
+    const cancelOnPageHide = () => requestChallengeCancellationOnExit();
+    window.addEventListener("pagehide", cancelOnPageHide);
+    exitCleanupGenerationRef.current += 1;
+
+    return () => {
+      window.removeEventListener("pagehide", cancelOnPageHide);
+      const cleanupGeneration = ++exitCleanupGenerationRef.current;
+      queueMicrotask(() => {
+        if (exitCleanupGenerationRef.current === cleanupGeneration) {
+          requestChallengeCancellationOnExit();
+        }
+      });
+    };
+  }, [requestChallengeCancellationOnExit]);
 
   const ensureBetterAuthSession = useCallback(async () => {
     const current = await authClient.getSession();
@@ -317,6 +411,7 @@ export function MatchPageClient({
     setSpectatorMode(false);
     setJoinPending(true);
     setError("");
+    setChallengeActionError("");
     try {
       const accountResponse = await upsertGuestIdentity();
       const accepted = await appRequest({
@@ -363,7 +458,7 @@ export function MatchPageClient({
       router.replace(`/g/${matchID}`);
       await refreshMatch();
     } catch (err) {
-      setError(err?.message || "Failed to join challenge.");
+      setChallengeActionError(err?.message || "Failed to join challenge.");
       await refreshMatch();
     } finally {
       setJoinPending(false);
@@ -375,6 +470,7 @@ export function MatchPageClient({
 
     setCancelPending(true);
     setError("");
+    setChallengeActionError("");
     try {
       const inviterSeatId = String(pendingChallengeState.inviterSeatId);
       let inviterCredentials = credentials;
@@ -393,7 +489,7 @@ export function MatchPageClient({
         throw new Error("Missing challenge credentials. Refresh and try again.");
       }
 
-      await appRequest({
+      const cancellation = await appRequest({
         route: `/api/challenges/${matchID}/cancel`,
         init: {
           method: "POST",
@@ -403,6 +499,17 @@ export function MatchPageClient({
           }),
         },
       });
+
+      if (cancellation?.status === "accepted") {
+        pendingChallengeDepartureRef.current = null;
+        autoCancelSentMatchRef.current = matchID;
+        clearPendingFriendChallenge(window.localStorage);
+        await refreshMatch();
+        return;
+      }
+
+      pendingChallengeDepartureRef.current = null;
+      autoCancelSentMatchRef.current = matchID;
 
       try {
         clearPendingFriendChallenge(window.localStorage);
@@ -422,7 +529,7 @@ export function MatchPageClient({
 
       router.replace("/");
     } catch (err) {
-      setError(err?.message || "Failed to cancel challenge.");
+      setChallengeActionError(err?.message || "Failed to cancel challenge.");
       await refreshMatch();
     } finally {
       setCancelPending(false);
@@ -584,14 +691,16 @@ export function MatchPageClient({
         match={match}
         challengeState={pendingChallengeState ?? expiredChallengeState}
         playerName={playerName}
-        setPlayerName={setPlayerName}
+        setPlayerName={updateChallengePlayerName}
         joinPending={joinPending}
         cancelPending={cancelPending}
         isLoadingMatch={isLoadingMatch}
-        error={error}
+        error={
+          pendingChallengeState ? challengeActionError || error : error
+        }
         onJoin={acceptFriendChallenge}
         onCancel={cancelFriendChallenge}
-        onRefresh={refreshMatch}
+        onRefresh={refreshPendingChallenge}
         onBackToLobby={goBackToLobby}
       />
     );

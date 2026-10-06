@@ -1,4 +1,8 @@
-import { getCredentialsStorageKey } from "./activeMatchStorage";
+import {
+  clearLastActiveMatch,
+  getCredentialsStorageKey,
+  readLastActiveMatch,
+} from "./activeMatchStorage";
 
 export const PENDING_FRIEND_CHALLENGE_STORAGE_KEY =
   "catana:lobby:pending-friend-challenge";
@@ -29,18 +33,85 @@ const safeJson = async (response) => {
 
 const postChallengeCancel = async ({ fetchImpl, matchID, credentials }) => {
   if (!credentials) {
-    return;
+    return { ok: false };
   }
 
   try {
-    await fetchImpl(`/api/challenges/${matchID}/cancel`, {
+    const response = await fetchImpl(`/api/challenges/${matchID}/cancel`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ credentials })
     });
+    if (!response?.ok) return { ok: false };
+    const result = await safeJson(response);
+    return { ok: true, status: result?.status ?? null };
   } catch (error) {
     /* ignore cleanup failures */
+    return { ok: false };
   }
+};
+
+const restoreAcceptedChallenge = (storage, record) => {
+  clearChallengeResumePointer(storage, record);
+  return {
+    status: "accepted",
+    href: `/g/${record.matchID}`
+  };
+};
+
+const clearChallengeResumePointer = (storage, record) => {
+  const currentChallenge = readPendingFriendChallenge(storage);
+  if (
+    currentChallenge?.matchID === record.matchID &&
+    currentChallenge?.playerID === record.playerID
+  ) {
+    clearPendingFriendChallenge(storage);
+  }
+};
+
+const clearChallengeResumeState = (storage, record) => {
+  clearChallengeResumePointer(storage, record);
+
+  try {
+    storage?.removeItem?.(
+      getCredentialsStorageKey({
+        matchID: record.matchID,
+        playerID: record.playerID
+      })
+    );
+  } catch (error) {
+    /* ignore storage failures */
+  }
+
+  const activeMatch = readLastActiveMatch(storage);
+  if (
+    activeMatch?.matchID === record.matchID &&
+    activeMatch?.playerID === record.playerID
+  ) {
+    clearLastActiveMatch(storage);
+  }
+};
+
+const cancelPendingChallenge = async ({
+  storage,
+  record,
+  fetchImpl,
+  credentials,
+}) => {
+  const cancellation = await postChallengeCancel({
+    fetchImpl,
+    matchID: record.matchID,
+    credentials
+  });
+
+  if (cancellation.status === "accepted") {
+    return restoreAcceptedChallenge(storage, record);
+  }
+  if (cancellation.ok) {
+    clearChallengeResumeState(storage, record);
+    return { status: "canceled" };
+  }
+  return { status: "cancel-failed" };
 };
 
 export function readPendingFriendChallenge(storage = getDefaultStorage()) {
@@ -80,7 +151,8 @@ export function clearPendingFriendChallenge(storage = getDefaultStorage()) {
 
 export async function restorePendingFriendChallenge({
   storage = getDefaultStorage(),
-  fetchImpl = fetch
+  fetchImpl = fetch,
+  cancelPending = false,
 } = {}) {
   const record = readPendingFriendChallenge(storage);
   if (!record) return null;
@@ -99,41 +171,49 @@ export async function restorePendingFriendChallenge({
       undefined
     );
     if (!response?.ok) {
-      return null;
+      return cancelPending
+        ? cancelPendingChallenge({ storage, record, fetchImpl, credentials })
+        : null;
     }
     challenge = await safeJson(response);
   } catch (error) {
-    return null;
+    return cancelPending
+      ? cancelPendingChallenge({ storage, record, fetchImpl, credentials })
+      : null;
   }
 
   if (challenge?.status === "pending") {
-    return {
-      status: "pending",
-      challengeState: {
-        matchID: record.matchID,
-        playerID: record.playerID,
-        challengeUrl: `/g/${record.matchID}`,
-        expiresAt: challenge?.expiresAt ?? null,
-        playerCredentials: credentials ?? null,
-        phase: "waiting"
-      }
-    };
-  }
+    if (!cancelPending) {
+      return {
+        status: "pending",
+        challengeState: {
+          matchID: record.matchID,
+          playerID: record.playerID,
+          challengeUrl: `/g/${record.matchID}`,
+          expiresAt: challenge?.expiresAt ?? null,
+          playerCredentials: credentials ?? null,
+          phase: "waiting"
+        }
+      };
+    }
 
-  clearPendingFriendChallenge(storage);
+    return cancelPendingChallenge({
+      storage,
+      record,
+      fetchImpl,
+      credentials,
+    });
+  }
 
   if (challenge?.status === "accepted") {
-    return {
-      status: "accepted",
-      href: `/g/${record.matchID}`
-    };
+    return restoreAcceptedChallenge(storage, record);
   }
 
-  await postChallengeCancel({
+  const cancellation = await cancelPendingChallenge({
+    storage,
+    record,
     fetchImpl,
-    matchID: record.matchID,
-    credentials
+    credentials,
   });
-
-  return null;
+  return cancellation.status === "canceled" ? null : cancellation;
 }
