@@ -36,7 +36,19 @@ finish() {
   trap - EXIT
   if [[ "$status" != 0 && "$activated" == 1 ]]; then
     echo 'Activation failed; restoring the previous verified selection.' >&2
-    write_selection --rollback || { echo 'Rollback failed; inspect the preserved model selections.' >&2; status=1; }
+    # Running services retain their startup selection until recreated.
+    stopped=0
+    if compose stop web game && write_selection --rollback; then
+      if ! compose up -d --no-build --no-deps --force-recreate web game ||
+         ! compose exec -T game node scripts/bots/check-production-bot.mjs --require-enabled; then
+        echo 'Restored selection could not be activated; leaving services stopped.' >&2
+        compose stop web game || true
+        status=1
+      fi
+    else
+      echo 'Rollback failed; inspect the preserved model selections before restarting.' >&2
+      status=1
+    fi
   fi
   if [[ "$stopped" == 1 ]]; then
     compose up -d --no-build web game || status=1
@@ -46,13 +58,13 @@ finish() {
 }
 trap finish EXIT
 # Require a verified existing selection before replacing it.
-compose run --rm --no-deps game node scripts/bots/check-production-bot.mjs
+compose run --rm --no-deps game node scripts/bots/check-production-bot.mjs --require-enabled
 stopped=1
 compose stop web game
 write_selection --model "/opt/settlex/candidate/$source_name" --checkpoint "$checkpoint" --sha256 "$expected_sha"
 activated=1
-compose run --rm --no-deps game node scripts/bots/check-production-bot.mjs
+compose run --rm --no-deps game node scripts/bots/check-production-bot.mjs --require-enabled
 compose up -d --no-build web game
-compose exec -T game node scripts/bots/check-production-bot.mjs
+compose exec -T game node scripts/bots/check-production-bot.mjs --require-enabled
 stopped=0
 echo "Bot $checkpoint activated using the existing images."

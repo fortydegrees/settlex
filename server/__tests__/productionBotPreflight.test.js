@@ -11,6 +11,9 @@ const enabledEnv = {
 };
 
 describe("production bot preflight", () => {
+  it("rejects disabled serving when activation explicitly requires an enabled bot", async () => {
+    await expect(checkProductionBot({ env: {}, requireEnabled: true })).rejects.toThrow("enabled");
+  });
   it("does not start a worker when the native bot is disabled", async () => {
     const createClient = vi.fn();
     await expect(checkProductionBot({ env: {}, createClient })).resolves.toEqual({ enabled: false });

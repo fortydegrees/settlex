@@ -4,9 +4,13 @@ import { DEFAULT_BOT_WORKER_PATH, readBotModelSelection } from "../../lib/server
 
 export async function checkProductionBot({
   env = process.env,
+  requireEnabled = false,
   createClient = (options) => new SettleGraphV2Client({ ...options, logger: { warn: (message) => console.error(message) } }),
 } = {}) {
-  if (env.SETTLEX_SETTLEGRAPH_V2_ENABLED !== "1") return { enabled: false };
+  if (env.SETTLEX_SETTLEGRAPH_V2_ENABLED !== "1") {
+    if (requireEnabled) throw new Error("Bot serving must be enabled before activation.");
+    return { enabled: false };
+  }
   const workerPath = env.SETTLEX_SETTLEGRAPH_V2_WORKER ?? DEFAULT_BOT_WORKER_PATH;
   if (!workerPath.trim()) throw new Error("SETTLEX_SETTLEGRAPH_V2_WORKER cannot be empty.");
   const model = readBotModelSelection({ env });
@@ -29,7 +33,7 @@ export async function checkProductionBot({
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    console.log(JSON.stringify(await checkProductionBot()));
+    console.log(JSON.stringify(await checkProductionBot({ requireEnabled: process.argv.includes("--require-enabled") })));
   } catch (error) {
     console.error(`Production bot preflight failed: ${error.message}`);
     process.exitCode = 1;
