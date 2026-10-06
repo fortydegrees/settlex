@@ -44,6 +44,8 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
   the real GameScreen mounts. Refresh, reconnect, replay, and direct-link
   mounts have no marker, so they stay silent. Native autoplay remains
   best-effort, especially in a background tab, and must never block the board.
+  On a fresh game, turn:start waits for the jingle's playback-completion event
+  plus a 0.5s gap, then plays only if it is still the local player's turn.
 - **Scale-degree vocabulary**: low D = home/ground/time · C♯ (leading tone) =
   act now · F natural (minor third) = misfortune/loss · B♭ = lament · the
   octave = victory · repeated notes = herald (reserved for awards) · a pitch

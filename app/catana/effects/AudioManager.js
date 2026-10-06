@@ -253,11 +253,31 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
     pendingTimeouts.add(timeoutId);
   };
 
-  const playMainLayers = (entry, plan) => {
+  const playMainLayers = (entry, plan, onComplete = null) => {
+    let remaining = plan.layers.length;
+    if (!remaining) onComplete?.();
     plan.layers.forEach((layer) => {
       const howl = getVariantHowl(layer.src, entry);
-      if (!howl) return;
-      playHowl(howl, layer.delayMs, layer.randomize);
+      if (!howl) {
+        remaining -= 1;
+        if (!remaining) onComplete?.();
+        return;
+      }
+      playHowl(howl, layer.delayMs, layer.randomize, onComplete ? ({ soundId }) => {
+        let finished = false;
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          howl.off?.("end", finish, soundId);
+          howl.off?.("playerror", finish, soundId);
+          howl.off?.("loaderror", finish);
+          remaining -= 1;
+          if (!remaining && !destroyed) onComplete();
+        };
+        howl.once("end", finish, soundId);
+        howl.once("playerror", finish, soundId);
+        howl.once("loaderror", finish);
+      } : null);
     });
   };
 
@@ -295,23 +315,30 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
     });
   };
 
-  const play = (cueName, providedPlan = null) => {
-    if (settings.muted) return;
-    if (!unlocked) return;
+  const play = (cueName, providedPlan = null, onComplete = null) => {
     if (destroyed) return;
+    if (settings.muted || !unlocked) {
+      onComplete?.();
+      return;
+    }
     const entry = theme[cueName];
-    if (!entry) return;
-    if (isDocumentHidden() && !entry.allowWhenHidden) return;
+    if (!entry || (isDocumentHidden() && !entry.allowWhenHidden)) {
+      onComplete?.();
+      return;
+    }
     const plan = providedPlan ?? planCue(cueName);
-    if (!plan) return;
+    if (!plan) {
+      onComplete?.();
+      return;
+    }
     lastPlay = cueName;
 
     if (plan.leadIn) {
-      playLeadIn(cueName, entry, plan, () => playMainLayers(entry, plan));
+      playLeadIn(cueName, entry, plan, () => playMainLayers(entry, plan, onComplete));
       return;
     }
 
-    playMainLayers(entry, plan);
+    playMainLayers(entry, plan, onComplete);
   };
 
   const unlock = () => {
@@ -333,7 +360,7 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
 
   const unsubscribe = bus?.on("cue", (event) => {
     const cueName = event.payload?.name;
-    if (cueName) play(cueName, event.payload?.plan);
+    if (cueName) play(cueName, event.payload?.plan, event.payload?.onComplete);
   });
 
   return {

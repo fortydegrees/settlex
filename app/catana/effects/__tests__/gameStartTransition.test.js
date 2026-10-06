@@ -16,6 +16,29 @@ const createStorage = () => {
 };
 
 describe("game-start transitions", () => {
+  it("holds the next turn cue before emission and forwards playback completion", () => {
+    const storage = createStorage();
+    const events = [];
+    let cue;
+    markGameStartTransition({ storage, matchID: "fresh-duel", now: 1_000 });
+    const options = {
+      storage,
+      matchID: "fresh-duel",
+      now: 1_500,
+      audio: { unlock: () => events.push("unlock") },
+      onStart: () => events.push("hold"),
+      onComplete: () => events.push("release"),
+      bus: { emit: (event) => { cue = event; events.push("cue"); } }
+    };
+
+    expect(playGameStartTransition(options)).toBe(true);
+    expect(events).toEqual(["unlock", "hold", "cue"]);
+    cue.payload.onComplete();
+    expect(events).toEqual(["unlock", "hold", "cue", "release"]);
+    expect(playGameStartTransition(options)).toBe(false);
+    expect(events).toHaveLength(4);
+  });
+
   it("consumes and emits at the audio boundary as one operation", () => {
     const storage = createStorage();
     const events = [];
