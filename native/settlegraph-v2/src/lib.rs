@@ -23,6 +23,8 @@ pub const INCUMBENT_007_CTNN_SHA256: &str =
     "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79";
 pub const INCUMBENT_008_CTNN_SHA256: &str =
     "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35";
+pub const INCUMBENT_009_CTNN_SHA256: &str =
+    "d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf";
 pub const EXPECTED_CONTRACT_SHA256: &str =
     "a64b9d0daaa3bb6f60f0c0c42bfc52b53ba4a4672263b85d899805323bc97e55";
 
@@ -69,10 +71,10 @@ pub fn load_verified_model(path: &Path) -> Result<VerifiedModel, String> {
     let sha256 = lowercase_hex(&Sha256::digest(&bytes));
     let expected_version = match sha256.as_str() {
         EXPECTED_CTNN_SHA256 => 2,
-        INCUMBENT_005_CTNN_SHA256 | INCUMBENT_006_CTNN_SHA256 | INCUMBENT_007_CTNN_SHA256 | INCUMBENT_008_CTNN_SHA256 => 3,
+        INCUMBENT_005_CTNN_SHA256 | INCUMBENT_006_CTNN_SHA256 | INCUMBENT_007_CTNN_SHA256 | INCUMBENT_008_CTNN_SHA256 | INCUMBENT_009_CTNN_SHA256 => 3,
         _ => {
             return Err(format!(
-                "sealed CTNN SHA-256 mismatch: expected approved V2, 005, 006, 007 or 008, received {sha256}"
+                "sealed CTNN SHA-256 mismatch: expected approved V2, 005, 006, 007, 008 or 009, received {sha256}"
             ))
         }
     };

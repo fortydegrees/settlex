@@ -82,7 +82,7 @@ describe("SettleGraphV2Client", () => {
   it.each([
     ["006", "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b"],
     ["007", "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79"],
-    ["008", "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35"]
+    ["008", "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35"], ["009", "d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf"]
   ])("accepts sealed %s decisions and rejects a later switch to 005", async (checkpoint, modelSha) => {
     let responseModel = modelSha;
     const proc = createWorkerStub((request) => request.mode === "health"
