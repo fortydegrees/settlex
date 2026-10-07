@@ -1,6 +1,8 @@
 # Selecting the Play vs Bot model
 
-A compatible checkpoint upgrade changes the model store, not app source. The store contains `models/007/model.ctnn`, `models/008/model.ctnn`, `current.json` and `previous.json`. Current selection records checkpoint/name, expected SHA-256, supported observation/action contract and relative model path. Models are external to Git and images.
+Current release target: exact SettleGraph 009, the wide policy. SHA-256 `d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf`. It retains V3 observations and direct legal-greedy play. The native runtime now supports the qualified normal 64/128/16 and wide 128/256/32 families. 008 remains the immediate rollback at SHA `d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35`.
+
+A compatible checkpoint upgrade changes the model store, not app source. The store contains retained `models/007/model.ctnn`, `models/008/model.ctnn` and current `models/009/model.ctnn`, `current.json` and `previous.json`. Current selection records checkpoint/name, expected SHA-256, supported observation/action contract and relative model path. Models are external to Git and images.
 
 The web server uses the selected name for new matches. The game server passes the selected model path/hash to the native worker; worker startup verifies bytes, format and embedded probe, and the client pins identity across decisions and restarts. Neither server hot-reloads selection; restart both after switching. Existing match labels are historical snapshots; an active match may resume with the new policy after restart, as with an app release.
 
@@ -10,7 +12,7 @@ From this checkout, build the native worker once (again only when runtime code c
 
 ```sh
 cargo build --release --locked --manifest-path native/settlegraph-v2/Cargo.toml
-pnpm bot:promote -- --model /absolute/promoted-model.ctnn --checkpoint 008 --sha256 EXPECTED_SHA256
+pnpm bot:promote -- --model /absolute/promoted-model.ctnn --checkpoint 009 --sha256 EXPECTED_SHA256
 pnpm bot:check
 ```
 
@@ -33,16 +35,16 @@ After this infrastructure is deployed once, both web and game mount `/srv/settle
 Upload the approved model to a new staging path on the server. From `/srv/settlex`, with explicit deployment authority:
 
 ```sh
-bash infra/scripts/promote-bot.sh /absolute/staged-model.ctnn 008 EXPECTED_SHA256
+bash infra/scripts/promote-bot.sh /absolute/staged-model.ctnn 009 EXPECTED_SHA256
 ```
 
 The script verifies the existing selection, stops web/game, installs and checks the candidate using the existing game image, atomically changes the selection, and restarts both services without builds. Ordinary mounts stay read-only; only the isolated installer receives write access. If activated-model validation fails, it verifies/restores previous.json and restarts the old selection. The original failure is still reported. Keep the staging model available until activation finishes.
 
 To roll back explicitly, run the same script with the retained prior model file, prior checkpoint and prior expected hash. Serialise production activations; do not run two activation scripts together. After success verify native preflight, the displayed opponent and actual Play vs Bot setup/main-turn behavior. Compatible here means the existing direct CTNN-v2/v3 runtime, topology and 299-action contract; architecture/observation/protocol changes still need a code release.
 
-## First adoption
+## Historical first adoption (6 October 2026)
 
-This code is prepared locally; production remains on its previous release until approved deployment. First build the new game/web images using the standard release workflow. Before replacing existing containers, initialise the external store with the exact currently live 007 model using the new game image:
+The model-store infrastructure was deployed on 6 October. The following first-adoption procedure is retained for rebuilding that setup. First build the new game/web images using the standard release workflow. Before replacing existing containers, initialise the external store with the exact currently live 007 model using the new game image:
 
 ```sh
 docker compose --env-file .env.prod -f infra/docker-compose.prod.yml run --rm --no-deps \

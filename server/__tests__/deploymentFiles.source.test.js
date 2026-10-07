@@ -229,20 +229,20 @@ describe("deployment file wiring", () => {
     expect(dockerignore).toMatch(/^\*\*\/\*\.ctnn$/m);
   });
 
-  it("pins and packages only the verified direct-play Bot 008 runtime", () => {
+  it("pins and packages only the verified direct-play Bot 009 runtime", () => {
     const model = JSON.parse(readRepoFile("release", "bot-model.json"));
     const gameDockerfile = readRepoFile("Dockerfile.game");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const startup = readRepoFile("infra", "scripts", "start-game.sh");
 
     expect(model).toEqual({
-      checkpoint: "008",
-      displayName: "SettleGraph 008",
-      sha256: "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35",
+      checkpoint: "009",
+      displayName: "SettleGraph 009",
+      sha256: "d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf",
       observationVersion: 3,
       observationDim: 1464,
       actionCount: 299,
-      relativePath: "incumbent-008/model.ctnn",
+      relativePath: "incumbent-009/model.ctnn",
       mode: "direct",
     });
     expect(gameDockerfile).toContain("FROM rust:1.85.1-bookworm AS native");
@@ -261,7 +261,7 @@ describe("deployment file wiring", () => {
     );
   });
 
-  it("builds the homepage Bot 008 action from the same deployment flag", () => {
+  it("builds the homepage Bot 009 action from the same deployment flag", () => {
     const webDockerfile = readRepoFile("Dockerfile.web");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const exampleEnv = readRepoFile(".env.example");

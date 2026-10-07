@@ -2,7 +2,7 @@
 
 This crate is the product-owned runtime boundary for the sealed SettleGraph
 bot. It preserves the original CTNN-v2 runtime and adds direct inference for
-checkpoints 005, 006, 007 and 008 with CTNN-v3 observations. All models use the same proven native
+checkpoints 005, 006, 007, 008 and 009 with CTNN-v3 observations. All models use the same proven native
 game, 299-action codec, state importer, legality mask, and action translation.
 The website sends complete authoritative Boardgame.io snapshots over NDJSON;
 no observation or action semantics are approximated in JavaScript.
@@ -39,7 +39,7 @@ are pinned to research commit
 `2cee77fa789fc4af8665e0be57e199928a7e965c`; see `PROVENANCE.md`.
 
 For the promoted 008 model, product configuration and 007 rollback, see
-[LOCAL_008.md](LOCAL_008.md). The bootstrap release manifest selects 008; active serving selections override it.
+[LOCAL_008.md](LOCAL_008.md). The bootstrap release manifest selects 009; active serving selections override it.
 The original V2, 005, 006 and 007 remain accepted for explicit rollback; production
 preflight requires the active selection's exact hash. Historical 006 details remain
 in [LOCAL_006.md](LOCAL_006.md).
@@ -138,3 +138,7 @@ promotion record or qualify the model's value output.
 ## Current model selection
 
 Product startup reads the shared external current.json and supplies `--expected-model-sha256` to the worker. The loader checks those exact bytes before parsing the supported CTNN contract and embedded probe; no new compatible hash needs a runtime source entry. Existing sealed-hash callers remain supported for historical tools/tests. App opponent names come from the same startup selection. See [BOT_MODELS.md](../../docs/agent/BOT_MODELS.md) for install, restart, rollback and initial production adoption.
+
+## 009 wider native support
+
+The current release selects the exact wide checkpoint, SHA `d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf`. The vendored inference wrapper and shared FP32 kernel are copied from the qualified research source at `55f4b3663ad980c367c70aa709163160e3dec378`. Only normal 64/128/16 and wide 128/256/32 widths are admitted; each loaded model creates its matching reusable scratch buffers. V3 observations, topology and 299 actions are unchanged. The loader verifies model bytes and embedded probe before serving. 008 remains supported for rollback. Exact artifact tests are opt-in with `SETTLEX_INCUMBENT_009_MODEL` and `SETTLEX_INCUMBENT_008_MODEL`.
