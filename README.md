@@ -21,9 +21,14 @@ recorded in `package.json`). PostgreSQL 16 is required for accounts and full
 matchmaking. Docker Compose is one way to run the local database.
 
 ```sh
-pnpm install --frozen-lockfile
+pnpm install --frozen-lockfile --config.node-linker=hoisted
 cp .env.example .env.local
 ```
+
+The install command explicitly selects the hoisted dependency layout used in the
+contributor walkthrough, rather than inheriting a machine's pnpm linker setting.
+If the required packages are already cached, `--offline` avoids downloads; an
+empty cache still needs registry access.
 
 Edit `.env.local`: replace both `change-me` secret values with distinct random
 values. You can generate each value with:
@@ -80,6 +85,26 @@ To stop the database while keeping its data:
 ```sh
 docker compose -f infra/docker-compose.local.yml stop postgres
 ```
+
+### Use other local ports
+
+If the defaults are occupied, keep the browser URLs, auth origin and standalone
+server ports aligned. For example, edit these values in your `.env.local`:
+
+```dotenv
+PUBLIC_APP_URL=http://localhost:3029
+BETTER_AUTH_URL=http://localhost:3029
+NEXT_PUBLIC_GAME_SERVER_ORIGIN=http://localhost:8029
+GAME_SERVER_INTERNAL_URL=http://localhost:8129
+SETTLEX_GAME_SERVER_PORT=8029
+SETTLEX_LOBBY_API_PORT=8129
+```
+
+Reload the environment in the game-server terminal before `pnpm serve`, and run
+`pnpm dev --hostname 127.0.0.1 --port 3029` for the website. Open
+[localhost:3029](http://localhost:3029). Set `DATABASE_URL` independently if your
+database uses another port. Public Next.js values must be set before building a
+production bundle; changing them only at `pnpm start` does not rebuild the client.
 
 ### Work on the interface without a match
 

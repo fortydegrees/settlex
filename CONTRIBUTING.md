@@ -43,20 +43,33 @@ started when verification finishes.
 
 Use a separate, disposable PostgreSQL database. These tests write data; never
 point them at production or a valuable development database. Provision the test
-database first, then export its URL:
+database first. If you are using the README's local Compose service, this creates
+the separate test database (once):
 
 ```sh
-export DATABASE_URL=postgres://settlehex:settlehex@localhost:55432/settlehex_test
-pnpm db:migrate:test
-export MATCH_ALERT_POSTGRES_URL="$DATABASE_URL"
-pnpm test:server
+docker compose -f infra/docker-compose.local.yml exec postgres \
+  createdb -U settlehex settlehex_test
+```
+
+Then select its URL, adjusting credentials/host/port for your own disposable
+service:
+
+```sh
+DATABASE_URL=postgres://settlehex:settlehex@localhost:55432/settlehex_test \
+  pnpm db:migrate:test
+export MATCH_ALERT_POSTGRES_URL=postgres://settlehex:settlehex@localhost:55432/settlehex_test
+env -u DATABASE_URL pnpm test:server
 ```
 
 The default local Compose service creates `settlehex`, not `settlehex_test`;
-create the latter yourself before these commands. Tests using
+the `createdb` step above creates the latter. If it already exists, use it only
+when it is disposable and belongs to your test setup. Tests using
 `MATCH_ALERT_POSTGRES_URL` skip when it is absent. Optional native bot tests
 require additional inputs and do not become qualified merely by running the
-ordinary suite. The PR verification workflow provisions its own PostgreSQL
+ordinary suite. General tests also check default connection configuration, so
+unset an inherited `DATABASE_URL` and use the dedicated test opt-in instead.
+For the combined checks, run `env -u DATABASE_URL pnpm verify` with the same
+`MATCH_ALERT_POSTGRES_URL` exported. The PR verification workflow provisions its own PostgreSQL
 service and does not deploy or use production credentials.
 
 ## Include a reviewable result
