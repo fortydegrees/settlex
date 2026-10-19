@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { expect, userEvent, waitFor, within } from "@storybook/test";
+import { expect, fireEvent, userEvent, waitFor, within } from "@storybook/test";
 import { ChatPanel } from "./ChatPanel";
 import { GameLogPanel } from "./GameLogPanel";
 
@@ -135,5 +135,30 @@ export const SelectableReplayLog = {
     robber.focus();
     await userEvent.keyboard(" ");
     await expect(canvas.getByRole("status")).toHaveTextContent("Selected event: robber");
+  },
+};
+
+// Exercise the production send-to-scroll bridge after the reader scrolls away.
+export const SendingResumesScrolling = {
+  render: () => <ChatFixture initialMessages={Array.from({ length: 30 }, (_, index) => ({
+    id: `history-${index}`,
+    sender: String(index % 2),
+    payload: `Earlier message ${index + 1}`,
+  }))} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const composer = canvas.getByRole("textbox", { name: "Chat message" });
+    const transcript = canvasElement.querySelector(".chat-panel-scroll");
+    await waitFor(() => expect(transcript.scrollTop).toBeGreaterThan(0));
+
+    fireEvent.wheel(transcript, { deltaY: -1000 });
+    transcript.scrollTop = 0;
+    await userEvent.type(composer, "Back at the latest message{enter}");
+
+    await waitFor(() => expect(canvas.getByText("Back at the latest message")).toBeVisible());
+    await expect(composer).toHaveValue("");
+    await waitFor(() => expect(
+      transcript.scrollTop + transcript.clientHeight
+    ).toBeGreaterThanOrEqual(transcript.scrollHeight - 1));
   },
 };

@@ -107,69 +107,51 @@ const FeedPanelComponent = ({
           handleFeedPanelMouseLeave(stateRef.current, idleTimerConfig),
       };
 
-  return React.createElement(
-    "div",
-    {
-      className: rootClassName,
-      "data-allow-interaction": "true",
-    },
-    React.createElement(
-      "div",
-      { className: panelClassName, ...panelInteractionProps },
-      React.createElement(
-        "div",
-        { className: joinClassNames(headerClassName, "select-none") },
-        title
-      ),
-      React.createElement(
-        "div",
-        { className: contentWrapClassName },
-        React.createElement(
-          "div",
-          {
-            ref: scrollRef,
-            className: joinClassNames(
+  return (
+    <div className={rootClassName} data-allow-interaction="true">
+      <div className={panelClassName} {...panelInteractionProps}>
+        <div className={joinClassNames(headerClassName, "select-none")}>
+          {title}
+        </div>
+        <div className={contentWrapClassName}>
+          <div
+            ref={scrollRef}
+            className={joinClassNames(
               scrollClassName,
               fadeClassName,
               scrollViewportClassName
-            ),
-            onWheel: () => markFeedPanelManualScroll(stateRef.current),
-            onTouchMove: () => markFeedPanelManualScroll(stateRef.current),
-            ...viewportInteractionProps,
-          },
-          hasRows
-            ? React.createElement(
-                "div",
-                { className: contentClassName },
-                rows.map((row, index) => {
+            )}
+            onWheel={() => markFeedPanelManualScroll(stateRef.current)}
+            onTouchMove={() => markFeedPanelManualScroll(stateRef.current)}
+            {...viewportInteractionProps}
+          >
+            {hasRows ? (
+              <div className={contentClassName}>
+                {rows.map((row, index) => {
                   const rowKey = String(row?.key ?? row?.id ?? index);
-                  return React.createElement(
-                    "div",
-                    {
-                      key: rowKey,
-                      ref: (node) => {
+                  return (
+                    <div
+                      key={rowKey}
+                      ref={(node) => {
                         if (node) rowRefs.current.set(rowKey, node);
                         else rowRefs.current.delete(rowKey);
-                      },
-                      className: entryClassName,
-                      "data-feed-row-active":
-                        String(activeRowKey) === rowKey ? "true" : undefined,
-                    },
-                    renderRow ? renderRow(row, index) : row
+                      }}
+                      className={entryClassName}
+                      data-feed-row-active={
+                        String(activeRowKey) === rowKey ? "true" : undefined
+                      }
+                    >
+                      {renderRow ? renderRow(row, index) : row}
+                    </div>
                   );
-                })
-              )
-            : null
-        )
-      ),
-      footer
-        ? React.createElement(
-            "div",
-            { className: footerClassName },
-            footer
-          )
-        : null
-    )
+                })}
+              </div>
+            ) : null}
+          </div>
+        </div>
+        {footer ? <div className={footerClassName}>{footer}</div> : null}
+      </div>
+    </div>
   );
 };
 

@@ -44,10 +44,9 @@ const ChatPanelComponent = ({
 
   const placeholder = canSend ? "Message..." : "Read-only";
 
-  const footer = React.createElement(
-    "form",
-    {
-      onSubmit: (event) => {
+  const footer = (
+    <form
+      onSubmit={(event) => {
         event.preventDefault();
         const result = submitChatDraft({
           draft,
@@ -58,51 +57,55 @@ const ChatPanelComponent = ({
           setDraft(result.nextDraft);
           setResumeAutoScrollKey((value) => value + 1);
         }
-      },
-    },
-    React.createElement("input", {
-      type: "text",
-      value: draft,
-      disabled: !canSend,
-      placeholder,
-      maxLength: 280,
-      onChange: (event) => setDraft(event.target.value),
-      className: composerInputClassName,
-      "aria-label": "Chat message",
-    })
+      }}
+    >
+      <input
+        type="text"
+        value={draft}
+        disabled={!canSend}
+        placeholder={placeholder}
+        maxLength={280}
+        onChange={(event) => setDraft(event.target.value)}
+        className={composerInputClassName}
+        aria-label="Chat message"
+      />
+    </form>
   );
 
-  return React.createElement(FeedPanel, {
-    title: "Chat",
-    rows,
-    footer,
-    autoScrollKey:
-      chatMessages.length > 0
-        ? chatMessages[chatMessages.length - 1]?.id ?? chatMessages.length
-        : "chat-empty",
-    resumeAutoScrollKey,
-    autoScrollIdleMs: 12000,
-    rootClassName,
-    trackPanelInteraction: true,
-    panelClassName,
-    headerClassName,
-    contentWrapClassName: "min-h-0 flex-1",
-    scrollViewportClassName: "h-full overflow-y-auto px-ui-3",
-    scrollClassName: "feed-panel-scroll chat-panel-scroll",
-    fadeClassName: "feed-panel-fade chat-panel-fade",
-    entryClassName:
-      "feed-panel-entry chat-panel-entry break-words type-body-small text-ink-primary",
-    contentClassName: "space-y-ui-1.5 py-ui-2 type-body-small",
-    footerClassName,
-    renderRow: (entry) =>
-      entry.tokens.map((token, tokenIndex) =>
-        React.createElement(FeedTokenRow, {
-          key: `${entry.key}-${tokenIndex}`,
-          token,
-          themeId,
-        })
-      ),
-  });
+  return (
+    <FeedPanel
+      title="Chat"
+      rows={rows}
+      footer={footer}
+      autoScrollKey={
+        chatMessages.length > 0
+          ? chatMessages[chatMessages.length - 1]?.id ?? chatMessages.length
+          : "chat-empty"
+      }
+      resumeAutoScrollKey={resumeAutoScrollKey}
+      autoScrollIdleMs={12000}
+      rootClassName={rootClassName}
+      trackPanelInteraction={true}
+      panelClassName={panelClassName}
+      headerClassName={headerClassName}
+      contentWrapClassName="min-h-0 flex-1"
+      scrollViewportClassName="h-full overflow-y-auto px-ui-3"
+      scrollClassName="feed-panel-scroll chat-panel-scroll"
+      fadeClassName="feed-panel-fade chat-panel-fade"
+      entryClassName="feed-panel-entry chat-panel-entry break-words type-body-small text-ink-primary"
+      contentClassName="space-y-ui-1.5 py-ui-2 type-body-small"
+      footerClassName={footerClassName}
+      renderRow={(entry) =>
+        entry.tokens.map((token, tokenIndex) => (
+          <FeedTokenRow
+            key={`${entry.key}-${tokenIndex}`}
+            token={token}
+            themeId={themeId}
+          />
+        ))
+      }
+    />
+  );
 };
 
 export const ChatPanel = React.memo(ChatPanelComponent);
