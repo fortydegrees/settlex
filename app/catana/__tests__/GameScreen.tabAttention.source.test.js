@@ -48,23 +48,8 @@ describe("GameScreen tab attention wiring", () => {
 });
 
 describe("match-found attention wiring", () => {
-  it("requests match-found and arms board-ready audio before navigating", () => {
-    const source = read("app/catana/lobby/useLobbyHomeActions.js");
-    const poll = between(
-      source,
-      "onMatchFound: () => {",
-      "router.push(`/g/${searchState.matchID}`);"
-    );
-
-    const attentionIndex = poll.indexOf('tabAttention.request("match-found")');
-    const soundIndex = poll.indexOf(
-      "onGameStartTransition?.(searchState.matchID)"
-    );
-
-    expect(source).toContain('import { tabAttention } from "../utils/tabAttention"');
-    expect(attentionIndex).toBeGreaterThan(-1);
-    expect(soundIndex).toBeGreaterThan(attentionIndex);
-  });
+  // Match-found attention and board-ready arming before navigation are exercised
+  // through the real lobby hook/controller in PublicMatchmaking.stories.jsx.
 
   it("primes the board-ready cue while matchmaking is searching", () => {
     const source = read("app/catana/home/HomeTableClient.js");

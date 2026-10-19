@@ -7,6 +7,8 @@ import { HomeTableClient } from "../home/HomeTableClient";
 import { MatchAlertContext } from "../matchAlerts/MatchAlertProvider";
 import { matchAlertFixtures } from "../dev/storybook/accountFixtures";
 import { readLastActiveMatch, writeLastActiveMatch } from "../utils/activeMatchStorage";
+import { tabAttention } from "../utils/tabAttention";
+import { consumeGameStartTransition, markGameStartTransition } from "../effects/gameStartTransition";
 
 const meta = {
   title: "Game State/Public Matchmaking/Lifecycle",
@@ -53,6 +55,10 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
   let actionResult;
   let mounted = true;
   const events = [];
+  const marks = [];
+  const transitionKey = "catana:game-start-transition";
+  const oldTransition = sessionStorage.getItem(transitionKey);
+  sessionStorage.removeItem(transitionKey);
   const requests = [];
   const router = { push: fn(href => events.push(["navigate", href])), replace: fn(), back: fn(), forward: fn(), refresh: fn(), hmrRefresh: fn(), prefetch: fn() };
   const alerts = {
@@ -63,7 +69,11 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
     display: matchAlertFixtures.off, loading: false, error: "",
     enable: fn(), disable: fn(), resume: fn(),
   };
-  const markGameStart = fn(matchID => events.push(["mark", matchID]));
+  const markGameStart = fn(matchID => {
+    marks.push({ matchID, title: document.title });
+    markGameStartTransition({ matchID });
+    events.push(["mark", matchID]);
+  });
   const api = { restoreAccount: async () => null, respond: async (route, init, body) => {
     if (init.method === "POST") return waitingSeat(body);
     if (init.method === "DELETE") return { status: "cancelled" };
@@ -92,7 +102,7 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
     </>;
   }
   const view = {
-    api, router, alerts, events, requests,
+    api, router, alerts, events, marks, requests,
     get lobby() { return lobby; },
     get actionResult() { return actionResult; },
     click: name => act(async () => within(host).getByRole("button", { name, exact: true }).click()),
@@ -115,6 +125,8 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
   } finally {
     await view.unmount();
     window.fetch = oldFetch;
+    if (oldTransition === null) sessionStorage.removeItem(transitionKey);
+    else sessionStorage.setItem(transitionKey, oldTransition);
     Object.keys(localStorage).filter(key => key.startsWith("catana:")).forEach(key => localStorage.removeItem(key));
     oldStorage.forEach((value, key) => localStorage.setItem(key, value));
     globalThis.IS_REACT_ACT_ENVIRONMENT = oldActEnvironment;
@@ -154,8 +166,24 @@ async function withClock(exercise) {
   }
 }
 
+// Exercise the real controller's background-tab metadata effect without
+// depending on whether the test runner's browser happens to be foregrounded.
+async function withHiddenDocument(exercise) {
+  const oldHidden = Object.getOwnPropertyDescriptor(document, "hidden");
+  let hidden = true;
+  Object.defineProperty(document, "hidden", { configurable: true, get: () => hidden });
+  try {
+    await exercise();
+  } finally {
+    hidden = false;
+    tabAttention.syncVisibility();
+    if (oldHidden) Object.defineProperty(document, "hidden", oldHidden);
+    else delete document.hidden;
+  }
+}
+
 export const WaitingAndAnnouncements = {
-  play: reportPlay(async ({ canvasElement, step }) => withClock(clock => withLobby(canvasElement, async view => {
+  play: reportPlay(async ({ canvasElement, step }) => withHiddenDocument(() => withClock(clock => withLobby(canvasElement, async view => {
     await step("A waiting seat persists credentials and advances elapsed time without navigating", async () => {
       await view.click("Find online");
       expect(view.lobby.searchState).toMatchObject({ matchID: "waiting-duel", playerID: "0", phase: "searching", createdNewPublicDuel: true });
@@ -175,14 +203,22 @@ export const WaitingAndAnnouncements = {
       await clock.advance(1000);
       expect(view.alerts.requestAnnouncement).toHaveBeenCalledOnce();
     });
-    await step("A filled poll marks the board before navigation and clears pending announcements", async () => {
+    await step("A filled poll requests attention, arms the board, then navigates and clears pending announcements", async () => {
+      view.router.push.mockImplementation(href => {
+        expect(document.title).toBe("🔔 Match found · Settlehex");
+        expect(document.head.querySelector('link[rel~="icon"]').getAttribute("href")).toBe("/match-alert-bell.svg");
+        expect(consumeGameStartTransition({ matchID: "waiting-duel" })).toBe(true);
+        expect(consumeGameStartTransition({ matchID: "waiting-duel" })).toBe(false);
+        view.events.push(["navigate", href]);
+      });
       view.api.respond = async () => ({ players: [{ id: 0, name: "Ada" }, { id: 1, name: "Bea" }] });
       await clock.advance(1500);
       expect(view.lobby.searchState.phase).toBe("matchFound");
+      expect(view.marks).toEqual([{ matchID: "waiting-duel", title: "🔔 Match found · Settlehex" }]);
       expect(view.events.slice(-2)).toEqual([["mark", "waiting-duel"], ["navigate", "/g/waiting-duel"]]);
       expect(clock.timeouts.size).toBe(0);
     });
-  }))),
+  })))),
 };
 
 export const CommittedAndAmbiguousResults = {
