@@ -53,60 +53,64 @@ import {
 } from "./gameSetup/devScenarios.js";
 import { createInitialGameState } from "./gameSetup/initialState.js";
 import { maskPlayerView } from "./gameSetup/playerView.js";
+import { maskEffectsPlayerView } from "./gameSetup/effectsPlayerView.js";
 export { getPlacementOrder } from "./gameSetup/initialState.js";
 
-const configuredEffectsPlugin = EffectsPlugin({
-  effects: {
-    distributeCardsFromTile: {
-      create: (value) => value,
-      duration: 2
-    },
-    roll: {
-      create: (value) => value,
-      duration: 1.5
-    },
-    robberBlocked: {
-      create: (value) => value,
-      duration: 1.5
-    },
-    placePiece: {
-      create: (value) => value,
-      duration: getPlacementEffectDuration(PLACE_PIECE_DEFAULT_TUNING)
-    },
-    buyDevCardReveal: {
-      create: (value) => value,
-      duration: 0
-    },
-    robberSteal: {
-      create: (value) => value,
-      duration: 0
-    },
-    robberMove: {
-      create: (value) => value,
-      duration: 0
-    },
-    awardClaimed: {
-      create: (value) => value,
-      duration: 0
-    },
-    maritimeTrade: {
-      create: (value) => value,
-      duration: 0
-    },
-    discardResources: {
-      create: (value) => value,
-      duration: 0
-    },
-    devCardPlayStarted: {
-      create: (value) => value,
-      duration: 0
-    },
-    devCardPlayResolved: {
-      create: (value) => value,
-      duration: 0
+const configuredEffectsPlugin = {
+  ...EffectsPlugin({
+    effects: {
+      distributeCardsFromTile: {
+        create: (value) => value,
+        duration: 2
+      },
+      roll: {
+        create: (value) => value,
+        duration: 1.5
+      },
+      robberBlocked: {
+        create: (value) => value,
+        duration: 1.5
+      },
+      placePiece: {
+        create: (value) => value,
+        duration: getPlacementEffectDuration(PLACE_PIECE_DEFAULT_TUNING)
+      },
+      buyDevCardReveal: {
+        create: (value) => value,
+        duration: 0
+      },
+      robberSteal: {
+        create: (value) => value,
+        duration: 0
+      },
+      robberMove: {
+        create: (value) => value,
+        duration: 0
+      },
+      awardClaimed: {
+        create: (value) => value,
+        duration: 0
+      },
+      maritimeTrade: {
+        create: (value) => value,
+        duration: 0
+      },
+      discardResources: {
+        create: (value) => value,
+        duration: 0
+      },
+      devCardPlayStarted: {
+        create: (value) => value,
+        duration: 0
+      },
+      devCardPlayResolved: {
+        create: (value) => value,
+        duration: 0
+      }
     }
-  }
-});
+  }),
+  playerView: maskEffectsPlayerView
+};
 
 export const createCatanGame = ({
   includeDebugMoves = isDebugEnvironment(),
