@@ -54,7 +54,7 @@ export const createChallengeCancelRoute =
         return unauthorizedResponse();
       }
 
-      const matchID = params?.matchID;
+      const matchID = (await params)?.matchID;
       const payload = await safeJson(request);
       return await withMatchMutationLockImpl({
         matchID,

@@ -5,7 +5,7 @@ import { HomeTableClient } from "./catana/home/HomeTableClient";
 async function getInitialHomeAccount() {
   try {
     const sessionAccount = await getSessionAccount({
-      headers: headers()
+      headers: await headers()
     });
 
     return sessionAccount?.account ?? null;

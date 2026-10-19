@@ -85,6 +85,8 @@ export const createGMatchPage = ({
   notFoundImpl = notFound,
 } = {}) =>
   async function GMatchPage({ params, searchParams }) {
+    params = await params;
+    searchParams = await searchParams;
     if (!params?.matchID) {
       return notFoundImpl();
     }
@@ -154,7 +156,7 @@ export const createGMatchPage = ({
       let accountId = null;
       try {
         const sessionAccount = await getSessionAccountImpl({
-          headers: headersImpl(),
+          headers: await headersImpl(),
         });
         accountId = sessionAccount?.account?.id ?? null;
       } catch (error) {

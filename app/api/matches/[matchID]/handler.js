@@ -15,7 +15,7 @@ export const createMatchDetailsRoute =
   ({ fetchImpl = fetch, baseUrl } = {}) =>
   async (_request, { params } = {}) => {
     try {
-      const matchID = params?.matchID;
+      const matchID = (await params)?.matchID;
       if (!matchID) {
         return NextResponse.json({ error: "matchID is required" }, { status: 400 });
       }

@@ -38,7 +38,7 @@ export const createReplayPage = ({
   notFoundImpl = notFound,
 } = {}) =>
   async function ReplayPage({ params }) {
-    const replay = await getArchivedReplayImpl(params?.replayId);
+    const replay = await getArchivedReplayImpl((await params)?.replayId);
 
     if (!replay) {
       return notFoundImpl();
@@ -71,7 +71,7 @@ export const createReplayPage = ({
     let accountId = null;
     try {
       const sessionAccount = await getSessionAccountImpl({
-        headers: headersImpl(),
+        headers: await headersImpl(),
       });
       accountId = sessionAccount?.account?.id ?? null;
     } catch {

@@ -49,8 +49,8 @@ describe("/g match page", () => {
     });
 
     const element = await Page({
-      params: { matchID: "m1" },
-      searchParams: { playerID: "0" },
+      params: Promise.resolve({ matchID: "m1" }),
+      searchParams: Promise.resolve({ playerID: "0" }),
     });
     const html = renderToStaticMarkup(element);
 
@@ -250,10 +250,11 @@ describe("/g match page", () => {
         },
       }),
       buildReplayFrames: vi.fn().mockReturnValue([{ index: 0 }]),
-      getSessionAccount: vi.fn().mockResolvedValue({
-        account: { id: "account_b" },
-      }),
-      headers: vi.fn().mockReturnValue(new Headers()),
+      getSessionAccount: async ({ headers }) =>
+        headers.get("cookie") === "session=account_b"
+          ? { account: { id: "account_b" } }
+          : null,
+      headers: async () => new Headers({ cookie: "session=account_b" }),
       readSeatCredential: vi.fn(),
       ReplayPageClient,
     });
@@ -363,3 +364,9 @@ describe("/g match page", () => {
     expect(notFoundImpl).not.toHaveBeenCalled();
   });
 });
+
+ it("keeps canonical match metadata when route params are asynchronous", async () => {
+  const { generateMetadata } = await import("../g/[matchID]/page.js");
+  const metadata = await generateMetadata({ params: Promise.resolve({ matchID: "game 7" }) });
+  expect(metadata.alternates.canonical).toBe("/g/game%207");
+ });

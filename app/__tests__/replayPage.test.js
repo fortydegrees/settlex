@@ -60,7 +60,7 @@ describe("replay page", () => {
     });
 
     const element = await Page({
-      params: { replayId: "rpl_3" },
+      params: Promise.resolve({ replayId: "rpl_3" }),
     });
     const html = renderToStaticMarkup(element);
 
@@ -101,10 +101,11 @@ describe("replay page", () => {
         { index: 0, state: { G: {}, ctx: {} } },
       ]),
       ReplayPageClient,
-      getSessionAccount: vi.fn().mockResolvedValue({
-        account: { id: "account_me" },
-      }),
-      headers: vi.fn().mockReturnValue(new Headers()),
+      getSessionAccount: async ({ headers }) =>
+        headers.get("cookie") === "session=account_me"
+          ? { account: { id: "account_me" } }
+          : null,
+      headers: async () => new Headers({ cookie: "session=account_me" }),
       readSeatCredential: vi.fn().mockResolvedValue(null),
     });
 

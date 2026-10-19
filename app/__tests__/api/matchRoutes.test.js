@@ -529,7 +529,7 @@ describe("match API routes", () => {
     );
     const detailsResponse = await GET(
       new Request("http://localhost/api/matches/match_1"),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
 
     expect(joinResponse.status).toBe(200);

@@ -23,7 +23,7 @@ const request = (action) => new Request(`http://localhost/api/challenges/m1/${ac
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ credentials: "inviter-secret" }),
 });
-const params = { params: { matchID: "m1" } };
+const params = { params: Promise.resolve({ matchID: "m1" }) };
 const deferred = () => {
   let resolve;
   const promise = new Promise((done) => { resolve = done; });

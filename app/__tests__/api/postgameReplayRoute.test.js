@@ -12,7 +12,7 @@ describe("postgame replay payload route", () => {
       getPostgameReplayPayload: vi.fn().mockResolvedValue(payload),
       getLiveMatch: vi.fn(),
     })(new Request("http://local/api/matches/m1/replay"), {
-      params: { matchID: "m1" },
+      params: Promise.resolve({ matchID: "m1" }),
     });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(payload);
@@ -26,15 +26,15 @@ describe("postgame replay payload route", () => {
       });
     expect(
       (await make({ gameover: { winner: "0" } })(null, {
-        params: { matchID: "m1" },
+        params: Promise.resolve({ matchID: "m1" }),
       })).status
     ).toBe(202);
     expect(
-      (await make({ gameover: null })(null, { params: { matchID: "m1" } }))
+      (await make({ gameover: null })(null, { params: Promise.resolve({ matchID: "m1" }) }))
         .status
     ).toBe(409);
     expect(
-      (await make(null)(null, { params: { matchID: "m1" } })).status
+      (await make(null)(null, { params: Promise.resolve({ matchID: "m1" }) })).status
     ).toBe(404);
   });
 
@@ -44,7 +44,7 @@ describe("postgame replay payload route", () => {
         .fn()
         .mockRejectedValue(new Error("Replay has no valid frames")),
       getLiveMatch: vi.fn(),
-    })(null, { params: { matchID: "m1" } });
+    })(null, { params: Promise.resolve({ matchID: "m1" }) });
 
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({
@@ -63,7 +63,7 @@ describe("postgame replay payload route", () => {
     const response = await createPostgameReplayRoute({
       getPostgameReplayPayload: vi.fn().mockResolvedValue(null),
       getLiveMatch: ({ matchID }) => getLiveMatch({ matchID, fetchImpl }),
-    })(null, { params: { matchID: "missing" } });
+    })(null, { params: Promise.resolve({ matchID: "missing" }) });
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ status: "missing" });

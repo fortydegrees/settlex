@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { ImageResponse } from "next/server";
+import { ImageResponse } from "next/og";
 import React from "react";
 import { HOME_DEMO_BOARD_PRESET } from "./catana/homeDemo/homeDemoPreset.js";
 import {

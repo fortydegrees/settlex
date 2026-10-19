@@ -17,7 +17,7 @@ export const createChallengeDetailsRoute =
     now = () => new Date(),
   } = {}) =>
   async (_request, { params } = {}) => {
-    const matchID = params?.matchID;
+    const matchID = (await params)?.matchID;
     if (!matchID) {
       return NextResponse.json(expiredPayload(null));
     }

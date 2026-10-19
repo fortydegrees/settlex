@@ -8,7 +8,7 @@ export const createProfilePage = ({
   notFoundImpl = notFound,
 } = {}) =>
   async function PublicProfilePage({ params }) {
-    const profile = await getPublicProfileImpl(params?.username);
+    const profile = await getPublicProfileImpl((await params)?.username);
 
     if (!profile) {
       return notFoundImpl();

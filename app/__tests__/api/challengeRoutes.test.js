@@ -125,7 +125,7 @@ describe("challenge API routes", () => {
     });
     const pendingResponse = await GET(
       new Request("http://localhost/api/challenges/match_1"),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
     expect(await pendingResponse.json()).toEqual({
       status: "pending",
@@ -155,7 +155,7 @@ describe("challenge API routes", () => {
     });
     const expiredResponse = await GET(
       new Request("http://localhost/api/challenges/match_1"),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
     expect(await expiredResponse.json()).toEqual({
       status: "expired",
@@ -217,7 +217,7 @@ describe("challenge API routes", () => {
           cookie: "settlehex_session=a.b",
         },
       }),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
 
     expect(response.status).toBe(403);
@@ -294,7 +294,7 @@ describe("challenge API routes", () => {
       new Request("http://localhost/api/challenges/match_1/accept", {
         method: "POST",
       }),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
     expect(unauthorizedAccept.status).toBe(401);
     expect(joinMatchForAccount).not.toHaveBeenCalled();
@@ -321,7 +321,7 @@ describe("challenge API routes", () => {
         method: "POST",
         headers: { cookie: "settlehex_session=a.b" },
       }),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
     expect(acceptResponse.status).toBe(200);
     expect(await acceptResponse.json()).toMatchObject({
@@ -373,7 +373,7 @@ describe("challenge API routes", () => {
         method: "POST",
         headers: { cookie: "settlehex_session=a.b" },
       }),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
     expect(rejectedJoinResponse.status).toBe(409);
     expect(await rejectedJoinResponse.json()).toEqual({
@@ -414,7 +414,7 @@ describe("challenge API routes", () => {
         },
         body: JSON.stringify({ credentials: "secret_inviter" }),
       }),
-      { params: { matchID: "match_1" } }
+      { params: Promise.resolve({ matchID: "match_1" }) }
     );
     expect(cancelResponse.status).toBe(200);
     expect(await cancelResponse.json()).toEqual({

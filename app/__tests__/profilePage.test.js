@@ -54,7 +54,7 @@ describe("public profile page", () => {
     });
 
     const element = await Page({
-      params: { username: "Ada" },
+      params: Promise.resolve({ username: "Ada" }),
     });
     const html = renderToStaticMarkup(element);
 
@@ -67,3 +67,9 @@ describe("public profile page", () => {
     expect(html).not.toContain("/replays/rpl_3");
   });
 });
+
+ it("names the profile in metadata when route params are asynchronous", async () => {
+  const { generateMetadata } = await import("../u/[username]/page.js");
+  expect(await generateMetadata({ params: Promise.resolve({ username: "Ada" }) }))
+    .toEqual({ title: "Ada’s profile" });
+ });

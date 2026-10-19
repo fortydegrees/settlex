@@ -54,7 +54,7 @@ export const createChallengeAcceptRoute =
         return unauthorizedResponse();
       }
 
-      const matchID = params?.matchID;
+      const matchID = (await params)?.matchID;
       return await withMatchMutationLockImpl({
         matchID,
         run: async () => {

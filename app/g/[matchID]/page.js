@@ -1,7 +1,8 @@
 import GMatchPage from "./page-content";
 import { createMatchMetadata } from "../../metadata.js";
 
-export function generateMetadata({ params }) {
+export async function generateMetadata({ params }) {
+  params = await params;
   return createMatchMetadata(params?.matchID);
 }
 
