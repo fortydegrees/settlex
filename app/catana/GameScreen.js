@@ -23,11 +23,7 @@ import {
   getGameOverTitle
 } from "./utils/gameScreenDisplayModel";
 import { getOpponentHudLayout } from "./utils/opponentHudLayout";
-import {
-  getActiveDisconnectStateByPlayerId,
-  mergeVisibleLogEntries,
-  readPresenceSnapshot
-} from "./utils/disconnectPresence";
+import { mergeVisibleLogEntries } from "./utils/disconnectPresence";
 import {
   buildDevCardBuyTransfer,
   buildDiscardTransfers,
@@ -35,16 +31,11 @@ import {
   buildRobberStealTransfers
 } from "./utils/cardTransferPayloads";
 import {
-  getActiveIdleStateByPlayerId,
-  readIdlePresenceSnapshot
-} from "./utils/idlePresence";
-import {
   getDiscardRequirement,
   getHasBlockingModal,
   getTurnCommandState,
   getVisibleDiceRoll
 } from "./utils/gameScreenCommandState";
-import { normalizeTimerSnapshot } from "./utils/timerSnapshot";
 import {
   canRenderDevPlayModal,
   shouldResetTradeModal
@@ -95,9 +86,6 @@ import {
 import useWindowSize from "./utils/useWindowSize";
 import { getBoardLayout, shouldResetBoardViewport } from "./utils/boardLayout";
 import {
-  getLobbyServerOrigin,
-} from "./utils/serverOrigins";
-import {
   DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
 } from "./utils/robberPlacementMotion";
 import { IconButton } from "../ui/IconButton";
@@ -122,6 +110,8 @@ import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
 import { getCurrentMatchAlertGameRegistration } from "./matchAlerts/matchAlertProviderActions.js";
 import { tabAttention } from "./utils/tabAttention";
 import { getGamePageTitle } from "./utils/gamePageTitle";
+import { useMatchClockAndPresence } from "./matchStatus/useMatchClockAndPresence";
+import { useIdleAcknowledgement } from "./matchStatus/useIdleAcknowledgement";
 
 let tradeDiscardModalPromise;
 const loadTradeDiscardModal = () =>
@@ -236,13 +226,6 @@ export function GameScreen(bgioProps) {
   const [activeDevCardReveal, setActiveDevCardReveal] = useState(null);
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [tradePresetResource, setTradePresetResource] = useState(null);
-  const [timerSnapshot, setTimerSnapshot] = useState(null);
-  const [timerSeeded, setTimerSeeded] = useState(false);
-  const [disconnectPresence, setDisconnectPresence] = useState(null);
-  const [idlePresence, setIdlePresence] = useState(null);
-  const [idleAckError, setIdleAckError] = useState(null);
-  const [isAcknowledgingIdle, setIsAcknowledgingIdle] = useState(false);
-  const [nowMs, setNowMs] = useState(Date.now());
   const [readySent, setReadySent] = useState(false);
   const [isMuted, setIsMuted] = useState(readStoredMute);
   const [themeId] = useState(readStoredThemeId);
@@ -547,6 +530,32 @@ export function GameScreen(bgioProps) {
       snapshots.currentResourcesByPlayerId;
   }, [playerViewMap]);
 
+  const {
+    timerSnapshot,
+    disconnectPresence,
+    idlePresence,
+    activeIdlePlayerId,
+    disconnectStateByPlayerId,
+    idleStateByPlayerId
+  } = useMatchClockAndPresence({
+    matchID,
+    isReplay,
+    timerSnapshot: bgioProps.timerSnapshot,
+    timerServerTimeMs: bgioProps.timerServerTimeMs,
+    disconnectPresence: bgioProps.disconnectPresence,
+    disconnectServerTimeMs: bgioProps.disconnectServerTimeMs,
+    idlePresence: bgioProps.idlePresence,
+    idleServerTimeMs: bgioProps.idleServerTimeMs
+  });
+  const { idleAckError, isAcknowledgingIdle, handleAcknowledgeIdle } =
+    useIdleAcknowledgement({
+      matchID,
+      playerID,
+      credentials: bgioProps.credentials,
+      activeIdlePlayerId,
+      isGameOver
+    });
+
   // The board remains animation-gated, but the feed follows authoritative
   // props as soon as the effect queue starts (including resource outcomes).
   const latestLogProps = useLatestPropsOnEffect("*");
@@ -573,13 +582,6 @@ export function GameScreen(bgioProps) {
       idlePresence
     ]
   );
-  const activeIdlePlayerId = idlePresence?.activeIdlePlayerId ?? null;
-  const disconnectStateByPlayerId = useMemo(() => {
-    return getActiveDisconnectStateByPlayerId(disconnectPresence, nowMs);
-  }, [disconnectPresence, nowMs]);
-  const idleStateByPlayerId = useMemo(() => {
-    return getActiveIdleStateByPlayerId(idlePresence, nowMs);
-  }, [idlePresence, nowMs]);
   const showResultsButton = isReplay
     ? !bgioProps.replayResultsOpen
     : isGameOver && !showGameOverModal && !showPostgame;
@@ -719,12 +721,6 @@ export function GameScreen(bgioProps) {
   }, [isGameOver, matchID, playerID]);
 
   useEffect(() => {
-    setTimerSnapshot(null);
-    setTimerSeeded(false);
-    setDisconnectPresence(null);
-    setIdlePresence(null);
-    setIdleAckError(null);
-    setIsAcknowledgingIdle(false);
     setReadySent(false);
     setShowConnectionBanner(false);
     pendingDevCardRevealRef.current = null;
@@ -763,90 +759,6 @@ export function GameScreen(bgioProps) {
 
     return () => clearTimeout(timeoutId);
   }, [bgioProps.isConnected, isGameOver]);
-
-  useEffect(() => {
-    if (
-      bgioProps.timerSnapshot === undefined &&
-      bgioProps.timerServerTimeMs === undefined
-    ) {
-      return;
-    }
-    if (!bgioProps.timerSnapshot) {
-      setTimerSnapshot(null);
-      return;
-    }
-    setTimerSnapshot(
-      normalizeTimerSnapshot(
-        bgioProps.timerSnapshot,
-        bgioProps.timerServerTimeMs
-      )
-    );
-  }, [bgioProps.timerSnapshot, bgioProps.timerServerTimeMs]);
-
-  useEffect(() => {
-    if (
-      bgioProps.disconnectPresence === undefined &&
-      bgioProps.disconnectServerTimeMs === undefined
-    ) {
-      return;
-    }
-
-    setDisconnectPresence(
-      readPresenceSnapshot(
-        bgioProps.disconnectPresence,
-        bgioProps.disconnectServerTimeMs
-      )
-    );
-  }, [bgioProps.disconnectPresence, bgioProps.disconnectServerTimeMs]);
-
-  useEffect(() => {
-    if (
-      bgioProps.idlePresence === undefined &&
-      bgioProps.idleServerTimeMs === undefined
-    ) {
-      return;
-    }
-
-    setIdlePresence(
-      readIdlePresenceSnapshot(
-        bgioProps.idlePresence,
-        bgioProps.idleServerTimeMs
-      )
-    );
-  }, [bgioProps.idlePresence, bgioProps.idleServerTimeMs]);
-
-  useEffect(() => {
-    if (isReplay) return;
-    if (!matchID || typeof window === "undefined") return;
-    if (bgioProps.timerSnapshot !== undefined || timerSeeded) return;
-    let cancelled = false;
-
-    const fetchSeed = async () => {
-      try {
-        const baseUrl = getLobbyServerOrigin();
-        const url = `${baseUrl}/timer/${matchID}`;
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled) return;
-        if (!data?.timer) {
-          setTimerSeeded(true);
-          return;
-        }
-        setTimerSnapshot(
-          normalizeTimerSnapshot(data.timer, data.serverTimeMs)
-        );
-        setTimerSeeded(true);
-      } catch (err) {
-        // ignore errors
-      }
-    };
-
-    fetchSeed();
-    return () => {
-      cancelled = true;
-    };
-  }, [isReplay, matchID, timerSeeded, bgioProps.timerSnapshot]);
 
   useEffect(() => {
     if (isReplay) return;
@@ -915,23 +827,6 @@ export function GameScreen(bgioProps) {
         ...rawGameStatus,
         showTimer: !hideTimer
       };
-  const hasDisconnectCountdown =
-    Object.keys(disconnectStateByPlayerId).length > 0;
-  const hasIdleCountdown = Boolean(activeIdlePlayerId);
-
-  useEffect(() => {
-    if (!hasDisconnectCountdown && !hasIdleCountdown) return;
-    const interval = setInterval(() => setNowMs(Date.now()), 250);
-    return () => clearInterval(interval);
-  }, [hasDisconnectCountdown, hasIdleCountdown]);
-
-  useEffect(() => {
-    if (isGameOver || activeIdlePlayerId == null) {
-      setIdleAckError(null);
-      setIsAcknowledgingIdle(false);
-    }
-  }, [activeIdlePlayerId, isGameOver]);
-
   useEffect(() => {
     if (isReplay) {
       if (playerAction === "roadBuilding") {
@@ -1103,43 +998,6 @@ export function GameScreen(bgioProps) {
   const handleConfirmResign = () => {
     setShowResignConfirm(false);
     moves.resign();
-  };
-
-  const handleAcknowledgeIdle = async () => {
-    if (isAcknowledgingIdle) return;
-    if (!matchID || playerID == null) return;
-    if (typeof window === "undefined") return;
-    if (!bgioProps.credentials) {
-      setIdleAckError("Missing player credentials.");
-      return;
-    }
-
-    setIsAcknowledgingIdle(true);
-    setIdleAckError(null);
-    try {
-      const baseUrl = getLobbyServerOrigin();
-      const response = await fetch(`${baseUrl}/idle/${matchID}/ack`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          playerID,
-          credentials: bgioProps.credentials
-        })
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? "Unable to clear idle warning.");
-      }
-
-      setIdleAckError(null);
-    } catch (error) {
-      setIdleAckError(error?.message ?? "Unable to clear idle warning.");
-    } finally {
-      setIsAcknowledgingIdle(false);
-    }
   };
 
   const { canRoll, canEnd } = getTurnCommandState({

@@ -9,32 +9,8 @@ const __dirname = path.dirname(__filename);
 const screenPath = path.resolve(__dirname, "..", "GameScreen.js");
 
 describe("GameScreen idle grace", () => {
-  it("reads pushed idle presence snapshots and derives active idle state", () => {
-    const contents = fs.readFileSync(screenPath, "utf8");
-
-    expect(contents).toContain("bgioProps.idlePresence");
-    expect(contents).toContain("bgioProps.idleServerTimeMs");
-    expect(contents).toContain("readIdlePresenceSnapshot");
-    expect(contents).toContain("getActiveIdleStateByPlayerId");
-  });
-
-  it("shows the local idle prompt modal only for the affected player and uses credentials for acknowledge", () => {
-    const contents = fs.readFileSync(screenPath, "utf8");
-
-    expect(contents).toContain("IdlePromptModal");
-    expect(contents).toContain("activeIdlePlayerId");
-    expect(contents).toContain("bgioProps.credentials");
-    expect(contents).toContain("/idle/");
-    expect(contents).toContain("/ack");
-  });
-
-  it("uses the shared lobby origin helper for timer seed and idle acknowledge routes", () => {
-    const contents = fs.readFileSync(screenPath, "utf8");
-
-    expect(contents).toContain("getLobbyServerOrigin");
-    expect(contents).not.toContain('window.location.hostname}:8080');
-  });
-
+  // Snapshot, seed-route and acknowledgement contracts now have executable
+  // coverage in matchStatus/MatchStatus.stories.jsx (real React DOM).
   it("keeps disconnect precedence over idle seat state", () => {
     const contents = fs.readFileSync(screenPath, "utf8");
 
