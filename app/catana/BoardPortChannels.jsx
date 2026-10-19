@@ -92,55 +92,57 @@ export function BoardPortChannels({ tiles = [], center, size, width, height }) {
 
   const portTiles = tiles.filter(({ type }) => type === TileTypes.PORT);
 
-  return React.createElement(
-    "div",
-    {
-      "data-testid": "board-port-channels",
-      "aria-hidden": true,
-      style: {
+  return (
+    <div
+      data-testid="board-port-channels"
+      aria-hidden={true}
+      style={{
         position: "absolute",
         inset: 0,
         width,
         height,
         pointerEvents: "none",
         overflow: "visible",
-      },
-    },
-    ...portTiles.map(({ coordinate, tile }) => {
-      const { marker, connectors } = getPortRenderModel({
-        coordinate,
-        size,
-        boardCenter: center,
-        direction: tile.direction,
-      });
+      }}
+    >
+      {portTiles.map(({ coordinate, tile }) => {
+        const { marker, connectors } = getPortRenderModel({
+          coordinate,
+          size,
+          boardCenter: center,
+          direction: tile.direction,
+        });
 
-      return React.createElement(
-        "div",
-        {
-          key: `board-port-channel-${tile.id}`,
-          "data-testid": "board-port-channel",
-          style: {
-            position: "absolute",
-            inset: 0,
-          },
-        },
-        ...connectors.map((connector, index) => {
-          const bar = getConnectorBar({
-            coordinate,
-            nodeDirection: connector.nodeDirection,
-            marker,
-            size,
-            center,
-          });
+        return (
+          <div
+            key={`board-port-channel-${tile.id}`}
+            data-testid="board-port-channel"
+            style={{
+              position: "absolute",
+              inset: 0,
+            }}
+          >
+            {connectors.map((connector, index) => {
+              const bar = getConnectorBar({
+                coordinate,
+                nodeDirection: connector.nodeDirection,
+                marker,
+                size,
+                center,
+              });
 
-          return React.createElement("div", {
-            key: `board-port-connector-${tile.id}-${index}`,
-            "data-testid": "board-port-connector",
-            "data-node-direction": connector.nodeDirection,
-            style: getConnectorBarStyle({ bar }),
-          });
-        })
-      );
-    })
+              return (
+                <div
+                  key={`board-port-connector-${tile.id}-${index}`}
+                  data-testid="board-port-connector"
+                  data-node-direction={connector.nodeDirection}
+                  style={getConnectorBarStyle({ bar })}
+                />
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
   );
 }

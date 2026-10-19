@@ -66,9 +66,11 @@ export const DenseResources = {
   render: (args) => <MobileFixture {...args} />,
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body);
-    expect(screen.getByRole("button", { name: "Hold to end turn" })).toBeVisible();
+    canvasElement.dataset.hudAssertions = "running";
+    expect(await screen.findByRole("button", { name: "Hold to end turn" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Trade Wood" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Open game log" })).toBeVisible();
+    canvasElement.dataset.hudAssertions = "passed";
   },
 };
 
@@ -77,10 +79,13 @@ export const EmptyHandPreRoll = {
   render: (args) => <MobileFixture {...args} />,
   play: async ({ canvasElement, args }) => {
     const screen = within(canvasElement.ownerDocument.body);
+    canvasElement.dataset.hudAssertions = "running";
     args.bgioProps.moves.rollDice.mockClear();
+    const roll = await screen.findByRole("button", { name: "Roll dice" });
     expect(screen.queryByRole("button", { name: /Development cards:/ })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Roll dice" }));
+    await userEvent.click(roll);
     expect(args.bgioProps.moves.rollDice).toHaveBeenCalledOnce();
+    canvasElement.dataset.hudAssertions = "passed";
   },
 };
 
@@ -109,8 +114,11 @@ export const WaitingReadOnly = {
   render: (args) => <MobileFixture {...args} />,
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body);
+    canvasElement.dataset.hudAssertions = "running";
+    await screen.findByRole("button", { name: "Open game log" });
     expect(screen.queryByRole("button", { name: "Hold to end turn" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Trade Wood" })).not.toBeInTheDocument();
+    canvasElement.dataset.hudAssertions = "passed";
   },
 };
 
