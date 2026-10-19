@@ -42,10 +42,7 @@ import {
 import { DEBUG_MOVES } from "./moves/debugMoves.js";
 import { appendGameLog } from "./utils/gameLog.js";
 import { EffectsPlugin } from "bgio-effects/dist/plugin.js";
-import {
-  PLACE_PIECE_DEFAULT_TUNING,
-  getPlacementEffectDuration
-} from "./effects/placePieceDefaults.js";
+import { getPlacementEffectDuration } from "../../lib/shared/placementEffectTiming.js";
 import {
   applyDevScenarioSetup,
   isDebugEnvironment,
@@ -73,7 +70,7 @@ const configuredEffectsPlugin = {
       },
       placePiece: {
         create: (value) => value,
-        duration: getPlacementEffectDuration(PLACE_PIECE_DEFAULT_TUNING)
+        duration: getPlacementEffectDuration()
       },
       buyDevCardReveal: {
         create: (value) => value,

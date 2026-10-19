@@ -1,10 +1,12 @@
+import {
+  PLACEMENT_EFFECT_DEFAULT_TIMING,
+  getPlacementEffectDuration as getSharedPlacementEffectDuration
+} from "../../../lib/shared/placementEffectTiming.js";
+
 export const PLACE_PIECE_DEFAULT_TUNING = {
+  ...PLACEMENT_EFFECT_DEFAULT_TIMING,
   dropDistance: 1.5,
-  dropDuration: 0.22,
-  squishDuration: 0.08,
-  settleDuration: 0.18,
   postHoldDuration: 0.03,
-  dustDuration: 0.24,
   dustScaleFrom: 0.2,
   dustScaleTo: 1.15,
   dustOpacity: 0.7,
@@ -19,7 +21,6 @@ export const PLACE_PIECE_DEFAULT_TUNING = {
   shadowScaleTo: 0.9,
   shadowSizeSettlement: 0.85,
   shadowSizeRoad: 0.6,
-  shadowFadeOutDuration: 0.08,
   upgradeLiftDistance: 0.9,
   upgradeLiftDuration: 0.14,
   upgradeLiftScale: 0.96,
@@ -32,11 +33,7 @@ export const PLACE_PIECE_DEFAULT_TUNING = {
   easeSettleRoad: "back.out(1.4)"
 };
 
-export const getPlacementEffectDuration = (tuning = PLACE_PIECE_DEFAULT_TUNING) => {
-  const overlap = Math.max(
-    tuning.dustDuration ?? 0,
-    tuning.squishDuration ?? 0,
-    tuning.shadowFadeOutDuration ?? 0
-  );
-  return (tuning.dropDuration ?? 0) + overlap + (tuning.settleDuration ?? 0);
-};
+// UI callers keep their existing default-object API, including local tuning
+// mutations. Server/replay code imports the neutral timing contract directly.
+export const getPlacementEffectDuration = (tuning = PLACE_PIECE_DEFAULT_TUNING) =>
+  getSharedPlacementEffectDuration(tuning);
