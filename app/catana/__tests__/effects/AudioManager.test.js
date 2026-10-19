@@ -53,6 +53,79 @@ describe("AudioManager", () => {
     global.document = originalDocument;
   });
 
+  it("replaces one whole cue while omitted cues keep their default sound", () => {
+    const bus = createEffectBus();
+    const audio = createAudioManager({ bus, soundOverrides: {
+      "build:settlement": { src: "/sounds/road.mp3", volume: 0.2 },
+      "turn:end": null
+    } });
+    audio.unlock();
+    for (const name of ["build:settlement", "build:city", "turn:end", "unknown:cue"]) {
+      bus.emit({ type: "cue", payload: { name } });
+    }
+    expect(playLog).toEqual(["/sounds/road.mp3", "/sounds/settle.mp3"]);
+    audio.destroy();
+  });
+
+  it("treats overrides as whole entries and preserves an explicit full-map base", () => {
+    global.document = { hidden: true };
+    const bus = createEffectBus();
+    const audio = createAudioManager({ bus,
+      theme: { one: { src: "/sounds/one.mp3", allowWhenHidden: true } },
+      soundOverrides: { one: { src: "/sounds/two.mp3" } }
+    });
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "one" } });
+    bus.emit({ type: "cue", payload: { name: "turn:start" } });
+    expect(playLog).toEqual([]);
+    global.document.hidden = false;
+    bus.emit({ type: "cue", payload: { name: "one" } });
+    expect(playLog).toEqual(["/sounds/two.mp3"]);
+    expect(audio.planCue("turn:start")).toBeNull();
+    audio.destroy();
+  });
+
+  it("keeps mute and hidden-tab decisions when an override preserves cue policy", () => {
+    global.document = { hidden: true };
+    for (const muted of [true, false]) {
+      const bus = createEffectBus();
+      const audio = createAudioManager({ bus, settings: { muted }, soundOverrides: {
+        "turn:start": { src: "/sounds/road.mp3", allowWhenHidden: true },
+        "build:settlement": { src: "/sounds/settle.mp3" }
+      } });
+      audio.unlock();
+      bus.emit({ type: "cue", payload: { name: "turn:start" } });
+      bus.emit({ type: "cue", payload: { name: "build:settlement" } });
+      audio.destroy();
+    }
+    expect(playLog).toEqual(["/sounds/road.mp3"]);
+  });
+
+  it("cancels overridden delayed layers and unsubscribes on destroy", () => {
+    vi.useFakeTimers();
+    const bus = createEffectBus();
+    const audio = createAudioManager({ bus, soundOverrides: { demo: {
+      variants: ["/sounds/road.mp3", "/sounds/settle.mp3"], layers: 2, layerDelayMs: 200
+    } } });
+    audio.unlock();
+    bus.emit({ type: "cue", payload: { name: "demo" } });
+    expect(playLog).toEqual(["/sounds/road.mp3"]);
+    audio.destroy();
+    vi.advanceTimersByTime(500);
+    bus.emit({ type: "cue", payload: { name: "demo" } });
+    expect(playLog).toEqual(["/sounds/road.mp3"]);
+    expect(howlInstances.every(howl => howl.unload.mock.calls.length === 1)).toBe(true);
+  });
+
+  it("leaves dice lead-in and layer planning unchanged for unrelated overrides", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    const original = createAudioManager();
+    const customized = createAudioManager({ soundOverrides: { "turn:end": null } });
+    expect(customized.planCue("dice:roll")).toEqual(original.planCue("dice:roll"));
+    original.destroy();
+    customized.destroy();
+  });
+
   it("plays sound for cue mapping", () => {
     const bus = createEffectBus();
     const audio = createAudioManager({

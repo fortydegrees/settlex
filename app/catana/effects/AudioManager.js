@@ -2,7 +2,10 @@ import { Howl } from "howler";
 import { DEFAULT_THEME } from "./soundThemes";
 import { isDocumentHidden } from "../utils/visibility";
 
-export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} } = {}) {
+export function createAudioManager({ bus, theme = DEFAULT_THEME, soundOverrides, settings = {} } = {}) {
+  // Replace whole cue entries; omitted cues retain the selected base map.
+  // null explicitly silences a cue. Asset load failures do not retry a default.
+  const sounds = soundOverrides ? { ...theme, ...soundOverrides } : theme;
   const variantHowls = new Map();
   const variantState = new Map();
   const pendingTimeouts = new Set();
@@ -158,7 +161,7 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
   };
 
   const planCue = (cueName) => {
-    const entry = theme[cueName];
+    const entry = sounds[cueName];
     if (!entry) return null;
 
     const plan = {
@@ -321,7 +324,7 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
       onComplete?.();
       return;
     }
-    const entry = theme[cueName];
+    const entry = sounds[cueName];
     if (!entry || (isDocumentHidden() && !entry.allowWhenHidden)) {
       onComplete?.();
       return;
@@ -352,7 +355,7 @@ export function createAudioManager({ bus, theme = DEFAULT_THEME, settings = {} }
       entry.variants?.forEach((src) => getVariantHowl(src, entry));
     };
 
-    Object.values(theme).forEach((entry) => {
+    Object.values(sounds).forEach((entry) => {
       preloadEntry(entry?.leadIn);
       preloadEntry(entry);
     });

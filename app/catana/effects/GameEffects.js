@@ -19,6 +19,7 @@ export function GameEffects({
   gameOverState,
   isWinner,
   audioSettings,
+  soundOverrides,
   gameStartMatchID = null,
   preloadSounds = false
 }) {
@@ -26,8 +27,8 @@ export function GameEffects({
   const bus = providedBus ?? localBus;
   const layerRef = useRef(null);
   const audio = useMemo(
-    () => createAudioManager({ bus, settings: audioSettings }),
-    [audioSettings, bus]
+    () => createAudioManager({ bus, settings: audioSettings, soundOverrides }),
+    [audioSettings, bus, soundOverrides]
   );
   const haptics = useMemo(() => createHapticManager({ bus }), [bus]);
   const turnStartRef = useRef({ ...DEFAULT_TURN_START_STATE });
@@ -90,8 +91,13 @@ export function GameEffects({
   }, [haptics]);
 
   useEffect(() => {
-    return () => audio.destroy();
-  }, [audio]);
+    return () => {
+      audio.destroy();
+      // Replacement cancels the opening jingle's completion callback. Release
+      // its hold through the usual gap; the gate is already destroyed on exit.
+      turnStartGate.release();
+    };
+  }, [audio, turnStartGate]);
 
   useEffect(() => {
     if (!preloadSounds) return undefined;
