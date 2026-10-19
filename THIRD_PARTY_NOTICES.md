@@ -39,9 +39,10 @@ notice alone completes all redistribution obligations or that these files are MI
 
 - The custom SettleHex display face: its existing README records design
   provenance, but an explicit redistribution/license disposition is still needed.
-- Recorded sound effects, downloaded reference audio, and board/reference
+- Older sound effects, downloaded reference audio, and board/reference
   artwork: determine the source and terms for each retained family. The sound
-  synthesis kit does not establish provenance for the whole audio library.
+  synthesis kit does not establish provenance for the whole audio library. David
+  recalls some older effects may be AI-generated; this remains unverified.
 - Vendored native game/inference code: retain source identity and provenance;
   resolve its publication/license scope separately from external model weights.
 
