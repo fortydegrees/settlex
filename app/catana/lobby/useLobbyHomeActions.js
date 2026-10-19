@@ -641,7 +641,8 @@ export function useLobbyHomeActions({
     play,
     cancelSearch,
     clearSearchAnnouncement,
-    resetSearchAfterSignOut
+    resetSearchAfterSignOut,
+    captureSearchContinuation
   } = usePublicMatchmaking({
     request: appRequest,
     ensureAccountSession,
@@ -768,16 +769,19 @@ export function useLobbyHomeActions({
   }, [challengeState]);
 
   const playPufferFromSearch = useCallback(async () => {
+    const canContinue = captureSearchContinuation();
     clearSearchAnnouncement();
     return playPufferAfterLeavingSearch({
       cancelSearch,
-      playAgainstBot,
+      playAgainstBot: () => canContinue()
+        ? playAgainstBot()
+        : { started: false, reason: "leave_failed" },
       pufferTransitionPendingRef,
       onPendingChange: (pending) => {
         if (mountedRef.current) setIsPufferTransitionPending(pending);
       }
     });
-  }, [cancelSearch, clearSearchAnnouncement, playAgainstBot]);
+  }, [cancelSearch, captureSearchContinuation, clearSearchAnnouncement, playAgainstBot]);
 
   const openIdentity = useCallback(() => {
     pendingActionRef.current = null;

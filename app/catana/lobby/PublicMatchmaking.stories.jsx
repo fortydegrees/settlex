@@ -374,6 +374,135 @@ export const IdentityAndCleanup = {
   })),
 };
 
+// Late DELETE replies must be inert across identity/lifetime and search ownership boundaries.
+export const ObsoleteCancellationResults = {
+  play: reportPlay(async ({ canvasElement, step }) => withClock(async clock => {
+    for (const recovery of [true, false]) {
+      for (const exit of ["sign-out", "unmount"]) {
+        for (const outcome of ["filled", "released", "uncertain", "rejected"]) {
+          await step(`${recovery ? "Lost POST recovery" : "Direct cancel"}: ${outcome} after ${exit}`, async () => withLobby(canvasElement, async view => {
+            const pending = deferred();
+            view.api.respond = async (_route, init, body) => {
+              if (init.method === "DELETE") return pending.promise;
+              if (recovery) throw new TypeError("lost POST response");
+              return waitingSeat(body);
+            };
+            await view.click("Find online");
+            if (!recovery) await view.click("Cancel search");
+            const cancellation = view.actionResult;
+            expect(view.requests.map(request => request.method)).toEqual(["POST", "DELETE"]);
+            if (exit === "sign-out") {
+              await view.click("Sign out");
+              expect(view.lobby.activeActionId).toBeNull();
+              expect(view.lobby.isBusy).toBe(false);
+            } else await view.unmount();
+            const storage = { ...localStorage };
+            const error = view.lobby.error;
+            await view.settle(() => outcome === "rejected" ? pending.reject(new TypeError("offline")) : pending.resolve(
+              outcome === "filled" ? { status: "match_found", ...filledMatch } : outcome === "released" ? { status: "cancelled" } : {}
+            ));
+            if (!recovery) expect(await cancellation).toBe(false);
+            expect({ ...localStorage }).toEqual(storage);
+            expect(view.events).toEqual([]);
+            expect(view.lobby.error).toBe(error);
+            if (exit === "sign-out") {
+              expect(view.lobby.searchState).toBeNull();
+              expect(view.lobby.isSearchCancelPending).toBe(false);
+              expect(view.lobby.activeActionId).toBeNull();
+              expect(view.lobby.isBusy).toBe(false);
+            }
+            expect(clock.timeouts.size).toBe(0);
+            expect(view.requests).toHaveLength(2);
+          }));
+        }
+      }
+    }
+  })),
+};
+
+export const NewerSearchCancellationOwnership = {
+  play: reportPlay(async ({ canvasElement, step }) => {
+    for (const recovery of [false, true]) {
+      for (const outcome of ["filled", "released", "uncertain", "rejected"]) {
+        await step(`${recovery ? "Recovery" : "Direct cancel"} ${outcome} cannot overwrite a newer pending cancellation`, async () => withLobby(canvasElement, async view => {
+          const old = deferred();
+          const newer = deferred();
+          let posts = 0;
+          let deletes = 0;
+          view.api.respond = async (_route, init, body) => {
+            if (init.method === "DELETE") return ++deletes === 1 ? old.promise : newer.promise;
+            posts += 1;
+            if (recovery && posts === 1) throw new TypeError("lost POST");
+            return { ...waitingSeat(body), matchID: posts === 1 ? "waiting-duel" : "newer-duel" };
+          };
+          await view.click("Find online");
+          if (!recovery) await view.click("Cancel search");
+          const oldCancellation = view.actionResult;
+          await view.click("Find online");
+          expect(view.lobby.searchState.matchID).toBe("newer-duel");
+          expect(view.lobby.isSearchCancelPending).toBe(false);
+          await view.click("Cancel search");
+          const newCancellation = view.actionResult;
+          expect(deletes).toBe(2);
+          expect(view.requests[3].body).toEqual(view.requests[2].body);
+          const storage = { ...localStorage };
+          await view.settle(() => outcome === "rejected" ? old.reject(new TypeError("offline")) : old.resolve(
+            outcome === "filled" ? { status: "match_found", ...filledMatch } : outcome === "released" ? { status: "cancelled" } : {}
+          ));
+          if (!recovery) expect(await oldCancellation).toBe(false);
+          expect(view.lobby.searchState.matchID).toBe("newer-duel");
+          expect(view.lobby.isSearchCancelPending).toBe(true);
+          expect(view.lobby.error).toBe("");
+          expect({ ...localStorage }).toEqual(storage);
+          expect(view.events).toEqual([]);
+          await view.settle(() => newer.resolve({}));
+          expect(await newCancellation).toBe(false);
+          expect(view.lobby.isSearchCancelPending).toBe(false);
+          expect(view.lobby.error).toContain("Could not confirm");
+          view.api.respond = async () => ({ status: "cancelled" });
+          await view.click("Cancel search");
+          expect(await view.actionResult).toBe(true);
+          expect(view.lobby.searchState).toBeNull();
+          expect(readLastActiveMatch()).toBeNull();
+          expect(view.requests[4].body).toEqual(view.requests[2].body);
+        }));
+      }
+    }
+  }),
+};
+
+export const ObsoletePufferHandoff = {
+  play: reportPlay(async ({ canvasElement, step }) => {
+    for (const exit of ["sign-out", "unmount", "new-search"]) {
+      await step(`A confirmed late release after ${exit} cannot start Puffer`, async () => withLobby(canvasElement, async view => {
+        const pending = deferred();
+        view.api.respond = async (_route, init, body) => init.method === "DELETE" ? pending.promise : waitingSeat(body);
+        await view.click("Find online");
+        await view.click("Play Puffer");
+        const handoff = view.actionResult;
+        if (exit === "sign-out") await view.click("Sign out");
+        else if (exit === "unmount") await view.unmount();
+        else await view.click("Find online");
+        await view.settle(() => pending.resolve({ status: "cancelled" }));
+        expect(await handoff).toEqual({ started: false, reason: "leave_failed" });
+        expect(view.requests.some(request => request.route === "/api/matches/create")).toBe(false);
+        expect(view.events).toEqual([]);
+      }));
+    }
+    await step("A new search between cancellation and the Puffer continuation prevents fallback", async () => withLobby(canvasElement, async view => {
+      // Queue both real actions in one React turn: cancel has no mutation yet,
+      // but its resolved promise must not authorize a bot after a new search.
+      await act(async () => {
+        const handoff = view.lobby.actions.playPufferFromSearch();
+        view.lobby.actions.playOnline();
+        await handoff;
+      });
+      expect(view.requests.some(request => request.route === "/api/matches/create")).toBe(false);
+      expect(view.lobby.searchState.matchID).toBe("waiting-duel");
+    }));
+  }),
+};
+
 export const ProductionLobby = {
   play: reportPlay(async ({ canvasElement }) => withLobby(canvasElement, async view => {
     const screen = within(canvasElement.ownerDocument.body);

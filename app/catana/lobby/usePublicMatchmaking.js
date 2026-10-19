@@ -53,6 +53,7 @@ export function usePublicMatchmaking({
   const announcementTimerRef = useRef(null);
   const announcedMatchIDRef = useRef(null);
   const searchGenerationRef = useRef(0);
+  const searchLifetimeRef = useRef(0);
   const activeSearchMutationRef = useRef(null);
   const searchCancelPendingRef = useRef(false);
   const mountedRef = useRef(true);
@@ -72,6 +73,7 @@ export function usePublicMatchmaking({
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      searchLifetimeRef.current += 1;
       advanceSearchGeneration(searchGenerationRef);
       clearScheduledMatchAnnouncement({ announcementTimerRef });
     };
@@ -134,6 +136,10 @@ export function usePublicMatchmaking({
   const play = useCallback(async () => {
     const startedAt = Date.now();
     const generation = advanceSearchGeneration(searchGenerationRef);
+    searchLifetimeRef.current += 1;
+    activeSearchMutationRef.current = null;
+    searchCancelPendingRef.current = false;
+    setIsSearchCancelPending(false);
     let mutation = null;
     let account = null;
     clearScheduledMatchAnnouncement({ announcementTimerRef });
@@ -240,6 +246,9 @@ export function usePublicMatchmaking({
         } catch {
           cancellation = { released: false, reason: "uncertain", matchFound: null };
         }
+        if (!mountedRef.current || !isSearchGenerationCurrent({ searchGenerationRef, generation })) {
+          return;
+        }
         if (cancellation.reason === "match_found") {
           activeSearchMutationRef.current = null;
           commitGameStartNavigation({
@@ -293,6 +302,7 @@ export function usePublicMatchmaking({
   ]);
 
   const cancelSearch = useCallback(async () => {
+    if (!mountedRef.current) return false;
     if (
       !beginSearchCancellation({
         searchCancelPendingRef,
@@ -305,9 +315,9 @@ export function usePublicMatchmaking({
       return false;
     }
 
+    const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
     try {
       const mutationAtCancellation = activeSearchMutationRef.current;
-      const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
       clearScheduledMatchAnnouncement({ announcementTimerRef });
       if (
         !isSearchGenerationCurrent({
@@ -330,6 +340,13 @@ export function usePublicMatchmaking({
         cancellation = await cancelPublicSearchRequest(mutation);
       } catch {
         cancellation = { released: false, reason: "uncertain", matchFound: null };
+      }
+
+      if (!mountedRef.current || !isSearchGenerationCurrent({
+        searchGenerationRef,
+        generation: cancellationGeneration
+      })) {
+        return false;
       }
 
       if (cancellation.reason === "match_found") {
@@ -375,8 +392,15 @@ export function usePublicMatchmaking({
       setSearchElapsedSeconds(0);
       return true;
     } finally {
-      searchCancelPendingRef.current = false;
-      if (mountedRef.current) setIsSearchCancelPending(false);
+      // Only this generation owns its pending indicator. A new search or
+      // successful sign-out releases the old operation independently.
+      if (mountedRef.current && isSearchGenerationCurrent({
+        searchGenerationRef,
+        generation: cancellationGeneration
+      })) {
+        searchCancelPendingRef.current = false;
+        setIsSearchCancelPending(false);
+      }
     }
   }, [
     currentAccount,
@@ -393,11 +417,24 @@ export function usePublicMatchmaking({
     clearScheduledMatchAnnouncement({ announcementTimerRef });
   }, []);
 
+  // Cancellation advances the request generation, but a Puffer continuation
+  // remains valid until a new search, sign-out or unmount ends this lifetime.
+  const captureSearchContinuation = useCallback(() => {
+    const lifetime = searchLifetimeRef.current;
+    return () => mountedRef.current && searchLifetimeRef.current === lifetime;
+  }, []);
+
   const resetSearchAfterSignOut = useCallback(() => {
     advanceSearchGeneration(searchGenerationRef);
+    searchLifetimeRef.current += 1;
+    activeSearchMutationRef.current = null;
+    searchCancelPendingRef.current = false;
+    setIsSearchCancelPending(false);
+    setSearchElapsedSeconds(0);
+    setActiveActionId((current) => current === "queue" ? null : current);
     clearScheduledMatchAnnouncement({ announcementTimerRef });
     setSearchState(null);
-  }, []);
+  }, [setActiveActionId]);
 
   return {
     searchState,
@@ -406,6 +443,7 @@ export function usePublicMatchmaking({
     play,
     cancelSearch,
     clearSearchAnnouncement,
-    resetSearchAfterSignOut
+    resetSearchAfterSignOut,
+    captureSearchContinuation
   };
 }
