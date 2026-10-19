@@ -1,3 +1,8 @@
+// Historical implementation references (retained for provenance):
+// https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
+// https://boardgame.io/documentation/#/phases
+// https://github.com/mbrinkl/santorini/blob/4d89b4bedbbb8c5cf57a123c42f7febe2fdf0dcb/src/game/index.ts
+
 import { TurnOrder } from "boardgame.io/dist/cjs/core.js";
 import {
   placeCity,
@@ -49,13 +54,12 @@ import {
 import { createInitialGameState } from "./gameSetup/initialState.js";
 import { maskPlayerView } from "./gameSetup/playerView.js";
 export { getPlacementOrder } from "./gameSetup/initialState.js";
-//setup board and convert tiles/edges into right format to render
 
 const configuredEffectsPlugin = EffectsPlugin({
   effects: {
     distributeCardsFromTile: {
       create: (value) => value,
-      duration: 2,
+      duration: 2
     },
     roll: {
       create: (value) => value,
@@ -101,11 +105,8 @@ const configuredEffectsPlugin = EffectsPlugin({
       create: (value) => value,
       duration: 0
     }
-  },
+  }
 });
-
-//tiles.push({coordinate:[-1,0,3], tile:{edges:{}, id:100, nodes: {}, number: 2, resource: "Sheep"}})
-
 
 export const createCatanGame = ({
   includeDebugMoves = isDebugEnvironment(),
@@ -119,100 +120,49 @@ export const createCatanGame = ({
   const terminalStageMoves = { resign, ...serverMoves };
   const plugins = includeEffects ? [configuredEffectsPlugin] : [];
   return {
-  //get spec to use (i.e. script to generate board)
-  //spec is game rules, e.g. dev cards, vps to win
-  //strategy is how to generate map
+    name: "catan",
+    plugins,
+    minPlayers: 2,
+    maxPlayers: 4,
+    validateSetupData: (setupData, numPlayers) =>
+      validateScenarioSetupData(setupData, numPlayers),
+    playerView: maskPlayerView,
+    setup: ({ ctx, random }, setupData) => {
+      const initialState = createInitialGameState({ ctx, random, setupData });
 
-  name: 'catan',
-  plugins,
-  minPlayers: 2,
-
-  maxPlayers: 4,
-
-  validateSetupData: (setupData, numPlayers) =>
-    validateScenarioSetupData(setupData, numPlayers),
-
-  playerView: maskPlayerView,
-
-  //seed:Date.now(),
-  //generate map here
-  setup: ({ ctx, random }, setupData) => {
-    const initialState = createInitialGameState({ ctx, random, setupData });
-
-    return applyDevScenarioSetup({
-      initialState,
-      ctx,
-      setupData
-    });
-  },
-
-//https://github.com/freeboardgames/FreeBoardGames.org/blob/master/web/src/games/sixtysix/game.ts#L23
-//dummy card thing^^
-  // playerView: ({G, ctx, playerID})=>{
-  //   return StripSecrets(G, playerID)
-  // },
-
-
-  //on placement phase
-  //send active player to placeInitialSettlement phase
-  //where they place a settlement and then a road
-
-  //need like a global state thing where
-  //if player in 'placeSettlement' stage, available nodes flash.
-  //available nodes determined by player color, building type
-  //e.g. if settlement, nodes determined by distance from other settlements, connected roads
-  //if city, determined by player color's settlements
-
-  //so game starts
-  //determine player order (automatic)
-
-  //phase: placement phase
-  //p1: place settlement
-  //p1: place road
-
-  //p2: place settlement
-  //p2: place road
-  //https://boardgame.io/documentation/#/phases
-
-  // Game-level endIf: sets ctx.gameover for VP wins. The phase-level endIf on
-  // "main" only ends the phase, which never marks the game finished for the
-  // server (archive/replay/cleanup all gate on ctx.gameover).
-  endIf: ({ G }) => G.core?.gameOver ?? undefined,
-
-  phases: {
-    preGame: {
-      turn: {
-        activePlayers: { all: "waiting" },
-        stages: {
-          waiting: {
-            moves: {
-              readyUp,
-              ...(includeServerMoves ? { autoStartGame } : {}),
-              ...terminalStageMoves,
-              ...debugMoves
+      return applyDevScenarioSetup({
+        initialState,
+        ctx,
+        setupData
+      });
+    },
+    // Game-level endIf: sets ctx.gameover for VP wins. The phase-level endIf on
+    // "main" only ends the phase, which never marks the game finished for the
+    // server (archive/replay/cleanup all gate on ctx.gameover).
+    endIf: ({ G }) => G.core?.gameOver ?? undefined,
+    phases: {
+      preGame: {
+        turn: {
+          activePlayers: { all: "waiting" },
+          stages: {
+            waiting: {
+              moves: {
+                readyUp,
+                ...(includeServerMoves ? { autoStartGame } : {}),
+                ...terminalStageMoves,
+                ...debugMoves
+              }
             }
           }
-        }
+        },
+        start: true,
+        next: "placement"
       },
-      start: true,
-      next: "placement"
-    },
-    placement: {
-      turn: {
-        order: TurnOrder.CUSTOM_FROM("placementOrder"),
-        // playOrder: (G, ctx) => {
-        //   // generate an array of sequential player IDs ['0', '1', '2', ...]
-        //   const defaultPlayOrder = Array(ctx.numPlayers).fill().map((_, i) => i + '');
-        //   // return a shuffled version of the array
-        //   return ctx.random.Shuffle(defaultPlayOrder);
-        // },
-        //order: TurnOrder.ONCE, //does work, but only goes once.
-        activePlayers: { currentPlayer: "settlement", others: null },
-        onBegin: ( context) => {
-          //TODO: don't think this should be here // updating valids here...
-          //TODO: randomize player order (could even do this in a pre-phase)
-          console.log("placement phase") 
-
+      placement: {
+        turn: {
+          order: TurnOrder.CUSTOM_FROM("placementOrder"),
+          activePlayers: { currentPlayer: "settlement", others: null },
+          onBegin: (context) => {
             if (context.G?.core) {
               context.G.core.phase = "placement";
             }
@@ -226,142 +176,134 @@ export const createCatanGame = ({
               context,
               currentStage,
               currentStage === "road" ? pendingRoadNodeId : undefined
-            )
-        },
-        stages: {
-          settlement: {
-            moves: {
-              placeSettlement,
-              autoPlaceSettlement,
-              ...terminalStageMoves,
-              ...debugMoves
-            }
+            );
           },
-          road: {
-            moves: {
-              placeRoad,
-              autoPlaceRoad,
-              ...terminalStageMoves,
-              ...debugMoves
-            }
-          },
-        },
-      },
-
-      endIf: ({ G }) => {
-        // End placement when all players have placed 2 settlements AND 2 roads
-        const ruleset = G.core.ruleset;
-        const startingSettlements = ruleset.pieceLimits.settlements;
-        const startingRoads = ruleset.pieceLimits.roads;
-        return G.core.players.every(id => {
-          const playerState = G.core.playerStateById[id];
-          return playerState.settlementsRemaining === startingSettlements - 2 &&
-                 playerState.roadsRemaining === startingRoads - 2;
-        });
-      },
-      next: "main",
-      start: false,
-      onEnd: ({ G, ctx }) => {
-        if (G.core) {
-          G.core.phase = "normal";
-        }
-        appendGameLog(G, ctx, { type: "phase:main", actorId: "system", data: {} });
-      },
-    },
-    main: {
-      turn: {
-        onBegin: ( context) => {
-          console.log("main phase")
-
-            const currentStage =
-              context.ctx?.activePlayers?.[context.ctx.currentPlayer] ?? "preRoll";
-            updateValids(context, currentStage)
-        },
-        order: TurnOrder.DEFAULT,
-        activePlayers: { currentPlayer: "preRoll", others: null },
-        stages: {
-          preRoll: { moves: {
-            rollDice, //after roll dice (and no 7) go to main
-            autoRoll,
-            playDevCardStart,
-            placeRoadFromDevCard,
-            ...terminalStageMoves,
-            ...debugMoves
-          }},
-          robberDiscard: { // Explicit phase for discarding
-             moves: {
-               discardResources,
-               autoDiscard,
-               ...terminalStageMoves,
-               ...debugMoves
-             }
-          },
-          // overSeven: { //only available to some. have to manage stage
-          //   moves:{
-          //     discard,
-          //     moveRobber
-          //   }
-          // },
-          postRoll: {
-            moves:{
-              placeRoad,
-              placeSettlement,
-              placeCity,
-              maritimeTrade,
-              buyDevCard,
-              playDevCardStart,
-              placeRoadFromDevCard,
-              ...terminalStageMoves,
-              // buyDev,55
-              // offerTrade,
-              // tradeWithBank,
-              // playDev,
-              //endTurn,
-              endTurn,
-              autoEndTurn,
-              ...debugMoves
-            }
-          },
-          moveRobber: {
-            moves:{
-              moveRobber,
-              autoMoveRobber,
-              ...terminalStageMoves,
-              ...debugMoves
-            }
-          },
-          devCardChoice: {
-            moves: {
-              confirmDevCardPlay,
-              autoResolveDevCard,
-              ...terminalStageMoves,
-              ...debugMoves
-            }
-          },
-          roadBuilding: {
-            moves: {
-              placeRoadFromDevCard,
-              autoPlaceRoadFromDevCard,
-              cancelDevCardPlay,
-              endTurn,
-              autoEndTurn,
-              ...terminalStageMoves,
-              ...debugMoves
+          stages: {
+            settlement: {
+              moves: {
+                placeSettlement,
+                autoPlaceSettlement,
+                ...terminalStageMoves,
+                ...debugMoves
+              }
+            },
+            road: {
+              moves: {
+                placeRoad,
+                autoPlaceRoad,
+                ...terminalStageMoves,
+                ...debugMoves
+              }
             }
           }
         },
+        endIf: ({ G }) => {
+          // End placement when all players have placed 2 settlements AND 2 roads
+          const ruleset = G.core.ruleset;
+          const startingSettlements = ruleset.pieceLimits.settlements;
+          const startingRoads = ruleset.pieceLimits.roads;
+          return G.core.players.every((id) => {
+            const playerState = G.core.playerStateById[id];
+            return (
+              playerState.settlementsRemaining === startingSettlements - 2 &&
+              playerState.roadsRemaining === startingRoads - 2
+            );
+          });
+        },
+        next: "main",
+        start: false,
+        onEnd: ({ G, ctx }) => {
+          if (G.core) {
+            G.core.phase = "normal";
+          }
+          appendGameLog(G, ctx, {
+            type: "phase:main",
+            actorId: "system",
+            data: {}
+          });
+        }
       },
-      endIf: ({ G }) => G.core.gameOver ?? undefined, //player VPs > VP to win, or resign (if allowed). maybe can just do this somewhere else: https://github.com/mbrinkl/santorini/blob/4d89b4bedbbb8c5cf57a123c42f7febe2fdf0dcb/src/game/index.ts
-      onEnd: () => {}
-
+      main: {
+        turn: {
+          onBegin: (context) => {
+            const currentStage =
+              context.ctx?.activePlayers?.[context.ctx.currentPlayer] ?? "preRoll";
+            updateValids(context, currentStage);
+          },
+          order: TurnOrder.DEFAULT,
+          activePlayers: { currentPlayer: "preRoll", others: null },
+          stages: {
+            preRoll: {
+              moves: {
+                rollDice,
+                autoRoll,
+                playDevCardStart,
+                placeRoadFromDevCard,
+                ...terminalStageMoves,
+                ...debugMoves
+              }
+            },
+            robberDiscard: {
+              moves: {
+                discardResources,
+                autoDiscard,
+                ...terminalStageMoves,
+                ...debugMoves
+              }
+            },
+            postRoll: {
+              moves: {
+                placeRoad,
+                placeSettlement,
+                placeCity,
+                maritimeTrade,
+                buyDevCard,
+                playDevCardStart,
+                placeRoadFromDevCard,
+                ...terminalStageMoves,
+                endTurn,
+                autoEndTurn,
+                ...debugMoves
+              }
+            },
+            moveRobber: {
+              moves: {
+                moveRobber,
+                autoMoveRobber,
+                ...terminalStageMoves,
+                ...debugMoves
+              }
+            },
+            devCardChoice: {
+              moves: {
+                confirmDevCardPlay,
+                autoResolveDevCard,
+                ...terminalStageMoves,
+                ...debugMoves
+              }
+            },
+            roadBuilding: {
+              moves: {
+                placeRoadFromDevCard,
+                autoPlaceRoadFromDevCard,
+                cancelDevCardPlay,
+                endTurn,
+                autoEndTurn,
+                ...terminalStageMoves,
+                ...debugMoves
+              }
+            }
+          }
+        },
+        endIf: ({ G }) => G.core.gameOver ?? undefined,
+        onEnd: () => {}
+      }
     },
-  },
-
-  moves: {
-    resign,
-    ...serverMoves,
-    ...debugMoves
-  },
+    moves: {
+      resign,
+      ...serverMoves,
+      ...debugMoves
+    }
   };
 };
 

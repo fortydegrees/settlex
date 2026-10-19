@@ -1,4 +1,4 @@
-import { ResourceType } from "../types.js";
+import { ResourceType } from "@settlex/game-core";
 
 export const DEV_CARD_CHOICE_STAGE = "devCardChoice";
 export const ROAD_BUILDING_STAGE = "roadBuilding";

@@ -2,9 +2,9 @@ import { INVALID_MOVE } from "boardgame.io/dist/cjs/core.js";
 import {
   applyMoveRobber,
   canPlaceRobber,
-  getRobberVictims
+  getRobberVictims,
+  TileTypes
 } from "@settlex/game-core";
-import { TileTypes } from "../types.js";
 import { appendGameLog } from "../utils/gameLog.js";
 import { emitPendingDevCardPlayResolved } from "./devCardPresentation.js";
 import { pickRandom } from "./randomChoice.js";
