@@ -50,44 +50,40 @@ const desktopFeedBodyStageMs = 190;
 const normalizePanelId = (panelId) =>
   typeof panelId === "string" && panelIds.has(panelId) ? panelId : null;
 
-const LogIcon = ({ className = mobileButtonIconClassName } = {}) =>
-  React.createElement(
-    "svg",
-    {
-      viewBox: "0 0 24 24",
-      className,
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "1.8",
-      strokeLinecap: "round",
-      strokeLinejoin: "round",
-      "aria-hidden": "true",
-    },
-    React.createElement("path", { d: "M8 7h9" }),
-    React.createElement("path", { d: "M8 12h9" }),
-    React.createElement("path", { d: "M8 17h9" }),
-    React.createElement("circle", { cx: "5", cy: "7", r: "1" }),
-    React.createElement("circle", { cx: "5", cy: "12", r: "1" }),
-    React.createElement("circle", { cx: "5", cy: "17", r: "1" })
-  );
+const LogIcon = ({ className = mobileButtonIconClassName } = {}) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M8 7h9" />
+    <path d="M8 12h9" />
+    <path d="M8 17h9" />
+    <circle cx="5" cy="7" r="1" />
+    <circle cx="5" cy="12" r="1" />
+    <circle cx="5" cy="17" r="1" />
+  </svg>
+);
 
-const ChatIcon = ({ className = mobileButtonIconClassName } = {}) =>
-  React.createElement(
-    "svg",
-    {
-      viewBox: "0 0 24 24",
-      className,
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "1.8",
-      strokeLinecap: "round",
-      strokeLinejoin: "round",
-      "aria-hidden": "true",
-    },
-    React.createElement("path", {
-      d: "M6.5 7.5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H11l-4.5 3v-3H6.5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z",
-    })
-  );
+const ChatIcon = ({ className = mobileButtonIconClassName } = {}) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M6.5 7.5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H11l-4.5 3v-3H6.5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2Z" />
+  </svg>
+);
 
 const EMPTY_CHAT_MESSAGES = [];
 
@@ -107,30 +103,32 @@ const buildMetaPanels = ({
     shortLabel: "Log",
     label: "Game Log",
     ariaLabel: "Toggle game log panel",
-    icon: React.createElement(LogIcon),
+    icon: <LogIcon />,
     defaultOpenDesktop: true,
-    renderDesktop: () =>
-      React.createElement(GameLogPanel, {
-        entries,
-        activeEntryKey,
-        onEntrySelect,
-        playerMap: logPlayerMap,
-        themeId,
-        rootClassName: "h-full w-full",
-        panelClassName: desktopFeedPanelClassName,
-        headerClassName: desktopFeedHeaderClassName,
-      }),
-    renderMobile: () =>
-      React.createElement(GameLogPanel, {
-        entries,
-        activeEntryKey,
-        onEntrySelect,
-        playerMap: logPlayerMap,
-        themeId,
-        rootClassName: "h-full w-full",
-        panelClassName: mobileFeedContentPanelClassName,
-        headerClassName: "sr-only",
-      }),
+    renderDesktop: () => (
+      <GameLogPanel
+        entries={entries}
+        activeEntryKey={activeEntryKey}
+        onEntrySelect={onEntrySelect}
+        playerMap={logPlayerMap}
+        themeId={themeId}
+        rootClassName="h-full w-full"
+        panelClassName={desktopFeedPanelClassName}
+        headerClassName={desktopFeedHeaderClassName}
+      />
+    ),
+    renderMobile: () => (
+      <GameLogPanel
+        entries={entries}
+        activeEntryKey={activeEntryKey}
+        onEntrySelect={onEntrySelect}
+        playerMap={logPlayerMap}
+        themeId={themeId}
+        rootClassName="h-full w-full"
+        panelClassName={mobileFeedContentPanelClassName}
+        headerClassName="sr-only"
+      />
+    ),
   },
   {
     id: "chat",
@@ -138,30 +136,32 @@ const buildMetaPanels = ({
     shortLabel: "Chat",
     label: "Chat",
     ariaLabel: "Toggle chat panel",
-    icon: React.createElement(ChatIcon),
+    icon: <ChatIcon />,
     defaultOpenDesktop: true,
-    renderDesktop: () =>
-      React.createElement(ChatPanel, {
-        playerID,
-        playerMap: logPlayerMap,
-        themeId,
-        chatMessages,
-        sendChatMessage,
-        rootClassName: "h-full w-full",
-        panelClassName: desktopFeedPanelClassName,
-        headerClassName: desktopFeedHeaderClassName,
-      }),
-    renderMobile: () =>
-      React.createElement(ChatPanel, {
-        playerID,
-        playerMap: logPlayerMap,
-        themeId,
-        chatMessages,
-        sendChatMessage,
-        rootClassName: "h-full w-full",
-        panelClassName: mobileFeedContentPanelClassName,
-        headerClassName: "sr-only",
-      }),
+    renderDesktop: () => (
+      <ChatPanel
+        playerID={playerID}
+        playerMap={logPlayerMap}
+        themeId={themeId}
+        chatMessages={chatMessages}
+        sendChatMessage={sendChatMessage}
+        rootClassName="h-full w-full"
+        panelClassName={desktopFeedPanelClassName}
+        headerClassName={desktopFeedHeaderClassName}
+      />
+    ),
+    renderMobile: () => (
+      <ChatPanel
+        playerID={playerID}
+        playerMap={logPlayerMap}
+        themeId={themeId}
+        chatMessages={chatMessages}
+        sendChatMessage={sendChatMessage}
+        rootClassName="h-full w-full"
+        panelClassName={mobileFeedContentPanelClassName}
+        headerClassName="sr-only"
+      />
+    ),
   },
 ];
 
@@ -269,10 +269,9 @@ function DesktopFeedFrame({
     }
   }, [onPhaseChange, panel.id, phase]);
 
-  return React.createElement(
-    "section",
-    {
-      className: joinClassNames(
+  return (
+    <section
+      className={joinClassNames(
         "settlex-ui-feed-frame group pointer-events-auto relative",
         desktopFeedSlotClassName,
         getDesktopFeedSlotSizeClassName(phase),
@@ -280,46 +279,43 @@ function DesktopFeedFrame({
         !isRestoreButton
           ? "overflow-hidden rounded-panel opacity-100 translate-y-0"
           : "overflow-visible rounded-panel opacity-95 translate-y-0.5 cursor-pointer hover:scale-[1.035] hover:opacity-100 active:translate-y-0 active:scale-[0.96] focus:outline-none"
-      ),
-      role: isRestoreButton ? "button" : undefined,
-      tabIndex: isRestoreButton ? 0 : undefined,
-      onClick: isRestoreButton ? () => onRestore(panel.id) : undefined,
-      onKeyDown: isRestoreButton ? handleRestoreKeyDown : undefined,
-      "aria-label": panel.label,
-      "aria-expanded": isRestoreButton ? "false" : undefined,
-      "aria-controls": isRestoreButton
-        ? `desktop-meta-panel-${panel.id}`
-        : undefined,
-      "data-meta-feed-frame": panel.id,
-      "data-meta-feed-frame-state": isOpen ? "open" : "minimized",
-      "data-meta-feed-frame-phase": phase,
-      "data-meta-feed-toggle": isRestoreButton ? panel.id : undefined,
-      "data-meta-sidebar-button": isRestoreButton ? panel.id : undefined,
-      "data-allow-interaction": "true",
-    },
-    React.createElement(
-      "div",
-      {
-        className: joinClassNames(
+      )}
+      role={isRestoreButton ? "button" : undefined}
+      tabIndex={isRestoreButton ? 0 : undefined}
+      onClick={isRestoreButton ? () => onRestore(panel.id) : undefined}
+      onKeyDown={isRestoreButton ? handleRestoreKeyDown : undefined}
+      aria-label={panel.label}
+      aria-expanded={isRestoreButton ? "false" : undefined}
+      aria-controls={
+        isRestoreButton
+          ? `desktop-meta-panel-${panel.id}`
+          : undefined
+      }
+      data-meta-feed-frame={panel.id}
+      data-meta-feed-frame-state={isOpen ? "open" : "minimized"}
+      data-meta-feed-frame-phase={phase}
+      data-meta-feed-toggle={isRestoreButton ? panel.id : undefined}
+      data-meta-sidebar-button={isRestoreButton ? panel.id : undefined}
+      data-allow-interaction="true"
+    >
+      <div
+        className={joinClassNames(
           META_PANEL_FRAME_CLASS_NAME,
           "transition-[border-color,box-shadow] duration-150 ease-out motion-reduce:transition-none",
           isRestoreButton ? "settlex-ui-feed-restore" : null
-        ),
-      },
-      React.createElement("div", {
-        className: "pointer-events-none absolute inset-0 rounded-[inherit]",
-        style: META_PANEL_GLASS_STYLE,
-        "aria-hidden": "true",
-      }),
-      React.createElement("div", {
-        className:
-          "pointer-events-none absolute inset-0 rounded-[inherit] bg-transparent transition-colors duration-150 ease-out group-hover:bg-decoration-wash group-active:bg-decoration-fill motion-reduce:transition-none",
-        "aria-hidden": "true",
-      }),
-      React.createElement(
-        "div",
-        {
-          className: joinClassNames(
+        )}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 rounded-[inherit]"
+          style={META_PANEL_GLASS_STYLE}
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-0 rounded-[inherit] bg-transparent transition-colors duration-150 ease-out group-hover:bg-decoration-wash group-active:bg-decoration-fill motion-reduce:transition-none"
+          aria-hidden="true"
+        />
+        <div
+          className={joinClassNames(
             "relative z-10 flex shrink-0 items-center justify-between overflow-hidden text-ink-secondary transition-[height,background-color,border-color] duration-150 ease-out motion-reduce:transition-none",
             shouldShowHeaderDetails
               ? "h-11 gap-ui-2.5 px-ui-3.5"
@@ -327,77 +323,77 @@ function DesktopFeedFrame({
             shouldShowHeaderDetails
               ? "settlex-ui-feed-header settlex-ui-feed-minimize cursor-pointer"
               : "border-b border-transparent bg-transparent"
-          ),
-          role: shouldShowHeaderDetails ? "button" : undefined,
-          tabIndex: shouldShowHeaderDetails ? 0 : undefined,
-          onClick: shouldShowHeaderDetails
-            ? () => onMinimize(panel.id)
-            : undefined,
-          onKeyDown: shouldShowHeaderDetails ? handleHeaderKeyDown : undefined,
-          "aria-label": shouldShowHeaderDetails
-            ? `Minimize ${panel.label}`
-            : undefined,
-          "data-meta-feed-minimize": shouldShowHeaderDetails
-            ? panel.id
-            : undefined,
-          "data-allow-interaction": shouldShowHeaderDetails
-            ? "true"
-            : undefined,
-        },
-        React.createElement(
-          "div",
-          {
-            className: "flex min-w-0 items-center gap-ui-2.5",
-          },
-          React.cloneElement(panel.icon, {
-            className: joinClassNames(
-              desktopButtonIconClassName,
-              isRestoreButton
-                ? "text-ink-secondary transition duration-150 ease-out group-hover:scale-110 group-hover:text-ink-primary motion-reduce:transform-none"
-                : null
-            ),
-          }),
-          React.createElement(
-            "span",
-            {
+          )}
+          role={shouldShowHeaderDetails ? "button" : undefined}
+          tabIndex={shouldShowHeaderDetails ? 0 : undefined}
+          onClick={
+            shouldShowHeaderDetails
+              ? () => onMinimize(panel.id)
+              : undefined
+          }
+          onKeyDown={shouldShowHeaderDetails ? handleHeaderKeyDown : undefined}
+          aria-label={
+            shouldShowHeaderDetails
+              ? `Minimize ${panel.label}`
+              : undefined
+          }
+          data-meta-feed-minimize={
+            shouldShowHeaderDetails
+              ? panel.id
+              : undefined
+          }
+          data-allow-interaction={
+            shouldShowHeaderDetails
+              ? "true"
+              : undefined
+          }
+        >
+          <div
+            className="flex min-w-0 items-center gap-ui-2.5"
+          >
+            {React.cloneElement(panel.icon, {
               className: joinClassNames(
+                desktopButtonIconClassName,
+                isRestoreButton
+                  ? "text-ink-secondary transition duration-150 ease-out group-hover:scale-110 group-hover:text-ink-primary motion-reduce:transform-none"
+                  : null
+              ),
+            })}
+            <span
+              className={joinClassNames(
                 "truncate type-action-small text-ink-secondary transition-[max-width,opacity,transform] duration-150 ease-out motion-reduce:transition-none",
                 shouldShowHeaderDetails
                   ? "max-w-[11rem] translate-x-0 opacity-100"
                   : "max-w-0 -translate-x-1 opacity-0"
-              ),
-            },
-            panel.label
-          )
-        )
-      ),
-      React.createElement(
-        "div",
-        {
-          id: `desktop-meta-panel-${panel.id}`,
-          className: joinClassNames(
+              )}
+            >
+              {panel.label}
+            </span>
+          </div>
+        </div>
+        <div
+          id={`desktop-meta-panel-${panel.id}`}
+          className={joinClassNames(
             "relative z-10 min-h-0 flex-1 transition duration-[150ms] ease-out motion-reduce:transition-none",
             shouldShowPanelBody
               ? "translate-y-0 opacity-100 delay-[45ms]"
               : "-translate-y-1 opacity-0 delay-0"
-          ),
-          "data-meta-feed-panel": panel.id,
-        },
-        panel.renderDesktop()
-      )
-    ),
-    isRestoreButton
-      ? React.createElement(
-          "span",
-          {
-            className:
-              "settlex-ui-pane settlex-ui-tooltip pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap px-ui-3 py-ui-1.5 type-caption text-ink-secondary opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none",
-            "aria-hidden": "true",
-            "data-meta-feed-tooltip": panel.id,
-          },
-          panel.label
-        )
-      : null
+          )}
+          data-meta-feed-panel={panel.id}
+        >
+          {panel.renderDesktop()}
+        </div>
+      </div>
+      {isRestoreButton
+        ? <span
+          className="settlex-ui-pane settlex-ui-tooltip pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap px-ui-3 py-ui-1.5 type-caption text-ink-secondary opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+          aria-hidden="true"
+          data-meta-feed-tooltip={panel.id}
+        >
+          {panel.label}
+        </span>
+        : null}
+    </section>
   );
 }
 
@@ -523,56 +519,52 @@ const DesktopMetaDockComponent = ({
     ? desktopFeedChatOpenHeight
     : desktopFeedCollapsedHeight;
   const stackHeight = `min(calc(100vh - 12rem), calc(${desktopFeedCollapsedHeight} + ${desktopFeedStackGap} + ${currentChatHeight}))`;
-  return React.createElement(
-    "div",
-    {
-      className: "pointer-events-none fixed left-4 top-1/2 z-30 hidden lg:block",
-      "data-meta-left-rail-shell": "true",
-    },
-    React.createElement(
-      "section",
-      {
-        className: joinClassNames(desktopFeedLaneClassName, "relative"),
-        style: { height: stackHeight },
-        "aria-label": "Game feed",
-        "data-meta-feed-dock": "true",
-        "data-allow-interaction": "true",
-      },
-      [
-        {
-          panel: logPanel,
-          top: currentLogTop,
-          height: currentLogHeight,
-          transform: "translateY(0px)",
-        },
-        {
-          panel: chatPanel,
-          top: `calc(${desktopFeedCollapsedHeight} + ${desktopFeedStackGap})`,
-          height: currentChatHeight,
-          transform: "translateY(0px)",
-        },
-      ].map(({ panel, top, height, transform }) =>
-        React.createElement(
-          "div",
+  return (
+    <div
+      className="pointer-events-none fixed left-4 top-1/2 z-30 hidden lg:block"
+      data-meta-left-rail-shell="true"
+    >
+      <section
+        className={joinClassNames(desktopFeedLaneClassName, "relative")}
+        style={{ height: stackHeight }}
+        aria-label="Game feed"
+        data-meta-feed-dock="true"
+        data-allow-interaction="true"
+      >
+        {[
           {
-            key: panel.id,
-            className:
-              "absolute inset-x-0 transition-[top,height,opacity,transform] duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none",
-            style: { top, height, transform },
+            panel: logPanel,
+            top: currentLogTop,
+            height: currentLogHeight,
+            transform: "translateY(0px)",
           },
-          React.createElement(DesktopFeedFrame, {
-            panel,
-            isOpen: openPanels.includes(panel.id),
-            onMinimize: minimizePanel,
-            onRestore: restorePanel,
-            onPhaseChange:
-              panel.id === "log"
-                ? handleLogFramePhaseChange
-                : handleChatFramePhaseChange,
-          })
-        )
-      )
-    )
+          {
+            panel: chatPanel,
+            top: `calc(${desktopFeedCollapsedHeight} + ${desktopFeedStackGap})`,
+            height: currentChatHeight,
+            transform: "translateY(0px)",
+          },
+        ].map(({ panel, top, height, transform }) => (
+          <div
+            key={panel.id}
+            className="absolute inset-x-0 transition-[top,height,opacity,transform] duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none"
+            style={{ top, height, transform }}
+          >
+            <DesktopFeedFrame
+              panel={panel}
+              isOpen={openPanels.includes(panel.id)}
+              onMinimize={minimizePanel}
+              onRestore={restorePanel}
+              onPhaseChange={
+                panel.id === "log"
+                  ? handleLogFramePhaseChange
+                  : handleChatFramePhaseChange
+              }
+            />
+          </div>
+        ))}
+      </section>
+    </div>
   );
 };
 
@@ -676,14 +668,16 @@ const MobileMetaRailComponent = ({
 
   if (!isPhoneLayout || (!isDrawerReady && !activePanel)) return null;
 
-  return React.createElement(
-    React.Suspense,
-    { fallback: null },
-    React.createElement(LazyMobileMetaDrawer, {
-      activePanel,
-      panels,
-      onActivePanelChange: setActivePanel,
-    })
+  return (
+    <React.Suspense
+      fallback={null}
+    >
+      <LazyMobileMetaDrawer
+        activePanel={activePanel}
+        panels={panels}
+        onActivePanelChange={setActivePanel}
+      />
+    </React.Suspense>
   );
 };
 
@@ -693,13 +687,12 @@ DesktopMetaDock.displayName = "DesktopMetaDock";
 export const MobileMetaRail = React.memo(MobileMetaRailComponent);
 MobileMetaRail.displayName = "MobileMetaRail";
 
-const LeftMetaRailComponent = (props) =>
-  React.createElement(
-    React.Fragment,
-    null,
-    React.createElement(DesktopMetaDock, props),
-    React.createElement(MobileMetaRail, props)
-  );
+const LeftMetaRailComponent = (props) => (
+  <>
+    <DesktopMetaDock {...props} />
+    <MobileMetaRail {...props} />
+  </>
+);
 
 export const LeftMetaRail = React.memo(LeftMetaRailComponent);
 LeftMetaRail.displayName = "LeftMetaRail";

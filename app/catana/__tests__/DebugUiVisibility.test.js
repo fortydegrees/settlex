@@ -11,7 +11,7 @@ const leftMetaRailPath = path.resolve(
   __dirname,
   "..",
   "components",
-  "LeftMetaRail.js"
+  "LeftMetaRail.jsx"
 );
 const pagePath = path.resolve(__dirname, "..", "page.js");
 const lobbyMatchClientPath = path.resolve(
@@ -28,9 +28,7 @@ describe("debug UI visibility", () => {
     expect(gameScreen).toContain("LeftMetaRail");
     expect(gameScreen).not.toContain("<DebugPanel");
 
-    const leftMetaRail = fs.existsSync(leftMetaRailPath)
-      ? fs.readFileSync(leftMetaRailPath, "utf8")
-      : "";
+    const leftMetaRail = fs.readFileSync(leftMetaRailPath, "utf8");
     expect(leftMetaRail).not.toContain("DebugPanel");
     expect(leftMetaRail).not.toMatch(/NODE_ENV\s*!==\s*["']production["']/);
   });
