@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { runAccountSignOutLifecycle } from "../lobby/useLobbyHomeActions.js";
 import * as lobbyActions from "../lobby/useLobbyHomeActions.js";
@@ -7,15 +5,6 @@ import * as lobbyActions from "../lobby/useLobbyHomeActions.js";
 vi.mock("../matchAlerts/useMatchAlerts.js", () => ({
   useMatchAlerts: vi.fn(),
 }));
-
-const readHook = () =>
-  readFileSync(
-    resolve(process.cwd(), "app/catana/lobby/useLobbyHomeActions.js"),
-    "utf8"
-  );
-
-const between = (source, start, end) =>
-  source.slice(source.indexOf(start), source.indexOf(end));
 
 describe("useLobbyHomeActions matchmaking rescue", () => {
   it("marks a committed match for board-ready audio before navigation", () => {
@@ -53,105 +42,8 @@ describe("useLobbyHomeActions matchmaking rescue", () => {
     ]);
   });
 
-  it("clears delayed announcements for every queue-ending transition", () => {
-    const source = readHook();
-    const unmountCleanupIndex = source.indexOf("mountedRef.current = false");
-    const unmountSource = source.slice(
-      unmountCleanupIndex - 80,
-      unmountCleanupIndex + 240
-    );
-    const pollingSource = between(
-      source,
-      "const poll = async () =>",
-      "const id = setInterval(poll, 1500)"
-    );
-    const cancelSource = between(
-      source,
-      "const cancelSearch = useCallback",
-      "const openIdentity"
-    );
-    const pufferSource = between(
-      source,
-      "const playPufferFromSearch = useCallback",
-      "const openIdentity"
-    );
-
-    expect(unmountSource).toContain("mountedRef.current = false");
-    expect(unmountSource).toContain("advanceSearchGeneration(searchGenerationRef)");
-    expect(unmountSource).toContain("clearScheduledMatchAnnouncement");
-    expect(pollingSource).toContain("clearScheduledMatchAnnouncement");
-    expect(cancelSource).toContain("clearScheduledMatchAnnouncement");
-    expect(pufferSource).toContain("clearScheduledMatchAnnouncement");
-    expect(source).toContain("announcedMatchIDRef.current = null");
-  });
-
-  it("keeps announcement results independent from polling state", () => {
-    const source = readHook();
-    const schedulingStart = source.indexOf("scheduleMatchAnnouncement({");
-    const schedulingSource = source.slice(schedulingStart, schedulingStart + 220);
-
-    expect(schedulingSource).toContain("requestAnnouncement");
-    expect(schedulingSource).not.toContain("setSearchState(null)");
-    expect(schedulingSource).not.toContain("router.push");
-  });
-
-  it("owns elapsed display state and resets it before each search", () => {
-    const source = readHook();
-    const playSource = between(
-      source,
-      "const play = useCallback",
-      "const createFriendChallenge"
-    );
-
-    expect(source).toContain("const [searchElapsedSeconds, setSearchElapsedSeconds]");
-    expect(source).toContain("getSearchElapsedSeconds(searchState.startedAt)");
-    expect(playSource).toContain("setSearchElapsedSeconds(0)");
-    expect(source).toContain("searchElapsedSeconds,");
-    expect(source).toContain("createdNewPublicDuel:");
-  });
-
-  it("exposes a Puffer transition that awaits search cancellation", () => {
-    const source = readHook();
-    const pufferSource = between(
-      source,
-      "const playPufferFromSearch = useCallback",
-      "const openIdentity"
-    );
-
-    expect(pufferSource).toContain("playPufferAfterLeavingSearch({");
-    expect(pufferSource).toContain("cancelSearch");
-    expect(pufferSource).toContain("playAgainstBot");
-    expect(source).toContain("playPufferFromSearch,");
-  });
-
-  it("keeps the lobby busy for the full Puffer transition", () => {
-    const source = readHook();
-    const pufferSource = between(
-      source,
-      "const playPufferFromSearch = useCallback",
-      "const openIdentity"
-    );
-
-    expect(source).toMatch(
-      /isBusy: Boolean\([\s\S]*searchState[\s\S]*challengeState[\s\S]*isPufferTransitionPending[\s\S]*activeActionId[\s\S]*\)/
-    );
-    expect(pufferSource).not.toContain("setSearchState");
-    expect(source).toContain('setError(err?.message || "Failed to start bot match.")');
-  });
-
-  it("asks the server to create a bot-intent match in one client request", () => {
-    const source = readHook();
-    const botSource = between(
-      source,
-      "const playAgainstBot = useCallback",
-      "const cancelChallengeInvite"
-    );
-
-    expect(botSource).toContain('route: "/api/matches/create"');
-    expect(botSource).toContain('opponentType: "bot"');
-    expect(botSource).not.toContain('route: "/api/matches/join"');
-    expect(botSource.match(/appRequest\(\{/g)).toHaveLength(1);
-  });
+  // Queue, cancellation, bot handoff and cleanup behavior are exercised with
+  // real React DOM in lobby/PublicMatchmaking.stories.jsx.
 });
 
 describe("useLobbyHomeActions sign-out lifecycle", () => {

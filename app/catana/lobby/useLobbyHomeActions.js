@@ -4,23 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "../../../lib/client/authClient";
 import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
-import {
-  advanceSearchGeneration,
-  beginSearchCancellation,
-  clearScheduledMatchAnnouncement,
-  createMatchmakingMutationIdentity,
-  finishSearchPoll,
-  getSearchElapsedSeconds,
-  isSearchGenerationCurrent,
-  playPufferAfterLeavingSearch,
-  resolvePublicMatchmakingCancellation,
-  resolvePublicMatchmakingSeat,
-  scheduleMatchAnnouncement,
-} from "../matchmaking/matchmakingRescue.js";
-import {
-  buildCancelPublicMatchmakingRequest,
-  buildStartPublicMatchmakingRequest,
-} from "../matchmaking/publicMatchmakingClient.js";
+import { playPufferAfterLeavingSearch } from "../matchmaking/matchmakingRescue.js";
+import { usePublicMatchmaking } from "./usePublicMatchmaking";
 import { normalizePlayerColorId } from "../theme/playerColors";
 import {
   clearLastActiveMatch,
@@ -38,7 +23,6 @@ import {
   readStoredPlayerIdentity,
   writeStoredPlayerIdentity
 } from "./playerIdentityStorage";
-import { tabAttention } from "../utils/tabAttention";
 
 const DEFAULT_AUTH_OPTIONS = Object.freeze({
   emailPassword: true,
@@ -146,18 +130,6 @@ export function commitGameStartNavigation({
   return matchID;
 }
 
-function normalizeMatch(raw) {
-  const playersObj = raw?.players || {};
-  const players = Object.values(playersObj).sort(
-    (a, b) => (a?.id ?? 0) - (b?.id ?? 0)
-  );
-  return {
-    matchID: raw?.matchID,
-    gameName: raw?.gameName,
-    players
-  };
-}
-
 export function useLobbyHomeActions({
   initialAccount = null,
   onGameStartTransition = null
@@ -178,22 +150,14 @@ export function useLobbyHomeActions({
   const [error, setError] = useState("");
   const [showIdentity, setShowIdentity] = useState(false);
   const [entryModal, setEntryModal] = useState(CLOSED_ENTRY_MODAL);
-  const [searchState, setSearchState] = useState(null);
   const [challengeState, setChallengeState] = useState(null);
   const [activeActionId, setActiveActionId] = useState(null);
   const [authOptions, setAuthOptions] = useState(DEFAULT_AUTH_OPTIONS);
   const [accountReady, setAccountReady] = useState(false);
-  const [searchElapsedSeconds, setSearchElapsedSeconds] = useState(0);
   const [isPufferTransitionPending, setIsPufferTransitionPending] = useState(false);
-  const [isSearchCancelPending, setIsSearchCancelPending] = useState(false);
 
   const pendingActionRef = useRef(null);
   const pendingEntryActionRef = useRef(null);
-  const announcementTimerRef = useRef(null);
-  const announcedMatchIDRef = useRef(null);
-  const searchGenerationRef = useRef(0);
-  const activeSearchMutationRef = useRef(null);
-  const searchCancelPendingRef = useRef(false);
   const pufferTransitionPendingRef = useRef(false);
   const mountedRef = useRef(true);
   const playerNameRef = useRef(playerName);
@@ -535,22 +499,9 @@ export function useLobbyHomeActions({
   ]);
 
   useEffect(() => {
-    if (!searchState?.startedAt || searchState.phase !== "searching") return;
-
-    const updateElapsed = () => {
-      setSearchElapsedSeconds(getSearchElapsedSeconds(searchState.startedAt));
-    };
-    updateElapsed();
-    const id = setInterval(updateElapsed, 1000);
-    return () => clearInterval(id);
-  }, [searchState?.phase, searchState?.startedAt]);
-
-  useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      advanceSearchGeneration(searchGenerationRef);
-      clearScheduledMatchAnnouncement({ announcementTimerRef });
     };
   }, []);
 
@@ -584,49 +535,6 @@ export function useLobbyHomeActions({
       cancelled = true;
     };
   }, [router]);
-
-  useEffect(() => {
-    if (!searchState?.matchID || searchState.playerID == null) return;
-    const generation = searchGenerationRef.current;
-
-    const poll = async () => {
-      try {
-        const data = await appRequest({
-          route: `/api/matches/${searchState.matchID}`
-        });
-        const match = normalizeMatch(data);
-        const allJoined = match.players.every((p) => p.name);
-        if (allJoined) {
-          finishSearchPoll({
-            searchGenerationRef,
-            generation,
-            onMatchFound: () => {
-              activeSearchMutationRef.current = null;
-              clearScheduledMatchAnnouncement({ announcementTimerRef });
-              advanceSearchGeneration(searchGenerationRef);
-              tabAttention.request("match-found");
-              try {
-                onGameStartTransition?.(searchState.matchID);
-              } catch (err) {
-                /* The board-ready audio marker is best-effort. */
-              }
-              setSearchState((current) =>
-                current && current.matchID === searchState.matchID
-                  ? { ...current, phase: "matchFound" }
-                  : current
-              );
-              router.push(`/g/${searchState.matchID}`);
-            }
-          });
-        }
-      } catch (err) {
-        /* keep polling */
-      }
-    };
-
-    const id = setInterval(poll, 1500);
-    return () => clearInterval(id);
-  }, [onGameStartTransition, router, searchState]);
 
   useEffect(() => {
     if (!challengeState?.matchID || challengeState.phase !== "waiting") return;
@@ -726,173 +634,25 @@ export function useLobbyHomeActions({
     return createGeneratedGuestAccount();
   }, [createGeneratedGuestAccount, ensureAccountSession]);
 
-  const cancelPublicSearchRequest = useCallback(async (mutation) => {
-    const response = await appRequest(
-      buildCancelPublicMatchmakingRequest({
-        modeId: mutation.modeId,
-        requestId: mutation.requestId,
-        requestedCredentials: mutation.credentials,
-      })
-    );
-    return resolvePublicMatchmakingCancellation(response);
-  }, []);
-
-  const play = useCallback(async () => {
-    const startedAt = Date.now();
-    const generation = advanceSearchGeneration(searchGenerationRef);
-    let mutation = null;
-    let account = null;
-    clearScheduledMatchAnnouncement({ announcementTimerRef });
-    announcedMatchIDRef.current = null;
-    setSearchElapsedSeconds(0);
-    setError("");
-    setActiveActionId("queue");
-    setSearchState({
-      matchID: null,
-      playerID: null,
-      startedAt,
-      phase: "searching",
-      createdNewPublicDuel: false
-    });
-
-    try {
-      account = await ensureAccountSession();
-      if (
-        !isSearchGenerationCurrent({ searchGenerationRef, generation })
-      ) {
-        return;
-      }
-      if (!account?.id) {
-        throw new Error("Pick a username first.");
-      }
-
-      mutation = {
-        ...createMatchmakingMutationIdentity(),
-        accountId: account.id,
-        modeId: "duel",
-        matchID: null,
-        playerID: null
-      };
-      activeSearchMutationRef.current = mutation;
-      const created = await appRequest(
-        buildStartPublicMatchmakingRequest({
-          modeId: mutation.modeId,
-          requestId: mutation.requestId,
-          requestedCredentials: mutation.credentials,
-        })
-      );
-
-      const resolvedSeat = resolvePublicMatchmakingSeat(created);
-      const {
-        matchID,
-        playerID,
-        credentials,
-        createdNewPublicDuel,
-      } = resolvedSeat;
-      mutation.matchID = matchID;
-      mutation.playerID = playerID;
-      mutation.credentials = credentials;
-
-      if (!isSearchGenerationCurrent({ searchGenerationRef, generation })) {
-        return;
-      }
-
-      if (createdNewPublicDuel) {
-        persistJoinedSeat({
-          matchID,
-          playerID,
-          credentials,
-          playerName: account.currentUsername
-        });
-        setSearchState({
-          matchID,
-          playerID,
-          startedAt,
-          phase: "searching",
-          createdNewPublicDuel: true
-        });
-        scheduleMatchAnnouncement({
-          matchID,
-          announcementTimerRef,
-          announcedMatchIDRef,
-          requestAnnouncement
-        });
-        return;
-      }
-
-      activeSearchMutationRef.current = null;
-      commitGameStartNavigation({
-        created: {
-          matchID,
-          playerID,
-          playerCredentials: credentials,
-        },
-        account,
-        persistJoinedSeat,
-        markGameStart: onGameStartTransition,
-        navigate: (href) => router.push(href),
-      });
-    } catch (err) {
-      if (
-        !isSearchGenerationCurrent({ searchGenerationRef, generation })
-      ) {
-        return;
-      }
-      clearScheduledMatchAnnouncement({ announcementTimerRef });
-      if (mutation) {
-        let cancellation;
-        try {
-          cancellation = await cancelPublicSearchRequest(mutation);
-        } catch {
-          cancellation = { released: false, reason: "uncertain", matchFound: null };
-        }
-        if (cancellation.reason === "match_found") {
-          activeSearchMutationRef.current = null;
-          commitGameStartNavigation({
-            created: {
-              matchID: cancellation.matchFound.matchID,
-              playerID: cancellation.matchFound.playerID,
-              playerCredentials: cancellation.matchFound.credentials,
-            },
-            account,
-            persistJoinedSeat,
-            markGameStart: onGameStartTransition,
-            navigate: (href) => router.push(href),
-          });
-          return;
-        }
-        if (cancellation.released) {
-          activeSearchMutationRef.current = null;
-          setActiveActionId(null);
-          advanceSearchGeneration(searchGenerationRef);
-          setSearchState(null);
-          setSearchElapsedSeconds(0);
-          setError(err?.message || "Matchmaking failed.");
-          return;
-        }
-        setError(
-          "Still checking whether your online request finished. Try Cancel again before starting Puffer."
-        );
-        return;
-      }
-      setActiveActionId(null);
-      advanceSearchGeneration(searchGenerationRef);
-      setSearchState(null);
-      setSearchElapsedSeconds(0);
-      setError(err?.message || "Matchmaking failed.");
-    } finally {
-      if (isSearchGenerationCurrent({ searchGenerationRef, generation })) {
-        setActiveActionId(null);
-      }
-    }
-  }, [
+  const {
+    searchState,
+    searchElapsedSeconds,
+    isSearchCancelPending,
+    play,
+    cancelSearch,
+    clearSearchAnnouncement,
+    resetSearchAfterSignOut
+  } = usePublicMatchmaking({
+    request: appRequest,
     ensureAccountSession,
-    cancelPublicSearchRequest,
-    onGameStartTransition,
+    currentAccount,
     persistJoinedSeat,
+    commitGameStartNavigation,
     requestAnnouncement,
-    router
-  ]);
+    onGameStartTransition,
+    setError,
+    setActiveActionId
+  });
 
   const createFriendChallenge = useCallback(async () => {
     setError("");
@@ -1007,102 +767,8 @@ export function useLobbyHomeActions({
     setChallengeState(null);
   }, [challengeState]);
 
-  const cancelSearch = useCallback(async () => {
-    if (
-      !beginSearchCancellation({
-        searchCancelPendingRef,
-        onPendingChange: (pending) => {
-          if (mountedRef.current) setIsSearchCancelPending(pending);
-        },
-        clearActiveAction: () => setActiveActionId(null),
-      })
-    ) {
-      return false;
-    }
-
-    try {
-      const mutationAtCancellation = activeSearchMutationRef.current;
-      const cancellationGeneration = advanceSearchGeneration(searchGenerationRef);
-      clearScheduledMatchAnnouncement({ announcementTimerRef });
-      if (
-        !isSearchGenerationCurrent({
-          searchGenerationRef,
-          generation: cancellationGeneration
-        })
-      ) {
-        return false;
-      }
-
-      const mutation = activeSearchMutationRef.current ?? mutationAtCancellation;
-      if (!mutation) {
-        setSearchState(null);
-        setSearchElapsedSeconds(0);
-        return true;
-      }
-
-      let cancellation;
-      try {
-        cancellation = await cancelPublicSearchRequest(mutation);
-      } catch {
-        cancellation = { released: false, reason: "uncertain", matchFound: null };
-      }
-
-      if (cancellation.reason === "match_found") {
-        const { matchID, playerID, credentials } = cancellation.matchFound;
-        activeSearchMutationRef.current = null;
-        setError("");
-        setSearchState((current) =>
-          current ? { ...current, matchID, playerID, phase: "matchFound" } : current
-        );
-        tabAttention.request("match-found");
-        commitGameStartNavigation({
-          created: {
-            matchID,
-            playerID,
-            playerCredentials: credentials,
-          },
-          account: currentAccount,
-          persistJoinedSeat,
-          markGameStart: onGameStartTransition,
-          navigate: (href) => router.push(href),
-        });
-        return false;
-      }
-
-      if (!cancellation.released) {
-        setError(
-          "Could not confirm that your public search was cancelled. Try Cancel again before starting Puffer."
-        );
-        setSearchState((current) => (current ? { ...current } : current));
-        return false;
-      }
-
-      activeSearchMutationRef.current = null;
-      const activeMatch = readLastActiveMatch(window.localStorage);
-      if (
-        activeMatch?.matchID === mutation.matchID &&
-        activeMatch?.playerID === String(mutation.playerID)
-      ) {
-        clearLastActiveMatch(window.localStorage);
-      }
-
-      setSearchState(null);
-      setSearchElapsedSeconds(0);
-      return true;
-    } finally {
-      searchCancelPendingRef.current = false;
-      if (mountedRef.current) setIsSearchCancelPending(false);
-    }
-  }, [
-    currentAccount,
-    cancelPublicSearchRequest,
-    onGameStartTransition,
-    persistJoinedSeat,
-    router,
-  ]);
-
   const playPufferFromSearch = useCallback(async () => {
-    clearScheduledMatchAnnouncement({ announcementTimerRef });
+    clearSearchAnnouncement();
     return playPufferAfterLeavingSearch({
       cancelSearch,
       playAgainstBot,
@@ -1111,7 +777,7 @@ export function useLobbyHomeActions({
         if (mountedRef.current) setIsPufferTransitionPending(pending);
       }
     });
-  }, [cancelSearch, playAgainstBot]);
+  }, [cancelSearch, clearSearchAnnouncement, playAgainstBot]);
 
   const openIdentity = useCallback(() => {
     pendingActionRef.current = null;
@@ -1141,21 +807,20 @@ export function useLobbyHomeActions({
     writeStoredPlayerIdentity(window.localStorage, {});
     clearPendingFriendChallenge(window.localStorage);
     clearLastActiveMatch(window.localStorage);
-    advanceSearchGeneration(searchGenerationRef);
-    clearScheduledMatchAnnouncement({ announcementTimerRef });
+    resetSearchAfterSignOut();
     setCurrentAccount(null);
     setPlayerName("");
     setPlayerEmoji("");
     setPlayerColor("");
     setShowIdentity(false);
     setEntryModal(CLOSED_ENTRY_MODAL);
-    setSearchState(null);
     setChallengeState(null);
     playerNameRef.current = "";
   }, [
     completeMatchAlertSignOut,
     detachCurrentBrowser,
     refreshMatchAlerts,
+    resetSearchAfterSignOut,
   ]);
 
   const signInWithProvider = useCallback(
