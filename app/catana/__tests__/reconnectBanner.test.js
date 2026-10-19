@@ -188,6 +188,41 @@ describe("resolveReconnectBannerCandidate", () => {
     expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).not.toBeNull();
   });
 
+  it("keeps a recoverable seat when credential storage cannot be read", async () => {
+    const backing = seededStorageForMatch("m1", "0", "Alice");
+    const saved = backing.getItem(ACTIVE_MATCH_STORAGE_KEY);
+    const storage = {
+      ...backing,
+      getItem(key) {
+        if (key === "catana:lobby:credentials:m1:0") throw new Error("storage denied");
+        return backing.getItem(key);
+      }
+    };
+    const fetchImpl = vi.fn();
+
+    await expect(resolveReconnectBannerCandidate({ pathname: "/", storage, fetchImpl })).resolves.toBeNull();
+    expect(backing.getItem(ACTIVE_MATCH_STORAGE_KEY)).toBe(saved);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("keeps a saved seat when the active-record read is temporarily denied", async () => {
+    const backing = seededStorageForMatch("m1", "0", "Alice");
+    const saved = backing.getItem(ACTIVE_MATCH_STORAGE_KEY);
+    const storage = { ...backing, getItem() { throw new Error("storage denied"); } };
+    expect(await resolveReconnectBannerCandidate({ pathname: "/", storage })).toBeNull();
+    expect(backing.getItem(ACTIVE_MATCH_STORAGE_KEY)).toBe(saved);
+  });
+
+  it.each([
+    ["server error", { ok: false, status: 503 }],
+    ["invalid JSON", { ok: true, json: async () => { throw new Error("invalid JSON"); } }]
+  ])("keeps a recoverable seat on %s", async (_name, response) => {
+    const storage = seededStorageForMatch("m1", "0", "Alice");
+    const saved = storage.getItem(ACTIVE_MATCH_STORAGE_KEY);
+    expect(await resolveReconnectBannerCandidate({ pathname: "/", storage, fetchImpl: async () => response })).toBeNull();
+    expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).toBe(saved);
+  });
+
   it("suppresses the banner without clearing state on fetch errors", async () => {
     const storage = seededStorageForMatch("m1", "0");
     const fetchImpl = vi.fn().mockRejectedValue(new Error("network"));

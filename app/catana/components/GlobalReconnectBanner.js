@@ -30,14 +30,21 @@ export function GlobalReconnectBanner() {
     let cancelled = false;
     setCandidate(null);
 
-    resolveReconnectBannerCandidate({
-      pathname,
-      storage: window.localStorage
-    }).then((nextCandidate) => {
+    const refreshCandidate = async () => {
+      let nextCandidate = null;
+      try {
+        nextCandidate = await resolveReconnectBannerCandidate({
+          pathname,
+          storage: window.localStorage
+        });
+      } catch {
+        // Accessing localStorage itself can fail; recovery is an optional hint.
+      }
       if (!cancelled) {
         setCandidate(nextCandidate);
       }
-    });
+    };
+    void refreshCandidate();
 
     return () => {
       cancelled = true;

@@ -48,7 +48,14 @@ export async function resolveReconnectBannerCandidate({
   if (isSameMatchPath(pathname, activeMatch.matchID)) return null;
 
   const credentialsKey = getCredentialsStorageKey(activeMatch);
-  if (!storage?.getItem?.(credentialsKey)) {
+  let credentials;
+  try {
+    credentials = storage?.getItem?.(credentialsKey);
+  } catch {
+    // An unreadable seat may still be recoverable when storage is available.
+    return null;
+  }
+  if (!credentials) {
     clearLastActiveMatch(storage);
     return null;
   }
