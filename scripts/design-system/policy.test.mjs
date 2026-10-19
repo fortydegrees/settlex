@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scanSource, compareLedger, createLedger, ledgerGrowth } from './policy.mjs';
+import { scanSource, compareLedger, createLedger, ledgerGrowth, parseGitRenames } from './policy.mjs';
 
 describe('design-system policy', () => {
   it('accepts complete roles, semantic colours/shapes and token spacing', () => {
@@ -58,6 +58,39 @@ describe('design-system policy', () => {
   it('does not allow a changed migration ledger to hide new violations', () => {
     expect(ledgerGrowth({ old: 1 }, { old: 2 })).toEqual([]);
     expect(ledgerGrowth({ old: 3, new: 1 }, { old: 2 })).toEqual(['old', 'new']);
+  });
+  it('preserves the same debt allowance across a verified file rename', () => {
+    const previous = { 'app/old.js | palette | text-red-600': 2 };
+    const current = { 'app/new.jsx | palette | text-red-600': 2 };
+    expect(ledgerGrowth(current, previous, [['app/old.js', 'app/new.jsx']])).toEqual([]);
+    expect(ledgerGrowth(previous, previous, [['app/old.js', 'app/new.jsx']])).toEqual(Object.keys(previous));
+  });
+  it('still blocks increased counts, substitutions and unrelated files after a rename', () => {
+    const previous = { 'app/old.js | palette | text-red-600': 2 };
+    const current = {
+      'app/new.jsx | palette | text-red-600': 3,
+      'app/new.jsx | palette | text-blue-600': 1,
+      'app/unrelated.jsx | palette | text-red-600': 1,
+    };
+    expect(ledgerGrowth(current, previous, [['app/old.js', 'app/new.jsx']])).toEqual(Object.keys(current));
+  });
+  it('does not treat a file copy or similar filename as an approved debt move', () => {
+    const previous = { 'app/old.js | palette | text-red-600': 2 };
+    expect(ledgerGrowth({ 'app/copy.jsx | palette | text-red-600': 2 }, previous)).toHaveLength(1);
+    expect(ledgerGrowth({ 'app/new.jsx.extra | palette | text-red-600': 2 }, previous, [['app/old.js', 'app/new.jsx']])).toHaveLength(1);
+  });
+  it('reads only Git renames from NUL-delimited changed paths', () => {
+    const changes = ['M', 'app/edited.jsx', 'R087', 'app/old name.js', 'app/new name.jsx', 'A', 'app/added.jsx', 'C100', 'app/original.jsx', 'app/copy.jsx', 'D', 'app/removed.jsx', 'R100', 'app/old\tname.js', 'app/new\tname.jsx', ''].join('\0');
+    expect(parseGitRenames(changes)).toEqual([
+      ['app/old name.js', 'app/new name.jsx'],
+      ['app/old\tname.js', 'app/new\tname.jsx'],
+    ]);
+  });
+  it('recognizes same-stem JSX extension moves even after a full syntax rewrite', () => {
+    expect(parseGitRenames(['A', 'app/Feed.jsx', 'D', 'app/Feed.js', 'D', 'app/typed.ts', 'A', 'app/typed.tsx', ''].join('\0'))).toEqual([
+      ['app/Feed.js', 'app/Feed.jsx'], ['app/typed.ts', 'app/typed.tsx'],
+    ]);
+    expect(parseGitRenames(['A', 'app/Feed.jsx', 'M', 'app/Feed.js', 'D', 'app/old.js', 'A', 'app/elsewhere/old.jsx', ''].join('\0'))).toEqual([]);
   });
   it('does not mistake alignment, layout, URLs or ordinary prose for styling', () => {
     expect(scanSource('app/example.jsx', 'const title = "Hello, friend."; const url = "https://example.com/text-sm"; const el = <div className="text-center flex grid-cols-2 w-12 h-12 mt-auto p-0" />;')).toEqual([]);

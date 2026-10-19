@@ -100,6 +100,45 @@ export function compareLedger(issues, ledger) {
   };
 }
 
-export function ledgerGrowth(current, previous) {
-  return Object.keys(current).filter(key => current[key] > (previous[key] ?? 0));
+// Accept only rename pairs supplied by Git, never mappings from the ledger.
+// Keep kind/value/count comparisons intact after moving the old file allowance.
+export function ledgerGrowth(current, previous, renames = []) {
+  const destinations = new Map(renames);
+  const allowances = {};
+  for (const [key, count] of Object.entries(previous)) {
+    const separator = key.indexOf(' | ');
+    const file = key.slice(0, separator);
+    const destination = destinations.get(file);
+    const movedKey = destination ? `${destination}${key.slice(separator)}` : key;
+    allowances[movedKey] = Math.max(allowances[movedKey] ?? 0, count);
+  }
+  return Object.keys(current).filter(key => current[key] > (allowances[key] ?? 0));
+}
+
+// --name-status -z uses separate NUL-delimited status/path fields, including
+// filenames with spaces or tabs. Copies/deletions/additions confer no allowance.
+export function parseGitRenames(output) {
+  const fields = output.split('\0');
+  const renames = [];
+  const added = new Set();
+  const deleted = [];
+  for (let index = 0; index < fields.length - 1;) {
+    const status = fields[index++];
+    const from = fields[index++];
+    if (status === 'A') added.add(from);
+    if (status === 'D') deleted.push(from);
+    if (/^[RC]\d+$/.test(status)) {
+      const to = fields[index++];
+      if (status.startsWith('R') && from && to) renames.push([from, to]);
+    }
+  }
+  // A JSX/TSX rewrite can fall below Git's similarity threshold. A same-stem
+  // extension move is unambiguous only when the original path is deleted and
+  // its exact counterpart is added; an ordinary copy never meets this rule.
+  for (const from of deleted) {
+    if (!/\.[jt]s$/.test(from)) continue;
+    const to = `${from}x`;
+    if (added.has(to)) renames.push([from, to]);
+  }
+  return renames;
 }

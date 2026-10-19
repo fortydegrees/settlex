@@ -2,7 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { scanSource, compareLedger, createLedger, ledgerGrowth } from './policy.mjs';
+import { scanSource, compareLedger, createLedger, ledgerGrowth, parseGitRenames } from './policy.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 // The material/interaction recipe owner is intentionally allowed literal
@@ -37,7 +37,10 @@ if (process.argv.includes('--inventory')) {
     const exists = spawnSync('git', ['cat-file', '-e', `${base}:scripts/design-system/legacy-styles.json`], { cwd: root });
     if (exists.status === 0) {
       const previous = JSON.parse(execFileSync('git', ['show', `${base}:scripts/design-system/legacy-styles.json`], { cwd: root, encoding: 'utf8' }));
-      const growth = ledgerGrowth(ledger, previous);
+      const renames = parseGitRenames(execFileSync('git', [
+        'diff', '--name-status', '-z', '--find-renames', base, '--', 'app',
+      ], { cwd: root, encoding: 'utf8' }));
+      const growth = ledgerGrowth(ledger, previous, renames);
       if (growth.length) {
         console.error('The migration ledger may only shrink. New exceptions need an explicit policy review, not a regenerated baseline.');
         for (const key of growth) console.error(`LEDGER GROWTH: ${key}`);
