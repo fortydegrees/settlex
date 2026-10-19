@@ -116,7 +116,7 @@ export function ledgerGrowth(current, previous, renames = []) {
 }
 
 // --name-status -z uses separate NUL-delimited status/path fields, including
-// filenames with spaces or tabs. Copies/deletions/additions confer no allowance.
+// filenames with spaces or tabs. Copies and unrelated additions confer no allowance.
 export function parseGitRenames(output) {
   const fields = output.split('\0');
   const renames = [];
