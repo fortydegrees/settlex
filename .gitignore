@@ -50,9 +50,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
-.env.prod
+# Local credentials stay private; only reviewed templates are tracked.
+.env
+.env.*
+!/.env.example
 
 # vercel
 .vercel

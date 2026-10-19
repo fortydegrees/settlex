@@ -2,7 +2,6 @@ node_modules
 .next
 .git
 .worktrees
-.env.prod
 .logs
 .local/bot/
 .pnpm-store/
@@ -26,8 +25,6 @@ ai/pufferlib/**/*.pt
 # Local native builds and sealed models are never image inputs.
 native/**/target/
 **/*.ctnn
-.env*.local
-.env.prod.*
 backups/
 
 # Reference material and generated design/audio previews are not runtime assets.
@@ -40,3 +37,8 @@ docs/
 sounds/
 public/svgs/working/
 public/svgs/colonist/
+
+# Exclude credentials at every depth; retain only the sanitized root template.
+**/.env
+**/.env.*
+!.env.example
