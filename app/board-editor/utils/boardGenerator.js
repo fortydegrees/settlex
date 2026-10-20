@@ -1,7 +1,7 @@
 //uses hexGrid to generate a board with a specific shape, then just creates a tile with all those
 
 import { GridGenerator } from "react-hexgrid";
-import { TileTypes } from "./types";
+import { ResourceType, TileTypes } from "./types";
 import { add } from "./coordinates";
 
 //do these need to go in coordinates? or rename it to map-utils?
@@ -54,6 +54,7 @@ const generateTilesNodesEdges = (gridHexes) => {
       id: tileAutoinc++,
       coordinate: [hex.q, hex.r, hex.s],
       type: TileTypes.EMPTY, //i.e. landTile, waterTile (can't have number)
+      resource: ResourceType.EMPTY,
       nodes: nodes,
       edges: edges
     });
