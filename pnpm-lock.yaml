@@ -11,6 +11,9 @@ patchedDependencies:
   react-zoom-pan-pinch@3.7.0:
     hash: d324to3j2dq7thpl6dcb7w3slm
     path: patches/react-zoom-pan-pinch@3.7.0.patch
+  vaul@1.1.2:
+    hash: kehrceeog5cjruzi6dj52n3u4u
+    path: patches/vaul@1.1.2.patch
 
 importers:
 
@@ -96,7 +99,7 @@ importers:
         version: 3.3.3
       vaul:
         specifier: ^1.1.2
-        version: 1.1.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 1.1.2(patch_hash=kehrceeog5cjruzi6dj52n3u4u)(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       web-push:
         specifier: ^3.6.7
         version: 3.6.7
@@ -12452,7 +12455,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vaul@1.1.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  vaul@1.1.2(patch_hash=kehrceeog5cjruzi6dj52n3u4u)(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       '@radix-ui/react-dialog': 1.1.15(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react: 19.3.1

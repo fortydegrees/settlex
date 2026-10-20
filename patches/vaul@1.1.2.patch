@@ -1,0 +1,20 @@
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1362,6 +1362,7 @@
+     ]);
+     return /*#__PURE__*/ React__namespace.default.createElement(DialogPrimitive__namespace.Root, {
+         defaultOpen: defaultOpen,
++        modal: modal,
+         onOpenChange: (open)=>{
+             if (!dismissible && !open) return;
+             if (open) {
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1340,6 +1340,7 @@
+     ]);
+     return /*#__PURE__*/ React__default.createElement(DialogPrimitive.Root, {
+         defaultOpen: defaultOpen,
++        modal: modal,
+         onOpenChange: (open)=>{
+             if (!dismissible && !open) return;
+             if (open) {

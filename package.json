@@ -92,7 +92,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "react-zoom-pan-pinch@3.7.0": "patches/react-zoom-pan-pinch@3.7.0.patch"
+      "react-zoom-pan-pinch@3.7.0": "patches/react-zoom-pan-pinch@3.7.0.patch",
+      "vaul@1.1.2": "patches/vaul@1.1.2.patch"
     },
     "overrides": {
       "eslint-config-next>@typescript-eslint/parser": "8.71.2"
