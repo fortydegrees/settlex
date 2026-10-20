@@ -127,6 +127,18 @@
   animation: pieceFlash 1.2s ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .opacity-animation,
+  .animation-pulse,
+  .piece-flash {
+    animation: none;
+  }
+
+  .animation-pulse {
+    will-change: auto;
+  }
+}
+
 @keyframes board-pulse {
   0%,
   100% {
