@@ -51,7 +51,7 @@ export function findAllLowestBy<T>(collection: Iterable<T>, fn: (val: T) => numb
 
 export function findHighestBy<T>(collection: Iterable<T>, fn: (val: T) => number): T | undefined {
   let highestVal: T | undefined;
-  let highestNum = -1;
+  let highestNum = Number.NEGATIVE_INFINITY;
   for (const val of collection) {
     const score = fn(val);
     if (score > highestNum) {
@@ -64,7 +64,7 @@ export function findHighestBy<T>(collection: Iterable<T>, fn: (val: T) => number
 
 export function findAllHighestBy<T>(collection: Iterable<T>, fn: (val: T) => number): T[] {
   let highestVals: T[] = [];
-  let highestNum = -1;
+  let highestNum = Number.NEGATIVE_INFINITY;
   for (const val of collection) {
     const score = fn(val);
     if (score > highestNum) {
