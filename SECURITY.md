@@ -3,11 +3,11 @@
 Do not post credentials, private match information or exploitable vulnerability
 details in a public issue or pull request.
 
-If this repository's GitHub Security tab offers **Report a vulnerability**, use
-that private reporting flow. Its availability has not yet been verified for this
-repository. If it is unavailable, arrange a private reporting channel with the
-maintainer before sending sensitive details. There is currently no published,
-verified security inbox or response-time commitment.
+GitHub private vulnerability reporting was checked on 20 October 2026 and is
+currently disabled for this repository. There is also no published, verified
+security inbox or response-time commitment. Arrange a private reporting channel
+with the maintainer before sending sensitive details. Enabling a supported
+private reporting route remains a release-preparation requirement.
 
 A useful private report includes the affected commit/version, a minimal
 reproduction, expected and actual behavior, and the impact. Use synthetic
