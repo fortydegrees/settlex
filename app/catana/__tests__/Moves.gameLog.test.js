@@ -5,15 +5,15 @@ import {
   ResourceType,
   TileTypes
 } from "@settlex/game-core";
-import { placeRoad } from "../moves/buildMoves";
+import { placeRoad } from "../../../lib/game-runtime/moves/buildMoves";
 import {
   buyDevCard,
   confirmDevCardPlay,
   playDevCardStart
-} from "../moves/devCardMoves";
-import { moveRobber } from "../moves/robberMoves";
-import { autoDiscard, rollDice } from "../moves/turnMoves";
-import { maybeLogGameOver } from "../moves/gameOver";
+} from "../../../lib/game-runtime/moves/devCardMoves";
+import { moveRobber } from "../../../lib/game-runtime/moves/robberMoves";
+import { autoDiscard, rollDice } from "../../../lib/game-runtime/moves/turnMoves";
+import { maybeLogGameOver } from "../../../lib/game-runtime/moves/gameOver";
 
 vi.mock("@settlex/game-core", async () => {
   const actual = await vi.importActual("@settlex/game-core");

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createEmptyState } from "@settlex/game-core";
-import { endTurn } from "../moves/turnMoves";
+import { endTurn } from "../../../lib/game-runtime/moves/turnMoves";
 
 describe("Moves.endTurn", () => {
   it("advances the core turn and syncs boardgame.io", () => {

@@ -4,7 +4,7 @@ import {
   canBuildRoad as coreCanBuildRoad,
   canBuildSettlement as coreCanBuildSettlement
 } from "@settlex/game-core";
-import { getBuildableEdges } from "../moves/buildMoves";
+import { getBuildableEdges } from "../../../lib/game-runtime/moves/buildMoves";
 import { isPassiveBuildEnabled } from "./passiveBuildMode";
 
 const emptyPassiveTargets = (passiveBuildEnabled) => ({

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Catan } from "../Game.js";
+import { Catan } from "../../../lib/game-runtime/Game.js";
 
 describe("Catan.playerView (state masking)", () => {
   const makeG = () => ({

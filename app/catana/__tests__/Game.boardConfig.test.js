@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { makeDeterministicRng } from "@settlex/game-core";
-import { Catan } from "../Game";
+import { Catan } from "../../../lib/game-runtime/Game";
 
 const createRandom = (seed = 123) => ({
   Number: makeDeterministicRng(seed),
@@ -14,7 +14,7 @@ describe("Catan setup board config", () => {
     vi.resetModules();
 
     try {
-      const { Catan: ProductionCatan } = await import("../Game");
+      const { Catan: ProductionCatan } = await import("../../../lib/game-runtime/Game");
       expect(
         ProductionCatan.validateSetupData(
           { boardConfig: { specId: "standard-4p" } },
@@ -144,7 +144,7 @@ describe("Catan setup board config", () => {
     vi.resetModules();
 
     try {
-      const { Catan: DevCatan } = await import("../Game");
+      const { Catan: DevCatan } = await import("../../../lib/game-runtime/Game");
       const ctx = {
         numPlayers: 2,
         phase: "preGame",

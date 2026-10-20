@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { setCurrentPlayerStage } from "../moves/stageControl";
+import { setCurrentPlayerStage } from "../../../lib/game-runtime/moves/stageControl";
 
 describe("stage control helpers", () => {
   it("sets the active current-player stage when setActivePlayers is available", () => {

@@ -3,7 +3,7 @@ import {
   CreateGameReducer,
   InitializeGame
 } from "boardgame.io/dist/cjs/internal.js";
-import { createCatanGame } from "../Game";
+import { createCatanGame } from "../../../lib/game-runtime/Game";
 
 const game = createCatanGame({
   includeDebugMoves: true,

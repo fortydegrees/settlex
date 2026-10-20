@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { CreateGameReducer, InitializeGame } from "boardgame.io/dist/cjs/internal.js";
 import { describe, expect, it } from "vitest";
-import { createCatanGame } from "../../../app/catana/Game.js";
+import { createCatanGame } from "../../../lib/game-runtime/Game.js";
 import { buildReplayFrames } from "../../../lib/server/replays/buildReplayFrames.js";
 import { buildableEdges, buildableNodes } from "../index";
 import {

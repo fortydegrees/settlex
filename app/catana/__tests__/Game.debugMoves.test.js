@@ -15,7 +15,7 @@ const loadCatanForEnv = async (nodeEnv) => {
   vi.resetModules();
 
   try {
-    const { Catan } = await import("../Game");
+    const { Catan } = await import("../../../lib/game-runtime/Game");
     return Catan;
   } finally {
     process.env.NODE_ENV = previousEnv;

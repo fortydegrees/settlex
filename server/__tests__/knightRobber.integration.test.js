@@ -2,7 +2,7 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { Client } from "boardgame.io/dist/cjs/client.js";
 import { InitializeGame } from "boardgame.io/dist/cjs/internal.js";
-import { createCatanGame } from "../../app/catana/Game.js";
+import { createCatanGame } from "../../lib/game-runtime/Game.js";
 import { SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
 import { SettleGraphV2BotManager } from "../bots/settleGraphV2BotManager.js";
 

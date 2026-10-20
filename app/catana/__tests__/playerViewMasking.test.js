@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { maskPlayerView } from "../gameSetup/playerView";
+import { maskPlayerView } from "../../../lib/game-runtime/setup/playerView";
 
 const makeG = () => ({
   core: {

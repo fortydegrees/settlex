@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   logResourceDistributions,
   logResourceShortages
-} from "../moves/resourceLogging";
+} from "../../../lib/game-runtime/moves/resourceLogging";
 
 describe("resource logging", () => {
   it("groups resource distributions by player in stable player order", () => {

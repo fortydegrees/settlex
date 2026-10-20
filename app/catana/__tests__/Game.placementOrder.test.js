@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeDeterministicRng } from "@settlex/game-core";
-import { Catan, getPlacementOrder } from "../Game";
+import { Catan, getPlacementOrder } from "../../../lib/game-runtime/Game";
 
 describe("placement order", () => {
   it("builds a snake order for the placement phase", () => {

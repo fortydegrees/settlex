@@ -6,7 +6,7 @@ import {
   emitPendingDevCardPlayResolved,
   hasMaskedOpponentResources,
   storePendingKnightPlayAnimation
-} from "../moves/devCardPresentation.js";
+} from "../../../lib/game-runtime/moves/devCardPresentation.js";
 
 describe("dev-card presentation helpers", () => {
   it("builds knight payloads with deterministic effect ids and award snapshots", () => {

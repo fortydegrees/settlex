@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeDeterministicRng } from "@settlex/game-core";
-import { Catan } from "../../app/catana/Game";
+import { Catan } from "../../lib/game-runtime/Game";
 import { PufferBotManager } from "../bots/pufferBotManager";
 
 function createRandomStub() {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createEmptyState } from "@settlex/game-core";
-import { logAwardChanges } from "../moves/awardLogging";
+import { logAwardChanges } from "../../../lib/game-runtime/moves/awardLogging";
 
 const makeRoadTopology = (edges) => {
   const edgeNodes = {};

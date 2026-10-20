@@ -4,7 +4,7 @@ import {
   createInitialGameState,
   getPlacementOrder,
   resolveModeSetup
-} from "../gameSetup/initialState";
+} from "../../../lib/game-runtime/setup/initialState";
 
 const createRandom = (seed = 123) => ({
   Number: makeDeterministicRng(seed),

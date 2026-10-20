@@ -86,7 +86,7 @@ extra delay is for exploration; put an approved timing change in the runner.
 
 | Responsibility | Concrete owner |
 | --- | --- |
-| Authoritative gameplay event and effect payload | `app/catana/Game.js` and `game-core/`; inspect the move and effects-plugin emission |
+| Authoritative gameplay event and effect payload | `lib/game-runtime/Game.js`, `lib/game-runtime/moves/` and `game-core/`; inspect the move and effects-plugin emission |
 | Consume bgio-effects events and translate to presentation events | `app/catana/effects/GameEffects.js`, e.g. `placePiece` → `build:place`, `roll` → dice cue + visual plan |
 | Route semantic event to a runner | `app/catana/effects/registry.js` |
 | Emit the cue at the visual moment | `placePiece.js`, `resourceDistribution.js`, `cardTransfer.js`, `devCardPlay.js` |

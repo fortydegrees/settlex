@@ -57,6 +57,7 @@ Ship small, correct changes with a stable, testable game engine.
 - UI: `app/`
 - Game server: `server/`
 - Engine (shared): `game-core/`
+- Game definition/setup/move adapters and log privacy: `lib/game-runtime/` (shared by server, browser and replay)
 - Agent docs: `docs/agent/`
 - Catana dev sandbox: `app/catana/dev/sandbox/` — dev-only local board sandbox for real board UI, animation, and audio iteration without the live server
 - Catana effects lab: `app/catana/dev/effects/` — dev-only isolated effect/audio replay and tuning surface

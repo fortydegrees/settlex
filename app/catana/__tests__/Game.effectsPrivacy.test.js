@@ -5,7 +5,7 @@ import {
   getFilterPlayerView
 } from "boardgame.io/dist/cjs/internal.js";
 import { ResourceType } from "@settlex/game-core";
-import { createCatanGame } from "../Game";
+import { createCatanGame } from "../../../lib/game-runtime/Game";
 
 const game = createCatanGame({ includeEffects: true, includeDebugMoves: false });
 const filter = getFilterPlayerView(game);

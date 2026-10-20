@@ -1,4 +1,4 @@
-import { createCatanGame } from "../../Game";
+import { createCatanGame } from "../../../../lib/game-runtime/Game";
 
 export function createSandboxGame(preset) {
   const baseGame = createCatanGame();

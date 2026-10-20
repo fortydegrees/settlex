@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as Moves from "../Moves";
+import * as Moves from "../../../lib/game-runtime/Moves";
 
 describe("Moves compatibility exports", () => {
   it("re-exports split move modules for legacy imports", () => {

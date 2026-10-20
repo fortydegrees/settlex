@@ -8,8 +8,8 @@ import {
 import {
   autoPlaceRoad,
   autoPlaceSettlement
-} from "../moves/forcedPlacementMoves";
-import { autoDiscard } from "../moves/turnMoves";
+} from "../../../lib/game-runtime/moves/forcedPlacementMoves";
+import { autoDiscard } from "../../../lib/game-runtime/moves/turnMoves";
 
 vi.mock("@settlex/game-core", async () => {
   const actual = await vi.importActual("@settlex/game-core");

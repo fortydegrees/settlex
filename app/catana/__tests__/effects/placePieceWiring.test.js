@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CreateGameReducer, getFilterPlayerView } from "boardgame.io/dist/cjs/internal.js";
-import { createCatanGame } from "../../Game.js";
+import { createCatanGame } from "../../../../lib/game-runtime/Game.js";
 import placementReplay from "../../../../lib/server/__tests__/fixtures/placementReplay.json";
 
 const read = (relativePath) =>

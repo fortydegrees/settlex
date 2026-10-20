@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countResources } from "../moves/resourceCounts";
+import { countResources } from "../../../lib/game-runtime/moves/resourceCounts";
 
 describe("resource counting", () => {
   it("groups repeated resources by count", () => {

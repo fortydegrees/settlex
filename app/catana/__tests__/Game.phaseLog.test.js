@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeDeterministicRng } from "@settlex/game-core";
-import { Catan } from "../Game";
+import { Catan } from "../../../lib/game-runtime/Game";
 
 describe("phase log entries", () => {
   it("does not log placement phase start by default", () => {

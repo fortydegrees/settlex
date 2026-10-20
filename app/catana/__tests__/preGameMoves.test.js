@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { autoStartGame, readyUp } from "../moves/preGameMoves";
+import { autoStartGame, readyUp } from "../../../lib/game-runtime/moves/preGameMoves";
 
 const makeContext = (overrides = {}) => ({
   G: {

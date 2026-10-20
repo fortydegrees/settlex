@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Catan } from "../Game";
+import { Catan } from "../../../lib/game-runtime/Game";
 
 describe("main phase endIf", () => {
   it("returns gameOver when set", () => {

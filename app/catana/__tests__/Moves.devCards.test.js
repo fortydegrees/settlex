@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createEmptyState, buildTopology, ResourceType, TileTypes } from "@settlex/game-core";
-import { DEBUG_takeDevCards } from "../moves/debugMoves";
+import { DEBUG_takeDevCards } from "../../../lib/game-runtime/moves/debugMoves";
 import {
   autoResolveDevCard,
   autoPlaceRoadFromDevCard,
@@ -9,9 +9,9 @@ import {
   confirmDevCardPlay,
   playDevCardStart,
   placeRoadFromDevCard
-} from "../moves/devCardMoves";
-import { endTurn } from "../moves/turnMoves";
-import { moveRobber } from "../moves/robberMoves";
+} from "../../../lib/game-runtime/moves/devCardMoves";
+import { endTurn } from "../../../lib/game-runtime/moves/turnMoves";
+import { moveRobber } from "../../../lib/game-runtime/moves/robberMoves";
 
 const tiles = [
   {

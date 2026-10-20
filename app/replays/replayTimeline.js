@@ -1,4 +1,4 @@
-import { maskGameLogEntries } from "../catana/utils/gameLogPrivacy.js";
+import { maskGameLogEntries } from "../../lib/game-runtime/log/gameLogPrivacy.js";
 import { getPublicVictoryPoints } from "@settlex/game-core";
 import {
   formatLogEntryText,

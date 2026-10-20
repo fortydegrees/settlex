@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { makeDeterministicRng } from "@settlex/game-core";
 import { BOARD_SOURCE_IDS } from "../../../lib/shared/catanaGameModes.js";
-import { DUEL_FAIR_BOARD_CATALOG } from "../gameSetup/catalogs/duelFairOfficialV1.generated.js";
+import { DUEL_FAIR_BOARD_CATALOG } from "../../../lib/game-runtime/setup/catalogs/duelFairOfficialV1.generated.js";
 import {
   materializeBoardSource,
   materializeCustomBoard,
   resolveBoardSource,
   selectCatalogEntry
-} from "../gameSetup/boardSources.js";
+} from "../../../lib/game-runtime/setup/boardSources.js";
 
 describe("Catana board sources", () => {
   it("materialises the first catalog entry at the lower boundary", () => {

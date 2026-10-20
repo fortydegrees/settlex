@@ -1,4 +1,4 @@
-import { createCatanGame } from "../app/catana/Game.js";
+import { createCatanGame } from "../lib/game-runtime/Game.js";
 
 // Privileged def: used only by the server's internal dispatch path
 // (timers/presence/bots) so it can apply forfeits and auto-starts.

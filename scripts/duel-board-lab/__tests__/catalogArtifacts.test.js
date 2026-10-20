@@ -12,7 +12,7 @@ const dataPath = resolve(
 );
 const runtimePath = resolve(
   repoRoot,
-  "app/catana/gameSetup/catalogs/duelFairOfficialV1.generated.js"
+  "lib/game-runtime/setup/catalogs/duelFairOfficialV1.generated.js"
 );
 
 describe("duel fair catalog v1 artifacts", () => {

@@ -1,5 +1,5 @@
-import { createCatanGame } from "../../Game";
-import { placeRoad, placeSettlement, updateValids } from "../../Moves";
+import { createCatanGame } from "../../../../lib/game-runtime/Game";
+import { placeRoad, placeSettlement, updateValids } from "../../../../lib/game-runtime/Moves";
 
 const SANDBOX_COLORS = ["sky", "rose", "amber", "lime"];
 const SANDBOX_EMOJIS = ["😀", "😎", "🤖", "🦊"];

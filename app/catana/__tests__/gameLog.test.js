@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appendGameLog } from "../utils/gameLog";
+import { appendGameLog } from "../../../lib/game-runtime/log/gameLog";
 
 describe("appendGameLog", () => {
   it("stamps id/turn/phase and appends", () => {

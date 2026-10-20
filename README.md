@@ -124,7 +124,7 @@ provider behavior.
 | Area | Purpose |
 | --- | --- |
 | `game-core/` | Deterministic TypeScript state, rules, legal actions and experimental notation |
-| `app/catana/Game.js`, `app/catana/moves/` | boardgame.io game definition and rules/effect adapters |
+| `lib/game-runtime/` | Shared boardgame.io factory, setup, move adapters and authoritative log/privacy helpers |
 | `server/` | Live matches, timers, presence, bots and archival lifecycle |
 | `lib/server/`, `app/api/` | Accounts, database access and website API boundaries |
 | `app/catana/` | Board, game screen, lobby and presentation effects |
@@ -134,9 +134,10 @@ provider behavior.
 | `native/`, `ai/pufferlib/` | Optional bot serving and research-related source; not needed for human play |
 | `docs/README.md` | Maintained guide index, with separate routes to history and internal records |
 
-The shared game definition still lives under `app/catana`; it is not a published
-standalone server package. One repository keeps its consumers and tests together.
-See the architecture guide for the actual boundaries and a short reading path.
+The server, browser and archive replay share `lib/game-runtime/Game.js`. It uses
+the rules in `game-core/`; presentation and effect runners remain under
+`app/catana/`. One repository keeps these consumers and tests together. See the
+architecture guide for the boundaries and a short reading path.
 
 The [experimental notation guide](docs/notation/README.md) covers durable records
 and replay; native archival remains the fallback. Early root notes now live in

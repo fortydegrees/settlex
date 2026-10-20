@@ -39,6 +39,7 @@ agent/public-readiness/publication-options.md - Curated current tree and publica
 agent/public-readiness/remaining-source-review.md - Remaining authored React source review
 agent/public-readiness/root-organisation.md - Root and documentation organisation receipt
 agent/public-readiness/runtime-boundaries.md - Runtime boundary audit
+agent/public-readiness/runtime-organisation.md - Authoritative runtime organisation receipt
 agent/public-readiness/sound-provenance.md - Older sound provenance — unresolved
 agent/public-readiness/source-reference-followup.md - Source-reference follow-up
 agent/public-readiness/vaul-modal-proposal.md - Vaul modality patch — trial approved

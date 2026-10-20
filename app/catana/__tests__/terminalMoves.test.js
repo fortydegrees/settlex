@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resign } from "../moves/terminalMoves.js";
+import { resign } from "../../../lib/game-runtime/moves/terminalMoves.js";
 
 const buildContext = (playerID) => ({
   G: { core: { players: ["0", "1"], gameOver: null }, gameLog: [] },

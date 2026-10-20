@@ -1,7 +1,7 @@
 // Deterministic synthetic game driver for maintained notation/archive tests.
 // Promoted from the locally automated HAN trial; no imported match or account data.
 import { InitializeGame, CreateGameReducer } from 'boardgame.io/dist/cjs/internal.js';
-import { createCatanGame } from '../../../app/catana/Game.js';
+import { createCatanGame } from '../../../lib/game-runtime/Game.js';
 import { buildableEdges, buildableNodes, canPlaceRobber } from '@settlex/game-core';
 import type { SettlexNotationSourceArchive as SourceArchive } from '@settlex/game-core';
 

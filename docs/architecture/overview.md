@@ -8,10 +8,18 @@ published packages or a new universal protocol.
 
 `game-core/` contains deterministic TypeScript rules and game state. It does not
 own React components, audio or web accounts. The boardgame.io definition in
-`app/catana/Game.js` registers phases, moves, plugins and player views; its move
+`lib/game-runtime/Game.js` registers phases, moves, plugins and player views; its move
 adapters invoke core rules and translate accepted results into state, logs and
-presentation effects. That location is historical. Server and replay consumers
-still share the definition without a wholesale folder migration.
+presentation effects. Setup, move adapters and authoritative log/privacy helpers
+live beside the factory under `lib/game-runtime/`. Server, browser, sandbox and
+archive replay consumers import this shared owner directly.
+
+`createCatanGame` retains its `includeDebugMoves`, `includeEffects` and
+`includeServerMoves` options. Production server registration enables server moves;
+archive reconstruction disables presentation effects. Board generation requires
+the supplied seeded boardgame.io random API. Neutral mode definitions and placement
+queue timing remain under `lib/shared/`; visual tuning, effect runners, React and
+audio remain presentation-owned.
 
 `server/` hosts live games and owns timers, disconnect/idle handling, bot dispatch
 and archival lifecycle. `lib/server/` and Next API routes connect website accounts,
@@ -30,8 +38,8 @@ responsibility has been extracted.
 
 1. `app/catana/Edge.js` handles the selected edge and invokes `moves.placeRoad`
    (or the separate development-card action).
-2. `app/catana/Game.js` defines where that move is available. boardgame.io handles
-   its match/turn context; the adapter in `moves/buildMoves.js` calls
+2. `lib/game-runtime/Game.js` defines where that move is available. boardgame.io handles
+   its match/turn context; the adapter in `lib/game-runtime/moves/buildMoves.js` calls
    `applyPlaceRoad` during setup or `applyBuildRoad` during normal play.
 3. `game-core/src/rules/buildActions.ts` validates normal-play builds; setup
    placement uses `game-core/src/rules/apply.ts`. These update core state. A rejected result becomes `INVALID_MOVE`; the adapter
@@ -73,8 +81,10 @@ lobby-to-game transition.
 
 | Question | Start here |
 | --- | --- |
-| How is a move validated? | `game-core/src/rules/buildActions.ts`, then `app/catana/moves/buildMoves.js` |
-| How does the game register turns and moves? | `app/catana/Game.js` |
+| How is a move validated? | `game-core/src/rules/buildActions.ts`, then `lib/game-runtime/moves/buildMoves.js` |
+| How does the game register turns and moves? | `lib/game-runtime/Game.js` |
+| How are seeded boards and player/effect views prepared? | `lib/game-runtime/setup/` |
+| Where are authoritative logs and recipient filtering? | `lib/game-runtime/log/` |
 | How are ambiguous requests recovered? | `app/catana/lobby/usePublicMatchmaking.js` and its React stories |
 | How do server timers reach the board? | `server/timers/` and `app/catana/matchStatus/` |
 | How does an event become animation/audio? | `app/catana/effects/GameEffects.js`, `registry.js`, `placePiece.js` |

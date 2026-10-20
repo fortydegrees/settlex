@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { pickRandom } from "../moves/randomChoice";
+import { pickRandom } from "../../../lib/game-runtime/moves/randomChoice";
 
 describe("random move choice", () => {
   it("uses boardgame.io Shuffle when available", () => {

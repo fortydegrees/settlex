@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Master } from "boardgame.io/dist/cjs/master.js";
 import { InitializeGame } from "boardgame.io/dist/cjs/internal.js";
 import { InMemory } from "boardgame.io/src/server/db/inmemory";
-import { createCatanGame } from "../../app/catana/Game.js";
+import { createCatanGame } from "../../lib/game-runtime/Game.js";
 import { buildAutoMoveAction } from "../timers/dispatchUtils.js";
 import { TimerManager } from "../timers/TimerManager.js";
 import { createTimerPubSub } from "../timers/timerPubSub.js";

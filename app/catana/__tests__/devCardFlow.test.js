@@ -5,7 +5,7 @@ import {
   buildAutoYearOfPlentyPayload,
   getDevCardReturnStage,
   isChoiceDevCardType
-} from "../moves/devCardFlow.js";
+} from "../../../lib/game-runtime/moves/devCardFlow.js";
 
 describe("dev-card flow helpers", () => {
   it("identifies forced choice cards and their return stage", () => {

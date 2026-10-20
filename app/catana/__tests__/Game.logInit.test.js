@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeDeterministicRng } from "@settlex/game-core";
-import { Catan } from "../Game";
+import { Catan } from "../../../lib/game-runtime/Game";
 
 describe("Catan setup", () => {
   it("initializes gameLog and gameLogSeq", () => {

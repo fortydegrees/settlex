@@ -136,7 +136,7 @@ Tests: `__tests__/effects/soundThemes.test.js` (mapping assertions) and
 
 Robber-landing + steal-glyph proposals (on the artifact board, unwired) ·
 trade-confirmed tick · trade-offer attention cue (when `offerTrade` in
-`Game.js` ships — discard-class) · chat message · invalid-action feedback ·
+`lib/game-runtime/Game.js` ships — discard-class) · chat message · invalid-action feedback ·
 opponent award-loss (currently local claims only) · ambience/music (untouched
 category; the homepage's "ambient tabletop life" direction is the natural
 opening). A Catan Universe audio audit (2026-08) confirmed no other missing

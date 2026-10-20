@@ -4,7 +4,7 @@ import {
   InitializeGame
 } from "boardgame.io/dist/cjs/internal.js";
 import { ResourceType } from "@settlex/game-core";
-import { createCatanGame } from "../Game";
+import { createCatanGame } from "../../../lib/game-runtime/Game";
 
 const game = createCatanGame({
   includeDebugMoves: false,

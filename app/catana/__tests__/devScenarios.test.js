@@ -3,7 +3,7 @@ import {
   applyDevScenarioSetup,
   extractScenarioState,
   validateScenarioSetupData
-} from "../gameSetup/devScenarios";
+} from "../../../lib/game-runtime/setup/devScenarios";
 
 const scenarioState = {
   core: {
