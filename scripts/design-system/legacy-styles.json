@@ -59,7 +59,6 @@
   "app/catana/components/AnimatedCount.css | css | line-height:1": 1,
   "app/catana/components/AnimatedCount.css | css | margin-block:-0.14em": 1,
   "app/catana/components/AnimatedCount.css | css | padding-block:0.14em": 1,
-  "app/catana/components/Board/ActionNode.js | inline-style | borderRadius:100": 1,
   "app/catana/components/DevCardDisplay.css | css | border-radius:10px": 2,
   "app/catana/components/DevCardDisplay.css | css | border-radius:8px": 1,
   "app/catana/components/DevCardDisplay.css | css | padding:8px 12px 7px": 1,

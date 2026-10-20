@@ -20,7 +20,7 @@ retrieved from the [Google Fonts Outfit distribution](https://github.com/google/
 The following files cite Catanatron commit
 `425ccdef04921d1756a1c9bb1f904fceb1f3c3d3` and contain adapted upstream code:
 
-- `app/catana/utils/coordinates.js`
+- `app/catana/board/coordinates.js`
 - `app/board-editor/utils/coordinates.js`
 - `app/catana/utils/useWindowSize.js`
 - `app/board-editor/utils/useWindowSize.js`

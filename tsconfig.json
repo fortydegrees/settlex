@@ -27,9 +27,7 @@
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx",
-    "app/catana/utils/randomQueue.js",
-    "app/catana/components/ActionsDock/hooks/useMousePosition.js"
+    "**/*.tsx"
   ],
   "exclude": [
     "node_modules",

@@ -14,8 +14,7 @@ For shared product-surface primitives, check `app/ui/*` and `docs/agent/skills/c
 ## Common Surfaces
 
 Board drawing, geometry and placement previews live in [the board feature](../board/README.md).
-`GameScreen.js` remains the composition entry point. The unreferenced legacy
-`Board/ActionNode.js` is not the active board renderer; use `../board/ActionNode.js`.
+`GameScreen.js` remains the composition entry point.
 
 - `PlayerActionContainer`, `TurnControlCluster`, `Die`: local player HUD, resources, dice, turn actions.
 - `OpponentPlayerBox`, `PlayerAvatarStats`, `CardStack`: opponent HUD, stats, resource/dev-card stacks, player identity.
