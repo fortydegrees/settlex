@@ -4,20 +4,69 @@
 
 Open the exact doc you need. Each line maps a Markdown path under `docs/` to its first top-level heading.
 
+agent/ARCHITECTURE_REFACTOR_2026-06-13.md - Architecture Refactor Reference - 2026-06-13
+agent/BOT_MODELS.md - Selecting the Play vs Bot model
+agent/CLARITY_UI_REVIEW.md - Clarity UI migration review
+agent/CONSOLIDATION_2026_10_06.md - Completed product work consolidation — 6 October 2026
+agent/DESIGN_SYSTEM.md - Enforced Clarity foundations
+agent/GIT_CLEANUP_2026_10_06.md - Git cleanup — 6 October 2026
 agent/HANDOFF.md - HANDOFF — Settlex (Catan clone)
 agent/NOTES.md - NOTES
+agent/OPEN_SOURCE_READINESS.md - Open-source readiness — working inventory
 agent/PROGRESS.md - PROGRESS
+agent/PUBLIC_READINESS_CUSTOMIZATION.md - Sound and board-theme customization receipt
+agent/PUBLIC_READINESS_IMPLEMENTATION.md - Public readiness: bounded implementation receipt
+agent/PUBLIC_READINESS_LOBBY.md - Public matchmaking lifecycle readability receipt
+agent/PUBLIC_READINESS_ONBOARDING.md - Contributor walkthrough and cumulative qualification
+agent/PUBLIC_READINESS_QUALIFICATION.md - Runtime and contributor qualification — 2026-10-19
+agent/PUBLIC_READINESS_READABILITY.md - GameScreen status ownership readability receipt
+agent/PUBLIC_READINESS_RECOVERY.md - Reconnect reliability closeout
+agent/PUBLIC_READINESS_RUNTIME.md - Placement timing ownership — 2026-10-19
+agent/PUBLIC_READINESS_SOURCE.md - Authored JSX readability receipt
+agent/PUBLIC_READINESS_UPGRADE.md - Supported runtime migration — 2026-10-19
+agent/public-readiness/asset-disposition.md - Asset and dev-tool disposition — source audit
+agent/public-readiness/asset-inventory.md - Asset and source-material inventory
+agent/public-readiness/audit-findings.md - Public-readiness audit — 2026-10-19
+agent/public-readiness/candidate-scan.md - Curated candidate secret scans
+agent/public-readiness/content-curation.md - Public/private content curation follow-up
+agent/public-readiness/decision-package.md - Remaining decisions — preparation review
+agent/public-readiness/final-preparation.md - Final bounded preparation receipt
+agent/public-readiness/history-proposal.md - Proposed history changes — remote operation NOT EXECUTED
+agent/public-readiness/history-trial.md - Provisional local history trial — no publication operation
+agent/public-readiness/management-status.md - Public-readiness management status
+agent/public-readiness/notation-reconciliation.md - Maintained HAN notation reconciliation — 20 October 2026
+agent/public-readiness/publication-options.md - Curated current tree and publication-history options — local proposal
+agent/public-readiness/remaining-source-review.md - Remaining authored React source review
+agent/public-readiness/root-organisation.md - Root and documentation organisation receipt
+agent/public-readiness/runtime-boundaries.md - Runtime boundary audit
+agent/public-readiness/sound-provenance.md - Older sound provenance — unresolved
+agent/public-readiness/source-reference-followup.md - Source-reference follow-up
+agent/public-readiness/vaul-modal-proposal.md - Vaul modality patch — trial approved
+agent/public-readiness/vaul-modal-trial.md - Vaul nonmodal drawer patch trial — 20 October 2026
 agent/SETTLEX_STANDARD_UI_VARIANT_PROMPT.md - Settlex Standard UI Variant Prompt
 agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md - Adding Shared UI Primitives
+agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md - Catana Design Review Checklist
 agent/skills/catana-brand/RESOURCE_ICON_STYLE_GUIDE.md - Catana Resource Icon Style Guide
 agent/skills/catana-brand/SKILL.md - Catana Design System
+agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md - SettleHex Sound Design Guide
+agent/STORYBOOK.md - Storybook UI Catalog
 agent/TESTING_NOTES.md - Testing Notes
+agent/TESTING.md - Testing
+agent/UI_CATALOG.md - SettleHex Standard UI Catalog
 agent/UI_CONTEXT.md - Catana UI Context
+agent/UI_STYLE_EXCEPTIONS.md - Owned artwork and geometry contracts
+architecture/overview.md - Architecture and source reading path
+bugs/2026-10-06-settlegraph-007-knight-robber-timeout.md - SettleGraph 007 knight robber timeout
+customization/themes-and-sounds.md - Customize board art and game sounds
 deploy/oci-mvp.md - OCI MVP Deployment
 future_plans/dev-card-box.md - Dev Card Box — Future UX/UI Notes
 future_plans/dev-card-play-tests.md - Dev Card Play - Testing Notes
 future_plans/player-view-model.md - Player View Model (Future Plan)
+history/early-development/animation-writing-draft.md - No top-level heading
+history/early-development/README.md - Early development notes
 mvp-compromises.md - MVP Compromises
+notation/FORMAT.md - Settlex HAN record contract
+notation/README.md - Settlex game records
 plans/2025-02-11-lime-cta-color-update.md - CTA Color Update: Emerald → Lime
 plans/2026-01-08-catan-ruleset-master-spec.md - Catan Ruleset Master Spec
 plans/2026-01-08-core-architecture-design.md - Core Engine Architecture Design
@@ -110,6 +159,12 @@ plans/2026-03-12-port-channel-board-layer-plan.md - Catana Port Channel Board La
 plans/2026-03-16-port-high-contrast-icons-plan.md - Catana Port High-Contrast Icons Implementation Plan
 plans/2026-03-16-port-simple-connectors-design.md - Catana Simple Port Connectors Design
 plans/2026-03-16-port-simple-connectors-plan.md - Catana Simple Port Connectors Implementation Plan
+README.md - Documentation
+superpowers/handoffs/2026-07-28-settlehex-share-card-fable-handoff.md - SettleHex share-card / SEO handoff for Fable
+superpowers/handoffs/2026-07-29-settlehex-brand-opus/BRAND_CONTEXT.md - SettleHex brand context
+superpowers/handoffs/2026-07-29-settlehex-brand-opus/CLAUDE_OPUS_PROMPT.md - Claude Opus prompt — SettleHex responsive identity exploration
+superpowers/handoffs/2026-07-29-settlehex-brand-opus/README.md - SettleHex brand exploration handoff
+superpowers/handoffs/2026-07-29-settlehex-brand-opus/response/DECISION_BRIEF.md - SettleHex identity — diagnosis, evidence, recommendation
 superpowers/plans/2026-03-18-piece-assets-imagegen-plan.md - Piece Assets Imagegen Plan Implementation Plan
 superpowers/plans/2026-03-20-longest-road-icon-plan.md - Longest Road Icon Implementation Plan
 superpowers/plans/2026-03-22-robber-icon-plan.md - Robber Icon Implementation Plan
@@ -155,6 +210,46 @@ superpowers/plans/2026-05-09-mobile-dev-card-picker.md - Mobile Dev Card Picker 
 superpowers/plans/2026-06-01-release-versioning.md - Release Versioning Implementation Plan
 superpowers/plans/2026-06-02-mobile-command-row-timer.md - Mobile Command Row Timer Implementation Plan
 superpowers/plans/2026-06-04-homepage-demo-board.md - Homepage Demo Board Implementation Plan
+superpowers/plans/2026-06-25-guest-auth-entry-flow.md - Guest Auth Entry Flow Implementation Plan
+superpowers/plans/2026-07-10-app-test-runner-pool.md - App Test Runner Pool Implementation Plan
+superpowers/plans/2026-07-10-engine-transaction-hardening.md - Engine Transaction Hardening Implementation Plan
+superpowers/plans/2026-07-10-unused-dependency-cleanup.md - Unused Dependency Cleanup Implementation Plan
+superpowers/plans/2026-07-11-duel-fair-board-lab.md - Duel Fair Board Lab Implementation Plan
+superpowers/plans/2026-07-11-frontend-loading-performance.md - Frontend Loading Performance Implementation Plan
+superpowers/plans/2026-07-13-duel-fair-v2-opening-evaluator.md - Duel Fair v2 Opening Evaluator Implementation Plan
+superpowers/plans/2026-07-13-duel-fair-v3-fast-ranking.md - Duel Fair v3 Fast Ranking Implementation Plan
+superpowers/plans/2026-07-14-archived-replay-v1.md - Archived Replay V1 Revision Implementation Plan
+superpowers/plans/2026-07-14-catana-animation-quick-wins.md - Catana Animation Quick Wins Implementation Plan
+superpowers/plans/2026-07-14-catana-pointer-frame-batching.md - Catana Pointer Frame Batching Implementation Plan
+superpowers/plans/2026-07-14-catana-runtime-quick-wins.md - Catana Runtime Quick Wins Implementation Plan
+superpowers/plans/2026-07-14-duel-fair-live-catalog.md - Duel Fair Live Catalog v1 Implementation Plan
+superpowers/plans/2026-07-14-empty-matchmaking-and-match-alerts.md - Empty Matchmaking And Match Alerts Implementation Plan
+superpowers/plans/2026-07-14-explicit-board-source-architecture.md - Explicit Board Source Architecture Implementation Plan
+superpowers/plans/2026-07-15-matchmaking-join-cancel-race.md - Matchmaking Join-Cancel Race Implementation Plan
+superpowers/plans/2026-07-28-one-account-per-match-seat.md - One Account Per Match Seat Implementation Plan
+superpowers/plans/2026-07-28-recover-stranded-mainline-improvements.md - Stranded Mainline Improvements Recovery Plan
+superpowers/plans/2026-07-28-settlehex-share-metadata.md - SettleHex Share Metadata Implementation Plan
+superpowers/plans/2026-07-28-test-suite-refactor.md - Test Suite Refactor Implementation Plan
+superpowers/plans/2026-07-29-settlehex-beta-copy.md - SettleHex Beta Copy Implementation Plan
+superpowers/plans/2026-07-29-settlehex-ui-catalog-and-claude-design.md - SettleHex UI Catalog And Claude Design Implementation Plan
+superpowers/plans/2026-08-07-match-found-calibration-sounds.md - Match-Found Calibration Sounds Implementation Plan
+superpowers/plans/2026-08-22-server-authoritative-matchmaking.md - Server-Authoritative Matchmaking Implementation Plan
+superpowers/plans/2026-08-25-settlegraph-v2-product-integration.md - SettleGraph V2 Product Integration Implementation Plan
+superpowers/plans/2026-09-14-home-demo-visibility-playback.md - Homepage Demo Visibility Playback Implementation Plan
+superpowers/plans/2026-09-22-account-lobby-foundations.md - Account and lobby foundations implementation plan
+superpowers/plans/2026-09-22-clarity-control-family.md - Clarity Control Family Implementation Plan
+superpowers/plans/2026-09-22-clarity-ui-redesign.md - Clarity UI Redesign Implementation Plan
+superpowers/plans/2026-09-22-enforced-ui-foundations.md - Enforced UI foundations — first migration
+superpowers/plans/2026-09-22-feed-foundations.md - Shared feed foundations implementation plan
+superpowers/plans/2026-09-22-profile-home-metadata-foundations.md - Profile and homepage metadata foundations implementation plan
+superpowers/plans/2026-09-22-recovery-postgame-replay-foundations.md - Recovery, postgame and replay foundations implementation plan
+superpowers/plans/2026-09-23-complete-clarity-migration.md - Complete Clarity Migration Implementation Plan
+superpowers/plans/2026-09-23-game-chrome-foundations.md - Game chrome foundations
+superpowers/plans/2026-09-23-game-info-dialog-foundations.md - Game Information Dialog Foundations Implementation Plan
+superpowers/plans/2026-10-06-bot-model-selection.md - Bot model selection Implementation Plan
+superpowers/plans/2026-10-07-settlegraph-009-release.md - SettleGraph 009 integration and release
+superpowers/plans/2026-10-19-open-source-readability.md - Open-source Readiness and Readability Implementation Plan
+superpowers/plans/2026-10-20-repository-organisation.md - Repository organisation and notation reconciliation
 superpowers/specs/2026-03-18-piece-assets-design.md - Piece Assets Design
 superpowers/specs/2026-03-20-longest-road-icon-design.md - Longest Road Icon Design
 superpowers/specs/2026-03-22-robber-icon-design.md - Robber Icon Design
@@ -196,3 +291,28 @@ superpowers/specs/2026-06-01-release-versioning-design.md - Release Versioning D
 superpowers/specs/2026-06-02-mobile-command-row-timer-design.md - Mobile Command Row Timer Design
 superpowers/specs/2026-06-03-settlehex-homepage-direction-brief.md - Settlehex Homepage Direction Brief
 superpowers/specs/2026-06-04-homepage-demo-board-design.md - Homepage Demo Board Design
+superpowers/specs/2026-06-25-guest-auth-and-play-entry-flow-design.md - Guest Auth And Play Entry Flow Design
+superpowers/specs/2026-07-10-catana-procedural-city-token-design.md - Catana Procedural City Token Design
+superpowers/specs/2026-07-10-engine-transaction-hardening-design.md - Engine Transaction Hardening Design
+superpowers/specs/2026-07-11-catana-3d-emoji-terrain-palette-design.md - Catana 3D Emoji Terrain Palette Design
+superpowers/specs/2026-07-11-duel-fair-board-lab-design.md - Duel Fair Board Lab
+superpowers/specs/2026-07-11-frontend-loading-performance-design.md - Frontend Loading Performance Design
+superpowers/specs/2026-07-13-duel-fair-v2-opening-evaluator-design.md - Duel Fair v2 Opening Evaluator
+superpowers/specs/2026-07-13-duel-fair-v3-fast-ranking-design.md - Duel Fair v3 Fast Ranking
+superpowers/specs/2026-07-14-catana-animation-quick-wins-design.md - Catana Animation Quick Wins Design
+superpowers/specs/2026-07-14-catana-pointer-frame-batching-design.md - Catana Pointer Frame Batching Design
+superpowers/specs/2026-07-14-catana-runtime-quick-wins-design.md - Catana Runtime Quick Wins Design
+superpowers/specs/2026-07-14-duel-fair-live-catalog-design.md - Duel Fair Live Catalog v1
+superpowers/specs/2026-07-14-empty-matchmaking-and-match-alerts-design.md - Empty Matchmaking And Match Alerts Design
+superpowers/specs/2026-07-14-explicit-board-source-architecture-design.md - Explicit Board Source Architecture
+superpowers/specs/2026-07-14-replay-v1-design.md - Archived Replay V1 Design
+superpowers/specs/2026-07-17-skill-progression-system-design.md - Settlex Skill Progression System Design
+superpowers/specs/2026-07-28-one-account-per-match-seat-design.md - One Account Per Match Seat
+superpowers/specs/2026-07-28-settlehex-share-metadata-design.md - SettleHex Share Metadata Design
+superpowers/specs/2026-07-29-settlehex-beta-copy-strategy-design.md - SettleHex Beta Copy Strategy
+superpowers/specs/2026-07-29-settlehex-ui-catalog-and-claude-design-design.md - SettleHex UI Catalog And Claude Design Integration
+superpowers/specs/2026-08-06-match-found-game-start-cue-design.md - Match-Found Game-Start Cue Design
+superpowers/specs/2026-08-25-settlegraph-v2-product-integration-design.md - SettleGraph V2 Product Integration Design
+superpowers/specs/2026-09-22-clarity-ui-redesign-design.md - SettleHex Clarity UI redesign
+superpowers/specs/2026-10-06-bot-model-selection.md - Approved bot model selection design
+superpowers/specs/2026-10-19-open-source-readability-design.md - Open-source readiness and contributor readability

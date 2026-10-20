@@ -6,6 +6,7 @@ focuses on two-player duels. It combines a TypeScript rules engine with a
 boardgame.io server and a Next.js/React interface.
 
 [Play SettleHex](https://settlehex.com) ·
+[Documentation](docs/README.md) ·
 [Architecture and source reading path](docs/architecture/overview.md) ·
 [Customize sounds and board art](docs/customization/themes-and-sounds.md)
 
@@ -122,16 +123,28 @@ provider behavior.
 
 | Area | Purpose |
 | --- | --- |
-| `game-core/` | Deterministic TypeScript state, rules and legal actions |
-| `app/catana/Game.js`, `moves/` | boardgame.io game definition and rules/effect adapters |
+| `game-core/` | Deterministic TypeScript state, rules, legal actions and experimental notation |
+| `app/catana/Game.js`, `app/catana/moves/` | boardgame.io game definition and rules/effect adapters |
 | `server/` | Live matches, timers, presence, bots and archival lifecycle |
 | `lib/server/`, `app/api/` | Accounts, database access and website API boundaries |
 | `app/catana/` | Board, game screen, lobby and presentation effects |
+| `app/catana/effects/`, `public/sounds/` | Presentation runners, audio cue routing and served clips |
+| `scripts/`, `infra/`, `release/` | Maintained commands, local/deployment infrastructure and release records |
+| `public/`, `design/`, `sounds/` | Served assets, design sources and sound creation tools; source and rights review still applies |
 | `native/`, `ai/pufferlib/` | Optional bot serving and research-related source; not needed for human play |
+| `docs/README.md` | Maintained guide index, with separate routes to history and internal records |
 
 The shared game definition still lives under `app/catana`; it is not a published
 standalone server package. One repository keeps its consumers and tests together.
 See the architecture guide for the actual boundaries and a short reading path.
+
+The [experimental notation guide](docs/notation/README.md) covers durable records
+and replay; native archival remains the fallback. Early root notes now live in
+[development history](docs/history/early-development/README.md), where their
+status and original filenames are recorded. They are not the current roadmap.
+Tool discovery directories such as `.agents/`, `.codex/`, `.storybook/` and the
+optional `.design-sync/` bridge retain their current paths; the
+[documentation index](docs/README.md) explains their owners.
 
 ## Checks and contribution
 
