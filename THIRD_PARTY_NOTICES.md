@@ -48,8 +48,9 @@ notice for that source, not a selection of the overall project's license.
 
 ## Inventory still under review
 
-- The custom SettleHex display face: its existing README records design
-  provenance, but an explicit redistribution/license disposition is still needed.
+- The custom SettleHex display face: its README now records the verified build-source match
+  and Outfit-guided generated concept lineage. Explicit redistribution/license
+  disposition is still needed.
 - Older sound effects, downloaded reference audio, and board/reference
   artwork: determine the source and terms for each retained family. The sound
   synthesis kit does not establish provenance for the whole audio library. David

@@ -15,3 +15,19 @@ SettleHex, Victory!, You win!, Your turn, Settings, Rematch. Do not assume suppo
 for arbitrary names, numbers or localization. FontBakery in the source task:
 74 pass, 2 fail (incomplete case pairs and OS/2 code-page flags), 48 skip, 3 info.
 This is not a complete production alphabet or a claim of cross-browser QA.
+
+## Source lineage
+
+A 20 October 2026 source audit verified that the shipped WOFF2 is byte-identical
+to the retained v0.4 validation output (SHA-256
+`e5cea15307d2afb7000b14bf31dc35a7fe481088e34cd460e89d4903070dc4df`).
+The font builder assembles explicit SVG glyph paths with fontTools; the v0.4
+step adds lowercase w to the v0.3 path set. It does not import outlines from an
+existing font into the emitted glyph tables in the inspected build path.
+
+The paths' visual reference was generated concept J. Its retained prompt used a
+typeset Outfit Bold proof as the primary reference and an earlier generated
+study as a secondary reference. Keep that design lineage visible: manually
+constructing paths does not by itself establish independent design or settle
+redistribution terms. Outfit's notice is retained separately. The custom face's
+license/distribution decision remains open; no license is granted by this README.
