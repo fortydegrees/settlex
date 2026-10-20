@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Howl } from "howler";
 import { createEffectBus } from "../../effects/EffectBus";
@@ -51,6 +52,28 @@ describe("AudioManager", () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     global.document = originalDocument;
+  });
+
+  it("preloads only shipped default assets, including dice variants and lead-ins", () => {
+    const audio = createAudioManager();
+    try {
+      audio.preload();
+      const sources = howlInstances.flatMap(({ config }) => config.src);
+      const missing = sources.filter((src) =>
+        !existsSync(new URL(`../../../../public${src}`, import.meta.url))
+      );
+      expect(missing).toEqual([]);
+      expect(sources).toEqual(expect.arrayContaining([
+        "/sounds/settle.mp3",
+        "/sounds/road.mp3",
+        "/sounds/die-throw-1.mp3",
+        "/sounds/die-throw-4.mp3",
+        "/sounds/dice-roll-test/dice_roll1.mp3",
+        "/sounds/dice-roll-test/dice_roll4.mp3"
+      ]));
+    } finally {
+      audio.destroy();
+    }
   });
 
   it("replaces one whole cue while omitted cues keep their default sound", () => {

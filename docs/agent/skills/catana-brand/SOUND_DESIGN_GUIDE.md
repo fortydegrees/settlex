@@ -9,6 +9,15 @@ https://claude.ai/code/artifact/04f03bf5-327c-4752-8c49-97dc41c92fb4) — every
 decided cue playable with its rationale, plus parked proposals. Recipes live in
 `sounds/soundkit/` (see its README for render/promote mechanics).
 
+The curated public tree retains the active `public/sounds/` clips and
+`sounds/soundkit/` recipes. Older root sample collections and unselected public
+audio studies are preserved privately; historical sample names are not current
+checkout instructions. Extend the cue map and audition a reviewed source rather
+than recovering an arbitrary old clip. The material layer's original creation
+method and redistribution terms remain unresolved; “recording” below describes
+the design account, not verified provenance. The kit README records its current
+render-command limitation.
+
 ## The two-layer soundscape
 
 The axis players hear is **material vs musical**, not recorded vs synthesized:

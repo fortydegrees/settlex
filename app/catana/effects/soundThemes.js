@@ -12,7 +12,6 @@ export const DEFAULT_THEME = {
   "build:settlement": { src: "/sounds/settle.mp3", volume: 0.6 },
   "build:city": { src: "/sounds/settle.mp3", volume: 0.6 },
   "build:road": { src: "/sounds/road.mp3", volume: 0.6 },
-  "build:place": { src: "/sounds/build_settlement.mp3", volume: 0.8 },
   "devcard:buy:public": { src: "/sounds/card_woosh.mp3", volume: 0.34 },
   "devcard:reveal:pop": { src: "/sounds/ui-pop-resource-out.mp3", volume: 0.4 },
   "devcard:reveal:travel": { src: "/sounds/card_woosh.mp3", volume: 0.4 },
