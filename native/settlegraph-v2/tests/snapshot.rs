@@ -6,9 +6,9 @@ use serde_json::{json, Value};
 use settlegraph_v2::decision::{
     collect_discard_plan_with, plan_for_action, select_highest_legal, DecisionEngine,
 };
-use settlegraph_v2::load_verified_model;
 use settlegraph_v2::protocol::WebsiteSnapshot;
 use settlegraph_v2::snapshot::import_snapshot;
+use settlegraph_v2::{load_verified_model, runtime_contract, EXPECTED_CTNN_SHA256};
 use std::path::Path;
 
 fn cards(counts: &[(&str, usize)]) -> Vec<Value> {
@@ -586,9 +586,11 @@ fn combines_repeated_native_discard_decisions_into_one_website_move() {
 #[test]
 #[ignore = "requires the external sealed CTNN-v2 artifact"]
 fn sealed_model_decision_is_deterministic_and_legal_for_imported_state() {
-    let model_path =
-        "/absolute/path/to/model.ctnn";
-    let verified = load_verified_model(Path::new(model_path)).expect("load sealed CTNN-v2");
+    let model_path = std::env::var("SETTLEX_SETTLEGRAPH_V2_MODEL")
+        .expect("set SETTLEX_SETTLEGRAPH_V2_MODEL to the exact external sealed CTNN-v2 artifact");
+    let verified = load_verified_model(Path::new(&model_path)).expect("load sealed CTNN-v2");
+    assert_eq!(verified.sha256, EXPECTED_CTNN_SHA256);
+    assert_eq!(verified.contract, runtime_contract());
     let mut engine = DecisionEngine::new(verified);
     let snapshot: WebsiteSnapshot =
         serde_json::from_value(base_snapshot_value()).expect("website snapshot");

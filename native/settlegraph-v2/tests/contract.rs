@@ -5,9 +5,6 @@ use settlegraph_v2::{
     load_verified_model, runtime_contract, EXPECTED_CONTRACT_SHA256, EXPECTED_CTNN_SHA256,
 };
 
-const SEALED_MODEL: &str =
-    "/absolute/path/to/model.ctnn";
-
 #[test]
 fn runtime_contract_matches_the_sealed_product_contract() {
     let contract = runtime_contract();
@@ -40,8 +37,8 @@ fn worker_request_rejects_unsupported_search_fields() {
 #[test]
 #[ignore = "requires the external sealed CTNN-v2 artifact"]
 fn sealed_ctnn_matches_hash_contract_and_embedded_probe() {
-    let path =
-        std::env::var("SETTLEX_SETTLEGRAPH_V2_MODEL").unwrap_or_else(|_| SEALED_MODEL.to_owned());
+    let path = std::env::var("SETTLEX_SETTLEGRAPH_V2_MODEL")
+        .expect("set SETTLEX_SETTLEGRAPH_V2_MODEL to the exact external sealed CTNN-v2 artifact");
     let loaded = load_verified_model(Path::new(&path)).expect("verified sealed model");
     assert_eq!(loaded.sha256, EXPECTED_CTNN_SHA256);
     assert_eq!(loaded.contract, runtime_contract());

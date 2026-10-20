@@ -4,9 +4,6 @@ use std::process::{Command, Stdio};
 use serde_json::Value;
 use settlegraph_v2::{EXPECTED_CONTRACT_SHA256, EXPECTED_CTNN_SHA256};
 
-const SEALED_MODEL: &str =
-    "/absolute/path/to/model.ctnn";
-
 fn read_response(reader: &mut BufReader<std::process::ChildStdout>) -> Value {
     let mut line = String::new();
     let bytes = reader.read_line(&mut line).expect("read worker response");
@@ -30,8 +27,8 @@ fn worker_rejects_search_arguments_without_loading_a_model() {
 #[test]
 #[ignore = "requires the external sealed CTNN-v2 artifact"]
 fn worker_preflights_once_and_returns_correlated_health_and_errors() {
-    let model =
-        std::env::var("SETTLEX_SETTLEGRAPH_V2_MODEL").unwrap_or_else(|_| SEALED_MODEL.to_owned());
+    let model = std::env::var("SETTLEX_SETTLEGRAPH_V2_MODEL")
+        .expect("set SETTLEX_SETTLEGRAPH_V2_MODEL to the exact external sealed CTNN-v2 artifact");
     let mut child = Command::new(env!("CARGO_BIN_EXE_settlegraph-v2-worker"))
         .args(["--model", &model])
         .stdin(Stdio::piped())

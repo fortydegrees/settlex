@@ -3,21 +3,34 @@
 rsvg-convert can only reach fonts registered with fontconfig, and Fredoka is
 not installed system-wide. Converting to paths keeps Fredoka and Outfit on
 exactly equal footing instead of comparing a real face against a fallback.
+
+
+Run with a Python environment that already provides fontTools. Set
+SETTLEX_FREDOKA_FONT to the exact original Fredoka variable TTF. Static Outfit
+Bold/Black inputs come from this checkout's public/fonts; no substitute face is
+selected. Missing external inputs fail explicitly when extraction is requested. Set
+SETTLEX_OUTFIT_VARIABLE_FONT to the original Outfit variable TTF for the 600-weight
+study. Extraction uses this running Python interpreter; existing cached outlines
+can still be read without rebuilding external fonts.
 """
 
 import json
 import os
 import subprocess
+import sys
+from pathlib import Path
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, "out", "words.json")
 
+REPO_FONTS = Path(__file__).resolve().parents[6] / "public" / "fonts"
+
 FACES = {
-    "fredoka600": ("fonts/Fredoka.ttf", {"wght": 600, "wdth": 100}),
-    "fredoka500": ("fonts/Fredoka.ttf", {"wght": 500, "wdth": 100}),
-    "outfit600": ("/absolute/path/to/fonts/Outfit-VariableFont_wght.ttf", {"wght": 600}),
-    "outfit700": ("public/fonts/Outfit-Bold.ttf", None),
-    "outfit900": ("public/fonts/Outfit-Black.ttf", None),
+    "fredoka600": (os.environ.get("SETTLEX_FREDOKA_FONT"), {"wght": 600, "wdth": 100}),
+    "fredoka500": (os.environ.get("SETTLEX_FREDOKA_FONT"), {"wght": 500, "wdth": 100}),
+    "outfit600": (os.environ.get("SETTLEX_OUTFIT_VARIABLE_FONT"), {"wght": 600}),
+    "outfit700": (str(REPO_FONTS / "Outfit-Bold.ttf"), None),
+    "outfit900": (str(REPO_FONTS / "Outfit-Black.ttf"), None),
 }
 
 _EXTRACT = r'''
@@ -69,8 +82,11 @@ print(json.dumps({"d": " ".join(parts), "advance": x, "ascent": asc,
 def _build(text):
     out = {}
     for key, (path, loc) in FACES.items():
+        if not path:
+            variable = "SETTLEX_FREDOKA_FONT" if key.startswith("fredoka") else "SETTLEX_OUTFIT_VARIABLE_FONT"
+            raise ValueError(f"set {variable} to the exact original variable TTF")
         res = subprocess.run(
-            [os.path.join(HERE, "venv", "bin", "python"), "-c", _EXTRACT,
+            [sys.executable, "-c", _EXTRACT,
              path, json.dumps(loc), text],
             capture_output=True, text=True, check=True,
         )

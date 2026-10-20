@@ -64,6 +64,18 @@ cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test incumbent_006
   -- --ignored --nocapture
 ```
 
+The three ignored original sealed-CTNN-v2 checks in `contract`, `snapshot` and
+`worker` require `SETTLEX_SETTLEGRAPH_V2_MODEL` to name the original external V2
+artifact (SHA-256 `072906d17077f1ed3fa4e9254999a8920ec243bdda3ab42575258492b58465c8`).
+They fail explicitly when invoked without that variable; they never fall back to
+a maintainer path or silently skip. The ordinary model-free tests need no model.
+The exact sealed hash, contract and embedded-probe validation remain enforced;
+a current 009 or other checkpoint is not a substitute for this historical fixture.
+To opt in to the other two cases with that same environment variable, use
+`--test snapshot sealed_model_decision_is_deterministic_and_legal_for_imported_state`
+or `--test worker worker_preflights_once_and_returns_correlated_health_and_errors`,
+each followed by `-- --ignored --exact --nocapture`.
+
 The external-artifact checks verify the exact file hashes, versioned contracts,
 embedded probes, and all 256 recorded logits, values, and legal argmaxes for each checkpoint.
 

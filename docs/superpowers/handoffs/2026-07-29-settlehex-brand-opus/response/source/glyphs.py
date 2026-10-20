@@ -4,10 +4,18 @@ Coordinates are emitted y-down (SVG convention) and normalised so the glyph
 bounding box is centred on (0,0) with a height of exactly 1000 units. Callers
 then place the S by scaling that box, so every study uses identical optical
 sizing regardless of which face supplied the outline.
+
+
+Run with a Python environment that already provides fontTools. Set
+SETTLEX_FREDOKA_FONT to the exact original Fredoka variable TTF. Static Outfit
+Bold/Black inputs come from this checkout's public/fonts; no substitute face is
+selected. Missing external inputs fail explicitly when extraction is requested.
 """
 
 import json
+import os
 import sys
+from pathlib import Path
 
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
@@ -16,12 +24,14 @@ from fontTools.pens.boundsPen import BoundsPen
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
 
+REPO_FONTS = Path(__file__).resolve().parents[6] / "public" / "fonts"
+
 FACES = {
     # name: (path, variable-axis location or None, weight label)
-    "fredoka600": ("fonts/Fredoka.ttf", {"wght": 600, "wdth": 100}, "Fredoka SemiBold"),
-    "fredoka500": ("fonts/Fredoka.ttf", {"wght": 500, "wdth": 100}, "Fredoka Medium"),
-    "outfit700": ("public/fonts/Outfit-Bold.ttf", None, "Outfit Bold"),
-    "outfit900": ("public/fonts/Outfit-Black.ttf", None, "Outfit Black"),
+    "fredoka600": (os.environ.get("SETTLEX_FREDOKA_FONT"), {"wght": 600, "wdth": 100}, "Fredoka SemiBold"),
+    "fredoka500": (os.environ.get("SETTLEX_FREDOKA_FONT"), {"wght": 500, "wdth": 100}, "Fredoka Medium"),
+    "outfit700": (str(REPO_FONTS / "Outfit-Bold.ttf"), None, "Outfit Bold"),
+    "outfit900": (str(REPO_FONTS / "Outfit-Black.ttf"), None, "Outfit Black"),
 }
 
 
@@ -59,6 +69,8 @@ if __name__ == "__main__":
     char = sys.argv[1] if len(sys.argv) > 1 else "S"
     out = {}
     for key, (path, loc, label) in FACES.items():
+        if not path:
+            raise ValueError("set SETTLEX_FREDOKA_FONT to the exact original Fredoka variable TTF")
         data = outline(path, loc, char)
         data["label"] = label
         out[key] = data
