@@ -35,6 +35,17 @@ The overall project's license disposition is unresolved. This notice records
 provenance and includes the upstream license; it does not assert that adding this
 notice alone completes all redistribution obligations or that these files are MIT.
 
+## settlers-setup board specification
+
+`game-core/src/spec.ts` cites and adapts the standard-board specification from
+[settlers-setup](https://github.com/cgagliardi/settlers-setup/blob/5ae568ae5cbaf5a35a25f20bfd54a6c38d4c5b0a/src/app/board/specs/standard.ts).
+The resource-count construction, board-spec fields and roll-number list retain
+recognizable upstream structure; local geometry, ports and bank setup differ.
+
+Copyright (c) 2020 Cory Gagliardi. The pinned upstream
+[MIT notice](LICENSES/settlers-setup-MIT.txt) is preserved in full. This is the
+notice for that source, not a selection of the overall project's license.
+
 ## Inventory still under review
 
 - The custom SettleHex display face: its existing README records design
