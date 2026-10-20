@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { getPool } from "../../lib/server/db/getPool.js";
+import { convertNotation as defaultConvertNotation, normalizeNotationOutcome } from "./notation/convertNotation.js";
 
 const toJsonbParam = (value) => {
   if (value == null) {
@@ -65,6 +66,7 @@ export const archiveFinishedMatch = async ({
   chatMessages = [],
   maxTerminalFetchRetries = 20,
   terminalFetchRetryDelayMs = 25,
+  convertNotation = defaultConvertNotation,
 } = {}) => {
   if (!serverDb?.fetch) {
     throw new Error("A live boardgame.io DB is required to archive finished matches");
@@ -125,6 +127,16 @@ export const archiveFinishedMatch = async ({
     winnerSeatId == null
       ? null
       : participantRows.find((participant) => participant.seatId === String(winnerSeatId)) ?? null;
+  let notation;
+  try {
+    notation = normalizeNotationOutcome(await convertNotation({
+      initialState: liveRecord.initialState ?? null,
+      log: liveRecord.log ?? null,
+      finalState: liveRecord.state,
+    }));
+  } catch {
+    notation = { status: "unavailable", errorCode: "worker-error" };
+  }
   const client = await pool.connect();
 
   try {
@@ -231,9 +243,12 @@ export const archiveFinishedMatch = async ({
           initial_state_json,
           log_json,
           final_state_json,
-          summary_json
+          summary_json,
+          notation_json,
+          notation_status,
+          notation_error_code
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `,
       [
         archivedMatchId,
@@ -241,6 +256,9 @@ export const archiveFinishedMatch = async ({
         toJsonbParam(liveRecord.log ?? []),
         toJsonbParam(liveRecord.state),
         toJsonbParam(summaryJson),
+        notation.status === "ready" ? notation.serializedRecord : null,
+        notation.status,
+        notation.status === "unavailable" ? notation.errorCode : null,
       ]
     );
 

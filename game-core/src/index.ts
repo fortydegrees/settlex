@@ -25,3 +25,11 @@ export * from "./board/boardUtils";
 export * from "./board/boardSpecs";
 export * from "./board/boardConfigs";
 export * from "./board/generateBoard";
+export { replayHAN, validateHANSyntax } from "./notation/reader";
+export { exportSettlexNotationArchive } from "./notation/settlex";
+export type { HANRecord, State as HANState } from "./notation/types";
+export type {
+  SourceArchive as SettlexNotationSourceArchive,
+  SourceFrame as SettlexNotationSourceFrame,
+  SettlexExport as SettlexNotationExport,
+} from "./notation/settlex";

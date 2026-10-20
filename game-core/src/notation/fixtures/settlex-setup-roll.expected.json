@@ -1,0 +1,697 @@
+{
+  "record": {
+    "format": "han-prototype",
+    "version": 1,
+    "rules": "base-friendly-omniscient-prototype-1",
+    "knowledge": "omniscient",
+    "coverage": "prefix",
+    "players": [
+      "1",
+      "2",
+      "3"
+    ],
+    "board": {
+      "tiles": [
+        {
+          "id": "c7",
+          "resource": "O",
+          "number": 8,
+          "vertices": [
+            "c7n",
+            "d6s",
+            "c8n",
+            "c7s",
+            "b8n",
+            "c6s"
+          ]
+        },
+        {
+          "id": "c6",
+          "resource": "G",
+          "number": 3,
+          "vertices": [
+            "c6n",
+            "d5s",
+            "c7n",
+            "c6s",
+            "b7n",
+            "c5s"
+          ]
+        },
+        {
+          "id": "c5",
+          "resource": "G",
+          "number": 6,
+          "vertices": [
+            "c5n",
+            "d4s",
+            "c6n",
+            "c5s",
+            "b6n",
+            "c4s"
+          ]
+        },
+        {
+          "id": "d7",
+          "resource": "L",
+          "number": 10,
+          "vertices": [
+            "d7n",
+            "e6s",
+            "d8n",
+            "d7s",
+            "c8n",
+            "d6s"
+          ]
+        },
+        {
+          "id": "d6",
+          "resource": null,
+          "number": null,
+          "vertices": [
+            "d6n",
+            "e5s",
+            "d7n",
+            "d6s",
+            "c7n",
+            "d5s"
+          ]
+        },
+        {
+          "id": "d5",
+          "resource": "L",
+          "number": 4,
+          "vertices": [
+            "d5n",
+            "e4s",
+            "d6n",
+            "d5s",
+            "c6n",
+            "d4s"
+          ]
+        },
+        {
+          "id": "d4",
+          "resource": "W",
+          "number": 2,
+          "vertices": [
+            "d4n",
+            "e3s",
+            "d5n",
+            "d4s",
+            "c5n",
+            "d3s"
+          ]
+        },
+        {
+          "id": "e7",
+          "resource": "L",
+          "number": 9,
+          "vertices": [
+            "e7n",
+            "f6s",
+            "e8n",
+            "e7s",
+            "d8n",
+            "e6s"
+          ]
+        },
+        {
+          "id": "e6",
+          "resource": "B",
+          "number": 5,
+          "vertices": [
+            "e6n",
+            "f5s",
+            "e7n",
+            "e6s",
+            "d7n",
+            "e5s"
+          ]
+        },
+        {
+          "id": "e5",
+          "resource": "G",
+          "number": 11,
+          "vertices": [
+            "e5n",
+            "f4s",
+            "e6n",
+            "e5s",
+            "d6n",
+            "e4s"
+          ]
+        },
+        {
+          "id": "e4",
+          "resource": "B",
+          "number": 9,
+          "vertices": [
+            "e4n",
+            "f3s",
+            "e5n",
+            "e4s",
+            "d5n",
+            "e3s"
+          ]
+        },
+        {
+          "id": "e3",
+          "resource": "W",
+          "number": 5,
+          "vertices": [
+            "e3n",
+            "f2s",
+            "e4n",
+            "e3s",
+            "d4n",
+            "e2s"
+          ]
+        },
+        {
+          "id": "f6",
+          "resource": "W",
+          "number": 12,
+          "vertices": [
+            "f6n",
+            "g5s",
+            "f7n",
+            "f6s",
+            "e7n",
+            "f5s"
+          ]
+        },
+        {
+          "id": "f5",
+          "resource": "B",
+          "number": 6,
+          "vertices": [
+            "f5n",
+            "g4s",
+            "f6n",
+            "f5s",
+            "e6n",
+            "f4s"
+          ]
+        },
+        {
+          "id": "f4",
+          "resource": "W",
+          "number": 3,
+          "vertices": [
+            "f4n",
+            "g3s",
+            "f5n",
+            "f4s",
+            "e5n",
+            "f3s"
+          ]
+        },
+        {
+          "id": "f3",
+          "resource": "G",
+          "number": 10,
+          "vertices": [
+            "f3n",
+            "g2s",
+            "f4n",
+            "f3s",
+            "e4n",
+            "f2s"
+          ]
+        },
+        {
+          "id": "g5",
+          "resource": "O",
+          "number": 11,
+          "vertices": [
+            "g5n",
+            "h4s",
+            "g6n",
+            "g5s",
+            "f6n",
+            "g4s"
+          ]
+        },
+        {
+          "id": "g4",
+          "resource": "L",
+          "number": 4,
+          "vertices": [
+            "g4n",
+            "h3s",
+            "g5n",
+            "g4s",
+            "f5n",
+            "g3s"
+          ]
+        },
+        {
+          "id": "g3",
+          "resource": "O",
+          "number": 8,
+          "vertices": [
+            "g3n",
+            "h2s",
+            "g4n",
+            "g3s",
+            "f4n",
+            "g2s"
+          ]
+        }
+      ],
+      "edges": {
+        "d7w": [
+          "d6s",
+          "c8n"
+        ],
+        "c8nw": [
+          "c8n",
+          "c7s"
+        ],
+        "b8ne": [
+          "c7s",
+          "b8n"
+        ],
+        "c7w": [
+          "b8n",
+          "c6s"
+        ],
+        "c7nw": [
+          "c6s",
+          "c7n"
+        ],
+        "c7ne": [
+          "c7n",
+          "d6s"
+        ],
+        "d6w": [
+          "d5s",
+          "c7n"
+        ],
+        "b7ne": [
+          "c6s",
+          "b7n"
+        ],
+        "c6w": [
+          "b7n",
+          "c5s"
+        ],
+        "c6nw": [
+          "c5s",
+          "c6n"
+        ],
+        "c6ne": [
+          "c6n",
+          "d5s"
+        ],
+        "d5w": [
+          "d4s",
+          "c6n"
+        ],
+        "b6ne": [
+          "c5s",
+          "b6n"
+        ],
+        "c5w": [
+          "b6n",
+          "c4s"
+        ],
+        "c5nw": [
+          "c4s",
+          "c5n"
+        ],
+        "c5ne": [
+          "c5n",
+          "d4s"
+        ],
+        "e7w": [
+          "e6s",
+          "d8n"
+        ],
+        "d8nw": [
+          "d8n",
+          "d7s"
+        ],
+        "c8ne": [
+          "d7s",
+          "c8n"
+        ],
+        "d7nw": [
+          "d6s",
+          "d7n"
+        ],
+        "d7ne": [
+          "d7n",
+          "e6s"
+        ],
+        "e6w": [
+          "e5s",
+          "d7n"
+        ],
+        "d6nw": [
+          "d5s",
+          "d6n"
+        ],
+        "d6ne": [
+          "d6n",
+          "e5s"
+        ],
+        "e5w": [
+          "e4s",
+          "d6n"
+        ],
+        "d5nw": [
+          "d4s",
+          "d5n"
+        ],
+        "d5ne": [
+          "d5n",
+          "e4s"
+        ],
+        "e4w": [
+          "e3s",
+          "d5n"
+        ],
+        "d4w": [
+          "c5n",
+          "d3s"
+        ],
+        "d4nw": [
+          "d3s",
+          "d4n"
+        ],
+        "d4ne": [
+          "d4n",
+          "e3s"
+        ],
+        "f7w": [
+          "f6s",
+          "e8n"
+        ],
+        "e8nw": [
+          "e8n",
+          "e7s"
+        ],
+        "d8ne": [
+          "e7s",
+          "d8n"
+        ],
+        "e7nw": [
+          "e6s",
+          "e7n"
+        ],
+        "e7ne": [
+          "e7n",
+          "f6s"
+        ],
+        "f6w": [
+          "f5s",
+          "e7n"
+        ],
+        "e6nw": [
+          "e5s",
+          "e6n"
+        ],
+        "e6ne": [
+          "e6n",
+          "f5s"
+        ],
+        "f5w": [
+          "f4s",
+          "e6n"
+        ],
+        "e5nw": [
+          "e4s",
+          "e5n"
+        ],
+        "e5ne": [
+          "e5n",
+          "f4s"
+        ],
+        "f4w": [
+          "f3s",
+          "e5n"
+        ],
+        "e4nw": [
+          "e3s",
+          "e4n"
+        ],
+        "e4ne": [
+          "e4n",
+          "f3s"
+        ],
+        "f3w": [
+          "f2s",
+          "e4n"
+        ],
+        "e3w": [
+          "d4n",
+          "e2s"
+        ],
+        "e3nw": [
+          "e2s",
+          "e3n"
+        ],
+        "e3ne": [
+          "e3n",
+          "f2s"
+        ],
+        "g6w": [
+          "g5s",
+          "f7n"
+        ],
+        "f7nw": [
+          "f7n",
+          "f6s"
+        ],
+        "f6nw": [
+          "f5s",
+          "f6n"
+        ],
+        "f6ne": [
+          "f6n",
+          "g5s"
+        ],
+        "g5w": [
+          "g4s",
+          "f6n"
+        ],
+        "f5nw": [
+          "f4s",
+          "f5n"
+        ],
+        "f5ne": [
+          "f5n",
+          "g4s"
+        ],
+        "g4w": [
+          "g3s",
+          "f5n"
+        ],
+        "f4nw": [
+          "f3s",
+          "f4n"
+        ],
+        "f4ne": [
+          "f4n",
+          "g3s"
+        ],
+        "g3w": [
+          "g2s",
+          "f4n"
+        ],
+        "f3nw": [
+          "f2s",
+          "f3n"
+        ],
+        "f3ne": [
+          "f3n",
+          "g2s"
+        ],
+        "h5w": [
+          "h4s",
+          "g6n"
+        ],
+        "g6nw": [
+          "g6n",
+          "g5s"
+        ],
+        "g5nw": [
+          "g4s",
+          "g5n"
+        ],
+        "g5ne": [
+          "g5n",
+          "h4s"
+        ],
+        "h4w": [
+          "h3s",
+          "g5n"
+        ],
+        "g4nw": [
+          "g3s",
+          "g4n"
+        ],
+        "g4ne": [
+          "g4n",
+          "h3s"
+        ],
+        "h3w": [
+          "h2s",
+          "g4n"
+        ],
+        "g3nw": [
+          "g2s",
+          "g3n"
+        ],
+        "g3ne": [
+          "g3n",
+          "h2s"
+        ]
+      },
+      "ports": {
+        "c7s": "G",
+        "b8n": "G",
+        "b7n": "any",
+        "c5s": "any",
+        "c5n": "any",
+        "d8n": "B",
+        "d7s": "B",
+        "d3s": "any",
+        "f6s": "any",
+        "e3n": "O",
+        "e2s": "O",
+        "f7n": "any",
+        "f3n": "W",
+        "g2s": "W",
+        "h4s": "any",
+        "g6n": "any",
+        "g4n": "L",
+        "h3s": "L"
+      }
+    },
+    "robber": "d6",
+    "result": null,
+    "actions": [
+      "PVc7n",
+      "PRc7nw",
+      "PVc8n",
+      "PRd7w",
+      "PVb8n",
+      "PRb8ne",
+      "PVc6n",
+      "PRc6nw",
+      "PVb7n",
+      "PRb7ne",
+      "PVc5n",
+      "PRc5nw",
+      "R(1+6)"
+    ]
+  },
+  "checkpoints": [
+    {
+      "sourceFrame": 0,
+      "actionCount": 0,
+      "logicalCount": 0,
+      "stateId": 0
+    },
+    {
+      "sourceFrame": 1,
+      "actionCount": 0,
+      "logicalCount": 0,
+      "stateId": 1
+    },
+    {
+      "sourceFrame": 2,
+      "actionCount": 0,
+      "logicalCount": 0,
+      "stateId": 2
+    },
+    {
+      "sourceFrame": 3,
+      "actionCount": 0,
+      "logicalCount": 0,
+      "stateId": 3
+    },
+    {
+      "sourceFrame": 4,
+      "actionCount": 1,
+      "logicalCount": 1,
+      "stateId": 4
+    },
+    {
+      "sourceFrame": 5,
+      "actionCount": 2,
+      "logicalCount": 2,
+      "stateId": 5
+    },
+    {
+      "sourceFrame": 6,
+      "actionCount": 3,
+      "logicalCount": 3,
+      "stateId": 6
+    },
+    {
+      "sourceFrame": 7,
+      "actionCount": 4,
+      "logicalCount": 4,
+      "stateId": 7
+    },
+    {
+      "sourceFrame": 8,
+      "actionCount": 5,
+      "logicalCount": 5,
+      "stateId": 8
+    },
+    {
+      "sourceFrame": 9,
+      "actionCount": 6,
+      "logicalCount": 6,
+      "stateId": 9
+    },
+    {
+      "sourceFrame": 10,
+      "actionCount": 7,
+      "logicalCount": 7,
+      "stateId": 10
+    },
+    {
+      "sourceFrame": 11,
+      "actionCount": 8,
+      "logicalCount": 8,
+      "stateId": 11
+    },
+    {
+      "sourceFrame": 12,
+      "actionCount": 9,
+      "logicalCount": 9,
+      "stateId": 12
+    },
+    {
+      "sourceFrame": 13,
+      "actionCount": 10,
+      "logicalCount": 10,
+      "stateId": 13
+    },
+    {
+      "sourceFrame": 14,
+      "actionCount": 11,
+      "logicalCount": 11,
+      "stateId": 14
+    },
+    {
+      "sourceFrame": 15,
+      "actionCount": 12,
+      "logicalCount": 12,
+      "stateId": 15
+    },
+    {
+      "sourceFrame": 16,
+      "actionCount": 13,
+      "logicalCount": 13,
+      "stateId": 16
+    }
+  ],
+  "sourceFrames": 17
+}

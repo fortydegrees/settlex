@@ -99,6 +99,9 @@ export const createArchivePool = ({ failAfterArchivedMatchInsert = false } = {})
           logJson: parseJsonbParam(params[2]),
           finalStateJson: parseJsonbParam(params[3]),
           summaryJson: parseJsonbParam(params[4]),
+          notationJson: parseJsonbParam(params[5]),
+          notationStatus: params[6],
+          notationErrorCode: params[7],
         });
         return { rows: [] };
       }
@@ -124,6 +127,12 @@ export const createArchivePool = ({ failAfterArchivedMatchInsert = false } = {})
     client,
     pool: {
       connect: vi.fn(async () => client),
+      query: vi.fn(async (sql, params = []) => {
+        if (!String(sql).includes("ar.notation_json")) throw new Error(`Unhandled archive pool query: ${sql}`);
+        const match = state.archivedMatches.find((row) => row.replayId === params[0]);
+        const replay = state.archivedMatchReplays.find((row) => row.archivedMatchId === match?.id);
+        return { rows: replay ? [{ notation_json: replay.notationJson, notation_status: replay.notationStatus, notation_error_code: replay.notationErrorCode }] : [] };
+      }),
     },
   };
 };
