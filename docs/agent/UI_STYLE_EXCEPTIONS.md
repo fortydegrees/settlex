@@ -13,7 +13,7 @@ values must not be mechanically replaced with product typography or colours.
 | --- | --- | --- |
 | `app/catana/board/Tile.js`, `board/Tile.css`, `board/Board.css` | Resource-tile number chips, pips and board marker geometry | Font size, spacing and corners scale with tile/board coordinates, not document headings or controls. |
 | `app/board-editor/Tile.js`, `EditableTile.js` | Editor's same tile/number artwork | The editor must preview the board renderer. Its surrounding control sidebar is ordinary UI. |
-| `app/catana/board/ActionNode.js`, `components/Board/ActionNode.js`, `board/BoardPortChannels.jsx`, `board/BuildPlacementPreview.js`, `board/RobberPlacementPreview.js` | Circular nodes, connector and placement shapes | These are board-positioned graphics, not panels or form controls. |
+| `app/catana/board/ActionNode.js`, `board/BoardPortChannels.jsx`, `board/BuildPlacementPreview.js`, `board/RobberPlacementPreview.js` | Circular nodes, connector and placement shapes | These are board-positioned graphics, not panels or form controls. |
 | `app/catana/board/Port.jsx`, `board/Port.css` | Port resource and ratio artwork | Ratio-label fit is part of the small port graphic. |
 | `app/catana/components/FeedTokenRow.jsx` | Miniature dice, resource and tile tokens | Feed prose uses normal roles; miniature artwork preserves its source token proportions. |
 | `app/catana/components/MiniDiceFace.js`, `app/catana/components/Die.css` | Dice faces and pips | Circular pip geometry and face contrast are graphic marks. |
