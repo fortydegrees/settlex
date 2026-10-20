@@ -4,6 +4,9 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 
 ## Entry Points
 
+- `app/catana/board/README.md`: board rendering, geometry, placement previews and
+  colocated tests. `app/catana/GameScreen.js` remains the screen composition owner.
+
 - `docs/agent/DESIGN_SYSTEM.md`: current enforced foundation contract and staged
   migration boundaries. Use complete `type-*` roles, semantic colours and
   `*-ui-*` spacing; do not introduce new typography fragments or raw corners.

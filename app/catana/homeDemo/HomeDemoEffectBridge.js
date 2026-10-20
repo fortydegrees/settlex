@@ -8,7 +8,7 @@ import {
   getPlacementEffectDuration
 } from "../effects/placePieceDefaults";
 import { DEFAULT_THEME_ID } from "../theme/themes";
-import { getBoardLayout } from "../utils/boardLayout";
+import { getBoardLayout } from "../board/boardLayout";
 import { isDocumentHidden } from "../utils/visibility";
 import useWindowSize from "../utils/useWindowSize";
 import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";

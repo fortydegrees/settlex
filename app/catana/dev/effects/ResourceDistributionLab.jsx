@@ -5,7 +5,7 @@ import { createResourceDistributionRunner } from "../../effects/resourceDistribu
 import { buildResourceDistributionDemo } from "./resourceDistributionLabUtils";
 import { createSeededRandom } from "../../utils/seededRandom";
 import useWindowSize from "../../utils/useWindowSize";
-import { getBoardLayout } from "../../utils/boardLayout";
+import { getBoardLayout } from "../../board/boardLayout";
 
 const DEFAULT_SEED = 1;
 const DEFAULT_COUNT = 4;

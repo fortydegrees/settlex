@@ -8,7 +8,7 @@ import {
   getMagneticBuildTarget,
   getShortestRotationDelta,
   isBuildTargetHandoffReady
-} from "../../utils/buildPlacementPreviewMotion";
+} from "../buildPlacementPreviewMotion";
 
 describe("buildPlacementPreviewMotion", () => {
   it("computes the shortest signed road rotation delta", () => {

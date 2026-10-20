@@ -7,7 +7,7 @@ import {
   STANDARD_BOARD_LAND_COORDS,
   STANDARD_BOARD_UNDERLAY,
   getHexCorners
-} from "../../utils/boardUnderlayGeometry";
+} from "../../board/boardUnderlayGeometry";
 
 const [viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight] =
   STANDARD_BOARD_UNDERLAY.viewBox;

@@ -32,7 +32,7 @@ describe("placePiece wiring", () => {
 
   it("uses a board placement layer for placement effects", () => {
     const screen = read("../../GameScreen.js");
-    const board = read("../../Board.js");
+    const board = read("../../board/Board.js");
     expect(screen).toContain("placementLayerRef");
     expect(board).toContain("placementLayerRef");
   });

@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { BoardPortChannels } from "../BoardPortChannels";
-import { BoardUnderlay } from "../BoardUnderlay";
-import { Port } from "../Port";
-import { Tile } from "../Tile";
+import { BoardPortChannels } from "../board/BoardPortChannels";
+import { BoardUnderlay } from "../board/BoardUnderlay";
+import { Port } from "../board/Port";
+import { Tile } from "../board/Tile";
 import { TileTypes } from "../types";
 import { DEFAULT_THEME_ID } from "../theme/themes";
-import { getBoardLayout } from "../utils/boardLayout";
-import { buildRenderMaps } from "../utils/renderMaps";
+import { getBoardLayout } from "../board/boardLayout";
+import { buildRenderMaps } from "../board/renderMaps";
 import useWindowSize from "../utils/useWindowSize";
 import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";
 import { HOME_DEMO_PLAYER_COLORS } from "./homeDemoSequence";

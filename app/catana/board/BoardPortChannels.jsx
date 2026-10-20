@@ -1,7 +1,7 @@
 import React from "react";
-import { TileTypes } from "./types";
-import { SQRT3, getNodeDelta, tilePixelVector } from "./utils/coordinates";
-import { getPortRenderModel } from "./utils/portLayout";
+import { TileTypes } from "../types";
+import { SQRT3, getNodeDelta, tilePixelVector } from "./coordinates";
+import { getPortRenderModel } from "./portLayout";
 
 const CONNECTOR_BAR_FILL = "#E5D08A";
 const CONNECTOR_GAP_RATIO = -0.25;

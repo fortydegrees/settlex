@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as robberPlacementPreviewMotion from "../../utils/robberPlacementPreviewMotion";
+import * as robberPlacementPreviewMotion from "../robberPlacementPreviewMotion";
 import {
   getScaledRobberPreviewSize,
   getLockedRobberPreviewPosition,
@@ -10,7 +10,7 @@ import {
   ROBBER_PREVIEW_MAX_LEAN_DEGREES,
   ROBBER_PREVIEW_MAGNETIC_RADIUS_PX,
   ROBBER_PREVIEW_RELEASE_RADIUS_PX
-} from "../../utils/robberPlacementPreviewMotion";
+} from "../robberPlacementPreviewMotion";
 
 describe("robberPlacementPreviewMotion", () => {
   it("keeps a committed robber destination after its interactive target is removed", () => {

@@ -10,7 +10,6 @@ const boardPath = path.resolve(__dirname, "..", "Board.js");
 const interactionPath = path.resolve(
   __dirname,
   "..",
-  "utils",
   "boardBuildInteraction.js"
 );
 

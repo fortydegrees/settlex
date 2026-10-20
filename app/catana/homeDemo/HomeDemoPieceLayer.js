@@ -1,6 +1,6 @@
 import React from "react";
-import { Edge } from "../Edge";
-import { Node } from "../Node";
+import { Edge } from "../board/Edge";
+import { Node } from "../board/Node";
 
 export function HomeDemoPieceLayer({
   pieceState,

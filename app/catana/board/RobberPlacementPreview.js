@@ -5,7 +5,7 @@ import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError
-} from "./theme/themes";
+} from "../theme/themes";
 import {
   getRobberPreviewViewportScale,
   getScaledRobberPreviewSize,
@@ -13,8 +13,8 @@ import {
   getRobberPreviewLeanAngle,
   isPointOverRobberBoardLand,
   resolveRobberPreviewTarget
-} from "./utils/robberPlacementPreviewMotion";
-import { shouldCompleteRobberPlacementHandoff } from "./utils/robberPlacementMotion";
+} from "./robberPlacementPreviewMotion";
+import { shouldCompleteRobberPlacementHandoff } from "./robberPlacementMotion";
 
 const PREVIEW_SIZE_PX = 56;
 const PREVIEW_HEAD_TRACK_Y_PERCENT = -28;

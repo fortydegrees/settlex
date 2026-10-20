@@ -127,7 +127,8 @@ provider behavior.
 | `lib/game-runtime/` | Shared boardgame.io factory, setup, move adapters and authoritative log/privacy helpers |
 | `server/` | Live matches, timers, presence, bots and archival lifecycle |
 | `lib/server/`, `app/api/` | Accounts, database access and website API boundaries |
-| `app/catana/` | Board, game screen, lobby and presentation effects |
+| `app/catana/` | Game-screen composition, HUD, lobby and feature owners |
+| `app/catana/board/` | Board drawing, geometry, placement previews and colocated tests |
 | `app/catana/effects/`, `public/sounds/` | Presentation runners, audio cue routing and served clips |
 | `scripts/`, `infra/`, `release/` | Maintained commands, local/deployment infrastructure and release records |
 | `public/`, `design/`, `sounds/` | Served assets, design sources and sound creation tools; source and rights review still applies |

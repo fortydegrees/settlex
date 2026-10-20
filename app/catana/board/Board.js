@@ -8,35 +8,35 @@ import { Port } from "./Port";
 import { BoardUnderlay } from "./BoardUnderlay";
 import { BoardPortChannels } from "./BoardPortChannels";
 import "./Board.css";
-import { getBoardLayout } from "./utils/boardLayout";
-import useWindowSize from "./utils/useWindowSize";
+import { getBoardLayout } from "./boardLayout";
+import useWindowSize from "../utils/useWindowSize";
 import {
   useLatestPropsOnEffect,
   useEffectListener,
   useEffectState
 } from "bgio-effects/react";
-import { TileTypes } from "./types";
-import { buildRenderMaps } from "./utils/renderMaps";
-import { buildPlayerViewMap } from "./utils/playerView";
+import { TileTypes } from "../types";
+import { buildRenderMaps } from "./renderMaps";
+import { buildPlayerViewMap } from "../utils/playerView";
 import {
   getRobberPlacementPresentationState,
   resolveRobberPlacementMotionMode
-} from "./utils/robberPlacementMotion";
-import { shouldSuppressBuildActions } from "./utils/passiveBuildMode";
-import { isDocumentHidden } from "./utils/visibility";
-import { getBuildPickupPieceType } from "./utils/playerAction";
+} from "./robberPlacementMotion";
+import { shouldSuppressBuildActions } from "./passiveBuildMode";
+import { isDocumentHidden } from "../utils/visibility";
+import { getBuildPickupPieceType } from "../utils/playerAction";
 import {
   getBoardInteractionState,
   getExplicitBuildableRoads,
   getMainBuildableNodes,
   getPassiveBuildTargets
-} from "./utils/boardBuildInteraction";
+} from "./boardBuildInteraction";
 import {
   buildLandRobberPreviewTiles,
   buildMagneticBuildTargets,
   buildMagneticRobberTargets,
   getValidRobberTiles
-} from "./utils/boardPreviewTargets";
+} from "./boardPreviewTargets";
 
 let robberPlacementPreviewModulePromise = null;
 const loadRobberPlacementPreviewModule = () => {

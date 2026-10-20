@@ -5,9 +5,9 @@ import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError
-} from "./theme/themes";
-import { isPointOverRobberBoardLand } from "./utils/robberPlacementPreviewMotion";
-import { getPieceSvgFile } from "./theme/pieceAssets.js";
+} from "../theme/themes";
+import { isPointOverRobberBoardLand } from "./robberPlacementPreviewMotion";
+import { getPieceSvgFile } from "../theme/pieceAssets.js";
 import {
   getBuildPickupOrigin,
   getBuildPickupLaunchBias,
@@ -20,7 +20,7 @@ import {
   isBuildTargetHandoffReady,
   getShortestRotationDelta,
   getScaledBuildPreviewSize
-} from "./utils/buildPlacementPreviewMotion";
+} from "./buildPlacementPreviewMotion";
 
 const PREVIEW_BASE_SIZE = 56;
 const PREVIEW_SHADOW_GROUND_OFFSET_FACTOR = 0.42;

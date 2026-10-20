@@ -5,8 +5,8 @@ import { createPiecePlacementRunner } from "../../effects/placePiece";
 import { PLACE_PIECE_DEFAULT_TUNING } from "../../effects/placePieceDefaults";
 import { createSeededRandom } from "../../utils/seededRandom";
 import useWindowSize from "../../utils/useWindowSize";
-import { getBoardLayout } from "../../utils/boardLayout";
-import { buildRenderMaps } from "../../utils/renderMaps";
+import { getBoardLayout } from "../../board/boardLayout";
+import { buildRenderMaps } from "../../board/renderMaps";
 import { generateBoard, resolveBoardConfig } from "@settlex/game-core";
 
 const DEFAULT_SEED = 1;

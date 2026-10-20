@@ -12,7 +12,7 @@ import {
   getHomeDemoVisiblePlayerIds,
   prepareHomeDemoEventState
 } from "../homeDemo/homeDemoSequence";
-import { buildRenderMaps } from "../utils/renderMaps";
+import { buildRenderMaps } from "../board/renderMaps";
 
 describe("home demo sequence", () => {
   it("uses four authored demo players", () => {

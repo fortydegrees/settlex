@@ -1,5 +1,5 @@
 "use client";
-import { MemoizedCatanBoard } from "./Board";
+import { MemoizedCatanBoard } from "./board/Board";
 import {
   TransformWrapper,
   TransformComponent,
@@ -84,10 +84,10 @@ import {
   upsertKnightDisplayOverride
 } from "./utils/devCardPlayPresentation";
 import useWindowSize from "./utils/useWindowSize";
-import { getBoardLayout, shouldResetBoardViewport } from "./utils/boardLayout";
+import { getBoardLayout, shouldResetBoardViewport } from "./board/boardLayout";
 import {
   DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
-} from "./utils/robberPlacementMotion";
+} from "./board/robberPlacementMotion";
 import { IconButton } from "../ui/IconButton";
 import { Tooltip, TooltipProvider } from "../ui/Tooltip";
 import { Howler } from "howler";

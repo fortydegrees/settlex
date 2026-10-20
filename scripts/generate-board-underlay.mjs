@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   STANDARD_BOARD_UNDERLAY,
-} from "../app/catana/utils/boardUnderlayGeometry.mjs";
+} from "../app/catana/board/boardUnderlayGeometry.mjs";
 
 const OUTPUT_PATH = path.resolve(
   process.cwd(),

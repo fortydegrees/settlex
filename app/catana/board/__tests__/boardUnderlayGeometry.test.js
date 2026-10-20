@@ -3,7 +3,7 @@ import {
   STANDARD_BOARD_LAND_COORDS,
   buildHexBoundaryEdges,
   orderBoundaryLoop,
-} from "../../utils/boardUnderlayGeometry";
+} from "../boardUnderlayGeometry";
 
 const pointKey = ([x, y]) => `${x},${y}`;
 const edgeKey = ([start, end]) => {

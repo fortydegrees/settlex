@@ -4,7 +4,7 @@ import {
   getRobberPlacementPresentationState,
   shouldCompleteRobberPlacementHandoff,
   resolveRobberPlacementMotionMode
-} from "../utils/robberPlacementMotion";
+} from "../robberPlacementMotion";
 
 describe("robber placement motion mode", () => {
   it("defaults to playful when no fallback condition applies", () => {

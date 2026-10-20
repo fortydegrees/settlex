@@ -4,8 +4,8 @@ import {
   getClassicPortIconPath,
   getPortIconPath,
   handleThemeImageError,
-} from "./theme/themes.js";
-import { getPortRenderModel } from "./utils/portLayout.js";
+} from "../theme/themes.js";
+import { getPortRenderModel } from "./portLayout.js";
 
 function PortImpl({
   coordinate,

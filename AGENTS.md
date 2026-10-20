@@ -55,6 +55,7 @@ Ship small, correct changes with a stable, testable game engine.
 
 ## Project map
 - UI: `app/`
+- Board drawing, geometry, placement previews and tests: `app/catana/board/`; game-screen composition remains `app/catana/GameScreen.js`
 - Game server: `server/`
 - Engine (shared): `game-core/`
 - Game definition/setup/move adapters and log privacy: `lib/game-runtime/` (shared by server, browser and replay)

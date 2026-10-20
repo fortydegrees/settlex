@@ -28,7 +28,10 @@ match-seat credentials are distinct; joining a game must establish the right sea
 rather than trust a client-supplied player number.
 
 The browser renders the state it is allowed to see and sends player intentions.
-`GameScreen.js` composes the board and interface. Feature-local owners such as
+`app/catana/GameScreen.js` composes the board and interface.
+`app/catana/board/` owns board drawing, geometry, placement targets/previews and
+their colocated tests; shared effects and theme owners remain alongside it.
+Feature-local owners such as
 `matchStatus/useMatchClockAndPresence.js` and `lobby/usePublicMatchmaking.js` keep
 state and the requests/timers that govern it together. The screen still contains
 substantial orchestration; this is an incremental cleanup, not a claim that every
@@ -36,7 +39,7 @@ responsibility has been extracted.
 
 ## Trace one road
 
-1. `app/catana/Edge.js` handles the selected edge and invokes `moves.placeRoad`
+1. `app/catana/board/Edge.js` handles the selected edge and invokes `moves.placeRoad`
    (or the separate development-card action).
 2. `lib/game-runtime/Game.js` defines where that move is available. boardgame.io handles
    its match/turn context; the adapter in `lib/game-runtime/moves/buildMoves.js` calls
@@ -87,6 +90,7 @@ lobby-to-game transition.
 | Where are authoritative logs and recipient filtering? | `lib/game-runtime/log/` |
 | How are ambiguous requests recovered? | `app/catana/lobby/usePublicMatchmaking.js` and its React stories |
 | How do server timers reach the board? | `server/timers/` and `app/catana/matchStatus/` |
+| Where are board drawing and placement previews? | `app/catana/board/Board.js`, `BuildPlacementPreview.js`, `RobberPlacementPreview.js` |
 | How does an event become animation/audio? | `app/catana/effects/GameEffects.js`, `registry.js`, `placePiece.js` |
 | How can I replace art or one sound? | [Customization guide](../customization/themes-and-sounds.md) |
 | What should a test prove? | [Testing policy](../agent/TESTING.md) |

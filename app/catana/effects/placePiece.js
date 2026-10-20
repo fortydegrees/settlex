@@ -1,12 +1,12 @@
 import { gsap } from "gsap";
-import { buildRenderMaps } from "../utils/renderMaps";
+import { buildRenderMaps } from "../board/renderMaps";
 import {
   getEdgeDelta,
   getEdgeTransform,
   getNodeDelta,
   SQRT3,
   tilePixelVector
-} from "../utils/coordinates";
+} from "../board/coordinates";
 import { isDocumentHidden } from "../utils/visibility";
 import { PLACE_PIECE_DEFAULT_TUNING } from "./placePieceDefaults";
 import { getBackgroundImageWithFallback } from "../theme/themes";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SQRT3, tilePixelVector } from "../../utils/coordinates";
-import { getPortRenderModel } from "../../utils/portLayout";
+import { SQRT3, tilePixelVector } from "../coordinates";
+import { getPortRenderModel } from "../portLayout";
 
 function getLegacyConnectorStyle({ x, y, w, h, nodeDirection }) {
   switch (nodeDirection) {

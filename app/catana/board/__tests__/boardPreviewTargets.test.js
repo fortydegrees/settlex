@@ -4,8 +4,8 @@ import {
   buildMagneticBuildTargets,
   buildMagneticRobberTargets,
   getValidRobberTiles
-} from "../utils/boardPreviewTargets";
-import { TileTypes } from "../types";
+} from "../boardPreviewTargets";
+import { TileTypes } from "../../types";
 
 vi.mock("@settlex/game-core", async () => {
   const actual = await vi.importActual("@settlex/game-core");

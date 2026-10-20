@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildRenderMaps } from "./renderMaps";
+import { buildRenderMaps } from "../renderMaps";
 
 const tiles = [
   {

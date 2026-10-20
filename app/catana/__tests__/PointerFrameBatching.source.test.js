@@ -31,11 +31,11 @@ const expectPlacementPointerBatching = (source) => {
 
 describe("pointer frame batching", () => {
   it("batches build placement target synchronization", () => {
-    expectPlacementPointerBatching(readCatanaSource("BuildPlacementPreview.js"));
+    expectPlacementPointerBatching(readCatanaSource("board/BuildPlacementPreview.js"));
   });
 
   it("batches robber placement target synchronization", () => {
-    expectPlacementPointerBatching(readCatanaSource("RobberPlacementPreview.js"));
+    expectPlacementPointerBatching(readCatanaSource("board/RobberPlacementPreview.js"));
   });
 
   it("batches and cleans up development-card pointer updates", () => {

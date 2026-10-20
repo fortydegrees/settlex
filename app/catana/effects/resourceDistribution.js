@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { tilePixelVector } from "../utils/coordinates";
+import { tilePixelVector } from "../board/coordinates";
 import { isDocumentHidden } from "../utils/visibility";
 import {
   getClassicSvgPath,

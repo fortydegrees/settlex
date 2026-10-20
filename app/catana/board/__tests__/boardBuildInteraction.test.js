@@ -9,7 +9,7 @@ import {
   getMainBuildableNodes,
   getOwnedSettlementNodeIds,
   getPassiveBuildTargets
-} from "../utils/boardBuildInteraction";
+} from "../boardBuildInteraction";
 
 const makeTopology = (edges) => {
   const edgeNodes = {};

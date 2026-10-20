@@ -4,10 +4,10 @@ import {
   getNodeDelta,
   getEdgeDelta,
   SQRT3,
-} from "./utils/coordinates";
+} from "./coordinates";
 import { Piece } from "./Piece";
-import { getClassicSvgPath, getThemedSvgPath } from "./theme/themes";
-import { getPieceSvgFile } from "./theme/pieceAssets.js";
+import { getClassicSvgPath, getThemedSvgPath } from "../theme/themes";
+import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 export function ActionNode({
   nodeId,

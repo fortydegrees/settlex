@@ -11,11 +11,11 @@ values must not be mechanically replaced with product typography or colours.
 
 | Owner | Retained contract | Why product tokens do not apply |
 | --- | --- | --- |
-| `app/catana/Tile.js`, `Tile.css`, `Board.css` | Resource-tile number chips, pips and board marker geometry | Font size, spacing and corners scale with tile/board coordinates, not document headings or controls. |
+| `app/catana/board/Tile.js`, `board/Tile.css`, `board/Board.css` | Resource-tile number chips, pips and board marker geometry | Font size, spacing and corners scale with tile/board coordinates, not document headings or controls. |
 | `app/board-editor/Tile.js`, `EditableTile.js` | Editor's same tile/number artwork | The editor must preview the board renderer. Its surrounding control sidebar is ordinary UI. |
-| `app/catana/ActionNode.js`, `components/Board/ActionNode.js`, `BoardPortChannels.js`, `BuildPlacementPreview.js`, `RobberPlacementPreview.js` | Circular nodes, connector and placement shapes | These are board-positioned graphics, not panels or form controls. |
-| `app/catana/Port.js`, `Port.css` | Port resource and ratio artwork | Ratio-label fit is part of the small port graphic. |
-| `app/catana/components/FeedTokenRow.js` | Miniature dice, resource and tile tokens | Feed prose uses normal roles; miniature artwork preserves its source token proportions. |
+| `app/catana/board/ActionNode.js`, `components/Board/ActionNode.js`, `board/BoardPortChannels.jsx`, `board/BuildPlacementPreview.js`, `board/RobberPlacementPreview.js` | Circular nodes, connector and placement shapes | These are board-positioned graphics, not panels or form controls. |
+| `app/catana/board/Port.jsx`, `board/Port.css` | Port resource and ratio artwork | Ratio-label fit is part of the small port graphic. |
+| `app/catana/components/FeedTokenRow.jsx` | Miniature dice, resource and tile tokens | Feed prose uses normal roles; miniature artwork preserves its source token proportions. |
 | `app/catana/components/MiniDiceFace.js`, `app/catana/components/Die.css` | Dice faces and pips | Circular pip geometry and face contrast are graphic marks. |
 | `app/catana/theme/playerColors.js` | Player identity palette and contrast decisions | Player colour is game/user data, not interface emphasis. |
 | `app/catana/components/GameOverModal.js`, `PostgameOverlay.js`, `app/replays/components/ReplayScoreChart.jsx` | Player-derived swatch/chart colours | Results and replay retain the player's identity colour. Surrounding copy, charts and controls use shared recipes. |

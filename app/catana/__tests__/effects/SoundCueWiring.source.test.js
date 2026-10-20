@@ -17,7 +17,7 @@ describe("family sound-cue wiring", () => {
   });
 
   it("emits awardClaimed effects for both award types from the move layer", () => {
-    const source = read("../../moves/awardLogging.js");
+    const source = read("../../../../lib/game-runtime/moves/awardLogging.js");
 
     expect(source).toContain('awardType: "longestRoad"');
     expect(source).toContain('awardType: "largestArmy"');

@@ -32,7 +32,7 @@ describe("Home demo board source", () => {
 
   it("hides fallback-sized board geometry until the real viewport is measured", () => {
     const homeSource = readAppFile("homeDemo", "HomeDemoBoard.js");
-    const boardSource = readAppFile("Board.js");
+    const boardSource = readAppFile("board", "Board.js");
 
     expect(homeSource).toContain("isMeasured");
     expect(homeSource).toContain("useBrowserLayoutEffect");

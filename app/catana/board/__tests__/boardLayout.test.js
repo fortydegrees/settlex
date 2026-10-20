@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeDefaultSize, getBoardLayout, shouldResetBoardViewport } from "../../utils/boardLayout";
-import { getBoardUnderlayFrame } from "../../utils/boardUnderlayLayout";
+import { computeDefaultSize, getBoardLayout, shouldResetBoardViewport } from "../boardLayout";
+import { getBoardUnderlayFrame } from "../boardUnderlayLayout";
 import {
   BOARD_UNDERLAY_DESIGN_SIZE,
   BOARD_UNDERLAY_VIEWBOX,
-} from "../../utils/boardUnderlayGeometry";
+} from "../boardUnderlayGeometry";
 
 const SQRT3 = Math.sqrt(3);
 

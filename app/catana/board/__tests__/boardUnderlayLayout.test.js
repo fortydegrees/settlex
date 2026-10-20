@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getBoardUnderlayFrame } from "../../utils/boardUnderlayLayout";
+import { getBoardUnderlayFrame } from "../boardUnderlayLayout";
 
 describe("boardUnderlayLayout", () => {
   it("scales the checked-in underlay from canonical asset bounds", () => {

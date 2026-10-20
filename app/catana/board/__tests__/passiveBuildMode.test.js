@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isPassiveBuildEnabled,
   shouldSuppressBuildActions
-} from "../utils/passiveBuildMode";
+} from "../passiveBuildMode";
 
 const baseCtx = {
   phase: "main",

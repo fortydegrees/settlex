@@ -1,8 +1,8 @@
 import React from "react";
-import { tilePixelVector, getNodeDelta, SQRT3 } from "./utils/coordinates";
+import { tilePixelVector, getNodeDelta, SQRT3 } from "./coordinates";
 import { Piece } from "./Piece";
-import { getClassicSvgPath, getThemedSvgPath } from "./theme/themes";
-import { getPieceSvgFile } from "./theme/pieceAssets.js";
+import { getClassicSvgPath, getThemedSvgPath } from "../theme/themes";
+import { getPieceSvgFile } from "../theme/pieceAssets.js";
 
 
 function NodeImpl({

@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { buildRenderMaps } from "../../utils/renderMaps";
-import { getBoardLayout } from "../../utils/boardLayout";
+import { buildRenderMaps } from "../../board/renderMaps";
+import { getBoardLayout } from "../../board/boardLayout";
 import {
   getEdgeTransform,
   getNodeDelta,
   SQRT3,
   tilePixelVector
-} from "../../utils/coordinates";
+} from "../../board/coordinates";
 import useWindowSize from "../../utils/useWindowSize";
 import {
   DEFAULT_THEME_ID,

@@ -2,9 +2,9 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BoardPortChannels } from "../BoardPortChannels";
-import { TileTypes } from "../types";
-import { SQRT3, getNodeDelta, tilePixelVector } from "../utils/coordinates";
-import { getPortRenderModel } from "../utils/portLayout";
+import { TileTypes } from "../../types";
+import { SQRT3, getNodeDelta, tilePixelVector } from "../coordinates";
+import { getPortRenderModel } from "../portLayout";
 
 const CONNECTOR_GAP_RATIO = -0.25;
 const CONNECTOR_END_GAP_RATIO = 0.06;

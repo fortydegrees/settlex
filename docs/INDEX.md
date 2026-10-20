@@ -27,6 +27,7 @@ agent/PUBLIC_READINESS_UPGRADE.md - Supported runtime migration — 2026-10-19
 agent/public-readiness/asset-disposition.md - Asset and dev-tool disposition — source audit
 agent/public-readiness/asset-inventory.md - Asset and source-material inventory
 agent/public-readiness/audit-findings.md - Public-readiness audit — 2026-10-19
+agent/public-readiness/board-organisation.md - Board presentation organisation — Task 4
 agent/public-readiness/candidate-scan.md - Curated candidate secret scans
 agent/public-readiness/content-curation.md - Public/private content curation follow-up
 agent/public-readiness/decision-package.md - Remaining decisions — preparation review

@@ -8,7 +8,7 @@ import {
   getThemedSvgPath,
   getTilePath
 } from "../theme/themes";
-import { SQRT3, cubeToAxial, getNodeDelta } from "../utils/coordinates";
+import { SQRT3, cubeToAxial, getNodeDelta } from "../board/coordinates";
 import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";
 import styles from "./HomeDemoBoardPoster.module.css";
 

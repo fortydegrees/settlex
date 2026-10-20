@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
-import { SQRT3, tilePixelVector } from "./utils/coordinates";
+import { SQRT3, tilePixelVector } from "./coordinates";
 import { useDrag } from "react-dnd";
 import "./Tile.css";
 import {
@@ -11,7 +11,7 @@ import {
   getTileFile,
   getThemedSvgPath,
   handleThemeImageError,
-} from "./theme/themes";
+} from "../theme/themes";
 
 // Resource icons now use one shared transform across all resources.
 // Baseline values come from the previous Sheep placement.

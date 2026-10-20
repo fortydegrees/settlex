@@ -1,10 +1,10 @@
 import React from "react";
-import { getBoardUnderlayPath } from "./theme/themes";
+import { getBoardUnderlayPath } from "../theme/themes";
 import {
   BOARD_UNDERLAY_DESIGN_SIZE,
   BOARD_UNDERLAY_VIEWBOX,
-} from "./utils/boardUnderlayGeometry";
-import { getBoardUnderlayFrame } from "./utils/boardUnderlayLayout";
+} from "./boardUnderlayGeometry";
+import { getBoardUnderlayFrame } from "./boardUnderlayLayout";
 
 export function BoardUnderlay({ center, size, themeId }) {
   const frame = getBoardUnderlayFrame({
