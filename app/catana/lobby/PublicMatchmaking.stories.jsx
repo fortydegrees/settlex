@@ -92,8 +92,8 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
     lobby = useLobbyHomeActions({ initialAccount, onGameStartTransition: markGameStart });
     const controls = {
       "Find online": lobby.actions.playOnline,
+      "Play vs Bot": lobby.actions.playBot,
       "Cancel search": lobby.overlays.cancelSearch,
-      "Play Puffer": lobby.actions.playPufferFromSearch,
       "Sign out": lobby.actions.signOut,
     };
     return <>
@@ -243,7 +243,7 @@ export const CommittedAndAmbiguousResults = {
       }));
     }
     for (const outcome of ["network", "server-error", "unrecognized-response"]) {
-      await step(`An uncertain ${outcome} outcome retains search state and blocks bot fallback`, async () => withLobby(canvasElement, async view => {
+      await step(`An uncertain ${outcome} outcome keeps search busy until cancellation is confirmed`, async () => withLobby(canvasElement, async view => {
         view.api.respond = async () => {
           if (outcome === "network") throw new TypeError("offline");
           if (outcome === "server-error") return { ok: false, status: 503, statusText: "Unavailable", json: async () => ({ error: "temporarily unavailable" }) };
@@ -252,8 +252,8 @@ export const CommittedAndAmbiguousResults = {
         await view.click("Find online");
         expect(view.lobby.searchState).not.toBeNull();
         expect(view.lobby.error).toContain("Still checking");
-        await view.click("Play Puffer");
-        expect(await view.actionResult).toEqual({ started: false, reason: "leave_failed" });
+        await view.click("Cancel search");
+        expect(await view.actionResult).toBe(false);
         expect(view.lobby.searchState).not.toBeNull();
         expect(view.lobby.isBusy).toBe(true);
         expect(view.lobby.error).toContain("Could not confirm");
@@ -322,37 +322,6 @@ export const CancellationRacesAndStorage = {
       expect(view.router.push).not.toHaveBeenCalled();
     }));
   })),
-};
-
-export const ConfirmedPufferHandoff = {
-  play: reportPlay(async ({ canvasElement, step }) => withClock(clock => withLobby(canvasElement, async view => {
-    await step("Puffer waits for confirmed cancellation and keeps the lobby busy until bot creation finishes", async () => {
-      const cancellation = deferred();
-      const bot = deferred();
-      view.api.respond = async (route, init, body) => {
-        if (route === "/api/matches/create") return bot.promise;
-        return init.method === "DELETE" ? cancellation.promise : waitingSeat(body);
-      };
-      await view.click("Find online");
-      await view.click("Play Puffer");
-      expect(view.lobby.isPufferTransitionPending).toBe(true);
-      expect(view.lobby.isBusy).toBe(true);
-      expect(clock.timeouts.size).toBe(0);
-      await view.click("Play Puffer");
-      expect(await view.actionResult).toEqual({ started: false, reason: "pending" });
-      expect(view.requests.map(request => request.method)).toEqual(["POST", "DELETE"]);
-      await view.settle(() => cancellation.resolve({ status: "cancelled" }));
-      expect(view.lobby.searchState).toBeNull();
-      expect(view.lobby.isPufferTransitionPending).toBe(true);
-      expect(view.lobby.isBusy).toBe(true);
-      expect(view.requests[2]).toEqual({ route: "/api/matches/create", method: "POST", body: { modeId: "duel", opponentType: "bot", botKey: "puffer" } });
-      await view.settle(() => bot.resolve({ matchID: "bot-duel", playerID: "0", playerCredentials: "synthetic-bot-seat" }));
-      expect(view.lobby.isPufferTransitionPending).toBe(false);
-      expect(view.lobby.isBusy).toBe(false);
-      expect(view.requests).toHaveLength(3);
-      expect(view.events.slice(-2)).toEqual([["mark", "bot-duel"], ["navigate", "/g/bot-duel"]]);
-    });
-  }))),
 };
 
 export const IdentityAndCleanup = {
@@ -507,38 +476,6 @@ export const NewerSearchCancellationOwnership = {
   }),
 };
 
-export const ObsoletePufferHandoff = {
-  play: reportPlay(async ({ canvasElement, step }) => {
-    for (const exit of ["sign-out", "unmount", "new-search"]) {
-      await step(`A confirmed late release after ${exit} cannot start Puffer`, async () => withLobby(canvasElement, async view => {
-        const pending = deferred();
-        view.api.respond = async (_route, init, body) => init.method === "DELETE" ? pending.promise : waitingSeat(body);
-        await view.click("Find online");
-        await view.click("Play Puffer");
-        const handoff = view.actionResult;
-        if (exit === "sign-out") await view.click("Sign out");
-        else if (exit === "unmount") await view.unmount();
-        else await view.click("Find online");
-        await view.settle(() => pending.resolve({ status: "cancelled" }));
-        expect(await handoff).toEqual({ started: false, reason: "leave_failed" });
-        expect(view.requests.some(request => request.route === "/api/matches/create")).toBe(false);
-        expect(view.events).toEqual([]);
-      }));
-    }
-    await step("A new search between cancellation and the Puffer continuation prevents fallback", async () => withLobby(canvasElement, async view => {
-      // Queue both real actions in one React turn: cancel has no mutation yet,
-      // but its resolved promise must not authorize a bot after a new search.
-      await act(async () => {
-        const handoff = view.lobby.actions.playPufferFromSearch();
-        view.lobby.actions.playOnline();
-        await handoff;
-      });
-      expect(view.requests.some(request => request.route === "/api/matches/create")).toBe(false);
-      expect(view.lobby.searchState.matchID).toBe("waiting-duel");
-    }));
-  }),
-};
-
 export const ProductionLobby = {
   play: reportPlay(async ({ canvasElement }) => withLobby(canvasElement, async view => {
     const screen = within(canvasElement.ownerDocument.body);
@@ -550,4 +487,20 @@ export const ProductionLobby = {
     expect(screen.queryByRole("button", { name: "Cancel", exact: true })).not.toBeInTheDocument();
     expect(view.requests.map(request => request.method)).toEqual(["POST", "DELETE"]);
   }, { home: true })),
+};
+
+export const SettleGraphBotStart = {
+  play: reportPlay(async ({ canvasElement }) => withLobby(canvasElement, async view => {
+    view.api.respond = async () => ({ matchID: "native-bot-duel", playerID: "0", playerCredentials: "synthetic-bot-seat" });
+    await view.click("Play vs Bot");
+    await view.actionResult;
+    expect(view.requests).toHaveLength(1);
+    expect(view.requests[0]).toMatchObject({
+      route: "/api/matches/create",
+      method: "POST",
+      body: { modeId: "duel", opponentType: "bot", botKey: "settlegraph-v2" },
+    });
+    expect(view.events).toContainEqual(["navigate", "/g/native-bot-duel"]);
+    expect(readLastActiveMatch(window.localStorage)).toMatchObject({ matchID: "native-bot-duel", playerID: "0" });
+  })),
 };

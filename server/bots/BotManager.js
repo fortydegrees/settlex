@@ -1,104 +1,90 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createPufferBotManagerFromEnv } from "./pufferBotManager.js";
+import { getBotFallbackMove, getStagePlayers, resolveStageKey } from "../stagePolicy.js";
 import { SettleGraphV2Client } from "./SettleGraphV2Client.js";
 import { SettleGraphV2BotManager } from "./settleGraphV2BotManager.js";
 import { getBotModelSelection } from "../../lib/server/bots/modelSelection.js";
 
-export const BOT_KEYS = Object.freeze({
-  PUFFER: "puffer",
-  SETTLEGRAPH_V2: "settlegraph-v2"
-});
+const NATIVE_BOT_KEY = "settlegraph-v2";
 
-function normalizedBotKey(seat) {
-  const explicit = String(seat?.data?.botKey ?? seat?.data?.bot ?? "")
-    .trim()
-    .toLowerCase();
-  if (explicit === BOT_KEYS.SETTLEGRAPH_V2) return BOT_KEYS.SETTLEGRAPH_V2;
-  if (explicit === BOT_KEYS.PUFFER || explicit === "bot") return BOT_KEYS.PUFFER;
-  const name = String(seat?.name ?? "").trim().toLowerCase();
-  if (seat?.data?.isBot === true || name.startsWith("[bot]") || name.includes("puffer")) {
-    return BOT_KEYS.PUFFER;
-  }
-  return null;
+function isNativeBot(seat) {
+  return (seat?.data?.botKey ?? seat?.data?.bot) === NATIVE_BOT_KEY;
 }
 
 export class BotManager {
-  constructor({ pufferManager, settleGraphV2Manager = null, logger = console }) {
-    this.pufferManager = pufferManager;
+  constructor({ botPlayerIds = [], settleGraphV2Manager = null, logger = console } = {}) {
+    this.botPlayerIds = new Set(botPlayerIds.map(String));
     this.settleGraphV2Manager = settleGraphV2Manager;
     this.logger = logger;
     this.matchBots = new Map();
   }
 
   isBotPlayer(playerID) {
-    return this.pufferManager.isBotPlayer(playerID);
+    return this.botPlayerIds.has(String(playerID));
   }
 
   isBotPlayerForMatch(matchID, playerID) {
-    return this.matchBots.get(String(matchID))?.has(String(playerID)) ||
-      this.pufferManager.isBotPlayerForMatch?.(matchID, playerID) ||
-      this.pufferManager.isBotPlayer(playerID);
+    return this.isBotPlayer(playerID) ||
+      Boolean(this.matchBots.get(String(matchID))?.has(String(playerID)));
   }
 
   syncMatchBots(matchID, metadata) {
-    this.pufferManager.syncMatchBots?.(matchID, metadata);
-    const detected = new Map();
+    const detected = new Set();
     for (const [playerID, seat] of Object.entries(metadata?.players ?? {})) {
-      const botKey = normalizedBotKey(seat);
-      if (botKey) detected.set(String(playerID), botKey);
+      if (isNativeBot(seat)) detected.add(String(playerID));
     }
     this.matchBots.set(String(matchID), detected);
   }
 
   syncMatchBotsFromMatchData(matchID, matchData) {
-    this.pufferManager.syncMatchBotsFromMatchData?.(matchID, matchData);
-    const detected = new Map();
+    const detected = new Set();
     for (const seat of Array.isArray(matchData) ? matchData : []) {
       if (seat?.id == null) continue;
-      const botKey = normalizedBotKey(seat);
-      if (botKey) detected.set(String(seat.id), botKey);
+      if (isNativeBot(seat)) detected.add(String(seat.id));
     }
     this.matchBots.set(String(matchID), detected);
   }
 
   async chooseMoves(state, playerID, matchID = null) {
     const playerId = String(playerID);
-    const botKey = matchID == null
-      ? (this.pufferManager.isBotPlayer(playerId) ? BOT_KEYS.PUFFER : null)
-      : this.matchBots.get(String(matchID))?.get(playerId);
-    if (!botKey) return [];
+    const isBot = matchID == null
+      ? this.isBotPlayer(playerId)
+      : this.isBotPlayerForMatch(matchID, playerId);
+    if (!isBot) return [];
 
-    if (botKey === BOT_KEYS.SETTLEGRAPH_V2 && this.settleGraphV2Manager) {
+    const stageKey = resolveStageKey(state);
+    if (stageKey === "preGame:waiting") return [{ move: "readyUp", args: [] }];
+    const actors = getStagePlayers(state, stageKey);
+    if (String(actors[0]) !== playerId) return [];
+    if (stageKey === "main:devCardChoice") return [{ move: "autoResolveDevCard", args: [] }];
+
+    if (this.settleGraphV2Manager) {
       try {
         return await this.settleGraphV2Manager.chooseMoves(state, playerId, matchID);
       } catch (error) {
         this.logger.warn?.(
-          "SettleGraph V2 inference failed; using Puffer fallback",
+          "SettleGraph inference failed; using stage fallback",
           { matchID, playerID: playerId, error }
         );
       }
     }
-    return this.pufferManager.chooseMoves(state, playerId, matchID);
-  }
-
-  getFallbackMove(state) {
-    return this.pufferManager.getFallbackMove(state);
+    return [{ move: getBotFallbackMove(state), args: [] }];
   }
 
   deleteMatch(matchID) {
     this.matchBots.delete(String(matchID));
-    this.pufferManager.deleteMatch?.(matchID);
   }
 
   close() {
     this.settleGraphV2Manager?.close();
-    this.pufferManager.close();
   }
 }
 
 export function createBotManagerFromEnv({ logger = console } = {}) {
-  const pufferManager = createPufferBotManagerFromEnv();
+  const botPlayerIds = (process.env.SETTLEX_BOT_PLAYER_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
   let settleGraphV2Manager = null;
   if (process.env.SETTLEX_SETTLEGRAPH_V2_ENABLED === "1") {
     const fileDir = path.dirname(fileURLToPath(import.meta.url));
@@ -114,5 +100,5 @@ export function createBotManagerFromEnv({ logger = console } = {}) {
     });
     settleGraphV2Manager = new SettleGraphV2BotManager({ client });
   }
-  return new BotManager({ pufferManager, settleGraphV2Manager, logger });
+  return new BotManager({ botPlayerIds, settleGraphV2Manager, logger });
 }

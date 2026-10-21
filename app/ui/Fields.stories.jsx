@@ -32,7 +32,7 @@ export const TextInput = {
   render: () => (
     <div className="grid max-w-xl gap-ui-3 sm:grid-cols-2">
       <Input aria-label="Empty player name" placeholder="Player name" />
-      <Input aria-label="Populated player name" defaultValue="Puffer fan" />
+      <Input aria-label="Populated player name" defaultValue="Bot fan" />
     </div>
   ),
 };
@@ -54,7 +54,7 @@ export const SelectField = {
       <Select aria-label="Match type" defaultValue="public-duel">
         <option value="public-duel">Public duel</option>
         <option value="friend-challenge">Friend challenge</option>
-        <option value="bot-game">Play Puffer</option>
+        <option value="bot-game">Play vs Bot</option>
       </Select>
     </div>
   ),

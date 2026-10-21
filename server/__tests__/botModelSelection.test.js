@@ -29,6 +29,7 @@ describe("bot model selection", () => {
     vi.stubEnv("SETTLEX_BOT_MODEL_MANIFEST", path.join(root, "current.json"));
     vi.resetModules();
     const { resolveBotDescriptor } = await import("../../lib/server/matches/botMatch.js");
+    expect(() => resolveBotDescriptor("puffer")).toThrow("Unknown bot");
     expect(resolveBotDescriptor("settlegraph-v2").displayName).toBe("SettleGraph 009");
   });
   it("selects an external checkpoint with its path, hash and display name", () => {

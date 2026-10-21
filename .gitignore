@@ -18,9 +18,9 @@ node_modules/
 /game-core/dist
 /native/settlegraph-v2/target/
 
-# AI training artifacts
-ai/pufferlib/runs*/
-ai/pufferlib/**/*.pt
+# Local research artifacts
+.venv/
+*.pt
 *.egg-info/
 
 

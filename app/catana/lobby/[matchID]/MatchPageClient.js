@@ -30,7 +30,6 @@ import {
 import { isInterruptedCredentialedDuel } from "../interruptedDuel";
 import {
   buildInterruptedDuelLeavePayload,
-  buildPufferBotJoinPayload,
   resolveInterruptedDuelLeaveFailure,
   resolveLiveMatchClientMode,
   resolveOpenSeatSelection,
@@ -98,7 +97,6 @@ export function MatchPageClient({
   const [credentials, setCredentials] = useState(initialCredentials ?? null);
   const [joinPending, setJoinPending] = useState(false);
   const [cancelPending, setCancelPending] = useState(false);
-  const [botFillPending, setBotFillPending] = useState(false);
   const [recoveryPending, setRecoveryPending] = useState(false);
   const [spectatorMode, setSpectatorMode] = useState(false);
 
@@ -602,34 +600,6 @@ export function MatchPageClient({
     router.replace(`/g/${matchID}`);
   }, [matchID, router]);
 
-  const fillOpenSeatsWithBots = async () => {
-    if (openSeats.length === 0) return;
-    setBotFillPending(true);
-    setError("");
-
-    try {
-      await upsertGuestIdentity();
-      for (const seat of openSeats) {
-        await appRequest({
-          route: "/api/matches/join",
-          init: {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(
-              buildPufferBotJoinPayload({ matchID, seat })
-            ),
-          },
-        });
-      }
-      await refreshMatch();
-    } catch (err) {
-      setError(err?.message || "Failed to fill open seats with bots.");
-      await refreshMatch();
-    } finally {
-      setBotFillPending(false);
-    }
-  };
-
   const leaveInterruptedDuel = async ({ lookAgain = false } = {}) => {
     setRecoveryPending(true);
     setError("");
@@ -749,7 +719,6 @@ export function MatchPageClient({
       playerID={playerID}
       isLoadingMatch={isLoadingMatch}
       joinPending={joinPending}
-      botFillPending={botFillPending}
       error={error}
       onPlayerNameChange={setPlayerName}
       onSeatChange={(nextPlayerID) => {
@@ -759,7 +728,6 @@ export function MatchPageClient({
       onJoin={joinSeat}
       onSpectate={spectateMatch}
       onRefresh={refreshMatch}
-      onFillBots={fillOpenSeatsWithBots}
     />
   );
 }

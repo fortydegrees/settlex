@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   buildInterruptedDuelLeavePayload,
-  buildPufferBotJoinPayload,
   resolveInterruptedDuelLeaveFailure,
   resolveLiveMatchClientMode,
   resolveOpenSeatSelection,
@@ -67,23 +66,6 @@ describe("match room state", () => {
     expect(
       resolveOpenSeatSelection({ openSeats: [], playerID: "1" })
     ).toBe("1");
-  });
-
-  it("builds the external join payload for each Puffer seat", () => {
-    expect(
-      buildPufferBotJoinPayload({
-        matchID: "room-42",
-        seat: { id: 2 },
-      })
-    ).toEqual({
-      matchID: "room-42",
-      playerID: "2",
-      participantType: "bot",
-      botKey: "puffer",
-      botName: "Puffer 3",
-      avatarEmoji: "🤖",
-      avatarColor: "royal",
-    });
   });
 
   it("builds the credentialed matchmaking-cancel payload for recovery", () => {

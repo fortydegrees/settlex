@@ -58,10 +58,10 @@ export const JoinOpenSeat = {
     }),
 };
 
-export const LeavePufferAndJoin = {
+export const LeaveBotAndJoin = {
   args: {
     currentGame: {
-      matchID: "storybook-puffer-match",
+      matchID: "storybook-bot-match",
       opponentType: "bot",
     },
   },
@@ -69,7 +69,7 @@ export const LeavePufferAndJoin = {
     const screen = within(context.canvasElement.ownerDocument.body);
     await waitFor(() =>
       expect(
-        screen.getByText("Leave your Puffer game and join HarbourFox?")
+        screen.getByText("Leave your bot game and join HarbourFox?")
       ).toBeVisible()
     );
     await dismissWithoutJoining({

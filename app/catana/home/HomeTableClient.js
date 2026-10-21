@@ -235,14 +235,9 @@ function HomeTableBoard({ initialAccount = null }) {
       return;
     }
 
-    if (mode === "bot") {
+    if (mode === "bot-v2") {
       gameStartSound.prime();
       lobby.actions.playBot();
-      return;
-    }
-
-    if (mode === "bot-v2") {
-      lobby.actions.playBot("settlegraph-v2");
       return;
     }
 
@@ -366,10 +361,8 @@ function HomeTableBoard({ initialAccount = null }) {
         matchAlertLoading={matchAlerts.loading}
         matchAlertError={matchAlerts.error}
         onMatchAlertAction={handleMatchAlertAction}
-        isPufferTransitionPending={lobby.isPufferTransitionPending}
         isSearchCancelPending={lobby.isSearchCancelPending}
         onCancel={lobby.overlays.cancelSearch}
-        onPlayPuffer={lobby.actions.playPufferFromSearch}
       />
     </main>
   );

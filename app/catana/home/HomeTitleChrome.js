@@ -142,13 +142,13 @@ export const buildSystemActions = ({ settleGraphV2Enabled = false } = {}) => [
     badge: "1v1",
     variant: "primary",
   },
-  {
-    id: settleGraphV2Enabled ? "bot-v2" : "bot",
+  ...(settleGraphV2Enabled ? [{
+    id: "bot-v2",
     label: "Play vs Bot",
     icon: CpuChipIcon,
     badge: "AI",
     variant: "accent",
-  },
+  }] : []),
   {
     id: "friend",
     label: "Play a Friend",

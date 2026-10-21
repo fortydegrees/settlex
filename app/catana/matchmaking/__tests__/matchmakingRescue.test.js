@@ -10,7 +10,6 @@ import {
   getMatchmakingRescueStage,
   getSearchCancelPresentation,
   getSearchElapsedSeconds,
-  playPufferAfterLeavingSearch,
   reconcileUnknownSearchMutation,
   resolvePublicMatchmakingCancellation,
   resolvePublicMatchmakingSeat,
@@ -24,7 +23,7 @@ describe("getMatchmakingRescueStage", () => {
     [11, "waiting"],
     [12, "alerts"],
     [29, "alerts"],
-    [30, "puffer"],
+    [30, "alerts"],
   ])("maps %s seconds to %s", (seconds, stage) => {
     expect(getMatchmakingRescueStage(seconds)).toBe(stage);
   });
@@ -213,105 +212,6 @@ describe("search cancellation feedback", () => {
       reason: "uncertain",
       matchFound: null,
     });
-  });
-});
-
-describe("Puffer rescue ordering", () => {
-  it("awaits leaving the waiting duel before creating Puffer", async () => {
-    const sequence = [];
-    let finishLeave;
-    const cancelSearch = vi.fn(
-      () =>
-        new Promise((resolve) => {
-          finishLeave = () => {
-            sequence.push("left");
-            resolve();
-          };
-        })
-    );
-    const playAgainstBot = vi.fn(() => {
-      sequence.push("puffer");
-      return "created";
-    });
-
-    const resultPromise = playPufferAfterLeavingSearch({
-      cancelSearch,
-      playAgainstBot,
-    });
-    expect(playAgainstBot).not.toHaveBeenCalled();
-
-    finishLeave();
-    await expect(resultPromise).resolves.toBe("created");
-    expect(sequence).toEqual(["left", "puffer"]);
-  });
-
-  it("does not create Puffer when the waiting-seat leave fails", async () => {
-    const cancelSearch = vi.fn().mockResolvedValue(false);
-    const playAgainstBot = vi.fn();
-
-    await expect(
-      playPufferAfterLeavingSearch({ cancelSearch, playAgainstBot })
-    ).resolves.toEqual({ started: false, reason: "leave_failed" });
-    expect(playAgainstBot).not.toHaveBeenCalled();
-  });
-
-  it("allows only one Puffer transition while leave is pending", async () => {
-    const pufferTransitionPendingRef = { current: false };
-    let finishLeave;
-    const cancelSearch = vi.fn(
-      () =>
-        new Promise((resolve) => {
-          finishLeave = () => resolve(true);
-        })
-    );
-    const playAgainstBot = vi.fn().mockResolvedValue("created");
-
-    const first = playPufferAfterLeavingSearch({
-      cancelSearch,
-      playAgainstBot,
-      pufferTransitionPendingRef,
-    });
-    await expect(
-      playPufferAfterLeavingSearch({
-        cancelSearch,
-        playAgainstBot,
-        pufferTransitionPendingRef,
-      })
-    ).resolves.toEqual({ started: false, reason: "pending" });
-
-    finishLeave();
-    await expect(first).resolves.toBe("created");
-    expect(cancelSearch).toHaveBeenCalledTimes(1);
-    expect(playAgainstBot).toHaveBeenCalledTimes(1);
-  });
-
-  it("holds the pending state through bot setup and releases it on failure", async () => {
-    const pufferTransitionPendingRef = { current: false };
-    const pendingChanges = [];
-    let rejectBotSetup;
-    const cancelSearch = vi.fn().mockResolvedValue(true);
-    const playAgainstBot = vi.fn(
-      () =>
-        new Promise((resolve, reject) => {
-          rejectBotSetup = reject;
-        })
-    );
-
-    const transition = playPufferAfterLeavingSearch({
-      cancelSearch,
-      playAgainstBot,
-      pufferTransitionPendingRef,
-      onPendingChange: (pending) => pendingChanges.push(pending),
-    });
-
-    await vi.waitFor(() => expect(playAgainstBot).toHaveBeenCalledTimes(1));
-    expect(pufferTransitionPendingRef.current).toBe(true);
-    expect(pendingChanges).toEqual([true]);
-
-    rejectBotSetup(new Error("bot setup failed"));
-    await expect(transition).rejects.toThrow("bot setup failed");
-    expect(pufferTransitionPendingRef.current).toBe(false);
-    expect(pendingChanges).toEqual([true, false]);
   });
 });
 

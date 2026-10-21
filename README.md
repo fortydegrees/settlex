@@ -132,7 +132,7 @@ provider behavior.
 | `app/catana/effects/`, `public/sounds/` | Presentation runners, audio cue routing and served clips |
 | `scripts/`, `infra/`, `release/` | Maintained commands, local/deployment infrastructure and release records |
 | `public/`, `design/`, `sounds/` | Served assets, design sources and sound creation tools; source and rights review still applies |
-| `native/`, `ai/pufferlib/` | Optional bot serving and research-related source; not needed for human play |
+| `native/` | Optional SettleGraph bot serving; not needed for human play |
 | `docs/README.md` | Maintained guide index, with separate routes to history and internal records |
 
 The server, browser and archive replay share `lib/game-runtime/Game.js`. It uses

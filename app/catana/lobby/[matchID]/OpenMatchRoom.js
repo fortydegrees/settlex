@@ -26,14 +26,12 @@ export function OpenMatchRoom({
   playerID,
   isLoadingMatch,
   joinPending,
-  botFillPending,
   error,
   onPlayerNameChange,
   onSeatChange,
   onJoin,
   onSpectate,
   onRefresh,
-  onFillBots,
 }) {
   return (
     <div
@@ -145,19 +143,6 @@ export function OpenMatchRoom({
                   className="w-full"
                 >
                   {joinPending ? "Joining…" : "Join & Play"}
-                </Button>
-                <Button
-                  variant="secondary"
-                  className="w-full whitespace-normal"
-                  type="button"
-                  onClick={onFillBots}
-                  disabled={
-                    botFillPending || joinPending || openSeats.length === 0
-                  }
-                >
-                  {botFillPending
-                    ? "Adding Bots…"
-                    : "Fill Open Seats With Bots"}
                 </Button>
                 <div className="break-all type-caption text-ink-secondary">
                   Game server:{" "}

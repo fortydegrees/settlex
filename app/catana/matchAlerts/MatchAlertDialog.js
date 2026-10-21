@@ -20,7 +20,7 @@ export function getMatchAlertDialogCopy({ state, alert, currentGame }) {
       title: `${seekerName} is looking for a duel`,
       description:
         currentGame?.opponentType === "bot"
-          ? `Leave your Puffer game and join ${seekerName}?`
+          ? `Leave your bot game and join ${seekerName}?`
           : "Take the open seat?",
     };
   }

@@ -40,10 +40,10 @@ distinguishes that correction from the separate custom-font and other asset
 questions. Existing [third-party notices](../../THIRD_PARTY_NOTICES.md) remain.
 
 Maintained app dev routes remain development-gated. Production GameScreen imports
-payload helpers from dev/sandbox, so the dev directory is retained. The home-table
-route wraps real application actions; use the sandbox/effects lab for isolated
-presentation work. Public static study HTML had no environment guard and is omitted.
-The soundkit direct family CLI's incomplete render loop remains a documented follow-up.
+payload helpers from dev/sandbox, so the dev directory is retained. The separate home-table,
+sidebar-connection and underlay-waves development routes were subsequently
+retired on 21 October 2026. The production homepage remains under
+`app/catana/home/`; it did not depend on those experiment files.
 
 Resolver verification found a pre-existing Palette B desert primary URL,
 /svgs/tile_desert.svg, absent in both original source and candidate. The board's

@@ -130,6 +130,7 @@ describe("match API routes", () => {
     const createMatchForAccount = vi.fn();
     const createBotMatchForAccount = vi.fn();
     const POST = createMatchCreateRoute({
+      isBotEnabled: () => true,
       getSessionAccount,
       createMatchForAccount,
       createBotMatchForAccount,
@@ -644,6 +645,27 @@ describe("match API routes", () => {
     });
   });
 
+  it("rejects external bot fills before mutating an open match", async () => {
+    const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
+    const joinMatchForAccount = vi.fn().mockResolvedValue({ playerID: "1", playerCredentials: "bot-secret" });
+    const getLiveMatch = vi.fn().mockResolvedValue({ matchID: "open-room", players: [{ id: 0, name: "Ada" }, { id: 1, name: "" }] });
+    const JOIN = createMatchJoinRoute({
+      getSessionAccount: async () => ({ account: { id: "acct_1", currentUsername: "Ada" } }),
+      getLiveMatch,
+      joinMatchForAccount,
+      reserveAlertsBeforeHumanJoin: async () => null,
+      withMatchMutationLock: runWithoutLock,
+    });
+    const response = await JOIN(new Request("http://localhost/api/matches/join", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchID: "open-room", playerID: "1", participantType: "bot" }),
+    }));
+    expect(response.status).toBe(403);
+    expect(joinMatchForAccount).not.toHaveBeenCalled();
+    expect(getLiveMatch).not.toHaveBeenCalled();
+  });
+
   it("makes the alert pause visible before a human seat and compensates a failed join", async () => {
     const { createMatchJoinRoute } = await loadRoute("join", "handler.js");
     const getSessionAccount = vi.fn().mockResolvedValue({
@@ -667,7 +689,6 @@ describe("match API routes", () => {
     };
     const getLiveMatch = vi
       .fn()
-      .mockResolvedValueOnce(liveMatch)
       .mockResolvedValue({
         ...liveMatch,
         players: {
@@ -685,9 +706,8 @@ describe("match API routes", () => {
       pausedAccountIds: ["acct_1"],
       previousPreferences: [],
     };
-    const reserveAlertsBeforeHumanJoin = vi.fn(async ({ participantType }) => {
+    const reserveAlertsBeforeHumanJoin = vi.fn(async () => {
       order.push("pause:start");
-      if (participantType === "bot") return null;
       await pauseGate;
       order.push("pause:done");
       return reservation;
@@ -710,30 +730,6 @@ describe("match API routes", () => {
       restoreAlertsAfterFailedHumanJoin,
       withMatchMutationLock: runWithoutLock,
     });
-
-    const botResponse = await JOIN(
-      new Request("http://localhost/api/matches/join", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", cookie: "settlehex_session=a.b" },
-        body: JSON.stringify({
-          matchID: "match_1",
-          playerID: "1",
-          participantType: "bot",
-        }),
-      })
-    );
-
-    expect(botResponse.status).toBe(200);
-    expect(reserveAlertsBeforeHumanJoin).toHaveBeenCalledWith({
-      liveMatch,
-      joiningAccountId: "acct_1",
-      joiningPlayerId: "1",
-      participantType: "bot",
-      matchID: "match_1",
-    });
-    reserveAlertsBeforeHumanJoin.mockClear();
-    joinMatchForAccount.mockClear();
-    order.length = 0;
 
     const humanResponsePromise = JOIN(
       new Request("http://localhost/api/matches/join", {

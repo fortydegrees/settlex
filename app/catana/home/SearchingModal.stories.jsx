@@ -5,7 +5,6 @@ import { SearchingModal } from "./SearchingModal";
 const callbacks = {
   onMatchAlertAction: fn(),
   onCancel: fn(),
-  onPlayPuffer: fn(),
 };
 
 const searching = { phase: "searching", startedAt: 1 };
@@ -20,7 +19,6 @@ const meta = {
     matchAlertDisplay: matchAlertFixtures.off,
     matchAlertLoading: false,
     matchAlertError: "",
-    isPufferTransitionPending: false,
     ...callbacks,
   },
   argTypes: {
@@ -29,7 +27,6 @@ const meta = {
     matchAlertDisplay: { control: false },
     matchAlertLoading: { control: false },
     matchAlertError: { control: false },
-    isPufferTransitionPending: { control: false },
   },
 };
 
@@ -60,22 +57,6 @@ export const AlertRescueAvailable = {
   },
 };
 
-export const PufferRescueAvailable = {
-  args: { searchState: searching, searchElapsedSeconds: 35 },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement.ownerDocument.body);
-    await waitFor(() => {
-      expect(screen.getByText("Match alerts")).toBeVisible();
-      expect(
-        screen.getByRole("button", { name: "Keep waiting" })
-      ).toBeVisible();
-      expect(
-        screen.getByRole("button", { name: "Play Puffer" })
-      ).toBeVisible();
-    });
-  },
-};
-
 export const MatchFound = {
   args: {
     searchState: { phase: "matchFound", startedAt: 1 },
@@ -94,20 +75,5 @@ export const RescueError = {
   args: {
     searchElapsedSeconds: 35,
     matchAlertError: "Match alerts could not be enabled. Check your connection and try again.",
-  },
-};
-
-export const StartingPuffer = {
-  args: {
-    searchState: null,
-    searchElapsedSeconds: 0,
-    isPufferTransitionPending: true,
-  },
-  play: async ({ canvasElement }) => {
-    const screen = within(canvasElement.ownerDocument.body);
-    await waitFor(() => {
-      expect(screen.getByText("Starting Puffer")).toBeVisible();
-      expect(screen.getByText("Setting up a bot duel...")).toBeVisible();
-    });
   },
 };

@@ -61,3 +61,22 @@ architecture, notation, UI, testing, operations and provenance guides remain.
 Moved the useful UI verification matrix into the testing guide and removed two
 unregistered browser scripts tied to obsolete lobby controls. Recovery reuses
 existing private history for exact matches and archives only distinct versions.
+
+## Retired experimental routes and Puffer — 21 October 2026
+
+With David's approval, privately preserved and removed the board editor,
+home-table, sidebar-connection and underlay-waves experiments, plus Puffer's
+training, inference and server integration. The homepage and match creation now
+use SettleGraph only; its existing availability flags remain. Removed the
+Puffer search rescue and arbitrary lobby bot-fill action. Existing server stage
+auto-moves handle inference failure without a Python backend. Historical bot
+names in archive/identity fixtures remain valid saved-game data.
+
+Removed the two editor-only dependencies. Current artwork, sandbox, effects lab,
+Storybook, native runtime, engine and maintained contributor guides remain.
+
+Focused bot/default and match-route checks and all eight rendered lobby lifecycle
+stories passed. UI policy, all 169 engine tests, all 201 app test files and lint
+passed. The server suite passed 352 tests and skipped 18; its unchanged real-worker
+notation test exceeded the converter's 30-second timeout, including in a separate
+run. No notation code or timeout was changed in this retirement.

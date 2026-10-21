@@ -18,7 +18,6 @@ const openMatch = {
 };
 
 const callbacks = {
-  onFillBots: fn(),
   onJoin: fn((event) => event.preventDefault()),
   onPlayerNameChange: fn(),
   onRefresh: fn(),
@@ -62,7 +61,6 @@ const meta = {
     playerID: "1",
     isLoadingMatch: false,
     joinPending: false,
-    botFillPending: false,
     error: "",
     ...callbacks,
   },
@@ -74,7 +72,6 @@ const meta = {
     playerID: { control: false },
     isLoadingMatch: { control: false },
     joinPending: { control: false },
-    botFillPending: { control: false },
     error: { control: false },
   },
 };
@@ -130,12 +127,6 @@ export const LongNamesAndServer = {
 export const JoinPending = {
   args: {
     joinPending: true,
-  },
-};
-
-export const BotFillPending = {
-  args: {
-    botFillPending: true,
   },
 };
 

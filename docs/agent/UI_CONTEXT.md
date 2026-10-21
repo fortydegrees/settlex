@@ -16,7 +16,6 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 - `app/catana/dev/sandbox/README.md`: real board UI sandbox. Use for gameplay HUD, board, opponent box, turn controls, dev-card, award, robber, and card-transfer presentation.
 - `app/catana/dev/effects/README.md`: isolated effects lab. Use for tuning deterministic animation/audio runners without needing a live game state.
 - `app/catana/components/README.md`: component and HUD context. Use before editing shared Catana components.
-- `app/catana/dev/sidebar-connection/`: scratch surface for left meta rail and dock/panel connector geometry.
 - `app/catana/dev/ui/`: standard UI showcase for shared product-surface primitives.
 - `docs/agent/UI_CATALOG.md`: production component ownership and the current
   Clarity ButtonFamily/Foundations reference. Its approved role-based corner and
@@ -43,7 +42,6 @@ Use `app/catana/dev/sandbox` when the change depends on real board layout, viewe
 
 Use `app/catana/dev/effects` when the change is an isolated effect runner, cue timing, audio mapping, or deterministic replay.
 
-Use `app/catana/dev/sidebar-connection` when the change is about the left meta rail shell, side-tab/ribbon geometry, row spacing, or panel connector shape.
 
 Use `app/catana/dev/ui` when the change is a shared product primitive from `app/ui/*`, not bespoke board chrome.
 

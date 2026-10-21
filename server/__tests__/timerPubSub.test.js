@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { PufferBotManager } from "../bots/pufferBotManager";
+import { BotManager } from "../bots/BotManager.js";
 import { IdlePresenceManager } from "../presence/IdlePresenceManager";
 import { TimerManager } from "../timers/TimerManager";
 import { createTimerPubSub } from "../timers/timerPubSub";
@@ -420,7 +420,7 @@ it("seeds bot seats from matchData before a pregame update schedules bot ready-u
   vi.useFakeTimers();
 
   const dispatch = vi.fn();
-  const botManager = new PufferBotManager();
+  const botManager = new BotManager();
   const timerManager = new TimerManager({
     dispatch,
     botMoveDelayMs: 250,
@@ -437,8 +437,8 @@ it("seeds bot seats from matchData before a pregame update schedules bot ready-u
         { id: "0", name: "Alice", data: { color: "red" } },
         {
           id: "1",
-          name: "[BOT] Puffer 2",
-          data: { bot: "puffer", isBot: true, emoji: "🤖" }
+          name: "[BOT] SettleGraph 009",
+          data: { bot: "settlegraph-v2", isBot: true, emoji: "🤖" }
         }
       ]
     ]
@@ -507,7 +507,7 @@ it("forwards state and matchData to the archive manager", () => {
   };
   const matchData = [
     { id: "0", name: "Ada", data: { accountId: "acct_1" } },
-    { id: "1", name: "[BOT] Puffer 2", data: { bot: "puffer", isBot: true } }
+    { id: "1", name: "[BOT] SettleGraph 009", data: { bot: "settlegraph-v2", isBot: true } }
   ];
 
   pubSub.publish("MATCH-archive", {

@@ -4,7 +4,6 @@ export function getMatchmakingRescueStage(elapsedSeconds) {
   const elapsed = Number.isFinite(elapsedSeconds)
     ? Math.max(0, elapsedSeconds)
     : 0;
-  if (elapsed >= 30) return "puffer";
   if (elapsed >= 12) return "alerts";
   return "waiting";
 }
@@ -53,13 +52,12 @@ export function beginSearchCancellation({
 
 export function getSearchCancelPresentation({
   isMatchFound = false,
-  isPufferTransitionPending = false,
   isSearchCancelPending = false,
 } = {}) {
   if (isMatchFound) return { disabled: true, label: "Loading board..." };
   if (isSearchCancelPending) return { disabled: true, label: "Cancelling..." };
   return {
-    disabled: Boolean(isPufferTransitionPending),
+    disabled: false,
     label: "Cancel",
   };
 }
@@ -323,28 +321,4 @@ export function scheduleMatchAnnouncement({
   }, MATCH_ANNOUNCEMENT_DELAY_MS);
 
   return true;
-}
-
-export async function playPufferAfterLeavingSearch({
-  cancelSearch,
-  playAgainstBot,
-  pufferTransitionPendingRef = { current: false },
-  onPendingChange,
-}) {
-  if (pufferTransitionPendingRef.current) {
-    return { started: false, reason: "pending" };
-  }
-
-  pufferTransitionPendingRef.current = true;
-  onPendingChange?.(true);
-  try {
-    const leftSearch = await cancelSearch();
-    if (leftSearch === false) {
-      return { started: false, reason: "leave_failed" };
-    }
-    return await playAgainstBot();
-  } finally {
-    pufferTransitionPendingRef.current = false;
-    onPendingChange?.(false);
-  }
 }

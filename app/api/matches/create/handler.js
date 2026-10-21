@@ -52,7 +52,7 @@ export const createMatchCreateRoute =
         payload?.opponentType === "bot"
           ? createBotMatchForAccountImpl
           : createMatchForAccountImpl;
-      const botKey = payload?.botKey ?? "puffer";
+      const botKey = payload?.botKey ?? "settlegraph-v2";
       if (
         payload?.opponentType === "bot" &&
         !isBotEnabledImpl(botKey)

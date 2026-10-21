@@ -5,7 +5,7 @@ export const BRAND_NAME = "SettleHex";
 export const BETA_PRIMARY_DESCRIPTOR =
   "Free online Catan for quick 1v1 games.";
 export const BETA_SUPPORTING_PROOF =
-  "Balanced boards. Play a friend, find a match, or challenge Puffer.";
+  "Balanced boards. Play a friend, find a match, or challenge a bot.";
 export const BRAND_DOMAIN_LABEL = "SETTLEHEX.COM";
 export const SHARE_IMAGE_ALT = `${BRAND_NAME} — ${BETA_PRIMARY_DESCRIPTOR}`;
 
@@ -95,7 +95,7 @@ export const createRobotsMetadata = () => ({
   rules: {
     userAgent: "*",
     allow: ["/", "/g/", "/u/"],
-    disallow: ["/api/", "/account", "/board-editor", "/catana/dev/"],
+    disallow: ["/api/", "/account", "/catana/dev/"],
   },
   sitemap: `${SITE_URL}/sitemap.xml`,
 });

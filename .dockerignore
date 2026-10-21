@@ -18,10 +18,9 @@ tmp
 output
 *.pem
 
-# AI training artifacts
-ai/pufferlib/python/.venv/
-ai/pufferlib/runs*/
-ai/pufferlib/**/*.pt
+# Local research artifacts
+.venv/
+*.pt
 *.egg-info/
 
 # Local native builds and sealed models are never image inputs.

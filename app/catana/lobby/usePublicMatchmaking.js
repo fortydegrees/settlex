@@ -53,7 +53,6 @@ export function usePublicMatchmaking({
   const announcementTimerRef = useRef(null);
   const announcedMatchIDRef = useRef(null);
   const searchGenerationRef = useRef(0);
-  const searchLifetimeRef = useRef(0);
   const activeSearchMutationRef = useRef(null);
   const searchCancelPendingRef = useRef(false);
   const mountedRef = useRef(true);
@@ -73,7 +72,6 @@ export function usePublicMatchmaking({
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      searchLifetimeRef.current += 1;
       advanceSearchGeneration(searchGenerationRef);
       clearScheduledMatchAnnouncement({ announcementTimerRef });
     };
@@ -136,7 +134,6 @@ export function usePublicMatchmaking({
   const play = useCallback(async () => {
     const startedAt = Date.now();
     const generation = advanceSearchGeneration(searchGenerationRef);
-    searchLifetimeRef.current += 1;
     activeSearchMutationRef.current = null;
     searchCancelPendingRef.current = false;
     setIsSearchCancelPending(false);
@@ -274,7 +271,7 @@ export function usePublicMatchmaking({
           return;
         }
         setError(
-          "Still checking whether your online request finished. Try Cancel again before starting Puffer."
+          "Still checking whether your online request finished. Try Cancel again."
         );
         return;
       }
@@ -373,7 +370,7 @@ export function usePublicMatchmaking({
 
       if (!cancellation.released) {
         setError(
-          "Could not confirm that your public search was cancelled. Try Cancel again before starting Puffer."
+          "Could not confirm that your public search was cancelled. Try Cancel again."
         );
         setSearchState((current) => (current ? { ...current } : current));
         return false;
@@ -413,20 +410,8 @@ export function usePublicMatchmaking({
     router,
   ]);
 
-  const clearSearchAnnouncement = useCallback(() => {
-    clearScheduledMatchAnnouncement({ announcementTimerRef });
-  }, []);
-
-  // Cancellation advances the request generation, but a Puffer continuation
-  // remains valid until a new search, sign-out or unmount ends this lifetime.
-  const captureSearchContinuation = useCallback(() => {
-    const lifetime = searchLifetimeRef.current;
-    return () => mountedRef.current && searchLifetimeRef.current === lifetime;
-  }, []);
-
   const resetSearchAfterSignOut = useCallback(() => {
     advanceSearchGeneration(searchGenerationRef);
-    searchLifetimeRef.current += 1;
     activeSearchMutationRef.current = null;
     searchCancelPendingRef.current = false;
     setIsSearchCancelPending(false);
@@ -442,8 +427,6 @@ export function usePublicMatchmaking({
     isSearchCancelPending,
     play,
     cancelSearch,
-    clearSearchAnnouncement,
-    resetSearchAfterSignOut,
-    captureSearchContinuation
+    resetSearchAfterSignOut
   };
 }

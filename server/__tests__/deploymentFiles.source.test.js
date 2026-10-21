@@ -307,9 +307,8 @@ describe("deployment file wiring", () => {
   it("keeps local AI training artifacts out of the Docker build context", () => {
     const dockerignore = readRepoFile(".dockerignore");
 
-    expect(dockerignore).toContain("ai/pufferlib/python/.venv/");
-    expect(dockerignore).toContain("ai/pufferlib/runs*/");
-    expect(dockerignore).toContain("ai/pufferlib/**/*.pt");
+    expect(dockerignore).toContain(".venv/");
+    expect(dockerignore).toContain("*.pt");
     expect(dockerignore).toContain("*.egg-info/");
   });
 

@@ -21,14 +21,12 @@ The following files cite Catanatron commit
 `425ccdef04921d1756a1c9bb1f904fceb1f3c3d3` and contain adapted upstream code:
 
 - `app/catana/board/coordinates.js`
-- `app/board-editor/utils/coordinates.js`
 - `app/catana/utils/useWindowSize.js`
-- `app/board-editor/utils/useWindowSize.js`
 
 The pinned upstream distribution includes the
 [GNU GPL version 3 license](LICENSES/Catanatron-GPL-3.0.txt).
 [Original source and license](https://github.com/bcollazo/catanatron/tree/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3).
-Local changes include geometry helpers, board-editor spacing, and window measurement
+Local changes include geometry helpers and window measurement
 for server rendering. Preserve the existing source attribution.
 
 The overall project's license disposition is unresolved. This notice records

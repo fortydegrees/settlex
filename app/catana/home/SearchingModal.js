@@ -14,11 +14,9 @@ export function SearchingModal({
   matchAlertDisplay,
   matchAlertLoading = false,
   matchAlertError = "",
-  isPufferTransitionPending,
   isSearchCancelPending = false,
   onMatchAlertAction,
-  onCancel,
-  onPlayPuffer
+  onCancel
 }) {
   const [rescueExpanded, setRescueExpanded] = useState(true);
 
@@ -26,7 +24,7 @@ export function SearchingModal({
     setRescueExpanded(true);
   }, [searchState?.startedAt]);
 
-  if (!searchState && !isPufferTransitionPending) return null;
+  if (!searchState) return null;
 
   const mins = Math.floor(searchElapsedSeconds / 60);
   const secs = searchElapsedSeconds % 60;
@@ -34,11 +32,9 @@ export function SearchingModal({
     mins > 0
       ? `${mins}:${String(secs).padStart(2, "0")}`
       : `0:${String(secs).padStart(2, "0")}`;
-  const isStartingPuffer = isPufferTransitionPending && !searchState;
   const isMatchFound = searchState?.phase === "matchFound";
   const cancelPresentation = getSearchCancelPresentation({
     isMatchFound,
-    isPufferTransitionPending,
     isSearchCancelPending,
   });
   const rescueStage = getMatchmakingRescueStage(searchElapsedSeconds);
@@ -47,16 +43,8 @@ export function SearchingModal({
     !isMatchFound &&
     rescueStage !== "waiting" &&
     rescueExpanded;
-  const title = isStartingPuffer
-    ? "Starting Puffer"
-    : isMatchFound
-      ? "Match found"
-      : "Finding a table";
-  const subtitle = isStartingPuffer
-    ? "Setting up a bot duel..."
-    : isMatchFound
-      ? "Loading board..."
-      : `1v1 · ${timeStr}`;
+  const title = isMatchFound ? "Match found" : "Finding a table";
+  const subtitle = isMatchFound ? "Loading board..." : `1v1 · ${timeStr}`;
 
   return (
     <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center overflow-y-auto bg-surface-search-scrim p-ui-4 backdrop-blur-md">
@@ -98,17 +86,6 @@ export function SearchingModal({
             onClick={() => void onCancel()}
           >
             {cancelPresentation.label}
-          </Button>
-        ) : null}
-        {searchState && !isMatchFound && rescueStage === "puffer" ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-ui-1 w-full"
-            disabled={isPufferTransitionPending}
-            onClick={onPlayPuffer}
-          >
-            Play Puffer
           </Button>
         ) : null}
       </div>

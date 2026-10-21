@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "../../../lib/client/authClient";
 import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
-import { playPufferAfterLeavingSearch } from "../matchmaking/matchmakingRescue.js";
 import { usePublicMatchmaking } from "./usePublicMatchmaking";
 import { normalizePlayerColorId } from "../theme/playerColors";
 import {
@@ -154,11 +153,9 @@ export function useLobbyHomeActions({
   const [activeActionId, setActiveActionId] = useState(null);
   const [authOptions, setAuthOptions] = useState(DEFAULT_AUTH_OPTIONS);
   const [accountReady, setAccountReady] = useState(false);
-  const [isPufferTransitionPending, setIsPufferTransitionPending] = useState(false);
 
   const pendingActionRef = useRef(null);
   const pendingEntryActionRef = useRef(null);
-  const pufferTransitionPendingRef = useRef(false);
   const mountedRef = useRef(true);
   const playerNameRef = useRef(playerName);
   playerNameRef.current = playerName;
@@ -640,9 +637,7 @@ export function useLobbyHomeActions({
     isSearchCancelPending,
     play,
     cancelSearch,
-    clearSearchAnnouncement,
     resetSearchAfterSignOut,
-    captureSearchContinuation
   } = usePublicMatchmaking({
     request: appRequest,
     ensureAccountSession,
@@ -699,10 +694,9 @@ export function useLobbyHomeActions({
     }
   }, [ensureAccountSession, persistJoinedSeat, router]);
 
-  const playAgainstBot = useCallback(async (botKey = "puffer") => {
-    const isSettleGraphV2 = botKey === "settlegraph-v2";
+  const playAgainstBot = useCallback(async () => {
     setError("");
-    setActiveActionId(isSettleGraphV2 ? "bot-v2" : "bot");
+    setActiveActionId("bot-v2");
 
     try {
       const account = await ensureGeneratedGuestAccount();
@@ -715,7 +709,7 @@ export function useLobbyHomeActions({
         init: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ modeId: "duel", opponentType: "bot", botKey })
+          body: JSON.stringify({ modeId: "duel", opponentType: "bot", botKey: "settlegraph-v2" })
         }
       });
 
@@ -767,21 +761,6 @@ export function useLobbyHomeActions({
 
     setChallengeState(null);
   }, [challengeState]);
-
-  const playPufferFromSearch = useCallback(async () => {
-    const canContinue = captureSearchContinuation();
-    clearSearchAnnouncement();
-    return playPufferAfterLeavingSearch({
-      cancelSearch,
-      playAgainstBot: () => canContinue()
-        ? playAgainstBot()
-        : { started: false, reason: "leave_failed" },
-      pufferTransitionPendingRef,
-      onPendingChange: (pending) => {
-        if (mountedRef.current) setIsPufferTransitionPending(pending);
-      }
-    });
-  }, [cancelSearch, captureSearchContinuation, clearSearchAnnouncement, playAgainstBot]);
 
   const openIdentity = useCallback(() => {
     pendingActionRef.current = null;
@@ -875,7 +854,6 @@ export function useLobbyHomeActions({
     isBusy: Boolean(
       searchState ||
         challengeState ||
-        isPufferTransitionPending ||
         activeActionId
     ),
     activeActionId,
@@ -883,17 +861,14 @@ export function useLobbyHomeActions({
     entryModal,
     searchState,
     searchElapsedSeconds,
-    isPufferTransitionPending,
     isSearchCancelPending,
     createdNewPublicDuel: Boolean(searchState?.createdNewPublicDuel),
-    playPufferFromSearch,
     challengeState,
     authOptions,
     actions: {
       playOnline: () => requirePlayIdentity({ intent: "online", action: play }),
       playFriend: () => requirePlayIdentity({ intent: "friend", action: createFriendChallenge }),
       playBot: playAgainstBot,
-      playPufferFromSearch,
       openIdentity,
       openSignIn,
       switchEntryToAuth,

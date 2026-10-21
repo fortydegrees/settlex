@@ -41,7 +41,7 @@ describe("SettleHex metadata", () => {
     const expectedTitle =
       "SettleHex — Free Online Catan for Quick 1v1 Games";
     const expectedDescription =
-      "Free online Catan for quick 1v1 games. Balanced boards. Play a friend, find a match, or challenge Puffer.";
+      "Free online Catan for quick 1v1 games. Balanced boards. Play a friend, find a match, or challenge a bot.";
 
     expect(metadata.loadError).toBeUndefined();
     expect(metadata.BRAND_NAME).toBe("SettleHex");
@@ -49,7 +49,7 @@ describe("SettleHex metadata", () => {
       "Free online Catan for quick 1v1 games."
     );
     expect(metadata.BETA_SUPPORTING_PROOF).toBe(
-      "Balanced boards. Play a friend, find a match, or challenge Puffer."
+      "Balanced boards. Play a friend, find a match, or challenge a bot."
     );
     expect(metadata.BRAND_DOMAIN_LABEL).toBe("SETTLEHEX.COM");
     expect(metadata.SHARE_IMAGE_ALT).toBe(
@@ -130,7 +130,7 @@ describe("SettleHex metadata", () => {
       rules: {
         userAgent: "*",
         allow: ["/", "/g/", "/u/"],
-        disallow: ["/api/", "/account", "/board-editor", "/catana/dev/"],
+        disallow: ["/api/", "/account", "/catana/dev/"],
       },
       sitemap: "https://settlehex.com/sitemap.xml",
     });

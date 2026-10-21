@@ -122,7 +122,8 @@ Open `http://localhost:3000`, choose **Play vs Bot**, and play normally. The
 default worker path is
 `native/settlegraph-v2/target/release/settlegraph-v2-worker`; override it with
 `SETTLEX_SETTLEGRAPH_V2_WORKER`. With the public and server native-bot flags enabled, the single homepage bot
-action uses the startup selection; bootstrap metadata currently selects 009. Puffer remains the flag-off development fallback.
+action uses the startup selection; bootstrap metadata currently selects 009.
+With the public flag disabled, the homepage hides the bot action.
 
 When finished, stop the two foreground processes and remove the disposable
 container/network (the named local database volume remains):
@@ -135,7 +136,8 @@ docker compose -f infra/docker-compose.local.yml down
 
 Disabled V2 creation fails with HTTP 503. Worker startup, hash, contract,
 timeout, snapshot, and response failures are logged with match/seat context;
-an already-created match uses Puffer for that decision so it cannot deadlock,
+an already-created match uses the existing server stage fallback for that decision
+so it cannot deadlock,
 and the native client preflights again after a worker restart.
 
 Model bytes are not tracked by Git or copied into Docker layers. Production

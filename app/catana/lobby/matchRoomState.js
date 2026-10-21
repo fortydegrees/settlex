@@ -27,18 +27,6 @@ export function resolveOpenSeatSelection({
     : String(openSeats[0].id);
 }
 
-export function buildPufferBotJoinPayload({ matchID, seat }) {
-  return {
-    matchID,
-    playerID: String(seat.id),
-    participantType: "bot",
-    botKey: "puffer",
-    botName: `Puffer ${Number(seat.id) + 1}`,
-    avatarEmoji: "🤖",
-    avatarColor: "royal",
-  };
-}
-
 export function buildInterruptedDuelLeavePayload({
   matchID,
   playerID,

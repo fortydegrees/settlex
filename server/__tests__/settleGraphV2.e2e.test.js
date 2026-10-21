@@ -100,18 +100,6 @@ describe("SettleGraph sealed-runtime integration", () => {
         db,
         { send() {}, sendAll() {} }
       );
-      const pufferManager = {
-        syncMatchBots: vi.fn(),
-        syncMatchBotsFromMatchData: vi.fn(),
-        isBotPlayer: vi.fn().mockReturnValue(false),
-        isBotPlayerForMatch: vi.fn().mockReturnValue(false),
-        chooseMoves: vi.fn(() => {
-          throw new Error("unexpected Puffer fallback");
-        }),
-        getFallbackMove: vi.fn(),
-        deleteMatch: vi.fn(),
-        close: vi.fn()
-      };
       const client = new SettleGraphV2Client({
         workerPath,
         expectedModel: { ...selection, sha256: expectedModelSha256 },
@@ -119,7 +107,6 @@ describe("SettleGraph sealed-runtime integration", () => {
         timeoutMs: 10_000
       });
       const botManager = new BotManager({
-        pufferManager,
         settleGraphV2Manager: new SettleGraphV2BotManager({ client })
       });
       const nativeDecisions = vi.spyOn(client, "decide");
@@ -188,7 +175,6 @@ describe("SettleGraph sealed-runtime integration", () => {
         }
 
         expect(logger.error).not.toHaveBeenCalled();
-        expect(pufferManager.chooseMoves).not.toHaveBeenCalled();
         expect(mainTurnDispatches).toBeGreaterThanOrEqual(2);
         expect(state()._stateID).toBeGreaterThan(mainTurnStartStateId);
         expect(state().ctx.currentPlayer).toBe("0");

@@ -48,8 +48,13 @@ export const createMatchJoinRoute =
       }
 
       const payload = await request.json();
-      const participantType =
-        payload?.participantType === "bot" ? "bot" : "human";
+      if (payload?.participantType === "bot") {
+        return NextResponse.json(
+          { error: "Bot seats are created with bot matches." },
+          { status: 403 }
+        );
+      }
+      const participantType = "human";
       const matchMutation = {
         matchID: payload?.matchID,
         run: async () => {
@@ -103,35 +108,18 @@ export const createMatchJoinRoute =
 
           let result;
           try {
-            const mutationIdentity =
-              participantType === "bot"
-                ? {}
-                : {
-                    matchmakingRequestId: readOptionalMatchmakingMutationToken(
-                      payload?.matchmakingRequestId,
-                      "matchmakingRequestId"
-                    ),
-                    requestedCredentials: readOptionalMatchmakingMutationToken(
-                      payload?.requestedCredentials,
-                      "requestedCredentials"
-                    ),
-                  };
+            const mutationIdentity = {
+              matchmakingRequestId: readOptionalMatchmakingMutationToken(
+                payload?.matchmakingRequestId, "matchmakingRequestId"
+              ),
+              requestedCredentials: readOptionalMatchmakingMutationToken(
+                payload?.requestedCredentials, "requestedCredentials"
+              ),
+            };
             result = await joinMatchForAccountImpl({
               account: sessionAccount.account,
               matchID: payload?.matchID,
               playerID: payload?.playerID,
-              participant:
-                participantType === "bot"
-                  ? {
-                      participantType: "bot",
-                      botKey: payload?.botKey ?? "puffer",
-                      usernameSnapshot: payload?.botName ?? "[BOT]",
-                      avatarSnapshot: {
-                        emoji: payload?.avatarEmoji ?? "🤖",
-                        color: payload?.avatarColor ?? "sky",
-                      },
-                    }
-                  : undefined,
               ...mutationIdentity,
             });
           } catch (error) {

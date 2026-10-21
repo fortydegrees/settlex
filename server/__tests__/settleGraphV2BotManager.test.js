@@ -99,44 +99,65 @@ describe("SettleGraphV2BotManager", () => {
 });
 
 describe("BotManager routing", () => {
-  it("routes by persisted botKey and falls back to Puffer with a structured warning", async () => {
-    const puffer = {
-      syncMatchBots: vi.fn(),
-      syncMatchBotsFromMatchData: vi.fn(),
-      isBotPlayer: vi.fn().mockReturnValue(false),
-      chooseMoves: vi.fn().mockResolvedValue([{ move: "autoEndTurn", args: [] }]),
-      deleteMatch: vi.fn(),
-      close: vi.fn()
-    };
-    const v2 = {
-      chooseMoves: vi.fn()
-        .mockResolvedValueOnce([{ move: "rollDice", args: [] }])
-        .mockRejectedValueOnce(new Error("worker unavailable")),
-      close: vi.fn()
-    };
-    const logger = { warn: vi.fn() };
-    const manager = new BotManager({ pufferManager: puffer, settleGraphV2Manager: v2, logger });
-    const metadata = {
-      players: {
-        "0": { name: "Ada", data: {} },
-        "1": {
-          name: "[BOT] SettleGraph 005",
-          data: { isBot: true, botKey: "settlegraph-v2" }
-        }
-      }
-    };
-    manager.syncMatchBots("m1", metadata);
+  const seats = { players: {
+    "0": { name: "Ada", data: {} },
+    "1": { name: "SettleGraph 009", data: { isBot: true, botKey: "settlegraph-v2" } }
+  } };
 
+  it("dispatches native moves and uses the stage auto-move when inference fails", async () => {
+    const native = { chooseMoves: vi.fn()
+      .mockResolvedValueOnce([{ move: "rollDice", args: [] }])
+      .mockRejectedValueOnce(new Error("worker unavailable")) };
+    const logger = { warn: vi.fn() };
+    const manager = new BotManager({ settleGraphV2Manager: native, logger });
+    manager.syncMatchBots("m1", seats);
     await expect(manager.chooseMoves(baseState(), "1", "m1"))
       .resolves.toEqual([{ move: "rollDice", args: [] }]);
     await expect(manager.chooseMoves(baseState(), "1", "m1"))
       .resolves.toEqual([{ move: "autoEndTurn", args: [] }]);
-
-    expect(manager.isBotPlayerForMatch("m1", "1")).toBe(true);
-    expect(puffer.chooseMoves).toHaveBeenCalledTimes(1);
     expect(logger.warn).toHaveBeenCalledWith(
-      "SettleGraph V2 inference failed; using Puffer fallback",
+      "SettleGraph inference failed; using stage fallback",
       expect.objectContaining({ matchID: "m1", playerID: "1", error: expect.any(Error) })
     );
+  });
+
+  it("does not act for human or retired backend seats", async () => {
+    const manager = new BotManager();
+    manager.syncMatchBots("m1", { players: {
+      ...seats.players,
+      "2": { name: "Old bot", data: { isBot: true, botKey: "puffer" } }
+    } });
+    expect(manager.isBotPlayerForMatch("m1", "2")).toBe(false);
+    await expect(manager.chooseMoves(baseState(), "0", "m1")).resolves.toEqual([]);
+    await expect(manager.chooseMoves(baseState(), "2", "m1")).resolves.toEqual([]);
+  });
+
+  it("keeps readiness, serial discard ownership and forced choice recovery without a worker", async () => {
+    const manager = new BotManager({ botPlayerIds: ["0", "1"] });
+    const waiting = baseState({ ctx: { phase: "preGame", currentPlayer: "0", activePlayers: { all: "waiting" } } });
+    await expect(manager.chooseMoves(waiting, "1"))
+      .resolves.toEqual([{ move: "readyUp", args: [] }]);
+    const discard = baseState();
+    discard.G.core.turn.phase = "robberDiscard";
+    discard.G.core.turn.pendingDiscards = ["0", "1"];
+    await expect(manager.chooseMoves(discard, "1")).resolves.toEqual([]);
+    await expect(manager.chooseMoves(discard, "0"))
+      .resolves.toEqual([{ move: "autoDiscard", args: [] }]);
+    const choice = baseState();
+    choice.G.devCardPlay = { type: "monopoly", playerId: "1" };
+    await expect(manager.chooseMoves(choice, "0")).resolves.toEqual([]);
+    await expect(manager.chooseMoves(choice, "1"))
+      .resolves.toEqual([{ move: "autoResolveDevCard", args: [] }]);
+  });
+
+  it("clears discovered seats and closes its native worker", () => {
+    const native = { close: vi.fn() };
+    const manager = new BotManager({ settleGraphV2Manager: native });
+    manager.syncMatchBotsFromMatchData("m1", [{ id: "1", ...seats.players["1"] }]);
+    expect(manager.isBotPlayerForMatch("m1", "1")).toBe(true);
+    manager.deleteMatch("m1");
+    expect(manager.isBotPlayerForMatch("m1", "1")).toBe(false);
+    manager.close();
+    expect(native.close).toHaveBeenCalledOnce();
   });
 });

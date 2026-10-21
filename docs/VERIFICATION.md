@@ -69,6 +69,10 @@ selection, asset-rights clearance or publication authorization.
 
 ## Bounded legacy fixes
 
+The board editor described below was subsequently retired with maintainer
+approval; its checks remain historical evidence. See the
+[retirement decision](agent/PROJECT_RECORD.md#retired-experimental-routes-and-puffer--21-october-2026).
+
 Four subsequent changes are included with their recorded qualification:
 
 - The board editor initializes tile resources as Empty so its initial drag/drop
