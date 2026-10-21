@@ -1,0 +1,154 @@
+import { describe, expect, it } from "vitest";
+import {
+  getActiveDisconnectStateByPlayerId,
+  getDisconnectRemainingMs,
+  mergeVisibleLogEntries,
+  readPresenceSnapshot
+} from "../utils/disconnectPresence";
+
+describe("disconnectPresence helpers", () => {
+  it("annotates pushed presence with receipt timing", () => {
+    const snapshot = readPresenceSnapshot(
+      {
+        activeDisconnectPlayerId: "1",
+        deadlineAtMs: 66_000,
+        remainingMs: 60_000,
+        events: []
+      },
+      6_000,
+      6_120
+    );
+
+    expect(snapshot).toMatchObject({
+      activeDisconnectPlayerId: "1",
+      deadlineAtMs: 66_000,
+      remainingMs: 60_000,
+      serverTimeMs: 6_000,
+      receivedAtMs: 6_120,
+      serverDelayMs: 120
+    });
+  });
+
+  it("computes reconnect time remaining from deadline and receipt time", () => {
+    const snapshot = readPresenceSnapshot(
+      {
+        activeDisconnectPlayerId: "1",
+        deadlineAtMs: 66_000,
+        remainingMs: 60_000,
+        events: []
+      },
+      6_000,
+      6_120
+    );
+
+    expect(getDisconnectRemainingMs(snapshot, 16_120)).toBe(49_880);
+  });
+
+  it("only exposes a disconnected seat while the reconnect window is still active", () => {
+    const activeSnapshot = readPresenceSnapshot(
+      {
+        activeDisconnectPlayerId: "1",
+        deadlineAtMs: 66_000,
+        remainingMs: 60_000,
+        statusByPlayerId: {
+          "1": { status: "disconnected" }
+        },
+        events: []
+      },
+      6_000,
+      6_120
+    );
+
+    expect(getActiveDisconnectStateByPlayerId(activeSnapshot, 16_120)).toEqual({
+      "1": {
+        status: "disconnected",
+        remainingMs: 49_880
+      }
+    });
+
+    const expiredSnapshot = {
+      ...activeSnapshot,
+      activeDisconnectPlayerId: null
+    };
+
+    expect(getActiveDisconnectStateByPlayerId(expiredSnapshot, 16_120)).toEqual(
+      {}
+    );
+  });
+
+  it("surfaces overlapping reconnect windows for multiple disconnected seats", () => {
+    const snapshot = readPresenceSnapshot(
+      {
+        activeDisconnectPlayerId: "1",
+        deadlineAtMs: 66_000,
+        remainingMs: 60_000,
+        statusByPlayerId: {
+          "0": {
+            status: "disconnected",
+            disconnectedAtMs: 7_000,
+            reconnectDeadlineAtMs: 57_000
+          },
+          "1": {
+            status: "disconnected",
+            disconnectedAtMs: 6_000,
+            reconnectDeadlineAtMs: 66_000
+          }
+        },
+        events: []
+      },
+      6_000,
+      6_120
+    );
+
+    expect(getActiveDisconnectStateByPlayerId(snapshot, 16_120)).toEqual({
+      "0": {
+        status: "disconnected",
+        remainingMs: 40_880
+      },
+      "1": {
+        status: "disconnected",
+        remainingMs: 49_880
+      }
+    });
+  });
+
+  it("merges server presence events after the referenced game log sequence", () => {
+    const merged = mergeVisibleLogEntries(
+      [
+        { id: 1, type: "roll", actorId: "0", data: { total: 7 } },
+        { id: 2, type: "build:road", actorId: "0", data: { edgeId: "1,2" } }
+      ],
+      [
+        {
+          id: 7,
+          type: "server:disconnect",
+          playerId: "1",
+          createdAtMs: 100,
+          afterGameLogSeq: 1
+        },
+        {
+          id: 8,
+          type: "server:reconnect",
+          playerId: "1",
+          createdAtMs: 200,
+          afterGameLogSeq: 2
+        }
+      ]
+    );
+
+    expect(merged.map((entry) => entry.type)).toEqual([
+      "roll",
+      "server:disconnect",
+      "build:road",
+      "server:reconnect"
+    ]);
+    expect(merged[1]).toMatchObject({
+      id: "server-7",
+      data: { playerId: "1" }
+    });
+    expect(merged[3]).toMatchObject({
+      id: "server-8",
+      data: { playerId: "1" }
+    });
+  });
+});

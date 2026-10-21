@@ -1,0 +1,302 @@
+/* eslint-disable @next/next/no-img-element */
+import React, { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { getDevCardRevealDurations } from "./utils/devCardPurchaseReveal";
+
+const DEV_CARD_FACE_SVGS = Object.freeze({
+  knight: "/svgs/cards/development/knight.svg",
+  victoryPoint: "/svgs/cards/development/victory_point.svg",
+  roadBuilding: "/svgs/cards/development/roadbuilding.svg",
+  yearOfPlenty: "/svgs/cards/development/year_of_plenty.svg",
+  monopoly: "/svgs/cards/development/monopoly.svg",
+});
+
+const DEV_CARD_BACK_SVG = "/svgs/cards/development/card_devcardback.svg";
+const DEV_CARD_EMBLEM_SVG = "/svgs/icon_devcard_emblem.svg";
+const CARD_ASPECT_RATIO = 72 / 52;
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const ACTOR_HANDOFF_LEAD_MS = 128;
+
+const getCenterCardWidth = () => {
+  if (typeof window === "undefined") return 140;
+  return Math.max(120, Math.min(156, window.innerWidth * 0.12));
+};
+
+export function DevCardPurchaseReveal({
+  reveal,
+  onComplete,
+  effectsBus,
+  flipVariant = "3d",
+}) {
+  const actorRef = useRef(null);
+  const emblemRef = useRef(null);
+  const flipRef = useRef(null);
+  const midpointCardRef = useRef(null);
+  const card3dRef = useRef(null);
+  const cardBackFaceRef = useRef(null);
+  const cardFrontFaceRef = useRef(null);
+  const onCompleteRef = useRef(onComplete);
+  const [midpointCardSrc, setMidpointCardSrc] = useState(DEV_CARD_BACK_SVG);
+  const isMidpointFlip = flipVariant === "midpoint";
+  const revealCardSrc = DEV_CARD_FACE_SVGS[reveal?.cardType] ?? DEV_CARD_BACK_SVG;
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    setMidpointCardSrc(DEV_CARD_BACK_SVG);
+  }, [reveal, flipVariant]);
+
+  useEffect(() => {
+    const actorNode = actorRef.current;
+    const emblemNode = emblemRef.current;
+    const flipNode = flipRef.current;
+    const midpointCardNode = midpointCardRef.current;
+    const card3dNode = card3dRef.current;
+    const cardBackFaceNode = cardBackFaceRef.current;
+    const cardFrontFaceNode = cardFrontFaceRef.current;
+    if (
+      !reveal ||
+      !actorNode ||
+      !emblemNode ||
+      !flipNode ||
+      (isMidpointFlip
+        ? !midpointCardNode
+        : !card3dNode || !cardBackFaceNode || !cardFrontFaceNode)
+    ) {
+      return undefined;
+    }
+    if (!reveal.triggerRect || !reveal.destinationRect) {
+      onCompleteRef.current?.();
+      return undefined;
+    }
+
+    const startX = reveal.triggerRect.left + reveal.triggerRect.width / 2;
+    const startY = reveal.triggerRect.top + reveal.triggerRect.height / 2;
+    const endX = reveal.destinationRect.left + reveal.destinationRect.width / 2;
+    const endY = reveal.destinationRect.top + reveal.destinationRect.height / 2;
+    const centerX =
+      reveal.centerPoint?.x ??
+      (typeof window === "undefined" ? startX : window.innerWidth / 2);
+    const centerY =
+      reveal.centerPoint?.y ??
+      (typeof window === "undefined" ? startY : window.innerHeight * 0.44);
+    const centerCardWidth = getCenterCardWidth();
+    const centerCardHeight = centerCardWidth * CARD_ASPECT_RATIO;
+    const destinationScale = Math.max(
+      0.42,
+      Math.min(1, reveal.destinationRect.height / centerCardHeight)
+    );
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.(REDUCED_MOTION_QUERY)?.matches;
+    const durations = getDevCardRevealDurations(prefersReducedMotion);
+    const timelineDelayMs = Math.max(
+      0,
+      (reveal.launchDelayMs ?? 0) - ACTOR_HANDOFF_LEAD_MS
+    );
+    const travelHandoffOffset = "<+0.02";
+
+    gsap.set(actorNode, {
+      x: startX,
+      y: startY,
+      xPercent: -50,
+      yPercent: -50,
+      width: centerCardWidth,
+      height: centerCardHeight,
+      scale: 0.46,
+      autoAlpha: 0,
+    });
+    gsap.set(emblemNode, {
+      autoAlpha: 1,
+      scale: 0.92,
+    });
+    gsap.set(flipNode, {
+      autoAlpha: 0,
+      scale: 0.92,
+      transformPerspective: 1000,
+      perspective: 800,
+      transformStyle: "preserve-3d",
+      rotationY: 0,
+      transformOrigin: "50% 50%",
+    });
+    if (isMidpointFlip) {
+      gsap.set(midpointCardNode, {
+        autoAlpha: 1,
+        backfaceVisibility: "hidden",
+      });
+    } else {
+      gsap.set(card3dNode, {
+        rotationY: 0,
+        transformStyle: "preserve-3d",
+        transformOrigin: "50% 50%",
+      });
+      gsap.set(cardBackFaceNode, {
+        autoAlpha: 1,
+        rotationY: 0,
+        backfaceVisibility: "hidden",
+        transformStyle: "preserve-3d",
+      });
+      gsap.set(cardFrontFaceNode, {
+        autoAlpha: 1,
+        rotationY: 180,
+        backfaceVisibility: "hidden",
+        transformStyle: "preserve-3d",
+      });
+    }
+
+    const timeline = gsap.timeline({
+      delay: timelineDelayMs / 1000,
+      onComplete: () => onCompleteRef.current?.(),
+    });
+
+    timeline.set(actorNode, { autoAlpha: 1 });
+    timeline.call(() => {
+      effectsBus?.emit({
+        type: "cue",
+        payload: { name: "devcard:reveal:pop" },
+      });
+    });
+    timeline.to(actorNode, {
+      y: startY - centerCardHeight * 0.12,
+      scale: 0.92,
+      duration: durations.releasePop,
+      ease: "back.out(1.9)",
+    });
+    timeline.to(actorNode, {
+      x: centerX,
+      y: centerY,
+      scale: 1,
+      duration: durations.travelToCenter,
+      ease: "power3.out",
+    }, travelHandoffOffset);
+    timeline.to({}, { duration: durations.holdAfterTravel });
+    timeline.to(flipNode, {
+      autoAlpha: 1,
+      scale: 1,
+      duration: durations.backReveal,
+      ease: "power2.out",
+    });
+    timeline.to(
+      emblemNode,
+      {
+        autoAlpha: 0,
+        scale: 0.82,
+        duration: durations.backReveal,
+        ease: "power2.out",
+      },
+      "<"
+    );
+    timeline.to({}, { duration: durations.holdAfterBackReveal });
+    if (isMidpointFlip) {
+      timeline.to(flipNode, {
+        rotationY: 90,
+        duration: durations.flip / 2,
+        ease: "power1.in",
+      });
+      timeline.call(() => {
+        setMidpointCardSrc(revealCardSrc);
+      });
+      timeline.set(flipNode, { rotationY: -90 });
+      timeline.to(flipNode, {
+        rotationY: 0,
+        duration: durations.flip / 2,
+        ease: "power1.out",
+      });
+    } else {
+      timeline.to(card3dNode, {
+        rotationY: 180,
+        duration: durations.flip,
+        ease: "back.out(1.15)",
+      });
+    }
+    timeline.to({}, { duration: durations.holdOnFace });
+    timeline.call(() => {
+      effectsBus?.emit({
+        type: "cue",
+        payload: { name: "devcard:reveal:travel" },
+      });
+    });
+    timeline.to(actorNode, {
+      x: endX,
+      y: endY,
+      scale: destinationScale,
+      duration: durations.travelToHand,
+      ease: "power2.out",
+    });
+
+    return () => {
+      timeline.kill();
+    };
+  }, [effectsBus, isMidpointFlip, reveal, revealCardSrc]);
+
+  if (!reveal) return null;
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[70]">
+      <div
+        ref={actorRef}
+        className="pointer-events-none fixed left-0 top-0"
+        style={{ transformOrigin: "50% 50%" }}
+      >
+        <img
+          ref={emblemRef}
+          src={DEV_CARD_EMBLEM_SVG}
+          alt=""
+          draggable={false}
+          className="absolute inset-[14%] h-[72%] w-[72%] object-contain drop-shadow-lg"
+        />
+        <div ref={flipRef} className="absolute inset-0">
+          {isMidpointFlip ? (
+            <img
+              ref={midpointCardRef}
+              src={midpointCardSrc}
+              alt=""
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+              style={{
+                backfaceVisibility: "hidden",
+                WebkitBackfaceVisibility: "hidden",
+              }}
+            />
+          ) : (
+            <div ref={card3dRef} className="absolute inset-0">
+              <div
+                ref={cardBackFaceRef}
+                className="absolute inset-0"
+                style={{
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
+                }}
+              >
+                <img
+                  src={DEV_CARD_BACK_SVG}
+                  alt=""
+                  draggable={false}
+                  className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+                />
+              </div>
+              <div
+                ref={cardFrontFaceRef}
+                className="absolute inset-0"
+                style={{
+                  transform: "rotateY(180deg)",
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
+                }}
+              >
+                <img
+                  src={revealCardSrc}
+                  alt=""
+                  draggable={false}
+                  className="absolute inset-0 h-full w-full object-contain drop-shadow-lg"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

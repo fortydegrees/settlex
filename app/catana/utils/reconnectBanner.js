@@ -1,0 +1,117 @@
+import {
+  clearLastActiveMatch,
+  getCredentialsStorageKey,
+  readLastActiveMatch
+} from "./activeMatchStorage";
+
+const readPlayers = (match) => {
+  if (Array.isArray(match?.players)) return match.players;
+  if (match?.players && typeof match.players === "object") {
+    return Object.values(match.players);
+  }
+  return null;
+};
+
+const readSetupData = (match) => match?.metadata?.setupData ?? match?.setupData ?? null;
+
+const isOccupiedSeat = (player) =>
+  Boolean(player?.name || player?.data?.usernameSnapshot);
+
+const isPendingFriendChallengeMatch = (match, players) => {
+  if (readSetupData(match)?.matchKind !== "friend_challenge") {
+    return false;
+  }
+
+  return players.some((player) => player?.id != null && !isOccupiedSeat(player));
+};
+
+const isResolvedMatch = (match) =>
+  Boolean(
+    match?.gameover ||
+      match?.metadata?.gameover ||
+      match?.ctx?.gameover ||
+      match?.G?.core?.gameOver ||
+      match?.state?.ctx?.gameover ||
+      match?.state?.G?.core?.gameOver
+  );
+
+export const isSameMatchPath = (pathname, matchID) =>
+  pathname === `/g/${matchID}`;
+
+export async function resolveReconnectBannerCandidate({
+  pathname,
+  storage,
+  fetchImpl = fetch
+}) {
+  const activeMatch = readLastActiveMatch(storage);
+  if (!activeMatch) return null;
+  if (isSameMatchPath(pathname, activeMatch.matchID)) return null;
+
+  const credentialsKey = getCredentialsStorageKey(activeMatch);
+  let credentials;
+  try {
+    credentials = storage?.getItem?.(credentialsKey);
+  } catch {
+    // An unreadable seat may still be recoverable when storage is available.
+    return null;
+  }
+  if (!credentials) {
+    clearLastActiveMatch(storage);
+    return null;
+  }
+
+  let response;
+  try {
+    // Same-origin Next API route; the game server's lobby API is not
+    // publicly exposed.
+    response = await fetchImpl(`/api/matches/${activeMatch.matchID}`, {
+      cache: "no-store"
+    });
+  } catch (err) {
+    return null;
+  }
+
+  if (!response?.ok) {
+    if (response?.status === 404) {
+      clearLastActiveMatch(storage);
+    }
+    return null;
+  }
+
+  let match;
+  try {
+    match = await response.json();
+  } catch (err) {
+    return null;
+  }
+
+  if (isResolvedMatch(match)) {
+    clearLastActiveMatch(storage);
+    return null;
+  }
+
+  const players = readPlayers(match);
+  if (!Array.isArray(players)) {
+    clearLastActiveMatch(storage);
+    return null;
+  }
+
+  const savedSeatStillExists = players.some(
+    (player) => String(player?.id) === activeMatch.playerID
+  );
+  if (!savedSeatStillExists) {
+    clearLastActiveMatch(storage);
+    return null;
+  }
+
+  if (isPendingFriendChallengeMatch(match, players)) {
+    return null;
+  }
+
+  return {
+    matchID: activeMatch.matchID,
+    playerID: activeMatch.playerID,
+    playerName: activeMatch.playerName,
+    href: `/g/${activeMatch.matchID}`
+  };
+}

@@ -1,0 +1,1951 @@
+"use client";
+import { MemoizedCatanBoard } from "./board/Board";
+import {
+  TransformWrapper,
+  TransformComponent,
+} from "react-zoom-pan-pinch";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import {
+  Cog6ToothIcon,
+  QuestionMarkCircleIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+} from "@heroicons/react/24/outline";
+
+import { shouldCancelBuildAction } from "./utils/cancelBuildAction";
+import { getGameStatus, shouldShowGameStatusTimer } from "./utils/gameStatus";
+import {
+  getBuildPickupPieceType,
+  shouldResetPlayerAction
+} from "./utils/playerAction";
+import {
+  buildGameScreenDisplayModel,
+  getGameOverTitle
+} from "./utils/gameScreenDisplayModel";
+import { getOpponentHudLayout } from "./utils/opponentHudLayout";
+import { mergeVisibleLogEntries } from "./utils/disconnectPresence";
+import {
+  buildDevCardBuyTransfer,
+  buildDiscardTransfers,
+  buildMaritimeTradeTransfers,
+  buildRobberStealTransfers
+} from "./utils/cardTransferPayloads";
+import {
+  getDiscardRequirement,
+  getHasBlockingModal,
+  getTurnCommandState,
+  getVisibleDiceRoll
+} from "./utils/gameScreenCommandState";
+import {
+  canRenderDevPlayModal,
+  shouldResetTradeModal
+} from "./utils/turnUiState";
+
+import { EffectsBoardWrapper, useLatestPropsOnEffect } from "bgio-effects/react";
+
+import { PlayerActionContainer } from "./components/PlayerActionContainer";
+import { MobilePlayerCockpit } from "./components/MobilePlayerCockpit";
+import { MobileMatchMenu } from "./components/MobileMatchMenu";
+import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
+import { GlassPillButton } from "./components/GlassPillButton";
+import { LeftMetaRail } from "./components/LeftMetaRail";
+import { StatusBanner } from "./components/StatusBanner";
+import { IdlePromptModal } from "./components/IdlePromptModal";
+import { GameRulesDialog, GameSettingsDialog } from "./components/GameInfoDialogs";
+import { GameOverOverlay } from "./components/GameOverOverlay";
+import {
+  runGameOverLobbyAction,
+  shouldResumeMatchAlertsForAction,
+  shouldOfferMatchAlertResume,
+} from "./components/gameOverAlertLifecycle.js";
+import { GameEffects } from "./effects/GameEffects";
+import { LowTimerCue } from "./components/LowTimerCue";
+import { createEffectBus } from "./effects/EffectBus";
+import { createResourceDistributionRunner } from "./effects/resourceDistribution";
+import { createPiecePlacementRunner } from "./effects/placePiece";
+import { createDevCardPlayRunner } from "./effects/devCardPlay";
+import {
+  advancePlayerResourceSnapshots,
+  createCardTransferRunner,
+  getRobberStealVisibleResource
+} from "./effects/cardTransfer";
+import { createRobberMoveRunner } from "./effects/robberMove";
+import { createAwardClaimRunner } from "./effects/awardClaim";
+import {
+  getDevCardPlayMotionPolicy,
+  getDevCardPlayPerspective
+} from "./effects/devCardPlayPerspective";
+import {
+  getVisibleDevCardsDuringReveal,
+} from "./utils/devCardPurchaseReveal";
+import {
+  createKnightDisplayOverride,
+  removeKnightDisplayOverride,
+  upsertKnightDisplayOverride
+} from "./utils/devCardPlayPresentation";
+import useWindowSize from "./utils/useWindowSize";
+import { getBoardLayout, shouldResetBoardViewport } from "./board/boardLayout";
+import {
+  DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
+} from "./board/robberPlacementMotion";
+import { IconButton } from "../ui/IconButton";
+import { Tooltip, TooltipProvider } from "../ui/Tooltip";
+import { Howler } from "howler";
+import {
+  CATANA_THEME_STORAGE_KEY,
+  resolveThemeId,
+} from "./theme/themes";
+import { CATANA_TABLE_BACKGROUND } from "./theme/backgrounds";
+import {
+  clearLastActiveMatch,
+  readLastActiveMatch
+} from "./utils/activeMatchStorage";
+import { shouldAutoReady } from "./utils/preGameReady";
+import {
+  buildSandboxAwardClaimPayload,
+  buildSandboxDevCardPlayPayload,
+  buildSandboxRobberMovePayload
+} from "./dev/sandbox/effectPayloads";
+import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
+import { getCurrentMatchAlertGameRegistration } from "./matchAlerts/matchAlertProviderActions.js";
+import { tabAttention } from "./utils/tabAttention";
+import { getGamePageTitle } from "./utils/gamePageTitle";
+import { useMatchClockAndPresence } from "./matchStatus/useMatchClockAndPresence";
+import { useIdleAcknowledgement } from "./matchStatus/useIdleAcknowledgement";
+
+let tradeDiscardModalPromise;
+const loadTradeDiscardModal = () =>
+  (tradeDiscardModalPromise ??= import("./components/TradeDiscardModal"));
+const LazyTradeDiscardModal = React.lazy(() =>
+  loadTradeDiscardModal().then((module) => ({
+    default: module.TradeDiscardModal
+  }))
+);
+
+let resignConfirmDialogPromise;
+const loadResignConfirmDialog = () =>
+  (resignConfirmDialogPromise ??= import("./components/ResignConfirmDialog"));
+const LazyResignConfirmDialog = React.lazy(() =>
+  loadResignConfirmDialog().then((module) => ({
+    default: module.ResignConfirmDialog
+  }))
+);
+
+let gameOverModalPromise;
+const loadGameOverModal = () =>
+  (gameOverModalPromise ??= import("./components/GameOverModal"));
+const LazyGameOverModal = React.lazy(() =>
+  loadGameOverModal().then((module) => ({ default: module.GameOverModal }))
+);
+
+let postgameOverlayPromise;
+const loadPostgameOverlay = () =>
+  (postgameOverlayPromise ??= import("./components/PostgameOverlay"));
+const LazyPostgameOverlay = React.lazy(() =>
+  loadPostgameOverlay().then((module) => ({
+    default: module.PostgameOverlay
+  }))
+);
+
+let devCardPurchaseRevealPromise;
+const loadDevCardPurchaseReveal = () =>
+  (devCardPurchaseRevealPromise ??= import("./DevCardPurchaseReveal"));
+const LazyDevCardPurchaseReveal = React.lazy(() =>
+  loadDevCardPurchaseReveal().then((module) => ({
+    default: module.DevCardPurchaseReveal
+  }))
+);
+
+const loadDeferredGameSurfaces = () =>
+  Promise.all([
+    loadTradeDiscardModal(),
+    loadResignConfirmDialog(),
+    loadGameOverModal(),
+    loadPostgameOverlay(),
+    loadDevCardPurchaseReveal()
+  ]);
+
+const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
+const topUtilityButtonClassName =
+  "settlex-ui-game-utility h-10 w-10 sm:h-12 sm:w-12";
+
+const readStoredMute = () => {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(AUDIO_MUTE_STORAGE_KEY) === "true";
+  } catch (err) {
+    return false;
+  }
+};
+
+const readStoredThemeId = () => {
+  if (typeof window === "undefined") return resolveThemeId(null);
+  try {
+    return resolveThemeId(
+      window.localStorage.getItem(CATANA_THEME_STORAGE_KEY)
+    );
+  } catch (err) {
+    return resolveThemeId(null);
+  }
+};
+
+const copyRect = (rect) => {
+  if (!rect) return null;
+  return {
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height,
+    right: rect.right,
+    bottom: rect.bottom,
+  };
+};
+
+const runAfterNextPaint = (callback) => {
+  if (typeof window === "undefined") {
+    callback();
+    return;
+  }
+  if (typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(callback);
+    return;
+  }
+  window.setTimeout(callback, 0);
+};
+
+export function GameScreen(bgioProps) {
+  const matchAlerts = useMatchAlerts();
+  const { registerCurrentGame } = matchAlerts;
+  //playerAction is things that appear to the user (not spectator)
+  //e.g. placeRoad, placeSettle, placeCity, moveRobber, trading
+  //but i think we want this controlled by server/gameState
+    //e.g. if disconnect after placing one road of RB, reconnect will want to prompt to place second road
+  const [playerAction, setPlayerAction] = useState(null);
+  const [buildPickup, setBuildPickup] = useState(null);
+  const [pendingDevCardReveal, setPendingDevCardReveal] = useState(null);
+  const [activeDevCardReveal, setActiveDevCardReveal] = useState(null);
+  const [showTradeModal, setShowTradeModal] = useState(false);
+  const [tradePresetResource, setTradePresetResource] = useState(null);
+  const [readySent, setReadySent] = useState(false);
+  const [isMuted, setIsMuted] = useState(readStoredMute);
+  const [themeId] = useState(readStoredThemeId);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
+  const [showPostgame, setShowPostgame] = useState(false);
+  const [matchAlertResumeChecked, setMatchAlertResumeChecked] = useState(true);
+  const [matchAlertResumeError, setMatchAlertResumeError] = useState("");
+  const [matchAlertResumePending, setMatchAlertResumePending] = useState(false);
+  const [showResignConfirm, setShowResignConfirm] = useState(false);
+  const [showGameSettings, setShowGameSettings] = useState(false);
+  const [showGameRules, setShowGameRules] = useState(false);
+  const [mobileMetaPanel, setMobileMetaPanel] = useState(null);
+  const [showConnectionBanner, setShowConnectionBanner] = useState(false);
+  const [knightDisplayOverrideByPlayerId, setKnightDisplayOverrideByPlayerId] =
+    useState({});
+  const [boardViewportScale, setBoardViewportScale] = useState(1);
+  const robberPlacementMotionMode = DEFAULT_ROBBER_PLACEMENT_MOTION_MODE;
+  const gameOverSeenRef = useRef(false);
+  const winnerConfettiSeenRef = useRef(false);
+  const hasSeenTransportConnectionRef = useRef(false);
+  const boardRef = useRef(null);
+  const boardTransformRef = useRef(null);
+  const settledBoardViewportRef = useRef(null);
+  const placementLayerRef = useRef(null);
+  const placementRoadLayerRef = useRef(null);
+  const devCardDisplayRef = useRef(null);
+  const devCardDisplayRectRef = useRef(null);
+  const devCardPlayActorStoreRef = useRef(new Map());
+  const pendingDevCardRevealRef = useRef(null);
+  const latestPlayerViewMapRef = useRef({});
+  const latestGRef = useRef(bgioProps.G);
+  latestGRef.current = bgioProps.G;
+  const previousResourcesByPlayerIdRef = useRef(new Map());
+  const currentResourcesByPlayerIdRef = useRef(new Map());
+  const effectsBus = useMemo(() => createEffectBus(), []);
+  const { width, height, isMeasured } = useWindowSize();
+  const isPhoneLayout = width > 0 && width < 640;
+  const boardLayoutReservedHeight = isPhoneLayout ? 0 : undefined;
+  const leftMetaRailLayoutInset = 0;
+
+  useEffect(() => {
+    if (!isMeasured) return;
+    const nextViewport = { width, height };
+    if (!shouldResetBoardViewport(
+      settledBoardViewportRef.current,
+      nextViewport,
+      window.matchMedia("(pointer: coarse)").matches
+    )) {
+      settledBoardViewportRef.current = nextViewport;
+      return;
+    }
+
+    // Board geometry already follows the viewport. Drop the old camera offset
+    // once resizing settles, keeping the board and in-progress actions mounted.
+    const timeout = window.setTimeout(() => {
+      boardTransformRef.current?.setTransform(0, 0, 1, 0);
+      settledBoardViewportRef.current = nextViewport;
+    }, 150);
+    return () => window.clearTimeout(timeout);
+  }, [width, height, isMeasured]);
+  const playfieldCenterOffsetX = 0;
+  const moves = bgioProps.moves;
+  const isReplay = bgioProps.isReplay === true;
+  const onWatchReplay = bgioProps.onWatchReplay;
+  const onReplayMobileMetaPanelOpen =
+    bgioProps.onReplayMobileMetaPanelOpen;
+
+  useEffect(() => {
+    if (isPhoneLayout) return;
+    setMobileMetaPanel(null);
+  }, [isPhoneLayout]);
+
+  useEffect(() => {
+    if (!isReplay || !bgioProps.replayConsoleMobileOpen) return;
+    setMobileMetaPanel(null);
+  }, [isReplay, bgioProps.replayConsoleMobileOpen]);
+
+  const handleMobileMetaPanelChange = useCallback(
+    (panelId) => {
+      setMobileMetaPanel(panelId);
+      if (isReplay && panelId) {
+        onReplayMobileMetaPanelOpen?.();
+      }
+    },
+    [isReplay, onReplayMobileMetaPanelOpen]
+  );
+
+  useEffect(() => {
+    const preload = () => {
+      void loadDeferredGameSurfaces().catch(() => {});
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const idleCallbackId = window.requestIdleCallback(preload, {
+        timeout: 2000
+      });
+      return () => window.cancelIdleCallback?.(idleCallbackId);
+    }
+
+    const timeoutId = window.setTimeout(preload, 1500);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  //get the active playerID of who's watching
+  //can be null for spectator?
+  //TODO: handle null/spectator
+  const playerID = bgioProps.playerID;
+  const matchID = bgioProps.matchID ?? "default";
+
+  const core = bgioProps.G.core;
+  const ruleset = core?.ruleset ?? {};
+  const coreTurn = core?.turn;
+  const gameOverState = bgioProps.ctx?.gameover ?? core?.gameOver;
+  const isGameOver = Boolean(gameOverState);
+  const devPlay = bgioProps.G.devCardPlay;
+  const devPlayMode =
+    devPlay?.type === "yearOfPlenty"
+      ? "dev-yop"
+      : devPlay?.type === "monopoly"
+      ? "dev-monopoly"
+      : null;
+  const shouldCloseTradeModal = shouldResetTradeModal({
+    showTradeModal,
+    playerID,
+    ctx: bgioProps.ctx,
+    corePhase: core?.phase,
+    isGameOver
+  });
+  const tradeModalVisible = showTradeModal && !shouldCloseTradeModal;
+  const devPlayModalVisible =
+    Boolean(devPlayMode) &&
+    canRenderDevPlayModal({
+      devPlay,
+      playerID,
+      ctx: bgioProps.ctx,
+      corePhase: core?.phase,
+      isGameOver
+    });
+  const {
+    mergedMatchData,
+    nameMap,
+    emojiMap,
+    effectiveColorByPlayerId,
+    playerViewMap,
+    player,
+    winnerId,
+    winnerName,
+    isWinner,
+    winnerVP,
+    scoreboard,
+    logPlayerMap,
+    gameOverReasonText,
+    postgameSummary
+  } = useMemo(
+    () =>
+      buildGameScreenDisplayModel({
+        core,
+        playerID,
+        gameOverState,
+        isGameOver,
+        matchData: bgioProps.matchData,
+        matchMetadata: bgioProps.matchMetadata
+      }),
+    [
+      core,
+      playerID,
+      gameOverState,
+      isGameOver,
+      bgioProps.matchData,
+      bgioProps.matchMetadata
+    ]
+  );
+  const pageTitle = getGamePageTitle({ playerID, nameMap, isReplay });
+  useEffect(() => tabAttention.setPageTitle(pageTitle), [pageTitle]);
+
+  const hasBotOpponent = useMemo(
+    () =>
+      mergedMatchData.some(
+        (seat) =>
+          String(seat?.id) !== String(playerID) &&
+          (seat?.data?.participantType === "bot" ||
+            seat?.data?.isBot === true ||
+            Boolean(seat?.data?.bot))
+      ),
+    [mergedMatchData, playerID]
+  );
+  const opponentType = hasBotOpponent ? "bot" : "human";
+  const canOfferAlertResume = shouldOfferMatchAlertResume({
+    preference: matchAlerts.preference,
+    matchID,
+    opponentType,
+  });
+
+  useEffect(() => {
+    if (!showGameOverModal || !canOfferAlertResume) return;
+    setMatchAlertResumeChecked(true);
+    setMatchAlertResumeError("");
+    setMatchAlertResumePending(false);
+  }, [canOfferAlertResume, showGameOverModal]);
+
+  const returnToLobby = useCallback(() => {
+    window.location.href = "/";
+  }, []);
+
+  const attemptReturnToLobby = useCallback(async (action) => {
+    if (matchAlertResumePending) return;
+    setMatchAlertResumePending(true);
+    setMatchAlertResumeError("");
+
+    const result = await runGameOverLobbyAction({
+      shouldResume: shouldResumeMatchAlertsForAction({
+        action,
+        eligible: canOfferAlertResume,
+        checked: matchAlertResumeChecked,
+      }),
+      resumeMatchAlerts: matchAlerts.resume,
+      onLobby: returnToLobby,
+    });
+
+    if (!result.returnedToLobby) {
+      setMatchAlertResumeError(result.error);
+      setMatchAlertResumePending(false);
+    }
+  }, [
+    canOfferAlertResume,
+    matchAlertResumeChecked,
+    matchAlertResumePending,
+    matchAlerts.resume,
+    returnToLobby,
+  ]);
+  const handleReturnToLobby = useCallback(
+    () => attemptReturnToLobby("return"),
+    [attemptReturnToLobby]
+  );
+  const handleRetryMatchAlertResume = useCallback(
+    () => attemptReturnToLobby("retry"),
+    [attemptReturnToLobby]
+  );
+
+  useEffect(() => {
+    const registration = getCurrentMatchAlertGameRegistration({
+      isReplay,
+      isGameOver,
+      credentials: bgioProps.credentials,
+      playerID,
+      matchID,
+      opponentType: hasBotOpponent ? "bot" : "human",
+    });
+    if (!registration) return undefined;
+    return registerCurrentGame(registration);
+  }, [
+    bgioProps.credentials,
+    hasBotOpponent,
+    isGameOver,
+    isReplay,
+    matchID,
+    playerID,
+    registerCurrentGame
+  ]);
+  const rawGameStatus = getGameStatus(core, bgioProps.ctx, {
+    playerAction,
+    viewerPlayerId: playerID,
+    playerMap: nameMap
+  });
+  const localMatchSeat = mergedMatchData.find(
+    (seat) => String(seat?.id) === String(playerID)
+  );
+  const shouldRequestYourTurnAttention =
+    !isReplay &&
+    !isGameOver &&
+    Boolean(bgioProps.credentials) &&
+    playerID != null &&
+    playerID !== "" &&
+    localMatchSeat?.data?.participantType !== "bot" &&
+    localMatchSeat?.data?.isBot !== true &&
+    !Boolean(localMatchSeat?.data?.bot) &&
+    String(bgioProps.ctx?.currentPlayer) === String(playerID) &&
+    rawGameStatus.kind !== "pregame" &&
+    String(rawGameStatus.activePlayerId) === String(playerID);
+
+  useEffect(() => {
+    if (shouldRequestYourTurnAttention) {
+      tabAttention.request("your-turn");
+    } else {
+      tabAttention.release("your-turn");
+    }
+
+    return () => {
+      tabAttention.release("your-turn");
+    };
+  }, [shouldRequestYourTurnAttention]);
+  latestPlayerViewMapRef.current = playerViewMap;
+
+  useEffect(() => {
+    const snapshots = advancePlayerResourceSnapshots({
+      currentResourcesByPlayerId: currentResourcesByPlayerIdRef.current,
+      playerViewMap
+    });
+    previousResourcesByPlayerIdRef.current =
+      snapshots.previousResourcesByPlayerId;
+    currentResourcesByPlayerIdRef.current =
+      snapshots.currentResourcesByPlayerId;
+  }, [playerViewMap]);
+
+  const {
+    timerSnapshot,
+    disconnectPresence,
+    idlePresence,
+    activeIdlePlayerId,
+    disconnectStateByPlayerId,
+    idleStateByPlayerId
+  } = useMatchClockAndPresence({
+    matchID,
+    isReplay,
+    timerSnapshot: bgioProps.timerSnapshot,
+    timerServerTimeMs: bgioProps.timerServerTimeMs,
+    disconnectPresence: bgioProps.disconnectPresence,
+    disconnectServerTimeMs: bgioProps.disconnectServerTimeMs,
+    idlePresence: bgioProps.idlePresence,
+    idleServerTimeMs: bgioProps.idleServerTimeMs
+  });
+  const { idleAckError, isAcknowledgingIdle, handleAcknowledgeIdle } =
+    useIdleAcknowledgement({
+      matchID,
+      playerID,
+      credentials: bgioProps.credentials,
+      activeIdlePlayerId,
+      isGameOver
+    });
+
+  // The board remains animation-gated, but the feed follows authoritative
+  // props as soon as the effect queue starts (including resource outcomes).
+  const latestLogProps = useLatestPropsOnEffect("*");
+  const canonicalGameLogEntries = useMemo(
+    () => (Array.isArray(latestLogProps.G?.gameLog) ? latestLogProps.G.gameLog : []),
+    [latestLogProps.G?.gameLog]
+  );
+  const replayLogEntries = Array.isArray(bgioProps.replayLogEntries)
+    ? bgioProps.replayLogEntries
+    : canonicalGameLogEntries;
+  const visibleLogEntries = useMemo(
+    () =>
+      isReplay
+        ? replayLogEntries
+        : mergeVisibleLogEntries(canonicalGameLogEntries, [
+            ...(disconnectPresence?.events ?? []),
+            ...(idlePresence?.events ?? [])
+          ]),
+    [
+      isReplay,
+      replayLogEntries,
+      canonicalGameLogEntries,
+      disconnectPresence,
+      idlePresence
+    ]
+  );
+  const showResultsButton = isReplay
+    ? !bgioProps.replayResultsOpen
+    : isGameOver && !showGameOverModal && !showPostgame;
+  const handleWatchReplay = useCallback(() => {
+    onWatchReplay?.();
+  }, [onWatchReplay]);
+  const clearBuildPickup = useCallback(() => {
+    setBuildPickup(null);
+  }, []);
+  const handleDevCardPurchaseStart = useCallback((snapshot) => {
+    pendingDevCardRevealRef.current = snapshot;
+    setPendingDevCardReveal(snapshot);
+  }, []);
+  const startDevCardRevealFromEffect = useCallback((payload) => {
+    if (!payload?.cardType) {
+      pendingDevCardRevealRef.current = null;
+      setPendingDevCardReveal(null);
+      return;
+    }
+
+    const pendingReveal = pendingDevCardRevealRef.current;
+    if (!pendingReveal) return;
+    if (String(pendingReveal.playerId) !== String(payload.playerId)) return;
+
+    const destinationRect = copyRect(
+      devCardDisplayRef.current?.getBoundingClientRect?.()
+    );
+    if (!destinationRect) {
+      pendingDevCardRevealRef.current = null;
+      setPendingDevCardReveal(null);
+      return;
+    }
+
+    pendingDevCardRevealRef.current = null;
+    setActiveDevCardReveal({
+      playerId: payload.playerId,
+      cardType: payload.cardType,
+      beforeCards: pendingReveal.beforeCards,
+      vpSnapshot: pendingReveal.vpSnapshot ?? null,
+      triggerRect: pendingReveal.triggerRect,
+      destinationRect,
+      launchDelayMs: pendingReveal.preLaunchDelayMs ?? 0,
+      startedAtMs: pendingReveal.startedAtMs ?? Date.now(),
+    });
+    setPendingDevCardReveal(null);
+  }, []);
+  const clearDevCardPlayActors = useCallback(() => {
+    devCardPlayActorStoreRef.current.forEach((actor) => {
+      actor?.el?.remove?.();
+    });
+    devCardPlayActorStoreRef.current.clear();
+    setKnightDisplayOverrideByPlayerId({});
+  }, []);
+  const freezeKnightDisplayFromPayload = useCallback((payload) => {
+    const override = createKnightDisplayOverride(payload);
+    if (!override) return;
+    setKnightDisplayOverrideByPlayerId((current) =>
+      upsertKnightDisplayOverride(current, {
+        ...override,
+        playerId: String(override.playerId)
+      })
+    );
+  }, []);
+  const releaseKnightDisplayFromPayload = useCallback((payload) => {
+    if (!payload?.playerId) return;
+    setKnightDisplayOverrideByPlayerId((current) =>
+      removeKnightDisplayOverride(current, String(payload.playerId))
+    );
+  }, []);
+  const emitLargestArmyAwardFromPayload = useCallback((payload) => {
+    if (payload?.cardType !== "knight") return;
+    const nextOwnerId = payload.nextLargestArmyOwnerId;
+    if (!nextOwnerId) return;
+    if (String(nextOwnerId) !== String(payload.playerId)) return;
+    if (String(nextOwnerId) === String(payload.previousLargestArmyOwnerId)) return;
+
+    const baseEffectId = payload.effectId ?? `award:largest-army:${nextOwnerId}`;
+    effectsBus.emit({
+      type: "award:claim",
+      payload: {
+        effectId: `${baseEffectId}:largest-army`,
+        awardType: "largestArmy",
+        playerId: nextOwnerId,
+        previousOwnerId: payload.previousLargestArmyOwnerId ?? null,
+        playerColorId: effectiveColorByPlayerId[nextOwnerId],
+        debugReplay: Boolean(payload.debugReplay)
+      }
+    });
+  }, [effectsBus, effectiveColorByPlayerId]);
+  const handleDevCardPlayResolveComplete = useCallback((payload) => {
+    releaseKnightDisplayFromPayload(payload);
+    emitLargestArmyAwardFromPayload(payload);
+  }, [
+    emitLargestArmyAwardFromPayload,
+    releaseKnightDisplayFromPayload
+  ]);
+
+  useEffect(() => {
+    if (isReplay) {
+      gameOverSeenRef.current = isGameOver;
+      setShowGameOverModal(false);
+      setShowPostgame(false);
+      return;
+    }
+    if (!isGameOver) {
+      gameOverSeenRef.current = false;
+      winnerConfettiSeenRef.current = false;
+      setShowGameOverModal(false);
+      setShowPostgame(false);
+      return;
+    }
+    if (!gameOverSeenRef.current) {
+      gameOverSeenRef.current = true;
+      setShowGameOverModal(true);
+      setShowPostgame(false);
+      setPlayerAction(null);
+      clearBuildPickup();
+      pendingDevCardRevealRef.current = null;
+      setPendingDevCardReveal(null);
+      setActiveDevCardReveal(null);
+      clearDevCardPlayActors();
+      setShowTradeModal(false);
+      setTradePresetResource(null);
+    }
+  }, [clearBuildPickup, clearDevCardPlayActors, isGameOver, isReplay]);
+
+  useEffect(() => {
+    if (!isGameOver || !matchID || typeof window === "undefined") return;
+    if (playerID == null || playerID === "") return;
+
+    const activeMatch = readLastActiveMatch(window.localStorage);
+    if (!activeMatch) return;
+    if (activeMatch.matchID !== matchID) return;
+    if (String(activeMatch.playerID) !== String(playerID)) return;
+
+    clearLastActiveMatch(window.localStorage);
+  }, [isGameOver, matchID, playerID]);
+
+  useEffect(() => {
+    setReadySent(false);
+    setShowConnectionBanner(false);
+    pendingDevCardRevealRef.current = null;
+    setPendingDevCardReveal(null);
+    setActiveDevCardReveal(null);
+    clearDevCardPlayActors();
+    hasSeenTransportConnectionRef.current = false;
+  }, [clearDevCardPlayActors, matchID]);
+
+  useEffect(() => {
+    pendingDevCardRevealRef.current = pendingDevCardReveal;
+  }, [pendingDevCardReveal]);
+
+  useEffect(() => {
+    const rect = copyRect(devCardDisplayRef.current?.getBoundingClientRect?.());
+    if (rect) {
+      devCardDisplayRectRef.current = rect;
+    }
+  }, [width, height]);
+
+  useEffect(() => {
+    if (bgioProps.isConnected) {
+      hasSeenTransportConnectionRef.current = true;
+      setShowConnectionBanner(false);
+      return;
+    }
+
+    if (!hasSeenTransportConnectionRef.current || isGameOver) {
+      setShowConnectionBanner(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setShowConnectionBanner(true);
+    }, 1200);
+
+    return () => clearTimeout(timeoutId);
+  }, [bgioProps.isConnected, isGameOver]);
+
+  useEffect(() => {
+    if (isReplay) return;
+    if (
+      !shouldAutoReady({
+        readySent,
+        playerID,
+        phase: bgioProps.ctx?.phase,
+        hasReadyMove: typeof moves?.readyUp === "function",
+        isMultiplayer: bgioProps.isMultiplayer,
+        isConnected: bgioProps.isConnected,
+        matchData: bgioProps.matchData,
+        readyByPlayerId: bgioProps.G?.preGame?.readyByPlayerId
+      })
+    ) {
+      return;
+    }
+
+    moves.readyUp();
+    setReadySent(true);
+  }, [
+    isReplay,
+    readySent,
+    playerID,
+    moves,
+    bgioProps.ctx?.phase,
+    bgioProps.isMultiplayer,
+    bgioProps.isConnected,
+    bgioProps.matchData,
+    bgioProps.G?.preGame?.readyByPlayerId
+  ]);
+
+  useEffect(() => {
+    Howler.mute(isMuted);
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(AUDIO_MUTE_STORAGE_KEY, String(isMuted));
+    } catch (err) {
+      // ignore storage errors
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(CATANA_THEME_STORAGE_KEY, themeId);
+    } catch (err) {
+      // ignore storage errors
+    }
+  }, [themeId]);
+
+  const hideTimer =
+    isGameOver ||
+    !shouldShowGameStatusTimer(rawGameStatus, timerSnapshot);
+  const visibleTimerSnapshot = hideTimer ? null : timerSnapshot;
+  const gameStatus = isGameOver
+    ? {
+        ...rawGameStatus,
+        kind: "game_over",
+        title: "Game Over",
+        text: "Game Over",
+        activePlayerId: null,
+        showTimer: false
+      }
+    : {
+        ...rawGameStatus,
+        showTimer: !hideTimer
+      };
+  useEffect(() => {
+    if (isReplay) {
+      if (playerAction === "roadBuilding") {
+        setPlayerAction(null);
+      }
+      return;
+    }
+    if (devPlay?.type === "roadBuilding" && devPlay.playerId === playerID) {
+      if (playerAction !== "roadBuilding") {
+        setPlayerAction("roadBuilding");
+      }
+      return;
+    }
+    if (playerAction === "roadBuilding") {
+      setPlayerAction(null);
+    }
+  }, [devPlay, isReplay, playerID, playerAction]);
+
+  useEffect(() => {
+    if (
+      shouldResetPlayerAction({
+        playerAction,
+        playerID,
+        ctx: bgioProps.ctx,
+        core,
+        coreTopology: bgioProps.G?.coreTopology,
+        corePhase: core?.phase,
+        isGameOver
+      })
+    ) {
+      setPlayerAction(null);
+      clearBuildPickup();
+    }
+  }, [
+    clearBuildPickup,
+    playerAction,
+    playerID,
+    bgioProps.ctx,
+    bgioProps.G?.coreTopology,
+    core,
+    core?.phase,
+    isGameOver
+  ]);
+
+  useEffect(() => {
+    if (buildPickup == null) return;
+    if (getBuildPickupPieceType(playerAction) != null) return;
+    clearBuildPickup();
+  }, [buildPickup, clearBuildPickup, playerAction]);
+
+  useEffect(() => {
+    if (!shouldCloseTradeModal) {
+      return;
+    }
+
+    setShowTradeModal(false);
+    setTradePresetResource(null);
+  }, [shouldCloseTradeModal]);
+
+  useEffect(() => {
+    if (!pendingDevCardReveal) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setPendingDevCardReveal((current) => {
+        if (current !== pendingDevCardReveal) return current;
+        pendingDevCardRevealRef.current = null;
+        return null;
+      });
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [pendingDevCardReveal]);
+
+  const playerDevCards = player?.devCards ?? null;
+  const playerRevealId = player?.id ?? null;
+  const displayDevCardsDuringReveal = getVisibleDevCardsDuringReveal({
+    pendingReveal: pendingDevCardReveal,
+    activeReveal: activeDevCardReveal,
+    playerId: playerRevealId,
+    playerDevCards: playerDevCards ?? [],
+  });
+  const localParkedDevCardType =
+    devPlay?.playerId != null &&
+    String(devPlay.playerId) === String(playerRevealId) &&
+    ["roadBuilding", "yearOfPlenty", "monopoly"].includes(devPlay.type)
+      ? devPlay.type
+      : null;
+  const displayDevCards = localParkedDevCardType
+    ? displayDevCardsDuringReveal.filter((card, index) => {
+        if (card !== localParkedDevCardType) return true;
+        return displayDevCardsDuringReveal.indexOf(card) !== index;
+      })
+    : displayDevCardsDuringReveal;
+  const frozenVpSnapshot =
+    activeDevCardReveal?.vpSnapshot ?? pendingDevCardReveal?.vpSnapshot ?? null;
+  const revealInFlight =
+    (pendingDevCardReveal &&
+      String(pendingDevCardReveal.playerId) === String(playerRevealId)) ||
+    (activeDevCardReveal &&
+      String(activeDevCardReveal.playerId) === String(playerRevealId));
+  const localKnightPlayInFlight =
+    playerRevealId != null &&
+    Boolean(knightDisplayOverrideByPlayerId[String(playerRevealId)]);
+  const localDevCardPlayInFlight =
+    localKnightPlayInFlight || Boolean(localParkedDevCardType);
+  const displayPlayer = !player
+    ? player
+    : {
+        ...player,
+        devCards: displayDevCards,
+      };
+
+  // Discard Logic
+  // Check if pendingDiscards list includes the current player
+  // NOTE: We used to check bgioProps.ctx.phase === 'robberDiscard' but sometimes
+  // the client-side derived ctx.phase might lag or differ if the game engine isn't strictly mapping G to ctx phases 1:1.
+  // Relying on G.core.turn.pendingDiscards is more robust because that IS the source of truth for "who needs to discard".
+  // Also, G.core.turn.phase should be 'robberDiscard' if pendingDiscards > 0, but let's be safe.
+  const { needsToDiscard, discardCount } = getDiscardRequirement({
+    isGameOver,
+    coreTurn,
+    playerID,
+    player
+  });
+
+  const handleDiscardConfirm = (resourcesToDiscard) => {
+    bgioProps.moves.discardResources(resourcesToDiscard);
+    // Modal will auto-close when phase/state updates
+  };
+
+  const discardCueActiveRef = useRef(false);
+  useEffect(() => {
+    const active =
+      Boolean(player) && !isReplay && !isGameOver && needsToDiscard;
+    if (active && !discardCueActiveRef.current) {
+      effectsBus.emit({ type: "cue", payload: { name: "discard:required" } });
+    }
+    discardCueActiveRef.current = active;
+  }, [effectsBus, isGameOver, isReplay, needsToDiscard, player]);
+
+  const handleTradeConfirm = (tradeData) => {
+    // console.log("Trade:", tradeData);
+    // Connect to actual move:
+    bgioProps.moves.maritimeTrade(tradeData);
+    // For now just close
+    setShowTradeModal(false);
+    setTradePresetResource(null);
+  };
+
+  const handleDevPlayConfirm = (payload) => {
+    bgioProps.moves.confirmDevCardPlay(payload);
+  };
+
+  const handleTradeOpen = (resource) => {
+    setTradePresetResource(resource ?? null);
+    setShowTradeModal(true);
+  };
+
+  const handleDevCardRevealComplete = useCallback(() => {
+    setActiveDevCardReveal(null);
+  }, []);
+
+  const handleResign = () => {
+    if (isGameOver) return;
+    if (typeof moves.resign !== "function") return;
+    setShowResignConfirm(true);
+  };
+
+  const handleConfirmResign = () => {
+    setShowResignConfirm(false);
+    moves.resign();
+  };
+
+  const { canRoll, canEnd } = getTurnCommandState({
+    isGameOver,
+    playerID,
+    ctx: bgioProps.ctx,
+    core,
+    coreTurn
+  });
+
+  const hasModalOpen = getHasBlockingModal({
+    tradeModalVisible,
+    needsToDiscard: !isReplay && needsToDiscard,
+    devPlayModalVisible: !isReplay && devPlayModalVisible,
+    showGameOverModal,
+    showPostgame,
+    showGameSettings,
+    showGameRules
+  });
+
+  //TODO: this will return multiple for non 1v1 games. handle in UI appropriately
+  //const opponentID = bgioProps.G.players.map(p=>(p.id !== playerID) ? p.id : null).filter(p=>p!== null)[0]
+  const opponents = useMemo(
+    () =>
+      Object.values(playerViewMap)
+        .filter((view) => view.id !== playerID)
+        .map((view) => ({
+          ...view,
+          name: nameMap[view.id],
+          emoji: emojiMap[view.id]
+        })),
+    [emojiMap, nameMap, playerID, playerViewMap]
+  );
+  const { topOpponents: displayedOpponents, bottomOpponent } = useMemo(
+    () =>
+      getOpponentHudLayout({
+        opponents,
+        isNeutralViewer: playerID == null,
+        isPhoneLayout
+      }),
+    [isPhoneLayout, opponents, playerID]
+  );
+  const localIdlePresence =
+    playerID != null ? idleStateByPlayerId[playerID] ?? null : null;
+  const activePlayerName =
+    gameStatus.activePlayerId != null
+      ? nameMap[gameStatus.activePlayerId] ?? `Player ${gameStatus.activePlayerId}`
+      : null;
+  const mobileCommandDiceRoll = getVisibleDiceRoll(bgioProps.G);
+  const showIdlePrompt =
+    !isGameOver &&
+    playerID != null &&
+    activeIdlePlayerId != null &&
+    String(activeIdlePlayerId) === String(playerID) &&
+    disconnectStateByPlayerId[playerID] == null &&
+    localIdlePresence != null;
+
+  //const otherPlayerCards = bgioProps.G.players[opponentID].resourceCards; //TODO: horrible, clean up. might need to check if playerID exists (e.g. what about spectator)
+
+  //we get a username here, being 'playerID' currently..
+
+  const handleScreenClickCapture = (event) => {
+    const target = event?.target;
+    const targetIsActionCircle = Boolean(
+      target?.closest?.('[data-action-circle="true"]')
+    );
+    if (
+      shouldCancelBuildAction({
+        playerAction,
+        phase: bgioProps.ctx.phase,
+        targetIsActionCircle
+      })
+    ) {
+      setPlayerAction(null);
+      clearBuildPickup();
+    }
+  };
+  const allowInteractionSelector = '[data-allow-interaction="true"]';
+  const handleContextMenu = (event) => {
+    // Opt-in for future log/chat/status containers.
+    if (event?.target?.closest?.(allowInteractionSelector)) return;
+    event.preventDefault();
+  };
+
+  useEffect(() => {
+    if (isReplay) return;
+    const handleKeyDown = (event) => {
+      if (event.defaultPrevented) return;
+      if (event.code === "Escape") {
+        if (getBuildPickupPieceType(playerAction) == null) return;
+        event.preventDefault();
+        setPlayerAction(null);
+        clearBuildPickup();
+        return;
+      }
+      if (event.code !== "Space") return;
+      if (event.repeat) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        return;
+      }
+
+      const targetElement = event.target instanceof Element ? event.target : null;
+      const isEditable = targetElement?.closest?.(
+        "input, textarea, select, [contenteditable]"
+      );
+      if (isEditable) return;
+      if (hasModalOpen) return;
+      if (isGameOver) return;
+
+      event.preventDefault();
+
+      if (canRoll) {
+        moves.rollDice();
+        return;
+      }
+      if (canEnd) {
+        setPlayerAction(null);
+        clearBuildPickup();
+        moves.endTurn();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    canRoll,
+    canEnd,
+    clearBuildPickup,
+    hasModalOpen,
+    isReplay,
+    isGameOver,
+    moves,
+    playerAction
+  ]);
+
+  const effects = useMemo(() => {
+    return {
+      resourceDistribution: ({ layerRef, boardRef, emitCue }) => {
+        const runner = createResourceDistributionRunner({
+          getLayerEl: () => layerRef.current,
+          getLayout: () => {
+            if (!width || !height) return null;
+            return getBoardLayout({
+              width,
+              height,
+              leftInset: leftMetaRailLayoutInset,
+              reservedUiHeight: boardLayoutReservedHeight,
+            });
+          },
+          getBoardRect: () =>
+            boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
+          emitCue,
+          themeId
+        });
+
+        return (event) => runner(event?.payload);
+      },
+      piecePlacement: ({ layerRef, boardRef, emitCue }) => {
+        const runner = createPiecePlacementRunner({
+          getLayerEl: (payload) =>
+            payload?.pieceType === "road"
+              ? placementRoadLayerRef.current
+              : placementLayerRef.current,
+          getLayout: () => {
+            if (!width || !height) return null;
+            return getBoardLayout({
+              width,
+              height,
+              leftInset: leftMetaRailLayoutInset,
+              reservedUiHeight: boardLayoutReservedHeight,
+            });
+          },
+          getBoardRect: () =>
+            boardRef?.current?.getBoundingClientRect() ?? new DOMRect(),
+          getTiles: () => latestGRef.current?.tiles ?? [],
+          getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId] ?? "red",
+          getViewerPlayerId: () => playerID,
+          emitCue,
+          useBoardSpace: true,
+          themeId
+        });
+
+        return (event) => runner(event?.payload);
+      },
+      devCardReveal: ({ layerRef, emitCue }) => {
+        const transferRunner = createCardTransferRunner({
+          getLayerEl: () => layerRef.current,
+          resolveTransfers: (payload) => payload.transfers ?? [],
+          emitCue,
+          themeId
+        });
+
+        return (event) => {
+          const payload = event?.payload;
+          if (!payload) return;
+          if (String(payload.playerId) === String(playerID)) {
+            startDevCardRevealFromEffect(payload);
+            return;
+          }
+          transferRunner({
+            ...payload,
+            transfers: buildDevCardBuyTransfer(payload)
+          });
+        };
+      },
+      cardTransfer: ({ layerRef, emitCue }) => {
+        const runner = createCardTransferRunner({
+          getLayerEl: () => layerRef.current,
+          resolveTransfers: (payload) => payload.transfers ?? [],
+          emitCue,
+          themeId
+        });
+
+        return (event) => {
+          const payload = event?.payload;
+          if (!payload) return;
+
+          if (event.type === "resource:maritime-trade") {
+            runner({
+              ...payload,
+              transfers: buildMaritimeTradeTransfers(payload)
+            });
+            return;
+          }
+
+          if (event.type === "resource:discard") {
+            runner({
+              ...payload,
+              transfers: buildDiscardTransfers(payload)
+            });
+            return;
+          }
+
+          if (event.type === "resource:robber-steal") {
+            runAfterNextPaint(() => {
+              const visibleResource = getRobberStealVisibleResource({
+                payload,
+                viewerPlayerId: playerID,
+                previousResourcesByPlayerId: previousResourcesByPlayerIdRef.current,
+                currentPlayerViewMap: latestPlayerViewMapRef.current
+              });
+              runner({
+                ...payload,
+                transfers: buildRobberStealTransfers({ payload, visibleResource })
+              });
+            });
+          }
+        };
+      },
+      robberMove: ({ emitCue }) => {
+        const runner = createRobberMoveRunner({
+          getLayerEl: () => placementLayerRef.current,
+          getLayout: () => {
+            if (!width || !height) return null;
+            return getBoardLayout({
+              width,
+              height,
+              leftInset: leftMetaRailLayoutInset,
+              reservedUiHeight: boardLayoutReservedHeight,
+            });
+          },
+          getTiles: () => latestGRef.current?.tiles ?? [],
+          viewerPlayerId: playerID,
+          emitCue,
+          themeId
+        });
+
+        return (event) => runner(event?.payload);
+      },
+      awardClaim: ({ layerRef, emitCue }) => {
+        const runner = createAwardClaimRunner({
+          getLayerEl: () => layerRef.current,
+          getRoadsByEdgeId: () => latestGRef.current?.core?.roadsByEdgeId ?? {},
+          getPlayerColor: (playerId) => effectiveColorByPlayerId[playerId],
+          getTargetEl: (_payload, id) => document.getElementById(id),
+          emitCue
+        });
+
+        return (event) => runner(event?.payload);
+      },
+      devCardPlay: ({ layerRef, emitCue }) => {
+        const runner = createDevCardPlayRunner({
+          getLayerEl: () => layerRef.current,
+          getSourceEl: (payload, id) => {
+            const sourceEl = document.getElementById(id);
+            if (sourceEl) return sourceEl;
+            if (String(payload?.playerId) !== String(playerID)) return null;
+            // Prefer a live measurement; fall back to the cached rect when
+            // the dev card display is unmounted at effect time.
+            const liveRect = copyRect(
+              devCardDisplayRef.current?.getBoundingClientRect?.()
+            );
+            if (liveRect) {
+              devCardDisplayRectRef.current = liveRect;
+            }
+            const cachedRect = devCardDisplayRectRef.current;
+            if (!cachedRect) return null;
+            return {
+              getBoundingClientRect: () => cachedRect
+            };
+          },
+          getTargetEl: (_payload, id) => document.getElementById(id),
+          getPerspective: (payload) =>
+            getDevCardPlayPerspective({
+              viewerPlayerId: playerID,
+              actorPlayerId: payload.playerId
+            }),
+          getMotionPolicy: () =>
+            getDevCardPlayMotionPolicy({
+              reducedMotion:
+                typeof window !== "undefined" &&
+                typeof window.matchMedia === "function" &&
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            }),
+          actorStore: devCardPlayActorStoreRef,
+          emitCue,
+          onStart: freezeKnightDisplayFromPayload,
+          onResolveComplete: handleDevCardPlayResolveComplete,
+          themeId
+        });
+
+        return (event) => runner(event);
+      }
+    };
+  }, [
+    width,
+    height,
+    boardLayoutReservedHeight,
+    effectiveColorByPlayerId,
+    handleDevCardPlayResolveComplete,
+    freezeKnightDisplayFromPayload,
+    leftMetaRailLayoutInset,
+    playerID,
+    startDevCardRevealFromEffect,
+    themeId
+  ]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    if (matchID !== "dev-sandbox") return undefined;
+
+    const handleDevSandboxDevCardPlay = (event) => {
+      const detail = event?.detail ?? {};
+      if (detail.action === "reset") {
+        clearDevCardPlayActors();
+        return;
+      }
+      const phase = detail.phase === "resolve" ? "resolve" : "start";
+      effectsBus.emit({
+        type: phase === "resolve" ? "devcard:play:resolve" : "devcard:play:start",
+        payload: buildSandboxDevCardPlayPayload({
+          playerId: detail.playerId,
+          cardType: detail.cardType,
+          phase,
+          fallbackPlayerId: opponents[0]?.id,
+          viewerPlayerId: playerID,
+          playerViewMap,
+          largestArmyOwnerId: core?.awards?.largestArmyOwnerId ?? null
+        })
+      });
+    };
+    const handleDevSandboxRobberMove = (event) => {
+      const detail = event?.detail ?? {};
+      effectsBus.emit({
+        type: "robber:move",
+        payload: buildSandboxRobberMovePayload({
+          detail,
+          fallbackActorId: opponents[0]?.id,
+          viewerPlayerId: playerID
+        })
+      });
+    };
+    const handleDevSandboxAwardClaim = (event) => {
+      const detail = event?.detail ?? {};
+      effectsBus.emit({
+        type: "award:claim",
+        payload: buildSandboxAwardClaimPayload({
+          detail,
+          effectiveColorByPlayerId
+        })
+      });
+    };
+
+    window.addEventListener(
+      "catana:dev-sandbox:devcard-play",
+      handleDevSandboxDevCardPlay
+    );
+    window.addEventListener(
+      "catana:dev-sandbox:robber-move",
+      handleDevSandboxRobberMove
+    );
+    window.addEventListener(
+      "catana:dev-sandbox:award-claim",
+      handleDevSandboxAwardClaim
+    );
+    return () => {
+      window.removeEventListener(
+        "catana:dev-sandbox:devcard-play",
+        handleDevSandboxDevCardPlay
+      );
+      window.removeEventListener(
+        "catana:dev-sandbox:robber-move",
+        handleDevSandboxRobberMove
+      );
+      window.removeEventListener(
+        "catana:dev-sandbox:award-claim",
+        handleDevSandboxAwardClaim
+      );
+    };
+  }, [
+    clearDevCardPlayActors,
+    core?.awards?.largestArmyOwnerId,
+    effectsBus,
+    effectiveColorByPlayerId,
+    matchID,
+    opponents,
+    playerID,
+    playerViewMap
+  ]);
+  // console.log('p', player)
+  // console.log('opps', opponents)
+  const handleToggleMute = useCallback(() => {
+    setIsMuted((prev) => !prev);
+  }, []);
+  const handleBoardTransformed = useCallback((_ref, state) => {
+    const nextScale =
+      Number.isFinite(state?.scale) && state.scale > 0 ? state.scale : 1;
+
+    setBoardViewportScale((currentScale) =>
+      Math.abs(currentScale - nextScale) < 0.001 ? currentScale : nextScale
+    );
+  }, []);
+  const friendlyRobberRule = ruleset.friendlyRobber?.enabled
+    ? `On up to ${ruleset.friendlyRobber.vpThreshold ?? 2} VP`
+    : "Off";
+  const gameRulesRows = [
+    ["Ruleset", bgioProps.G?.rulesetId ?? "Custom"],
+    ["Victory target", `${ruleset.victoryPointsToWin ?? 10} VP`],
+    ["Discard limit", `${ruleset.discardLimit ?? 7} cards`],
+    ["Bank trade", `${ruleset.tradeRates?.bank ?? 4}:1`],
+    ["Ports", `${ruleset.tradeRates?.genericPort ?? 3}:1 / ${ruleset.tradeRates?.specificPort ?? 2}:1`],
+    ["Friendly robber", friendlyRobberRule],
+    ["Development cards", ruleset.devCardsEnabled === false ? "Off" : "On"],
+  ];
+  return (
+    <div
+      className="catana-game-screen select-none"
+      style={{
+        background: CATANA_TABLE_BACKGROUND,
+        width: "100vw", // Use viewport width to take the full screen width
+        height: "100vh", // Use viewport height to take the full screen height
+        overflow: "hidden", // Prevent scrollbars on the page
+        position: "fixed", // Fix the object in place
+        top: 0,
+        left: 0,
+        pointerEvents: mobileMetaPanel ? "auto" : undefined,
+      }}
+      onClickCapture={handleScreenClickCapture}
+      onContextMenu={handleContextMenu}
+    >
+      {/* board in zoom/pan/pinch wrapper  */}
+      <TransformWrapper
+        ref={boardTransformRef}
+        minPositionX={-500}
+        minPositionY={-200}
+        maxPositionX={500}
+        maxPositionY={500}
+        maxScale={6}
+        minScale={0.3}
+        disablePadding={true}
+        doubleClick={{ mode: "toggle" }}
+        onTransformed={handleBoardTransformed}
+      >
+        <TransformComponent>
+          <MemoizedCatanBoard
+            boardRef={boardRef}
+            placementLayerRef={placementLayerRef}
+            placementRoadLayerRef={placementRoadLayerRef}
+            boardViewportScale={boardViewportScale}
+            playerAction={playerAction}
+            setPlayerAction={setPlayerAction}
+            buildPickup={buildPickup}
+            setBuildPickup={setBuildPickup}
+            playerColorMap={effectiveColorByPlayerId}
+            robberPlacementMotionMode={robberPlacementMotionMode}
+            boardLayoutLeftInset={leftMetaRailLayoutInset}
+            boardLayoutReservedHeight={boardLayoutReservedHeight}
+            themeId={themeId}
+            {...bgioProps}
+          />
+        </TransformComponent>
+      </TransformWrapper>
+
+      {activeDevCardReveal ? (
+        <React.Suspense fallback={null}>
+          <LazyDevCardPurchaseReveal
+            reveal={activeDevCardReveal}
+            effectsBus={effectsBus}
+            onComplete={handleDevCardRevealComplete}
+          />
+        </React.Suspense>
+      ) : null}
+
+      <TooltipProvider delay={0}>
+        <div
+          className="fixed left-3 top-3 z-40 hidden sm:flex items-center gap-ui-1.5 sm:left-4 sm:top-4 sm:gap-ui-2"
+          data-game-utility-cluster="true"
+          data-allow-interaction="true"
+        >
+          <Tooltip label={isMuted ? "Unmute audio" : "Mute audio"}>
+            <IconButton
+              variant="utility"
+              size="md"
+              onClick={handleToggleMute}
+              className={topUtilityButtonClassName}
+              aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+              data-allow-interaction="true"
+            >
+              {isMuted ? (
+                <SpeakerXMarkIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+              ) : (
+                <SpeakerWaveIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+              )}
+            </IconButton>
+          </Tooltip>
+          <Tooltip label="Game settings">
+            <IconButton
+              variant="utility"
+              size="md"
+              onClick={() => setShowGameSettings(true)}
+              className={`hidden sm:inline-flex ${topUtilityButtonClassName}`}
+              aria-label="Open game settings"
+              data-allow-interaction="true"
+            >
+              <Cog6ToothIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip label="Game rules">
+            <IconButton
+              variant="utility"
+              size="md"
+              onClick={() => setShowGameRules(true)}
+              className={`hidden sm:inline-flex ${topUtilityButtonClassName}`}
+              aria-label="Open game rules"
+              data-allow-interaction="true"
+            >
+              <QuestionMarkCircleIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+            </IconButton>
+          </Tooltip>
+        </div>
+      </TooltipProvider>
+
+      {!showResultsButton ? (
+        <div
+          className="fixed right-3 top-3 z-40 sm:hidden"
+          data-allow-interaction="true"
+        >
+          <MobileMatchMenu
+            isMuted={isMuted}
+            onToggleMute={handleToggleMute}
+            onOpenGameRules={() => setShowGameRules(true)}
+            onOpenGameSettings={() => setShowGameSettings(true)}
+            canResign={!isReplay && !isGameOver && !!player}
+            onResign={handleResign}
+          />
+        </div>
+      ) : null}
+
+      {!isReplay && !isGameOver && !!player && !isPhoneLayout && (
+        <div className="fixed right-3 top-3 z-40 hidden sm:block sm:right-4 sm:top-4" data-allow-interaction="true">
+          <GlassPillButton
+            onClick={handleResign}
+            aria-label="Resign match"
+            data-allow-interaction="true"
+          >
+            <span>Resign</span>
+          </GlassPillButton>
+        </div>
+      )}
+
+      {showResultsButton && (
+        <div className="fixed right-4 top-4 z-40" data-allow-interaction="true">
+          <GlassPillButton
+            onClick={() =>
+              isReplay
+                ? bgioProps.onReplayResultsOpen?.()
+                : setShowGameOverModal(true)
+            }
+            aria-label="Open game results"
+            data-allow-interaction="true"
+          >
+            <span aria-hidden="true">🏆</span>
+            <span>Results</span>
+          </GlassPillButton>
+        </div>
+      )}
+
+      <LeftMetaRail
+        entries={visibleLogEntries}
+        activeEntryKey={
+          isReplay ? bgioProps.replayActiveLogEntryKey : null
+        }
+        onEntrySelect={
+          isReplay ? bgioProps.onReplayLogEntrySelect : null
+        }
+        logPlayerMap={logPlayerMap}
+        themeId={themeId}
+        playerID={playerID}
+        bgioProps={bgioProps}
+        mobileActivePanel={mobileMetaPanel}
+        onMobileActivePanelChange={handleMobileMetaPanelChange}
+        isPhoneLayout={isPhoneLayout}
+      />
+
+      <GameSettingsDialog
+        open={showGameSettings}
+        onOpenChange={setShowGameSettings}
+        isMuted={isMuted}
+        onToggleMute={handleToggleMute}
+        themeId={themeId}
+      />
+
+      <GameRulesDialog
+        open={showGameRules}
+        onOpenChange={setShowGameRules}
+        rows={gameRulesRows}
+      />
+
+      {!isReplay && (
+        <GameEffects
+          effectsBus={effectsBus}
+          boardRef={boardRef}
+          effects={effects}
+          currentPlayerId={bgioProps.ctx?.currentPlayer}
+          playerID={playerID}
+          phase={bgioProps.ctx?.phase}
+          gameOverState={gameOverState}
+          isWinner={isWinner}
+          gameStartMatchID={matchID}
+          preloadSounds
+        />
+      )}
+      {!isReplay && (
+        <LowTimerCue
+          effectsBus={effectsBus}
+          timerSnapshot={visibleTimerSnapshot}
+          statusType={gameStatus?.statusType}
+          statusKind={gameStatus?.kind}
+          // Tick only for the local player's own clock -- the visual alert
+          // still covers the opponent's turn, but audio urgency is personal.
+          enabled={
+            !isGameOver &&
+            player?.id != null &&
+            gameStatus?.activePlayerId === player.id
+          }
+        />
+      )}
+
+      {/* our cards and action dock 
+TODO: accurately colour it
+*/}
+      {!!player &&
+        (isPhoneLayout ? (
+          <MobilePlayerCockpit
+            setPlayerAction={setPlayerAction}
+            buildPickup={buildPickup}
+            setBuildPickup={setBuildPickup}
+            effectsBus={effectsBus}
+            bgioProps={bgioProps}
+            player={displayPlayer}
+            presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
+            onDevCardPurchaseStart={handleDevCardPurchaseStart}
+            devCardDisplayRef={devCardDisplayRef}
+            displayDevCards={displayPlayer?.devCards ?? null}
+            keepDevCardShellMounted={Boolean(revealInFlight || localDevCardPlayInFlight)}
+            vpDisplayOverride={frozenVpSnapshot}
+            knightDisplayOverride={
+              player?.id != null
+                ? knightDisplayOverrideByPlayerId[String(player.id)] ?? null
+                : null
+            }
+            onTradeClick={handleTradeOpen}
+            isActive={!isGameOver && gameStatus.activePlayerId === player.id}
+            statusType={gameStatus.statusType}
+            gameStatus={gameStatus}
+            activePlayerName={activePlayerName}
+            canRoll={canRoll}
+            canEnd={canEnd}
+            timerSnapshot={visibleTimerSnapshot}
+            themeId={themeId}
+            activeMobileMetaPanel={mobileMetaPanel}
+            onMobileMetaPanelOpen={handleMobileMetaPanelChange}
+            showTurnControls={isReplay || !isGameOver}
+            diceRoll={mobileCommandDiceRoll}
+            readOnly={isReplay}
+          />
+        ) : (
+          <PlayerActionContainer
+            effectsBus={effectsBus}
+            setPlayerAction={setPlayerAction}
+            buildPickup={buildPickup}
+            setBuildPickup={setBuildPickup}
+            bgioProps={bgioProps}
+            //playerID={bgioProps.playerID} //for multiplayer
+            player={displayPlayer} //for testing/dev
+            presence={disconnectStateByPlayerId[player.id] ?? idleStateByPlayerId[player.id] ?? null}
+            onDevCardPurchaseStart={handleDevCardPurchaseStart}
+            devCardDisplayRef={devCardDisplayRef}
+            displayDevCards={displayPlayer?.devCards ?? null}
+            keepDevCardShellMounted={Boolean(revealInFlight || localDevCardPlayInFlight)}
+            vpDisplayOverride={frozenVpSnapshot}
+            knightDisplayOverride={
+              player?.id != null
+                ? knightDisplayOverrideByPlayerId[String(player.id)] ?? null
+                : null
+            }
+            onTradeClick={handleTradeOpen}
+            isActive={!isGameOver && gameStatus.activePlayerId === player.id}
+            statusType={gameStatus.statusType}
+            gameStatus={gameStatus}
+            canRoll={canRoll}
+            canEnd={canEnd}
+            timerSnapshot={visibleTimerSnapshot}
+            themeId={themeId}
+            layoutOffsetX={playfieldCenterOffsetX}
+            showTurnControls={isReplay || !isGameOver}
+            readOnly={isReplay}
+            replayStatusText={
+              isReplay ? `Replay · Turn ${bgioProps.replayTurn ?? "—"}` : null
+            }
+          />
+        ))}
+
+      {bottomOpponent ? (
+        <div
+          className="pointer-events-none fixed inset-x-0 bottom-ui-4 z-30 flex justify-center px-ui-4"
+          data-neutral-viewer-bottom-player="true"
+          style={{
+            transform: playfieldCenterOffsetX
+              ? `translateX(${Math.round(playfieldCenterOffsetX)}px)`
+              : undefined
+          }}
+        >
+          <div className="pointer-events-auto">
+            <OpponentPlayerBox
+              player={bottomOpponent}
+              presence={
+                disconnectStateByPlayerId[bottomOpponent.id] ??
+                idleStateByPlayerId[bottomOpponent.id] ??
+                null
+              }
+              core={bgioProps.G.core}
+              coreTopology={bgioProps.G.coreTopology}
+              isActive={
+                !isGameOver &&
+                gameStatus.activePlayerId === bottomOpponent.id
+              }
+              statusType={gameStatus.statusType}
+              knightDisplayOverride={
+                knightDisplayOverrideByPlayerId[String(bottomOpponent.id)] ??
+                null
+              }
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {/* MODALS */}
+      {/* 1. Force Discard Modal */}
+      {!!player && !isReplay && needsToDiscard && !isGameOver && (
+        <React.Suspense fallback={null}>
+          <LazyTradeDiscardModal
+            mode="discard"
+            player={player}
+            requiredDiscardCount={discardCount}
+            onConfirm={handleDiscardConfirm}
+            themeId={themeId}
+            // No cancel for forced discard
+          />
+        </React.Suspense>
+      )}
+
+      {/* 2. Manual Trade Modal */}
+      {!!player && tradeModalVisible && !needsToDiscard && !isGameOver && (
+        <React.Suspense fallback={null}>
+          <LazyTradeDiscardModal
+            mode="trade"
+            player={player}
+            onConfirm={handleTradeConfirm}
+            onCancel={() => {
+              setShowTradeModal(false);
+              setTradePresetResource(null);
+              clearBuildPickup();
+            }}
+            G={bgioProps.G}
+            tradePresetResource={tradePresetResource}
+            themeId={themeId}
+          />
+        </React.Suspense>
+      )}
+
+      {!!player && !isReplay && devPlayModalVisible && !needsToDiscard && !isGameOver && (
+        <React.Suspense fallback={null}>
+          <LazyTradeDiscardModal
+            mode={devPlayMode}
+            player={player}
+            onConfirm={handleDevPlayConfirm}
+            G={bgioProps.G}
+            themeId={themeId}
+          />
+        </React.Suspense>
+      )}
+
+      {showIdlePrompt ? (
+        <IdlePromptModal
+          remainingMs={localIdlePresence?.remainingMs ?? null}
+          onAcknowledge={handleAcknowledgeIdle}
+          isSubmitting={isAcknowledgingIdle}
+          error={idleAckError}
+        />
+      ) : null}
+
+      {!isReplay && showResignConfirm ? (
+        <React.Suspense fallback={null}>
+          <LazyResignConfirmDialog
+            open={showResignConfirm}
+            onOpenChange={setShowResignConfirm}
+            onConfirm={handleConfirmResign}
+          />
+        </React.Suspense>
+      ) : null}
+
+      {(displayedOpponents.length > 0 || showConnectionBanner) && (
+        <div
+          className={
+            isPhoneLayout
+              ? "pointer-events-none fixed inset-x-0 top-11 z-30 flex flex-col items-center gap-ui-2 px-ui-14"
+              : "pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-ui-3 px-ui-4"
+          }
+          style={{
+            transform: playfieldCenterOffsetX
+              ? `translateX(${Math.round(playfieldCenterOffsetX)}px)`
+              : undefined,
+          }}
+        >
+          {displayedOpponents.length > 0 && (
+            <div className="pointer-events-auto flex items-start gap-ui-4">
+              {displayedOpponents.map((opponent) => (
+                <OpponentPlayerBox
+                  key={opponent.id}
+                  player={opponent}
+                  presence={disconnectStateByPlayerId[opponent.id] ?? idleStateByPlayerId[opponent.id] ?? null}
+                  core={bgioProps.G.core}
+                  coreTopology={bgioProps.G.coreTopology}
+                  isActive={!isGameOver && gameStatus.activePlayerId === opponent.id}
+                  statusType={gameStatus.statusType}
+                  compact={isPhoneLayout}
+                  knightDisplayOverride={
+                    knightDisplayOverrideByPlayerId[String(opponent.id)] ?? null
+                  }
+                />
+              ))}
+            </div>
+          )}
+
+          {showConnectionBanner ? (
+            <StatusBanner
+              variant="danger"
+              title="Connection lost. Trying to reconnect…"
+              className="pointer-events-auto max-w-lg"
+            />
+          ) : null}
+        </div>
+      )}
+
+      {((isReplay && bgioProps.replayResultsOpen) ||
+        (!isReplay && showGameOverModal)) && (
+        <GameOverOverlay>
+          <React.Suspense fallback={null}>
+            <LazyGameOverModal
+              title={getGameOverTitle({ isWinner, winnerId, winnerName })}
+              subtitle={
+                gameOverState?.reason === "victoryPoints"
+                  ? winnerVP != null
+                    ? `Victory Points: ${winnerVP}`
+                    : "Victory Points"
+                  : gameOverReasonText
+              }
+              scoreboard={scoreboard}
+              isWinner={isWinner}
+              shouldFireConfetti={
+                !isReplay && isWinner && !winnerConfettiSeenRef.current
+              }
+              onConfettiFired={() => {
+                winnerConfettiSeenRef.current = true;
+              }}
+              onWatchReplay={
+                isReplay ? bgioProps.onReplayResultsClose : handleWatchReplay
+              }
+              replayStatus={bgioProps.postgameReplayStatus}
+              onViewSummary={
+                isReplay
+                  ? undefined
+                  : () => {
+                      setShowPostgame(true);
+                      setShowGameOverModal(false);
+                    }
+              }
+              onLobby={handleReturnToLobby}
+              onClose={() =>
+                isReplay
+                  ? bgioProps.onReplayResultsClose?.()
+                  : setShowGameOverModal(false)
+              }
+              showMatchAlertResume={canOfferAlertResume}
+              matchAlertResumeChecked={matchAlertResumeChecked}
+              matchAlertResumeError={
+                matchAlertResumeError
+                  ? matchAlerts.error || matchAlertResumeError
+                  : ""
+              }
+              matchAlertResumePending={matchAlertResumePending}
+              onMatchAlertResumeCheckedChange={setMatchAlertResumeChecked}
+              onRetryMatchAlertResume={handleRetryMatchAlertResume}
+              onContinueWithoutMatchAlerts={returnToLobby}
+            />
+          </React.Suspense>
+        </GameOverOverlay>
+      )}
+
+      {showPostgame && (
+        <React.Suspense fallback={null}>
+          <LazyPostgameOverlay
+            summary={postgameSummary}
+            scoreboard={scoreboard}
+            onWatchReplay={handleWatchReplay}
+            onClose={() => {
+              setShowPostgame(false);
+              setShowGameOverModal(true);
+            }}
+          />
+        </React.Suspense>
+      )}
+    </div>
+  );
+}
+
+export const GameScreenWithEffects = EffectsBoardWrapper(GameScreen, {
+  // Wait until all effects have finished before updating state.
+  updateStateAfterEffects: true,
+});

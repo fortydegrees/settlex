@@ -1,0 +1,14 @@
+/* The modal composes shared controls; only heading alignment and long-username
+   wrapping belong here. Button material lives in the shared palette. */
+.entry > h2,
+.entry > p {
+  text-align: center;
+  text-wrap: balance;
+}
+
+.playAction {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.playAction > span { display: block; }

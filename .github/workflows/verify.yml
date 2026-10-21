@@ -1,0 +1,57 @@
+name: Verify pull requests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_DB: settlehex_test
+          POSTGRES_USER: settlehex
+          POSTGRES_PASSWORD: settlehex
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U settlehex -d settlehex_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.13.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Prepare test database
+        run: pnpm db:migrate:test
+        env:
+          DATABASE_URL: postgres://settlehex:settlehex@localhost:5432/settlehex_test
+      - name: Check policy, engine, server, app and lint
+        run: pnpm verify
+        env:
+          MATCH_ALERT_POSTGRES_URL: postgres://settlehex:settlehex@localhost:5432/settlehex_test
+      - name: Build web app without private bot files
+        run: pnpm build
+        env:
+          # Build-only placeholders follow Dockerfile.web; no artifact is deployed.
+          SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS: "1"
+          SETTLEX_SETTLEGRAPH_V2_ENABLED: "0"
+          NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2: "0"

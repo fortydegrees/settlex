@@ -1,0 +1,284 @@
+import { EventEmitter } from "node:events";
+import { PassThrough, Writable } from "node:stream";
+import { describe, expect, it, vi } from "vitest";
+import {
+  SETTLEGRAPH_005_MODEL_SHA256,
+  SETTLEGRAPH_V2_CONTRACT_SHA256,
+  SETTLEGRAPH_V2_MODEL_SHA256,
+  SettleGraphV2Client
+} from "../bots/SettleGraphV2Client.js";
+
+function createWorkerStub(onRequest) {
+  const proc = new EventEmitter();
+  proc.stdout = new PassThrough();
+  proc.stderr = new PassThrough();
+  proc.stdin = new Writable({
+    write(chunk, _encoding, callback) {
+      const request = JSON.parse(chunk.toString());
+      const response = onRequest(request);
+      queueMicrotask(() => {
+        proc.stdout.write(`${JSON.stringify(response)}\n`);
+      });
+      callback();
+    }
+  });
+  proc.kill = vi.fn(() => {
+    proc.emit("exit", 0, null);
+    return true;
+  });
+  return proc;
+}
+
+const healthResponse = (id) => ({
+  id,
+  ok: true,
+  modelSha256: SETTLEGRAPH_V2_MODEL_SHA256,
+  contract: {
+    model_kind: "SettleGraph/CTNN-v2",
+    observation_version: 2,
+    observation_dim: 1445,
+    codec_version: 1,
+    action_count: 299,
+    contract_sha256: SETTLEGRAPH_V2_CONTRACT_SHA256
+  }
+});
+
+const health005Response = (id, overrides = {}) => ({
+  ...healthResponse(id),
+  modelSha256: SETTLEGRAPH_005_MODEL_SHA256,
+  contract: {
+    model_kind: "SettleGraph/CTNN-v3",
+    observation_version: 3,
+    observation_dim: 1464,
+    codec_version: 1,
+    action_count: 299,
+    contract_sha256: SETTLEGRAPH_V2_CONTRACT_SHA256
+  },
+  ...overrides
+});
+
+describe("SettleGraphV2Client", () => {
+  it("accepts a future compatible hash from selection and passes it to the worker", async () => {
+    const sha256 = "a".repeat(64);
+    const proc = createWorkerStub((request) => health005Response(request.id, { modelSha256: sha256 }));
+    const spawnImpl = vi.fn(() => proc);
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: "/tmp/009.ctnn", spawnImpl,
+      expectedModel: { sha256, observationVersion: 3, observationDim: 1464, actionCount: 299 }
+    });
+    try {
+      await expect(client.start()).resolves.toMatchObject({ modelSha256: sha256 });
+      expect(spawnImpl).toHaveBeenCalledWith("/tmp/worker", ["--model", "/tmp/009.ctnn", "--expected-model-sha256", sha256], expect.any(Object));
+    } finally { client.close(); }
+  });
+  it("rejects an approved older hash when another model is explicitly selected", async () => {
+    const proc = createWorkerStub((request) => health005Response(request.id));
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: "/tmp/009.ctnn", spawnImpl: () => proc,
+      expectedModel: { sha256: "a".repeat(64), observationVersion: 3, observationDim: 1464, actionCount: 299 }
+    });
+    await expect(client.start()).rejects.toThrow("model SHA-256 mismatch");
+  });
+  it.each([
+    ["006", "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b"],
+    ["007", "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79"],
+    ["008", "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35"], ["009", "d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf"]
+  ])("accepts sealed %s decisions and rejects a later switch to 005", async (checkpoint, modelSha) => {
+    let responseModel = modelSha;
+    const proc = createWorkerStub((request) => request.mode === "health"
+      ? health005Response(request.id, { modelSha256: modelSha })
+      : {
+          id: request.id, ok: true, stateId: request.state._stateID,
+          plannedMoves: [{ move: "endTurn", args: [] }],
+          actionIds: [298], modelSha256: responseModel
+        });
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: `/tmp/incumbent-${checkpoint}.ctnn`, spawnImpl: () => proc
+    });
+    try {
+      await expect(client.decide({ playerId: "1", state: { _stateID: 42 } }))
+        .resolves.toMatchObject({ modelSha256: modelSha });
+      responseModel = SETTLEGRAPH_005_MODEL_SHA256;
+      await expect(client.decide({ playerId: "1", state: { _stateID: 43 } }))
+        .rejects.toThrow("unexpected model identity");
+    } finally {
+      client.close();
+    }
+  });
+
+  it.each([
+    ["shape", { observation_dim: 1445 }],
+    ["observation version", { observation_version: 2 }],
+    ["contract hash", { contract_sha256: "unapproved" }]
+  ])("rejects sealed 006 with a mismatched %s", async (_name, mismatch) => {
+    const health = health005Response("fixture", {
+      modelSha256: "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b"
+    });
+    const proc = createWorkerStub((request) => ({
+      ...health, id: request.id, contract: { ...health.contract, ...mismatch }
+    }));
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/worker", modelPath: "/tmp/incumbent-006.ctnn", spawnImpl: () => proc
+    });
+    await expect(client.start()).rejects.toThrow("contract mismatch");
+  });
+
+  it("accepts 005 health and pins later decisions to that identity", async () => {
+    let responseModelSha256 = SETTLEGRAPH_005_MODEL_SHA256;
+    const proc = createWorkerStub((request) => request.mode === "health"
+      ? health005Response(request.id)
+      : {
+          id: request.id,
+          ok: true,
+          stateId: request.state._stateID,
+          plannedMoves: [{ move: "endTurn", args: [] }],
+          actionIds: [298],
+          modelSha256: responseModelSha256
+        });
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/settlegraph-v2-worker",
+      modelPath: "/tmp/incumbent-005.ctnn",
+      spawnImpl: () => proc
+    });
+
+    await expect(client.decide({ playerId: "1", state: { _stateID: 42 } }))
+      .resolves.toMatchObject({ modelSha256: SETTLEGRAPH_005_MODEL_SHA256 });
+    responseModelSha256 = SETTLEGRAPH_V2_MODEL_SHA256;
+    await expect(client.decide({ playerId: "1", state: { _stateID: 43 } }))
+      .rejects.toThrow("unexpected model identity");
+    client.close();
+  });
+
+  it.each([
+    ["shape", { contract: { ...health005Response("fixture").contract, observation_dim: 1445 } }, "contract mismatch"],
+    ["hash", { modelSha256: "wrong-model" }, "model SHA-256 mismatch"]
+  ])("rejects 005 health with a mismatched %s", async (_name, override, expected) => {
+    const proc = createWorkerStub((request) => health005Response(request.id, override));
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/settlegraph-v2-worker",
+      modelPath: "/tmp/incumbent-005.ctnn",
+      spawnImpl: () => proc
+    });
+
+    await expect(client.start()).rejects.toThrow(expected);
+    expect(proc.kill).toHaveBeenCalledOnce();
+  });
+
+  it("rejects an approved but different model identity after a worker restart", async () => {
+    const first = createWorkerStub((request) => health005Response(request.id));
+    const second = createWorkerStub((request) => healthResponse(request.id));
+    const spawnImpl = vi.fn()
+      .mockReturnValueOnce(first)
+      .mockReturnValueOnce(second);
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/settlegraph-v2-worker",
+      modelPath: "/tmp/incumbent-005.ctnn",
+      spawnImpl
+    });
+
+    await expect(client.start()).resolves.toMatchObject({
+      modelSha256: SETTLEGRAPH_005_MODEL_SHA256
+    });
+    first.emit("exit", 1, null);
+    await expect(client.start()).rejects.toThrow("model SHA-256 mismatch");
+    expect(spawnImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it("preflights the sealed contract once and correlates decision responses", async () => {
+    const requests = [];
+    const proc = createWorkerStub((request) => {
+      requests.push(request);
+      if (request.mode === "health") return healthResponse(request.id);
+      return {
+        id: request.id,
+        ok: true,
+        stateId: request.state._stateID,
+        plannedMoves: [{ move: "rollDice", args: [] }],
+        actionIds: [294],
+        value: 0.25,
+        legalActionCount: 1,
+        modelSha256: SETTLEGRAPH_V2_MODEL_SHA256
+      };
+    });
+    const spawnImpl = vi.fn(() => proc);
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/settlegraph-v2-worker",
+      modelPath: "/tmp/accepted-v2.ctnn",
+      spawnImpl
+    });
+
+    const result = await client.decide({ playerId: "1", state: { _stateID: 42 } });
+    const second = await client.decide({ playerId: "1", state: { _stateID: 43 } });
+
+    expect(spawnImpl).toHaveBeenCalledTimes(1);
+    expect(spawnImpl).toHaveBeenCalledWith(
+      "/tmp/settlegraph-v2-worker",
+      ["--model", "/tmp/accepted-v2.ctnn"],
+      expect.objectContaining({ stdio: ["pipe", "pipe", "pipe"] })
+    );
+    expect(requests.map(({ mode }) => mode)).toEqual(["health", "decide", "decide"]);
+    expect(requests[1]).toMatchObject({
+      playerId: "1",
+      state: { _stateID: 42 }
+    });
+    expect(result.plannedMoves).toEqual([{ move: "rollDice", args: [] }]);
+    expect(second.stateId).toBe(43);
+
+    client.close();
+  });
+
+  it("rejects a worker whose model identity does not match the sealed artifact", async () => {
+    const proc = createWorkerStub((request) => ({
+      ...healthResponse(request.id),
+      modelSha256: "wrong-model"
+    }));
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/settlegraph-v2-worker",
+      modelPath: "/tmp/accepted-v2.ctnn",
+      spawnImpl: () => proc
+    });
+
+    await expect(client.decide({ playerId: "1", state: {} }))
+      .rejects.toThrow("model SHA-256 mismatch");
+    expect(proc.kill).toHaveBeenCalledOnce();
+  });
+
+  it("rejects a request timeout and can restart on the next decision", async () => {
+    vi.useFakeTimers();
+    const first = createWorkerStub(() => undefined);
+    first.stdin = new Writable({ write(_chunk, _encoding, callback) { callback(); } });
+    const second = createWorkerStub((request) => {
+      if (request.mode === "health") return healthResponse(request.id);
+      return {
+        id: request.id,
+        ok: true,
+        stateId: 8,
+        plannedMoves: [{ move: "endTurn", args: [] }],
+        actionIds: [298],
+        modelSha256: SETTLEGRAPH_V2_MODEL_SHA256
+      };
+    });
+    const spawnImpl = vi.fn()
+      .mockReturnValueOnce(first)
+      .mockReturnValueOnce(second);
+    const client = new SettleGraphV2Client({
+      workerPath: "/tmp/settlegraph-v2-worker",
+      modelPath: "/tmp/accepted-v2.ctnn",
+      timeoutMs: 20,
+      spawnImpl
+    });
+
+    const timedOut = client.decide({ playerId: "1", state: {} });
+    const timedOutExpectation = expect(timedOut).rejects.toThrow("timed out");
+    await vi.advanceTimersByTimeAsync(20);
+    await timedOutExpectation;
+
+    const recovered = client.decide({ playerId: "1", state: { _stateID: 8 } });
+    const recoveredExpectation = expect(recovered).resolves.toMatchObject({ actionIds: [298] });
+    await vi.runAllTimersAsync();
+    await recoveredExpectation;
+    expect(spawnImpl).toHaveBeenCalledTimes(2);
+    client.close();
+    vi.useRealTimers();
+  });
+});

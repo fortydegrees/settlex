@@ -1,0 +1,45 @@
+node_modules
+.next
+.git
+.worktrees
+.env.prod
+.logs
+.local/bot/
+.pnpm-store/
+.superpowers/
+.claude/
+.factory/
+.playwright-cli/
+.tmp/
+.codex/
+coverage
+tmp
+output
+*.pem
+
+# AI training artifacts
+ai/pufferlib/python/.venv/
+ai/pufferlib/runs*/
+ai/pufferlib/**/*.pt
+*.egg-info/
+
+# Local native builds and sealed models are never image inputs.
+native/**/target/
+**/*.ctnn
+backups/
+
+# Reference material and generated design/audio previews are not runtime assets.
+.design-sync/
+.ds-sync/
+ds-bundle/
+storybook-static/
+design/
+docs/
+sounds/
+public/svgs/working/
+public/svgs/colonist/
+
+# Exclude credentials at every depth; retain only the sanitized root template.
+**/.env
+**/.env.*
+!.env.example

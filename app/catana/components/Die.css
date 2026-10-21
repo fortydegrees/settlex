@@ -1,0 +1,63 @@
+:root {
+    --color-base-red: 351, 100%;
+    --color-red: var(--color-base-red), 100%;
+}
+
+.jk-die {
+    --jk-die-color: hsl(var(--color-red));
+    position: relative;
+    margin-bottom: var(--jk-die-size);
+  }
+  
+  .jk-die-body {
+    transform: var(--jk-die-target-rotation, rotateX(20deg) rotateZ(45deg));
+    transform-style: preserve-3d;
+    width: var(--jk-die-size);
+    height: var(--jk-die-size);
+    will-change: transform;
+  }
+  
+  .jk-shadow {
+    --color: rgba(0, 0, 0, 0.1);
+  
+    position: absolute;
+    top: 0;
+    left: calc(var(--jk-die-size) * -0.1);
+    transform: translateZ(calc(var(--jk-die-size) * -1)) rotateZ(45deg);
+    border-radius: calc(var(--jk-die-size) * 0.3);
+    box-shadow: 0 0 0 0.1em var(--color);
+    background: var(--color);
+    width: calc(var(--jk-die-size) * 1.2);
+    height: calc(var(--jk-die-size) * 1.2);
+    will-change: transform, opacity, filter;
+  }
+  
+  .jk-face,
+  .jk-inner-face,
+  .jk-internal {
+    position: absolute;
+    border-radius: calc(var(--jk-die-size) * 0.3);
+    background-color: var(--jk-die-color);
+    overflow: hidden;
+  }
+  
+  .jk-face,
+  .jk-inner-face {
+    width: var(--jk-die-size);
+    height: var(--jk-die-size);
+  }
+  
+  .jk-internal {
+    width: calc(var(--jk-die-size) * 0.98);
+    height: calc(var(--jk-die-size) * 0.98);
+  }
+  
+  .jk-pip-face {
+    background: radial-gradient(
+        closest-side,
+        rgba(0, 0, 0, 0.1),
+        var(--jk-die-color)
+      ),
+      var(--jk-die-color);
+    fill: black;
+  }

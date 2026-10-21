@@ -1,0 +1,19 @@
+[package]
+name = "settlegraph-v2-worker"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "settlegraph_v2"
+path = "src/lib.rs"
+
+[[bin]]
+name = "settlegraph-v2-worker"
+path = "src/main.rs"
+
+[dependencies]
+catan-core = { path = "vendor/catan-core" }
+catan-env-contract = { path = "vendor/catan-env-contract" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"

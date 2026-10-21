@@ -1,0 +1,81 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules/
+/.pnp
+.pnp.js
+/.pnpm-store/
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/game-core/dist
+/native/settlegraph-v2/target/
+
+# AI training artifacts
+ai/pufferlib/runs*/
+ai/pufferlib/**/*.pt
+*.egg-info/
+
+
+
+# misc
+.DS_Store
+*.pem
+*.ctnn
+.logs/
+.worktrees/
+.superpowers/
+.claude/
+.factory/
+.playwright-cli/
+output/
+tmp/
+.tmp/
+artifacts/
+traces/
+public/svgs/working/
+public/svgs/colonist/
+public/svgs/* copy.svg
+misc/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local credentials stay private; only reviewed templates are tracked.
+.env
+.env.*
+!/.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+next-env.d.ts
+.local/bot/
+package-lock.json
+storybook-static/
+
+# design-sync
+.ds-sync/
+ds-bundle/
+.design-sync/sb-reference/
+.design-sync/learnings/
+.design-sync/.cache/
+.design-sync/node_modules
+.design-sync/sb-build.log
+.design-sync/dist/
+.design-sync/build.log
+.design-sync/validate.log
+.design-sync/compare.log
+.design-sync/resync.log

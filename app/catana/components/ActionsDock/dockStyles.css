@@ -1,0 +1,120 @@
+.dock {
+    position: absolute;
+    z-index: 5;
+    pointer-events: auto;
+    /* top: 0; */
+    bottom: 60%;
+    left: 50%;
+     transform: translateX(-25%) translateY(-50%); 
+    align-items: flex-end;
+    height: 58px;
+    display: flex;
+    padding: var(--settlex-ui-space-2-5);
+    padding-bottom: var(--settlex-ui-space-4);
+    gap: var(--settlex-ui-space-6);
+    /* background-color: rgba(0, 0, 0, 0.92); */
+    box-sizing: content-box;
+    border-radius: var(--settlex-ui-radius-control);
+    transform-origin: center bottom;
+  }
+
+  .dock-card {
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: var(--settlex-ui-radius-control);
+     /* border: solid 1px rgba(255, 255, 255, 0.7); */
+    /* background-color: #262626; */
+
+    position: relative;
+    padding: 0;
+    margin: 0;
+
+/*   
+    &:hover {
+      filter: saturate(1) brightness(1.12);
+    } */
+  }
+
+  .dock-card.enabled {
+    cursor: pointer;
+  }
+  
+  .dock-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--settlex-ui-space-1);
+  }
+  
+  .dock-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--settlex-ui-radius-pill);
+    background-color: var(--settlex-ui-surface-selected);
+  }
+  
+.card {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dock-card .card__img-shell,
+  .dock-card .card__img-base {
+    filter: saturate(0.85) brightness(0.85);
+    transition: filter 200ms;
+  }
+
+  .dock-card.enabled .card__img-shell,
+  .dock-card.enabled .card__img-base {
+    filter: saturate(1) brightness(1);
+  }
+
+  .card__img {
+    width: 80%;
+    position: relative;
+    display: block;
+    z-index: 1;
+  }
+
+  .card__img-base {
+    transition: opacity 120ms;
+  }
+
+  .card__img-hidden {
+    opacity: 0;
+  }
+
+  .card__img-shell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    z-index: 1;
+    transform-origin: 50% 100%;
+    will-change: transform;
+  }
+
+  .card__img-shell-prelaunch {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .card__img-shell-prelaunch-visible {
+    opacity: 1;
+  }
+
+  .card__img-prelaunch {
+    width: 80%;
+  }
+  

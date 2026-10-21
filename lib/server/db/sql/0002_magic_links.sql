@@ -1,0 +1,5 @@
+-- Legacy placeholder.
+--
+-- Account claiming and provider identity are now owned by Better Auth tables
+-- created in 0001_accounts_archive.sql. This migration remains as a no-op so
+-- existing migration histories that include 0002_magic_links.sql stay coherent.

@@ -1,0 +1,137 @@
+import { describe, expect, it } from "vitest";
+import { makeDeterministicRng } from "@settlex/game-core";
+import { Catan } from "../../lib/game-runtime/Game";
+import { PufferBotManager } from "../bots/pufferBotManager";
+
+function createRandomStub() {
+  const number = makeDeterministicRng(123);
+  return {
+    Number: number,
+    Shuffle: (items) => [...items],
+    D6: (count) => Array.from({ length: count }, () => 1)
+  };
+}
+
+function createState({
+  phase = "placement",
+  currentPlayer = "0",
+  activePlayers = { "0": "settlement" },
+  turn = 1
+} = {}) {
+  const setupCtx = { numPlayers: 2, phase };
+  const G = Catan.setup({ ctx: setupCtx, random: createRandomStub() }, {});
+  const ctx = {
+    numPlayers: 2,
+    phase,
+    currentPlayer,
+    activePlayers,
+    turn
+  };
+  return { G, ctx, _stateID: turn };
+}
+
+describe("PufferBotManager", () => {
+  it("returns no actions for non-bot seats", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["1"] });
+    const state = createState();
+
+    const moves = await manager.chooseMoves(state, "0");
+    expect(moves).toEqual([]);
+  });
+
+  it("uses autoDiscard fallback in robberDiscard stage", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["0"] });
+    const state = createState({
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "0": "robberDiscard" },
+      turn: 4
+    });
+    state.G.core.phase = "normal";
+    state.G.core.turn.currentPlayerId = "0";
+    state.G.core.turn.phase = "robberDiscard";
+    state.G.core.turn.pendingDiscards = ["0"];
+
+    const moves = await manager.chooseMoves(state, "0");
+    expect(moves).toEqual([{ move: "autoDiscard", args: [] }]);
+  });
+
+  it("can auto-discard for a bot seat that is not the turn owner", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["1"] });
+    const state = createState({
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "1": "robberDiscard" },
+      turn: 4
+    });
+    state.G.core.phase = "normal";
+    state.G.core.turn.currentPlayerId = "0";
+    state.G.core.turn.phase = "robberDiscard";
+    state.G.core.turn.pendingDiscards = ["1"];
+
+    const moves = await manager.chooseMoves(state, "1");
+    expect(moves).toEqual([{ move: "autoDiscard", args: [] }]);
+  });
+
+  it("uses autoResolveDevCard for forced dev-card choices", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["0"] });
+    const state = createState({
+      phase: "main",
+      currentPlayer: "0",
+      activePlayers: { "0": "devCardChoice" },
+      turn: 5
+    });
+    state.G.core.phase = "normal";
+    state.G.core.turn.currentPlayerId = "0";
+    state.G.core.turn.phase = "postRoll";
+    state.G.devCardPlay = {
+      type: "monopoly",
+      playerId: "0",
+      startedFromStage: "postRoll"
+    };
+
+    const moves = await manager.chooseMoves(state, "0");
+    expect(moves).toEqual([{ move: "autoResolveDevCard", args: [] }]);
+  });
+
+  it("uses readyUp in preGame waiting stage for bot seats", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["0"] });
+    const state = createState({
+      phase: "preGame",
+      currentPlayer: "1",
+      activePlayers: { all: "waiting" },
+      turn: 1
+    });
+
+    const moves = await manager.chooseMoves(state, "0");
+    expect(moves).toEqual([{ move: "readyUp", args: [] }]);
+  });
+
+  it("deleteMatch clears dynamically detected bot seats", () => {
+    const manager = new PufferBotManager();
+
+    manager.syncMatchBotsFromMatchData("m1", [
+      { id: "1", name: "[BOT] Puffer 2", data: { bot: "puffer" } }
+    ]);
+
+    expect(manager.isBotPlayerForMatch("m1", "1")).toBe(true);
+
+    manager.deleteMatch("m1");
+
+    expect(manager.isBotPlayerForMatch("m1", "1")).toBe(false);
+  });
+
+  it("chooses a legal mapped move with random fallback when no checkpoint is configured", async () => {
+    const manager = new PufferBotManager({ botPlayerIds: ["0"] });
+    const state = createState({
+      phase: "placement",
+      currentPlayer: "0",
+      activePlayers: { "0": "settlement" },
+      turn: 1
+    });
+
+    const moves = await manager.chooseMoves(state, "0");
+    expect(moves.length).toBeGreaterThan(0);
+    expect(moves[0].move).toBe("placeSettlement");
+  });
+});
