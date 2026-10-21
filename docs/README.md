@@ -21,24 +21,21 @@ Notation remains experimental. Its guide describes the maintained HAN prototype
 and additive archive sidecar; ongoing design discussion does not change that
 contract. Use the architecture guide for today's source paths.
 
-## Tool owners
+## Contributor tools
 
 | Location | Purpose and entry point |
 | --- | --- |
-| [`scripts/`](../scripts/) | Maintained commands invoked by root `package.json`, including `pnpm docs:index` |
-| [`.agents/skills/`](../.agents/skills/) | Native project skills routed by [AGENTS.md](../AGENTS.md) |
-| [`.codex/hooks.json`](../.codex/hooks.json) | Release prompt/command hook; implementation imports the release status helper |
-| [`.storybook/`](../.storybook/) | `pnpm storybook` configuration, source stories and shared preview setup |
-| [`.design-sync/NOTES.md`](../.design-sync/NOTES.md) | Optional design converter bridge and its limitations; root package types and bridge config reference this directory |
+| [`scripts/`](../scripts/) | Maintained commands invoked by `package.json`, including `pnpm docs:index` |
+| [`.storybook/`](../.storybook/) | Component stories and preview setup for `pnpm storybook` |
+| [`.github/workflows/`](../.github/workflows/) | Repository checks and the manually triggered production deployment |
 
-The retained `.factory/` tree contains legacy vendored agent skills rather than
-the current native discovery route. Machine-local `.claude/launch.json` preview
-launches are omitted from this tree; they are not portable setup prerequisites.
+Personal agent settings and optional design-converter configuration are local
+preferences, ignored by Git and not required to build or contribute to the game.
 
 ## Historical material
 
 [Early development notes](history/early-development/README.md) preserve the
-original backlog, board design questions and animation writing draft. Their
+retained board-spec, topology and animation writing drafts. Their
 wording and external references are retained as historical evidence, not release
 commitments or maintained instructions.
 

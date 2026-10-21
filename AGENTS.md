@@ -1,89 +1,35 @@
-<EXTREMELY_IMPORTANT>
-This repo uses Superpowers.
+# Working on SettleHex
 
-At the start of the session, ensure native skill discovery is configured:
-`~/.agents/skills/superpowers -> ~/.codex/superpowers/skills`
+## Code ownership
 
-If you see “missing skills” (e.g. "using-superpowers" not found), verify the symlink and restart Codex.
-</EXTREMELY_IMPORTANT>
+- `game-core/`: deterministic TypeScript rules and game state.
+- `lib/game-runtime/`: boardgame.io registration, setup, moves and privacy.
+- `server/`: live games, timers, bots and archives.
+- `app/`: website and game UI; board rendering lives in `app/catana/board/`.
+- `lib/server/` and `app/api/`: accounts, database access and website APIs.
 
-# AGENTS.md — Settlex
+See [architecture](docs/architecture/overview.md) and
+[contributing](CONTRIBUTING.md) for setup and a source reading path.
 
-## Goal
-Ship small, correct changes with a stable, testable game engine.
+## Changes and verification
 
-## Workflow
-- Clarify scope + acceptance criteria before coding.
-- Prefer test-first for game rules and state transitions.
-- Keep diffs small and focused; avoid unrelated refactors.
-- Update `docs/agent/PROJECT_RECORD.md` after meaningful changes.
-- Before adding or updating tests, follow `docs/agent/TESTING.md`; do not add
-  source-grep tests for UI implementation details.
-- If instructions are ambiguous, ask up to 3 targeted questions or state assumptions.
-- Avoid scope creep; implement only what was requested.
-- If you notice repeated mistakes, propose a short edit to `AGENTS.md`.
-
-## Fast iteration
-- For UI, animation, audio, copy, and timing tuning work, prefer direct edits plus manual verification in the relevant dev surface.
-- In particular, use `app/catana/dev/sandbox/` and `app/catana/dev/effects/` as the default loop for Catana board/effects/audio iteration.
-- Use browser-based visual companions/mockups only when they are clearly necessary to decide or verify the work, or when the user asks for them. For small animation choices, text proposals plus the relevant dev surface are usually enough.
-- Do not add or update tests for value-only tweaks, timing nudges, sound swaps, CSS adjustments, or other tuning-only changes unless the user explicitly asks.
-- For presentation-only Catana animation features, do not add tests by default. Use focused manual/dev-surface verification unless the change alters shared logic, reusable helpers, event wiring, state flow, or fixes a regression that should stay locked in.
-- Add or update tests when changing shared logic, reusable helpers, event wiring, state flow, or fixing a regression that should stay locked in.
-- For tuning tasks, use the smallest relevant verification step. Prefer targeted sandbox/effects-lab/manual checks over broad automated test runs.
-- If a tuning pass grows into a logic change, shared abstraction change, or bug fix, switch back to the normal test-oriented workflow.
-
-## Updates
-- Provide brief updates only when starting a new phase or when the plan changes.
-- Each update should include a concrete outcome (e.g., “Added X”, “Found Y”).
-
-## Commands (pnpm)
-- Install: `pnpm i`
-- Dev UI: `pnpm dev`
-- Dev UI (log to file): `pnpm dev:log`
-- Game server: `pnpm serve`
-- Lint: `pnpm lint`
-- Verify: `pnpm verify`
-- Fast beta deploy: `pnpm deploy:prod:fast` after explicit user approval and local release checks
-- Engine build: `pnpm -C game-core build`
-- Engine tests: `pnpm -C game-core test`
-
-## Production deploy lanes
-- Default to the fast beta lane for normal MVP fixes: local verification, push to `main`, then `pnpm deploy:prod:fast`. This SSHes to `settlehex-oci`, updates the `/srv/settlex` Git checkout, rebuilds Docker Compose services, runs migrations, and checks `https://settlehex.com`.
-- Use the thorough GitHub Actions lane only when requested or when changes touch deploy/Docker infrastructure, dependencies, auth/session/security, or risky database migrations.
-- Before any production deploy, state which lane is being used and why. Never deploy without explicit user approval.
-
-## Project map
-- UI: `app/`
-- Board drawing, geometry, placement previews and tests: `app/catana/board/`; game-screen composition remains `app/catana/GameScreen.js`
-- Game server: `server/`
-- Engine (shared): `game-core/`
-- Game definition/setup/move adapters and log privacy: `lib/game-runtime/` (shared by server, browser and replay)
-- Agent docs: `docs/agent/`
-- Catana dev sandbox: `app/catana/dev/sandbox/` — dev-only local board sandbox for real board UI, animation, and audio iteration without the live server
-- Catana effects lab: `app/catana/dev/effects/` — dev-only isolated effect/audio replay and tuning surface
-- **Dev verification surfaces**: use `.agents/skills/catana-dev-surfaces/SKILL.md` when choosing, adding, or using sandbox, effects-lab, viewport-wall, scenario, replay, or measured UI-performance verification surfaces.
-- **Gameplay feel/effects**: use `.agents/skills/catana-game-feel-effects/SKILL.md` before animation, audio, haptic, effect-bus, cue-routing, dice/card/piece motion, or semantic presentation-loop work.
-- **Sound design**: read `docs/agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md` before creating or revising any audio cue — the shipped sound identity, family grammar, audition workflow, and synthesis kit (`sounds/soundkit/`).
-- **Mobile gameplay UX**: use `.agents/skills/catana-mobile-game-ux/SKILL.md` before phone HUD, command-row, touch-control, drawer, narrow-viewport, haptic, or mobile-browser work.
-- **Match lifecycle**: use `.agents/skills/catana-match-lifecycle/SKILL.md` before match create/join/leave, matchmaking recovery, match alerts, credentials, canonical game URLs, interrupted duels, finished/archived matches, replay entry, or ambiguous network outcomes.
-- **Design system**: `.agents/skills/catana-design/SKILL.md` is the active native skill for Catana/SettleHex design routing. Also use `docs/agent/UI_CONTEXT.md` and `docs/agent/skills/catana-brand/SKILL.md` before building or restyling UI. If adding shared product-surface primitives, read `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` and review targeted external references before inventing a new common interaction pattern.
-- **Standard UI catalog**: before adding or changing standard product UI, inspect `docs/agent/UI_CATALOG.md` and the relevant Storybook stories. Reuse the owning production component, add a named story for a meaningful production state/copy branch, and verify interaction plus desktop/mobile motion with `pnpm storybook`. Use integrated Catana dev surfaces for gameplay/provider behavior outside Storybook's scope.
-
-## Effects + audio (GSAP + cue bus)
-- Entry point: `app/catana/effects/GameEffects.js` (EffectBus + AudioManager + cue emit)
-- Effect registry: `app/catana/effects/registry.js` (bus event routing)
-- Resource distribution runner: `app/catana/effects/resourceDistribution.js` (GSAP timeline + cue labels)
-- Sound mapping: `app/catana/effects/soundThemes.js` (cue -> `/sounds/*.mp3`)
-- Audio playback: `app/catana/effects/AudioManager.js` (Howler + hidden-tab policy)
-- Assets: `public/sounds/` (served under `/sounds/*`)
-- Dev board sandbox: `/catana/dev/sandbox` (real game screen locally for board UI, animation, and audio testing)
-- Dev lab: `/catana/dev/effects` (deterministic isolated effect replays)
-
-## Guardrails
-- Use pnpm; do not modify `package-lock.json`.
-- New engine code should be TypeScript; UI can remain JavaScript for now.
-- Engine logic must be deterministic; no `Math.random` or time-based logic.
-- Game rules are server-authoritative; UI should be a thin client.
+- Keep changes focused; preserve unrelated work.
+- Use pnpm. Do not create or update `package-lock.json`.
 - Ask before adding dependencies or changing build tooling.
-- Before building, restyling, or reviewing UI, use `.agents/skills/catana-design/SKILL.md`, then read `docs/agent/UI_CONTEXT.md` and `docs/agent/skills/catana-brand/SKILL.md`. For one-off visual audits, also use `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md`. If the work adds a reusable standard UI primitive, follow `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`, which requires checking the existing kit first and then reviewing targeted external references before inventing a new shared pattern.
+- New engine code should be TypeScript. Rules remain server-authoritative and
+  deterministic: no wall-clock or `Math.random()` behavior in the engine.
+- Follow [the testing guide](docs/agent/TESTING.md). Test behavior and contracts,
+  not source-text implementation details. Use focused manual checks for visual
+  or sound tuning, and regression tests for shared logic or state-flow changes.
+- For UI work, start with [UI context](docs/agent/UI_CONTEXT.md) and the existing
+  [component catalog](docs/agent/UI_CATALOG.md). Reuse existing components and
+  verify their meaningful states in Storybook or the game dev surfaces.
+- Record significant architectural decisions in
+  [the project record](docs/agent/PROJECT_RECORD.md).
+
+## Production
+
+Never deploy without explicit approval. Before a deployment, run
+`pnpm release:status`, follow its required checks, and obtain approval for any
+new public release-note copy. Use the deployment runbooks in `docs/deploy/`.
+Local verification, pushing source and deploying the website are separate actions.

@@ -144,9 +144,6 @@ The [experimental notation guide](docs/notation/README.md) covers durable record
 and replay; native archival remains the fallback. Early root notes now live in
 [development history](docs/history/early-development/README.md), where their
 status and original filenames are recorded. They are not the current roadmap.
-Tool discovery directories such as `.agents/`, `.codex/`, `.storybook/` and the
-optional `.design-sync/` bridge retain their current paths; the
-[documentation index](docs/README.md) explains their owners.
 
 ## Checks and contribution
 

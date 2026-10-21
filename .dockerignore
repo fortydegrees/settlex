@@ -12,6 +12,7 @@ node_modules
 .playwright-cli/
 .tmp/
 .codex/
+.agents/
 coverage
 tmp
 output

@@ -10,7 +10,6 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 - `docs/agent/DESIGN_SYSTEM.md`: current enforced foundation contract and staged
   migration boundaries. Use complete `type-*` roles, semantic colours and
   `*-ui-*` spacing; do not introduce new typography fragments or raw corners.
-- `.agents/skills/catana-design/SKILL.md`: active routing skill for SettleHex/Catana design, restyling, and visual review work.
 - `docs/agent/skills/catana-brand/SKILL.md`: current product direction plus brand, component, color, typography, and motion rules. Read this before building or restyling Catana UI.
 - `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md`: checklist for one-off visual audits and pre-redesign critique.
 - `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`: extra workflow only when adding or extending reusable `app/ui/*` primitives.

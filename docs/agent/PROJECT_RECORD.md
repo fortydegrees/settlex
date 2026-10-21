@@ -43,3 +43,12 @@ Removed two unused legacy number-image URL helpers. Privately archived 36 old
 brand-comparison, piece/icon-design and brainstorming files with verified
 byte-for-byte recovery. Updated the documentation index and retained-history
 guide. No board art, gameplay behavior or asset licence changed.
+
+## Local tooling and public source — 21 October 2026
+
+Personal agent skill collections, Codex hooks and the optional design-converter
+bridge are privately archived and excluded from the tracked repository. Removed
+the converter-only package type entry and the Codex-hook-specific test. Product
+release scripts, Storybook, GitHub Actions and application source are unchanged.
+`AGENTS.md` now provides a short repository guide without requiring a particular
+agent installation. The README's presentation remains a separate editorial task.
