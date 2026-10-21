@@ -129,7 +129,8 @@ must be technically blocked; this local task does not change remote settings.
 ## Migration history
 
 The counts below record earlier slice boundaries, not the current inventory.
-The latest completion entry in `CLARITY_UI_REVIEW.md` records final checks/counts.
+Use [the verification record](../VERIFICATION.md) for recorded checks and limits;
+use `pnpm ui:inventory` for the current inventory.
 
 Buttons, fields, dialogs/alerts, panels, popovers/tooltips, metadata disclosure,
 banners, account page and account-entry form now consume complete roles and

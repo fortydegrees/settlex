@@ -38,7 +38,7 @@ owners have no remaining tracked findings. New stress stories: identity
 `LongUsername`, friend invite `LongNamesAndLink`/`CancelPending`, open room
 `NoOpenSeats`. The standalone emoji-browser and friend-invite stories retain
 controlled local state so selection and text entry visibly update. See
-`CLARITY_UI_REVIEW.md` for this batch's fresh checks and limits.
+[the verification record](../VERIFICATION.md) for recorded checks and limits.
 
 The following recovery/postgame/replay slice adds `IdleSubmitting`, `IdleError`,
 `UnavailableLongMatchId`, game-over `ReplayPreparing`/`ReplayFailed`, replay
@@ -131,7 +131,8 @@ mock only external callbacks. White-on-lime text contrast remains unresolved.
 This isolated branch applies shared Clarity recipes through the production owners
 above, not a parallel mockup component library. The wordmark is provisional and
 does not define UI type or control shapes. Exact sampled states, verification
-limits and integration boundaries are in `CLARITY_UI_REVIEW.md`.
+limits and integration boundaries are retained in the private migration record.
+See [the verification record](../VERIFICATION.md) for the retained public evidence.
 
 New review states include homepage `ClarityIdle`, `ClarityThreeModesIdle` and
 `ClarityBot006Starting`; account menu `ClarityLongNameRecovery`; account/public profile

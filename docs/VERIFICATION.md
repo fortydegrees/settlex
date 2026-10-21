@@ -103,3 +103,12 @@ checks, not application suites or infrastructure qualification. Migration 0009
 still needs disposable real-PostgreSQL qualification. Source/asset/font rights,
 project license, reporting arrangements and the final history/identity choice
 remain unresolved; technical correctness does not clear redistribution rights.
+
+## Historical UI migration evidence
+
+The detailed Clarity migration diary is privately preserved. Its recorded
+follow-up checked 24 policy/font fixtures, eight game-over model tests, two
+account-menu model tests, lint and sampled desktop/phone states; it did not
+claim a full gameplay, accessibility or production qualification. Use the
+[current design contract](agent/DESIGN_SYSTEM.md) and [UI catalog](agent/UI_CATALOG.md)
+for contributor guidance, rather than the old task diary.

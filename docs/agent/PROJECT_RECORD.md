@@ -52,3 +52,12 @@ the converter-only package type entry and the Codex-hook-specific test. Product
 release scripts, Storybook, GitHub Actions and application source are unchanged.
 `AGENTS.md` now provides a short repository guide without requiring a particular
 agent installation. The README's presentation remains a separate editorial task.
+
+## Contributor documentation cleanup — 21 October 2026
+
+Privately preserved dated plans, stale handoffs/backlogs, superseded notation
+proposals, early design/writing notes and historical Puffer writeups. Current
+architecture, notation, UI, testing, operations and provenance guides remain.
+Moved the useful UI verification matrix into the testing guide and removed two
+unregistered browser scripts tied to obsolete lobby controls. Recovery reuses
+existing private history for exact matches and archives only distinct versions.

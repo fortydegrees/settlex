@@ -21,7 +21,7 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 - `docs/agent/UI_CATALOG.md`: production component ownership and the current
   Clarity ButtonFamily/Foundations reference. Its approved role-based corner and
   shared-material rules supersede older ad hoc button snippets in the brand guide.
-- `docs/agent/TESTING_NOTES.md`: verification matrix and future test backlog.
+- `docs/agent/TESTING.md`: testing policy and dev-surface verification matrix.
 - `docs/agent/PROJECT_RECORD.md`: concise decisions and provenance pointers. Use owning surface guides and the UI catalog for detailed current guidance.
 
 ## Agent Reminders

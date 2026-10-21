@@ -141,9 +141,8 @@ the rules in `game-core/`; presentation and effect runners remain under
 architecture guide for the boundaries and a short reading path.
 
 The [experimental notation guide](docs/notation/README.md) covers durable records
-and replay; native archival remains the fallback. Early root notes now live in
-[development history](docs/history/early-development/README.md), where their
-status and original filenames are recorded. They are not the current roadmap.
+and replay; native archival remains the fallback. Early working notes and dated
+plans are privately archived; use the maintained guides for current behavior.
 
 ## Checks and contribution
 

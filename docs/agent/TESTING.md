@@ -48,27 +48,18 @@ Presentation-only tuning should use the sandbox, effects lab, viewport wall,
 Storybook, or focused browser checks. Add a regression test when presentation
 work changes shared logic, event wiring, cleanup, ownership, or state flow.
 
-## 2026-07-28 baseline
+## UI Verification Matrix
 
-- 351 repository test files.
-- 257 app test files.
-- 121 app test files read production source text.
-- 110 source-reading files are under `app/catana`.
-- 51 files are explicitly named `*.source.test.js`.
+Use this matrix to choose the smallest check that proves a UI change. It does not replace focused tests for logic, event wiring, or regressions.
 
-The cleanup plan is recorded in
-`docs/superpowers/plans/2026-07-28-test-suite-refactor.md`.
+| Change type | Canonical surface | First viewport/state | Verification default |
+| --- | --- | --- | --- |
+| Gameplay HUD, opponent boxes, resource/dev-card rails, turn controls | `/catana/dev/sandbox` | `1440x900`, relevant preset and viewer seat | Manual/dev-surface check plus `git diff --check` for tuning-only changes |
+| Mobile HUD or responsive layout | `/catana/dev/sandbox` | `390x844`, same preset/state as desktop | Manual/dev-surface check; add focused tests only for shared logic or regression locks |
+| Anchor-dependent board effects | `/catana/dev/sandbox` | actor and non-actor viewer perspectives | Sandbox replay or real flow; focused payload/registry tests when wiring changed |
+| Isolated effect runner or audio cue timing | `/catana/dev/effects` | selected effect replay, normal and reduced motion when relevant | Lab replay; focused lint/tests for runner, registry, cue, or helper changes |
+| Left meta rail connector geometry | `/catana/dev/sandbox` | log-only, chat-only, both-open states | Visual comparison in the real game shell |
+| Shared product UI primitive | Storybook, then `/catana/dev/ui` | desktop first, mobile if responsive | Component interaction tests when API or shared behavior changed |
+| Game rules, race conditions, server-authoritative state | Focused Vitest/game-core tests | reproduced failing state or server log sequence | Test-first regression; sandbox/browser checks are secondary |
 
-## 2026-07-28 first-pass result
-
-- 68 low-value test files deleted and one focused behavior suite added.
-- 190 app test files remain, down from 257.
-- 63 repository tests read source, down from 133.
-- 51 app tests read source, down from 121.
-- 46 Catana tests read source, down from 110.
-- 22 app files are explicitly named `*.source.test.js`, down from 51.
-
-The remaining source-oriented tests were not automatically blessed as ideal.
-They were retained when they protect an executable artifact or a higher-risk
-auth, reconnect, lifecycle, route, interaction, or performance contract without
-a behavior-first replacement. Migrate those contracts before deleting them.
+Use focused checks for small changes; broaden verification when shared logic or state flow changes.

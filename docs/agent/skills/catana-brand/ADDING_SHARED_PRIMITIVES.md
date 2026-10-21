@@ -9,7 +9,7 @@ This is the short workflow doc that sits between the brand philosophy in `SKILL.
 Before designing or implementing a new shared primitive, read:
 
 1. `docs/agent/skills/catana-brand/SKILL.md`
-2. `docs/superpowers/specs/2026-04-21-settlex-standard-ui-system-design.md`
+2. `docs/agent/DESIGN_SYSTEM.md`
 3. the existing primitives in `app/ui/*`
 4. `app/catana/dev/ui/UiShowcaseClient.js`
 
@@ -153,7 +153,7 @@ Add a new shared Settlex UI primitive for [COMPONENT].
 Read first:
 - docs/agent/skills/catana-brand/SKILL.md
 - docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md
-- docs/superpowers/specs/2026-04-21-settlex-standard-ui-system-design.md
+- docs/agent/DESIGN_SYSTEM.md
 - app/ui/*
 - app/catana/dev/ui/UiShowcaseClient.js
 

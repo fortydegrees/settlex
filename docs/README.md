@@ -1,8 +1,7 @@
 # Documentation
 
-Start with the maintained guides below. Historical plans and internal working
-records have separate roles; a file's presence in this tree does not make it a
-current contract or part of the intended public candidate.
+Start with the maintained guides below. Source and colocated tests describe
+current behavior; the project record captures significant decisions.
 
 ## Maintained guides
 
@@ -32,18 +31,12 @@ contract. Use the architecture guide for today's source paths.
 Personal agent settings and optional design-converter configuration are local
 preferences, ignored by Git and not required to build or contribute to the game.
 
-## Historical material
+## Operations and historical material
 
-[Early development notes](history/early-development/README.md) preserve the
-retained board-spec, topology and animation writing drafts. Their
-wording and external references are retained as historical evidence, not release
-commitments or maintained instructions.
-
-`plans/`, `superpowers/`, `future_plans/`, `bugs/` and older point-in-time documents
-record proposals, investigations and previous decisions. Check each document's
-status against the maintained source and guides before following it. `deploy/`
-contains operational runbooks; production actions have their own authorization
-and current release checks.
+`deploy/` contains operational runbooks; production actions require their own
+authorization and current release checks. Dated implementation plans, early
+working notes, design experiments and research drafts are preserved privately
+by the maintainer rather than presented as contributor instructions.
 
 ## Project record and inventory
 
@@ -54,5 +47,5 @@ Detailed internal management, audit and research originals remain privately
 preserved; they are not contributor prerequisites.
 
 [INDEX.md](INDEX.md) is generated from Markdown actually retained in this tree,
-including historical records. It is not a list of current contracts. Regenerate
+and is a navigation aid. Regenerate
 it with `pnpm docs:index` after adding or renaming documentation.
