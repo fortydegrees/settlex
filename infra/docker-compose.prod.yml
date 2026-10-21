@@ -1,0 +1,96 @@
+services:
+  proxy:
+    image: caddy:2.10-alpine
+    depends_on:
+      web:
+        condition: service_started
+      game:
+        condition: service_started
+    env_file:
+      - ../.env.prod
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile.web
+      args:
+        SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
+        SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
+        SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
+        SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../.env.prod
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
+      NEXT_PUBLIC_SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
+      NEXT_PUBLIC_SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
+      SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
+      SETTLEX_BOT_MODEL_MANIFEST: /opt/settlex/models/current.json
+    volumes:
+      - type: bind
+        source: ${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}
+        target: /opt/settlex/models
+        read_only: true
+        bind:
+          create_host_path: false
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  game:
+    build:
+      context: ..
+      dockerfile: Dockerfile.game
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../.env.prod
+    environment:
+      NODE_ENV: production
+      SETTLEX_BOT_MOVE_DELAY_MS: ${SETTLEX_BOT_MOVE_DELAY_MS:-450}
+      SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
+      SETTLEX_BOT_MODEL_MANIFEST: /opt/settlex/models/current.json
+      SETTLEX_SETTLEGRAPH_V2_WORKER: /usr/local/bin/settlegraph-v2-worker
+    volumes:
+      - type: bind
+        source: ${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}
+        target: /opt/settlex/models
+        read_only: true
+        bind:
+          create_host_path: false
+    expose:
+      - "8000"
+      - "8080"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-bookworm
+    env_file:
+      - ../.env.prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    volumes:
+      - settlehex-postgres-prod:/var/lib/postgresql/data
+
+volumes:
+  caddy-config:
+  caddy-data:
+  settlehex-postgres-prod:

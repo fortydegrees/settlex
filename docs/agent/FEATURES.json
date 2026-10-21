@@ -1,0 +1,28 @@
+{
+  "project": "settlex",
+  "lastUpdated": "2026-01-08",
+  "features": [
+    {
+      "id": "core-extraction",
+      "title": "Extract game-core engine package",
+      "status": "in_progress",
+      "acceptance": [
+        "game-core is pure TypeScript with no React/Next imports",
+        "Board generation and rules are deterministic",
+        "Server and UI import the same core package",
+        "Placement moves route through core GameState"
+      ]
+    },
+    {
+      "id": "core-tests",
+      "title": "Add core rule tests",
+      "status": "in_progress",
+      "acceptance": [
+        "Vitest is configured for game-core",
+        "Board generation invariants are tested",
+        "Buildability rules (setup + normal) are tested",
+        "Core tests cover resource distribution and robber"
+      ]
+    }
+  ]
+}

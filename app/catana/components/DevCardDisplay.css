@@ -1,0 +1,242 @@
+.devcard-box {
+  align-items: flex-end;
+  height: 86px;
+  overflow: visible;
+  border-radius: var(--settlex-ui-radius-panel);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.055)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(191, 219, 254, 0.18), rgba(147, 197, 253, 0.12));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 14px 26px rgba(37, 99, 235, 0.08);
+  padding: 8px 12px 7px;
+  transform: translateZ(0);
+  transition:
+    width 180ms ease,
+    opacity 190ms ease,
+    transform 210ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.devcard-box--empty-shell {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.96);
+}
+
+.devcard-box--has-cards {
+  animation: catana-devcard-box-enter 210ms cubic-bezier(0.34, 1.56, 0.64, 1)
+    both;
+}
+
+.devcard-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.1);
+  pointer-events: none;
+}
+
+.devcard-box--embedded {
+  height: 80px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: var(--settlex-ui-space-1) var(--settlex-ui-space-2-5);
+}
+
+.devcard-box--embedded::before {
+  display: none;
+}
+
+.local-devcard-bay {
+  display: flex;
+  align-items: flex-end;
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    max-width 360ms cubic-bezier(0.42, 0, 0.18, 1),
+    opacity 180ms ease-out 90ms;
+}
+
+.local-devcard-bay--visible {
+  max-width: 18rem;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.local-devcard-bay--empty {
+  max-width: 0;
+  opacity: 0;
+}
+
+.devcard-dock-track {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--settlex-ui-space-2-5);
+  height: 72px;
+  width: 100%;
+  z-index: 1;
+}
+
+.devcard-card {
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  box-shadow: none;
+  display: block;
+  flex: 0 0 auto;
+  height: 72px;
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  transform-origin: 50% 100%;
+  transition: transform 120ms ease, opacity 120ms ease, filter 120ms ease,
+    box-shadow 120ms ease;
+  width: 52px;
+  will-change: transform;
+}
+
+.devcard-card:focus,
+.devcard-card:focus-visible {
+  outline: none;
+}
+
+.devcard-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+
+.devcard-playable {
+  cursor: pointer;
+}
+
+.devcard-playable:hover {
+  filter: saturate(1.06) brightness(1.04);
+  box-shadow: none;
+}
+
+.devcard-playable:active {
+  filter: saturate(1.08) brightness(1);
+}
+
+.devcard-disabled {
+  filter: none;
+}
+
+.devcard-disabled::after {
+  opacity: 0;
+  background: none;
+}
+
+.devcard-active {
+  box-shadow: none;
+}
+
+.devcard-image {
+  display: block;
+  height: 72px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  width: 52px;
+}
+
+.devcard-stack-card {
+  border-radius: 10px;
+  height: 72px;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  transform-origin: 50% 100%;
+  transition: transform 120ms ease;
+  width: 52px;
+}
+
+.devcard-stack-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+
+.devcard-disabled .devcard-image {
+  filter: saturate(0.94) brightness(0.96);
+}
+
+.devcard-disabled .devcard-stack-card::after {
+  inset: 2px;
+  opacity: 1;
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.18),
+      rgba(255, 255, 255, 0.04)
+    ),
+    rgba(165, 210, 255, 0.24);
+}
+
+.devcard-copy-badge {
+  @apply type-hud-card-copy;
+  align-items: center;
+  background: rgba(239, 246, 255, 0.96);
+  border-radius: var(--settlex-ui-radius-pill);
+  box-shadow: 0 4px 10px -8px rgba(15, 23, 42, 0.6);
+  color: var(--settlex-ui-text-secondary);
+  display: flex;
+  height: 1.12rem;
+  justify-content: center;
+  min-width: 1.12rem;
+  padding: 0 var(--settlex-ui-space-1);
+  pointer-events: none;
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  z-index: 10;
+}
+
+.devcard-tooltip {
+  user-select: none;
+}
+
+@keyframes catana-devcard-box-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .devcard-box {
+    transition: none;
+    animation: none;
+    transform: none;
+  }
+
+  .devcard-card {
+    transform: none !important;
+    transition: none;
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Catana Design"
+  short_description: "Current SettleHex UI taste guide"
+  default_prompt: "Use $catana-design to review, design, or implement this SettleHex UI surface."

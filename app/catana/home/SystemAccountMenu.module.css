@@ -1,0 +1,7 @@
+.signedOutTrigger { user-select: none; }
+
+.signedOutTrigger:global(.settlex-ui-button-utility) {
+  box-shadow:
+    inset 0 1px 0 var(--settlex-ui-button-highlight),
+    0 0 0 1px rgb(255 255 255 / .72);
+}

@@ -1,0 +1,137 @@
+use std::fs;
+use std::path::Path;
+
+use catan_env_contract::{
+    settlegraph_contract_sha256, SettleGraphNet, CODEC_VERSION, NUM_ACTIONS, OBS_V2_DIM,
+    OBS_V2_VERSION,
+};
+use serde::Serialize;
+use sha2::{Digest, Sha256};
+
+pub mod decision;
+pub mod protocol;
+pub mod snapshot;
+pub mod topology;
+
+pub const EXPECTED_CTNN_SHA256: &str =
+    "072906d17077f1ed3fa4e9254999a8920ec243bdda3ab42575258492b58465c8";
+pub const INCUMBENT_005_CTNN_SHA256: &str =
+    "382a8708312d469efdbb7333891a3469bd204d46d85ec02e218e0c0b377437ca";
+pub const INCUMBENT_006_CTNN_SHA256: &str =
+    "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b";
+pub const INCUMBENT_007_CTNN_SHA256: &str =
+    "88ef6db4c7cf1958774e8e0bcbda0eeb49ac683f50b960bd2cdb67a381e2df79";
+pub const INCUMBENT_008_CTNN_SHA256: &str =
+    "d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35";
+pub const INCUMBENT_009_CTNN_SHA256: &str =
+    "d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf";
+pub const EXPECTED_CONTRACT_SHA256: &str =
+    "a64b9d0daaa3bb6f60f0c0c42bfc52b53ba4a4672263b85d899805323bc97e55";
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct RuntimeContract {
+    pub model_kind: &'static str,
+    pub observation_version: u32,
+    pub observation_dim: usize,
+    pub codec_version: u32,
+    pub action_count: usize,
+    pub contract_sha256: String,
+}
+
+pub struct VerifiedModel {
+    pub sha256: String,
+    pub contract: RuntimeContract,
+    pub net: SettleGraphNet,
+}
+
+fn lowercase_hex(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut output = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        output.push(HEX[(byte >> 4) as usize] as char);
+        output.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    output
+}
+
+pub fn runtime_contract() -> RuntimeContract {
+    RuntimeContract {
+        model_kind: "SettleGraph/CTNN-v2",
+        observation_version: OBS_V2_VERSION,
+        observation_dim: OBS_V2_DIM,
+        codec_version: CODEC_VERSION,
+        action_count: NUM_ACTIONS,
+        contract_sha256: lowercase_hex(&settlegraph_contract_sha256()),
+    }
+}
+
+pub fn load_verified_model(path: &Path) -> Result<VerifiedModel, String> {
+    let bytes = fs::read(path)
+        .map_err(|error| format!("cannot read sealed CTNN {}: {error}", path.display()))?;
+    let sha256 = lowercase_hex(&Sha256::digest(&bytes));
+    let expected_version = match sha256.as_str() {
+        EXPECTED_CTNN_SHA256 => 2,
+        INCUMBENT_005_CTNN_SHA256 | INCUMBENT_006_CTNN_SHA256 | INCUMBENT_007_CTNN_SHA256 | INCUMBENT_008_CTNN_SHA256 | INCUMBENT_009_CTNN_SHA256 => 3,
+        _ => {
+            return Err(format!(
+                "sealed CTNN SHA-256 mismatch: expected approved V2, 005, 006, 007, 008 or 009, received {sha256}"
+            ))
+        }
+    };
+
+    parse_verified_model(bytes, sha256, Some(expected_version))
+}
+
+/// Product selections authenticate the supplied artifact without a per-checkpoint whitelist.
+pub fn load_selected_model(path: &Path, expected_sha256: &str) -> Result<VerifiedModel, String> {
+    if expected_sha256.len() != 64
+        || !expected_sha256
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err("selected model requires a lowercase SHA-256".to_owned());
+    }
+    let bytes = fs::read(path)
+        .map_err(|error| format!("cannot read selected CTNN {}: {error}", path.display()))?;
+    let sha256 = lowercase_hex(&Sha256::digest(&bytes));
+    if sha256 != expected_sha256 {
+        return Err(format!(
+            "selected CTNN SHA-256 mismatch: expected {expected_sha256}, received {sha256}"
+        ));
+    }
+    parse_verified_model(bytes, sha256, None)
+}
+
+fn parse_verified_model(
+    bytes: Vec<u8>,
+    sha256: String,
+    expected_version: Option<u32>,
+) -> Result<VerifiedModel, String> {
+    let net = SettleGraphNet::from_bytes(&bytes)?;
+    if let Some(expected_version) = expected_version {
+        if net.observation_version() != expected_version {
+            return Err(format!(
+            "sealed model observation version mismatch: hash requires V{expected_version}, header reports V{}",
+            net.observation_version()
+        ));
+        }
+    }
+    let mut contract = runtime_contract();
+    contract.observation_version = net.observation_version();
+    contract.observation_dim = net.observation_dim();
+    if net.observation_version() == 3 {
+        contract.model_kind = "SettleGraph/CTNN-v3";
+    }
+    if contract.contract_sha256 != EXPECTED_CONTRACT_SHA256 {
+        return Err(format!(
+            "native SettleGraph contract SHA-256 mismatch: expected {EXPECTED_CONTRACT_SHA256}, received {}",
+            contract.contract_sha256
+        ));
+    }
+
+    Ok(VerifiedModel {
+        sha256,
+        contract,
+        net,
+    })
+}

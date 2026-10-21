@@ -1,0 +1,18 @@
+{
+  "_comment": [
+    "Resolution map for the design-sync bundle only — never used by Next, tests, or the editor.",
+    "cfg.tsconfig points the converter's esbuild pass here so `next/*` specifiers land on the",
+    "shims in ./shims instead of the real Next modules, which require Next's compiler and runtime.",
+    "Storybook gets the same effect from @storybook/nextjs; this is the standalone-bundle equivalent."
+  ],
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "next/navigation": ["./.design-sync/shims/next-navigation.js"],
+      "next/link": ["./.design-sync/shims/next-link.jsx"],
+      "next/image": ["./.design-sync/shims/next-image.jsx"],
+      "next/font/google": ["./.design-sync/shims/next-font-google.js"],
+      "@/*": ["./*"]
+    }
+  }
+}
