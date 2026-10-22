@@ -14,6 +14,7 @@ import { ReplayPanel } from "./components/ReplayPanel";
 import {
   buildReplayChatMessages,
   getReplayKeyboardAction,
+  getReplayEventIndexForFrame,
 } from "./replayClientState";
 import {
   buildReplayGameScreenProps,
@@ -134,8 +135,7 @@ export function PostgameGameBoard(props) {
     () => buildReplayChatMessages(replay?.chatMessages ?? []),
     [replay?.chatMessages]
   );
-  const archivedInitialEventIndex =
-    initialFrameIndex > 0 ? Math.max(timeline.events.length - 1, 0) : 0;
+  const archivedInitialEventIndex = getReplayEventIndexForFrame(initialFrameIndex, timeline.events);
   const [session, dispatch] = useReducer(
     postgameReplayReducer,
     {

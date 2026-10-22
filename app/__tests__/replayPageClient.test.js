@@ -32,6 +32,17 @@ describe("replay client state", () => {
     expect(clampReplayFrameIndex(-2, 2)).toBe(0);
   });
 
+  it("opens the requested frame after all of its log consequences", async () => {
+    const { getReplayEventIndexForFrame } = await loadReplayPageClientModule();
+    const events = [{ frameIndex: 0 }, { frameIndex: 2 }, { frameIndex: 2 }, { frameIndex: 4 }];
+    expect(getReplayEventIndexForFrame(2, events)).toBe(2);
+    expect(getReplayEventIndexForFrame(3, events)).toBe(2);
+    expect(getReplayEventIndexForFrame(0, events)).toBe(0);
+    expect(getReplayEventIndexForFrame(-1, events)).toBe(0);
+    expect(getReplayEventIndexForFrame(99, events)).toBe(3);
+    expect(getReplayEventIndexForFrame(2, [])).toBe(0);
+  });
+
   it("maps only step-navigation keyboard shortcuts", async () => {
     const { getReplayKeyboardAction } =
       await loadReplayPageClientModule();

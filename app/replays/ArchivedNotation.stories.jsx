@@ -40,11 +40,21 @@ export const Complete = {
     }
     await waitFor(() => expect(screen.getByRole("img", { name: "Die showing 4" })).toBeVisible());
     expect(screen.getByRole("img", { name: "Die showing 3" })).toBeVisible();
+    screen.getByLabelText("BrickAndMortar hand").focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(screen.getByRole("slider", { name: "Seek through the match" })).toHaveValue("13");
   },
 };
 
 export const Middle = {
   render: () => <ReplayPageClient replay={replay} record={record} initialFrameIndex={1200} initialPerspectivePlayerID="0" />,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement);
+    if (screen.queryByRole("button", { name: "Open replay tray" })) {
+      await userEvent.click(screen.getByRole("button", { name: "Open replay tray" }));
+    }
+    expect(screen.getByRole("slider", { name: "Seek through the match" })).toHaveValue("1200");
+  },
 };
 
 export const Terminal = {
