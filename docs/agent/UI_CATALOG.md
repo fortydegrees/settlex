@@ -174,3 +174,5 @@ No live auth, matchmaking, push subscription or production deployment was tested
   390×844. The desktop rail and mobile drawer are intentionally exclusive
   below/above the 640px production breakpoint; the mobile drawer remains
   scrollable when its chart extends beyond the visible drawer body.
+
+Notation archive stories in `app/replays/ArchivedNotation.stories.jsx` exercise compact complete records, middle/terminal positions and a setup prefix through the production replay client and board. They complement the replay panel stories; private recording import remains separate.

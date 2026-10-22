@@ -1,11 +1,16 @@
 # Settlex game records
 
-Settlex is adopting an omniscient, replayable game record built around Hexil Action Notation (HAN). The record contains the starting board, a named rules profile and the decisions and random outcomes that actually occurred. A reader derives costs, production, awards and scores. The live engine continues to use its normal current-state representation.
+Settlex is adopting an omniscient, replayable game record built around Hexil Action Notation (HAN). The record contains the starting board, a named rules profile and the decisions and random outcomes that actually occurred. A reader derives costs, production, awards and scores. The intended end state is for this portable record to be Settlex’s **canonical saved game history**. The live engine continues to use its normal current-state representation; replay frames are derived views and may eventually become disposable seek caches.
 
 The format is experimental. Its explicit `han-prototype` version 1 identity is retained while the contract is tested in real archives. This is a Settlex whole-game envelope using HAN actions, not an upstream Hexil file format or a published Catan standard.
 
+The agreed next direction is **CGN**: a lean omniscient core with optional standardised session and analysis additions. See [CGN direction](CGN-DIRECTION.md); existing wire identifiers are unchanged.
+
 ## Start here
 
+- [Implement a recorder or viewer](IMPLEMENTERS.md) explains engine integration, replay controls, game-log projection and board rendering, with a runnable example. The contract is portable; the reference package is currently workspace-only.
+- [Open a saved record in the replay viewer](REPLAY-CONSUMER.md) reconstructs the board and gameplay log directly from compact notation.
+- [Saved-record log proof](LOG-PROOF.md) documents independent reconstruction and comparison with the native log.
 - [File format and supported rules](FORMAT.md) defines the complete-game contract.
 - [Complete Settlex example](examples/settlex-complete.han.json) contains a real locally automated game: 2,437 controller moves, 2,542 HAN tokens, final score 10–2–2. All 2,438 source checkpoints were compared during export. Its game history can be replayed without the original snapshots or RNG seed.
 - [Hexil Action Notation](https://github.com/hexil-org/hexer/blob/main/docs/hexil_action_notation.md) is the upstream reference for token spellings, resource formulas and coordinate notation. Credit for that action language belongs to Hexil.
@@ -27,7 +32,7 @@ console.log(states.at(-1).points); // { '1': 10, '2': 2, '3': 2 }
 JS
 ```
 
-`replayHAN(record)` returns the initial position and one position after each logical action. An adjacent paid buy/place pair produces one logical action; free placements are individual actions. The maintained implementation is under `game-core/src/notation/`. A frozen expected-output fixture and deterministic local-game tests protect the integration without requiring the private research workspace.
+`replayHAN(record)` returns the initial position and one position after each logical action. An adjacent paid buy/place pair produces one logical action; free placements are individual actions. The maintained implementation is under `game-core/src/notation/`. The independent research reader remains available for comparison, without becoming a production dependency.
 
 ## Finished-game adoption
 
@@ -43,7 +48,9 @@ The native archive and notation outcome are saved together in `archived_match_re
 
 Unsupported or invalid history, worker failures, timeouts and a full export queue do not prevent native archiving. They produce `unavailable`, never a fabricated or incomplete complete-game record. This first integration does not automatically retry or backfill unavailable and historical rows.
 
-The current website replay pages still use the native archive. The new record is an additional durable representation. The server-side getter and local export command read stored notation only; they do not publish an omniscient download endpoint or change participant/perspective access.
+The archive consumers now prefer a supported, complete stored record for the canonical game page, legacy replay links and post-game replay fetch. One shared selector reconstructs the board and gameplay log, preserving archived names, appearances, chat, results and account/seat perspectives. Missing, unavailable, invalid or unsupported records use the retained legacy controller history. If both sources fail, the existing invalid-replay state remains. This code change has not been deployed.
+
+The integrated Storybook examples also open compact records directly; see [the replay consumer guide](REPLAY-CONSUMER.md). Archive pages retain their existing full-information post-game access policy. Supported records are sent compactly and reconstructed in the viewer; legacy fallback retains its existing frame transport. No live-game feed or new download endpoint is introduced. Viewer masking is presentation policy, not an access boundary.
 
 ## Export a stored game
 
@@ -59,4 +66,4 @@ The command reads a previously stored ready record. It does not convert historic
 
 The repository includes additive migration `0009_archived_match_notation.sql`. Apply it before starting the updated archive server in an approved release. Adding code locally does not change the running service or existing database rows. No production migration or deployment is part of this implementation.
 
-The next adoption steps are broader archive coverage, explicit resolution of forfeits and other unsupported cases, then moving the replay consumer to this record with parity checks. Only after those steps should we consider removing the native history or freezing a non-experimental interchange version. Independent implementations, conformance examples and collaboration with Hexil would support standardization; local use alone does not establish it.
+The record is now preferred by the archive consumer code. The next steps are broader archive coverage, explicit resolution of forfeits and other unsupported cases, and direct structured record emission from the authoritative engine. Then new supported games can stop storing duplicate legacy controller history, while historical fallbacks remain readable. “Native” describes the old storage implementation, not a competing long-term standard: the portable record is intended to become native to Settlex. Freezing a non-experimental interchange version remains a separate compatibility decision. Independent implementations, conformance examples and collaboration with Hexil would support standardization; local use alone does not establish it.

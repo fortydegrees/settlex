@@ -20,8 +20,14 @@ agent/UI_STYLE_EXCEPTIONS.md - Owned artwork and geometry contracts
 architecture/overview.md - Architecture and source reading path
 customization/themes-and-sounds.md - Customize board art and game sounds
 deploy/oci-mvp.md - OCI MVP Deployment
+notation/CGN-DIRECTION.md - CGN direction
+notation/examples/cgn-log-proof/comparison-semantic.md - Saved-record log comparison
+notation/examples/cgn-log-proof/comparison.md - Saved-record log comparison
 notation/FORMAT.md - Settlex HAN record contract
+notation/IMPLEMENTERS.md - Implementing a game recorder or replay viewer
+notation/LOG-PROOF.md - Saved-record post-game log proof
 notation/README.md - Settlex game records
+notation/REPLAY-CONSUMER.md - Open a saved record in the replay viewer
 provenance/art-and-fonts.md - Artwork authorship and font provenance
 provenance/asset-disposition.md - Current assets and privately preserved studies
 provenance/assets.md - Asset and source-material inventory

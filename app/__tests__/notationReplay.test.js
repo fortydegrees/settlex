@@ -1,0 +1,70 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { parseLocalReplayFile } from '../replays/localReplayFile.js';
+import { buildReplayTimeline } from '../replays/replayTimeline.js';
+import { buildReplayGameScreenProps } from '../replays/replayGameScreenProps.js';
+const saved=JSON.parse(readFileSync('docs/notation/examples/settlex-complete.han.json','utf8'));
+const open = record => parseLocalReplayFile(JSON.stringify(record));
+describe('direct saved-record post-game consumer',()=>{
+  it('reconstructs the board and cursor-limited log, with log clicks mapped to logical actions',()=>{
+    const payload=open(saved);
+    expect(payload.frames).toHaveLength(2542);
+    expect(payload.frames[0].state.G.gameLog).toEqual([]);
+    expect(payload.frames.at(-1).state.G.gameLog).toHaveLength(3785);
+    expect(payload.frames.at(-1).state.G.core.gameOver.winnerId).toBe('1');
+    expect(payload.frames.at(-1).state.G.core.devDeck.every(c=>c==='hidden')).toBe(true);
+    const timeline=buildReplayTimeline({frames:payload.frames,participants:payload.replay.participants});
+    const first=timeline.events[1];
+    expect(first.visibleLogEntries).toHaveLength(1);
+    expect(first.label).toContain('settlement');
+    expect(timeline.events[0].state.ctx.gameover).toBeUndefined();
+    expect(timeline.logEventIndexByKey[String(first.visibleLogEntries[0].id)]).toBe(1);
+    const steal=timeline.events.find(e=>e.visibleLogEntries.at(-1)?.type==='robber:steal');
+    expect(steal).toBeTruthy();
+    const row=steal.visibleLogEntries.at(-1);
+    const bystander=saved.players.find(p=>p!==row.actorId&&p!==row.data.victimId);
+    const publicProps=buildReplayGameScreenProps({event:steal,perspectiveId:bystander,revealAllHands:false});
+    expect(publicProps.replayLogEntries.at(-1).data.resource).toBeUndefined();
+    const involved=buildReplayGameScreenProps({event:steal,perspectiveId:row.actorId});
+    expect(involved.replayLogEntries.at(-1).data.resource).toBe(row.data.resource);
+    expect(publicProps.credentials).toBeNull();
+    expect(publicProps.moves.rollDice()).toBeUndefined();
+    const purchase = timeline.events.find(e => e.logEntry?.type === 'dev:buy');
+    const otherSeat = saved.players.find(p => p !== purchase.logEntry.actorId);
+    const revealedPurchase = buildReplayGameScreenProps({event:purchase,perspectiveId:otherSeat});
+    expect(revealedPurchase.replayLogEntries.find(row=>row.id===purchase.logEntry.id).data.cardType).toBe('victoryPoint');
+    const hiddenPurchase = buildReplayGameScreenProps({event:purchase,perspectiveId:otherSeat,revealAllHands:false});
+    expect(hiddenPurchase.replayLogEntries.find(row=>row.id===purchase.logEntry.id).data.cardType).toBeUndefined();
+    expect(timeline.logEventIndexByKey[String(row.id)]).toBe(steal.eventIndex);
+    const last=timeline.events.at(-1);
+    expect(last.state.G.core.playerStateById['1'].victoryPoints).toBe(10);
+    expect(first.visibleLogEntries.some(r=>r.type==='game:over')).toBe(false);
+  });
+  it('keeps the summary actor on the primary action while highlighting its last consequence',()=>{
+    const payload=open(saved);
+    const timeline=buildReplayTimeline({frames:payload.frames,participants:payload.replay.participants});
+    const roll=timeline.events.find(e=>{
+      const rows=e.visibleLogEntries.filter(r=>r.actionIndex===15);
+      return rows[0]?.type==='roll' && rows.at(-1)?.actorId!==rows[0].actorId;
+    });
+    expect(roll).toBeTruthy();
+    expect(roll.label).toBe('Player 2 rolled 5');
+    expect(roll.logEntry.actorId).toBe('2');
+    expect(roll.logEntry.type).toBe('roll');
+    expect(roll.logEntryKey).toBe(String(roll.visibleLogEntries.at(-1).id));
+  });
+  it('rejects board connections which cannot be drawn as tile boundaries',()=>{
+    const prefix=structuredClone({...saved,coverage:'prefix',result:null,actions:[]});
+    const vertices=prefix.board.tiles[0].vertices;
+    prefix.board.edges.zz99w=[vertices[0],vertices[3]];
+    expect(()=>open(prefix)).toThrow(/drawable edge/);
+  });
+  it('keeps known prefixes incomplete and rejects unsupported records before mounting',()=>{
+    const prefix={...saved,coverage:'prefix',result:null,actions:saved.actions.slice(0,12)};
+    const payload=open(prefix);
+    expect(payload.replay.isComplete).toBe(false);
+    expect(payload.frames.at(-1).state.G.core.gameOver).toBeNull();
+    expect(()=>open({...prefix,actions:['BR']})).toThrow();
+    expect(()=>open({...prefix,rules:'unknown'})).toThrow();
+  });
+});

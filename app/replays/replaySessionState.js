@@ -3,10 +3,13 @@ import { clampReplayEventIndex } from "./replayTimeline";
 export const createReplaySessionState = ({
   eventCount,
   perspectiveId = null,
+  isComplete = true,
 }) => ({
   eventCount,
+  isComplete,
   eventIndex: 0,
   perspectiveId,
+  revealAllHands: true,
   panelOpen: true,
   mobilePanelOpen: false,
   chartOpen: false,
@@ -96,7 +99,7 @@ export const replaySessionReducer = (state, action) => {
       state.eventCount
     );
     const reachedTerminal =
-      eventIndex === finalEventIndex && !state.terminalResultsSeen;
+      state.isComplete !== false && eventIndex === finalEventIndex && !state.terminalResultsSeen;
     if (reachedTerminal) {
       return openReplayResults(state, {
         eventIndex,
@@ -107,6 +110,7 @@ export const replaySessionReducer = (state, action) => {
     return { ...state, eventIndex };
   }
   if (action.type === "openResults") {
+    if (state.isComplete === false) return state;
     return openReplayResults(state, {
       eventIndex: finalEventIndex,
       returnEventIndex:
@@ -128,6 +132,9 @@ export const replaySessionReducer = (state, action) => {
   }
   if (action.type === "setPerspective") {
     return { ...state, perspectiveId: action.perspectiveId };
+  }
+  if (action.type === "setRevealAllHands") {
+    return { ...state, revealAllHands: action.reveal };
   }
   if (action.type === "setPanelOpen") {
     return { ...state, panelOpen: action.open };

@@ -50,6 +50,7 @@ function ReplayPanelHarness({
   initialOpen = true,
   initialMobileOpen = false,
   initialPerspectiveId = null,
+  initialRevealAllHands = true,
   initialChartOpen = false,
   initialEventIndex = 2,
   timeline = replayTimeline,
@@ -57,6 +58,7 @@ function ReplayPanelHarness({
   const [open, setOpen] = useState(initialOpen);
   const [mobileOpen, setMobileOpen] = useState(initialMobileOpen);
   const [perspectiveId, setPerspectiveId] = useState(initialPerspectiveId);
+  const [revealAllHands, setRevealAllHands] = useState(initialRevealAllHands);
   const [chartOpen, setChartOpen] = useState(initialChartOpen);
   const navigation = useReplayNavigation({ eventCount: timeline.events.length, initialEventIndex });
   const currentEventIndex = navigation.eventIndex;
@@ -68,6 +70,8 @@ function ReplayPanelHarness({
         currentEvent={timeline.events[currentEventIndex]}
         currentEventIndex={currentEventIndex}
         perspectiveId={perspectiveId}
+        revealAllHands={revealAllHands}
+        onRevealAllHandsChange={setRevealAllHands}
         victoryTarget={10}
         open={open}
         mobileOpen={mobileOpen}
@@ -145,6 +149,11 @@ export const DesktopChartExpanded = {
   parameters: {
     viewport: { defaultViewport: "catanaDesktop" },
   },
+};
+
+export const DesktopHandsHidden = {
+  ...DesktopPanelOpen,
+  args: { ...DesktopPanelOpen.args, initialRevealAllHands: false },
 };
 
 export const DesktopFourPlayersLongNames = {

@@ -583,7 +583,7 @@ export function GameScreen(bgioProps) {
     ]
   );
   const showResultsButton = isReplay
-    ? !bgioProps.replayResultsOpen
+    ? bgioProps.replayCanShowResults !== false && !bgioProps.replayResultsOpen
     : isGameOver && !showGameOverModal && !showPostgame;
   const handleWatchReplay = useCallback(() => {
     onWatchReplay?.();
@@ -1036,9 +1036,10 @@ export function GameScreen(bgioProps) {
       getOpponentHudLayout({
         opponents,
         isNeutralViewer: playerID == null,
-        isPhoneLayout
+        isPhoneLayout,
+        isReplay,
       }),
-    [isPhoneLayout, opponents, playerID]
+    [isPhoneLayout, isReplay, opponents, playerID]
   );
   const localIdlePresence =
     playerID != null ? idleStateByPlayerId[playerID] ?? null : null;
@@ -1733,7 +1734,7 @@ TODO: accurately colour it
 
       {bottomOpponent ? (
         <div
-          className="pointer-events-none fixed inset-x-0 bottom-ui-4 z-30 flex justify-center px-ui-4"
+          className={`pointer-events-none fixed inset-x-0 z-30 flex justify-center px-ui-4 ${isPhoneLayout && isReplay ? "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]" : "bottom-ui-4"}`}
           data-neutral-viewer-bottom-player="true"
           style={{
             transform: playfieldCenterOffsetX
@@ -1744,6 +1745,9 @@ TODO: accurately colour it
           <div className="pointer-events-auto">
             <OpponentPlayerBox
               player={bottomOpponent}
+              compact={isPhoneLayout}
+              revealHand={isReplay && bgioProps.replayRevealAllHands === true}
+              themeId={themeId}
               presence={
                 disconnectStateByPlayerId[bottomOpponent.id] ??
                 idleStateByPlayerId[bottomOpponent.id] ??
@@ -1834,8 +1838,8 @@ TODO: accurately colour it
         <div
           className={
             isPhoneLayout
-              ? "pointer-events-none fixed inset-x-0 top-11 z-30 flex flex-col items-center gap-ui-2 px-ui-14"
-              : "pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-ui-3 px-ui-4"
+              ? `pointer-events-none fixed inset-x-0 z-30 flex flex-col items-center gap-ui-2 ${isReplay ? "top-14 px-ui-4" : "top-11 px-ui-14"}`
+              : `pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-ui-3 px-ui-4 ${isReplay ? "lg:left-48 lg:right-[23rem]" : ""}`
           }
           style={{
             transform: playfieldCenterOffsetX
@@ -1844,10 +1848,16 @@ TODO: accurately colour it
           }}
         >
           {displayedOpponents.length > 0 && (
-            <div className="pointer-events-auto flex items-start gap-ui-4">
+            <div
+              aria-label={isPhoneLayout && isReplay ? "Replay players" : undefined}
+              tabIndex={isPhoneLayout && isReplay ? 0 : undefined}
+              className={`pointer-events-auto flex items-start gap-ui-4 ${isReplay ? "max-w-full" : ""} ${isPhoneLayout && isReplay ? "settlex-ui-focus w-full flex-nowrap overflow-x-auto pb-ui-3 pt-ui-5" : isReplay ? "flex-wrap justify-center" : ""}`}
+            >
               {displayedOpponents.map((opponent) => (
                 <OpponentPlayerBox
                   key={opponent.id}
+                  revealHand={isReplay && bgioProps.replayRevealAllHands === true}
+                  themeId={themeId}
                   player={opponent}
                   presence={disconnectStateByPlayerId[opponent.id] ?? idleStateByPlayerId[opponent.id] ?? null}
                   core={bgioProps.G.core}

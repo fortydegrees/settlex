@@ -482,12 +482,27 @@ function apply(s: State, record: HANRecord, event: Event, paid = false): void {
   }
   derive(s, record);
 }
-/** Initial state plus one independent checkpoint per logical action (paid pairs collapse). */
-export function replayHAN(record: HANRecord): State[] {
+export interface HANReplayStep {
+  /** Zero-based logical action; token range is zero-based, end-exclusive. */
+  actionIndex: number;
+  tokenStart: number;
+  tokenEnd: number;
+  event: Event;
+  paid: boolean;
+  before: State;
+  after: State;
+}
+export interface HANReplayTrace { initial: State; steps: HANReplayStep[] }
+
+/** Validated logical actions and their independent replay checkpoints. */
+export function replayHANTrace(record: HANRecord): HANReplayTrace {
   validate(record);
   const s = initialState(record);
-  const states: State[] = [clone(s)];
+  const initial = clone(s);
+  const steps: HANReplayStep[] = [];
+  let before = initial;
   for (let i = 0; i < record.actions.length; i++) {
+    const tokenStart = i;
     const token = record.actions[i];
     let event: Event,
       paid = false;
@@ -501,11 +516,18 @@ export function replayHAN(record: HANRecord): State[] {
         paid = true;
       } else event = parse(token);
       apply(s, record, event, paid);
-      states.push(clone(s));
+      const after = clone(s);
+      steps.push({ actionIndex: steps.length, tokenStart, tokenEnd: i + 1, event, paid, before, after });
+      before = after;
     } catch (error) {
       throw new Error(`HAN action ${i + 1} (${token}): ${(error as Error).message}`);
     }
   }
   if (record.coverage === 'complete') requireThat(s.winner !== null && s.winner === record.result!.winner, 'complete result does not match derived victory/winner');
-  return states;
+  return { initial, steps };
+}
+/** Initial state plus one independent checkpoint per logical action (paid pairs collapse). */
+export function replayHAN(record: HANRecord): State[] {
+  const trace = replayHANTrace(record);
+  return [trace.initial, ...trace.steps.map(step => step.after)];
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { hydrateArchivedReplayPayload } from "./archivedReplayPayload.js";
 
 const createAbortError = () => {
   if (typeof DOMException === "function") {
@@ -52,7 +53,9 @@ export const loadPostgameReplayPayload = async ({
     );
     throwIfAborted(signal);
     if (response.ok && response.status !== 202) {
-      return response.json();
+      const payload = await response.json();
+      throwIfAborted(signal);
+      return hydrateArchivedReplayPayload(payload);
     }
     if (response.status !== 202) {
       const details = await response.json().catch(() => ({}));

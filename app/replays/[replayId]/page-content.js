@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getSessionAccount } from "../../../lib/server/accounts/getSessionAccount.js";
 import { getArchivedReplay } from "../../../lib/server/replays/getArchivedReplay.js";
 import { buildReplayFrames } from "../../../lib/server/replays/buildReplayFrames.js";
+import { buildArchivedReplayPayload } from "../../../lib/server/replays/buildArchivedReplayPayload.js";
 import { readMatchCredentialCookie } from "../../../lib/server/session/matchCredentialCookie.js";
 
 export const resolveLegacyReplayPerspectivePlayerID = async ({
@@ -44,16 +45,9 @@ export const createReplayPage = ({
       return notFoundImpl();
     }
 
-    let frames;
+    let payload;
     try {
-      frames = buildReplayFramesImpl({
-        initialState: replay.initialState,
-        log: replay.log,
-        finalState: replay.finalState,
-      });
-      if (frames.length === 0) {
-        throw new Error("Replay has no valid frames");
-      }
+      payload = buildArchivedReplayPayload(replay, { buildReplayFrames: buildReplayFramesImpl });
     } catch (error) {
       const ReplayStatusPageResolved =
         ReplayStatusPageImpl ??
@@ -87,8 +81,7 @@ export const createReplayPage = ({
       });
 
     return h(ReplayPageClientResolved, {
-      replay,
-      frames,
+      ...payload,
       initialPerspectivePlayerID,
     });
   };

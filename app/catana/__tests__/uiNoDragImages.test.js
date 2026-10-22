@@ -28,12 +28,6 @@ describe("Catana UI images", () => {
     expect(contents).toMatch(/getResourceIconPath[\s\S]*draggable=\{false\}/);
   });
 
-  it("uses one uniform resource bar icon size", () => {
-    const contents = readComponent("PlayerActionContainer.js");
-    expect(contents).toMatch(/className="h-10 w-10 object-contain"/);
-    expect(contents).not.toMatch(/className="h-9"/);
-  });
-
   it("disables dragging on action dock icons", () => {
     const contents = readComponent(path.join("ActionsDock", "DockCard.js"));
     expect(contents).toMatch(/<img[\s\S]*draggable=\{false\}/);

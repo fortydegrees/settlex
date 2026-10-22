@@ -27,6 +27,8 @@ export const buildReplayGameScreenProps = ({
   matchID,
   matchData,
   resultsOpen,
+  isComplete = true,
+  revealAllHands = true,
 }) => ({
   ...event?.state,
   matchID,
@@ -40,8 +42,12 @@ export const buildReplayGameScreenProps = ({
   isConnected: true,
   isMultiplayer: false,
   isReplay: true,
+  replayRevealAllHands: revealAllHands,
   replayTurn: event?.turn ?? null,
   replayResultsOpen: resultsOpen,
-  replayLogEntries: maskGameLogEntries(event?.visibleLogEntries ?? [], perspectiveId),
+  replayCanShowResults: isComplete,
+  replayLogEntries: revealAllHands
+    ? event?.visibleLogEntries ?? []
+    : maskGameLogEntries(event?.visibleLogEntries ?? [], perspectiveId),
   replayActiveLogEntryKey: event?.logEntryKey ?? null,
 });

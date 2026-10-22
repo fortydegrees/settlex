@@ -64,4 +64,26 @@ describe("useLocalPlayerDockModel helpers", () => {
       endTurnEnabled: false,
     });
   });
+
+  it("keeps only piece counts in the read-only dock", () => {
+    const model = renderTradeModel({ readOnly: true });
+    expect(model.dynamicActions.map((action) => action.name)).toEqual([
+      "road", "settlement", "city",
+    ]);
+    expect(model.dynamicActions.every((action) => !action.enabled)).toBe(true);
+  });
+
+  it("preserves live dock actions and their eligibility", () => {
+    const dynamicActions = [
+      { name: "trade", enabled: true },
+      { name: "devCard", enabled: false },
+      null,
+    ];
+    const model = applyReadOnlyDockState({
+      readOnly: false, dynamicActions, rollEnabled: true, endTurnEnabled: false,
+    });
+    expect(model.dynamicActions).toBe(dynamicActions);
+    expect(model.rollEnabled).toBe(true);
+    expect(model.endTurnEnabled).toBe(false);
+  });
 });

@@ -27,7 +27,11 @@ export function ReplayPanel({
   currentEvent,
   currentEventIndex,
   perspectiveId,
+  revealAllHands = true,
+  onRevealAllHandsChange,
   victoryTarget,
+  canShowResults = true,
+  replayMetadata = null,
   open,
   mobileOpen,
   chartOpen = false,
@@ -36,6 +40,7 @@ export function ReplayPanel({
   onChartOpenChange,
   onPerspectiveChange,
   onResultsOpen,
+  onLibraryOpen = null,
   onPreviousEvent,
   onNextEvent,
   onPreviousTurn,
@@ -110,6 +115,20 @@ export function ReplayPanel({
       </label>
     );
   const actorId = currentEvent?.logEntry?.actorId;
+  const revealControl = (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={revealAllHands}
+      onClick={() => onRevealAllHandsChange?.(!revealAllHands)}
+      className="settlex-ui-focus mt-ui-2 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control px-ui-2 text-left hover:bg-surface-hover"
+    >
+      <span className="type-action-small text-ink-primary">Reveal all hands</span>
+      <span aria-hidden="true" className={`flex h-6 w-11 shrink-0 items-center rounded-pill p-ui-0.5 transition-colors motion-reduce:transition-none ${revealAllHands ? "bg-surface-positive" : "bg-surface-inset"}`}>
+        <span className={`h-5 w-5 rounded-pill bg-surface-solid shadow-sm transition-transform motion-reduce:transition-none ${revealAllHands ? "translate-x-5" : "translate-x-0"}`} />
+      </span>
+    </button>
+  );
   const actorName =
     actorId == null
       ? null
@@ -123,6 +142,11 @@ export function ReplayPanel({
     : turnText;
   const eventSummary = (
     <div className="mt-ui-3">
+      {replayMetadata?.checkpoint?.label ? (
+        <p className="mb-ui-2 type-caption text-ink-secondary">
+          Checkpoint: {replayMetadata.checkpoint.label}
+        </p>
+      ) : null}
       <div className="flex items-baseline justify-between gap-ui-3">
         <span className="min-w-0 truncate type-caption text-ink-secondary">
           {turnAndActorText}
@@ -137,6 +161,14 @@ export function ReplayPanel({
       >
         {currentEvent?.label ?? "Initial setup"}
       </div>
+      {currentEvent?.annotation?.decision ? (
+        <p className="mt-ui-2 type-body-small text-ink-primary">
+          Chosen move: {currentEvent.annotation.decision.label}
+        </p>
+      ) : null}
+      {[...(replayMetadata?.warnings ?? []), ...(currentEvent?.annotation?.notes ?? [])].map((note, index) => (
+        <p key={`${index}:${note}`} className="mt-ui-2 type-caption text-ink-secondary">{note}</p>
+      ))}
     </div>
   );
   const scoreChart = (
@@ -179,9 +211,11 @@ export function ReplayPanel({
               <header className={META_PANEL_HEADER_CLASS_NAME}>
                 <span className="type-action-small">Replay</span>
                 <div className="flex items-center gap-ui-1.5">
+                  {onLibraryOpen ? <Button size="sm" variant="subtle" onClick={onLibraryOpen} aria-label="Saved games">Games</Button> : null}
                   <Button
                     size="sm"
                     variant={atEnd ? "accent" : "subtle"}
+                    disabled={!canShowResults}
                     onClick={onResultsOpen}
                   >
                     Results
@@ -198,6 +232,7 @@ export function ReplayPanel({
               </header>
               <div className="relative z-10 shrink-0 px-ui-3.5 pb-ui-3 pt-ui-3">
                 {renderPerspectiveControl()}
+                {revealControl}
                 {eventSummary}
                 <div
                   className="mt-ui-2"
@@ -335,10 +370,12 @@ export function ReplayPanel({
                   Replay
                 </Drawer.Title>
                 <div className="flex items-center gap-ui-2">
+                  {onLibraryOpen ? <Button size="sm" variant="subtle" onClick={onLibraryOpen} aria-label="Saved games">Games</Button> : null}
                   <Button
                     size="sm"
                     variant={atEnd ? "accent" : "subtle"}
                     className="h-11 min-h-[2.75rem]"
+                    disabled={!canShowResults}
                     onClick={onResultsOpen}
                   >
                     Results
@@ -362,6 +399,7 @@ export function ReplayPanel({
               </Drawer.Description>
               <div className="mt-ui-3 min-h-0 flex-1 overflow-y-auto">
                 {renderPerspectiveControl()}
+                {revealControl}
                 {eventSummary}
                 <div
                   className="mt-ui-2"

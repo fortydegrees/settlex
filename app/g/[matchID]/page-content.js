@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getSessionAccount } from "../../../lib/server/accounts/getSessionAccount.js";
 import { getMatchPageData } from "../../../lib/server/matches/getMatchPageData.js";
 import { buildReplayFrames } from "../../../lib/server/replays/buildReplayFrames.js";
+import { buildArchivedReplayPayload } from "../../../lib/server/replays/buildArchivedReplayPayload.js";
 import { readMatchCredentialCookie } from "../../../lib/server/session/matchCredentialCookie.js";
 
 const readLivePlayerIDs = (liveMatch) => {
@@ -128,16 +129,9 @@ export const createGMatchPage = ({
 
     if (pageData?.kind === "archived") {
       const archivedMatch = pageData.archivedMatch;
-      let frames;
+      let payload;
       try {
-        frames = buildReplayFramesImpl({
-          initialState: archivedMatch.initialState,
-          log: archivedMatch.log,
-          finalState: archivedMatch.finalState,
-        });
-        if (frames.length === 0) {
-          throw new Error("Replay has no valid frames");
-        }
+        payload = buildArchivedReplayPayload(archivedMatch, { buildReplayFrames: buildReplayFramesImpl });
       } catch (error) {
         const ReplayStatusPageResolved =
           ReplayStatusPageImpl ??
@@ -171,8 +165,7 @@ export const createGMatchPage = ({
         });
 
       return h(ReplayPageClientResolved, {
-        replay: archivedMatch,
-        frames,
+        ...payload,
         initialFrameIndex: 0,
         initialPerspectivePlayerID,
       });

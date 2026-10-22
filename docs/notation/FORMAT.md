@@ -80,3 +80,7 @@ Keep existing meanings stable. Incompatible envelope changes require a new versi
 Current source-export limits include forfeits, robber skips with no legal destination, and empty Year of Plenty. They produce an unavailable archive conversion, not an invented token. Expansions, midgame snapshot imports, resumption with an unrevealed future deck, cryptographic fairness and masked-record reconstruction are outside this version. The explicit board is authoritative for incidence; the reader validates membership/shape, while the source mapper and viewer perform additional topology/geometry checks.
 
 The archive sidecar status, database IDs and operational error codes are application storage metadata, not additions to the interchange file. Record availability and legality are separate from authorization to distribute omniscient information.
+
+## Direction beyond this experimental profile
+
+See [CGN direction](CGN-DIRECTION.md) for the agreed lean omniscient core and optional session/analysis additions. Those extension schemas and a CGN wire rename are not implemented by this version. See [log projection proof](LOG-PROOF.md) for the first post-game consumer experiment.

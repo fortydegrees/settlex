@@ -1,0 +1,76 @@
+{
+  "source": {
+    "kind": "actual-local-boardgame-io",
+    "seed": "notation-roundtrip-2026-10-19",
+    "moves": 2437
+  },
+  "savedRecordFileSha256": "740d5331cd180f93558dba71dcb9453cdcd686fbbd2bb32a2171f92877791acd",
+  "recordSha256": "6415b09695c2d3c91b072b5147ddb6a5bf1ff4124b0520d3119c31837fdc5299",
+  "nativeLogSha256": "80aa28afc20d7099cc13d1b3ad5ffc4be55be846773d5be1b6dc1c473bac042c",
+  "expectedSemanticSha256": "7a15e811f9055350a73c9d3c7fe6d84266df6823cc100b94ef0986c6cbc912a1",
+  "actualSemanticSha256": "7a15e811f9055350a73c9d3c7fe6d84266df6823cc100b94ef0986c6cbc912a1",
+  "sourceCheckpointsCompared": 2438,
+  "comparison": {
+    "expectedRows": 3785,
+    "actualRows": 3785,
+    "mismatchCount": 0,
+    "differences": []
+  },
+  "sourceEventCounts": {
+    "build:settlement": 6,
+    "build:road": 10,
+    "turn:end": 956,
+    "resource:gain": 1226,
+    "phase:main": 1,
+    "roll": 952,
+    "robber:move": 198,
+    "trade:maritime": 29,
+    "dev:buy": 25,
+    "discard": 246,
+    "dev:play": 16,
+    "resource:shortage": 10,
+    "award:largestArmy": 1,
+    "robber:steal": 107,
+    "build:city": 1,
+    "game:over": 1
+  },
+  "projectedEventCounts": {
+    "build:settlement": 6,
+    "build:road": 10,
+    "turn:end": 956,
+    "resource:gain": 1226,
+    "phase:main": 1,
+    "roll": 952,
+    "robber:move": 198,
+    "trade:maritime": 29,
+    "dev:buy": 25,
+    "discard": 246,
+    "dev:play": 16,
+    "resource:shortage": 10,
+    "award:largestArmy": 1,
+    "robber:steal": 107,
+    "build:city": 1,
+    "game:over": 1
+  },
+  "ignoredNativeMetadata": {
+    "fields": [
+      "id",
+      "turn",
+      "phase",
+      "forced"
+    ],
+    "forcedTrueRows": 0
+  },
+  "unsupportedCoverage": [
+    "player trades",
+    "Monopoly",
+    "Year of Plenty",
+    "Longest Road transfers",
+    "forced actions",
+    "forfeit endings",
+    "chat",
+    "negotiation",
+    "clocks"
+  ],
+  "renderedTextDifferences": 0
+}

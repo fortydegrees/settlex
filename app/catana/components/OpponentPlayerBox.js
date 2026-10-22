@@ -4,6 +4,7 @@ import devCardBackIcon from "../../../public/svgs/cards/development/card_devcard
 import { CardStack } from "./CardStack";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { getOpponentResourceBadgeTone } from "./OpponentPlayerBoxUtils";
+import { ReplayHandCards } from "../../replays/components/ReplayHandCards";
 
 const OpponentPlayerBoxComponent = ({
   player,
@@ -13,7 +14,9 @@ const OpponentPlayerBoxComponent = ({
   isActive,
   statusType,
   knightDisplayOverride,
-  compact = false
+  compact = false,
+  revealHand = false,
+  themeId,
 }) => {
   if (!player) return null;
 
@@ -39,7 +42,7 @@ const OpponentPlayerBoxComponent = ({
   return (
     <div
       id={`p${player.id}-opponent-box`}
-      className={`flex items-start ${
+      className={`flex shrink-0 items-start ${
         compact ? "origin-top scale-[0.78]" : ""
       }`}
     >
@@ -57,8 +60,9 @@ const OpponentPlayerBoxComponent = ({
           dangerPanelClassName,
         ].filter(Boolean).join(" ")}
         avatarClassName={dangerAvatarClassName}
+        statsPanelChildrenClassName={revealHand ? "flex min-w-0 flex-1 items-center justify-start gap-x-ui-3" : undefined}
         statsPanelChildren={
-          <>
+          revealHand ? <ReplayHandCards player={player} themeId={themeId} compact={compact} /> : <div className="contents">
             <div id={`p${player.id}-resources`}>
               <CardStack
                 count={resourceCount}
@@ -77,7 +81,7 @@ const OpponentPlayerBoxComponent = ({
                 className={stackMotionClass}
               />
             </div>
-          </>
+          </div>
         }
       />
     </div>

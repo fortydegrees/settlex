@@ -1,4 +1,5 @@
 import { maskGameLogEntries } from "../../lib/game-runtime/log/gameLogPrivacy.js";
+import { buildReplayPurchaseDetails } from "./replayPurchaseDetails";
 import { getPublicVictoryPoints } from "@settlex/game-core";
 import {
   formatLogEntryText,
@@ -101,7 +102,43 @@ export const buildReplayTimeline = ({
     getPublicVictoryPoints(state?.G?.core, playerId),
 } = {}) => {
   const safeFrames = Array.isArray(frames) ? frames : [];
+  const withPurchaseDetails = buildReplayPurchaseDetails(safeFrames);
   const { players, playerMap } = buildPlayerData(participants);
+  if (safeFrames.length > 0 && safeFrames.every((frame) => frame.annotation)) {
+    const logEventIndexByKey = {};
+    let seenLogCount = 0;
+    const events = safeFrames.map((frame, eventIndex) => {
+      const visibleLogEntries = withPurchaseDetails(frame.state?.G?.gameLog ?? []);
+      const added = visibleLogEntries.slice(seenLogCount);
+      for (let i = seenLogCount; i < visibleLogEntries.length; i++) {
+        logEventIndexByKey[getGameLogEntryKey(visibleLogEntries[i], i)] = eventIndex;
+      }
+      seenLogCount = visibleLogEntries.length;
+      const last = added.at(-1) ?? null;
+      return {
+        eventIndex, frameIndex: frame.index, label: frame.annotation.label,
+        // The summary describes the primary action; the highlight marks the
+        // final consequence reached at this position (which may have another actor).
+        turn: getStateTurn(frame.state), logEntry: added[0] ?? null,
+        logEntryKey: last ? getGameLogEntryKey(last, visibleLogEntries.length - 1) : null,
+        visibleLogEntries, state: frame.state, annotation: frame.annotation,
+      };
+    });
+    const turnStarts = [];
+    for (const event of events) {
+      if (event.turn != null && turnStarts.at(-1)?.turn !== event.turn) {
+        turnStarts.push({ turn: event.turn, eventIndex: event.eventIndex });
+      }
+    }
+    return {
+      events, players, playerMap, turnStarts,
+      scoreSeries: events.map((event) => ({
+        eventIndex: event.eventIndex, turn: event.turn,
+        scoresByPlayerId: readScores({ state: event.state, players, getVictoryPointsForState }),
+      })),
+      logEventIndexByKey,
+    };
+  }
   const firstFrame = safeFrames[0] ?? null;
   const firstState = firstFrame?.state ?? null;
   const initialTurn = getStateTurn(firstState);
@@ -123,7 +160,7 @@ export const buildReplayTimeline = ({
 
   for (const frame of safeFrames) {
     const gameLog = Array.isArray(frame?.state?.G?.gameLog)
-      ? frame.state.G.gameLog
+      ? withPurchaseDetails(frame.state.G.gameLog)
       : [];
     const firstNewEntryIndex = Math.min(seenLogCount, gameLog.length);
 

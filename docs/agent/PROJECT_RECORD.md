@@ -80,3 +80,27 @@ stories passed. UI policy, all 169 engine tests, all 201 app test files and lint
 passed. The server suite passed 352 tests and skipped 18; its unchanged real-worker
 notation test exceeded the converter's 30-second timeout, including in a separate
 run. No notation code or timeout was changed in this retirement.
+
+## Compact archived replay consumers — 22 October 2026
+
+Finished-game page, legacy replay links and post-game replay fetch now prefer a
+validated complete compact record. One shared selector checks participant seats,
+winner and drawable geometry, then sends the record for browser reconstruction.
+Old, unavailable or invalid records retain controller-history fallback. Native
+archives remain stored; this is a consumer integration, not a storage cutover.
+
+Replay positions share their resulting board and log prefix. Finished replays
+reveal recorded hands by default, with a perspective toggle; masking is a viewer
+policy, not an information-access boundary. Incomplete prefixes have no results.
+Replay dice follow the selected position, and phone players scroll horizontally.
+The maintained notation guides and integrated Storybook examples own the details.
+
+Local engine/server tests, all 206 app test files, UI policy and lint passed.
+The saved-record comparison matched every native gameplay row and rendered text
+for the retained complete example. The production build passed with the existing
+build-time placeholder facility; no live credentials or database were used.
+Real PostgreSQL migration/write/read qualification remains outstanding because
+no local PostgreSQL server or Docker daemon was available. The previously timed-out
+notation worker passed with its unchanged 30-second deadline in both diagnostic
+and combined runs; the earlier failure's cause remains unproven. No deployment,
+backfill or public release qualification is implied.

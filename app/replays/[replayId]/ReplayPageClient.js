@@ -3,19 +3,21 @@
 import { createElement as h, useMemo } from "react";
 import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
 import { PostgameGameBoard } from "../PostgameGameBoard";
+import { hydrateArchivedReplayPayload } from "../archivedReplayPayload.js";
 
 export const createReplayPageClient = ({
   PostgameGameBoard: PostgameGameBoardImpl = PostgameGameBoard,
 } = {}) =>
   function ReplayPageClient({
     replay,
-    frames = [],
+    frames = null,
+    record = null,
     initialFrameIndex = 0,
     initialPerspectivePlayerID = null,
   }) {
     const initialReplayPayload = useMemo(
-      () => ({ replay, frames }),
-      [replay, frames]
+      () => hydrateArchivedReplayPayload({ replay, ...(record ? { record } : { frames: frames ?? [] }) }),
+      [replay, frames, record]
     );
 
     return h(

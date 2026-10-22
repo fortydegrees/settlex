@@ -206,7 +206,12 @@ export function formatLogEntry(entry, playerMap = {}) {
       break;
     }
     case "dev:buy": {
-      tokens.push(textToken(" bought a dev card"));
+      if (DEV_CARD_TEXT[data.cardType]) {
+        tokens.push(textToken(" bought "));
+        tokens.push({ kind: "devCard", cardType: data.cardType, label: DEV_CARD_TEXT[data.cardType].name });
+      } else {
+        tokens.push(textToken(" bought a dev card"));
+      }
       break;
     }
     case "dev:play": {

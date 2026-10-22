@@ -28,7 +28,9 @@ export const applyReadOnlyDockState = ({
   endTurnEnabled,
 }) => ({
   dynamicActions: readOnly
-    ? dynamicActions.map((action) => action && { ...action, enabled: false })
+    ? dynamicActions
+        .filter((action) => action && action.name !== "trade" && action.name !== "devCard")
+        .map((action) => ({ ...action, enabled: false }))
     : dynamicActions,
   rollEnabled: readOnly ? false : rollEnabled,
   endTurnEnabled: readOnly ? false : endTurnEnabled,

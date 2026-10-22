@@ -7,7 +7,8 @@ import { TurnControlCluster } from "./TurnControlCluster";
 import { AnimatedCount } from "./AnimatedCount";
 import { getBadgeClasses } from "./CardStackStyles";
 import React, { useCallback, useEffect } from "react";
-import { useDie } from "./Die";
+import { StaticDie, useDie } from "./Die";
+import { getVisibleDiceRoll } from "../utils/gameScreenCommandState";
 import { buildDiceAnimationPair } from "./diceAnimationPlan";
 import { useEffectListener } from "bgio-effects/react";
 import {
@@ -46,6 +47,7 @@ export const CardIcon = ({
   onResourceClick,
   themeId,
   isLast = false,
+  compact = false,
 }) => {
   const handleClick = () => {
     if (onResourceClick) {
@@ -58,14 +60,14 @@ export const CardIcon = ({
 
   return (
     <Container
-      className={`flex items-center ${isLast ? "" : "mr-ui-6"} ${onResourceClick ? "cursor-pointer settlex-ui-focus" : ""}`}
+      className={`flex items-center ${isLast ? "" : compact ? "mr-ui-1" : "mr-ui-6"} ${onResourceClick ? "cursor-pointer settlex-ui-focus" : ""}`}
       id={`p${player}-${resource}`}
       type={onResourceClick ? "button" : undefined}
       aria-label={onResourceClick ? `Trade ${resource}` : undefined}
       onClick={onResourceClick ? handleClick : undefined}
       
     >
-      <div className="w-7 text-center select-none text-ink-hud-on-glass mr-ui-1 type-hud-resource-desktop drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+      <div className={`${compact ? "w-5 type-hud-resource-wide" : "w-7 type-hud-resource-desktop"} text-center select-none text-ink-hud-on-glass mr-ui-1 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]`}>
         <AnimatedCount
           value={resourceCount}
           className="resource-dock-count"
@@ -75,7 +77,7 @@ export const CardIcon = ({
       <img
         src={iconSrc}
         alt=""
-        className="h-10 w-10 object-contain"
+        className={`${compact ? "h-6 w-6" : "h-10 w-10"} object-contain`}
         draggable={false}
         onError={(event) => handleThemeImageError(event, iconFallback)}
       />
@@ -302,10 +304,10 @@ export const PlayerActionContainer = ({
         width: 0,
       };
 
-  const rollContent = (
+  const rollContent = readOnly && !getVisibleDiceRoll(G) ? null : (
     <>
-      <Die dieSize="3.15rem" />
-      <Die2 dieSize="3.15rem" />
+      {readOnly ? <StaticDie face={G.diceRoll[0]} dieSize="3.15rem" /> : <Die dieSize="3.15rem" />}
+      {readOnly ? <StaticDie face={G.diceRoll[1]} dieSize="3.15rem" /> : <Die2 dieSize="3.15rem" />}
     </>
   );
   const handleEndTurn = useCallback(() => {

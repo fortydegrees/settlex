@@ -262,6 +262,7 @@ const DieView = ({
 };
 
 const Die = memo(DieView);
+export const StaticDie = Die;
 
 /**
  * Use `useDie` to get a [`DieComponent`, `rollToFunction`] tuple.

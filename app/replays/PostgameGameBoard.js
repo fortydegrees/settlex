@@ -51,6 +51,7 @@ const postgameReplayReducer = (state, action) => {
     return {
       ...createReplaySessionState({
         eventCount: action.eventCount,
+        isComplete: action.isComplete,
         perspectiveId: action.perspectiveId,
       }),
       identityKey: action.identityKey,
@@ -65,6 +66,7 @@ export function PostgameGameBoard(props) {
     initialReplayPayload = null,
     initialPerspectivePlayerID = null,
     initialFrameIndex = 0,
+    onReplayLibraryOpen = null,
   } = props;
   const archivedMode = initialReplayPayload != null;
   const initialPayloadIdentityRef = useRef({
@@ -109,6 +111,7 @@ export function PostgameGameBoard(props) {
   });
   const hydratedPayload = initialReplayPayload ?? replayPayload.payload;
   const replay = hydratedPayload?.replay ?? null;
+  const isComplete = replay?.isComplete !== false;
   const safeFrames = useMemo(() => {
     const frames = hydratedPayload?.frames ?? [];
     if (frames.length > 0) return frames;
@@ -137,12 +140,13 @@ export function PostgameGameBoard(props) {
     postgameReplayReducer,
     {
       eventCount: timeline.events.length,
+      isComplete,
       perspectiveId: archivedMode
         ? initialPerspectivePlayerID
         : bgioProps.playerID,
     },
-    ({ eventCount, perspectiveId }) => ({
-      ...createReplaySessionState({ eventCount, perspectiveId }),
+    ({ eventCount, perspectiveId, isComplete }) => ({
+      ...createReplaySessionState({ eventCount, perspectiveId, isComplete }),
       identityKey: archivedMode ? replayIdentityKey : null,
       eventIndex: archivedInitialEventIndex,
     })
@@ -158,6 +162,7 @@ export function PostgameGameBoard(props) {
     : {
         ...createReplaySessionState({
           eventCount: timeline.events.length,
+          isComplete,
           perspectiveId: archivedMode
             ? initialPerspectivePlayerID
             : bgioProps.playerID,
@@ -257,6 +262,7 @@ export function PostgameGameBoard(props) {
       type: "startReplay",
       identityKey: replayIdentityKey,
       eventCount: timeline.events.length,
+      isComplete,
       perspectiveId: archivedMode
         ? initialPerspectivePlayerID
         : bgioProps.playerID,
@@ -268,6 +274,7 @@ export function PostgameGameBoard(props) {
     archivedMode,
     bgioProps.playerID,
     initialPerspectivePlayerID,
+    isComplete,
     payloadReadyForIdentity,
     replayIdentityKey,
     sessionIdentityMatches,
@@ -307,9 +314,11 @@ export function PostgameGameBoard(props) {
         ...buildReplayGameScreenProps({
           event: currentEvent,
           perspectiveId: displaySession.perspectiveId,
+          revealAllHands: displaySession.revealAllHands,
           matchID,
           matchData: replayMatchData,
           resultsOpen: displaySession.resultsOpen,
+          isComplete,
         }),
         chatMessages,
         onReplayResultsOpen: () => dispatch({ type: "openResults" }),
@@ -345,7 +354,11 @@ export function PostgameGameBoard(props) {
           currentEvent,
           currentEventIndex: displaySession.eventIndex,
           perspectiveId: displaySession.perspectiveId,
+          revealAllHands: displaySession.revealAllHands,
           victoryTarget,
+          canShowResults: isComplete,
+          onLibraryOpen: onReplayLibraryOpen,
+          replayMetadata: replay?.metadata,
           open: displaySession.panelOpen,
           mobileOpen: displaySession.mobilePanelOpen,
           chartOpen: displaySession.chartOpen,
@@ -356,6 +369,8 @@ export function PostgameGameBoard(props) {
             dispatch({ type: "setChartOpen", open }),
           onPerspectiveChange: (perspectiveId) =>
             dispatch({ type: "setPerspective", perspectiveId }),
+          onRevealAllHandsChange: (reveal) =>
+            dispatch({ type: "setRevealAllHands", reveal }),
           onResultsOpen: () => dispatch({ type: "openResults" }),
           onPreviousEvent: previousEvent,
           onNextEvent: nextEvent,
