@@ -1,7 +1,8 @@
-export const ACTIVE_MATCH_STORAGE_KEY = "catana:last-active-match";
+import { readBrowserStorage, writeBrowserStorage, removeBrowserStorage } from "../../../../lib/client/browserStorage.js";
+export const ACTIVE_MATCH_STORAGE_KEY = "settlehex:last-active-match";
 
 export const getCredentialsStorageKey = ({ matchID, playerID }) =>
-  `catana:lobby:credentials:${matchID}:${playerID}`;
+  `settlehex:lobby:credentials:${matchID}:${playerID}`;
 
 const getDefaultStorage = () =>
   typeof window === "undefined" ? null : window.localStorage;
@@ -25,7 +26,7 @@ const normalizeRecord = (value) => {
 
 export function readLastActiveMatch(storage = getDefaultStorage()) {
   try {
-    const raw = storage?.getItem?.(ACTIVE_MATCH_STORAGE_KEY);
+    const raw = readBrowserStorage(storage, ACTIVE_MATCH_STORAGE_KEY);
     if (!raw) return null;
     return normalizeRecord(JSON.parse(raw));
   } catch (err) {
@@ -38,7 +39,7 @@ export function writeLastActiveMatch(storage = getDefaultStorage(), record) {
   if (!normalized) return;
 
   try {
-    storage?.setItem?.(ACTIVE_MATCH_STORAGE_KEY, JSON.stringify(normalized));
+    writeBrowserStorage(storage, ACTIVE_MATCH_STORAGE_KEY, JSON.stringify(normalized));
   } catch (err) {
     // ignore storage failures
   }
@@ -46,7 +47,7 @@ export function writeLastActiveMatch(storage = getDefaultStorage(), record) {
 
 export function clearLastActiveMatch(storage = getDefaultStorage()) {
   try {
-    storage?.removeItem?.(ACTIVE_MATCH_STORAGE_KEY);
+    removeBrowserStorage(storage, ACTIVE_MATCH_STORAGE_KEY);
   } catch (err) {
     // ignore storage failures
   }

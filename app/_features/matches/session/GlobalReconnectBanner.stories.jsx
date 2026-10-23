@@ -5,6 +5,7 @@ import { PathnameContext } from "next/dist/shared/lib/hooks-client-context.share
 import { expect, within } from "@storybook/test";
 import { GlobalReconnectBanner } from "./GlobalReconnectBanner";
 import { ACTIVE_MATCH_STORAGE_KEY } from "./activeMatchStorage";
+import { readBrowserStorage } from "../../../../lib/client/browserStorage.js";
 
 const meta = {
   title: "Game State/Recovery/Reconnect Banner",
@@ -47,8 +48,10 @@ async function withBanner(canvasElement, exercise, { denyStorageAccess = false, 
   const navigations = [];
   let mounted = true;
   const storage = {
+    get length() { return records.size; },
+    key: index => [...records.keys()][index] ?? null,
     getItem: key => {
-      if (denyCredentialRead && key.startsWith("catana:lobby:credentials:")) throw new Error("credential storage denied");
+      if (denyCredentialRead && key.startsWith("settlehex:lobby:credentials:")) throw new Error("credential storage denied");
       return records.get(key) ?? null;
     },
     setItem: (key, value) => records.set(key, value),
@@ -56,7 +59,7 @@ async function withBanner(canvasElement, exercise, { denyStorageAccess = false, 
   };
   const seed = (matchID, playerName) => {
     records.set(ACTIVE_MATCH_STORAGE_KEY, JSON.stringify({ matchID, playerID: "0", playerName }));
-    records.set(`catana:lobby:credentials:${matchID}:0`, "synthetic-local-seat");
+    records.set(`settlehex:lobby:credentials:${matchID}:0`, "synthetic-local-seat");
   };
   seed("m1", "Alice");
   Object.defineProperty(window, "localStorage", { configurable: true, get: () => {
@@ -154,5 +157,25 @@ export const ActiveRouteAndUnmount = {
     await view.settle(1, response());
     expect(view.screen.queryByRole("button", { name: "Rejoin match" })).not.toBeInTheDocument();
     expect(view.records.has(ACTIVE_MATCH_STORAGE_KEY)).toBe(true);
+  })),
+};
+
+export const LegacyPreferencesAndSeatRecovery = {
+  play: report(canvas => withBanner(canvas, async view => {
+    view.records.clear();
+    view.records.set("catana:last-active-match", JSON.stringify({matchID:"m1",playerID:"0",playerName:"Alice"}));
+    view.records.set("catana:lobby:credentials:m1:0", "synthetic-local-seat");
+    view.records.set("catana:audioMuted", "true");
+    view.records.set("settlehex:themeId", "");
+    view.records.set("catana:themeId", "classic");
+    await view.render();
+    expect(view.requests).toHaveLength(1);
+    expect(readBrowserStorage(window.localStorage, "settlehex:audioMuted")).toBe("true");
+    expect(readBrowserStorage(window.localStorage, "settlehex:themeId")).toBe("");
+    expect(view.records.get("settlehex:lobby:credentials:m1:0")).toBe("synthetic-local-seat");
+    expect(view.records.has("catana:lobby:credentials:m1:0")).toBe(false);
+    await view.settle(0, response());
+    await view.click("Rejoin match");
+    expect(view.navigations).toEqual(["/g/m1"]);
   })),
 };

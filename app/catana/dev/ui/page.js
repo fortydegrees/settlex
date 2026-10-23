@@ -1,10 +1,5 @@
-import { notFound } from "next/navigation";
-import { UiShowcaseClient } from "../../../_features/dev/ui/UiShowcaseClient";
+import { redirectDevelopmentRoute } from "../../../../lib/server/developmentRoutes.js";
 
-export default function StandardUiShowcasePage() {
-  if (process.env.NODE_ENV !== "development") {
-    notFound();
-  }
-
-  return <UiShowcaseClient />;
+export default function LegacyDevelopmentPage({ searchParams } = {}) {
+  return redirectDevelopmentRoute("/dev/ui", searchParams);
 }

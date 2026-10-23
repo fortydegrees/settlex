@@ -1,7 +1,7 @@
 # App feature owners
 
 Next route files load these implementations. `_features` is private to the app;
-its directory names do not define URLs. Existing `/catana/dev/*` routes remain
+its directory names do not define URLs. Existing `/dev/*` routes remain
 thin development-only adapters, and `/settlehex` still redirects to `/`.
 
 | Change | Owner |

@@ -25,7 +25,7 @@ function seededStorageForMatch(matchID, playerID, playerName) {
       playerID,
       playerName
     }),
-    [`catana:lobby:credentials:${matchID}:${playerID}`]: "secret"
+    [`settlehex:lobby:credentials:${matchID}:${playerID}`]: "secret"
   });
 
   return storage;
@@ -194,7 +194,7 @@ describe("resolveReconnectBannerCandidate", () => {
     const storage = {
       ...backing,
       getItem(key) {
-        if (key === "catana:lobby:credentials:m1:0") throw new Error("storage denied");
+        if (key === "settlehex:lobby:credentials:m1:0") throw new Error("storage denied");
         return backing.getItem(key);
       }
     };

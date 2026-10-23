@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "../../../ui/Button";
 
-const SANDBOX_PATH = "/catana/dev/sandbox?viewportWall=1";
+const SANDBOX_PATH = "/dev/sandbox?viewportWall=1";
 
 const VIEWPORTS = [
   {

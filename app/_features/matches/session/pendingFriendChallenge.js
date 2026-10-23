@@ -1,3 +1,4 @@
+import { readBrowserStorage, writeBrowserStorage, removeBrowserStorage } from "../../../../lib/client/browserStorage.js";
 import {
   clearLastActiveMatch,
   getCredentialsStorageKey,
@@ -5,7 +6,7 @@ import {
 } from "./activeMatchStorage";
 
 export const PENDING_FRIEND_CHALLENGE_STORAGE_KEY =
-  "catana:lobby:pending-friend-challenge";
+  "settlehex:lobby:pending-friend-challenge";
 
 const getDefaultStorage = () =>
   typeof window === "undefined" ? null : window.localStorage;
@@ -73,7 +74,7 @@ const clearChallengeResumeState = (storage, record) => {
   clearChallengeResumePointer(storage, record);
 
   try {
-    storage?.removeItem?.(
+    removeBrowserStorage(storage,
       getCredentialsStorageKey({
         matchID: record.matchID,
         playerID: record.playerID
@@ -116,7 +117,7 @@ const cancelPendingChallenge = async ({
 
 export function readPendingFriendChallenge(storage = getDefaultStorage()) {
   try {
-    const raw = storage?.getItem?.(PENDING_FRIEND_CHALLENGE_STORAGE_KEY);
+    const raw = readBrowserStorage(storage, PENDING_FRIEND_CHALLENGE_STORAGE_KEY);
     if (!raw) return null;
     return normalizeRecord(JSON.parse(raw));
   } catch (error) {
@@ -132,7 +133,7 @@ export function writePendingFriendChallenge(
   if (!normalized) return;
 
   try {
-    storage?.setItem?.(
+    writeBrowserStorage(storage,
       PENDING_FRIEND_CHALLENGE_STORAGE_KEY,
       JSON.stringify(normalized)
     );
@@ -143,7 +144,7 @@ export function writePendingFriendChallenge(
 
 export function clearPendingFriendChallenge(storage = getDefaultStorage()) {
   try {
-    storage?.removeItem?.(PENDING_FRIEND_CHALLENGE_STORAGE_KEY);
+    removeBrowserStorage(storage, PENDING_FRIEND_CHALLENGE_STORAGE_KEY);
   } catch (error) {
     /* ignore storage failures */
   }
@@ -157,7 +158,7 @@ export async function restorePendingFriendChallenge({
   const record = readPendingFriendChallenge(storage);
   if (!record) return null;
 
-  const credentials = storage?.getItem?.(
+  const credentials = readBrowserStorage(storage,
     getCredentialsStorageKey({
       matchID: record.matchID,
       playerID: record.playerID

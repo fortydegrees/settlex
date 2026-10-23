@@ -1,4 +1,5 @@
 "use client";
+import { readBrowserStorage, writeBrowserStorage, removeBrowserStorage } from "../../../../lib/client/browserStorage.js";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,9 +36,9 @@ import {
   resolveOpenSeatSelection,
 } from "./matchRoomState";
 
-const PLAYER_NAME_STORAGE_KEY = "catana:lobby:playerName";
-const PLAYER_EMOJI_STORAGE_KEY = "catana:lobby:playerEmoji";
-const PLAYER_COLOR_STORAGE_KEY = "catana:lobby:playerColor";
+const PLAYER_NAME_STORAGE_KEY = "settlehex:lobby:playerName";
+const PLAYER_EMOJI_STORAGE_KEY = "settlehex:lobby:playerEmoji";
+const PLAYER_COLOR_STORAGE_KEY = "settlehex:lobby:playerColor";
 
 const safeJson = async (res) => {
   try {
@@ -272,7 +273,7 @@ export function MatchPageClient({
               avatarEmoji: (() => {
                 try {
                   return (
-                    window.localStorage.getItem(PLAYER_EMOJI_STORAGE_KEY) || "😀"
+                    readBrowserStorage(window.localStorage, PLAYER_EMOJI_STORAGE_KEY) || "😀"
                   );
                 } catch (err) {
                   return "😀";
@@ -281,7 +282,7 @@ export function MatchPageClient({
               avatarColor: (() => {
                 try {
                   return (
-                    window.localStorage.getItem(PLAYER_COLOR_STORAGE_KEY) ||
+                    readBrowserStorage(window.localStorage, PLAYER_COLOR_STORAGE_KEY) ||
                     "royal"
                   );
                 } catch (err) {
@@ -296,7 +297,7 @@ export function MatchPageClient({
 
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
+      const stored = readBrowserStorage(window.localStorage, PLAYER_NAME_STORAGE_KEY);
       if (stored) setPlayerName(stored);
     } catch (err) {
       // ignore
@@ -317,7 +318,7 @@ export function MatchPageClient({
     if (!playerID) return;
     if (credentials) return;
     try {
-      const storedCreds = window.localStorage.getItem(
+      const storedCreds = readBrowserStorage(window.localStorage,
         getCredentialsStorageKey({ matchID, playerID })
       );
       if (storedCreds) setCredentials(storedCreds);
@@ -328,7 +329,7 @@ export function MatchPageClient({
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(PLAYER_NAME_STORAGE_KEY, playerName);
+      writeBrowserStorage(window.localStorage, PLAYER_NAME_STORAGE_KEY, playerName);
     } catch (err) {
       // ignore
     }
@@ -434,7 +435,7 @@ export function MatchPageClient({
         undefined;
 
       try {
-        window.localStorage.setItem(
+        writeBrowserStorage(window.localStorage,
           getCredentialsStorageKey({ matchID, playerID: nextPlayerID }),
           nextCreds
         );
@@ -476,7 +477,7 @@ export function MatchPageClient({
       try {
         inviterCredentials =
           inviterCredentials ||
-          window.localStorage.getItem(
+          readBrowserStorage(window.localStorage,
             getCredentialsStorageKey({ matchID, playerID: inviterSeatId })
           );
       } catch (err) {
@@ -511,7 +512,7 @@ export function MatchPageClient({
 
       try {
         clearPendingFriendChallenge(window.localStorage);
-        window.localStorage.removeItem(
+        removeBrowserStorage(window.localStorage,
           getCredentialsStorageKey({ matchID, playerID: inviterSeatId })
         );
         const activeMatch = readLastActiveMatch(window.localStorage);
@@ -570,7 +571,7 @@ export function MatchPageClient({
       if (!nextCreds) throw new Error("Join succeeded but returned no credentials.");
 
       try {
-        window.localStorage.setItem(
+        writeBrowserStorage(window.localStorage,
           getCredentialsStorageKey({ matchID, playerID }),
           nextCreds
         );
@@ -618,7 +619,7 @@ export function MatchPageClient({
       });
 
       try {
-        window.localStorage.removeItem(
+        removeBrowserStorage(window.localStorage,
           getCredentialsStorageKey({ matchID, playerID })
         );
         const activeMatch = readLastActiveMatch(window.localStorage);

@@ -130,7 +130,7 @@ describe("SettleHex metadata", () => {
       rules: {
         userAgent: "*",
         allow: ["/", "/g/", "/u/"],
-        disallow: ["/api/", "/account", "/catana/dev/"],
+        disallow: ["/api/", "/account", "/dev/", "/catana/dev/"],
       },
       sitemap: "https://settlehex.com/sitemap.xml",
     });

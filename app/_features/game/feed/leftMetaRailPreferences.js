@@ -1,5 +1,6 @@
+import { readBrowserStorage, writeBrowserStorage } from "../../../../lib/client/browserStorage.js";
 export const LEFT_META_RAIL_DESKTOP_STORAGE_KEY =
-  "catana:left-meta-rail:desktop";
+  "settlehex:left-meta-rail:desktop";
 export const LEFT_META_RAIL_DESKTOP_MIN_WIDTH = 250;
 export const LEFT_META_RAIL_DESKTOP_DEFAULT_WIDTH = 350;
 export const LEFT_META_RAIL_DESKTOP_MAX_WIDTH = 448;
@@ -64,7 +65,7 @@ export function readLeftMetaRailDesktopPrefs(
   options
 ) {
   try {
-    const raw = storage?.getItem?.(LEFT_META_RAIL_DESKTOP_STORAGE_KEY);
+    const raw = readBrowserStorage(storage, LEFT_META_RAIL_DESKTOP_STORAGE_KEY);
     if (!raw) {
       return normalizeLeftMetaRailDesktopPrefs(null, options);
     }
@@ -83,7 +84,7 @@ export function writeLeftMetaRailDesktopPrefs(
   const normalized = normalizeLeftMetaRailDesktopPrefs(prefs, options);
 
   try {
-    storage?.setItem?.(
+    writeBrowserStorage(storage,
       LEFT_META_RAIL_DESKTOP_STORAGE_KEY,
       JSON.stringify(normalized)
     );

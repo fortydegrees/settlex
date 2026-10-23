@@ -27,7 +27,7 @@ describe("activeMatchStorage", () => {
   it("builds the seat credential key", () => {
     expect(
       getCredentialsStorageKey({ matchID: "abc", playerID: "1" })
-    ).toBe("catana:lobby:credentials:abc:1");
+    ).toBe("settlehex:lobby:credentials:abc:1");
   });
 
   it("round-trips the last active match record", () => {

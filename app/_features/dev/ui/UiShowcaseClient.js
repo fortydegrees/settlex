@@ -113,7 +113,7 @@ export function UiShowcaseClient() {
                   Open lobby
                 </Link>
                 <Link
-                  href="/catana/dev/sandbox"
+                  href="/dev/sandbox"
                   className="settlehex-ui-button settlehex-ui-button-subtle settlehex-ui-focus block px-ui-3 py-ui-2 type-action-small"
                 >
                   Open board sandbox

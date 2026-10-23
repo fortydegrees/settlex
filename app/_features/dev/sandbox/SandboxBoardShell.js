@@ -129,7 +129,7 @@ export function SandboxBoardShell({
   const dispatchDevCardPlayEffect = (detail) => {
     if (typeof window === "undefined") return;
     window.dispatchEvent(
-      new CustomEvent("catana:dev-sandbox:devcard-play", { detail })
+      new CustomEvent("settlehex:dev-sandbox:devcard-play", { detail })
     );
   };
 
@@ -161,7 +161,7 @@ export function SandboxBoardShell({
     });
     if (!payload) return;
     window.dispatchEvent(
-      new CustomEvent("catana:dev-sandbox:robber-move", {
+      new CustomEvent("settlehex:dev-sandbox:robber-move", {
         detail: payload
       })
     );
@@ -175,7 +175,7 @@ export function SandboxBoardShell({
     });
     if (!payload) return;
     window.dispatchEvent(
-      new CustomEvent("catana:dev-sandbox:award-claim", {
+      new CustomEvent("settlehex:dev-sandbox:award-claim", {
         detail: payload
       })
     );
@@ -194,7 +194,7 @@ export function SandboxBoardShell({
     });
     if (!payload) return;
     window.dispatchEvent(
-      new CustomEvent("catana:dev-sandbox:award-claim", {
+      new CustomEvent("settlehex:dev-sandbox:award-claim", {
         detail: payload
       })
     );
@@ -203,7 +203,7 @@ export function SandboxBoardShell({
   const handleLargestArmyAwardReplay = () => {
     if (typeof window === "undefined") return;
     window.dispatchEvent(
-      new CustomEvent("catana:dev-sandbox:award-claim", {
+      new CustomEvent("settlehex:dev-sandbox:award-claim", {
         detail: buildLargestArmyAwardReplayPayload({
           playerId: getSyntheticOpponentId()
         })
@@ -218,7 +218,7 @@ export function SandboxBoardShell({
       playerIds.find((playerId) => String(playerId) !== String(nextOwnerId)) ??
       null;
     window.dispatchEvent(
-      new CustomEvent("catana:dev-sandbox:award-claim", {
+      new CustomEvent("settlehex:dev-sandbox:award-claim", {
         detail: buildLargestArmyAwardReplayPayload({
           playerId: nextOwnerId,
           previousOwnerId

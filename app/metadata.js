@@ -95,7 +95,7 @@ export const createRobotsMetadata = () => ({
   rules: {
     userAgent: "*",
     allow: ["/", "/g/", "/u/"],
-    disallow: ["/api/", "/account", "/catana/dev/"],
+    disallow: ["/api/", "/account", "/dev/", "/catana/dev/"],
   },
   sitemap: `${SITE_URL}/sitemap.xml`,
 });

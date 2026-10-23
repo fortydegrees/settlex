@@ -1,4 +1,5 @@
-const STORAGE_KEY = "catana:game-start-transition";
+import { readBrowserStorage, writeBrowserStorage, removeBrowserStorage } from "../../../../lib/client/browserStorage.js";
+const STORAGE_KEY = "settlehex:game-start-transition";
 const MAX_AGE_MS = 60_000;
 
 const browserStorage = () =>
@@ -11,7 +12,7 @@ export function markGameStartTransition({
 } = {}) {
   if (!storage || !matchID) return false;
   try {
-    storage.setItem(STORAGE_KEY, JSON.stringify({ matchID, createdAt: now }));
+    writeBrowserStorage(storage, STORAGE_KEY, JSON.stringify({ matchID, createdAt: now }));
     return true;
   } catch {
     return false;
@@ -26,8 +27,8 @@ export function consumeGameStartTransition({
   if (!storage || !matchID) return false;
   let transition = null;
   try {
-    const raw = storage.getItem(STORAGE_KEY);
-    storage.removeItem(STORAGE_KEY);
+    const raw = readBrowserStorage(storage, STORAGE_KEY);
+    removeBrowserStorage(storage, STORAGE_KEY);
     transition = raw ? JSON.parse(raw) : null;
   } catch {
     return false;

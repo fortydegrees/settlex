@@ -21,10 +21,10 @@ const countResources = (resources) => {
   return counts;
 };
 
-export const TradeDiscardModal = ({ 
+export const TradeDiscardModal = ({
   mode, // 'discard' | 'trade' | 'dev-yop' | 'dev-monopoly'
   player, // The current player object (with resources)
-  onConfirm, 
+  onConfirm,
   onCancel,
   requiredDiscardCount, // For discard mode: how many cards MUST be discarded
   G, // Need access to G and topology for trade rates
@@ -112,7 +112,7 @@ export const TradeDiscardModal = ({
     ? Object.keys(selected).filter((r) => selected[r] > 0)
     : [];
   const givingResource = selectedGiveTypes.length === 1 ? selectedGiveTypes[0] : null;
-  
+
   const currentTradeRate =
     isTrade && givingResource ? getTradeRate(givingResource) : 0;
 
@@ -237,7 +237,7 @@ export const TradeDiscardModal = ({
   return (
     <div className="settlehex-ui-dialog-backdrop settlehex-ui-layer-dialog settlehex-ui-dialog-viewport fixed inset-0 flex items-center justify-center pointer-events-auto">
       <div role="dialog" aria-labelledby={titleId} className="settlehex-ui-pane settlehex-ui-dialog-surface w-[520px] max-w-full max-h-full flex flex-col gap-ui-4">
-        
+
         {/* Header */}
         <h2 id={titleId} className="type-title text-center text-ink-primary">
           {title}
@@ -245,7 +245,7 @@ export const TradeDiscardModal = ({
 
         {/* Content */}
         <div className="flex flex-col gap-ui-4">
-          
+
           {/* GIVE SECTION */}
           {(isDiscard || isTrade) && (
             <div
@@ -578,7 +578,7 @@ export const TradeDiscardModal = ({
               Cancel
             </Button>
           )}
-          
+
           <Button variant="primary" size="sm"
             onClick={handleConfirm}
             disabled={!canConfirm}

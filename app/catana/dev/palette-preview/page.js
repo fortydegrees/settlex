@@ -1,10 +1,5 @@
-import { notFound } from "next/navigation";
-import { PaletteBoardPreviewClient } from "../../../_features/dev/palette-preview/PaletteBoardPreviewClient";
+import { redirectDevelopmentRoute } from "../../../../lib/server/developmentRoutes.js";
 
-export default function PaletteBoardPreviewPage() {
-  if (process.env.NODE_ENV !== "development") {
-    notFound();
-  }
-
-  return <PaletteBoardPreviewClient />;
+export default function LegacyDevelopmentPage({ searchParams } = {}) {
+  return redirectDevelopmentRoute("/dev/palette-preview", searchParams);
 }

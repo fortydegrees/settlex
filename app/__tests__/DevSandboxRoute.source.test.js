@@ -10,7 +10,7 @@ const read = (relativePath) =>
 
 describe("Dev sandbox route source", () => {
   it("keeps the sandbox route development-only and boots the sandbox client", () => {
-    const source = read("../catana/dev/sandbox/page.js");
+    const source = read("../dev/sandbox/page.js");
 
     expect(source).toContain('process.env.NODE_ENV !== "development"');
     expect(source).toContain("notFound()");

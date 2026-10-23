@@ -10,7 +10,7 @@ import {
   guestIdentity,
   matchAlertFixtures,
   savedIdentity,
-} from "../catana/dev/storybook/accountFixtures";
+} from "../dev/storybook/accountFixtures";
 import { publicReleaseInfo } from "./releaseInfo";
 import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 import {

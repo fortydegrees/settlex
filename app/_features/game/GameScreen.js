@@ -1,4 +1,5 @@
 "use client";
+import { readBrowserStorage, writeBrowserStorage } from "../../../lib/client/browserStorage.js";
 import { MemoizedCatanBoard } from "./board/Board";
 import {
   TransformWrapper,
@@ -105,7 +106,7 @@ import {
   buildSandboxAwardClaimPayload,
   buildSandboxDevCardPlayPayload,
   buildSandboxRobberMovePayload
-} from "../catana/dev/sandbox/effectPayloads";
+} from "../dev/sandbox/effectPayloads";
 import { useMatchAlerts } from "../matches/alerts/useMatchAlerts.js";
 import { getCurrentMatchAlertGameRegistration } from "../matches/alerts/matchAlertProviderActions.js";
 import { tabAttention } from "../../../lib/client/tabAttention";
@@ -165,14 +166,14 @@ const loadDeferredGameSurfaces = () =>
     loadDevCardPurchaseReveal()
   ]);
 
-const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
+const AUDIO_MUTE_STORAGE_KEY = "settlehex:audioMuted";
 const topUtilityButtonClassName =
   "settlehex-ui-game-utility h-10 w-10 sm:h-12 sm:w-12";
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
   try {
-    return window.localStorage.getItem(AUDIO_MUTE_STORAGE_KEY) === "true";
+    return readBrowserStorage(window.localStorage, AUDIO_MUTE_STORAGE_KEY) === "true";
   } catch (err) {
     return false;
   }
@@ -182,7 +183,7 @@ const readStoredThemeId = () => {
   if (typeof window === "undefined") return resolveThemeId(null);
   try {
     return resolveThemeId(
-      window.localStorage.getItem(SETTLEHEX_THEME_STORAGE_KEY)
+      readBrowserStorage(window.localStorage, SETTLEHEX_THEME_STORAGE_KEY)
     );
   } catch (err) {
     return resolveThemeId(null);
@@ -795,7 +796,7 @@ export function GameScreen(bgioProps) {
     Howler.mute(isMuted);
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(AUDIO_MUTE_STORAGE_KEY, String(isMuted));
+      writeBrowserStorage(window.localStorage, AUDIO_MUTE_STORAGE_KEY, String(isMuted));
     } catch (err) {
       // ignore storage errors
     }
@@ -804,7 +805,7 @@ export function GameScreen(bgioProps) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(SETTLEHEX_THEME_STORAGE_KEY, themeId);
+      writeBrowserStorage(window.localStorage, SETTLEHEX_THEME_STORAGE_KEY, themeId);
     } catch (err) {
       // ignore storage errors
     }
@@ -1383,28 +1384,28 @@ export function GameScreen(bgioProps) {
     };
 
     window.addEventListener(
-      "catana:dev-sandbox:devcard-play",
+      "settlehex:dev-sandbox:devcard-play",
       handleDevSandboxDevCardPlay
     );
     window.addEventListener(
-      "catana:dev-sandbox:robber-move",
+      "settlehex:dev-sandbox:robber-move",
       handleDevSandboxRobberMove
     );
     window.addEventListener(
-      "catana:dev-sandbox:award-claim",
+      "settlehex:dev-sandbox:award-claim",
       handleDevSandboxAwardClaim
     );
     return () => {
       window.removeEventListener(
-        "catana:dev-sandbox:devcard-play",
+        "settlehex:dev-sandbox:devcard-play",
         handleDevSandboxDevCardPlay
       );
       window.removeEventListener(
-        "catana:dev-sandbox:robber-move",
+        "settlehex:dev-sandbox:robber-move",
         handleDevSandboxRobberMove
       );
       window.removeEventListener(
-        "catana:dev-sandbox:award-claim",
+        "settlehex:dev-sandbox:award-claim",
         handleDevSandboxAwardClaim
       );
     };
@@ -1657,7 +1658,7 @@ export function GameScreen(bgioProps) {
         />
       )}
 
-      {/* our cards and action dock 
+      {/* our cards and action dock
 TODO: accurately colour it
 */}
       {!!player &&

@@ -5,7 +5,7 @@ import { expect, fn, within } from "@storybook/test";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
 import { HomeTableClient } from "../../home/HomeTableClient";
 import { MatchAlertContext } from "../alerts/MatchAlertProvider";
-import { matchAlertFixtures } from "../../catana/dev/storybook/accountFixtures";
+import { matchAlertFixtures } from "../../dev/storybook/accountFixtures";
 import { readLastActiveMatch, writeLastActiveMatch } from "../session/activeMatchStorage";
 import { tabAttention } from "../../../../lib/client/tabAttention";
 import { consumeGameStartTransition, markGameStartTransition } from "../../game/effects/gameStartTransition";
@@ -56,7 +56,7 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
   let mounted = true;
   const events = [];
   const marks = [];
-  const transitionKey = "catana:game-start-transition";
+  const transitionKey = "settlehex:game-start-transition";
   const oldTransition = sessionStorage.getItem(transitionKey);
   sessionStorage.removeItem(transitionKey);
   const requests = [];
@@ -189,7 +189,7 @@ export const WaitingAndAnnouncements = {
       expect(view.lobby.searchState).toMatchObject({ matchID: "waiting-duel", playerID: "0", phase: "searching", createdNewPublicDuel: true });
       expect(view.lobby.searchElapsedSeconds).toBe(0);
       expect(view.lobby.isBusy).toBe(true);
-      expect(localStorage.getItem("catana:lobby:credentials:waiting-duel:0")).toBe(view.requests[0].body.requestedCredentials);
+      expect(localStorage.getItem("settlehex:lobby:credentials:waiting-duel:0")).toBe(view.requests[0].body.requestedCredentials);
       expect(readLastActiveMatch()).toMatchObject({ matchID: "waiting-duel", playerID: "0", playerName: "Ada" });
       expect(view.router.push).not.toHaveBeenCalled();
       await clock.advance(1000);
@@ -230,7 +230,7 @@ export const CommittedAndAmbiguousResults = {
           return init.method === "DELETE" ? { status: "match_found", ...filledMatch } : filledMatch;
         };
         view.router.push.mockImplementation(href => {
-          expect(localStorage.getItem("catana:lobby:credentials:filled-duel:1")).toBe("synthetic-assigned-seat");
+          expect(localStorage.getItem("settlehex:lobby:credentials:filled-duel:1")).toBe("synthetic-assigned-seat");
           expect(readLastActiveMatch()).toMatchObject({ matchID: "filled-duel", playerID: "1", playerName: "Ada" });
           view.events.push(["navigate", href]);
         });

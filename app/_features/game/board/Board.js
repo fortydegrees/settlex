@@ -453,7 +453,7 @@ export function CatanBoard({
 
   // placePiece effects keep state updates delayed; use active effect to suppress overlaps
 
-  
+
 
   useEffectListener(
     "distributeCardsFromTile",
@@ -810,7 +810,7 @@ export function CatanBoard({
   //TODO: i think we need to just render nodes.
   //as in, right now we render all nodes and just hide it if it's not actionable
   //we only need to do this if it's the player's turn
-  
+
   {
     !suppressBuildActions &&
       (() => {

@@ -1,4 +1,5 @@
 "use client";
+import { readBrowserStorage } from "../../../lib/client/browserStorage.js";
 
 import { useRouter } from "next/navigation";
 import React, {
@@ -67,7 +68,7 @@ const useGameStartSound = () => {
     if (audioRef.current) return;
     if (typeof window === "undefined") return;
     try {
-      if (window.localStorage.getItem("catana:audioMuted") === "true") return;
+      if (readBrowserStorage(window.localStorage, "settlehex:audioMuted") === "true") return;
       const audio = new window.Audio("/sounds/game-start.mp3");
       audio.preload = "auto";
       audioRef.current = audio;

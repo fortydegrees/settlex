@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { fn } from "@storybook/test";
-import { replayTimeline } from "../../catana/dev/storybook/replayFixtures";
+import { replayTimeline } from "../../dev/storybook/replayFixtures";
 import { ReplayPanel } from "./ReplayPanel";
 import { useReplayNavigation } from "../useReplayNavigation";
 import { getPreviousTurnEventIndex, getNextTurnEventIndex } from "../replayTimeline";

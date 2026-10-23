@@ -36,7 +36,7 @@ function okJson(payload) {
 describe("pendingFriendChallenge", () => {
   const pendingStorage = (activeMatchID = "m1") => createMemoryStorage({
     [PENDING_FRIEND_CHALLENGE_STORAGE_KEY]: JSON.stringify({ matchID: "m1", playerID: "0", savedAtMs: 123 }),
-    "catana:lobby:credentials:m1:0": "secret",
+    "settlehex:lobby:credentials:m1:0": "secret",
     [ACTIVE_MATCH_STORAGE_KEY]: JSON.stringify({ matchID: activeMatchID, playerID: "0", savedAtMs: 123 }),
   });
 
@@ -48,7 +48,7 @@ describe("pendingFriendChallenge", () => {
 
     expect(await restorePendingFriendChallenge({ storage, fetchImpl, cancelPending: true })).toEqual({ status: "canceled" });
     expect(readPendingFriendChallenge(storage)).toBeNull();
-    expect(storage.getItem("catana:lobby:credentials:m1:0")).toBeNull();
+    expect(storage.getItem("settlehex:lobby:credentials:m1:0")).toBeNull();
     expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).toBe(
       activeMatchID === "m1" ? null : JSON.stringify({ matchID: activeMatchID, playerID: "0", savedAtMs: 123 })
     );
@@ -62,7 +62,7 @@ describe("pendingFriendChallenge", () => {
 
     expect(await restorePendingFriendChallenge({ storage, fetchImpl, cancelPending: true })).toEqual({ status: "cancel-failed" });
     expect(readPendingFriendChallenge(storage)?.matchID).toBe("m1");
-    expect(storage.getItem("catana:lobby:credentials:m1:0")).toBe("secret");
+    expect(storage.getItem("settlehex:lobby:credentials:m1:0")).toBe("secret");
     expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).not.toBeNull();
   });
 
@@ -76,7 +76,7 @@ describe("pendingFriendChallenge", () => {
 
     expect(await restorePendingFriendChallenge({ storage, fetchImpl, cancelPending: true })).toEqual({ status: "accepted", href: "/g/m1" });
     expect(readPendingFriendChallenge(storage)).toBeNull();
-    expect(storage.getItem("catana:lobby:credentials:m1:0")).toBe("secret");
+    expect(storage.getItem("settlehex:lobby:credentials:m1:0")).toBe("secret");
     expect(storage.getItem(ACTIVE_MATCH_STORAGE_KEY)).not.toBeNull();
   });
 
@@ -124,7 +124,7 @@ describe("pendingFriendChallenge", () => {
         matchID: "m1",
         playerID: "0"
       }),
-      "catana:lobby:credentials:m1:0": "secret"
+      "settlehex:lobby:credentials:m1:0": "secret"
     });
     const fetchImpl = vi.fn().mockResolvedValue(
       okJson({
@@ -159,7 +159,7 @@ describe("pendingFriendChallenge", () => {
         matchID: "m1",
         playerID: "0"
       }),
-      "catana:lobby:credentials:m1:0": "secret"
+      "settlehex:lobby:credentials:m1:0": "secret"
     });
     const fetchImpl = vi.fn().mockResolvedValue(
       okJson({
@@ -186,7 +186,7 @@ describe("pendingFriendChallenge", () => {
         matchID: "m1",
         playerID: "0"
       }),
-      "catana:lobby:credentials:m1:0": "secret"
+      "settlehex:lobby:credentials:m1:0": "secret"
     });
     const fetchImpl = vi
       .fn()

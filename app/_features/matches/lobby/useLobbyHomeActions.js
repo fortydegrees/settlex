@@ -1,4 +1,5 @@
 "use client";
+import { writeBrowserStorage } from "../../../../lib/client/browserStorage.js";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -595,7 +596,7 @@ export function useLobbyHomeActions({
       if (!credentials) return;
 
       try {
-        window.localStorage.setItem(
+        writeBrowserStorage(window.localStorage,
           getCredentialsStorageKey({ matchID, playerID }),
           credentials
         );

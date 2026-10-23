@@ -1,3 +1,4 @@
+import { readBrowserStorage, writeBrowserStorage, removeBrowserStorage } from "../../../../lib/client/browserStorage.js";
 import {
   clearLastActiveMatch,
   getCredentialsStorageKey,
@@ -137,7 +138,7 @@ const leaveActiveBotMatch = async ({ currentGame, storage, fetchImpl }) => {
   const credentialKey = getCredentialsStorageKey(activeMatch);
   let credentials;
   try {
-    credentials = storage?.getItem?.(credentialKey);
+    credentials = readBrowserStorage(storage, credentialKey);
   } catch {
     return false;
   }
@@ -155,7 +156,7 @@ const leaveActiveBotMatch = async ({ currentGame, storage, fetchImpl }) => {
   if (!response.ok) return false;
 
   try {
-    storage?.removeItem?.(credentialKey);
+    removeBrowserStorage(storage, credentialKey);
   } catch {
     // The server leave already succeeded; stale local credentials are harmless.
   }
@@ -206,7 +207,7 @@ export async function joinAlertMatch({
     if (!credentials) return joinResult("error");
 
     try {
-      storage?.setItem?.(
+      writeBrowserStorage(storage,
         getCredentialsStorageKey({
           matchID: verified.match.matchID,
           playerID: joinedPlayerID,

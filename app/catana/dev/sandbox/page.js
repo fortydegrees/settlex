@@ -1,10 +1,5 @@
-import { notFound } from "next/navigation";
-import { SandboxClient } from "../../../_features/dev/sandbox/SandboxClient";
+import { redirectDevelopmentRoute } from "../../../../lib/server/developmentRoutes.js";
 
-export default function SandboxPage() {
-  if (process.env.NODE_ENV !== "development") {
-    notFound();
-  }
-
-  return <SandboxClient />;
+export default function LegacyDevelopmentPage({ searchParams } = {}) {
+  return redirectDevelopmentRoute("/dev/sandbox", searchParams);
 }

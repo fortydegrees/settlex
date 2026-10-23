@@ -22,7 +22,7 @@ describe("GameScreen dev card play animation wiring", () => {
   it("supports dev-sandbox synthetic Knight start, resolve, and reset events", () => {
     const source = readGameScreen();
 
-    expect(source).toContain("catana:dev-sandbox:devcard-play");
+    expect(source).toContain("settlehex:dev-sandbox:devcard-play");
     expect(source).toContain("devcard:play:start");
     expect(source).toContain("devcard:play:resolve");
     expect(source).toContain("clearDevCardPlayActors");

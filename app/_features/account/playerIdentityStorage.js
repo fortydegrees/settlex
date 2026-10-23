@@ -1,12 +1,13 @@
+import { readBrowserStorage, writeBrowserStorage, removeBrowserStorage } from "../../../lib/client/browserStorage.js";
 import {
   PLAYER_COLOR_PICKER_OPTIONS,
   normalizePlayerColorId,
 } from "../theme/playerColors";
 import { buildGeneratedGuestUsername } from "../../../lib/shared/guestUsername";
 
-export const STORAGE_KEY_NAME = "catana:lobby:playerName";
-export const STORAGE_KEY_EMOJI = "catana:lobby:playerEmoji";
-export const STORAGE_KEY_COLOR = "catana:lobby:playerColor";
+export const STORAGE_KEY_NAME = "settlehex:lobby:playerName";
+export const STORAGE_KEY_EMOJI = "settlehex:lobby:playerEmoji";
+export const STORAGE_KEY_COLOR = "settlehex:lobby:playerColor";
 
 export const EMOJI_OPTIONS = [
   "😀", "😃", "😄", "😁",
@@ -17,7 +18,7 @@ export const EMOJI_OPTIONS = [
 
 const getStorageValue = (storage, key) => {
   try {
-    return storage?.getItem(key) || "";
+    return readBrowserStorage(storage, key) || "";
   } catch (error) {
     return "";
   }
@@ -41,21 +42,21 @@ export const writeStoredPlayerIdentity = (
 ) => {
   try {
     if (name) {
-      storage?.setItem(STORAGE_KEY_NAME, name);
+      writeBrowserStorage(storage, STORAGE_KEY_NAME, name);
     } else {
-      storage?.removeItem(STORAGE_KEY_NAME);
+      removeBrowserStorage(storage, STORAGE_KEY_NAME);
     }
 
     if (emoji) {
-      storage?.setItem(STORAGE_KEY_EMOJI, emoji);
+      writeBrowserStorage(storage, STORAGE_KEY_EMOJI, emoji);
     } else {
-      storage?.removeItem(STORAGE_KEY_EMOJI);
+      removeBrowserStorage(storage, STORAGE_KEY_EMOJI);
     }
 
     if (color) {
-      storage?.setItem(STORAGE_KEY_COLOR, normalizePlayerColorId(color));
+      writeBrowserStorage(storage, STORAGE_KEY_COLOR, normalizePlayerColorId(color));
     } else {
-      storage?.removeItem(STORAGE_KEY_COLOR);
+      removeBrowserStorage(storage, STORAGE_KEY_COLOR);
     }
   } catch (error) {
     /* ignore storage write failures */

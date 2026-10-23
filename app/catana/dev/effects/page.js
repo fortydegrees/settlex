@@ -1,10 +1,5 @@
-import { notFound } from "next/navigation";
-import { EffectsLabClient } from "../../../_features/dev/effects/EffectsLabClient";
+import { redirectDevelopmentRoute } from "../../../../lib/server/developmentRoutes.js";
 
-export default function EffectsLabPage() {
-  if (process.env.NODE_ENV !== "development") {
-    notFound();
-  }
-
-  return <EffectsLabClient />;
+export default function LegacyDevelopmentPage({ searchParams } = {}) {
+  return redirectDevelopmentRoute("/dev/effects", searchParams);
 }

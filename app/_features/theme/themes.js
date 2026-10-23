@@ -1,5 +1,5 @@
 export const DEFAULT_THEME_ID = "emoji";
-export const SETTLEHEX_THEME_STORAGE_KEY = "catana:themeId";
+export const SETTLEHEX_THEME_STORAGE_KEY = "settlehex:themeId";
 const CLASSIC_THEME_ID = "classic";
 
 const PALETTE_TILE_FILE_NAMES = Object.freeze([

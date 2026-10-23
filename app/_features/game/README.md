@@ -24,7 +24,7 @@ Board drawing, geometry and placement previews live in [the board feature](board
 
 ## Verification Defaults
 
-- If a component is only restyled, verify in the surface that owns it, usually `/catana/dev/sandbox`.
+- If a component is only restyled, verify in the surface that owns it, usually `/dev/sandbox`.
 - If a component exposes shared behavior or helpers, run the focused component/helper tests.
 - Check desktop `1440x900` first for HUD layout. Add `390x844` for mobile-sensitive surfaces.
 

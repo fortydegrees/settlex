@@ -78,7 +78,7 @@ export const ResetDuringOpeningJingle = {
     const cues = [];
     const originalPlay = Howl.prototype.play;
     const oldAct = globalThis.IS_REACT_ACT_ENVIRONMENT;
-    const storageKey = "catana:game-start-transition";
+    const storageKey = "settlehex:game-start-transition";
     const oldMarker = sessionStorage.getItem(storageKey);
     const overrides = { "game:start": { src: "/sounds/road.mp3", allowWhenHidden: true } };
     const stopObserving = bus.on("cue", event => cues.push(event.payload.name));

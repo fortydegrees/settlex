@@ -46,7 +46,7 @@ export function parseLocalReplayFile(text) {
   let payload;
   try { payload = JSON.parse(text); } catch { throw new Error("The selected file is not valid JSON. Convert the recording to a replay file first."); }
   if (payload?.format === "han-prototype") payload = buildNotationReplayFile(payload);
-  if (payload?.format !== "settlex-replay-file" || payload.schemaVersion !== 1) fail("unsupported format or version");
+  if (!["settlehex-replay-file", "settlex-replay-file"].includes(payload?.format) || payload.schemaVersion !== 1) fail("unsupported format or version");
   const { replay, frames } = payload;
   if (!isRecord(replay) || typeof replay.match?.replayId !== "string" || !Array.isArray(replay.participants) || replay.participants.length < 2
     || typeof replay.isComplete !== "boolean" || !Array.isArray(frames) || frames.length === 0) fail("missing participants, completion status or frames");

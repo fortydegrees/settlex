@@ -10,7 +10,7 @@ const read = (relativePath) =>
 
 describe("Dev viewport wall source", () => {
   it("keeps the viewport wall route development-only", () => {
-    const source = read("../../../../catana/dev/viewports/page.js");
+    const source = read("../../../../dev/viewports/page.js");
 
     expect(source).toContain('process.env.NODE_ENV !== "development"');
     expect(source).toContain("notFound()");
@@ -20,7 +20,7 @@ describe("Dev viewport wall source", () => {
   it("embeds the SettleHex sandbox at the expected responsive viewport set", () => {
     const source = read("../ViewportWallClient.js");
 
-    expect(source).toContain('"/catana/dev/sandbox?viewportWall=1"');
+    expect(source).toContain('"/dev/sandbox?viewportWall=1"');
     expect(source).toContain("2560");
     expect(source).toContain("1440");
     expect(source).toContain("1024");

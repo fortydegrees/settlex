@@ -5,7 +5,7 @@
     /* top: 0; */
     bottom: 60%;
     left: 50%;
-     transform: translateX(-25%) translateY(-50%); 
+     transform: translateX(-25%) translateY(-50%);
     align-items: flex-end;
     height: 58px;
     display: flex;
@@ -29,7 +29,7 @@
     padding: 0;
     margin: 0;
 
-/*   
+/*
     &:hover {
       filter: saturate(1) brightness(1.12);
     } */
@@ -38,21 +38,21 @@
   .dock-card.enabled {
     cursor: pointer;
   }
-  
+
   .dock-card-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: var(--settlehex-ui-space-1);
   }
-  
+
   .dock-dot {
     width: 6px;
     height: 6px;
     border-radius: var(--settlehex-ui-radius-pill);
     background-color: var(--settlehex-ui-surface-selected);
   }
-  
+
 .card {
     position: relative;
     display: flex;
@@ -117,4 +117,4 @@
   .card__img-prelaunch {
     width: 80%;
   }
-  
+

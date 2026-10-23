@@ -1,3 +1,4 @@
+import { readBrowserStorage } from "../../../../lib/client/browserStorage.js";
 import {
   clearLastActiveMatch,
   getCredentialsStorageKey,
@@ -50,7 +51,7 @@ export async function resolveReconnectBannerCandidate({
   const credentialsKey = getCredentialsStorageKey(activeMatch);
   let credentials;
   try {
-    credentials = storage?.getItem?.(credentialsKey);
+    credentials = readBrowserStorage(storage, credentialsKey);
   } catch {
     // An unreadable seat may still be recoverable when storage is available.
     return null;

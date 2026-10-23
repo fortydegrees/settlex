@@ -1,7 +1,7 @@
 # Customize board art and game sounds
 
-Start the local app with `pnpm dev`, then open `/catana/dev/effects` for an
-isolated runner or `/catana/dev/sandbox` for the real board. These routes are
+Start the local app with `pnpm dev`, then open `/dev/effects` for an
+isolated runner or `/dev/sandbox` for the real board. These routes are
 for development. No match server, live account or new package is needed for
 these examples. Keep your change in its owning map and check the real preview.
 
@@ -38,7 +38,7 @@ identity matters: changing the map recreates and unloads the audio manager.
 This is a developer injection point, not a persisted sound-pack setting.
 `GameEffects` also accepts `audioSettings={{ muted: true }}` for an embedding;
 the normal GameScreen mute control uses Howler's global mute and stores
-`catana:audioMuted`.
+`settlehex:audioMuted`.
 
 The same map works with a standalone audio manager used by a preview:
 
@@ -175,7 +175,7 @@ a new theme is not a universal reskin of every image on the site.
 
 ### Select and preview
 
-GameScreen reads `catana:themeId` on mount, resolves unknown IDs to Emoji, and
+GameScreen reads `settlehex:themeId` on mount, resolves unknown IDs to Emoji, and
 writes the resolved ID back. Game settings displays the ID; there is currently
 no interactive theme selector. `getThemeOptions()` exposes registry entries but
 has no current picker consumer.
@@ -185,8 +185,8 @@ select the registered ID in browser developer tools, then reload:
 
 ```js
 // Save the old value separately if you need to restore a prior preference.
-localStorage.getItem("catana:themeId");
-localStorage.setItem("catana:themeId", "my-board");
+localStorage.getItem("settlehex:themeId");
+localStorage.setItem("settlehex:themeId", "my-board");
 location.reload();
 ```
 

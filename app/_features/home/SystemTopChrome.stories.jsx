@@ -4,7 +4,7 @@ import {
   matchAlertErrors,
   matchAlertFixtures,
   savedIdentity,
-} from "../catana/dev/storybook/accountFixtures";
+} from "../dev/storybook/accountFixtures";
 import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 import { SystemTopChrome } from "./SystemTopChrome";
 

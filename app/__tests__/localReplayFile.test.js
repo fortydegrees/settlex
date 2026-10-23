@@ -4,6 +4,10 @@ import { buildReplayTimeline } from "../_features/replay/replayTimeline.js";
 import { createReplaySessionState, replaySessionReducer } from "../_features/replay/replaySessionState.js";
 import { localReplayPayload as payload } from "./fixtures/localReplayPayload.js";
 describe("generic local replay file",()=>{
+  it.each(["settlehex-replay-file", "settlex-replay-file"])("reads the %s envelope without changing saved state",format=>{
+    const saved=payload();saved.format=format;
+    expect(parseLocalReplayFile(JSON.stringify(saved)).frames).toEqual(saved.frames);
+  });
   it("loads frames without needing an account, database or finished game",()=>{
     const result=parseLocalReplayFile(JSON.stringify(payload()));
     expect(result.frames).toHaveLength(3);
