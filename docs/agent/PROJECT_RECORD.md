@@ -152,3 +152,18 @@ Persisted game registration, HAN/CGN schemas, replay envelopes, the production
 database volume and match-lock namespace retain compatibility. Existing deployed
 paths, real remote URLs, captured records and upstream native identities remain
 accurate. No dependency versions, remote state or production services changed.
+
+Qualification passed all 160 app test files, 174 engine tests, 34 UI-policy
+tests, lint, the production build and the Storybook build (226 entries). The
+server/lib run passed 647 tests with 18 environment-dependent skips; its real
+notation-worker test still timed out. A diagnostic using 232 byte-verified
+pre-migration source files also exceeded the unchanged 30-second deadline in
+this environment. This remains an unresolved qualification limit, rather than
+a reason to alter archive behavior during a naming migration.
+
+Production HTTP checks passed for all canonical/legacy dev guards, retired
+routes, the scenario API and the homepage redirect. The legacy preference/seat
+recovery story passed in development Storybook with controlled external
+boundaries. Independent review findings were fixed and reviewed again. Local
+qualification does not establish real-PostgreSQL or production deployment
+readiness.
