@@ -104,3 +104,17 @@ no local PostgreSQL server or Docker daemon was available. The previously timed-
 notation worker passed with its unchanged 30-second deadline in both diagnostic
 and combined runs; the earlier failure's cause remains unproven. No deployment,
 backfill or public release qualification is implied.
+
+## 2026-10-23 — app feature ownership
+
+Replaced the Catana implementation umbrella with `app/_features/` owners for
+home, account/profile, match lifecycle, game presentation, replay, theme and dev
+surfaces. See `app/_features/README.md` for the source reading path. Existing
+URLs and development guards remain in thin route adapters; persisted names,
+CSS selectors and runtime identities are unchanged. `GameScreen` retains screen
+orchestration and deferred surfaces. The purchase reveal and its snapshot helper
+are colocated under game effects; cards own the shared `CardIcon` and hand renderer.
+Pure compact replay adapters and shared text/alert models now serve browser and
+server consumers from `lib/`. Rules, notation and authoritative privacy retain
+their existing owners. Runtime tests moved into the server/lib lane without
+changing the runner; the game UI shorthand is now `pnpm test:game-ui`.

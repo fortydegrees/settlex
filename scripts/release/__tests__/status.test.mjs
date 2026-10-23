@@ -38,7 +38,7 @@ const approvedRelease2 = {
 describe("release status", () => {
   it("detects release-note and deployment-infra changes", () => {
     expect(hasReleaseNotesChanged(["release/release-notes.json"])).toBe(true);
-    expect(hasReleaseNotesChanged(["app/catana/lobby/VersionBadge.js"])).toBe(
+    expect(hasReleaseNotesChanged(["app/_features/home/VersionBadge.js"])).toBe(
       false
     );
 
@@ -46,7 +46,7 @@ describe("release status", () => {
     expect(
       hasDeploymentInfraChanged(["infra/scripts/deploy-prod-from-git.sh"])
     ).toBe(true);
-    expect(hasDeploymentInfraChanged(["app/catana/lobby/VersionBadge.js"])).toBe(
+    expect(hasDeploymentInfraChanged(["app/_features/home/VersionBadge.js"])).toBe(
       false
     );
   });

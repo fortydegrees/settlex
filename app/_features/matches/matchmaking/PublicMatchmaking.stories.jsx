@@ -5,7 +5,7 @@ import { expect, fn, within } from "@storybook/test";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
 import { HomeTableClient } from "../../home/HomeTableClient";
 import { MatchAlertContext } from "../alerts/MatchAlertProvider";
-import { matchAlertFixtures } from "../../../catana/dev/storybook/accountFixtures";
+import { matchAlertFixtures } from "../../dev/storybook/accountFixtures";
 import { readLastActiveMatch, writeLastActiveMatch } from "../session/activeMatchStorage";
 import { tabAttention } from "../../../../lib/client/tabAttention";
 import { consumeGameStartTransition, markGameStartTransition } from "../../game/effects/gameStartTransition";

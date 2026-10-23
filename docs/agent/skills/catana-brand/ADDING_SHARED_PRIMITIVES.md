@@ -11,7 +11,7 @@ Before designing or implementing a new shared primitive, read:
 1. `docs/agent/skills/catana-brand/SKILL.md`
 2. `docs/agent/DESIGN_SYSTEM.md`
 3. the existing primitives in `app/ui/*`
-4. `app/catana/dev/ui/UiShowcaseClient.js`
+4. `app/_features/dev/ui/UiShowcaseClient.js`
 
 If the component is an overlay, floating surface, or anything with focus/dismissal/keyboard behavior, also read the relevant Base UI docs.
 
@@ -94,8 +94,8 @@ When adding a new shared primitive:
 2. Prefer Base UI/headless primitives when accessibility or interaction behavior matters
 3. Review two or three external references for the interaction before writing the shared component
 4. Copy/adapt the behavior pattern or open-code implementation where sensible; do not import a whole styling system just to get one pattern
-5. Add or update source tests under `app/catana/__tests__/`
-6. Add an example to `app/catana/dev/ui/UiShowcaseClient.js`
+5. Add or update behavior tests beside the owning component
+6. Add an example to `app/_features/dev/ui/UiShowcaseClient.js`
 7. If sensible, migrate one real surface to prove it in production context
 8. Browser-check desktop and mobile if the component is visual or interactive
 
@@ -155,7 +155,7 @@ Read first:
 - docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md
 - docs/agent/DESIGN_SYSTEM.md
 - app/ui/*
-- app/catana/dev/ui/UiShowcaseClient.js
+- app/_features/dev/ui/UiShowcaseClient.js
 
 Requirements:
 - This belongs to the shared standard UI layer, not bespoke gameplay UI.

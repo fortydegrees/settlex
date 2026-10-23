@@ -4,7 +4,7 @@ import {
   matchAlertErrors,
   matchAlertFixtures,
   savedIdentity,
-} from "../../catana/dev/storybook/accountFixtures";
+} from "../dev/storybook/accountFixtures";
 import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
 import { SystemTopChrome } from "./SystemTopChrome";
 

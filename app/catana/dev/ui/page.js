@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { UiShowcaseClient } from "./UiShowcaseClient";
+import { UiShowcaseClient } from "../../../_features/dev/ui/UiShowcaseClient";
 
 export default function StandardUiShowcasePage() {
   if (process.env.NODE_ENV !== "development") {

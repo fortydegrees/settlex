@@ -47,7 +47,7 @@ PostgreSQL. No backfill, production migration, public endpoint or deployment is
 implied. Existing format limits and archive privacy/retention boundaries remain.
 
 The shared game definition/setup/moves/log helpers live in `lib/game-runtime/`;
-board drawing/geometry/placement previews live in `app/catana/board/`.
+board drawing/geometry/placement previews live in `app/_features/game/board/`.
 Their moves were independently reviewed for import/body parity. The preceding source-organisation qualification passed all 201 app test files
 serially, lint, UI policy and the configured production build. Those earlier
 checks predate the legacy fixes below and were not duplicated for curation.

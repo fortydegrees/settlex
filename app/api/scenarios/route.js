@@ -4,7 +4,7 @@ import path from 'path';
 
 export const dynamic = "force-dynamic";
 
-const SCENARIOS_DIR = path.join(process.cwd(), 'app', 'catana', 'scenarios');
+const SCENARIOS_DIR = path.join(process.cwd(), 'app', '_features', 'dev', 'scenarios');
 
 const isDevelopment = () => process.env.NODE_ENV === 'development';
 

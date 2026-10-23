@@ -30,6 +30,6 @@ warning while detecting ESM syntax; this relocation adds no package boundary or
 loader configuration.
 
 Existing runtime behavioral tests retain their names under
-`app/catana/__tests__/`; server/archive and replay tests remain with their
+`lib/game-runtime/__tests__/`; server/archive and replay tests remain with their
 consumers. See the [architecture reading path](../../docs/architecture/overview.md)
 and [testing policy](../../docs/agent/TESTING.md).

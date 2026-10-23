@@ -43,7 +43,7 @@ Maintained app dev routes remain development-gated. Production GameScreen import
 payload helpers from dev/sandbox, so the dev directory is retained. The separate home-table,
 sidebar-connection and underlay-waves development routes were subsequently
 retired on 21 October 2026. The production homepage remains under
-`app/catana/home/`; it did not depend on those experiment files.
+`app/_features/home/`; it did not depend on those experiment files.
 
 Resolver verification found a pre-existing Palette B desert primary URL,
 /svgs/tile_desert.svg, absent in both original source and candidate. The board's

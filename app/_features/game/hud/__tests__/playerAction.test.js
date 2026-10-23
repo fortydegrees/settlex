@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const loadScenarioState = (name) => {
-  const scenarioPath = path.resolve(process.cwd(), "app/catana/scenarios", name);
+  const scenarioPath = path.resolve(process.cwd(), "app/_features/dev/scenarios", name);
   const raw = JSON.parse(fs.readFileSync(scenarioPath, "utf8"));
   return raw.state ?? raw.G ?? raw;
 };

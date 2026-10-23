@@ -5,7 +5,7 @@
 - `game-core/`: deterministic TypeScript rules and game state.
 - `lib/game-runtime/`: boardgame.io registration, setup, moves and privacy.
 - `server/`: live games, timers, bots and archives.
-- `app/`: website and game UI; board rendering lives in `app/catana/board/`.
+- `app/`: website and game UI; board rendering lives in `app/_features/game/board/`.
 - `lib/server/` and `app/api/`: accounts, database access and website APIs.
 
 See [architecture](docs/architecture/overview.md) and

@@ -225,7 +225,7 @@ turn hand-off, relevance checks and cancellation on unmount.
 Relevant checks (run only the scope your change needs):
 
 ```sh
-pnpm exec vitest run app/catana/__tests__/effects app/_features/theme/__tests__/themeAssets.test.js
+pnpm exec vitest run app/_features/game/effects/__tests__ app/_features/theme/__tests__/themeAssets.test.js
 pnpm exec eslint app/_features/game/effects/AudioManager.js app/_features/game/effects/GameEffects.js
 ```
 

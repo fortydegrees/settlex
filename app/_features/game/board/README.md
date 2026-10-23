@@ -2,7 +2,7 @@
 
 `Board.js` renders the playable board; `app/_features/game/GameScreen.js` composes it
 with the HUD, feed, viewport controls and effect providers. The Next route stays
-at `app/catana/page.js`.
+through `app/g/[matchID]/` and `app/_features/game/GameScreen.js`.
 
 - `Tile`, `Node`, `Edge`, `Piece`, `Port` and `ActionNode` draw tiles, pieces,
   ports and placement targets. Their CSS stays beside them.

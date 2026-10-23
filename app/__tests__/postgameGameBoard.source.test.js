@@ -44,9 +44,6 @@ describe("PostgameGameBoard", () => {
   });
 
   it("owns the boardgame.io live board slot", () => {
-    expect(matchPageSource).toContain(
-      'import { PostgameGameBoard } from "../../../replays/PostgameGameBoard"'
-    );
     expect(matchPageSource).toContain("board: PostgameGameBoard");
     expect(matchPageSource).not.toContain("board: GameScreenWithEffects");
   });

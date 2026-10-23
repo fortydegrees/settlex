@@ -15,16 +15,16 @@ describe("verification lanes", () => {
     expect(source).toContain("**/game-core/dist/**");
   });
 
-  it("exposes focused verification scripts for game logic, server/runtime, and Catana app work", () => {
+  it("exposes focused verification scripts for game logic, server/runtime, and game UI work", () => {
     const packageJson = JSON.parse(readRepoFile("package.json"));
     const scripts = packageJson.scripts ?? {};
 
     expect(scripts["test:logic"]).toBe("pnpm -C game-core build && pnpm -C game-core test");
     expect(scripts["test:server"]).toBe(
-      "pnpm exec vitest run server lib ai --reporter=dot"
+      "pnpm exec vitest run server lib --reporter=dot"
     );
-    expect(scripts["test:catana"]).toBe(
-      "pnpm exec vitest run app/catana --reporter=dot"
+    expect(scripts["test:game-ui"]).toBe(
+      "pnpm exec vitest run app/_features/game --reporter=dot"
     );
     expect(scripts.verify).toContain("pnpm run test:logic");
     expect(scripts.verify).toContain("pnpm run test:server");

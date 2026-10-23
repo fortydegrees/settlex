@@ -13,10 +13,10 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 - `docs/agent/skills/catana-brand/SKILL.md`: current product direction plus brand, component, color, typography, and motion rules. Read this before building or restyling Catana UI.
 - `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md`: checklist for one-off visual audits and pre-redesign critique.
 - `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`: extra workflow only when adding or extending reusable `app/ui/*` primitives.
-- `app/catana/dev/sandbox/README.md`: real board UI sandbox. Use for gameplay HUD, board, opponent box, turn controls, dev-card, award, robber, and card-transfer presentation.
-- `app/catana/dev/effects/README.md`: isolated effects lab. Use for tuning deterministic animation/audio runners without needing a live game state.
+- `app/_features/dev/sandbox/README.md`: real board UI sandbox. Use for gameplay HUD, board, opponent box, turn controls, dev-card, award, robber, and card-transfer presentation.
+- `app/_features/dev/effects/README.md`: isolated effects lab. Use for tuning deterministic animation/audio runners without needing a live game state.
 - `app/_features/game/README.md`: component and HUD context. Use before editing shared Catana components.
-- `app/catana/dev/ui/`: standard UI showcase for shared product-surface primitives.
+- `app/_features/dev/ui/`: standard UI showcase for shared product-surface primitives.
 - `docs/agent/UI_CATALOG.md`: production component ownership and the current
   Clarity ButtonFamily/Foundations reference. Its approved role-based corner and
   shared-material rules supersede older ad hoc button snippets in the brand guide.
@@ -38,12 +38,12 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 
 ## UI Work Triage
 
-Use `app/catana/dev/sandbox` when the change depends on real board layout, viewer seat, player HUD, opponent HUD, live effect anchors, or board state.
+Use `app/_features/dev/sandbox` when the change depends on real board layout, viewer seat, player HUD, opponent HUD, live effect anchors, or board state.
 
-Use `app/catana/dev/effects` when the change is an isolated effect runner, cue timing, audio mapping, or deterministic replay.
+Use `app/_features/dev/effects` when the change is an isolated effect runner, cue timing, audio mapping, or deterministic replay.
 
 
-Use `app/catana/dev/ui` when the change is a shared product primitive from `app/ui/*`, not bespoke board chrome.
+Use `app/_features/dev/ui` when the change is a shared product primitive from `app/ui/*`, not bespoke board chrome.
 
 Use focused source tests or Vitest when the change modifies helpers, selectors, event payloads, state gating, or a regression that should stay locked in.
 

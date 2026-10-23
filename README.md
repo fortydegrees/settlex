@@ -127,9 +127,9 @@ provider behavior.
 | `lib/game-runtime/` | Shared boardgame.io factory, setup, move adapters and authoritative log/privacy helpers |
 | `server/` | Live matches, timers, presence, bots and archival lifecycle |
 | `lib/server/`, `app/api/` | Accounts, database access and website API boundaries |
-| `app/catana/` | Game-screen composition, HUD, lobby and feature owners |
-| `app/catana/board/` | Board drawing, geometry, placement previews and colocated tests |
-| `app/catana/effects/`, `public/sounds/` | Presentation runners, audio cue routing and served clips |
+| `app/_features/` | Home, account/profile, match lifecycle, game, replay, theme and dev owners |
+| `app/_features/game/board/` | Board drawing, geometry, placement previews and colocated tests |
+| `app/_features/game/effects/`, `public/sounds/` | Presentation runners, audio cue routing and served clips |
 | `scripts/`, `infra/`, `release/` | Maintained commands, local/deployment infrastructure and release records |
 | `public/`, `design/`, `sounds/` | Served assets, design sources and sound creation tools; source and rights review still applies |
 | `native/` | Optional SettleGraph bot serving; not needed for human play |
@@ -137,7 +137,7 @@ provider behavior.
 
 The server, browser and archive replay share `lib/game-runtime/Game.js`. It uses
 the rules in `game-core/`; presentation and effect runners remain under
-`app/catana/`. One repository keeps these consumers and tests together. See the
+`app/_features/game/`. One repository keeps these consumers and tests together. See the
 architecture guide for the boundaries and a short reading path.
 
 The [experimental notation guide](docs/notation/README.md) covers durable records

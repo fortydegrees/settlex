@@ -1,6 +1,6 @@
-# Catana Components
+# Game presentation
 
-This folder contains Catana-specific UI components. Treat it as gameplay UI, not generic product UI.
+This feature owns gameplay presentation. `GameScreen.js` composes `board/`, `hud/`, `cards/`, `feed/`, `dialogs/`, `model/` and `effects/`; rules remain in `game-core/` and `lib/game-runtime/`.
 
 For shared product-surface primitives, check `app/ui/*` and `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md` before adding a new common pattern.
 
@@ -13,7 +13,7 @@ For shared product-surface primitives, check `app/ui/*` and `docs/agent/skills/c
 
 ## Common Surfaces
 
-Board drawing, geometry and placement previews live in [the board feature](../board/README.md).
+Board drawing, geometry and placement previews live in [the board feature](board/README.md).
 `GameScreen.js` remains the composition entry point.
 
 - `PlayerActionContainer`, `TurnControlCluster`, `Die`: local player HUD, resources, dice, turn actions.
