@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { getDevCardRevealDurations } from "./utils/devCardPurchaseReveal";
+import { getDevCardRevealDurations } from "./devCardPurchaseRevealModel";
 
 const DEV_CARD_FACE_SVGS = Object.freeze({
   knight: "/svgs/cards/development/knight.svg",

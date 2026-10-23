@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { Dock } from "../../components/ActionsDock/Dock";
 import { DockCard } from "../../components/ActionsDock/DockCard";
 import { DevCardDisplay } from "../../components/DevCardDisplay";
-import { DevCardPurchaseReveal } from "../../DevCardPurchaseReveal";
+import { DevCardPurchaseReveal } from "../../../_features/game/effects/dev-card-purchase/DevCardPurchaseReveal";
 
 const DEFAULT_CARD_TYPE = "victoryPoint";
 const DEFAULT_PRELAUNCH_DELAY_MS = 320;

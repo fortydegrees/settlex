@@ -1,7 +1,7 @@
 import {
   getDevCardRevealDurations,
   getVisibleDevCardsDuringReveal,
-} from "../../utils/devCardPurchaseReveal";
+} from "../devCardPurchaseRevealModel";
 
 describe("devCardPurchaseReveal helpers", () => {
   it("uses the slower staged reveal timings for normal motion", () => {

@@ -77,7 +77,7 @@ import {
 } from "./effects/devCardPlayPerspective";
 import {
   getVisibleDevCardsDuringReveal,
-} from "./utils/devCardPurchaseReveal";
+} from "../_features/game/effects/dev-card-purchase/devCardPurchaseRevealModel";
 import {
   createKnightDisplayOverride,
   removeKnightDisplayOverride,
@@ -149,7 +149,7 @@ const LazyPostgameOverlay = React.lazy(() =>
 
 let devCardPurchaseRevealPromise;
 const loadDevCardPurchaseReveal = () =>
-  (devCardPurchaseRevealPromise ??= import("./DevCardPurchaseReveal"));
+  (devCardPurchaseRevealPromise ??= import("../_features/game/effects/dev-card-purchase/DevCardPurchaseReveal"));
 const LazyDevCardPurchaseReveal = React.lazy(() =>
   loadDevCardPurchaseReveal().then((module) => ({
     default: module.DevCardPurchaseReveal
