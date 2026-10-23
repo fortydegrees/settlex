@@ -48,21 +48,21 @@ cargo build --release --locked --manifest-path native/settlegraph-v2/Cargo.toml
 cargo fmt --manifest-path native/settlegraph-v2/Cargo.toml -- --check
 cargo clippy --manifest-path native/settlegraph-v2/Cargo.toml --all-targets -- -D warnings
 cargo test --manifest-path native/settlegraph-v2/Cargo.toml
-SETTLEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/accepted-v2.ctnn \
+SETTLEHEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/accepted-v2.ctnn \
 cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test contract \
   sealed_ctnn_matches_hash_contract_and_embedded_probe -- --ignored --exact --nocapture
-SETTLEX_INCUMBENT_005_MODEL=/absolute/path/to/incumbent-005/model.ctnn \
-SETTLEX_005_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
+SETTLEHEX_INCUMBENT_005_MODEL=/absolute/path/to/incumbent-005/model.ctnn \
+SETTLEHEX_005_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
 cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test incumbent_005 \
   -- --ignored --nocapture
-SETTLEX_INCUMBENT_006_MODEL=/absolute/path/to/incumbent-006/model.ctnn \
-SETTLEX_006_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
+SETTLEHEX_INCUMBENT_006_MODEL=/absolute/path/to/incumbent-006/model.ctnn \
+SETTLEHEX_006_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
 cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test incumbent_006 \
   -- --ignored --nocapture
 ```
 
 The three ignored original sealed-CTNN-v2 checks in `contract`, `snapshot` and
-`worker` require `SETTLEX_SETTLEGRAPH_V2_MODEL` to name the original external V2
+`worker` require `SETTLEHEX_SETTLEGRAPH_V2_MODEL` to name the original external V2
 artifact (SHA-256 `072906d17077f1ed3fa4e9254999a8920ec243bdda3ab42575258492b58465c8`).
 They fail explicitly when invoked without that variable; they never fall back to
 a maintainer path or silently skip. The ordinary model-free tests need no model.
@@ -79,9 +79,9 @@ embedded probes, and all 256 recorded logits, values, and legal argmaxes for eac
 Run the real Boardgame.io-to-model smoke with:
 
 ```bash
-SETTLEX_RUN_SETTLEGRAPH_V2_E2E=1 \
-SETTLEX_EXPECTED_MODEL_SHA256=<exact-sha-for-the-selected-model> \
-SETTLEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/model.ctnn \
+SETTLEHEX_RUN_SETTLEGRAPH_V2_E2E=1 \
+SETTLEHEX_EXPECTED_MODEL_SHA256=<exact-sha-for-the-selected-model> \
+SETTLEHEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/model.ctnn \
 pnpm vitest run server/__tests__/settleGraphV2.e2e.test.js --reporter=verbose
 ```
 
@@ -97,8 +97,8 @@ DATABASE_URL=postgres://settlehex:settlehex@localhost:55432/settlehex pnpm db:mi
 Build the release worker, then run the game server:
 
 ```bash
-SETTLEX_SETTLEGRAPH_V2_ENABLED=1 \
-SETTLEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/selected-model.ctnn \
+SETTLEHEX_SETTLEGRAPH_V2_ENABLED=1 \
+SETTLEHEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/selected-model.ctnn \
 DATABASE_URL=postgres://settlehex:settlehex@localhost:55432/settlehex \
 pnpm serve
 ```
@@ -106,8 +106,8 @@ pnpm serve
 In a second terminal, run the web app with the server and public UI flags:
 
 ```bash
-SETTLEX_SETTLEGRAPH_V2_ENABLED=1 \
-NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=1 \
+SETTLEHEX_SETTLEGRAPH_V2_ENABLED=1 \
+NEXT_PUBLIC_SETTLEHEX_SETTLEGRAPH_V2=1 \
 GAME_SERVER_INTERNAL_URL=http://localhost:8080 \
 NEXT_PUBLIC_GAME_SERVER_ORIGIN=http://localhost:8000 \
 DATABASE_URL=postgres://settlehex:settlehex@localhost:55432/settlehex \
@@ -121,7 +121,7 @@ pnpm dev
 Open `http://localhost:3000`, choose **Play vs Bot**, and play normally. The
 default worker path is
 `native/settlegraph-v2/target/release/settlegraph-v2-worker`; override it with
-`SETTLEX_SETTLEGRAPH_V2_WORKER`. With the public and server native-bot flags enabled, the single homepage bot
+`SETTLEHEX_SETTLEGRAPH_V2_WORKER`. With the public and server native-bot flags enabled, the single homepage bot
 action uses the startup selection; bootstrap metadata currently selects 009.
 With the public flag disabled, the homepage hides the bot action.
 
@@ -150,4 +150,4 @@ Product startup reads the shared external current.json and supplies `--expected-
 
 ## 009 wider native support
 
-The current release selects the exact 009 wide checkpoint, SHA `d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf`. The vendored inference wrapper and shared FP32 kernel are imported from source at `55f4b3663ad980c367c70aa709163160e3dec378`. Only normal 64/128/16 and wide 128/256/32 widths are admitted; each loaded model creates its matching reusable scratch buffers. V3 observations, topology and 299 actions are unchanged. The loader verifies model bytes and embedded probe before serving. 008 remains supported for rollback. Exact artifact tests are opt-in with `SETTLEX_INCUMBENT_009_MODEL` and `SETTLEX_INCUMBENT_008_MODEL`.
+The current release selects the exact 009 wide checkpoint, SHA `d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf`. The vendored inference wrapper and shared FP32 kernel are imported from source at `55f4b3663ad980c367c70aa709163160e3dec378`. Only normal 64/128/16 and wide 128/256/32 widths are admitted; each loaded model creates its matching reusable scratch buffers. V3 observations, topology and 299 actions are unchanged. The loader verifies model bytes and embedded probe before serving. 008 remains supported for rollback. Exact artifact tests are opt-in with `SETTLEHEX_INCUMBENT_009_MODEL` and `SETTLEHEX_INCUMBENT_008_MODEL`.

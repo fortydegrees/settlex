@@ -16,21 +16,21 @@ pnpm bot:promote -- --model /absolute/promoted-model.ctnn --checkpoint 009 --sha
 pnpm bot:check
 ```
 
-The default store is `.local/bot`, ignored by Git and Docker builds. Set `SETTLEX_BOT_MODEL_MANIFEST=/absolute/store/current.json` for another store. Both local server processes must use the same selection and these flags:
+The default store is `.local/bot`, ignored by Git and Docker builds. Set `SETTLEHEX_BOT_MODEL_MANIFEST=/absolute/store/current.json` for another store. Both local server processes must use the same selection and these flags:
 
 ```sh
-export SETTLEX_SETTLEGRAPH_V2_ENABLED=1
-export NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=1
+export SETTLEHEX_SETTLEGRAPH_V2_ENABLED=1
+export NEXT_PUBLIC_SETTLEHEX_SETTLEGRAPH_V2=1
 pnpm serve  # game server; run pnpm dev in another shell with the same flags
 ```
 
 After a selection change restart game/web. Roll back with `pnpm bot:promote -- --rollback`, then restart both. An installed model can also be selected again with its original model path/checkpoint/hash. A checkpoint directory cannot be overwritten with different bytes. Failed validation leaves current.json unchanged; unused candidate bytes may remain in their version directory. A per-store lock prevents simultaneous CLI installations; after a killed installer, verify no installer is running before removing its stale `.promotion-lock` directory.
 
-If no local/external selection exists, `release/bot-model.json` provides bootstrap metadata. The old `SETTLEX_SETTLEGRAPH_V2_MODEL` override applies only to that bootstrap. An explicitly configured missing manifest fails startup; it never silently selects a fallback. An external current.json takes precedence over the checked-in release metadata.
+If no local/external selection exists, `release/bot-model.json` provides bootstrap metadata. The old `SETTLEHEX_SETTLEGRAPH_V2_MODEL` override applies only to that bootstrap. An explicitly configured missing manifest fails startup; it never silently selects a fallback. An external current.json takes precedence over the checked-in release metadata.
 
 ## Production: routine model upgrade
 
-After this infrastructure is deployed once, both web and game mount `/srv/settlex-models` read-only at `/opt/settlex/models` and read `/opt/settlex/models/current.json`. Set `SETTLEX_BOT_MODELS_DIR` for a different host store. Future compatible weight changes do not rebuild images or change the public release counter.
+After this infrastructure is deployed once, both web and game mount `/srv/settlex-models` read-only at `/opt/settlex/models` and read `/opt/settlex/models/current.json`. Set `SETTLEHEX_BOT_MODELS_DIR` for a different host store. Future compatible weight changes do not rebuild images or change the public release counter.
 
 Upload the approved model to a new staging path on the server. From `/srv/settlex`, with explicit deployment authority:
 
@@ -49,10 +49,10 @@ For a new installation, prepare the external store before starting game/web. The
 From `/srv/settlex`, create the configured host store with permissions allowing the installer to write and both services to read it. Stage the approved model as `/absolute/staging/model.ctnn`. Use the same absolute store path as the Compose services (`/srv/settlex-models` by default):
 
 ```sh
-export SETTLEX_BOT_MODELS_DIR=/srv/settlex-models
-install -d "$SETTLEX_BOT_MODELS_DIR"
+export SETTLEHEX_BOT_MODELS_DIR=/srv/settlex-models
+install -d "$SETTLEHEX_BOT_MODELS_DIR"
 docker compose --env-file .env.prod -f infra/docker-compose.prod.yml run --rm --no-deps \
-  --volume "$SETTLEX_BOT_MODELS_DIR:/opt/settlex/models:rw" \
+  --volume "$SETTLEHEX_BOT_MODELS_DIR:/opt/settlex/models:rw" \
   --volume /absolute/staging:/opt/settlex/candidate:ro \
   game node scripts/bots/promote.mjs \
   --directory /opt/settlex/models --model /opt/settlex/candidate/model.ctnn \

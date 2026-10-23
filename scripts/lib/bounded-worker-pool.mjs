@@ -7,7 +7,7 @@ export function resolveConcurrency(rawValue, availableCpuCount) {
   const parsed = Number(rawValue);
   if (!Number.isInteger(parsed) || parsed < 1 || parsed > 8) {
     throw new Error(
-      "SETTLEX_APP_TEST_CONCURRENCY must be an integer from 1 to 8"
+      "SETTLEHEX_APP_TEST_CONCURRENCY must be an integer from 1 to 8"
     );
   }
   return parsed;

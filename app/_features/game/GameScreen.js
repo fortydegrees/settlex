@@ -105,7 +105,7 @@ import {
   buildSandboxAwardClaimPayload,
   buildSandboxDevCardPlayPayload,
   buildSandboxRobberMovePayload
-} from "../catana/catana/dev/sandbox/effectPayloads";
+} from "../catana/dev/sandbox/effectPayloads";
 import { useMatchAlerts } from "../matches/alerts/useMatchAlerts.js";
 import { getCurrentMatchAlertGameRegistration } from "../matches/alerts/matchAlertProviderActions.js";
 import { tabAttention } from "../../../lib/client/tabAttention";

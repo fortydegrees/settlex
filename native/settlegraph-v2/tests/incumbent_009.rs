@@ -3,7 +3,7 @@ use std::path::Path;
 #[test]
 #[ignore = "requires exact external 009 artifact"]
 fn incumbent_009_loads_and_runs_its_wide_v3_contract() {
-    let path = std::env::var("SETTLEX_INCUMBENT_009_MODEL").expect("set exact 009 path");
+    let path = std::env::var("SETTLEHEX_INCUMBENT_009_MODEL").expect("set exact 009 path");
     let model = load_verified_model(Path::new(&path)).expect("load checkpoint 009");
     assert_eq!(
         model.sha256,

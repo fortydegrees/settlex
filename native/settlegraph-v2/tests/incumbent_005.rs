@@ -6,7 +6,7 @@ use settlegraph_v2::decision::select_highest_legal;
 use settlegraph_v2::{load_verified_model, INCUMBENT_005_CTNN_SHA256};
 
 fn model_path() -> String {
-    std::env::var("SETTLEX_INCUMBENT_005_MODEL").expect("set the sealed 005 model path")
+    std::env::var("SETTLEHEX_INCUMBENT_005_MODEL").expect("set the sealed 005 model path")
 }
 
 #[test]
@@ -20,7 +20,7 @@ fn incumbent_005_matches_research_outputs_and_legal_choices() {
     assert_eq!(model.contract.action_count, 299);
 
     let probes: Value = serde_json::from_slice(
-        &std::fs::read(std::env::var("SETTLEX_005_REFERENCE_PROBES").unwrap()).unwrap(),
+        &std::fs::read(std::env::var("SETTLEHEX_005_REFERENCE_PROBES").unwrap()).unwrap(),
     )
     .unwrap();
     let rows = probes["rows"].as_array().unwrap();

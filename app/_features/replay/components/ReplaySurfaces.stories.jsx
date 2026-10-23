@@ -2,7 +2,7 @@ import { expect, fn, userEvent, within } from "@storybook/test";
 import {
   replayScoreSeries,
   replayTimeline,
-} from "../../catana/catana/dev/storybook/replayFixtures";
+} from "../../catana/dev/storybook/replayFixtures";
 import {
   getReplayChartKeyboardSeekIndex,
   ReplayScoreChart,

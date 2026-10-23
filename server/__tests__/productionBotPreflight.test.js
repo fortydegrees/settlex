@@ -4,10 +4,10 @@ import { checkProductionBot } from "../../scripts/bots/check-production-bot.mjs"
 
 const MODEL_009 = "d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf";
 const enabledEnv = {
-  SETTLEX_SETTLEGRAPH_V2_ENABLED: "1",
-  SETTLEX_BOT_MODEL_MANIFEST: path.resolve("release/bot-model.json"),
-  SETTLEX_SETTLEGRAPH_V2_MODEL: "/models/incumbent-009/model.ctnn",
-  SETTLEX_SETTLEGRAPH_V2_WORKER: "/usr/local/bin/settlegraph-v2-worker",
+  SETTLEHEX_SETTLEGRAPH_V2_ENABLED: "1",
+  SETTLEHEX_BOT_MODEL_MANIFEST: path.resolve("release/bot-model.json"),
+  SETTLEHEX_SETTLEGRAPH_V2_MODEL: "/models/incumbent-009/model.ctnn",
+  SETTLEHEX_SETTLEGRAPH_V2_WORKER: "/usr/local/bin/settlegraph-v2-worker",
 };
 
 describe("production bot preflight", () => {
@@ -20,7 +20,7 @@ describe("production bot preflight", () => {
     expect(createClient).not.toHaveBeenCalled();
   });
 
-  it.each(["SETTLEX_SETTLEGRAPH_V2_WORKER"])(
+  it.each(["SETTLEHEX_SETTLEGRAPH_V2_WORKER"])(
     "rejects enabled deployment without %s", async (key) => {
       await expect(checkProductionBot({ env: { ...enabledEnv, [key]: "" } })).rejects.toThrow(key);
     }
@@ -32,8 +32,8 @@ describe("production bot preflight", () => {
     const createClient = vi.fn(() => client);
     await expect(checkProductionBot({ env: enabledEnv, createClient })).resolves.toEqual({ enabled: true, modelSha256: MODEL_009 });
     expect(createClient).toHaveBeenCalledWith(expect.objectContaining({
-      modelPath: enabledEnv.SETTLEX_SETTLEGRAPH_V2_MODEL,
-      workerPath: enabledEnv.SETTLEX_SETTLEGRAPH_V2_WORKER,
+      modelPath: enabledEnv.SETTLEHEX_SETTLEGRAPH_V2_MODEL,
+      workerPath: enabledEnv.SETTLEHEX_SETTLEGRAPH_V2_WORKER,
     }));
     expect(client.close).toHaveBeenCalledOnce();
   });

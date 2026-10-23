@@ -1,6 +1,6 @@
 # SettleHex Dev Sandbox
 
-`/catana/catana/dev/sandbox` is the default live-board surface for SettleHex UI, HUD, animation, and audio iteration.
+`/catana/dev/sandbox` is the default live-board surface for SettleHex UI, HUD, animation, and audio iteration.
 
 Use it when the change needs the real board screen, player perspective, HUD anchors, or board-state-driven layout.
 

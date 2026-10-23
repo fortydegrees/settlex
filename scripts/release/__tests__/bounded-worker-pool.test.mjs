@@ -20,7 +20,7 @@ describe("resolveConcurrency", () => {
     "rejects invalid value %s",
     (value) => {
       expect(() => resolveConcurrency(value, 4)).toThrow(
-        "SETTLEX_APP_TEST_CONCURRENCY must be an integer from 1 to 8"
+        "SETTLEHEX_APP_TEST_CONCURRENCY must be an integer from 1 to 8"
       );
     }
   );

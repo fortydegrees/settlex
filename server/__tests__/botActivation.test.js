@@ -10,7 +10,7 @@ function activate(failure = "") {
     fs.mkdirSync(path.join(root, "infra/scripts"), { recursive: true });
     fs.mkdirSync(path.join(root, "bin"));
     fs.copyFileSync("infra/scripts/promote-bot.sh", path.join(root, "infra/scripts/promote-bot.sh"));
-    fs.writeFileSync(path.join(root, ".env.prod"), "SETTLEX_SETTLEGRAPH_V2_ENABLED=1\n");
+    fs.writeFileSync(path.join(root, ".env.prod"), "SETTLEHEX_SETTLEGRAPH_V2_ENABLED=1\n");
     fs.writeFileSync(path.join(root, "model.ctnn"), "fixture");
     for (const name of ["current", "web", "game"]) fs.writeFileSync(path.join(root, name), "007\n");
     fs.writeFileSync(path.join(root, "bin/docker"), `#!/bin/bash

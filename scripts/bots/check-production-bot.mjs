@@ -1,3 +1,5 @@
+import environment from "../../lib/config/environment.cjs";
+const { readEnvironment } = environment;
 import { pathToFileURL } from "node:url";
 import { SettleGraphV2Client } from "../../server/bots/SettleGraphV2Client.js";
 import { DEFAULT_BOT_WORKER_PATH, readBotModelSelection } from "../../lib/server/bots/modelSelection.js";
@@ -7,12 +9,12 @@ export async function checkProductionBot({
   requireEnabled = false,
   createClient = (options) => new SettleGraphV2Client({ ...options, logger: { warn: (message) => console.error(message) } }),
 } = {}) {
-  if (env.SETTLEX_SETTLEGRAPH_V2_ENABLED !== "1") {
+  if (readEnvironment(env, "SETTLEHEX_SETTLEGRAPH_V2_ENABLED") !== "1") {
     if (requireEnabled) throw new Error("Bot serving must be enabled before activation.");
     return { enabled: false };
   }
-  const workerPath = env.SETTLEX_SETTLEGRAPH_V2_WORKER ?? DEFAULT_BOT_WORKER_PATH;
-  if (!workerPath.trim()) throw new Error("SETTLEX_SETTLEGRAPH_V2_WORKER cannot be empty.");
+  const workerPath = readEnvironment(env, "SETTLEHEX_SETTLEGRAPH_V2_WORKER") ?? DEFAULT_BOT_WORKER_PATH;
+  if (!workerPath.trim()) throw new Error("SETTLEHEX_SETTLEGRAPH_V2_WORKER cannot be empty.");
   const model = readBotModelSelection({ env });
   const client = createClient({
     modelPath: model.modelPath,

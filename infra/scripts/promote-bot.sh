@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+# Normalize only legacy names that have no canonical counterpart.
+while IFS= read -r legacy_name; do
+  canonical_name="${legacy_name/SETTLEX_/SETTLEHEX_}"
+  if ! declare -p "$canonical_name" >/dev/null 2>&1; then
+    export "$canonical_name=${!legacy_name}"
+  fi
+done < <(compgen -v SETTLEX_)
 cd "$(dirname "$0")/../.."
 if [[ $# != 3 ]]; then
   echo 'Usage: infra/scripts/promote-bot.sh /absolute/model.ctnn CHECKPOINT SHA256' >&2
@@ -17,7 +25,7 @@ services:
   game:
     volumes:
       - type: bind
-        source: ${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}
+        source: ${SETTLEHEX_BOT_MODELS_DIR:-/srv/settlex-models}
         target: /opt/settlex/models
         read_only: false
         bind:

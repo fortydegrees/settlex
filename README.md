@@ -97,8 +97,8 @@ PUBLIC_APP_URL=http://localhost:3029
 BETTER_AUTH_URL=http://localhost:3029
 NEXT_PUBLIC_GAME_SERVER_ORIGIN=http://localhost:8029
 GAME_SERVER_INTERNAL_URL=http://localhost:8129
-SETTLEX_GAME_SERVER_PORT=8029
-SETTLEX_LOBBY_API_PORT=8129
+SETTLEHEX_GAME_SERVER_PORT=8029
+SETTLEHEX_LOBBY_API_PORT=8129
 ```
 
 Reload the environment in the game-server terminal before `pnpm serve`, and run
@@ -109,8 +109,8 @@ production bundle; changing them only at `pnpm start` does not rebuild the clien
 
 ### Work on the interface without a match
 
-With `pnpm dev` running, open `/catana/catana/dev/sandbox` for the real board with
-controlled scenarios or `/catana/catana/dev/effects` for isolated animation/audio
+With `pnpm dev` running, open `/catana/dev/sandbox` for the real board with
+controlled scenarios or `/catana/dev/effects` for isolated animation/audio
 previews. These routes are development-only. Some account/notification requests
 can fail when no account or database is available; a board preview is not a
 full-stack check.

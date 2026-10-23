@@ -53,7 +53,7 @@ jobs:
       - name: Build production images
         run: |
           docker build -f Dockerfile.game .
-          docker build -f Dockerfile.web --build-arg SETTLEX_SETTLEGRAPH_V2_ENABLED=1 .
+          docker build -f Dockerfile.web --build-arg SETTLEHEX_SETTLEGRAPH_V2_ENABLED=1 .
 
   deploy:
     needs: verify
@@ -76,7 +76,7 @@ jobs:
           OCI_APP_DIR: ${{ secrets.OCI_APP_DIR }}
           OCI_HOST: ${{ secrets.OCI_HOST }}
           OCI_USER: ${{ secrets.OCI_USER }}
-          SETTLEX_BUILD_SHA: ${{ github.sha }}
+          SETTLEHEX_BUILD_SHA: ${{ github.sha }}
         run: |
           # Read the complete script before execution; Docker must not consume it as stdin.
-          ssh "$OCI_USER@$OCI_HOST" "cd '$OCI_APP_DIR' && SETTLEX_DEPLOY_EXPECTED_SHA='$SETTLEX_BUILD_SHA' bash -c \"\$(cat)\"" < infra/scripts/deploy-prod-from-git.sh
+          ssh "$OCI_USER@$OCI_HOST" "cd '$OCI_APP_DIR' && SETTLEHEX_DEPLOY_EXPECTED_SHA='$SETTLEHEX_BUILD_SHA' bash -c \"\$(cat)\"" < infra/scripts/deploy-prod-from-git.sh

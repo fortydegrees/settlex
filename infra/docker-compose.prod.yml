@@ -22,10 +22,10 @@ services:
       context: ..
       dockerfile: Dockerfile.web
       args:
-        SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
-        SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
-        SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
-        SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
+        SETTLEHEX_RELEASE_VERSION: ${SETTLEHEX_RELEASE_VERSION-${SETTLEX_RELEASE_VERSION:-1}}
+        SETTLEHEX_BUILD_SHA: ${SETTLEHEX_BUILD_SHA-${SETTLEX_BUILD_SHA:-local}}
+        SETTLEHEX_BUILD_DATE: ${SETTLEHEX_BUILD_DATE-${SETTLEX_BUILD_DATE:-}}
+        SETTLEHEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEHEX_SETTLEGRAPH_V2_ENABLED-${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}}
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,14 +34,14 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      NEXT_PUBLIC_SETTLEX_RELEASE_VERSION: ${SETTLEX_RELEASE_VERSION:-1}
-      NEXT_PUBLIC_SETTLEX_BUILD_SHA: ${SETTLEX_BUILD_SHA:-local}
-      NEXT_PUBLIC_SETTLEX_BUILD_DATE: ${SETTLEX_BUILD_DATE:-}
-      SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
-      SETTLEX_BOT_MODEL_MANIFEST: /opt/settlex/models/current.json
+      NEXT_PUBLIC_SETTLEHEX_RELEASE_VERSION: ${SETTLEHEX_RELEASE_VERSION-${SETTLEX_RELEASE_VERSION:-1}}
+      NEXT_PUBLIC_SETTLEHEX_BUILD_SHA: ${SETTLEHEX_BUILD_SHA-${SETTLEX_BUILD_SHA:-local}}
+      NEXT_PUBLIC_SETTLEHEX_BUILD_DATE: ${SETTLEHEX_BUILD_DATE-${SETTLEX_BUILD_DATE:-}}
+      SETTLEHEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEHEX_SETTLEGRAPH_V2_ENABLED-${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}}
+      SETTLEHEX_BOT_MODEL_MANIFEST: /opt/settlex/models/current.json
     volumes:
       - type: bind
-        source: ${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}
+        source: ${SETTLEHEX_BOT_MODELS_DIR-${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}}
         target: /opt/settlex/models
         read_only: true
         bind:
@@ -61,13 +61,13 @@ services:
       - ../.env.prod
     environment:
       NODE_ENV: production
-      SETTLEX_BOT_MOVE_DELAY_MS: ${SETTLEX_BOT_MOVE_DELAY_MS:-450}
-      SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}
-      SETTLEX_BOT_MODEL_MANIFEST: /opt/settlex/models/current.json
-      SETTLEX_SETTLEGRAPH_V2_WORKER: /usr/local/bin/settlegraph-v2-worker
+      SETTLEHEX_BOT_MOVE_DELAY_MS: ${SETTLEHEX_BOT_MOVE_DELAY_MS-${SETTLEX_BOT_MOVE_DELAY_MS:-450}}
+      SETTLEHEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEHEX_SETTLEGRAPH_V2_ENABLED-${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}}
+      SETTLEHEX_BOT_MODEL_MANIFEST: /opt/settlex/models/current.json
+      SETTLEHEX_SETTLEGRAPH_V2_WORKER: /usr/local/bin/settlegraph-v2-worker
     volumes:
       - type: bind
-        source: ${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}
+        source: ${SETTLEHEX_BOT_MODELS_DIR-${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}}
         target: /opt/settlex/models
         read_only: true
         bind:

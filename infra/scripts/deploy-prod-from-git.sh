@@ -2,18 +2,26 @@
 
 set -euo pipefail
 
-if [ -n "${SETTLEX_ROOT_DIR:-}" ]; then
-  ROOT_DIR="$SETTLEX_ROOT_DIR"
+# Normalize only legacy names that have no canonical counterpart.
+while IFS= read -r legacy_name; do
+  canonical_name="${legacy_name/SETTLEX_/SETTLEHEX_}"
+  if ! declare -p "$canonical_name" >/dev/null 2>&1; then
+    export "$canonical_name=${!legacy_name}"
+  fi
+done < <(compgen -v SETTLEX_)
+
+if [ -n "${SETTLEHEX_ROOT_DIR:-}" ]; then
+  ROOT_DIR="$SETTLEHEX_ROOT_DIR"
 elif [ -f infra/docker-compose.prod.yml ] && [ -f release/release-notes.json ]; then
   ROOT_DIR="$(pwd)"
 else
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 fi
 COMPOSE_FILE="infra/docker-compose.prod.yml"
-REMOTE="${SETTLEX_DEPLOY_REMOTE:-origin}"
-BRANCH="${SETTLEX_DEPLOY_BRANCH:-main}"
-REPO_URL="${SETTLEX_DEPLOY_REPO_URL:-https://github.com/fortydegrees/settlex.git}"
-HEALTH_URL="${SETTLEX_HEALTH_URL:-https://settlehex.com}"
+REMOTE="${SETTLEHEX_DEPLOY_REMOTE:-origin}"
+BRANCH="${SETTLEHEX_DEPLOY_BRANCH:-main}"
+REPO_URL="${SETTLEHEX_DEPLOY_REPO_URL:-https://github.com/fortydegrees/settlex.git}"
+HEALTH_URL="${SETTLEHEX_HEALTH_URL:-https://settlehex.com}"
 
 cd "$ROOT_DIR"
 
@@ -28,7 +36,7 @@ ensure_git_checkout() {
     git init
   fi
 
-  if ! git remote get-url "$REMOTE" >/catana/catana/dev/null 2>&1; then
+  if ! git remote get-url "$REMOTE" >/dev/null 2>&1; then
     git remote add "$REMOTE" "$REPO_URL"
   fi
 }
@@ -72,7 +80,7 @@ done
 ensure_git_checkout
 
 has_head=false
-if git rev-parse --verify HEAD >/catana/catana/dev/null 2>&1; then
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
   has_head=true
 else
   # A pre-existing source tree may have stale untracked files. Preserve only
@@ -95,7 +103,7 @@ if [ "$has_head" = true ]; then
 fi
 git fetch "$REMOTE" "$BRANCH"
 new_sha="$(git rev-parse "${REMOTE}/${BRANCH}")"
-if [ -n "${SETTLEX_DEPLOY_EXPECTED_SHA:-}" ] && [ "$new_sha" != "$SETTLEX_DEPLOY_EXPECTED_SHA" ]; then
+if [ -n "${SETTLEHEX_DEPLOY_EXPECTED_SHA:-}" ] && [ "$new_sha" != "$SETTLEHEX_DEPLOY_EXPECTED_SHA" ]; then
   echo "Remote branch no longer matches the verified commit; refusing deployment." >&2
   exit 1
 fi
@@ -104,7 +112,7 @@ backup_database() {
   local postgres_user postgres_db backup_dir backup_path short_sha
   postgres_user="$(get_env_value POSTGRES_USER)"
   postgres_db="$(get_env_value POSTGRES_DB)"
-  backup_dir="${SETTLEX_DB_BACKUP_DIR:-backups}"
+  backup_dir="${SETTLEHEX_DB_BACKUP_DIR:-backups}"
   short_sha="${new_sha:0:12}"
   backup_path="${backup_dir}/prod-before-${short_sha}-$(date -u +"%Y%m%dT%H%M%SZ").sql"
 
@@ -127,11 +135,11 @@ fi
 
 git reset --hard "$new_sha"
 
-export SETTLEX_BUILD_SHA="$new_sha"
-export SETTLEX_BUILD_DATE="${SETTLEX_BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}"
+export SETTLEHEX_BUILD_SHA="$new_sha"
+export SETTLEHEX_BUILD_DATE="${SETTLEHEX_BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}"
 
 infra/scripts/deploy-prod.sh
 
 docker compose --env-file .env.prod -f "$COMPOSE_FILE" ps
-curl --fail --silent --show-error --location "$HEALTH_URL" >/catana/catana/dev/null
+curl --fail --silent --show-error --location "$HEALTH_URL" >/dev/null
 echo "Live health check passed: ${HEALTH_URL}"

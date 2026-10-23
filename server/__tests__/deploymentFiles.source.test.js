@@ -80,9 +80,9 @@ const runProductionDeployWithRecordedCommands = ({ preflightExit = 0 } = {}) => 
   fs.writeFileSync(
     path.join(binDir, "docker"),
     `#!/usr/bin/env bash
-printf 'docker %s\\n' "$*" >> "$SETTLEX_COMMAND_LOG"
+printf 'docker %s\\n' "$*" >> "$SETTLEHEX_COMMAND_LOG"
 if [[ "$*" == *"run --rm --no-deps game node scripts/bots/check-production-bot.mjs"* ]]; then
-  exit "$SETTLEX_PREFLIGHT_EXIT"
+  exit "$SETTLEHEX_PREFLIGHT_EXIT"
 fi
 if [[ "$*" == *"exec -T web node -e"* ]]; then
   exit 1
@@ -93,7 +93,7 @@ fi
   fs.writeFileSync(
     path.join(binDir, "curl"),
     `#!/usr/bin/env bash
-printf 'curl %s\\n' "$*" >> "$SETTLEX_COMMAND_LOG"
+printf 'curl %s\\n' "$*" >> "$SETTLEHEX_COMMAND_LOG"
 `,
     { mode: 0o755 }
   );
@@ -105,11 +105,11 @@ printf 'curl %s\\n' "$*" >> "$SETTLEX_COMMAND_LOG"
       env: {
         ...process.env,
         PATH: `${binDir}${path.delimiter}${process.env.PATH}`,
-        SETTLEX_BUILD_SHA: "test-build",
-        SETTLEX_BUILD_DATE: "2026-08-26T00:00:00Z",
-        SETTLEX_RELEASE_VERSION: "4",
-        SETTLEX_COMMAND_LOG: commandLog,
-        SETTLEX_PREFLIGHT_EXIT: String(preflightExit),
+        SETTLEHEX_BUILD_SHA: "test-build",
+        SETTLEHEX_BUILD_DATE: "2026-08-26T00:00:00Z",
+        SETTLEHEX_RELEASE_VERSION: "4",
+        SETTLEHEX_COMMAND_LOG: commandLog,
+        SETTLEHEX_PREFLIGHT_EXIT: String(preflightExit),
       },
     });
     const commands = fs.existsSync(commandLog)
@@ -249,12 +249,12 @@ describe("deployment file wiring", () => {
     expect(gameDockerfile).toContain("cargo build --release --locked");
     expect(gameDockerfile).toContain("/usr/local/bin/settlegraph-v2-worker");
     expect(gameDockerfile).toContain('CMD ["sh", "infra/scripts/start-game.sh"]');
-    expect(compose).toContain("SETTLEX_SETTLEGRAPH_V2_ENABLED");
-    expect(compose).toContain("SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models");
+    expect(compose).toContain("SETTLEHEX_SETTLEGRAPH_V2_ENABLED");
+    expect(compose).toContain("SETTLEHEX_BOT_MODELS_DIR-${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}");
     expect(compose).toContain("read_only: true");
     expect(compose).toContain("create_host_path: false");
-    expect(compose).not.toContain("SETTLEX_SETTLEGRAPH_V2_MODEL:");
-    expect(compose.match(/SETTLEX_BOT_MODEL_MANIFEST: \/opt\/settlehex\/models\/current.json/g)).toHaveLength(2);
+    expect(compose).not.toContain("SETTLEHEX_SETTLEGRAPH_V2_MODEL:");
+    expect(compose.match(/SETTLEHEX_BOT_MODEL_MANIFEST: \/opt\/settlex\/models\/current.json/g)).toHaveLength(2);
     expect(compose.match(/read_only: true/g)).toHaveLength(2);
     expect(startup.indexOf("check-production-bot.mjs")).toBeLessThan(
       startup.indexOf("server/server.js")
@@ -266,12 +266,12 @@ describe("deployment file wiring", () => {
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const exampleEnv = readRepoFile(".env.example");
 
-    expect(webDockerfile).toContain("ARG SETTLEX_SETTLEGRAPH_V2_ENABLED=0");
+    expect(webDockerfile).toContain("ARG SETTLEHEX_SETTLEGRAPH_V2_ENABLED=$SETTLEX_SETTLEGRAPH_V2_ENABLED");
     expect(webDockerfile).toContain(
-      "ENV NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=$SETTLEX_SETTLEGRAPH_V2_ENABLED"
+      "ENV NEXT_PUBLIC_SETTLEHEX_SETTLEGRAPH_V2=$SETTLEHEX_SETTLEGRAPH_V2_ENABLED"
     );
-    expect(compose).toContain("SETTLEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}");
-    expect(exampleEnv).toContain("NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=0");
+    expect(compose).toContain("SETTLEHEX_SETTLEGRAPH_V2_ENABLED: ${SETTLEHEX_SETTLEGRAPH_V2_ENABLED-${SETTLEX_SETTLEGRAPH_V2_ENABLED:-0}}");
+    expect(exampleEnv).toContain("NEXT_PUBLIC_SETTLEHEX_SETTLEGRAPH_V2=0");
   });
 
   it("keeps local compose limited to postgres", () => {
@@ -346,13 +346,13 @@ describe("deployment file wiring", () => {
 
     expect(script).not.toContain("docker compose -f infra/docker-compose.prod.yml pull");
     expect(script).toContain('COMPOSE_FILE="infra/docker-compose.prod.yml"');
-    expect(script).toContain("SETTLEX_BUILD_SHA");
-    expect(script).toContain("SETTLEX_BUILD_DATE");
-    expect(script).toContain("SETTLEX_RELEASE_VERSION");
+    expect(script).toContain("SETTLEHEX_BUILD_SHA");
+    expect(script).toContain("SETTLEHEX_BUILD_DATE");
+    expect(script).toContain("SETTLEHEX_RELEASE_VERSION");
     expect(script).toContain("command -v node");
     expect(script).toContain("scripts/release/read-release-notes.mjs");
     expect(script).toContain("release/release-notes.json");
-    expect(script).toContain("Could not determine SETTLEX_RELEASE_VERSION.");
+    expect(script).toContain("Could not determine SETTLEHEX_RELEASE_VERSION.");
     expect(script).toContain('docker compose --env-file .env.prod -f "$COMPOSE_FILE" "$@"');
     const buildIndex = script.indexOf('compose build web game');
     const botPreflightIndex = script.indexOf(
@@ -392,8 +392,8 @@ describe("deployment file wiring", () => {
       "curl --fail --silent --show-error --location https://settlehex.com",
       "curl --fail --silent --show-error --location https://settlehex.com/api/auth/options",
       "curl --fail --silent --show-error --location https://settlehex.com/socket.io/?EIO=4&transport=polling",
-      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/timer/settlex-route-check",
-      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/idle/settlex-route-check/ack",
+      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/timer/settlehex-route-check",
+      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/idle/settlehex-route-check/ack",
     ]);
   });
 
@@ -428,14 +428,14 @@ describe("deployment file wiring", () => {
     );
     expect(dockerfile).toContain("corepack prepare pnpm@9.13.2 --activate");
     expectPatchFilesAvailableBeforeInstall(dockerfile);
-    expect(dockerfile).toContain("ARG SETTLEX_RELEASE_VERSION");
-    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_RELEASE_VERSION");
-    expect(dockerfile).toContain("ARG SETTLEX_BUILD_SHA");
-    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_BUILD_SHA");
-    expect(dockerfile).toContain("ARG SETTLEX_BUILD_DATE");
-    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEX_BUILD_DATE");
+    expect(dockerfile).toContain("ARG SETTLEHEX_RELEASE_VERSION");
+    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEHEX_RELEASE_VERSION");
+    expect(dockerfile).toContain("ARG SETTLEHEX_BUILD_SHA");
+    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEHEX_BUILD_SHA");
+    expect(dockerfile).toContain("ARG SETTLEHEX_BUILD_DATE");
+    expect(dockerfile).toContain("NEXT_PUBLIC_SETTLEHEX_BUILD_DATE");
     expect(dockerfile).toContain(
-      "ENV SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1"
+      "ENV SETTLEHEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS=1"
     );
     expect(dockerfile).not.toContain("ARG BETTER_AUTH_SECRET");
     expect(dockerfile).not.toContain("ARG DATABASE_URL");
@@ -459,8 +459,8 @@ describe("deployment file wiring", () => {
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).not.toContain("push:");
     expect(workflow).not.toContain("branches:");
-    expect(workflow).toContain("SETTLEX_BUILD_SHA");
-    expect(workflow).toContain("SETTLEX_DEPLOY_EXPECTED_SHA");
+    expect(workflow).toContain("SETTLEHEX_BUILD_SHA");
+    expect(workflow).toContain("SETTLEHEX_DEPLOY_EXPECTED_SHA");
     expect(workflow).toContain("infra/scripts/deploy-prod-from-git.sh");
     expect(workflow).toContain("docker build -f Dockerfile.game");
     expect(workflow).toContain("docker build -f Dockerfile.web");
@@ -476,11 +476,11 @@ describe("deployment file wiring", () => {
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
 
     expect(compose).toContain("args:");
-    expect(compose).toContain("SETTLEX_RELEASE_VERSION:");
-    expect(compose).toContain("SETTLEX_BUILD_SHA:");
-    expect(compose).toContain("SETTLEX_BUILD_DATE:");
-    expect(compose).toContain("NEXT_PUBLIC_SETTLEX_RELEASE_VERSION:");
-    expect(compose).toContain("NEXT_PUBLIC_SETTLEX_BUILD_SHA:");
-    expect(compose).toContain("NEXT_PUBLIC_SETTLEX_BUILD_DATE:");
+    expect(compose).toContain("SETTLEHEX_RELEASE_VERSION:");
+    expect(compose).toContain("SETTLEHEX_BUILD_SHA:");
+    expect(compose).toContain("SETTLEHEX_BUILD_DATE:");
+    expect(compose).toContain("NEXT_PUBLIC_SETTLEHEX_RELEASE_VERSION:");
+    expect(compose).toContain("NEXT_PUBLIC_SETTLEHEX_BUILD_SHA:");
+    expect(compose).toContain("NEXT_PUBLIC_SETTLEHEX_BUILD_DATE:");
   });
 });

@@ -1,4 +1,4 @@
-import scenario from "../../catana/catana/dev/scenarios/new_dev_game.json";
+import scenario from "../../catana/dev/scenarios/new_dev_game.json";
 
 const scenarioState = scenario.G;
 

@@ -16,8 +16,8 @@ This document covers the MVP deployment shape for SettleHex on one OCI Ubuntu VM
 ## SettleGraph bot
 
 SettleGraph is the only supported bot backend. With
-`SETTLEX_SETTLEGRAPH_V2_ENABLED=1` and the corresponding
-`NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2=1` build flag, **Play vs Bot** uses the
+`SETTLEHEX_SETTLEGRAPH_V2_ENABLED=1` and the corresponding
+`NEXT_PUBLIC_SETTLEHEX_SETTLEGRAPH_V2=1` build flag, **Play vs Bot** uses the
 selected native model. Without the flag the homepage omits that action; there
 is no Python/Puffer fallback. Inference failures use the existing stage
 recovery moves. See [bot installation and rollback](../agent/BOT_MODELS.md)

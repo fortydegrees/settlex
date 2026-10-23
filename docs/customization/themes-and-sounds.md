@@ -1,7 +1,7 @@
 # Customize board art and game sounds
 
-Start the local app with `pnpm dev`, then open `/catana/catana/dev/effects` for an
-isolated runner or `/catana/catana/dev/sandbox` for the real board. These routes are
+Start the local app with `pnpm dev`, then open `/catana/dev/effects` for an
+isolated runner or `/catana/dev/sandbox` for the real board. These routes are
 for development. No match server, live account or new package is needed for
 these examples. Keep your change in its owning map and check the real preview.
 

@@ -21,8 +21,8 @@ describe("buildPublicReleaseInfo", () => {
     const info = buildPublicReleaseInfo({
       releaseNotes,
       env: {
-        NEXT_PUBLIC_SETTLEX_BUILD_SHA: "abcdef1234567890",
-        NEXT_PUBLIC_SETTLEX_BUILD_DATE: "2026-06-01T14:30:00Z"
+        NEXT_PUBLIC_SETTLEHEX_BUILD_SHA: "abcdef1234567890",
+        NEXT_PUBLIC_SETTLEHEX_BUILD_DATE: "2026-06-01T14:30:00Z"
       }
     });
 
@@ -74,9 +74,9 @@ describe("buildPublicReleaseInfo", () => {
       "utf8"
     );
 
-    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEX_RELEASE_VERSION");
-    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEX_BUILD_SHA");
-    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEX_BUILD_DATE");
+    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEHEX_RELEASE_VERSION");
+    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEHEX_BUILD_SHA");
+    expect(source).toContain("process.env.NEXT_PUBLIC_SETTLEHEX_BUILD_DATE");
     expect(source).not.toContain("env = process.env");
   });
 });

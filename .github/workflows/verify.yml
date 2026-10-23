@@ -52,6 +52,6 @@ jobs:
         run: pnpm build
         env:
           # Build-only placeholders follow Dockerfile.web; no artifact is deployed.
-          SETTLEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS: "1"
-          SETTLEX_SETTLEGRAPH_V2_ENABLED: "0"
-          NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2: "0"
+          SETTLEHEX_ALLOW_BUILD_TIME_SERVER_PLACEHOLDERS: "1"
+          SETTLEHEX_SETTLEGRAPH_V2_ENABLED: "0"
+          NEXT_PUBLIC_SETTLEHEX_SETTLEGRAPH_V2: "0"

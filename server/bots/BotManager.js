@@ -1,3 +1,5 @@
+import environment from "../../lib/config/environment.cjs";
+const { readEnvironment } = environment;
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getBotFallbackMove, getStagePlayers, resolveStageKey } from "../stagePolicy.js";
@@ -81,21 +83,21 @@ export class BotManager {
 }
 
 export function createBotManagerFromEnv({ logger = console } = {}) {
-  const botPlayerIds = (process.env.SETTLEX_BOT_PLAYER_IDS ?? "")
+  const botPlayerIds = (readEnvironment(process.env, "SETTLEHEX_BOT_PLAYER_IDS") ?? "")
     .split(",")
     .map((id) => id.trim())
     .filter(Boolean);
   let settleGraphV2Manager = null;
-  if (process.env.SETTLEX_SETTLEGRAPH_V2_ENABLED === "1") {
+  if (readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_ENABLED") === "1") {
     const fileDir = path.dirname(fileURLToPath(import.meta.url));
-    const workerPath = process.env.SETTLEX_SETTLEGRAPH_V2_WORKER ??
+    const workerPath = readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_WORKER") ??
       path.resolve(fileDir, "../../native/settlegraph-v2/target/release/settlegraph-v2-worker");
     const client = new SettleGraphV2Client({
       workerPath,
       modelPath: getBotModelSelection().modelPath,
       expectedModel: getBotModelSelection(),
-      workerCwd: process.env.SETTLEX_SETTLEGRAPH_V2_WORKER_CWD ?? null,
-      timeoutMs: process.env.SETTLEX_SETTLEGRAPH_V2_TIMEOUT_MS ?? 3000,
+      workerCwd: readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_WORKER_CWD") ?? null,
+      timeoutMs: readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_TIMEOUT_MS") ?? 3000,
       logger
     });
     settleGraphV2Manager = new SettleGraphV2BotManager({ client });

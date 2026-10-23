@@ -34,7 +34,7 @@ esac
 `);
     executable(path.join(bin, "docker"), `#!/bin/sh
 case "$*" in
-  *pg_dump*) cat >/catana/catana/dev/null; echo test-database-backup ;;
+  *pg_dump*) cat >/dev/null; echo test-database-backup ;;
 esac
 `);
     executable(path.join(bin, "curl"), '#!/bin/sh\nexit 0\n');
@@ -47,7 +47,7 @@ exit ${deployExit}
       expect(sshCommand).toBeTruthy();
       const result = spawnSync("bash", ["-c", sshCommand], {
         cwd: root, encoding: "utf8",
-        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, OCI_USER: "test", OCI_HOST: "test", OCI_APP_DIR: root, SETTLEX_BUILD_SHA: "verified-head", COMMAND_LOG: commandLog },
+        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, OCI_USER: "test", OCI_HOST: "test", OCI_APP_DIR: root, SETTLEHEX_BUILD_SHA: "verified-head", COMMAND_LOG: commandLog },
       });
       const commands = fs.readFileSync(commandLog, "utf8");
       expect(commands).toContain("git reset --hard verified-head");
@@ -80,7 +80,7 @@ printf 'docker %s\\n' "$*" >> "$COMMAND_LOG"
     try {
       const result = spawnSync("bash", ["-s"], {
         input: script, cwd: root, encoding: "utf8",
-        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, SETTLEX_ROOT_DIR: root, SETTLEX_DEPLOY_EXPECTED_SHA: "verified-head", COMMAND_LOG: commandLog },
+        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, SETTLEHEX_ROOT_DIR: root, SETTLEHEX_DEPLOY_EXPECTED_SHA: "verified-head", COMMAND_LOG: commandLog },
       });
       expect(result.status).toBe(1);
       expect(result.stderr).toContain("no longer matches the verified commit");

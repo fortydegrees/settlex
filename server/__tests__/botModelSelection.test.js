@@ -26,7 +26,7 @@ afterEach(() => {
 describe("bot model selection", () => {
   it("derives the match opponent name from the selected future checkpoint", async () => {
     const root = store();
-    vi.stubEnv("SETTLEX_BOT_MODEL_MANIFEST", path.join(root, "current.json"));
+    vi.stubEnv("SETTLEHEX_BOT_MODEL_MANIFEST", path.join(root, "current.json"));
     vi.resetModules();
     const { resolveBotDescriptor } = await import("../../lib/server/matches/botMatch.js");
     expect(() => resolveBotDescriptor("puffer")).toThrow("Unknown bot");
@@ -34,11 +34,11 @@ describe("bot model selection", () => {
   });
   it("selects an external checkpoint with its path, hash and display name", () => {
     const root = store();
-    expect(readBotModelSelection({ env: { SETTLEX_BOT_MODEL_MANIFEST: path.join(root, "current.json") } }))
+    expect(readBotModelSelection({ env: { SETTLEHEX_BOT_MODEL_MANIFEST: path.join(root, "current.json") } }))
       .toMatchObject({ ...selection, modelPath: path.join(root, "models/009/model.ctnn") });
   });
   it("fails closed when an explicitly selected manifest is missing", () => {
-    expect(() => readBotModelSelection({ env: { SETTLEX_BOT_MODEL_MANIFEST: "/missing/current.json" } }))
+    expect(() => readBotModelSelection({ env: { SETTLEHEX_BOT_MODEL_MANIFEST: "/missing/current.json" } }))
       .toThrow("manifest");
   });
   it.each([

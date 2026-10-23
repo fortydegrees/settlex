@@ -1,3 +1,5 @@
+import environment from "../../../lib/config/environment.cjs";
+const { readEnvironment } = environment;
 import releaseNotesData from "../../../release/release-notes.json";
 
 const toTrimmedString = (value) =>
@@ -16,17 +18,17 @@ const normalizeHighlights = (highlights) =>
     : [];
 
 const publicBuildEnv = {
-  NEXT_PUBLIC_SETTLEX_RELEASE_VERSION:
-    process.env.NEXT_PUBLIC_SETTLEX_RELEASE_VERSION,
-  NEXT_PUBLIC_SETTLEX_BUILD_SHA: process.env.NEXT_PUBLIC_SETTLEX_BUILD_SHA,
-  NEXT_PUBLIC_SETTLEX_BUILD_DATE: process.env.NEXT_PUBLIC_SETTLEX_BUILD_DATE
+  NEXT_PUBLIC_SETTLEHEX_RELEASE_VERSION:
+    process.env.NEXT_PUBLIC_SETTLEHEX_RELEASE_VERSION,
+  NEXT_PUBLIC_SETTLEHEX_BUILD_SHA: process.env.NEXT_PUBLIC_SETTLEHEX_BUILD_SHA,
+  NEXT_PUBLIC_SETTLEHEX_BUILD_DATE: process.env.NEXT_PUBLIC_SETTLEHEX_BUILD_DATE
 };
 
 export function buildPublicReleaseInfo({
   releaseNotes = releaseNotesData,
   env = publicBuildEnv
 } = {}) {
-  const envVersion = toVersion(env.NEXT_PUBLIC_SETTLEX_RELEASE_VERSION);
+  const envVersion = toVersion(readEnvironment(env, "NEXT_PUBLIC_SETTLEHEX_RELEASE_VERSION"));
   const currentVersion = envVersion ?? releaseNotes.currentVersion;
   const currentRelease =
     releaseNotes.releases?.find((release) => release.version === currentVersion) ??
@@ -35,8 +37,8 @@ export function buildPublicReleaseInfo({
   const version = currentRelease.version ?? currentVersion;
   const releaseLabel =
     toTrimmedString(currentRelease.label) || `release ${version}`;
-  const buildSha = toTrimmedString(env.NEXT_PUBLIC_SETTLEX_BUILD_SHA);
-  const buildDate = toTrimmedString(env.NEXT_PUBLIC_SETTLEX_BUILD_DATE);
+  const buildSha = toTrimmedString(readEnvironment(env, "NEXT_PUBLIC_SETTLEHEX_BUILD_SHA"));
+  const buildDate = toTrimmedString(readEnvironment(env, "NEXT_PUBLIC_SETTLEHEX_BUILD_DATE"));
 
   return {
     version,

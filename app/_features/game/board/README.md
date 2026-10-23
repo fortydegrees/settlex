@@ -25,5 +25,5 @@ not endorse them as the preferred testing pattern. Follow
 Art selection remains in `../theme/`, animation/audio runners in `../effects/`,
 and HUD/feed components in `../components/`. Homepage staging remains in
 `../homeDemo/`. Reuse these owners rather than making another board renderer.
-Verify real board integration in `/catana/catana/dev/sandbox`; use
-`/catana/catana/dev/effects` for isolated event runners.
+Verify real board integration in `/catana/dev/sandbox`; use
+`/catana/dev/effects` for isolated event runners.

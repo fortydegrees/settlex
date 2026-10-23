@@ -18,7 +18,7 @@ describe("run-vitest-app-tests", () => {
     expect(source).toContain("runBounded");
     expect(source).toContain("killProcessTree");
     expect(source).toContain('detached: process.platform !== "win32"');
-    expect(source).toContain("SETTLEX_APP_TEST_CONCURRENCY");
+    expect(source).toContain("SETTLEHEX_APP_TEST_CONCURRENCY");
     expect(source).not.toContain("spawnSync");
   });
 });

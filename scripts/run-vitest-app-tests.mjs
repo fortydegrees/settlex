@@ -1,3 +1,5 @@
+import environment from "../lib/config/environment.cjs";
+const { readEnvironment } = environment;
 #!/usr/bin/env node
 
 import { spawn } from "node:child_process";
@@ -111,7 +113,7 @@ function runTestFile(file) {
 
 try {
   const concurrency = resolveConcurrency(
-    process.env.SETTLEX_APP_TEST_CONCURRENCY,
+    readEnvironment(process.env, "SETTLEHEX_APP_TEST_CONCURRENCY"),
     availableParallelism()
   );
   console.log(

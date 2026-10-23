@@ -9,7 +9,7 @@ const INCUMBENT_006_CTNN_SHA256: &str =
     "299c23241e1ca32c4b9203206a9b2c17fc7f6246d4adff0f6d3a9ad6404b736b";
 
 fn model_path() -> String {
-    std::env::var("SETTLEX_INCUMBENT_006_MODEL").expect("set the sealed 006 model path")
+    std::env::var("SETTLEHEX_INCUMBENT_006_MODEL").expect("set the sealed 006 model path")
 }
 
 #[test]
@@ -23,7 +23,7 @@ fn incumbent_006_matches_research_outputs_and_legal_choices() {
     assert_eq!(model.contract.action_count, 299);
 
     let probes: Value = serde_json::from_slice(
-        &std::fs::read(std::env::var("SETTLEX_006_REFERENCE_PROBES").unwrap()).unwrap(),
+        &std::fs::read(std::env::var("SETTLEHEX_006_REFERENCE_PROBES").unwrap()).unwrap(),
     )
     .unwrap();
     let rows = probes["rows"].as_array().unwrap();

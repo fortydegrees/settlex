@@ -49,3 +49,7 @@ preserved; they are not contributor prerequisites.
 [INDEX.md](INDEX.md) is generated from Markdown actually retained in this tree,
 and is a navigation aid. Regenerate
 it with `pnpm docs:index` after adding or renaming documentation.
+
+## Configuration naming
+
+Current configuration uses `SETTLEHEX_*` and `NEXT_PUBLIC_SETTLEHEX_*` names. Existing `SETTLEX_*` settings are read only when the corresponding canonical name is absent. An explicit canonical empty value or `0` wins; it does not fall back to an enabled old value. Next public settings are resolved at build time. Shell deployment entrypoints and Compose preserve the same precedence. Real deployment paths and remote URLs are unchanged.

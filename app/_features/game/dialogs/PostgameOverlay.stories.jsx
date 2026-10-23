@@ -1,5 +1,5 @@
 import { expect, fn, userEvent, within } from "@storybook/test";
-import { completedPostgameFixture } from "../../catana/catana/dev/storybook/postgameFixtures";
+import { completedPostgameFixture } from "../../catana/dev/storybook/postgameFixtures";
 import { PostgameOverlay } from "./PostgameOverlay";
 
 const meta = {

@@ -27,8 +27,8 @@ fn worker_rejects_search_arguments_without_loading_a_model() {
 #[test]
 #[ignore = "requires the external sealed CTNN-v2 artifact"]
 fn worker_preflights_once_and_returns_correlated_health_and_errors() {
-    let model = std::env::var("SETTLEX_SETTLEGRAPH_V2_MODEL")
-        .expect("set SETTLEX_SETTLEGRAPH_V2_MODEL to the exact external sealed CTNN-v2 artifact");
+    let model = std::env::var("SETTLEHEX_SETTLEGRAPH_V2_MODEL")
+        .expect("set SETTLEHEX_SETTLEGRAPH_V2_MODEL to the exact external sealed CTNN-v2 artifact");
     let mut child = Command::new(env!("CARGO_BIN_EXE_settlegraph-v2-worker"))
         .args(["--model", &model])
         .stdin(Stdio::piped())

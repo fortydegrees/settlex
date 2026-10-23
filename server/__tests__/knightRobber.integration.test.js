@@ -6,7 +6,7 @@ import { createCatanGame } from "../../lib/game-runtime/Game.js";
 import { SettleGraphV2Client } from "../bots/SettleGraphV2Client.js";
 import { SettleGraphV2BotManager } from "../bots/settleGraphV2BotManager.js";
 
-const RUN_NATIVE = process.env.SETTLEX_RUN_SETTLEGRAPH_V2_E2E === "1";
+const RUN_NATIVE = process.env.SETTLEHEX_RUN_SETTLEGRAPH_V2_E2E === "1";
 const GAME = {
   ...createCatanGame({ includeDebugMoves: false, includeEffects: false }),
   seed: "knight-robber-regression"
@@ -169,9 +169,9 @@ describe("knight robber native worker integration", () => {
     async (stage) => {
       const client = seedKnightClient(stage, { nativeRules: true });
       const worker = new SettleGraphV2Client({
-        workerPath: process.env.SETTLEX_SETTLEGRAPH_V2_WORKER ??
+        workerPath: process.env.SETTLEHEX_SETTLEGRAPH_V2_WORKER ??
           path.resolve("native/settlegraph-v2/target/release/settlegraph-v2-worker"),
-        modelPath: process.env.SETTLEX_SETTLEGRAPH_V2_MODEL,
+        modelPath: process.env.SETTLEHEX_SETTLEGRAPH_V2_MODEL,
         timeoutMs: 10_000
       });
       const manager = new SettleGraphV2BotManager({ client: worker });

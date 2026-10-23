@@ -12,7 +12,7 @@ import { SettleGraphV2BotManager } from "../bots/settleGraphV2BotManager.js";
 
 import { readBotModelSelection } from "../../lib/server/bots/modelSelection.js";
 
-const RUN_E2E = process.env.SETTLEX_RUN_SETTLEGRAPH_V2_E2E === "1";
+const RUN_E2E = process.env.SETTLEHEX_RUN_SETTLEGRAPH_V2_E2E === "1";
 const MATCH_ID = "settlegraph-v2-e2e";
 const E2E_GAME = {
   ...ServerCatan,
@@ -49,12 +49,12 @@ describe("SettleGraph sealed-runtime integration", () => {
   it.runIf(RUN_E2E)(
     "plays setup and a main-turn action through Master, router, native worker, and sealed model",
     async () => {
-      const workerPath = process.env.SETTLEX_SETTLEGRAPH_V2_WORKER ??
+      const workerPath = process.env.SETTLEHEX_SETTLEGRAPH_V2_WORKER ??
         path.resolve("native/settlegraph-v2/target/release/settlegraph-v2-worker");
       const selection = readBotModelSelection();
-      const modelPath = process.env.SETTLEX_SETTLEGRAPH_V2_MODEL ?? selection.modelPath;
-      const expectedModelSha256 = process.env.SETTLEX_EXPECTED_MODEL_SHA256 ?? selection.sha256;
-      expect(modelPath, "SETTLEX_SETTLEGRAPH_V2_MODEL must be set").toBeTruthy();
+      const modelPath = process.env.SETTLEHEX_SETTLEGRAPH_V2_MODEL ?? selection.modelPath;
+      const expectedModelSha256 = process.env.SETTLEHEX_EXPECTED_MODEL_SHA256 ?? selection.sha256;
+      expect(modelPath, "SETTLEHEX_SETTLEGRAPH_V2_MODEL must be set").toBeTruthy();
 
       const metadata = {
         gameName: "catan",
@@ -183,8 +183,8 @@ describe("SettleGraph sealed-runtime integration", () => {
         expect(nativeDecisions.mock.calls.length).toBeGreaterThanOrEqual(5);
         const decisions = await Promise.all(nativeDecisions.mock.results.map(({ value }) => value));
         expect(decisions.every((decision) => decision.modelSha256 === expectedModelSha256)).toBe(true);
-        if (process.env.SETTLEX_E2E_RECEIPT) {
-          writeFileSync(process.env.SETTLEX_E2E_RECEIPT, JSON.stringify({
+        if (process.env.SETTLEHEX_E2E_RECEIPT) {
+          writeFileSync(process.env.SETTLEHEX_E2E_RECEIPT, JSON.stringify({
             passed: true, modelSha256: health.modelSha256, contract: health.contract,
             workerPath, modelPath, boardSourceId: state().G.boardSourceId,
             setupCompleted: true, mainTurnCompleted: true, mainTurnDispatches,

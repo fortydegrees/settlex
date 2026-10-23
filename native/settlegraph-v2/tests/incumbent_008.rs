@@ -13,7 +13,7 @@ fn selected_loader_rejects_malformed_identity_before_reading_model() {
 #[test]
 #[ignore = "requires the exact external 008 artifact"]
 fn incumbent_008_loads_with_its_sealed_v3_contract() {
-    let path = std::env::var("SETTLEX_INCUMBENT_008_MODEL").expect("set the sealed 008 model path");
+    let path = std::env::var("SETTLEHEX_INCUMBENT_008_MODEL").expect("set the sealed 008 model path");
     let model = load_verified_model(Path::new(&path)).expect("load checkpoint 008");
     let selected =
         load_selected_model(Path::new(&path), &model.sha256).expect("load selected model");

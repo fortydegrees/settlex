@@ -1,5 +1,5 @@
 import { expect, fn, waitFor, within } from "@storybook/test";
-import { matchAlertFixtures } from "../catana/catana/dev/storybook/accountFixtures";
+import { matchAlertFixtures } from "../catana/dev/storybook/accountFixtures";
 import { SearchingModal } from "./SearchingModal";
 
 const callbacks = {

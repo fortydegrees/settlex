@@ -160,7 +160,7 @@ export const buildSystemActions = ({ settleGraphV2Enabled = false } = {}) => [
 
 export const SYSTEM_ACTIONS = buildSystemActions({
   settleGraphV2Enabled:
-    process.env.NEXT_PUBLIC_SETTLEX_SETTLEGRAPH_V2 === "1",
+    process.env.NEXT_PUBLIC_SETTLEHEX_SETTLEGRAPH_V2 === "1",
 });
 
 function HexClusterGlyph({ filterId }) {

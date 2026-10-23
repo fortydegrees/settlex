@@ -1,3 +1,5 @@
+import environment from "../lib/config/environment.cjs";
+const { readEnvironment } = environment;
 // src/server.js
 import { Server, Origins, SocketIO } from "boardgame.io/dist/cjs/server.js"
 import koaBody from "koa-body"
@@ -40,7 +42,7 @@ const dispatch = async ({ matchID, move, playerID }) => {
   })
 }
 
-const parsedBotDelay = Number(process.env.SETTLEX_BOT_MOVE_DELAY_MS)
+const parsedBotDelay = Number(readEnvironment(process.env, "SETTLEHEX_BOT_MOVE_DELAY_MS"))
 const botMoveDelayMs = Number.isFinite(parsedBotDelay)
   ? parsedBotDelay
   : DEFAULT_BOT_MOVE_DELAY_MS
@@ -59,7 +61,7 @@ const idleManager = new IdlePresenceManager({
 })
 const matchChatStore = new MatchChatStore()
 const parsedFinishedMatchCleanupGraceMs = Number(
-  process.env.SETTLEX_FINISHED_MATCH_CLEANUP_GRACE_MS
+  readEnvironment(process.env, "SETTLEHEX_FINISHED_MATCH_CLEANUP_GRACE_MS")
 )
 const finishedMatchCleanupGraceMs = Number.isFinite(
   parsedFinishedMatchCleanupGraceMs
