@@ -172,7 +172,7 @@ export const LegacyPreferencesAndSeatRecovery = {
     expect(view.requests).toHaveLength(1);
     expect(readBrowserStorage(window.localStorage, "settlehex:audioMuted")).toBe("true");
     expect(readBrowserStorage(window.localStorage, "settlehex:themeId")).toBe("");
-    expect(view.records.get("settlehex:lobby:credentials:m1:0")).toBe("synthetic-local-seat");
+    expect(readBrowserStorage(window.localStorage, "settlehex:lobby:credentials:m1:0")).toBe("synthetic-local-seat");
     expect(view.records.has("catana:lobby:credentials:m1:0")).toBe(false);
     await view.settle(0, response());
     await view.click("Rejoin match");

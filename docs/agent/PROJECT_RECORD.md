@@ -142,7 +142,8 @@ Current product prose, packages, configuration, browser keys/events and develope
 URLs use SettleHex, `settlehex`, `SETTLEHEX_*` and `/dev/...`. Existing environment
 values remain fallback inputs only when the canonical key is absent, including
 Docker, Compose and promotion scripts. Browser migration preserves preferences,
-identity and recovery hints; per-key deletion barriers prevent a stale tab from
+identity and recovery hints in separate import slots so migration cannot replace
+new canonical writes; per-key deletion barriers prevent a stale tab from
 restoring released credentials even after a partial migration failure. These
 hints never replace server authorization. Old dev bookmarks redirect only in
 development; canonical and old dev pages remain unavailable in production.
