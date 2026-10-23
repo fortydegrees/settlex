@@ -3,7 +3,7 @@ import {
   getReplayChartKeyboardSeekIndex,
   getReplayEventIndexAtChartX,
   getVisibleReplayScoreData,
-} from "../replays/components/ReplayScoreChart";
+} from "../_features/replay/components/ReplayScoreChart";
 
 it("hides future score samples and future turn labels", () => {
   const result = getVisibleReplayScoreData({

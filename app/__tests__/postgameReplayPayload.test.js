@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
-import { loadPostgameReplayPayload } from "../replays/usePostgameReplayPayload";
-import * as postgameReplayPayload from "../replays/usePostgameReplayPayload";
+import { loadPostgameReplayPayload } from "../_features/replay/usePostgameReplayPayload";
+import * as postgameReplayPayload from "../_features/replay/usePostgameReplayPayload";
 
 it("tags every payload state with the identity that produced it", () => {
   expect(postgameReplayPayload.createPostgameReplayPayloadState).toBeTypeOf(

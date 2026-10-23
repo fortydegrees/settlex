@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { replayNavigationReducer } from "../replays/useReplayNavigation";
+import { replayNavigationReducer } from "../_features/replay/useReplayNavigation";
 
 describe("replay navigation", () => {
   it("clamps step and seek actions without playback state", () => {

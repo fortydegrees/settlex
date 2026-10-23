@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const source = fs.readFileSync(
-  path.resolve(process.cwd(), "app/replays/PostgameGameBoard.js"),
+  path.resolve(process.cwd(), "app/_features/replay/PostgameGameBoard.js"),
   "utf8"
 );
 const gameScreenSource = fs.readFileSync(

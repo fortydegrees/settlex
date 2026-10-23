@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { buildChatEntries, submitChatDraft } from "./chatMessages";
-import { formatChatEntry } from "../../../catana/utils/gameText";
+import { formatChatEntry } from "../../../../lib/shared/gameText";
 import { FeedPanel } from "./FeedPanel";
 import { FeedTokenRow } from "./FeedTokenRow";
 

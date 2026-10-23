@@ -29,8 +29,8 @@ record without the application, use the runnable [reference consumer](IMPLEMENTE
 ## What powers it
 
 - `game-core/src/notation/`: maintained legality replay, state trace and semantic log projection.
-- `app/replays/notationReplay.js`: translates canonical board addresses, resource names and derived states into the existing viewer's presentation shape.
-- `app/replays/replayTimeline.js`: action positions, log-click seeking and score history.
+- `lib/replays/notationReplay.js`: translates canonical board addresses, resource names and derived states into the existing viewer's presentation shape.
+- `app/_features/replay/replayTimeline.js`: action positions, log-click seeking and score history.
 - The existing post-game board, log formatter and perspective masking supply the UI. Gameplay controls and chat remain read-only.
 
 An adjacent paid buy/place pair is one logical action. A roll and its production/shortage notices also share one resulting position. Independent shortage notices may be displayed in any stable order; no fictitious intermediate game positions or resource priorities are introduced.

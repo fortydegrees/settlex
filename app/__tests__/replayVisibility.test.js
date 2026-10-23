@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createReplaySessionState, replaySessionReducer } from "../replays/replaySessionState";
-import { buildReplayGameScreenProps } from "../replays/replayGameScreenProps";
-import { buildReplayTimeline } from "../replays/replayTimeline";
-import { formatLogEntry } from "../catana/utils/gameText";
+import { createReplaySessionState, replaySessionReducer } from "../_features/replay/replaySessionState";
+import { buildReplayGameScreenProps } from "../_features/replay/replayGameScreenProps";
+import { buildReplayTimeline } from "../_features/replay/replayTimeline";
+import { formatLogEntry } from "../../lib/shared/gameText";
 
 describe("replay information visibility", () => {
   it("reveals hands by default and preserves a hidden choice across navigation", () => {

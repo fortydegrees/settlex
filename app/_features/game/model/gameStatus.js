@@ -1,4 +1,4 @@
-import { STATUS_TEXT } from "../../../catana/utils/gameText";
+import { STATUS_TEXT } from "../../../../lib/shared/gameText";
 
 export const STATUS_TYPES = {
   ROLLING: "rolling",

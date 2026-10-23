@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { hydrateArchivedReplayPayload } from "./archivedReplayPayload.js";
+import { hydrateArchivedReplayPayload } from "../../../lib/replays/archivedReplayPayload.js";
 
 const createAbortError = () => {
   if (typeof DOMException === "function") {

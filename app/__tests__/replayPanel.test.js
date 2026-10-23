@@ -4,8 +4,8 @@ import {
   getReplayRailOffset,
   getSegmentedReplayPerspectiveOptions,
   shouldUseSegmentedReplayPerspective,
-} from "../replays/components/replayPanelLayout";
-import { getReplayChartClipStyle } from "../replays/components/ReplayScoreChart";
+} from "../_features/replay/components/replayPanelLayout";
+import { getReplayChartClipStyle } from "../_features/replay/components/ReplayScoreChart";
 
 const duel = [
   { id: "0", name: "Nora" },

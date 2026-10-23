@@ -1,10 +1,10 @@
-import { maskGameLogEntries } from "../../lib/game-runtime/log/gameLogPrivacy.js";
+import { maskGameLogEntries } from "../../../lib/game-runtime/log/gameLogPrivacy.js";
 import { buildReplayPurchaseDetails } from "./replayPurchaseDetails";
 import { getPublicVictoryPoints } from "@settlex/game-core";
 import {
   formatLogEntryText,
   getGameLogEntryKey,
-} from "../catana/utils/gameText";
+} from "../../../lib/shared/gameText";
 
 const RAW_ACTION_LABELS = {
   autoRoll: "Rolled dice",

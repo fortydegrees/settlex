@@ -1,9 +1,9 @@
 "use client";
 
 import { createElement as h, useMemo } from "react";
-import { CATANA_TABLE_BACKGROUND } from "../../_features/theme/backgrounds";
-import { PostgameGameBoard } from "../PostgameGameBoard";
-import { hydrateArchivedReplayPayload } from "../archivedReplayPayload.js";
+import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+import { PostgameGameBoard } from "./PostgameGameBoard";
+import { hydrateArchivedReplayPayload } from "../../../lib/replays/archivedReplayPayload.js";
 
 export const createReplayPageClient = ({
   PostgameGameBoard: PostgameGameBoardImpl = PostgameGameBoard,

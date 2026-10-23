@@ -1,4 +1,4 @@
-import { maskGameLogEntries } from "../../lib/game-runtime/log/gameLogPrivacy.js";
+import { maskGameLogEntries } from "../../../lib/game-runtime/log/gameLogPrivacy.js";
 
 const ignoreReplayMove = () => undefined;
 

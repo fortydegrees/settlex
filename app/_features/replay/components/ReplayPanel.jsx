@@ -7,10 +7,10 @@ import {
   META_PANEL_FRAME_CLASS_NAME,
   META_PANEL_GLASS_STYLE,
   META_PANEL_HEADER_CLASS_NAME,
-} from "../../_features/game/feed/metaPanelChrome";
-import useWindowSize from "../../../lib/client/useWindowSize";
-import { Button } from "../../ui/Button";
-import { Select } from "../../ui/Select";
+} from "../../game/feed/metaPanelChrome";
+import useWindowSize from "../../../../lib/client/useWindowSize";
+import { Button } from "../../../ui/Button";
+import { Select } from "../../../ui/Select";
 import { ReplayScoreChart } from "./ReplayScoreChart";
 import { ReplayStepControls } from "./ReplayStepControls";
 import {

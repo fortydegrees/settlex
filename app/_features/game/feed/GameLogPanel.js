@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { formatLogEntry, getGameLogEntryKey } from "../../../catana/utils/gameText";
+import { formatLogEntry, getGameLogEntryKey } from "../../../../lib/shared/gameText";
 import { FeedPanel } from "./FeedPanel";
 import { FeedTokenRow } from "./FeedTokenRow";
 

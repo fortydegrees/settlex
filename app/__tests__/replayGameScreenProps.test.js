@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { buildReplayGameScreenProps } from "../replays/replayGameScreenProps";
-import { buildReplayTimeline } from "../replays/replayTimeline";
+import { buildReplayGameScreenProps } from "../_features/replay/replayGameScreenProps";
+import { buildReplayTimeline } from "../_features/replay/replayTimeline";
 
 it.each([false, true])(
   "keeps future log entries out of an earlier board position (annotated %s)",

@@ -5,8 +5,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
-import { Button } from "../../ui/Button";
-import { Tooltip, TooltipProvider } from "../../ui/Tooltip";
+import { Button } from "../../../ui/Button";
+import { Tooltip, TooltipProvider } from "../../../ui/Tooltip";
 import { getReplayRailOffset } from "./replayPanelLayout";
 
 const ReplayChevron = ({ direction, double = false }) => {

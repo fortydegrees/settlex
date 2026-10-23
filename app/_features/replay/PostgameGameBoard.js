@@ -9,7 +9,7 @@ import {
   useReducer,
   useRef,
 } from "react";
-import { GameScreenWithEffects } from "../_features/game/GameScreen";
+import { GameScreenWithEffects } from "../game/GameScreen";
 import { ReplayPanel } from "./components/ReplayPanel";
 import {
   buildReplayChatMessages,

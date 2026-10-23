@@ -97,7 +97,7 @@ export const createGMatchPage = ({
     if (pageData?.kind === "postgame-preparing") {
       const ReplayStatusPageResolved =
         ReplayStatusPageImpl ??
-        (await import("../../replays/components/ReplayStatusPage.jsx"))
+        (await import("../../_features/replay/components/ReplayStatusPage.jsx"))
           .ReplayStatusPage;
 
       return h(ReplayStatusPageResolved, {
@@ -135,7 +135,7 @@ export const createGMatchPage = ({
       } catch (error) {
         const ReplayStatusPageResolved =
           ReplayStatusPageImpl ??
-          (await import("../../replays/components/ReplayStatusPage.jsx"))
+          (await import("../../_features/replay/components/ReplayStatusPage.jsx"))
             .ReplayStatusPage;
         return h(ReplayStatusPageResolved, {
           matchID: params.matchID,
@@ -144,7 +144,7 @@ export const createGMatchPage = ({
       }
       const ReplayPageClientResolved =
         ReplayPageClientImpl ??
-        (await import("../../replays/[replayId]/ReplayPageClient.js"))
+        (await import("../../_features/replay/ReplayPageClient.js"))
           .ReplayPageClient;
 
       let accountId = null;

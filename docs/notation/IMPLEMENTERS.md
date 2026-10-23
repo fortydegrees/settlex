@@ -221,7 +221,7 @@ for vertexId, resource in board.ports:
 
 This is a rendering recipe, not a second implemented renderer. For a working
 integrated example, use the [existing local viewer](REPLAY-CONSUMER.md).
-[`app/replays/notationReplay.js`](../../app/replays/notationReplay.js) contains
+[`lib/replays/notationReplay.js`](../../lib/replays/notationReplay.js) contains
 its stricter geometry/port checks and maps notation state into Settlex's board
 UI. An independent renderer does not need that app-specific state shape.
 

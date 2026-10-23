@@ -5,10 +5,10 @@ import { createReplayPage } from "../replays/[replayId]/page-content.js";
 import { getPostgameReplayPayload } from "../../lib/server/replays/getPostgameReplayPayload.js";
 import { createElement as h } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { createReplayPageClient } from "../replays/[replayId]/ReplayPageClient.js";
-import { loadPostgameReplayPayload } from "../replays/usePostgameReplayPayload.js";
+import { createReplayPageClient } from "../_features/replay/ReplayPageClient.js";
+import { loadPostgameReplayPayload } from "../_features/replay/usePostgameReplayPayload.js";
 import { createPostgameReplayRoute } from "../api/matches/[matchID]/replay/handler.js";
-vi.mock("../replays/PostgameGameBoard", () => ({ PostgameGameBoard: () => null }));
+vi.mock("../_features/replay/PostgameGameBoard", () => ({ PostgameGameBoard: () => null }));
 
 const record = JSON.parse(readFileSync("docs/notation/examples/settlex-complete.han.json", "utf8"));
 const archived = (status) => ({

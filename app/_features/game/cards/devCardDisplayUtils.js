@@ -1,3 +1,5 @@
+import { DEV_CARD_TEXT } from "../../../../lib/shared/devCardText.js";
+export { DEV_CARD_TEXT };
 import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
 
 export const DEV_CARD_SVGS = {
@@ -8,28 +10,6 @@ export const DEV_CARD_SVGS = {
   monopoly: "/svgs/cards/development/monopoly.svg",
 };
 
-export const DEV_CARD_TEXT = {
-  knight: {
-    name: "Knight",
-    description: "Move the robber and build toward Largest Army."
-  },
-  victoryPoint: {
-    name: "Victory Point",
-    description: "A secret point that counts toward your final score."
-  },
-  roadBuilding: {
-    name: "Road Building",
-    description: "Place up to two roads without spending resources."
-  },
-  yearOfPlenty: {
-    name: "Year of Plenty",
-    description: "Take any two resources from the bank."
-  },
-  monopoly: {
-    name: "Monopoly",
-    description: "Choose a resource and claim every copy from other players."
-  },
-};
 
 export const DEV_CARD_DISPLAY_ORDER = [
   "knight",

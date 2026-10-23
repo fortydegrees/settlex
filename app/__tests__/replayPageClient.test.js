@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 const loadReplayPageClientModule = async () => {
-  return import("../replays/replayClientState.js");
+  return import("../_features/replay/replayClientState.js");
 };
 
 describe("replay client state", () => {
@@ -61,7 +61,7 @@ describe("replay client state", () => {
 
   it("projects raw frames into meaningful log events, turns, and VP samples", async () => {
     const { buildReplayTimeline } = await import(
-      "../replays/replayTimeline.js"
+      "../_features/replay/replayTimeline.js"
     );
     const participants = [
       {
@@ -172,7 +172,7 @@ describe("replay client state", () => {
 
   it("keeps hidden victory-point development cards out of the replay graph", async () => {
     const { buildReplayTimeline } = await import(
-      "../replays/replayTimeline.js"
+      "../_features/replay/replayTimeline.js"
     );
     const core = {
       buildingsByNodeId: {
@@ -208,7 +208,7 @@ describe("replay client state", () => {
 
   it("falls back to raw action frames without structured game-log events", async () => {
     const { buildReplayTimeline } = await import(
-      "../replays/replayTimeline.js"
+      "../_features/replay/replayTimeline.js"
     );
     const frames = [
       {
@@ -241,7 +241,7 @@ describe("replay client state", () => {
 
   it("uses human-readable labels for known legacy fallback actions", async () => {
     const { buildReplayTimeline } = await import(
-      "../replays/replayTimeline.js"
+      "../_features/replay/replayTimeline.js"
     );
     const actions = [
       "autoRoll",
@@ -279,7 +279,7 @@ describe("replay client state", () => {
 });
 
 it("keeps shared replay timeline summaries generic for stolen cards", async () => {
-  const { buildReplayTimeline } = await import("../replays/replayTimeline.js");
+  const { buildReplayTimeline } = await import("../_features/replay/replayTimeline.js");
   const entry = { id: 1, type: "robber:steal", actorId: "0",
     data: { victimId: "1", resource: "Ore" } };
   const timeline = buildReplayTimeline({

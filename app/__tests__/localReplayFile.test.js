@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseLocalReplayFile, createLocalReplayReader } from "../replays/localReplayFile.js";
-import { buildReplayTimeline } from "../replays/replayTimeline.js";
-import { createReplaySessionState, replaySessionReducer } from "../replays/replaySessionState.js";
+import { parseLocalReplayFile, createLocalReplayReader } from "../_features/replay/localReplayFile.js";
+import { buildReplayTimeline } from "../_features/replay/replayTimeline.js";
+import { createReplaySessionState, replaySessionReducer } from "../_features/replay/replaySessionState.js";
 import { localReplayPayload as payload } from "./fixtures/localReplayPayload.js";
 describe("generic local replay file",()=>{
   it("loads frames without needing an account, database or finished game",()=>{

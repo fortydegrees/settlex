@@ -6,7 +6,7 @@ import { exportSettlexNotationArchive, projectHANLog } from '@settlex/game-core'
 import { mapSettlexBoard } from '../../game-core/src/notation/board';
 import { runLocalSettlexGame } from '../../server/__tests__/helpers/notationGame.ts';
 import { buildReplayFrames } from '../../lib/server/replays/buildReplayFrames.js';
-import { formatLogEntry } from '../../app/catana/utils/gameText.js';
+import { formatLogEntry } from '../../lib/shared/gameText.js';
 import { normalizeNativeLog, semanticLog, compareLogs, canonicalizeLogForComparison } from './log-comparison.mjs';
 const hash = x => createHash('sha256').update(typeof x === 'string' ? x : JSON.stringify(x)).digest('hex');
 const canonical = value => Array.isArray(value) ? value.map(canonical) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])) : value;

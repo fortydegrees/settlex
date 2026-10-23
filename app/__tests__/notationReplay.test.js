@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { parseLocalReplayFile } from '../replays/localReplayFile.js';
-import { buildReplayTimeline } from '../replays/replayTimeline.js';
-import { buildReplayGameScreenProps } from '../replays/replayGameScreenProps.js';
+import { parseLocalReplayFile } from '../_features/replay/localReplayFile.js';
+import { buildReplayTimeline } from '../_features/replay/replayTimeline.js';
+import { buildReplayGameScreenProps } from '../_features/replay/replayGameScreenProps.js';
 const saved=JSON.parse(readFileSync('docs/notation/examples/settlex-complete.han.json','utf8'));
 const open = record => parseLocalReplayFile(JSON.stringify(record));
 describe('direct saved-record post-game consumer',()=>{

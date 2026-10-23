@@ -1,4 +1,4 @@
-import { buildNotationReplayFile } from "./notationReplay.js";
+import { buildNotationReplayFile } from "../../../lib/replays/notationReplay.js";
 
 const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const fail = (detail) => { throw new Error(`Invalid local replay: ${detail}`); };

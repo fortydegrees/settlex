@@ -10,7 +10,7 @@ import {
   resolveFriendChallengeState,
 } from "../../../../lib/server/matches/friendChallenge.js";
 import { Catan } from "../../../../lib/game-runtime/Game";
-import { PostgameGameBoard } from "../../../replays/PostgameGameBoard";
+import { PostgameGameBoard } from "../../replay/PostgameGameBoard";
 import { InterruptedDuelRecovery } from "./InterruptedDuelRecovery";
 import { LiveMatchLoadingShell } from "./LiveMatchLoadingShell";
 import { OpenMatchRoom } from "./OpenMatchRoom";

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   createReplaySessionState,
   replaySessionReducer,
-} from "../replays/replaySessionState";
-import * as replaySessionState from "../replays/replaySessionState";
+} from "../_features/replay/replaySessionState";
+import * as replaySessionState from "../_features/replay/replaySessionState";
 
 describe("replay session state", () => {
   it("restores the cursor after an early Results reveal", () => {

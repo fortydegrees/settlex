@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "../../ui/Button";
-import { CATANA_TABLE_BACKGROUND } from "../../_features/theme/backgrounds";
+import { Button } from "../../../ui/Button";
+import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
 
 const COPY = {
   preparing: [

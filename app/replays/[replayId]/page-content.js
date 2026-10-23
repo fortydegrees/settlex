@@ -51,7 +51,7 @@ export const createReplayPage = ({
     } catch (error) {
       const ReplayStatusPageResolved =
         ReplayStatusPageImpl ??
-        (await import("../components/ReplayStatusPage.jsx"))
+        (await import("../../_features/replay/components/ReplayStatusPage.jsx"))
           .ReplayStatusPage;
       return h(ReplayStatusPageResolved, {
         matchID: replay.match.bgioMatchId ?? replay.match.replayId,
@@ -60,7 +60,7 @@ export const createReplayPage = ({
     }
     const ReplayPageClientResolved =
       ReplayPageClientImpl ??
-      (await import("./ReplayPageClient.js")).ReplayPageClient;
+      (await import("../../_features/replay/ReplayPageClient.js")).ReplayPageClient;
 
     let accountId = null;
     try {
