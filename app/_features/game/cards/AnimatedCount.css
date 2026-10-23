@@ -27,18 +27,18 @@
 }
 
 .animated-count__value--enter {
-  animation: catana-animated-count-enter var(--catana-animated-count-enter-duration, 220ms) var(--settlex-ui-ease-standard, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation: settlehex-animated-count-enter var(--settlehex-animated-count-enter-duration, 220ms) var(--settlehex-ui-ease-standard, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
 .animated-count__value--exit {
-  animation: catana-animated-count-exit var(--catana-animated-count-exit-duration, 180ms) ease-out both;
+  animation: settlehex-animated-count-exit var(--settlehex-animated-count-exit-duration, 180ms) ease-out both;
 }
 
 .resource-dock-count {
-  --catana-animated-count-enter-duration: 440ms;
-  --catana-animated-count-exit-duration: 360ms;
+  --settlehex-animated-count-enter-duration: 440ms;
+  --settlehex-animated-count-exit-duration: 360ms;
 
-  color: var(--settlex-ui-text-hud-on-glass);
+  color: var(--settlehex-ui-text-hud-on-glass);
   font-variant-numeric: normal;
 }
 
@@ -47,30 +47,30 @@
 }
 
 .animated-count.resource-dock-count[data-direction="increase"] .animated-count__value--enter {
-  animation-name: catana-resource-count-gain;
+  animation-name: settlehex-resource-count-gain;
 }
 
 .animated-count.resource-dock-count[data-direction="decrease"] .animated-count__value--enter {
-  animation-name: catana-resource-count-loss;
+  animation-name: settlehex-resource-count-loss;
 }
 
 .animated-count[data-direction="decrease"] .animated-count__value--enter {
-  animation-name: catana-animated-count-enter-down;
+  animation-name: settlehex-animated-count-enter-down;
 }
 
 .animated-count[data-direction="decrease"] .animated-count__value--exit {
-  animation-name: catana-animated-count-exit-down;
+  animation-name: settlehex-animated-count-exit-down;
 }
 
 .animated-count[data-direction="steady"] .animated-count__value--enter {
-  animation-name: catana-animated-count-enter-steady;
+  animation-name: settlehex-animated-count-enter-steady;
 }
 
 .animated-count[data-direction="steady"] .animated-count__value--exit {
-  animation-name: catana-animated-count-exit-steady;
+  animation-name: settlehex-animated-count-exit-steady;
 }
 
-@keyframes catana-animated-count-enter {
+@keyframes settlehex-animated-count-enter {
   from {
     opacity: 0;
     filter: blur(1.5px);
@@ -88,7 +88,7 @@
   }
 }
 
-@keyframes catana-animated-count-exit {
+@keyframes settlehex-animated-count-exit {
   from {
     opacity: 1;
     filter: blur(0);
@@ -102,7 +102,7 @@
   }
 }
 
-@keyframes catana-animated-count-enter-down {
+@keyframes settlehex-animated-count-enter-down {
   from {
     opacity: 0;
     filter: blur(1.5px);
@@ -120,7 +120,7 @@
   }
 }
 
-@keyframes catana-animated-count-exit-down {
+@keyframes settlehex-animated-count-exit-down {
   from {
     opacity: 1;
     filter: blur(0);
@@ -134,7 +134,7 @@
   }
 }
 
-@keyframes catana-animated-count-enter-steady {
+@keyframes settlehex-animated-count-enter-steady {
   from {
     opacity: 0;
     filter: blur(1px);
@@ -148,7 +148,7 @@
   }
 }
 
-@keyframes catana-animated-count-exit-steady {
+@keyframes settlehex-animated-count-exit-steady {
   from {
     opacity: 1;
     transform: scale(1);
@@ -160,9 +160,9 @@
   }
 }
 
-@keyframes catana-resource-count-gain {
+@keyframes settlehex-resource-count-gain {
   from {
-    color: var(--settlex-ui-text-hud-count-gain-start);
+    color: var(--settlehex-ui-text-hud-count-gain-start);
     opacity: 0;
     text-shadow:
       0 0 8px rgb(34 197 94 / 0.85),
@@ -171,7 +171,7 @@
   }
 
   58% {
-    color: var(--settlex-ui-text-hud-count-gain-peak);
+    color: var(--settlehex-ui-text-hud-count-gain-peak);
     opacity: 1;
     text-shadow:
       0 0 10px rgb(34 197 94 / 0.9),
@@ -180,16 +180,16 @@
   }
 
   to {
-    color: var(--settlex-ui-text-hud-on-glass);
+    color: var(--settlehex-ui-text-hud-on-glass);
     opacity: 1;
     text-shadow: 0 0 0 rgb(34 197 94 / 0);
     transform: translateY(0) scale(1);
   }
 }
 
-@keyframes catana-resource-count-loss {
+@keyframes settlehex-resource-count-loss {
   from {
-    color: var(--settlex-ui-text-hud-count-loss-start);
+    color: var(--settlehex-ui-text-hud-count-loss-start);
     opacity: 0;
     text-shadow:
       0 0 8px rgb(244 63 94 / 0.85),
@@ -198,7 +198,7 @@
   }
 
   58% {
-    color: var(--settlex-ui-text-hud-count-loss-peak);
+    color: var(--settlehex-ui-text-hud-count-loss-peak);
     opacity: 1;
     text-shadow:
       0 0 10px rgb(244 63 94 / 0.9),
@@ -207,7 +207,7 @@
   }
 
   to {
-    color: var(--settlex-ui-text-hud-on-glass);
+    color: var(--settlehex-ui-text-hud-on-glass);
     opacity: 1;
     text-shadow: 0 0 0 rgb(244 63 94 / 0);
     transform: translateY(0) scale(1);

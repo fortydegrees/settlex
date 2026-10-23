@@ -12,11 +12,11 @@ import { Popover } from "../../../ui/Popover";
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
 const menuItemClassName =
-  "settlex-ui-game-menu-item settlex-ui-focus flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control border px-ui-3 py-ui-2.5 text-left type-action-small transition-colors duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none";
+  "settlehex-ui-game-menu-item settlehex-ui-focus flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control border px-ui-3 py-ui-2.5 text-left type-action-small transition-colors duration-[var(--settlehex-ui-duration-fast)] motion-reduce:transition-none";
 const neutralItemClassName =
-  "settlex-ui-game-menu-item-neutral";
+  "settlehex-ui-game-menu-item-neutral";
 const dangerItemClassName =
-  "settlex-ui-game-menu-item-danger";
+  "settlehex-ui-game-menu-item-danger";
 const iconClassName = "h-5 w-5 shrink-0";
 
 function MobileMatchMenuItem({
@@ -97,7 +97,7 @@ export function MobileMatchMenu({
       align="end"
       sideOffset={8}
       triggerAriaLabel="Open match menu"
-      triggerClassName="settlex-ui-button settlex-ui-button-secondary settlex-ui-button-utility settlex-ui-game-utility h-11 w-11"
+      triggerClassName="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-button-utility settlehex-ui-game-utility h-11 w-11"
       triggerContent={
         <EllipsisHorizontalIcon className="h-5 w-5" aria-hidden="true" />
       }

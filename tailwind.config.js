@@ -11,8 +11,8 @@ module.exports = {
   ],
   theme: {
     extend: {
-      spacing: Object.fromEntries(Object.keys(spaces).map(name => [`ui-${name}`, `var(--settlex-ui-space-${name.replace('.', '-')})`])),
-      borderRadius: Object.fromEntries(Object.keys(radii).map(name => [name, `var(--settlex-ui-radius-${name})`])),
+      spacing: Object.fromEntries(Object.keys(spaces).map(name => [`ui-${name}`, `var(--settlehex-ui-space-${name.replace('.', '-')})`])),
+      borderRadius: Object.fromEntries(Object.keys(radii).map(name => [name, `var(--settlehex-ui-radius-${name})`])),
       colors: colourUtilities,
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

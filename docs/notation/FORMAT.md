@@ -1,6 +1,6 @@
-# Settlex HAN record contract
+# SettleHex HAN record contract
 
-Status: experimental version 1, `format: "han-prototype"`. This is the wire contract implemented by the maintained notation module. The upstream [Hexil Action Notation reference](https://github.com/hexil-org/hexer/blob/main/docs/hexil_action_notation.md) defines action syntax; this document defines Settlex's whole-game envelope and replay interpretation. It does not assert compatibility with Hexil's runtime or its separate state notation.
+Status: experimental version 1, `format: "han-prototype"`. This is the wire contract implemented by the maintained notation module. The upstream [Hexil Action Notation reference](https://github.com/hexil-org/hexer/blob/main/docs/hexil_action_notation.md) defines action syntax; this document defines SettleHex's whole-game envelope and replay interpretation. It does not assert compatibility with Hexil's runtime or its separate state notation.
 
 The referenced HAN document was inspected on 2026-10-19; the research source receipt identifies Git blob `6d68ebad13194d9251fe9ed21e8eecfb5fff7447`. The implementation is original. A change to upstream main does not silently change the semantics of an existing record.
 
@@ -10,7 +10,7 @@ Use UTF-8 JSON, conventionally named `*.han.json`. Object key order and whitespa
 
 A record describes what happened with full information: actual die faces, development-card identities and stolen resources. It does not store the future deck order, a random seed, private access credentials, chat or account metadata. Costs and other deterministic consequences come from the named rules. Redacted observations and inference about unknown facts belong in import tooling, outside this core contract.
 
-[The complete example](examples/settlex-complete.han.json) is valid input, not an abbreviated JSON sketch. Its first actions are setup placements. Its last action reaches the declared winner; replay verifies that result.
+[The complete example](examples/settlehex-complete.han.json) is valid input, not an abbreviated JSON sketch. Its first actions are setup placements. Its last action reaches the declared winner; replay verifies that result.
 
 ## Envelope
 

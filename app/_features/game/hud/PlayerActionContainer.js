@@ -14,7 +14,7 @@ import { useEffectListener } from "bgio-effects/react";
 import {
   getVictoryPoints,
   getPublicVictoryPoints,
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { getBuildPickupPieceType } from "./playerAction";
 import { useLocalPlayerDockModel } from "./useLocalPlayerDockModel";
 import "../../theme/hudGlass.css";
@@ -295,7 +295,7 @@ export const PlayerActionContainer = ({
             vpDisplayOverride={vpDisplayOverride}
             knightDisplayOverride={knightDisplayOverride}
             statsPanelClassName={
-              !isSeatWarning && isOverLimit ? "catana-hud-glass--danger" : ""
+              !isSeatWarning && isOverLimit ? "settlehex-hud-glass--danger" : ""
             }
             showStatsPanelNameplate={false}
             statsPanelChildrenClassName="flex min-w-0 flex-1 items-center justify-start gap-x-ui-3"
@@ -342,7 +342,7 @@ export const PlayerActionContainer = ({
                   {showDevCardBay && (
                     <>
                       <span
-                        className="catana-hud-divider ml-ui-0 mr-ui-4 mb-ui-3 h-14 w-px shrink-0 rounded-pill"
+                        className="settlehex-hud-divider ml-ui-0 mr-ui-4 mb-ui-3 h-14 w-px shrink-0 rounded-pill"
                         aria-hidden={true}
                       />
                       <DevCardDisplay

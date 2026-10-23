@@ -1,4 +1,4 @@
-import { canPlaceRobber, getRobberVictims } from "@settlex/game-core";
+import { canPlaceRobber, getRobberVictims } from "@settlehex/game-core";
 import { describe, expect, it } from "vitest";
 import {
   SANDBOX_PRESETS,

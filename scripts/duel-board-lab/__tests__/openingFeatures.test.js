@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 import { buildBoardFacts } from "../analysis/boardFacts.mjs";
 import { startingResourcesForNode } from "../analysis/startingResources.mjs";
 import { generateCandidate, BOARD_FAMILIES } from "../generators/generateCandidate.mjs";

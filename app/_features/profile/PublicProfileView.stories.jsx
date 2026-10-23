@@ -113,6 +113,6 @@ export const Mobile = {
     profile: historyProfile,
   },
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };

@@ -2,9 +2,9 @@ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import { exportSettlexNotationArchive, projectHANLog } from '@settlex/game-core';
-import { mapSettlexBoard } from '../../game-core/src/notation/board';
-import { runLocalSettlexGame } from '../../server/__tests__/helpers/notationGame.ts';
+import { exportSettleHexNotationArchive, projectHANLog } from '@settlehex/game-core';
+import { mapSettleHexBoard } from '../../game-core/src/notation/board';
+import { runLocalSettleHexGame } from '../../server/__tests__/helpers/notationGame.ts';
 import { buildReplayFrames } from '../../lib/server/replays/buildReplayFrames.js';
 import { formatLogEntry } from '../../lib/shared/gameText.js';
 import { normalizeNativeLog, semanticLog, compareLogs, canonicalizeLogForComparison } from './log-comparison.mjs';
@@ -30,22 +30,22 @@ const text = row => formatLogEntry(displayEntry(row)).map(t => {
   return t.text ?? t.label ?? `[${t.kind}]`;
 }).join('');
 
-describe('actual Settlex saved-record log proof', () => {
+describe('actual SettleHex saved-record log proof', () => {
   it('compares the saved-record-only projection with every native gameplay row in order', () => {
-    const raw=readFileSync(resolve('docs/notation/examples/settlex-complete.han.json'),'utf8');
+    const raw=readFileSync(resolve('docs/notation/examples/settlehex-complete.han.json'),'utf8');
     const saved=JSON.parse(raw);
     // Project BEFORE generating any native source or comparison log.
     const projected=projectHANLog(saved);
     const quiet=vi.spyOn(console,'log').mockImplementation(()=>{});
     let run, exported;
     try {
-      run=runLocalSettlexGame({maxMoves:6000});
-      exported=exportSettlexNotationArchive(run.archive,buildReplayFrames);
+      run=runLocalSettleHexGame({maxMoves:6000});
+      exported=exportSettleHexNotationArchive(run.archive,buildReplayFrames);
     } finally {quiet.mockRestore();}
     expect(exported.record).toEqual(saved);
     const native=run.archive.finalState.G.gameLog;
     const seats=Object.fromEntries(run.archive.initialState.G.core.players.map((p,i)=>[p,saved.players[i]]));
-    const expected=canonicalizeLogForComparison(normalizeNativeLog(native,mapSettlexBoard(run.archive.initialState),seats));
+    const expected=canonicalizeLogForComparison(normalizeNativeLog(native,mapSettleHexBoard(run.archive.initialState),seats));
     const actual=canonicalizeLogForComparison(semanticLog(projected));
     const comparison=compareLogs(expected,actual);
     const receipt={comparisonPolicy:'same-roll shortage notices unordered; all other rows ordered',source:{kind:'actual-local-boardgame-io',seed:run.seed,moves:run.moves},

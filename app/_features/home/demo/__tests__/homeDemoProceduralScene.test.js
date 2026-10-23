@@ -3,7 +3,7 @@ import {
   buildableEdges,
   buildableNodes,
   createEmptyState
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { HOME_DEMO_BOARD_PRESET } from "../homeDemoPreset";
 import { generateHomeDemoProceduralEvents } from "../homeDemoProceduralScene";
 import {

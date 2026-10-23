@@ -10,7 +10,7 @@ import { loadPostgameReplayPayload } from "../_features/replay/usePostgameReplay
 import { createPostgameReplayRoute } from "../api/matches/[matchID]/replay/handler.js";
 vi.mock("../_features/replay/PostgameGameBoard", () => ({ PostgameGameBoard: () => null }));
 
-const record = JSON.parse(readFileSync("docs/notation/examples/settlex-complete.han.json", "utf8"));
+const record = JSON.parse(readFileSync("docs/notation/examples/settlehex-complete.han.json", "utf8"));
 const archived = (status) => ({
   match: { replayId: "r1", bgioMatchId: "m1", winnerSeatId: "0", playerCount: 3 },
   participants: ["Ada", "Ben", "Cy"].map((name, index) => ({

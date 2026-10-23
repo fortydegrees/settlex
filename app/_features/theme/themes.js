@@ -1,5 +1,5 @@
 export const DEFAULT_THEME_ID = "emoji";
-export const CATANA_THEME_STORAGE_KEY = "catana:themeId";
+export const SETTLEHEX_THEME_STORAGE_KEY = "catana:themeId";
 const CLASSIC_THEME_ID = "classic";
 
 const PALETTE_TILE_FILE_NAMES = Object.freeze([
@@ -86,7 +86,7 @@ const createTileAssetOverrides = (optionFolder) =>
     )
   );
 
-export const CATANA_THEMES = Object.freeze({
+export const SETTLEHEX_THEMES = Object.freeze({
   classic: {
     id: "classic",
     label: "Classic",
@@ -145,20 +145,20 @@ export const TILE_FILES_BY_RESOURCE = Object.freeze({
 const normalizeFileName = (fileName = "") => String(fileName).replace(/^\/+/, "");
 
 export function resolveThemeId(themeId) {
-  if (themeId && CATANA_THEMES[themeId]) {
+  if (themeId && SETTLEHEX_THEMES[themeId]) {
     return themeId;
   }
   return DEFAULT_THEME_ID;
 }
 
 export function getThemeAssetBase(themeId) {
-  return CATANA_THEMES[resolveThemeId(themeId)]?.assetBase ?? CATANA_THEMES[DEFAULT_THEME_ID].assetBase;
+  return SETTLEHEX_THEMES[resolveThemeId(themeId)]?.assetBase ?? SETTLEHEX_THEMES[DEFAULT_THEME_ID].assetBase;
 }
 
 export function getThemedSvgPath(themeId, fileName) {
   const resolvedThemeId = resolveThemeId(themeId);
   const normalized = normalizeFileName(fileName);
-  const theme = CATANA_THEMES[resolvedThemeId] ?? CATANA_THEMES[DEFAULT_THEME_ID];
+  const theme = SETTLEHEX_THEMES[resolvedThemeId] ?? SETTLEHEX_THEMES[DEFAULT_THEME_ID];
   const overridePath = theme.assetOverrides?.[normalized];
   if (overridePath) {
     return overridePath;
@@ -176,7 +176,7 @@ export function getBoardUnderlayPath(themeId) {
 
 export function getBackgroundImageWithFallback(themeId, fileName) {
   const resolvedThemeId = resolveThemeId(themeId);
-  const theme = CATANA_THEMES[resolvedThemeId] ?? CATANA_THEMES[DEFAULT_THEME_ID];
+  const theme = SETTLEHEX_THEMES[resolvedThemeId] ?? SETTLEHEX_THEMES[DEFAULT_THEME_ID];
   const themedPath = getThemedSvgPath(themeId, fileName);
   const classicPath = getClassicSvgPath(fileName);
   if (theme.disableBackgroundFallback || themedPath === classicPath) {
@@ -247,5 +247,5 @@ export function getTilePath(themeId, resource) {
 }
 
 export function getThemeOptions() {
-  return Object.values(CATANA_THEMES);
+  return Object.values(SETTLEHEX_THEMES);
 }

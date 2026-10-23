@@ -9,7 +9,7 @@ const workflow = fs.readFileSync(new URL("../../.github/workflows/deploy-prod.ym
 
 describe("verified deployment commit pin", () => {
   it.each([0, 19])("runs the entire SSH deployment after backup consumes stdin (deploy exit %s)", (deployExit) => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "settlex-deploy-stdin-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "settlehex-deploy-stdin-"));
     const bin = path.join(root, "bin");
     const scripts = path.join(root, "infra/scripts");
     fs.mkdirSync(bin);
@@ -34,7 +34,7 @@ esac
 `);
     executable(path.join(bin, "docker"), `#!/bin/sh
 case "$*" in
-  *pg_dump*) cat >/dev/null; echo test-database-backup ;;
+  *pg_dump*) cat >/catana/catana/dev/null; echo test-database-backup ;;
 esac
 `);
     executable(path.join(bin, "curl"), '#!/bin/sh\nexit 0\n');
@@ -60,7 +60,7 @@ exit ${deployExit}
   });
 
   it("refuses a changed remote head before checkout reset or Docker commands", () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "settlex-deploy-pin-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "settlehex-deploy-pin-"));
     const bin = path.join(root, "bin");
     fs.mkdirSync(bin);
     fs.mkdirSync(path.join(root, ".git"));

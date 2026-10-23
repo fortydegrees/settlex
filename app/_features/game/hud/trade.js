@@ -1,4 +1,4 @@
-import { bestTradeRate } from "@settlex/game-core";
+import { bestTradeRate } from "@settlehex/game-core";
 
 export const getMaritimeTradeRateIfTradable = ({
   core,

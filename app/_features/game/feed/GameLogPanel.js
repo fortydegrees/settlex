@@ -9,9 +9,9 @@ const GameLogPanelComponent = ({
   themeId,
   activeEntryKey = null,
   onEntrySelect,
-  headerClassName = "settlex-ui-feed-header px-ui-4 py-ui-2 type-action-small text-ink-secondary",
+  headerClassName = "settlehex-ui-feed-header px-ui-4 py-ui-2 type-action-small text-ink-secondary",
   rootClassName = "fixed left-ui-4 bottom-ui-4 w-72 md:w-80 xl:w-96 z-30 pointer-events-auto",
-  panelClassName = "settlex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col select-text overflow-hidden",
+  panelClassName = "settlehex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col select-text overflow-hidden",
 }) => {
   const formattedEntries = useMemo(
     () =>
@@ -52,9 +52,9 @@ const GameLogPanelComponent = ({
       contentClassName="space-y-ui-2 type-body-small pt-ui-2"
       renderRow={(entry) => (
         <div
-          className={`game-log-entry settlex-ui-focus break-words rounded-small px-ui-1.5 py-ui-0.5 type-body-small ${
+          className={`game-log-entry settlehex-ui-focus break-words rounded-small px-ui-1.5 py-ui-0.5 type-body-small ${
             entry.isActive
-              ? "settlex-ui-feed-current"
+              ? "settlehex-ui-feed-current"
               : ""
           } ${
             entry.isServerEntry ? "italic text-ink-secondary" : "text-ink-primary"

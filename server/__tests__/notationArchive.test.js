@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { archiveFinishedMatch } from "../archive/archiveFinishedMatch.js";
 import { createArchivePool } from "./helpers/archiveTestUtils.js";
 
-const completeRecord = JSON.parse(readFileSync(resolve("docs/notation/examples/settlex-complete.han.json"), "utf8"));
+const completeRecord = JSON.parse(readFileSync(resolve("docs/notation/examples/settlehex-complete.han.json"), "utf8"));
 const live = () => ({
   metadata: { gameName: "catan", players: {} },
   initialState: { _stateID: 0, G: { rulesetId: "standard" }, ctx: {} },

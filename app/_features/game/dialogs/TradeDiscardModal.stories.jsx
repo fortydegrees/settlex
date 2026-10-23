@@ -1,5 +1,5 @@
 import React from "react";
-import { createEmptyState, ResourceType } from "@settlex/game-core";
+import { createEmptyState, ResourceType } from "@settlehex/game-core";
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { TradeDiscardModal } from "./TradeDiscardModal";
 

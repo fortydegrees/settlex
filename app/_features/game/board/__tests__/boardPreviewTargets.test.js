@@ -7,8 +7,8 @@ import {
 } from "../boardPreviewTargets";
 import { TileTypes } from "../../../theme/gameAssets";
 
-vi.mock("@settlex/game-core", async () => {
-  const actual = await vi.importActual("@settlex/game-core");
+vi.mock("@settlehex/game-core", async () => {
+  const actual = await vi.importActual("@settlehex/game-core");
   return {
     ...actual,
     canPlaceRobber: vi.fn((_core, _topology, tileId) => tileId !== 2)

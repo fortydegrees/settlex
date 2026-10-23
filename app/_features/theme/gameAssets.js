@@ -7,7 +7,7 @@ export {
   EdgeBuildingTypes,
   PlayerColor,
   PLAYER_COLORS
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { getPieceSvgPath } from "./pieceAssets.js";
 
 

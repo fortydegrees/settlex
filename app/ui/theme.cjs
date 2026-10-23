@@ -90,40 +90,40 @@ const typography = {
 // One registry is consumed by Tailwind and the policy checker. Misspelled
 // semantic utility names must fail validation, not silently produce no CSS.
 const colourUtilities = {
-  ink: { primary: 'var(--settlex-ui-text-primary)', secondary: 'var(--settlex-ui-text-secondary)', muted: 'var(--settlex-ui-text-muted)', danger: 'var(--settlex-ui-text-danger)', brand: 'var(--settlex-ui-text-brand)', link: 'var(--settlex-ui-text-link)', positive: 'var(--settlex-ui-text-positive)', highlight: 'var(--settlex-ui-text-highlight)', 'hud-roll': 'var(--settlex-ui-text-hud-roll)', 'hud-on-glass': 'var(--settlex-ui-text-hud-on-glass)', 'hud-on-glass-muted': 'var(--settlex-ui-text-hud-on-glass-muted)', 'hud-award': 'var(--settlex-ui-text-hud-award)', 'hud-badge-default': 'var(--settlex-ui-text-hud-badge-default)', 'hud-badge-danger': 'var(--settlex-ui-text-hud-badge-danger)', 'console-primary': 'var(--settlex-ui-text-console-primary)', 'console-secondary': 'var(--settlex-ui-text-console-secondary)', 'console-muted': 'var(--settlex-ui-text-console-muted)' },
-  surface: { solid: 'var(--settlex-ui-surface-solid)', inset: 'var(--settlex-ui-surface-inset)', selected: 'var(--settlex-ui-surface-selected)', hover: 'var(--settlex-ui-surface-hover)', positive: 'var(--settlex-ui-surface-positive)', 'search-scrim': 'var(--settlex-ui-surface-search-scrim)', 'game-scrim': 'var(--settlex-ui-surface-game-scrim)', 'hud-badge-default': 'var(--settlex-ui-surface-hud-badge-default)', 'hud-badge-danger': 'var(--settlex-ui-surface-hud-badge-danger)', console: 'var(--settlex-ui-surface-console)', 'console-panel': 'var(--settlex-ui-surface-console-panel)', 'console-inset': 'var(--settlex-ui-surface-console-inset)' },
-  'console-edge': { DEFAULT: 'var(--settlex-ui-border-console)' },
-  decoration: { fill: 'var(--settlex-ui-decoration-fill)', wash: 'var(--settlex-ui-decoration-wash)', ring: 'var(--settlex-ui-decoration-ring)', edge: 'var(--settlex-ui-decoration-edge)' },
-  edge: { DEFAULT: 'var(--settlex-ui-border-default)', subtle: 'var(--settlex-ui-border-subtle)' },
+  ink: { primary: 'var(--settlehex-ui-text-primary)', secondary: 'var(--settlehex-ui-text-secondary)', muted: 'var(--settlehex-ui-text-muted)', danger: 'var(--settlehex-ui-text-danger)', brand: 'var(--settlehex-ui-text-brand)', link: 'var(--settlehex-ui-text-link)', positive: 'var(--settlehex-ui-text-positive)', highlight: 'var(--settlehex-ui-text-highlight)', 'hud-roll': 'var(--settlehex-ui-text-hud-roll)', 'hud-on-glass': 'var(--settlehex-ui-text-hud-on-glass)', 'hud-on-glass-muted': 'var(--settlehex-ui-text-hud-on-glass-muted)', 'hud-award': 'var(--settlehex-ui-text-hud-award)', 'hud-badge-default': 'var(--settlehex-ui-text-hud-badge-default)', 'hud-badge-danger': 'var(--settlehex-ui-text-hud-badge-danger)', 'console-primary': 'var(--settlehex-ui-text-console-primary)', 'console-secondary': 'var(--settlehex-ui-text-console-secondary)', 'console-muted': 'var(--settlehex-ui-text-console-muted)' },
+  surface: { solid: 'var(--settlehex-ui-surface-solid)', inset: 'var(--settlehex-ui-surface-inset)', selected: 'var(--settlehex-ui-surface-selected)', hover: 'var(--settlehex-ui-surface-hover)', positive: 'var(--settlehex-ui-surface-positive)', 'search-scrim': 'var(--settlehex-ui-surface-search-scrim)', 'game-scrim': 'var(--settlehex-ui-surface-game-scrim)', 'hud-badge-default': 'var(--settlehex-ui-surface-hud-badge-default)', 'hud-badge-danger': 'var(--settlehex-ui-surface-hud-badge-danger)', console: 'var(--settlehex-ui-surface-console)', 'console-panel': 'var(--settlehex-ui-surface-console-panel)', 'console-inset': 'var(--settlehex-ui-surface-console-inset)' },
+  'console-edge': { DEFAULT: 'var(--settlehex-ui-border-console)' },
+  decoration: { fill: 'var(--settlehex-ui-decoration-fill)', wash: 'var(--settlehex-ui-decoration-wash)', ring: 'var(--settlehex-ui-decoration-ring)', edge: 'var(--settlehex-ui-decoration-edge)' },
+  edge: { DEFAULT: 'var(--settlehex-ui-border-default)', subtle: 'var(--settlehex-ui-border-subtle)' },
 };
 const variables = {
-  '--settlex-ui-font-ui': 'var(--font-outfit, Outfit, sans-serif)',
-  '--settlex-ui-font-code': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-  '--settlex-ui-font-display': '"SettleHex Display", var(--settlex-ui-font-ui)',
-  '--settlex-ui-duration-fast': '140ms', '--settlex-ui-duration-dialog': '220ms', '--settlex-ui-duration-exit': '160ms',
-  '--settlex-ui-ease-standard': 'cubic-bezier(.2, .9, .24, 1)', '--settlex-ui-ease-bounce': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-  '--settlex-ui-z-dialog': '80', '--settlex-ui-z-popover': '90', '--settlex-ui-z-tooltip': '100', '--settlex-ui-z-status': '120',
-  '--settlex-ui-shadow-panel': 'inset 0 1px 0 #fff, 0 16px 40px -24px rgb(30 64 175 / .28), 0 2px 6px rgb(30 64 175 / .06)',
-  '--settlex-ui-shadow-selected': '0 1px 2px rgb(15 23 42 / .08)',
-  '--settlex-ui-avatar-preview-glyph': '3rem',
-  '--settlex-ui-avatar-profile-glyph': '2rem',
-  '--settlex-ui-avatar-small-glyph': '.875rem',
-  '--settlex-ui-avatar-header-glyph': '1.125rem',
-  '--settlex-ui-avatar-header-wide-glyph': '1.25rem',
-  '--settlex-ui-emoji-option-glyph': '1.5rem',
-  '--settlex-ui-celebration-glyph': '2.25rem',
-  '--settlex-ui-hud-control-inset': '.45rem',
+  '--settlehex-ui-font-ui': 'var(--font-outfit, Outfit, sans-serif)',
+  '--settlehex-ui-font-code': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+  '--settlehex-ui-font-display': '"SettleHex Display", var(--settlehex-ui-font-ui)',
+  '--settlehex-ui-duration-fast': '140ms', '--settlehex-ui-duration-dialog': '220ms', '--settlehex-ui-duration-exit': '160ms',
+  '--settlehex-ui-ease-standard': 'cubic-bezier(.2, .9, .24, 1)', '--settlehex-ui-ease-bounce': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+  '--settlehex-ui-z-dialog': '80', '--settlehex-ui-z-popover': '90', '--settlehex-ui-z-tooltip': '100', '--settlehex-ui-z-status': '120',
+  '--settlehex-ui-shadow-panel': 'inset 0 1px 0 #fff, 0 16px 40px -24px rgb(30 64 175 / .28), 0 2px 6px rgb(30 64 175 / .06)',
+  '--settlehex-ui-shadow-selected': '0 1px 2px rgb(15 23 42 / .08)',
+  '--settlehex-ui-avatar-preview-glyph': '3rem',
+  '--settlehex-ui-avatar-profile-glyph': '2rem',
+  '--settlehex-ui-avatar-small-glyph': '.875rem',
+  '--settlehex-ui-avatar-header-glyph': '1.125rem',
+  '--settlehex-ui-avatar-header-wide-glyph': '1.25rem',
+  '--settlehex-ui-emoji-option-glyph': '1.5rem',
+  '--settlehex-ui-celebration-glyph': '2.25rem',
+  '--settlehex-ui-hud-control-inset': '.45rem',
 };
-for (const [name, value] of Object.entries(spaces)) variables[`--settlex-ui-space-${name.replace('.', '-')}`] = value;
-for (const [name, value] of Object.entries(radii)) variables[`--settlex-ui-radius-${name}`] = value;
-for (const [name, value] of Object.entries(colours)) variables[`--settlex-ui-${name}`] = value;
+for (const [name, value] of Object.entries(spaces)) variables[`--settlehex-ui-space-${name.replace('.', '-')}`] = value;
+for (const [name, value] of Object.entries(radii)) variables[`--settlehex-ui-radius-${name}`] = value;
+for (const [name, value] of Object.entries(colours)) variables[`--settlehex-ui-${name}`] = value;
 const typeStyles = {};
 for (const [role, type] of Object.entries(typography)) {
-  for (const [property, value] of Object.entries(type)) variables[`--settlex-ui-type-${role}-${property}`] = String(value);
+  for (const [property, value] of Object.entries(type)) variables[`--settlehex-ui-type-${role}-${property}`] = String(value);
   typeStyles[`.type-${role}`] = {
-    fontFamily: `var(--settlex-ui-font-${type.family ?? 'ui'})`,
-    fontSize: `var(--settlex-ui-type-${role}-size)`, fontWeight: `var(--settlex-ui-type-${role}-weight)`,
-    lineHeight: `var(--settlex-ui-type-${role}-line)`, letterSpacing: `var(--settlex-ui-type-${role}-tracking)`,
+    fontFamily: `var(--settlehex-ui-font-${type.family ?? 'ui'})`,
+    fontSize: `var(--settlehex-ui-type-${role}-size)`, fontWeight: `var(--settlehex-ui-type-${role}-weight)`,
+    lineHeight: `var(--settlehex-ui-type-${role}-line)`, letterSpacing: `var(--settlehex-ui-type-${role}-tracking)`,
   };
 }
 

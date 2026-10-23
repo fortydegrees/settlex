@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import {
-  CATANA_THEMES,
+  SETTLEHEX_THEMES,
   DEFAULT_THEME_ID,
   getThemeAssetBase,
   getThemedSvgPath,
@@ -42,11 +42,11 @@ const PIECE_COLORS = [
   "gold",
 ];
 
-describe("Catana theme assets", () => {
+describe("SettleHex theme assets", () => {
   it("exposes classic, palette-b, and emoji themes", () => {
-    expect(CATANA_THEMES.classic.assetBase).toBe("/svgs");
-    expect(CATANA_THEMES["palette-b"].id).toBe("palette-b");
-    expect(CATANA_THEMES.emoji.id).toBe("emoji");
+    expect(SETTLEHEX_THEMES.classic.assetBase).toBe("/svgs");
+    expect(SETTLEHEX_THEMES["palette-b"].id).toBe("palette-b");
+    expect(SETTLEHEX_THEMES.emoji.id).toBe("emoji");
     expect(DEFAULT_THEME_ID).toBe("emoji");
   });
 

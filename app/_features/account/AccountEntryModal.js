@@ -210,7 +210,7 @@ function AccountAuthForm({
       ) : null}
 
       {status ? (
-        <div role="status" className="settlex-ui-inset px-ui-4 py-ui-3 type-body-small text-ink-secondary">
+        <div role="status" className="settlehex-ui-inset px-ui-4 py-ui-3 type-body-small text-ink-secondary">
           {status}
         </div>
       ) : null}
@@ -233,16 +233,16 @@ function AvatarPreview({
       open={isPickerOpen}
       onOpenChange={onAvatarPreviewClick}
       triggerAriaLabel="Change avatar and color"
-      triggerClassName="settlex-ui-focus group mx-auto flex flex-col items-center rounded-small"
+      triggerClassName="settlehex-ui-focus group mx-auto flex flex-col items-center rounded-small"
       triggerContent={
         <>
           <span
-            className={`settlex-ui-avatar-preview relative grid h-20 w-20 place-items-center overflow-hidden rounded-panel bg-gradient-to-br ${colorOption.gradient} transition group-hover:-translate-y-0.5 motion-reduce:transition-none`}
+            className={`settlehex-ui-avatar-preview relative grid h-20 w-20 place-items-center overflow-hidden rounded-panel bg-gradient-to-br ${colorOption.gradient} transition group-hover:-translate-y-0.5 motion-reduce:transition-none`}
           >
             {emoji}
             <span
               aria-hidden="true"
-              className="settlex-ui-avatar-preview-shadow absolute bottom-2 h-2 w-10 rounded-pill blur-[1px]"
+              className="settlehex-ui-avatar-preview-shadow absolute bottom-2 h-2 w-10 rounded-pill blur-[1px]"
             />
           </span>
           <span className="mt-ui-2 type-caption text-ink-secondary">
@@ -371,7 +371,7 @@ function PlayUsernameForm({
       </Button>
 
       {status ? (
-        <div role="alert" className="settlex-ui-inline-error px-ui-4 py-ui-3 type-body-small">
+        <div role="alert" className="settlehex-ui-inline-error px-ui-4 py-ui-3 type-body-small">
           {status}
         </div>
       ) : null}

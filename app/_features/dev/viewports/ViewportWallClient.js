@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "../../../ui/Button";
 
-const SANDBOX_PATH = "/catana/dev/sandbox?viewportWall=1";
+const SANDBOX_PATH = "/catana/catana/dev/sandbox?viewportWall=1";
 
 const VIEWPORTS = [
   {
@@ -72,7 +72,7 @@ function ViewportPreview({ viewport, scale, reloadToken }) {
   const sandboxUrl = `${SANDBOX_PATH}&wallViewport=${viewport.id}&reload=${reloadToken}`;
 
   return (
-    <section className="settlex-ui-pane p-ui-3">
+    <section className="settlehex-ui-pane p-ui-3">
       <div className="mb-ui-3 flex items-center justify-between gap-ui-3">
         <div className="min-w-0">
           <h2 className="type-section truncate text-ink-primary">
@@ -83,7 +83,7 @@ function ViewportPreview({ viewport, scale, reloadToken }) {
           </p>
         </div>
         <a
-          className="settlex-ui-button settlex-ui-button-utility settlex-ui-focus type-action-small shrink-0 px-ui-3 py-ui-1"
+          className="settlehex-ui-button settlehex-ui-button-utility settlehex-ui-focus type-action-small shrink-0 px-ui-3 py-ui-1"
           href={sandboxUrl}
           target="_blank"
           rel="noreferrer"
@@ -98,7 +98,7 @@ function ViewportPreview({ viewport, scale, reloadToken }) {
       >
         <iframe
           key={sandboxUrl}
-          title={`Catana sandbox ${viewport.label}`}
+          title={`SettleHex sandbox ${viewport.label}`}
           src={sandboxUrl}
           width={viewport.width}
           height={viewport.height}
@@ -128,21 +128,21 @@ export function ViewportWallClient() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 to-blue-600 px-ui-5 py-ui-5 text-ink-primary">
-      <header className="settlex-ui-pane sticky top-4 z-10 mb-ui-5 flex flex-wrap items-center justify-between gap-ui-3 px-ui-4 py-ui-3">
+      <header className="settlehex-ui-pane sticky top-4 z-10 mb-ui-5 flex flex-wrap items-center justify-between gap-ui-3 px-ui-4 py-ui-3">
         <div>
           <p className="type-caption uppercase text-ink-secondary">
-            Catana Dev
+            SettleHex Dev
           </p>
           <h1 className="type-title text-ink-primary">Viewport Wall</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-ui-2">
-          <div className="settlex-ui-inset flex p-ui-1">
+          <div className="settlehex-ui-inset flex p-ui-1">
             {SCALE_OPTIONS.map((option) => (
               <button
                 key={option.label}
                 type="button"
-                className={`settlex-ui-segment settlex-ui-focus type-action-small rounded-pill px-ui-3 py-ui-1 transition ${
+                className={`settlehex-ui-segment settlehex-ui-focus type-action-small rounded-pill px-ui-3 py-ui-1 transition ${
                   scaleMultiplier === option.value
                     ? "bg-surface-selected text-ink-primary shadow-sm"
                     : "text-ink-secondary hover:text-ink-primary"

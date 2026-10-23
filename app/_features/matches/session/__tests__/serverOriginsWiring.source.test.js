@@ -21,7 +21,7 @@ describe("server origin wiring", () => {
     expect(contents).not.toContain('window.location.hostname}:8000');
   });
 
-  it("redirects the legacy catana page back to the root lobby", () => {
+  it("redirects the legacy settlehex page back to the root lobby", () => {
     const contents = readAppFile("app/catana/page.js");
 
     expect(contents).toContain('from "next/navigation"');

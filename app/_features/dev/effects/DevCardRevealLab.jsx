@@ -187,11 +187,11 @@ export function DevCardRevealLab({ emitCue }) {
 
   return (
     <div className="grid gap-ui-6 lg:grid-cols-[320px_1fr]">
-      <section className="flex flex-col gap-ui-4 settlex-dev-console-panel p-ui-4">
+      <section className="flex flex-col gap-ui-4 settlehex-dev-console-panel p-ui-4">
         <label className="type-label flex flex-col text-ink-console-muted">
           Card Type
           <select
-            className="mt-ui-1 settlex-dev-console-field"
+            className="mt-ui-1 settlehex-dev-console-field"
             value={selectedCardType}
             onChange={(event) => {
               setSelectedCardType(event.target.value);
@@ -206,13 +206,13 @@ export function DevCardRevealLab({ emitCue }) {
           </select>
         </label>
 
-        <div className="settlex-dev-console-inset p-ui-3 type-body-small text-ink-console-secondary">
+        <div className="settlehex-dev-console-inset p-ui-3 type-body-small text-ink-console-secondary">
           Replay both reveal variants together to compare the older midpoint
           turn against the newer 3D GSAP flip.
         </div>
 
         <button
-          className="settlex-dev-console-button"
+          className="settlehex-dev-console-button"
           type="button"
           onClick={replayBoth}
         >
@@ -220,7 +220,7 @@ export function DevCardRevealLab({ emitCue }) {
         </button>
       </section>
 
-      <section className="relative overflow-hidden settlex-dev-console-panel p-ui-4">
+      <section className="relative overflow-hidden settlehex-dev-console-panel p-ui-4">
         <div className="grid gap-ui-4 lg:grid-cols-2">
           <RevealComparisonLane
             title="Old Midpoint"

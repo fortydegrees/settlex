@@ -7,7 +7,7 @@ import { createSeededRandom } from "./seededRandom";
 import useWindowSize from "../../../../lib/client/useWindowSize";
 import { getBoardLayout } from "../../game/board/boardLayout";
 import { buildRenderMaps } from "../../game/board/renderMaps";
-import { generateBoard, resolveBoardConfig } from "@settlex/game-core";
+import { generateBoard, resolveBoardConfig } from "@settlehex/game-core";
 
 const DEFAULT_SEED = 1;
 const DEFAULT_PLAYER_ID = "0";
@@ -96,12 +96,12 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
 
   return (
     <div className="grid gap-ui-6 lg:grid-cols-[minmax(260px,360px)_1fr]">
-      <section className="flex max-h-[70vh] flex-col gap-ui-4 overflow-y-auto settlex-dev-console-panel p-ui-3">
+      <section className="flex max-h-[70vh] flex-col gap-ui-4 overflow-y-auto settlehex-dev-console-panel p-ui-3">
         <div className="flex flex-wrap items-end gap-ui-3">
           <label className="type-label flex flex-col text-ink-console-muted">
             Seed
             <input
-              className="mt-ui-1 settlex-dev-console-field"
+              className="mt-ui-1 settlehex-dev-console-field"
               type="number"
               value={seed}
               onChange={(event) => setSeed(event.target.value)}
@@ -111,7 +111,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
           <label className="type-label flex flex-col text-ink-console-muted">
             Piece
             <select
-              className="mt-ui-1 settlex-dev-console-field"
+              className="mt-ui-1 settlehex-dev-console-field"
               value={pieceType}
               onChange={(event) => {
                 setPieceType(event.target.value);
@@ -126,7 +126,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
           <label className="type-label flex flex-col text-ink-console-muted">
             Player Color
             <select
-              className="mt-ui-1 settlex-dev-console-field"
+              className="mt-ui-1 settlehex-dev-console-field"
               value={playerColor}
               onChange={(event) => setPlayerColor(event.target.value)}
             >
@@ -216,7 +216,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
           <label className="type-label flex flex-col text-ink-console-muted">
             Ease Drop
             <input
-              className="mt-ui-1 settlex-dev-console-field"
+              className="mt-ui-1 settlehex-dev-console-field"
               value={tuning.easeDrop}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeDrop: event.target.value }))}
             />
@@ -224,7 +224,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
         <label className="type-label flex flex-col text-ink-console-muted">
           Ease Dust
           <input
-            className="mt-ui-1 settlex-dev-console-field"
+            className="mt-ui-1 settlehex-dev-console-field"
             value={tuning.easeDust}
             onChange={(event) => setTuning((prev) => ({ ...prev, easeDust: event.target.value }))}
           />
@@ -232,7 +232,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
         <label className="type-label flex flex-col text-ink-console-muted">
           Ease Shadow
           <input
-            className="mt-ui-1 settlex-dev-console-field"
+            className="mt-ui-1 settlehex-dev-console-field"
             value={tuning.shadowEase}
             onChange={(event) => setTuning((prev) => ({ ...prev, shadowEase: event.target.value }))}
           />
@@ -240,7 +240,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
         <label className="type-label flex flex-col text-ink-console-muted">
           Ease Squish
           <input
-            className="mt-ui-1 settlex-dev-console-field"
+            className="mt-ui-1 settlehex-dev-console-field"
               value={tuning.easeSquish}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeSquish: event.target.value }))}
             />
@@ -248,7 +248,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
           <label className="type-label flex flex-col text-ink-console-muted">
             Ease Settle (Settlement)
             <input
-              className="mt-ui-1 settlex-dev-console-field"
+              className="mt-ui-1 settlehex-dev-console-field"
               value={tuning.easeSettle}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeSettle: event.target.value }))}
             />
@@ -256,7 +256,7 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
           <label className="type-label flex flex-col text-ink-console-muted">
             Ease Settle (Road)
             <input
-              className="mt-ui-1 settlex-dev-console-field"
+              className="mt-ui-1 settlehex-dev-console-field"
               value={tuning.easeSettleRoad}
               onChange={(event) => setTuning((prev) => ({ ...prev, easeSettleRoad: event.target.value }))}
             />
@@ -264,11 +264,11 @@ export function PiecePlacementLab({ layerRef, emitCue }) {
         </div>
       </section>
 
-      <section className="relative flex min-w-0 flex-col gap-ui-4 settlex-dev-console-panel p-ui-6">
+      <section className="relative flex min-w-0 flex-col gap-ui-4 settlehex-dev-console-panel p-ui-6">
         <div className="flex items-center justify-between">
           <h2 className="type-section text-ink-console-primary">Preview</h2>
           <button
-            className="settlex-dev-console-button"
+            className="settlehex-dev-console-button"
             onClick={handleReplay}
             type="button"
           >

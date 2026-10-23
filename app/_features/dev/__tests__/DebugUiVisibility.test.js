@@ -12,7 +12,7 @@ const pagePath = path.resolve(process.cwd(), "app/catana/page.js");
 const lobbyMatchClientPath = path.resolve(process.cwd(), "app/_features/matches/room/MatchPageClient.js");
 
 describe("debug UI visibility", () => {
-  it("does not render the in-game debug panel in Catana clients", () => {
+  it("does not render the in-game debug panel in SettleHex clients", () => {
     const gameScreen = fs.readFileSync(gameScreenPath, "utf8");
     expect(gameScreen).toContain("LeftMetaRail");
     expect(gameScreen).not.toContain("<DebugPanel");
@@ -22,7 +22,7 @@ describe("debug UI visibility", () => {
     expect(leftMetaRail).not.toMatch(/NODE_ENV\s*!==\s*["']production["']/);
   });
 
-  it("disables boardgame.io debug overlay in catana clients", () => {
+  it("disables boardgame.io debug overlay in settlehex clients", () => {
     const page = fs.readFileSync(pagePath, "utf8");
     const lobbyMatchClient = fs.readFileSync(lobbyMatchClientPath, "utf8");
 

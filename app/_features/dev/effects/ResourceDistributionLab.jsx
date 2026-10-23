@@ -45,11 +45,11 @@ export function ResourceDistributionLab({ layerRef, emitCue }) {
 
   return (
     <div className="flex flex-col gap-ui-6">
-      <section className="settlex-dev-console-panel flex flex-wrap items-end gap-ui-4 p-ui-4">
+      <section className="settlehex-dev-console-panel flex flex-wrap items-end gap-ui-4 p-ui-4">
         <label className="type-label flex flex-col text-ink-console-muted">
           Seed
           <input
-            className="settlex-dev-console-field mt-ui-1"
+            className="settlehex-dev-console-field mt-ui-1"
             type="number"
             value={seed}
             onChange={(event) => setSeed(event.target.value)}
@@ -70,7 +70,7 @@ export function ResourceDistributionLab({ layerRef, emitCue }) {
         </label>
 
         <button
-          className="settlex-dev-console-button"
+          className="settlehex-dev-console-button"
           onClick={handleReplay}
           type="button"
         >
@@ -78,7 +78,7 @@ export function ResourceDistributionLab({ layerRef, emitCue }) {
         </button>
       </section>
 
-      <section className="settlex-dev-console-panel relative flex items-center justify-center p-ui-8">
+      <section className="settlehex-dev-console-panel relative flex items-center justify-center p-ui-8">
         <div
           ref={boardRef}
           className="relative rounded-control border border-dashed border-console-edge bg-surface-console-inset"

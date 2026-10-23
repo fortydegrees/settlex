@@ -4,7 +4,7 @@ import theme from '../../app/ui/theme.cjs';
 
 const styleProperties = /^(font(Size|Weight|Family)?|lineHeight|letterSpacing|color|backgroundColor|borderRadius|padding(?:Top|Right|Bottom|Left|Inline|Block)?|margin(?:Top|Right|Bottom|Left|Inline|Block)?|gap|rowGap|columnGap)$/;
 const cssProperties = /^(font(?:-size|-weight|-family)?|line-height|letter-spacing|color|background-color|border-radius|padding(?:-.+)?|margin(?:-.+)?|gap|row-gap|column-gap)$/;
-const safeValue = value => /^(0|auto|inherit|initial|unset|normal|currentColor|transparent)$/.test(value) || /^var\(--settlex-/.test(value) || value.split(/\s+/).every(part => part === '0' || /^var\(--settlex-[\w-]+\)$/.test(part));
+const safeValue = value => /^(0|auto|inherit|initial|unset|normal|currentColor|transparent)$/.test(value) || /^var\(--settlehex-/.test(value) || value.split(/\s+/).every(part => part === '0' || /^var\(--settlehex-[\w-]+\)$/.test(part));
 const semanticColours = new Set(Object.entries(theme.colourUtilities).flatMap(([family, entries]) =>
   Object.keys(entries).map(name => name === 'DEFAULT' ? family : `${family}-${name}`)));
 
@@ -29,9 +29,9 @@ function category(token) {
   if (colour && (!semanticColours.has(colour[1]) || colour[2])) return 'unknown-token';
   if (/^(text-(?:xs|sm|base|lg|[2-9]?xl)(?:\/.*)?|font-(?:sans|serif|mono|thin|extralight|light|normal|medium|semibold|bold|extrabold|black)|leading-.+|tracking-.+)$/.test(base)) return 'type';
   if (/^(text|bg|border|ring|fill|stroke|accent)-(?:white|black|(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d+)(?:\/.*)?$/.test(base)) return 'palette';
-  if (/^rounded(?:-.+)?$/.test(base) && !/^rounded-(?:(?:[trblse]|tl|tr|bl|br|ss|se|es|ee)-)?(?:small|control|panel|pill|none|\[inherit\])$/.test(base) && !base.includes('var(--settlex-')) return 'radius';
-  if (/^-?(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])-(?:\d[^\s]*|\[.+\])$/.test(base) && !/-(?:0|\[var\(--settlex-.+)$/.test(base)) return 'spacing';
-  if (/^(?:text|font|leading|tracking|bg|border|ring|fill|stroke|accent)-\[/.test(base) && !base.includes('var(--settlex-')) return 'arbitrary-style';
+  if (/^rounded(?:-.+)?$/.test(base) && !/^rounded-(?:(?:[trblse]|tl|tr|bl|br|ss|se|es|ee)-)?(?:small|control|panel|pill|none|\[inherit\])$/.test(base) && !base.includes('var(--settlehex-')) return 'radius';
+  if (/^-?(?:p[xytrblse]?|m[xytrblse]?|gap(?:-[xy])?|space-[xy])-(?:\d[^\s]*|\[.+\])$/.test(base) && !/-(?:0|\[var\(--settlehex-.+)$/.test(base)) return 'spacing';
+  if (/^(?:text|font|leading|tracking|bg|border|ring|fill|stroke|accent)-\[/.test(base) && !base.includes('var(--settlehex-')) return 'arbitrary-style';
   return null;
 }
 
@@ -49,7 +49,7 @@ export function scanSource(file, source) {
       }
     });
     ast.walkDecls(decl => {
-      if (/^--settlex-ui-(?:type|font|space|radius)-/.test(decl.prop)) add('foundation-override', decl.prop, decl.source.start.line);
+      if (/^--settlehex-ui-(?:type|font|space|radius)-/.test(decl.prop)) add('foundation-override', decl.prop, decl.source.start.line);
       const splitType = /^(font.*|line-height|letter-spacing)$/.test(decl.prop) && !['inherit', '0'].includes(decl.value);
       if (cssProperties.test(decl.prop) && (splitType || !safeValue(decl.value))) add('css', `${decl.prop}:${decl.value}`, decl.source.start.line);
     });
@@ -68,7 +68,7 @@ export function scanSource(file, source) {
     if (ts.isPropertyAssignment(node)) {
       const name = ts.isComputedPropertyName(node.name) && ts.isStringLiteralLike(node.name.expression)
         ? node.name.expression.text : node.name.text;
-      if (/^--settlex-ui-(?:type|font|space|radius)-/.test(name)) add('foundation-override', name, line);
+      if (/^--settlehex-ui-(?:type|font|space|radius)-/.test(name)) add('foundation-override', name, line);
       const value = ts.isStringLiteralLike(node.initializer) ? node.initializer.text : node.initializer.getText(ast);
       const splitType = /^(font.*|lineHeight|letterSpacing)$/.test(name) && !['inherit', '0'].includes(value);
       let ancestor = node.parent;

@@ -1,5 +1,5 @@
 import React, { createElement as h } from "react";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
 
 export function LiveMatchLoadingShell() {
   return h(
@@ -7,7 +7,7 @@ export function LiveMatchLoadingShell() {
     {
       className:
         "min-h-screen overflow-hidden text-ink-primary",
-      style: { background: CATANA_TABLE_BACKGROUND },
+      style: { background: SETTLEHEX_TABLE_BACKGROUND },
     },
     h(
       "div",
@@ -39,7 +39,7 @@ export function LiveMatchLoadingShell() {
             "div",
             {
               className:
-                "settlex-ui-pane px-ui-6 py-ui-4 text-center",
+                "settlehex-ui-pane px-ui-6 py-ui-4 text-center",
             },
             h(
               "div",

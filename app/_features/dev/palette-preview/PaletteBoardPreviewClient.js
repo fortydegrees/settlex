@@ -342,7 +342,7 @@ export function PaletteBoardPreviewClient() {
 
   return (
     <main className="min-h-screen px-ui-4 py-ui-6 text-ink-primary sm:px-ui-6">
-      <div className="settlex-ui-pane mx-auto max-w-[1320px] p-ui-5">
+      <div className="settlehex-ui-pane mx-auto max-w-[1320px] p-ui-5">
         <h1 className="type-page">
           Palette Row + Board Preview
         </h1>
@@ -350,14 +350,14 @@ export function PaletteBoardPreviewClient() {
           Pick Option C/B/A/D/E, toggle number tokens, and preview both the resource row and a full 19-hex board.
         </p>
 
-        <section className="settlex-ui-inset mb-ui-3 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-ui-2.5 p-ui-3">
+        <section className="settlehex-ui-inset mb-ui-3 grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-ui-2.5 p-ui-3">
           <div className="grid gap-ui-1.5">
             <label htmlFor="palette-select" className="type-label text-ink-secondary">
               Palette Option
             </label>
             <select
               id="palette-select"
-              className="settlex-ui-field w-full"
+              className="settlehex-ui-field w-full"
               value={selectedPaletteId}
               onChange={(event) => setSelectedPaletteId(event.target.value)}
             >
@@ -373,7 +373,7 @@ export function PaletteBoardPreviewClient() {
             <input
               id="show-number-tokens"
               type="checkbox"
-              className="settlex-ui-checkbox h-4 w-4"
+              className="settlehex-ui-checkbox h-4 w-4"
               checked={showNumberTokens}
               onChange={(event) => setShowNumberTokens(event.target.checked)}
             />
@@ -387,11 +387,11 @@ export function PaletteBoardPreviewClient() {
           {palette.name}. {palette.note} Number tokens {showNumberTokens ? "enabled" : "disabled"}.
         </p>
 
-        <section className="settlex-ui-inset p-ui-3">
+        <section className="settlehex-ui-inset p-ui-3">
           <h2 className="mb-ui-2.5 type-section">Selected Resource Row</h2>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-ui-2.5">
             {ROW_RESOURCE_ORDER.map((resourceKey) => (
-              <article key={`row-card-${resourceKey}`} className="settlex-ui-pane p-ui-2">
+              <article key={`row-card-${resourceKey}`} className="settlehex-ui-pane p-ui-2">
                 <TileFrame
                   colors={palette.resources[resourceKey]}
                   svgKey={`row-${selectedPaletteId}-${resourceKey}`}
@@ -407,7 +407,7 @@ export function PaletteBoardPreviewClient() {
           </div>
         </section>
 
-        <section className="settlex-ui-inset mt-ui-3 p-ui-3">
+        <section className="settlehex-ui-inset mt-ui-3 p-ui-3">
           <h2 className="mb-ui-2.5 type-section">Board Preview (19 Hexes)</h2>
           <div className="boardScroll">
             <div className="boardRoot">

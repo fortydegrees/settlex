@@ -2,7 +2,7 @@ import { ReplayPageClient } from "./ReplayPageClient";
 import { PostgameGameBoard } from "./PostgameGameBoard";
 import { buildNotationReplayFile } from "../../../lib/replays/notationReplay";
 import { MatchAlertContext } from "../matches/alerts/MatchAlertProvider";
-import record from "../../../docs/notation/examples/settlex-complete.han.json";
+import record from "../../../docs/notation/examples/settlehex-complete.han.json";
 import { expect, userEvent, waitFor, within } from "@storybook/test";
 
 const participants = ["HarbourFox", "BrickAndMortar", "RoadScholar"].map((name, index) => ({

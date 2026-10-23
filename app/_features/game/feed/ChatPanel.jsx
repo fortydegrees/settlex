@@ -5,9 +5,9 @@ import { FeedPanel } from "./FeedPanel";
 import { FeedTokenRow } from "./FeedTokenRow";
 
 const defaultComposerInputClassName =
-  "settlex-ui-feed-composer settlex-ui-focus w-full rounded-control px-ui-3 py-ui-2 type-label";
+  "settlehex-ui-feed-composer settlehex-ui-focus w-full rounded-control px-ui-3 py-ui-2 type-label";
 const defaultFooterClassName =
-  "settlex-ui-feed-footer px-ui-3 py-ui-2.5";
+  "settlehex-ui-feed-footer px-ui-3 py-ui-2.5";
 
 const emptyRows = [
   {
@@ -23,9 +23,9 @@ const ChatPanelComponent = ({
   chatMessages = [],
   sendChatMessage,
   rootClassName = "w-full",
-  headerClassName = "settlex-ui-feed-header px-ui-4 py-ui-2 type-action-small text-ink-secondary",
+  headerClassName = "settlehex-ui-feed-header px-ui-4 py-ui-2 type-action-small text-ink-secondary",
   panelClassName =
-    "settlex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col overflow-hidden select-text",
+    "settlehex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col overflow-hidden select-text",
   composerInputClassName = defaultComposerInputClassName,
   footerClassName = defaultFooterClassName,
 }) => {

@@ -9,13 +9,13 @@ const SIZE_STYLES = {
 };
 
 const VARIANT_STYLES = {
-  primary: "settlex-ui-button-primary",
-  secondary: "settlex-ui-button-secondary",
-  utility: "settlex-ui-button-secondary settlex-ui-button-utility",
-  accent: "settlex-ui-button-accent",
-  ghost: "settlex-ui-button-ghost",
-  subtle: "settlex-ui-button-subtle",
-  danger: "settlex-ui-button-danger",
+  primary: "settlehex-ui-button-primary",
+  secondary: "settlehex-ui-button-secondary",
+  utility: "settlehex-ui-button-secondary settlehex-ui-button-utility",
+  accent: "settlehex-ui-button-accent",
+  ghost: "settlehex-ui-button-ghost",
+  subtle: "settlehex-ui-button-subtle",
+  danger: "settlehex-ui-button-danger",
 };
 
 const VARIANT_ALIASES = {
@@ -42,7 +42,7 @@ export const Button = React.forwardRef(function Button(
       ref={ref}
       type={type}
       className={cn(
-        "settlex-ui-button settlex-ui-focus",
+        "settlehex-ui-button settlehex-ui-focus",
         SIZE_STYLES[size] ?? SIZE_STYLES.md,
         VARIANT_STYLES[resolvedVariant] ?? VARIANT_STYLES.primary,
         className
@@ -52,7 +52,7 @@ export const Button = React.forwardRef(function Button(
       {sheen ? (
         <span
           aria-hidden="true"
-          className="settlex-ui-button-sheen pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 animate-[settlex-ui-cta-shimmer_3.4s_linear_infinite] motion-reduce:animate-none"
+          className="settlehex-ui-button-sheen pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 animate-[settlehex-ui-cta-shimmer_3.4s_linear_infinite] motion-reduce:animate-none"
         />
       ) : null}
       <span className="relative z-10 inline-flex w-full min-w-0 items-center [justify-content:inherit] gap-ui-2">{children}</span>

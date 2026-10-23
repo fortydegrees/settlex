@@ -254,7 +254,7 @@ function TileImpl({
         </div>
         {hasRobber && (
           <div
-            data-catana-robber-tile-id={id}
+            data-settlehex-robber-tile-id={id}
             style={{
               position: "absolute",
               width: size / 1.5,

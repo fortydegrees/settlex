@@ -159,7 +159,7 @@ describe("SettleHex metadata", () => {
     expect((await response.arrayBuffer()).byteLength).toBeGreaterThan(0);
   });
 
-  it("uses shipped Catana SVGs and the Outfit brand font", async () => {
+  it("uses shipped SettleHex SVGs and the Outfit brand font", async () => {
     const assets = await loadImageAssets();
 
     expect(assets.loadError).toBeUndefined();

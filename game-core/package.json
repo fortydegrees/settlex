@@ -1,5 +1,5 @@
 {
-  "name": "@settlex/game-core",
+  "name": "@settlehex/game-core",
   "version": "0.1.0",
   "private": true,
   "main": "dist/index.js",

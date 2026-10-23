@@ -57,7 +57,7 @@ const isolatedPrefs = () => {
 };
 
 export const DesktopPersistenceAndKeyboard = {
-  parameters: { viewport: { defaultViewport: "catanaDesktop" } },
+  parameters: { viewport: { defaultViewport: "settlehexDesktop" } },
   beforeEach: isolatedPrefs,
   render: () => <RailFixture />,
   play: async ({ canvasElement }) => {
@@ -101,7 +101,7 @@ export const DesktopPersistenceAndKeyboard = {
 };
 
 export const DesktopReadOnly = {
-  parameters: { viewport: { defaultViewport: "catanaDesktop" } },
+  parameters: { viewport: { defaultViewport: "settlehexDesktop" } },
   beforeEach: isolatedPrefs,
   render: () => <RailFixture readOnly />,
   play: async ({ canvasElement }) => {
@@ -148,7 +148,7 @@ export const MobileUncontrolledReadOnly = { args: { mobile: true, uncontrolled: 
 // Real timers run; this adapter records stage/preload work so unmount can prove
 // it cancels the IDs it scheduled. It is installed/restored only during this play.
 export const UnmountCancelsScheduledWork = {
-  parameters: { viewport: { defaultViewport: "catanaDesktop" } },
+  parameters: { viewport: { defaultViewport: "settlehexDesktop" } },
   beforeEach: isolatedPrefs,
   render: () => <RailFixture />,
   play: async ({ canvasElement }) => {

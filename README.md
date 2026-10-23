@@ -109,8 +109,8 @@ production bundle; changing them only at `pnpm start` does not rebuild the clien
 
 ### Work on the interface without a match
 
-With `pnpm dev` running, open `/catana/dev/sandbox` for the real board with
-controlled scenarios or `/catana/dev/effects` for isolated animation/audio
+With `pnpm dev` running, open `/catana/catana/dev/sandbox` for the real board with
+controlled scenarios or `/catana/catana/dev/effects` for isolated animation/audio
 previews. These routes are development-only. Some account/notification requests
 can fail when no account or database is available; a board preview is not a
 full-stack check.

@@ -1,4 +1,4 @@
-import { createEmptyState } from "@settlex/game-core";
+import { createEmptyState } from "@settlehex/game-core";
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import {
   buildGameScreenDisplayModel,
@@ -115,7 +115,7 @@ export const Loser = {
 };
 
 export const WinnerMobile = {
-  parameters: { viewport: { defaultViewport: "catanaMobile" } },
+  parameters: { viewport: { defaultViewport: "settlehexMobile" } },
 };
 
 export const WinnerUnsupportedCopy = {
@@ -230,6 +230,6 @@ export const Mobile = {
     onWatchReplay: fn(),
   },
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };

@@ -5,7 +5,7 @@ import { Banner } from "../../../ui/Banner";
 import { Button } from "../../../ui/Button";
 import { Input } from "../../../ui/Input";
 import { Panel } from "../../../ui/Panel";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import { sanitizeDisplayName } from "../../../../lib/shared/playerIdentity";
 import {
   getChallengeCountdownPresentation,
@@ -40,8 +40,8 @@ function ChallengeSeat({ label, seat, fallback }) {
   const displayName = sanitizeDisplayName(seat?.name) || fallback;
 
   return (
-    <div className="settlex-ui-inset min-w-0 px-ui-4 py-ui-3">
-      <div className="settlex-ui-label">
+    <div className="settlehex-ui-inset min-w-0 px-ui-4 py-ui-3">
+      <div className="settlehex-ui-label">
         {label}
       </div>
       <div className="mt-ui-1 break-words type-action text-ink-primary">
@@ -128,13 +128,13 @@ export function PendingFriendChallengeScreen({
   return (
     <div
       className="relative min-h-screen overflow-hidden text-ink-primary"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <div
         className="absolute inset-0 opacity-35 blur-[1px]"
         aria-hidden="true"
       >
-        <div className="absolute left-1/2 top-1/2 aspect-square w-[min(82vw,42rem)] -translate-x-1/2 -translate-y-1/2 rounded-pill border-[length:var(--settlex-ui-space-8)] border-decoration-ring shadow-[0_0_0_1px_rgba(255,255,255,0.36),0_28px_90px_-40px_rgba(15,23,42,0.62)]" />
+        <div className="absolute left-1/2 top-1/2 aspect-square w-[min(82vw,42rem)] -translate-x-1/2 -translate-y-1/2 rounded-pill border-[length:var(--settlehex-ui-space-8)] border-decoration-ring shadow-[0_0_0_1px_rgba(255,255,255,0.36),0_28px_90px_-40px_rgba(15,23,42,0.62)]" />
         <div className="absolute left-1/2 top-1/2 h-[18rem] w-[18rem] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-panel border border-decoration-edge bg-decoration-fill" />
       </div>
       <div className="absolute inset-0 bg-decoration-wash backdrop-blur-[2px]" />
@@ -143,7 +143,7 @@ export function PendingFriendChallengeScreen({
         <Panel bodyClassName="p-ui-5 sm:p-ui-6" className="w-full">
           <div className="grid gap-ui-6 md:grid-cols-[1fr_1.05fr] md:items-center">
             <div>
-              <div className="settlex-ui-label">
+              <div className="settlehex-ui-label">
                 Settlehex game
               </div>
               <h1 className="mt-ui-2 type-title text-ink-primary">
@@ -186,7 +186,7 @@ export function PendingFriendChallengeScreen({
                       <input
                         readOnly
                         value={absoluteChallengeUrl}
-                        className="settlex-ui-field min-w-0 flex-1"
+                        className="settlehex-ui-field min-w-0 flex-1"
                         aria-label="Invite link"
                       />
                       <Button

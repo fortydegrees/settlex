@@ -1,5 +1,5 @@
 // Before adding or revising cues, read
-// docs/agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md — the sound identity's
+// docs/agent/skills/settlehex-design/SOUND_DESIGN_GUIDE.md — the sound identity's
 // grammar, the audition workflow, and the synthesis kit (sounds/soundkit/).
 export const DEFAULT_THEME = {
   "game:start": {

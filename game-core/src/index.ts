@@ -26,13 +26,13 @@ export * from "./board/boardSpecs";
 export * from "./board/boardConfigs";
 export * from "./board/generateBoard";
 export { replayHAN, replayHANTrace, validateHANSyntax } from "./notation/reader";
-export { exportSettlexNotationArchive } from "./notation/settlex";
+export { exportSettleHexNotationArchive } from "./notation/settlehex";
 export type { HANRecord, State as HANState } from "./notation/types";
 export type {
-  SourceArchive as SettlexNotationSourceArchive,
-  SourceFrame as SettlexNotationSourceFrame,
-  SettlexExport as SettlexNotationExport,
-} from "./notation/settlex";
+  SourceArchive as SettleHexNotationSourceArchive,
+  SourceFrame as SettleHexNotationSourceFrame,
+  SettleHexExport as SettleHexNotationExport,
+} from "./notation/settlehex";
 
 export { projectHANLog } from "./notation/log";
 export type { HANLogEntry } from "./notation/log";

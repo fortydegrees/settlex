@@ -21,7 +21,7 @@ describe("stored notation access", () => {
   });
 
   it("exports only a stored ready record and preserves an existing output", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "settlex-notation-"));
+    const dir = await mkdtemp(join(tmpdir(), "settlehex-notation-"));
     const out = join(dir, "game.han.json");
     const record = { format: "han-prototype", coverage: "complete", actions: ["E"] };
     const getNotation = vi.fn(async () => ({ status: "ready", record }));
@@ -61,7 +61,7 @@ describe("stored notation access", () => {
   });
 
   it("removes only a newly created partial output after a failed write", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "settlex-notation-partial-"));
+    const dir = await mkdtemp(join(tmpdir(), "settlehex-notation-partial-"));
     const out = join(dir, "partial.han.json");
     try {
       await expect(exportArchivedNotation({ replayId: "r1", out, pool: {},
@@ -78,7 +78,7 @@ describe("stored notation access", () => {
   });
 
   it("survives an owned pool idle error while writing without exposing its detail", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "settlex-notation-pool-error-"));
+    const dir = await mkdtemp(join(tmpdir(), "settlehex-notation-pool-error-"));
     const out = join(dir, "game.han.json");
     const owned = new EventEmitter();
     owned.end = vi.fn(async () => {});

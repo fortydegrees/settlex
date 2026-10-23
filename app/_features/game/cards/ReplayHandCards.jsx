@@ -20,7 +20,7 @@ export function ReplayHandCards({ player, themeId, compact = false }) {
   const unknownDevCards = devCards.length - knownDevCards.length;
 
   return (
-    <div tabIndex={0} onKeyDown={(event) => event.stopPropagation()} aria-label={`${player.name ?? "Player"} hand`} className={`settlex-ui-focus w-40 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
+    <div tabIndex={0} onKeyDown={(event) => event.stopPropagation()} aria-label={`${player.name ?? "Player"} hand`} className={`settlehex-ui-focus w-40 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
       <div className={`flex w-max items-center ${compact ? "py-ui-1" : "py-ui-4"} pr-ui-4`}>
         <div id={`p${player.id}-resources`} className={`relative flex ${compact ? "h-12" : "h-20"} items-end ${compact ? "" : "pl-ui-4 pr-ui-3"}`} aria-label="Resource cards">
           <div className="mb-ui-4 flex self-end">
@@ -32,7 +32,7 @@ export function ReplayHandCards({ player, themeId, compact = false }) {
         </div>
         {devCards.length > 0 && (
           <div className="flex shrink-0 items-center" aria-label="Development cards">
-            <span className="catana-hud-divider mr-ui-4 h-14 w-px shrink-0 rounded-pill" aria-hidden="true" />
+            <span className="settlehex-hud-divider mr-ui-4 h-14 w-px shrink-0 rounded-pill" aria-hidden="true" />
             {knownDevCards.length > 0 && <DevCardDisplay cards={knownDevCards} playerId={player.id} showCountBadge={false} embedded />}
             {unknownDevCards > 0 && (
               <div title="These card identities are unavailable in this recording.">

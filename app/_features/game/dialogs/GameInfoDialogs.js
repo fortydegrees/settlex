@@ -27,7 +27,7 @@ export function GameSettingsDialog({
       }
     >
       <div className="space-y-ui-3">
-        <div className="settlex-ui-inset px-ui-4 py-ui-3">
+        <div className="settlehex-ui-inset px-ui-4 py-ui-3">
           <div className="flex items-center justify-between gap-ui-4">
             <span className="type-action-small text-ink-primary">Audio</span>
             <span className="type-label text-ink-secondary">{isMuted ? "Muted" : "On"}</span>
@@ -42,7 +42,7 @@ export function GameSettingsDialog({
             {isMuted ? "Unmute audio" : "Mute audio"}
           </Button>
         </div>
-        <div className="settlex-ui-inset flex items-center justify-between gap-ui-4 px-ui-4 py-ui-3">
+        <div className="settlehex-ui-inset flex items-center justify-between gap-ui-4 px-ui-4 py-ui-3">
           <span className="type-action-small text-ink-primary">Theme</span>
           <span className="min-w-0 break-words text-right type-label capitalize text-ink-secondary">{themeId}</span>
         </div>
@@ -67,7 +67,7 @@ export function GameRulesDialog({ open, onOpenChange, rows }) {
     >
       <dl className="grid gap-ui-2">
         {rows.map(([label, value]) => (
-          <div key={label} className="settlex-ui-inset grid grid-cols-2 items-center gap-ui-4 px-ui-4 py-ui-3">
+          <div key={label} className="settlehex-ui-inset grid grid-cols-2 items-center gap-ui-4 px-ui-4 py-ui-3">
             <dt className="min-w-0 break-words type-action-small text-ink-primary">{label}</dt>
             <dd className="min-w-0 break-words text-right type-label text-ink-secondary">{value}</dd>
           </div>

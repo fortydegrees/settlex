@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createEmptyState,
   ResourceType
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import {
   getBoardInteractionState,
   getExplicitBuildableRoads,

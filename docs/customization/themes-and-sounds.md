@@ -1,7 +1,7 @@
 # Customize board art and game sounds
 
-Start the local app with `pnpm dev`, then open `/catana/dev/effects` for an
-isolated runner or `/catana/dev/sandbox` for the real board. These routes are
+Start the local app with `pnpm dev`, then open `/catana/catana/dev/effects` for an
+isolated runner or `/catana/catana/dev/sandbox` for the real board. These routes are
 for development. No match server, live account or new package is needed for
 these examples. Keep your change in its owning map and check the real preview.
 
@@ -16,7 +16,7 @@ source for a new asset rather than relying on an archived filename.
 The shipped map is `app/_features/game/effects/soundThemes.js` (`DEFAULT_THEME`).
 Place your own licensed clip under `public/sounds/`; reference it as
 `/sounds/your-file.mp3`. Consult the
-[Sound Design Guide](../agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md)
+[Sound Design Guide](../agent/skills/settlehex-design/SOUND_DESIGN_GUIDE.md)
 for the current sound family and audition workflow.
 
 For an application-specific variant, define a stable map outside the component
@@ -132,12 +132,12 @@ notification infrastructure is needed for these customization examples.
 
 ## Register a compatible board asset theme
 
-`app/_features/theme/themes.js` owns `CATANA_THEMES` and path resolution. The current
+`app/_features/theme/themes.js` owns `SETTLEHEX_THEMES` and path resolution. The current
 IDs are `emoji` (default), `palette-b` and `classic`. Classic redirects retired
 base tile/resource artwork to Emoji; it is not a separate complete historical
 asset pack.
 
-Add an entry **inside** the existing `CATANA_THEMES` object. This minimal working
+Add an entry **inside** the existing `SETTLEHEX_THEMES` object. This minimal working
 example reuses existing files and changes only the ore tile:
 
 ```js

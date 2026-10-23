@@ -1,4 +1,4 @@
-import { ResourceType, TileTypes } from "@settlex/game-core";
+import { ResourceType, TileTypes } from "@settlehex/game-core";
 
 const NON_STARTING_RESOURCES = new Set([ResourceType.DESERT, ResourceType.EMPTY]);
 

@@ -92,10 +92,10 @@ import { IconButton } from "../../ui/IconButton";
 import { Tooltip, TooltipProvider } from "../../ui/Tooltip";
 import { Howler } from "howler";
 import {
-  CATANA_THEME_STORAGE_KEY,
+  SETTLEHEX_THEME_STORAGE_KEY,
   resolveThemeId,
 } from "../theme/themes";
-import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 import {
   clearLastActiveMatch,
   readLastActiveMatch
@@ -105,7 +105,7 @@ import {
   buildSandboxAwardClaimPayload,
   buildSandboxDevCardPlayPayload,
   buildSandboxRobberMovePayload
-} from "../dev/sandbox/effectPayloads";
+} from "../catana/catana/dev/sandbox/effectPayloads";
 import { useMatchAlerts } from "../matches/alerts/useMatchAlerts.js";
 import { getCurrentMatchAlertGameRegistration } from "../matches/alerts/matchAlertProviderActions.js";
 import { tabAttention } from "../../../lib/client/tabAttention";
@@ -167,7 +167,7 @@ const loadDeferredGameSurfaces = () =>
 
 const AUDIO_MUTE_STORAGE_KEY = "catana:audioMuted";
 const topUtilityButtonClassName =
-  "settlex-ui-game-utility h-10 w-10 sm:h-12 sm:w-12";
+  "settlehex-ui-game-utility h-10 w-10 sm:h-12 sm:w-12";
 
 const readStoredMute = () => {
   if (typeof window === "undefined") return false;
@@ -182,7 +182,7 @@ const readStoredThemeId = () => {
   if (typeof window === "undefined") return resolveThemeId(null);
   try {
     return resolveThemeId(
-      window.localStorage.getItem(CATANA_THEME_STORAGE_KEY)
+      window.localStorage.getItem(SETTLEHEX_THEME_STORAGE_KEY)
     );
   } catch (err) {
     return resolveThemeId(null);
@@ -804,7 +804,7 @@ export function GameScreen(bgioProps) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(CATANA_THEME_STORAGE_KEY, themeId);
+      window.localStorage.setItem(SETTLEHEX_THEME_STORAGE_KEY, themeId);
     } catch (err) {
       // ignore storage errors
     }
@@ -1445,9 +1445,9 @@ export function GameScreen(bgioProps) {
   ];
   return (
     <div
-      className="catana-game-screen select-none"
+      className="settlehex-game-screen select-none"
       style={{
-        background: CATANA_TABLE_BACKGROUND,
+        background: SETTLEHEX_TABLE_BACKGROUND,
         width: "100vw", // Use viewport width to take the full screen width
         height: "100vh", // Use viewport height to take the full screen height
         overflow: "hidden", // Prevent scrollbars on the page
@@ -1852,7 +1852,7 @@ TODO: accurately colour it
               aria-label={isPhoneLayout && isReplay ? "Replay players" : undefined}
               onKeyDown={isPhoneLayout && isReplay ? (event) => event.stopPropagation() : undefined}
               tabIndex={isPhoneLayout && isReplay ? 0 : undefined}
-              className={`pointer-events-auto flex items-start gap-ui-4 ${isReplay ? "max-w-full" : ""} ${isPhoneLayout && isReplay ? "settlex-ui-focus w-full flex-nowrap overflow-x-auto pb-ui-3 pt-ui-5" : isReplay ? "flex-wrap justify-center" : ""}`}
+              className={`pointer-events-auto flex items-start gap-ui-4 ${isReplay ? "max-w-full" : ""} ${isPhoneLayout && isReplay ? "settlehex-ui-focus w-full flex-nowrap overflow-x-auto pb-ui-3 pt-ui-5" : isReplay ? "flex-wrap justify-center" : ""}`}
             >
               {displayedOpponents.map((opponent) => (
                 <OpponentPlayerBox

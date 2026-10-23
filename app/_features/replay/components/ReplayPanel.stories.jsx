@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { fn } from "@storybook/test";
-import { replayTimeline } from "../../dev/storybook/replayFixtures";
+import { replayTimeline } from "../../catana/catana/dev/storybook/replayFixtures";
 import { ReplayPanel } from "./ReplayPanel";
 import { useReplayNavigation } from "../useReplayNavigation";
 import { getPreviousTurnEventIndex, getNextTurnEventIndex } from "../replayTimeline";
@@ -127,7 +127,7 @@ export const DesktopPanelOpen = {
     initialPerspectiveId: "0",
   },
   parameters: {
-    viewport: { defaultViewport: "catanaDesktop" },
+    viewport: { defaultViewport: "settlehexDesktop" },
   },
 };
 
@@ -137,7 +137,7 @@ export const DesktopPanelCollapsed = {
     initialOpen: false,
   },
   parameters: {
-    viewport: { defaultViewport: "catanaDesktop" },
+    viewport: { defaultViewport: "settlehexDesktop" },
   },
 };
 
@@ -147,7 +147,7 @@ export const DesktopChartExpanded = {
     initialChartOpen: true,
   },
   parameters: {
-    viewport: { defaultViewport: "catanaDesktop" },
+    viewport: { defaultViewport: "settlehexDesktop" },
   },
 };
 
@@ -165,7 +165,7 @@ export const DesktopFourPlayersLongNames = {
     <ReplayPanelHarness {...args} timeline={fourPlayerTimeline} />
   ),
   parameters: {
-    viewport: { defaultViewport: "catanaDesktop" },
+    viewport: { defaultViewport: "settlehexDesktop" },
   },
 };
 
@@ -175,7 +175,7 @@ export const DesktopTerminalResultsClosed = {
     initialEventIndex: replayTimeline.events.length - 1,
   },
   parameters: {
-    viewport: { defaultViewport: "catanaDesktop" },
+    viewport: { defaultViewport: "settlehexDesktop" },
   },
 };
 
@@ -186,7 +186,7 @@ export const MobileDockClosed = {
     initialPerspectiveId: null,
   },
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };
 
@@ -196,7 +196,7 @@ export const MobilePlayerPerspectiveDock = {
     initialPerspectiveId: "1",
   },
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };
 
@@ -206,7 +206,7 @@ export const MobileDrawerOpen = {
     initialMobileOpen: true,
   },
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };
 

@@ -12,7 +12,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={outfit.variable}>
       <body className={outfit.className}>
-        <div className="settlex-ui-root">
+        <div className="settlehex-ui-root">
           <MatchAlertProvider>
             {children}
             <GlobalReconnectBanner />

@@ -1,4 +1,4 @@
-import { getVictoryPoints } from "@settlex/game-core";
+import { getVictoryPoints } from "@settlehex/game-core";
 import { resolveEffectivePlayerColors } from "../../theme/playerColorsInGame";
 import { mergePlayerMetadata, sanitizeDisplayName } from "../../../../lib/shared/playerIdentity";
 import { buildPlayerViewMap } from "./playerView";

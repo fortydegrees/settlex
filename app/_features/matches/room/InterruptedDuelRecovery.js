@@ -3,7 +3,7 @@
 import { Banner } from "../../../ui/Banner";
 import { Button } from "../../../ui/Button";
 import { Panel } from "../../../ui/Panel";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
 
 export function InterruptedDuelRecovery({
   pending,
@@ -14,11 +14,11 @@ export function InterruptedDuelRecovery({
   return (
     <div
       className="min-h-screen"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-ui-4 py-ui-10">
         <Panel bodyClassName="p-ui-5 sm:p-ui-6">
-          <div className="settlex-ui-label">
+          <div className="settlehex-ui-label">
             Match update
           </div>
           <h1 className="mt-ui-3 type-title text-ink-primary">

@@ -8,7 +8,7 @@ import {
   buildableEdges,
   buildableNodes,
   getPlayableDevCardCounts,
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { getMaritimeTradeRateIfTradable } from "./trade";
 import { getBuildPickupPieceType } from "./playerAction";
 import { getTurnControlMode } from "./turnControlMode";

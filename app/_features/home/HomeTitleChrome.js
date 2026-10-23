@@ -429,7 +429,7 @@ function HomeMetaChrome({
             <li key={highlight} className="flex gap-ui-2">
               <span
                 aria-hidden="true"
-                className="settlex-ui-metadata-dot settlex-ui-metadata-dot-positive mt-ui-1.5 h-1.5 w-1.5 shrink-0"
+                className="settlehex-ui-metadata-dot settlehex-ui-metadata-dot-positive mt-ui-1.5 h-1.5 w-1.5 shrink-0"
               />
               <span>{highlight}</span>
             </li>
@@ -456,7 +456,7 @@ function SystemActionButton({ action, disabled, isActive, onSelectMode }) {
   return (
     <button
       type="button"
-      className={`settlex-ui-button settlex-ui-focus settlex-ui-button-${action.variant} ${modeStyles.button}`}
+      className={`settlehex-ui-button settlehex-ui-focus settlehex-ui-button-${action.variant} ${modeStyles.button}`}
       disabled={disabled}
       data-active={isActive ? "true" : undefined}
       onClick={() => onSelectMode(action.id)}

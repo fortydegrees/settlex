@@ -3,7 +3,7 @@ import {
   canBuildCity as coreCanBuildCity,
   canBuildRoad as coreCanBuildRoad,
   canBuildSettlement as coreCanBuildSettlement
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { getBuildableEdges } from "../../../../lib/game-runtime/moves/buildMoves";
 import { isPassiveBuildEnabled } from "./passiveBuildMode";
 

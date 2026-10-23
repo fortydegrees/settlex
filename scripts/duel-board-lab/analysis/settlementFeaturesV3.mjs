@@ -1,4 +1,4 @@
-import { getNumDots, ResourceType, TileTypes } from "@settlex/game-core";
+import { getNumDots, ResourceType, TileTypes } from "@settlehex/game-core";
 import { STANDARD_RESOURCES } from "../constants.mjs";
 
 const geometricMean = (values) => Math.pow(

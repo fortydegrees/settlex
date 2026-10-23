@@ -2,7 +2,7 @@ import { expect, fn, userEvent, within } from "@storybook/test";
 import {
   replayScoreSeries,
   replayTimeline,
-} from "../../dev/storybook/replayFixtures";
+} from "../../catana/catana/dev/storybook/replayFixtures";
 import {
   getReplayChartKeyboardSeekIndex,
   ReplayScoreChart,
@@ -20,7 +20,7 @@ const stepCallbacks = {
 
 const stepControlsStage = (props) => (
   <div className="mx-auto flex min-h-screen w-full max-w-md items-center px-4 py-8">
-    <section className="settlex-ui-pane w-full p-ui-5">
+    <section className="settlehex-ui-pane w-full p-ui-5">
       <ReplayStepControls
         {...props}
         turnStarts={replayTimeline.turnStarts}
@@ -96,7 +96,7 @@ export const ReplayScoreTimeline = {
   },
   render: (args) => (
     <div className="mx-auto flex min-h-screen w-full max-w-xl items-center px-4 py-8">
-      <section className="settlex-ui-pane w-full p-ui-5">
+      <section className="settlehex-ui-pane w-full p-ui-5">
         <ReplayScoreChart
           {...args}
           players={replayTimeline.players}

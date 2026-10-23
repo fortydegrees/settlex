@@ -4,46 +4,46 @@
 .button {
   width: 100%;
   min-height: 66px;
-  padding: 0 var(--settlex-ui-space-3);
+  padding: 0 var(--settlehex-ui-space-3);
   border: 0;
   text-align: left;
-  border-radius: var(--settlex-ui-radius-control);
+  border-radius: var(--settlehex-ui-radius-control);
   --mode-depth-shadow:
     inset 0 1px 0 var(--mode-highlight),
     0 3px 0 var(--mode-base),
     0 14px 26px -14px var(--mode-shadow);
   box-shadow: var(--mode-depth-shadow);
-  transition: transform var(--settlex-ui-duration-fast) ease-out, box-shadow var(--settlex-ui-duration-fast) ease-out;
+  transition: transform var(--settlehex-ui-duration-fast) ease-out, box-shadow var(--settlehex-ui-duration-fast) ease-out;
   --mode-pressed-shadow: 0 0 0 transparent;
-  --mode-highlight: var(--settlex-ui-button-highlight);
-  --mode-base: var(--settlex-ui-button-base);
-  --mode-shadow: var(--settlex-ui-button-shadow);
+  --mode-highlight: var(--settlehex-ui-button-highlight);
+  --mode-base: var(--settlehex-ui-button-base);
+  --mode-shadow: var(--settlehex-ui-button-shadow);
   /* Secondary ink softens the foreground, whether that foreground is light
      or dark. Bot retains its approved warm-brown tonal equivalent below. */
 }
 
-.button:global(.settlex-ui-button-primary) {
+.button:global(.settlehex-ui-button-primary) {
   --mode-pressed-shadow: 0 8px 18px -12px var(--mode-shadow);
 }
 
-.content { display: flex; width: 100%; align-items: center; gap: var(--settlex-ui-space-4); }
+.content { display: flex; width: 100%; align-items: center; gap: var(--settlehex-ui-space-4); }
 .icon {
   display: grid;
   flex-shrink: 0;
   place-items: center;
   width: 38px;
   height: 38px;
-  border-radius: var(--settlex-ui-radius-small);
+  border-radius: var(--settlehex-ui-radius-small);
 }
 
-.icon { @apply type-home-icon-label; background: var(--settlex-ui-button-icon); }
+.icon { @apply type-home-icon-label; background: var(--settlehex-ui-button-icon); }
 .symbol { width: 24px; height: 24px; }
 
 .marker {
   @apply type-home-marker;
   flex-shrink: 0;
   min-width: 24px;
-  color: var(--settlex-ui-button-marker);
+  color: var(--settlehex-ui-button-marker);
   text-align: center;
   white-space: nowrap;
 }
@@ -56,7 +56,7 @@
   text-align: left;
 }
 
-.button:global(.settlex-ui-button):hover:not(:active):not(:disabled) {
+.button:global(.settlehex-ui-button):hover:not(:active):not(:disabled) {
   transform: translateY(-2px);
   box-shadow:
     inset 0 1px 0 var(--mode-highlight),
@@ -68,34 +68,34 @@
   box-shadow: inset 0 1px 0 var(--mode-highlight), 0 1px 0 var(--mode-base), var(--mode-pressed-shadow);
 }
 
-.button:global(.settlex-ui-button):disabled {
-  background: var(--settlex-ui-button-face);
-  color: var(--settlex-ui-button-ink);
+.button:global(.settlehex-ui-button):disabled {
+  background: var(--settlehex-ui-button-face);
+  color: var(--settlehex-ui-button-ink);
   box-shadow: var(--mode-depth-shadow);
   opacity: .78;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
-.button:global(.settlex-ui-button):disabled[data-active="true"] { opacity: 1; }
+.button:global(.settlehex-ui-button):disabled[data-active="true"] { opacity: 1; }
 
 @media (min-width: 1024px) {
   .button {
     min-height: 72px;
-    padding-inline: var(--settlex-ui-space-4);
+    padding-inline: var(--settlehex-ui-space-4);
     --mode-depth-shadow: inset 0 1px 0 var(--mode-highlight), 0 3px 0 var(--mode-base), 0 16px 30px -14px var(--mode-shadow);
     box-shadow: var(--mode-depth-shadow);
   }
-  .content { gap: var(--settlex-ui-space-5); }
+  .content { gap: var(--settlehex-ui-space-5); }
   .icon { @apply type-home-icon-label-wide; width: 42px; height: 42px; }
   .label { @apply type-home-action-wide; }
   .marker { @apply type-home-marker-wide; }
-  .fourModes .button { padding-inline: var(--settlex-ui-space-3); }
-  .fourModes .content { gap: var(--settlex-ui-space-4); }
+  .fourModes .button { padding-inline: var(--settlehex-ui-space-3); }
+  .fourModes .content { gap: var(--settlehex-ui-space-4); }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .button:global(.settlex-ui-button-secondary):not(:disabled) {
-    background: var(--settlex-ui-surface-solid);
+  .button:global(.settlehex-ui-button-secondary):not(:disabled) {
+    background: var(--settlehex-ui-surface-solid);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -103,6 +103,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .button { transition: none; }
-  .button:global(.settlex-ui-button):hover:not(:active):not(:disabled) { transform: none; }
+  .button:global(.settlehex-ui-button):hover:not(:active):not(:disabled) { transform: none; }
   .button:active:not(:disabled) { transform: none; }
 }

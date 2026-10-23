@@ -2,7 +2,7 @@
   align-items: flex-end;
   height: 86px;
   overflow: visible;
-  border-radius: var(--settlex-ui-radius-panel);
+  border-radius: var(--settlehex-ui-radius-panel);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.055)),
     linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(191, 219, 254, 0.18), rgba(147, 197, 253, 0.12));
@@ -24,7 +24,7 @@
 }
 
 .devcard-box--has-cards {
-  animation: catana-devcard-box-enter 210ms cubic-bezier(0.34, 1.56, 0.64, 1)
+  animation: settlehex-devcard-box-enter 210ms cubic-bezier(0.34, 1.56, 0.64, 1)
     both;
 }
 
@@ -43,7 +43,7 @@
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  padding: var(--settlex-ui-space-1) var(--settlex-ui-space-2-5);
+  padding: var(--settlehex-ui-space-1) var(--settlehex-ui-space-2-5);
 }
 
 .devcard-box--embedded::before {
@@ -76,7 +76,7 @@
   position: relative;
   display: flex;
   align-items: flex-end;
-  gap: var(--settlex-ui-space-2-5);
+  gap: var(--settlehex-ui-space-2-5);
   height: 72px;
   width: 100%;
   z-index: 1;
@@ -192,14 +192,14 @@
   @apply type-hud-card-copy;
   align-items: center;
   background: rgba(239, 246, 255, 0.96);
-  border-radius: var(--settlex-ui-radius-pill);
+  border-radius: var(--settlehex-ui-radius-pill);
   box-shadow: 0 4px 10px -8px rgba(15, 23, 42, 0.6);
-  color: var(--settlex-ui-text-secondary);
+  color: var(--settlehex-ui-text-secondary);
   display: flex;
   height: 1.12rem;
   justify-content: center;
   min-width: 1.12rem;
-  padding: 0 var(--settlex-ui-space-1);
+  padding: 0 var(--settlehex-ui-space-1);
   pointer-events: none;
   position: absolute;
   right: 4px;
@@ -211,7 +211,7 @@
   user-select: none;
 }
 
-@keyframes catana-devcard-box-enter {
+@keyframes settlehex-devcard-box-enter {
   0% {
     opacity: 0;
     transform: translateY(6px) scale(0.96);

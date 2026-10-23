@@ -1,6 +1,6 @@
 # Saved-record post-game log proof
 
-This proof tests the next CGN adoption step: regenerate Settlex's post-game gameplay log using only the saved game record. It does not replace the live log. The [local replay consumer](REPLAY-CONSUMER.md) now uses this projection for its post-game log and board.
+This proof tests the next CGN adoption step: regenerate SettleHex's post-game gameplay log using only the saved game record. It does not replace the live log. The [local replay consumer](REPLAY-CONSUMER.md) now uses this projection for its post-game log and board.
 
 ## Contract
 
@@ -8,7 +8,7 @@ This proof tests the next CGN adoption step: regenerate Settlex's post-game game
 
 `replayHANTrace(record)` exposes the same validated replay used by `replayHAN`, with actions and before/after states. Consecutive steps share their boundary snapshot; consumers should treat snapshots as read-only. The existing `replayHAN` checkpoint API and current wire identity are unchanged. Both new APIs are experimental implementation tools, not the final CGN wire schema.
 
-The projection includes setup turn boundaries, starting resources, rolled production, bank shortages, build actions, development-card actions, robber movement/steals, discards, trades, awards and victory. Free roads carry their derived development-card context. It follows the current Settlex presentation convention of displaying a development purchase without naming the drawn card; the omniscient record and trace still contain that card.
+The projection includes setup turn boundaries, starting resources, rolled production, bank shortages, build actions, development-card actions, robber movement/steals, discards, trades, awards and victory. Free roads carry their derived development-card context. It follows the current SettleHex presentation convention of displaying a development purchase without naming the drawn card; the omniscient record and trace still contain that card.
 
 The log uses record seat IDs, canonical board coordinates and HAN resource codes. A UI adapter translates resource codes and supplies names/themes. Costs are applied by replay, not inserted into the stored record or presented as extra log rows.
 
@@ -20,8 +20,8 @@ From the repository root:
 pnpm -C game-core build
 node --input-type=module <<'JS'
 import { readFile } from 'node:fs/promises';
-import { projectHANLog } from '@settlex/game-core';
-const record = JSON.parse(await readFile('docs/notation/examples/settlex-complete.han.json', 'utf8'));
+import { projectHANLog } from '@settlehex/game-core';
+const record = JSON.parse(await readFile('docs/notation/examples/settlehex-complete.han.json', 'utf8'));
 for (const row of projectHANLog(record)) console.log(JSON.stringify(row));
 JS
 ```
@@ -34,7 +34,7 @@ pnpm exec vitest run scripts/notation/log-comparison.test.js scripts/notation/lo
 
 To retain evidence, set `CGN_LOG_PROOF_OUT` to a **new directory whose parent already exists**. The proof refuses to overwrite an existing directory. It writes `receipt.json`, `projected-log.jsonl` and a readable `comparison.md`; it does not retain the large native snapshot archive.
 
-The proof first projects the saved file. Separately, it runs the actual Settlex controller with the existing bounded, deterministic local driver, exports that game and requires equality with the saved record. The export compares all source checkpoints. The native final log is then independently normalized and compared row-for-row. It never supplies input to the projector.
+The proof first projects the saved file. Separately, it runs the actual SettleHex controller with the existing bounded, deterministic local driver, exports that game and requires equality with the saved record. The export compares all source checkpoints. The native final log is then independently normalized and compared row-for-row. It never supplies input to the projector.
 
 ## What equality means
 

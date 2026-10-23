@@ -19,7 +19,7 @@ export function MatchAlertControl({
       className={
         isMenu
           ? "border-t border-edge-subtle px-ui-2.5 py-ui-2.5"
-          : "settlex-ui-inset p-ui-3 text-left"
+          : "settlehex-ui-inset p-ui-3 text-left"
       }
     >
       <div className="flex flex-wrap items-center gap-ui-2">

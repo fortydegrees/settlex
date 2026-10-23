@@ -1,4 +1,4 @@
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 import { describe, expect, it } from "vitest";
 import { buildBoardContextV3 } from "../analysis/boardContextV3.mjs";
 import { buildBoardFacts } from "../analysis/boardFacts.mjs";

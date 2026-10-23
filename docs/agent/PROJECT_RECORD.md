@@ -107,7 +107,7 @@ backfill or public release qualification is implied.
 
 ## 2026-10-23 — app feature ownership
 
-Replaced the Catana implementation umbrella with `app/_features/` owners for
+Replaced the SettleHex implementation umbrella with `app/_features/` owners for
 home, account/profile, match lifecycle, game presentation, replay, theme and dev
 surfaces. See `app/_features/README.md` for the source reading path. Existing
 URLs and development guards remain in thin route adapters; persisted names,
@@ -129,3 +129,9 @@ replays at desktop and phone sizes. Independent source review found no behaviora
 or architectural issue; a whitespace check and an existing mobile story's portal
 query were corrected. This is local qualification, not real-PostgreSQL, physical
 device or deployment evidence.
+
+## Current design guidance (23 October 2026)
+
+DESIGN_SYSTEM owns product intent and interaction responsibilities. The old brand guide is a compatibility pointer; use the catalog, production stories and current owning components. Shared feedback belongs to shared controls; game-event choreography belongs to effects. Review control families and whole journeys, including keyboard order, repeat input and reduced motion. Trade/discard and game-over composition remain design work.
+
+The private UI polish review sampled account, trade/discard, results and replay. Its proposed fixes are not implementation approval or a whole-product audit. Preserve that evidence privately; this naming pass does not implement visual changes.

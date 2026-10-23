@@ -47,7 +47,7 @@ impl TopologyMap {
                     tile.id, tile.coordinate
                 ));
             }
-            // Catana's named EAST direction is cube [1,-1,0]. The pinned
+            // SettleHex's named EAST direction is cube [1,-1,0]. The pinned
             // native board uses half-width x and half-radius y units.
             let native_center = [q - r, 3 * s];
             if by_native_center.insert(native_center, tile).is_some() {

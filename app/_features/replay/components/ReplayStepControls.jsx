@@ -95,19 +95,19 @@ export function ReplayStepControls({
           <span className="sr-only">Seek through the match</span>
           <div className="relative flex h-[1.375rem] items-center">
             <div
-              className="pointer-events-none absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-pill settlex-ui-replay-track"
+              className="pointer-events-none absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-pill settlehex-ui-replay-track"
               aria-hidden="true"
             >
               <div
                 data-replay-rail-fill="true"
-                className="absolute inset-y-0 left-0 rounded-pill settlex-ui-replay-progress"
+                className="absolute inset-y-0 left-0 rounded-pill settlehex-ui-replay-progress"
                 style={{ width: getReplayRailOffset(progressRatio) }}
               />
               {turnStarts.slice(1).map((item) => (
                 <span
                   key={`${item.turn}-${item.eventIndex}`}
                   data-replay-turn-marker="true"
-                  className="absolute -bottom-[3px] -top-[3px] w-0.5 -translate-x-1/2 rounded-pill settlex-ui-replay-marker"
+                  className="absolute -bottom-[3px] -top-[3px] w-0.5 -translate-x-1/2 rounded-pill settlehex-ui-replay-marker"
                   style={{
                     left: getReplayRailOffset(item.eventIndex / railSpan),
                   }}
@@ -115,7 +115,7 @@ export function ReplayStepControls({
               ))}
             </div>
             <input
-              className="settlex-ui-replay-range relative z-10 m-ui-0 h-[1.375rem] w-full cursor-pointer appearance-none rounded-pill bg-transparent settlex-ui-focus"
+              className="settlehex-ui-replay-range relative z-10 m-ui-0 h-[1.375rem] w-full cursor-pointer appearance-none rounded-pill bg-transparent settlehex-ui-focus"
               type="range"
               min="0"
               max={finalEventIndex}

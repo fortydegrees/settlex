@@ -34,7 +34,7 @@ export function SwatchPicker({
             aria-pressed={isActive}
             onClick={() => onChange(option.id)}
             className={cn(
-              "settlex-ui-swatch settlex-ui-focus h-11 w-11 cursor-pointer rounded-pill transition-transform duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none",
+              "settlehex-ui-swatch settlehex-ui-focus h-11 w-11 cursor-pointer rounded-pill transition-transform duration-[var(--settlehex-ui-duration-fast)] motion-reduce:transition-none",
               option.swatch,
               swatchClassName
             )}

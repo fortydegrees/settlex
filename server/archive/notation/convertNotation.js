@@ -1,5 +1,5 @@
 import { Worker } from "node:worker_threads";
-import { validateHANSyntax } from "@settlex/game-core";
+import { validateHANSyntax } from "@settlehex/game-core";
 
 const unavailable = (errorCode) => ({ status: "unavailable", errorCode });
 const validCodes = new Set(["unsupported-source", "invalid-source", "serialization", "worker-error", "worker-exit", "worker-start", "timeout", "capacity"]);

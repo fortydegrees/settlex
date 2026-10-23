@@ -66,14 +66,14 @@ export const PlayerColour = {
 
 export const ClarityControls = {
   render: () => (
-    <div className="settlex-ui-pane mx-auto max-w-md space-y-ui-4 p-ui-6">
-      <h1 className="settlex-ui-heading">Choose your identity</h1>
+    <div className="settlehex-ui-pane mx-auto max-w-md space-y-ui-4 p-ui-6">
+      <h1 className="settlehex-ui-heading">Choose your identity</h1>
       <label className="block space-y-ui-2">
-        <span className="settlex-ui-label">Player name</span>
+        <span className="settlehex-ui-label">Player name</span>
         <Input placeholder="Tab here to inspect focus" />
       </label>
       <label className="block space-y-ui-2">
-        <span className="settlex-ui-label">Email address</span>
+        <span className="settlehex-ui-label">Email address</span>
         <Input type="email" defaultValue="player@" aria-invalid="true" aria-describedby="clarity-error" />
       </label>
       <p id="clarity-error" className="type-body-small text-ink-danger">Enter a complete email address.</p>

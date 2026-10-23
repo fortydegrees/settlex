@@ -90,5 +90,5 @@ export const EmailSubmitting = {
 
 export const Mobile = {
   args: { account: guestAccount },
-  parameters: { viewport: { defaultViewport: "catanaMobile" } },
+  parameters: { viewport: { defaultViewport: "settlehexMobile" } },
 };

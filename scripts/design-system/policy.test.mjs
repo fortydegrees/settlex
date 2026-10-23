@@ -18,12 +18,12 @@ describe('design-system policy', () => {
     expect(issues.map(x => x.value)).toEqual(expect.arrayContaining(['text-lg', 'px-4', 'font-bold', 'font-medium', 'fontSize:18', 'color:#fff']));
   });
   it('checks CSS declarations, allowing tokens and structural zero/inherit', () => {
-    expect(scanSource('app/example.module.css', '.a { padding:0 var(--settlex-ui-space-4); color:inherit; }')).toEqual([]);
+    expect(scanSource('app/example.module.css', '.a { padding:0 var(--settlehex-ui-space-4); color:inherit; }')).toEqual([]);
     expect(scanSource('app/example.module.css', '.a { font-size:17px; border-radius:12px; color:#123; margin:7px; }')).toHaveLength(4);
   });
   it('rejects unknown tokens and split typography even when values reference tokens', () => {
     expect(scanSource('app/example.jsx', '<p className="type-made-up p-ui-99" />')).toHaveLength(2);
-    expect(scanSource('app/example.module.css', '.a { font-size:var(--settlex-ui-type-body-size); }')).toHaveLength(1);
+    expect(scanSource('app/example.module.css', '.a { font-size:var(--settlehex-ui-type-body-size); }')).toHaveLength(1);
   });
   it('rejects misspelled semantic colours instead of silently emitting no CSS', () => {
     const issues = scanSource('app/example.jsx', '<div className="text-ink-nonsense hover:bg-ui-surface-inset border-edge-missing ring-decoration-missing" />');
@@ -43,15 +43,15 @@ describe('design-system policy', () => {
   });
   it('checks CSS utility composition and blocks redefining foundation roles locally', () => {
     expect(scanSource('app/example.module.css', '.a { @apply type-title text-ink-primary p-ui-4; }')).toEqual([]);
-    expect(scanSource('app/example.module.css', '.a { @apply text-xl font-bold; --settlex-ui-type-title-size: 27px; }')).toHaveLength(3);
+    expect(scanSource('app/example.module.css', '.a { @apply text-xl font-bold; --settlehex-ui-type-title-size: 27px; }')).toHaveLength(3);
   });
   it('blocks static inline and object-based foundation overrides', () => {
-    const issues = scanSource('app/example.jsx', `const styles = { '--settlex-ui-font-ui': 'serif', ['--settlex-ui-space-4']: '99px' }; const el = <h2 className="type-title" style={{ '--settlex-ui-type-title-size': '90px', '--settlex-ui-radius-panel': '0px' }} />;`);
+    const issues = scanSource('app/example.jsx', `const styles = { '--settlehex-ui-font-ui': 'serif', ['--settlehex-ui-space-4']: '99px' }; const el = <h2 className="type-title" style={{ '--settlehex-ui-type-title-size': '90px', '--settlehex-ui-radius-panel': '0px' }} />;`);
     expect(issues.map(issue => [issue.kind, issue.value])).toEqual([
-      ['foundation-override', '--settlex-ui-font-ui'],
-      ['foundation-override', '--settlex-ui-space-4'],
-      ['foundation-override', '--settlex-ui-type-title-size'],
-      ['foundation-override', '--settlex-ui-radius-panel'],
+      ['foundation-override', '--settlehex-ui-font-ui'],
+      ['foundation-override', '--settlehex-ui-space-4'],
+      ['foundation-override', '--settlehex-ui-type-title-size'],
+      ['foundation-override', '--settlehex-ui-radius-panel'],
     ]);
     expect(scanSource('app/example.jsx', '<div style={{ "--piece-x": position }} />')).toEqual([]);
   });

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "../../ui/Button";
 import { Input } from "../../ui/Input";
 import { EmailAuthModeToggle } from "./EmailAuthModeToggle";
-import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 
 const AUTH_PROVIDER_LABELS = Object.freeze({
   discord: "Continue with Discord",
@@ -99,12 +99,12 @@ export function AccountPageView({
   return (
     <main
       className="min-h-screen px-ui-4 py-ui-10 text-ink-primary"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
-      <div className="settlex-ui-pane mx-auto max-w-xl p-ui-5 sm:p-ui-6">
+      <div className="settlehex-ui-pane mx-auto max-w-xl p-ui-5 sm:p-ui-6">
         <div className="flex items-start justify-between gap-ui-4">
           <div className="min-w-0">
-            <p className="settlex-ui-label">
+            <p className="settlehex-ui-label">
               Settlehex account
             </p>
             <h1 className="mt-ui-2 break-words type-title text-ink-primary">
@@ -116,7 +116,7 @@ export function AccountPageView({
           </div>
           <Link
             href="/"
-            className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus min-h-[2.75rem] shrink-0 px-ui-4 py-ui-2 type-action-small"
+            className="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-focus min-h-[2.75rem] shrink-0 px-ui-4 py-ui-2 type-action-small"
           >
             Back
           </Link>
@@ -179,7 +179,7 @@ export function AccountPageView({
         ) : null}
 
         {statusMessage ? (
-          <div className="settlex-ui-inset mt-ui-4 break-words px-ui-4 py-ui-3 type-body-small text-ink-secondary">
+          <div className="settlehex-ui-inset mt-ui-4 break-words px-ui-4 py-ui-3 type-body-small text-ink-secondary">
             {statusMessage}
           </div>
         ) : null}

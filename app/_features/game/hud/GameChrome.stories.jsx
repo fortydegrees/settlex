@@ -142,7 +142,7 @@ export const MobileFeedDrawerReadOnly = {
 };
 
 export const DesktopFeedDock = {
-  parameters: { viewport: { defaultViewport: "catanaDesktop" } },
+  parameters: { viewport: { defaultViewport: "settlehexDesktop" } },
   render: () => <DesktopMetaDock entries={entries} logPlayerMap={players} themeId="classic"
     playerID={null} bgioProps={{ chatMessages: messages }} />,
 };

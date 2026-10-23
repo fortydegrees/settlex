@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Panel } from "../../ui/Panel";
-import { CATANA_TABLE_BACKGROUND } from "../../_features/theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../../_features/theme/backgrounds";
 
 export function UnavailableMatchPage({ matchID }) {
   return (
     <div
       className="relative min-h-screen overflow-hidden text-ink-primary"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <div className="absolute inset-0 bg-decoration-wash backdrop-blur-[2px]" />
       <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-xl items-center px-ui-4 py-ui-8">
@@ -22,7 +22,7 @@ export function UnavailableMatchPage({ matchID }) {
           </p>
           <Link
             href="/"
-            className="settlex-ui-button settlex-ui-button-primary settlex-ui-focus mx-auto mt-ui-6 min-h-[2.95rem] px-ui-5 py-ui-3 type-action-small"
+            className="settlehex-ui-button settlehex-ui-button-primary settlehex-ui-focus mx-auto mt-ui-6 min-h-[2.95rem] px-ui-5 py-ui-3 type-action-small"
           >
             Back to lobby
           </Link>

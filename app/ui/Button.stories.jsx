@@ -30,21 +30,21 @@ function ButtonFamilyPreview() {
   return (
     <main className="mx-auto max-w-5xl space-y-ui-6 p-ui-5 text-ink-primary sm:p-ui-8">
       <header>
-        <p className="settlex-ui-label">SettleHex · Clarity</p>
+        <p className="settlehex-ui-label">SettleHex · Clarity</p>
         <h1 className="mt-ui-2 type-page">One family, distinct roles</h1>
         <p className="mt-ui-2 type-body-small text-ink-secondary">Production controls, shared material. Shape follows role—not size.</p>
       </header>
       <section className="space-y-ui-4">
-        <h2 className="settlex-ui-heading">Floating utilities · pill / circle</h2>
+        <h2 className="settlehex-ui-heading">Floating utilities · pill / circle</h2>
         <div className="flex items-center gap-ui-4">
           <SystemAccountMenu identity={{}} accountStatus="guest" hasIdentity={false} onOpenSignIn={() => setAccountOpen(true)} />
           <IconButton variant="utility" aria-label="Settings example"><Cog6ToothIcon /></IconButton>
           <Button variant="utility" size="sm" disabled>Unavailable</Button>
         </div>
-        <p className="settlex-ui-label">Open Sign in to inspect the real account-entry modal.</p>
+        <p className="settlehex-ui-label">Open Sign in to inspect the real account-entry modal.</p>
       </section>
-      <section className="settlex-ui-pane space-y-ui-4 p-ui-5">
-        <h2 className="settlex-ui-heading">Form and product actions · 14px</h2>
+      <section className="settlehex-ui-pane space-y-ui-4 p-ui-5">
+        <h2 className="settlehex-ui-heading">Form and product actions · 14px</h2>
         <div className="flex flex-wrap gap-ui-3">
           <Button size="lg">Sign in</Button>
           <Button variant="accent" size="lg">Play vs Bot</Button>
@@ -58,8 +58,8 @@ function ButtonFamilyPreview() {
         </div>
       </section>
       <section className="space-y-ui-4">
-        <h2 className="settlex-ui-heading">Play dock · 14px, with 8px icon tiles</h2>
-        <p className="settlex-ui-label">The approved layout and stronger depth, using the same shared material palette.</p>
+        <h2 className="settlehex-ui-heading">Play dock · 14px, with 8px icon tiles</h2>
+        <p className="settlehex-ui-label">The approved layout and stronger depth, using the same shared material palette.</p>
         <div className="relative h-64 md:h-24">
           <HomeGameModeDock isBusy={false} activeActionId={null} onSelectMode={fn()} />
         </div>

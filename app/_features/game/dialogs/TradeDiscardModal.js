@@ -5,7 +5,7 @@ import { STANDARD_RESOURCES, ResourceType } from "../../theme/gameAssets";
 import {
   bestTradeRate,
   getMaritimeTradeReceiveCount,
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import {
   getClassicResourceIconPath,
   getResourceIconPath,
@@ -235,8 +235,8 @@ export const TradeDiscardModal = ({
     : "Select a Resource to Claim";
 
   return (
-    <div className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog settlex-ui-dialog-viewport fixed inset-0 flex items-center justify-center pointer-events-auto">
-      <div role="dialog" aria-labelledby={titleId} className="settlex-ui-pane settlex-ui-dialog-surface w-[520px] max-w-full max-h-full flex flex-col gap-ui-4">
+    <div className="settlehex-ui-dialog-backdrop settlehex-ui-layer-dialog settlehex-ui-dialog-viewport fixed inset-0 flex items-center justify-center pointer-events-auto">
+      <div role="dialog" aria-labelledby={titleId} className="settlehex-ui-pane settlehex-ui-dialog-surface w-[520px] max-w-full max-h-full flex flex-col gap-ui-4">
         
         {/* Header */}
         <h2 id={titleId} className="type-title text-center text-ink-primary">
@@ -249,7 +249,7 @@ export const TradeDiscardModal = ({
           {/* GIVE SECTION */}
           {(isDiscard || isTrade) && (
             <div
-              className={`settlex-ui-inset p-ui-4 ${
+              className={`settlehex-ui-inset p-ui-4 ${
                 isTrade ? "order-2" : ""
               }`}
             >
@@ -300,11 +300,11 @@ export const TradeDiscardModal = ({
                         </span>
                       </div>
 
-                      <div className="settlex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
+                      <div className="settlehex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
                         <button
                           onClick={() => decrement(res)}
                           aria-label={`Decrease give ${res}`}
-                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
+                          className="settlehex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
                           disabled={selectedCount === 0}
                         >
                           -
@@ -315,7 +315,7 @@ export const TradeDiscardModal = ({
                         <button
                           onClick={() => increment(res, available)}
                           aria-label={`Increase give ${res}`}
-                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
+                          className="settlehex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
                           disabled={
                             (isTrade
                               ? selectedCount + getTradeRate(res) > available
@@ -337,7 +337,7 @@ export const TradeDiscardModal = ({
 
           {/* RECEIVE SECTION (Trade Only) */}
           {isTrade && (
-            <div className="settlex-ui-inset p-ui-4 order-1">
+            <div className="settlehex-ui-inset p-ui-4 order-1">
               <h3 className="type-section mb-ui-2 text-ink-primary">Receive</h3>
               <div className="grid grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] gap-ui-2">
                 {STANDARD_RESOURCES.map((res) => {
@@ -375,11 +375,11 @@ export const TradeDiscardModal = ({
                           )}
                         </div>
 
-                        <div className="settlex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
+                        <div className="settlehex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
                           <button
                             onClick={() => decrement(res, "receive")}
                             aria-label={`Decrease receive ${res}`}
-                            className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
+                            className="settlehex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
                             disabled={selectedCount === 0}
                           >
                             -
@@ -390,7 +390,7 @@ export const TradeDiscardModal = ({
                           <button
                             onClick={() => increment(res, available, "receive")}
                             aria-label={`Increase receive ${res}`}
-                            className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
+                            className="settlehex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
                             disabled={
                               totalSelectedReceive >= tradeReceiveCapacity ||
                               selectedCount >= available ||
@@ -409,7 +409,7 @@ export const TradeDiscardModal = ({
 
           {/* DEV CARD SELECT SECTION */}
           {isDevYop && (
-            <div className="settlex-ui-inset p-ui-4">
+            <div className="settlehex-ui-inset p-ui-4">
               <h3 className="type-section mb-ui-2 text-ink-primary">
                 Select Two Resources
               </h3>
@@ -454,11 +454,11 @@ export const TradeDiscardModal = ({
                         )}
                       </div>
 
-                      <div className="settlex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
+                      <div className="settlehex-ui-inset flex items-center gap-ui-1 rounded-pill px-ui-1">
                         <button
                           onClick={() => decrement(res)}
                           aria-label={`Decrease selection ${res}`}
-                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
+                          className="settlehex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-danger disabled:opacity-30"
                           disabled={selectedCount === 0}
                         >
                           -
@@ -469,7 +469,7 @@ export const TradeDiscardModal = ({
                         <button
                           onClick={() => increment(res, available)}
                           aria-label={`Increase selection ${res}`}
-                          className="settlex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
+                          className="settlehex-ui-focus w-6 h-6 flex items-center justify-center type-action-small text-ink-secondary hover:text-ink-primary disabled:opacity-30"
                           disabled={disableIncrement || isDisabled}
                         >
                           +
@@ -483,7 +483,7 @@ export const TradeDiscardModal = ({
           )}
 
           {isDevMonopoly && (
-            <div className="settlex-ui-inset p-ui-4">
+            <div className="settlehex-ui-inset p-ui-4">
               <h3 className="type-section mb-ui-2 text-ink-primary">
                 Select a Resource
               </h3>
@@ -496,7 +496,7 @@ export const TradeDiscardModal = ({
                       key={res}
                       onClick={() => increment(res, 1)}
                       aria-label={`Claim ${res}`}
-                      className={`settlex-ui-focus flex flex-col items-center p-ui-2 rounded-small transition-all ${
+                      className={`settlehex-ui-focus flex flex-col items-center p-ui-2 rounded-small transition-all ${
                         isSelected
                           ? "bg-surface-positive ring-2 ring-ink-positive shadow-sm scale-105"
                           : "hover:bg-surface-hover"

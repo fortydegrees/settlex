@@ -33,10 +33,10 @@ const OpponentPlayerBoxComponent = ({
   });
   const isOverLimit = resourceBadgeTone === "danger";
   const dangerPanelClassName =
-    !isSeatWarning && isOverLimit ? "catana-hud-glass--danger" : "";
+    !isSeatWarning && isOverLimit ? "settlehex-hud-glass--danger" : "";
   const dangerAvatarClassName =
     !isSeatWarning && isOverLimit
-      ? "catana-hud-avatar--danger"
+      ? "settlehex-hud-avatar--danger"
       : "";
 
   return (

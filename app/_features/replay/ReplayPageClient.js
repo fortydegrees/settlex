@@ -1,7 +1,7 @@
 "use client";
 
 import { createElement as h, useMemo } from "react";
-import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 import { PostgameGameBoard } from "./PostgameGameBoard";
 import { hydrateArchivedReplayPayload } from "../../../lib/replays/archivedReplayPayload.js";
 
@@ -24,7 +24,7 @@ export const createReplayPageClient = ({
       "div",
       {
         className: "min-h-screen",
-        style: { background: CATANA_TABLE_BACKGROUND },
+        style: { background: SETTLEHEX_TABLE_BACKGROUND },
       },
       h(PostgameGameBoardImpl, {
         initialReplayPayload,

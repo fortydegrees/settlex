@@ -2,7 +2,7 @@ import {
   buildableEdges,
   buildableNodes,
   createEmptyState
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";
 
 const DEFAULT_DELAY_MS = Object.freeze([1000, 4000]);

@@ -20,7 +20,7 @@ export function Popover({
       <BasePopover.Trigger
         aria-label={triggerAriaLabel}
         className={cn(
-          "settlex-ui-focus",
+          "settlehex-ui-focus",
           triggerClassName
         )}
       >
@@ -30,11 +30,11 @@ export function Popover({
         <BasePopover.Positioner
           sideOffset={sideOffset}
           align={align}
-          className="settlex-ui-layer-popover"
+          className="settlehex-ui-layer-popover"
         >
           <BasePopover.Popup
             className={cn(
-              "settlex-ui-pane settlex-ui-popover settlex-ui-overlay-motion w-max p-ui-3",
+              "settlehex-ui-pane settlehex-ui-popover settlehex-ui-overlay-motion w-max p-ui-3",
               className
             )}
           >

@@ -2,7 +2,7 @@ import {
   getNumDots,
   ResourceType,
   TileTypes
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { STANDARD_RESOURCES } from "../constants.mjs";
 import { buildBoardFacts, CUBE_DIRECTIONS } from "./boardFacts.mjs";
 import {

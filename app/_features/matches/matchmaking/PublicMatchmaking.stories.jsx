@@ -5,7 +5,7 @@ import { expect, fn, within } from "@storybook/test";
 import { useLobbyHomeActions } from "../lobby/useLobbyHomeActions";
 import { HomeTableClient } from "../../home/HomeTableClient";
 import { MatchAlertContext } from "../alerts/MatchAlertProvider";
-import { matchAlertFixtures } from "../../dev/storybook/accountFixtures";
+import { matchAlertFixtures } from "../../catana/catana/dev/storybook/accountFixtures";
 import { readLastActiveMatch, writeLastActiveMatch } from "../session/activeMatchStorage";
 import { tabAttention } from "../../../../lib/client/tabAttention";
 import { consumeGameStartTransition, markGameStartTransition } from "../../game/effects/gameStartTransition";
@@ -49,7 +49,7 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
   const oldFetch = window.fetch;
   const oldActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
   const oldStorage = new Map(Object.keys(localStorage).map(key => [key, localStorage.getItem(key)]));
-  Object.keys(localStorage).filter(key => key.startsWith("catana:")).forEach(key => localStorage.removeItem(key));
+  Object.keys(localStorage).filter(key => key.startsWith("settlehex:")).forEach(key => localStorage.removeItem(key));
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   let lobby;
   let actionResult;
@@ -127,7 +127,7 @@ async function withLobby(canvasElement, exercise, { initialAccount = account, ho
     window.fetch = oldFetch;
     if (oldTransition === null) sessionStorage.removeItem(transitionKey);
     else sessionStorage.setItem(transitionKey, oldTransition);
-    Object.keys(localStorage).filter(key => key.startsWith("catana:")).forEach(key => localStorage.removeItem(key));
+    Object.keys(localStorage).filter(key => key.startsWith("settlehex:")).forEach(key => localStorage.removeItem(key));
     oldStorage.forEach((value, key) => localStorage.setItem(key, value));
     globalThis.IS_REACT_ACT_ENVIRONMENT = oldActEnvironment;
   }

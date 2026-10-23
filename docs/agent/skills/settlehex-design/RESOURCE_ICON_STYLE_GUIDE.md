@@ -1,13 +1,13 @@
-# Catana Resource Icon Style Guide
+# SettleHex Resource Icon Style Guide
 
 Status: Authoritative draft for production handoff  
 Last updated: 2026-02-23  
 Applies to: `Wood`, `Brick`, `Sheep`, `Wheat`, `Ore`
 
 ## 1) Purpose
-Define the visual and technical contract for Catana resource icons so external designers can deliver assets that:
+Define the visual and technical contract for SettleHex resource icons so external designers can deliver assets that:
 
-- feel native to Catana's "joyful, vibrant, modern-flat" brand,
+- feel native to SettleHex's "joyful, vibrant, modern-flat" brand,
 - remain legible at game sizes,
 - work consistently across tile overlays, ports, HUD/resource bars, logs, and theme variants.
 
@@ -230,7 +230,7 @@ Don't:
 
 If the designer must choose a direction without additional review:
 
-- pick the flatter Catana direction,
+- pick the flatter SettleHex direction,
 - use shared structural outline language,
 - use local two-tone accents (not global gradients),
 - prioritize square footprint and small-size legibility over decorative detail.

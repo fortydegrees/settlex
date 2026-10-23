@@ -1,4 +1,4 @@
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 
 const freezeRecord = (value) => Object.freeze({ ...value });
 

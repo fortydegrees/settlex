@@ -1,5 +1,5 @@
 import type { HANRecord, Board, Card, Counts, Event, Formula, Piece, Resource, State } from './types';
-// HAN replay is independent of the Settlex source-frame exporter.
+// HAN replay is independent of the SettleHex source-frame exporter.
 const resources: Resource[] = ['B', 'G', 'L', 'O', 'W'];
 const cards: Card[] = ['k', 'm', 'r', 'v', 'y'];
 const costs: Record<Piece | 'development', Formula> = {

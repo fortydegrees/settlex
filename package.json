@@ -1,5 +1,5 @@
 {
-  "name": "settlex",
+  "name": "settlehex",
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@9.13.2",
@@ -48,7 +48,7 @@
     "@base-ui/react": "^1.4.1",
     "@heroicons/react": "^2.0.18",
     "@react-spring/web": "10.1.2",
-    "@settlex/game-core": "workspace:*",
+    "@settlehex/game-core": "workspace:*",
     "assert": "^2.1.0",
     "autoprefixer": "10.4.15",
     "better-auth": "1.6.33",

@@ -1,4 +1,4 @@
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 import { STANDARD_RESOURCES } from "../constants.mjs";
 
 export const DIRECT_RECIPES = Object.freeze({

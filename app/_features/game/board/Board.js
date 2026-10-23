@@ -1047,7 +1047,7 @@ export function CatanBoard({
     });
   }
 
-  //make a subgraph of buildable nodes - used in catanatron
+  //make a subgraph of buildable nodes - used in settlehextron
   //https://github.com/bcollazo/catanatron/blob/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3/catanatron_core/catanatron/models/board.py#L148
   //but we don't do this as we don't generate water tiles.. yet..
   //const buildable_subgraph = STATIC_GRAPH.subgraph(landNodes)

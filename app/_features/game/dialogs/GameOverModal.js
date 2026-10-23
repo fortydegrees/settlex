@@ -64,11 +64,11 @@ export function GameOverModal({
   }, [isWinner, shouldFireConfetti, onConfettiFired]);
 
   return (
-    <div className="settlex-ui-pane relative max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto p-ui-5 sm:p-ui-6">
+    <div className="settlehex-ui-pane relative max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto p-ui-5 sm:p-ui-6">
       <button
         onClick={actions.close}
         disabled={matchAlertResume.pending}
-        className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus absolute right-2 top-2 h-11 w-11 disabled:cursor-wait"
+        className="settlehex-ui-button settlehex-ui-button-ghost settlehex-ui-focus absolute right-2 top-2 h-11 w-11 disabled:cursor-wait"
         aria-label="Close"
       >
         <span className="relative z-10">
@@ -77,8 +77,8 @@ export function GameOverModal({
       </button>
 
       <div className="text-center">
-        <div className="settlex-ui-celebration-glyph mb-ui-2">🏆</div>
-        <div className="settlex-ui-label">
+        <div className="settlehex-ui-celebration-glyph mb-ui-2">🏆</div>
+        <div className="settlehex-ui-label">
           Game Over
         </div>
         {isWinner ? (
@@ -93,7 +93,7 @@ export function GameOverModal({
         <div className="mt-ui-1 type-body-small text-ink-secondary">{subtitle}</div>
       </div>
 
-      <div className="mt-ui-5 rounded-small settlex-ui-winner p-ui-4">
+      <div className="mt-ui-5 rounded-small settlehex-ui-winner p-ui-4">
         {winner ? (
           <div className="flex items-center justify-between gap-ui-3">
             <div className="flex min-w-0 items-center gap-ui-3">
@@ -119,7 +119,7 @@ export function GameOverModal({
           {secondaryRows.map((row) => (
             <div
               key={row.id}
-              className="settlex-ui-inset flex min-w-0 max-w-full items-center gap-ui-2 px-ui-4 py-ui-3"
+              className="settlehex-ui-inset flex min-w-0 max-w-full items-center gap-ui-2 px-ui-4 py-ui-3"
             >
               <div
                 className="h-6 w-6 shrink-0 rounded-pill"
@@ -137,7 +137,7 @@ export function GameOverModal({
       )}
 
       {matchAlertResume.visible ? (
-        <div className="settlex-ui-inset mt-ui-5 p-ui-3 text-left">
+        <div className="settlehex-ui-inset mt-ui-5 p-ui-3 text-left">
           <label className="flex min-h-[2.75rem] cursor-pointer items-center gap-ui-3 type-label text-ink-secondary">
             <input
               type="checkbox"
@@ -146,13 +146,13 @@ export function GameOverModal({
               onChange={(event) =>
                 onMatchAlertResumeCheckedChange?.(event.target.checked)
               }
-              className="settlex-ui-checkbox settlex-ui-focus h-4 w-4 shrink-0"
+              className="settlehex-ui-checkbox settlehex-ui-focus h-4 w-4 shrink-0"
             />
             <span>{matchAlertResume.label}</span>
           </label>
 
           {matchAlertResume.error ? (
-            <div className="mt-ui-3 settlex-ui-inline-error p-ui-3">
+            <div className="mt-ui-3 settlehex-ui-inline-error p-ui-3">
               <p className="type-label text-ink-danger" role="alert">
                 {matchAlertResume.error}
               </p>

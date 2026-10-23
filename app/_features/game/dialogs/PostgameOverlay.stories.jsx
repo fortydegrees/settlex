@@ -1,5 +1,5 @@
 import { expect, fn, userEvent, within } from "@storybook/test";
-import { completedPostgameFixture } from "../../dev/storybook/postgameFixtures";
+import { completedPostgameFixture } from "../../catana/catana/dev/storybook/postgameFixtures";
 import { PostgameOverlay } from "./PostgameOverlay";
 
 const meta = {
@@ -65,6 +65,6 @@ export const FinalScoresUnavailable = {
 
 export const Mobile = {
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };

@@ -40,7 +40,7 @@ export function projectHANLog(record: HANRecord): HANLogEntry[] {
           { [event.piece === 'road' ? 'edgeId' : 'nodeId']: event.at, initialPlacement: setup });
         break;
       case 'roll': emit('roll', actor, { dice: event.dice, total: event.dice[0] + event.dice[1] }); break;
-      // The current Settlex presentation deliberately omits the drawn card. The
+      // The current SettleHex presentation deliberately omits the drawn card. The
       // omniscient core retains it; a richer viewer can display it from the trace.
       case 'buyDev': emit('dev:buy', actor); break;
       case 'play': emit('dev:play', actor, { cardType: cardNames[event.card] }); break;

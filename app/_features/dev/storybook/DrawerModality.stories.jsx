@@ -12,7 +12,7 @@ const { Drawer: CommonJsDrawer } = require("vaul");
 
 const meta = {
   title: "Regression/Drawer Modality",
-  parameters: { layout: "fullscreen", viewport: { defaultViewport: "catanaMobile" } },
+  parameters: { layout: "fullscreen", viewport: { defaultViewport: "settlehexMobile" } },
 };
 
 export default meta;
@@ -52,7 +52,7 @@ function DrawerFixture({ consumer = "feed", moduleForm = "esm", modal }) {
       {mounted && consumer === "library" && <LibraryDrawer.Root open={open} onOpenChange={setOpen} {...(modal === undefined ? {} : { modal })}>
         <LibraryDrawer.Portal>
           <LibraryDrawer.Overlay className="fixed inset-0 bg-surface-overlay" />
-          <LibraryDrawer.Content className="settlex-ui-pane fixed inset-x-0 bottom-0 p-ui-4">
+          <LibraryDrawer.Content className="settlehex-ui-pane fixed inset-x-0 bottom-0 p-ui-4">
             <LibraryDrawer.Title>Modal control</LibraryDrawer.Title>
             <LibraryDrawer.Description>Installed Vaul module behavior.</LibraryDrawer.Description>
             <label>Modal draft<input aria-label="Modal draft" /></label>

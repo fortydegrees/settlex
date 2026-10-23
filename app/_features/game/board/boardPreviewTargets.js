@@ -1,4 +1,4 @@
-import { canPlaceRobber } from "@settlex/game-core";
+import { canPlaceRobber } from "@settlehex/game-core";
 import { TileTypes } from "../../theme/gameAssets";
 import { tilePixelVector } from "./coordinates";
 

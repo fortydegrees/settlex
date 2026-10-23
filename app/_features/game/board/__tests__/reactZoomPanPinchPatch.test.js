@@ -33,7 +33,7 @@ function createFakeDocument() {
 function loadCjsInternals() {
   const bundle = fs.readFileSync(cjsBundlePath, "utf8");
   const code = `${bundle}
-module.exports.__settlexInternals = {
+module.exports.__settlehexInternals = {
   calculateBounds: typeof calculateBounds !== "undefined" && calculateBounds,
   getDoubleClickMode: typeof getDoubleClickMode !== "undefined" && getDoubleClickMode,
 };`;
@@ -52,7 +52,7 @@ module.exports.__settlexInternals = {
   sandbox.exports = sandbox.module.exports;
 
   vm.runInNewContext(code, sandbox, { filename: cjsBundlePath });
-  return sandbox.module.exports.__settlexInternals;
+  return sandbox.module.exports.__settlehexInternals;
 }
 
 function createBoundsContext(props) {
@@ -73,7 +73,7 @@ function createBoundsContext(props) {
 }
 
 describe("patched react-zoom-pan-pinch behavior", () => {
-  it("preserves Settlex pan room bounds for the packaged runtime", () => {
+  it("preserves SettleHex pan room bounds for the packaged runtime", () => {
     const { calculateBounds } = loadCjsInternals();
 
     const props = {
@@ -98,7 +98,7 @@ describe("patched react-zoom-pan-pinch behavior", () => {
     });
   });
 
-  it("preserves Settlex double-click toggle semantics for the packaged runtime", () => {
+  it("preserves SettleHex double-click toggle semantics for the packaged runtime", () => {
     const { getDoubleClickMode } = loadCjsInternals();
 
     expect(getDoubleClickMode("zoomIn", 2, 1)).toBe("zoomIn");

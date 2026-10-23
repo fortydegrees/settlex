@@ -1,4 +1,4 @@
-import { createEmptyState } from "@settlex/game-core";
+import { createEmptyState } from "@settlehex/game-core";
 import {
   buildGameScreenDisplayModel,
   buildPostgameSummary,

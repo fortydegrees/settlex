@@ -140,7 +140,7 @@ export function EffectsLabClient() {
   };
 
   return (
-    <div className="settlex-dev-console min-h-screen">
+    <div className="settlehex-dev-console min-h-screen">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-ui-6 px-ui-6 py-ui-8">
         <header className="flex flex-col gap-ui-2">
           <h1 className="type-title text-ink-console-primary">Effects Lab</h1>
@@ -150,11 +150,11 @@ export function EffectsLabClient() {
           </p>
         </header>
 
-        <section className="settlex-dev-console-panel flex flex-wrap items-end gap-ui-4 p-ui-4">
+        <section className="settlehex-dev-console-panel flex flex-wrap items-end gap-ui-4 p-ui-4">
           <label className="type-label flex flex-col text-ink-console-muted">
             Effect
             <select
-              className="settlex-dev-console-field mt-ui-1"
+              className="settlehex-dev-console-field mt-ui-1"
               value={selectedId}
               onChange={(event) => setSelectedId(event.target.value)}
             >
@@ -184,7 +184,7 @@ export function EffectsLabClient() {
             Custom Sound
             <input
               ref={fileInputRef}
-              className="settlex-dev-console-file mt-ui-1"
+              className="settlehex-dev-console-file mt-ui-1"
               type="file"
               accept="audio/*"
               disabled={!audioSupported}
@@ -213,7 +213,7 @@ export function EffectsLabClient() {
           </label>
 
           <button
-            className="settlex-dev-console-button settlex-dev-console-button-secondary"
+            className="settlehex-dev-console-button settlehex-dev-console-button-secondary"
             type="button"
             onClick={handleClearSound}
             disabled={!customSound.url}
@@ -222,7 +222,7 @@ export function EffectsLabClient() {
           </button>
         </section>
 
-        <section className="settlex-dev-console-panel relative p-ui-8">
+        <section className="settlehex-dev-console-panel relative p-ui-8">
           {selected ? (
             <selected.component layerRef={layerRef} emitCue={emitCue} />
           ) : (

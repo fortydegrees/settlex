@@ -6,7 +6,7 @@ import { createCatanGame } from "../../../lib/game-runtime/Game.js";
 import { buildReplayFrames } from "../../../lib/server/replays/buildReplayFrames.js";
 import { buildableEdges, buildableNodes } from "../index";
 import {
-  exportSettlexNotationArchive,
+  exportSettleHexNotationArchive,
   replayHAN,
   validateHANSyntax,
   type HANRecord,
@@ -14,7 +14,7 @@ import {
 
 const retainedRecordPath = resolve(
   __dirname,
-  "../../../docs/notation/examples/settlex-complete.han.json",
+  "../../../docs/notation/examples/settlehex-complete.han.json",
 );
 
 function shortAuthoritativeArchive() {
@@ -77,8 +77,8 @@ describe("maintained HAN notation", () => {
 
   it("exports real source frames matching the frozen independent setup/roll record", () => {
     const archive = shortAuthoritativeArchive();
-    const expected = JSON.parse(readFileSync(resolve(__dirname, "fixtures/settlex-setup-roll.expected.json"), "utf8"));
-    const actual = exportSettlexNotationArchive(archive, buildReplayFrames);
+    const expected = JSON.parse(readFileSync(resolve(__dirname, "fixtures/settlehex-setup-roll.expected.json"), "utf8"));
+    const actual = exportSettleHexNotationArchive(archive, buildReplayFrames);
     expect(actual).toEqual(expected);
     expect(actual.sourceFrames).toBe(archive.log.length + 1);
     expect(actual.record.actions.some((token: string) => /^R\([1-6]\+[1-6]\)$/.test(token))).toBe(true);
@@ -88,17 +88,17 @@ describe("maintained HAN notation", () => {
     const archive = shortAuthoritativeArchive();
     const malformed = structuredClone(archive);
     delete malformed.log[0]._stateID;
-    expect(() => exportSettlexNotationArchive(malformed, buildReplayFrames)).toThrow(/log state ID/);
+    expect(() => exportSettleHexNotationArchive(malformed, buildReplayFrames)).toThrow(/log state ID/);
 
     const unsupported = structuredClone(archive);
     unsupported.initialState.G.core.ruleset.devCardsEnabled = false;
-    expect(() => exportSettlexNotationArchive(unsupported, buildReplayFrames)).toThrow(/development-card rule/);
+    expect(() => exportSettleHexNotationArchive(unsupported, buildReplayFrames)).toThrow(/development-card rule/);
   });
 
   it("does not mark a missing terminal archive as complete", () => {
     const archive = shortAuthoritativeArchive();
     const noFinal = { initialState: archive.initialState, log: archive.log };
-    const result = exportSettlexNotationArchive(noFinal, buildReplayFrames);
+    const result = exportSettleHexNotationArchive(noFinal, buildReplayFrames);
     expect(result.record.coverage).toBe("prefix");
     expect(result.record.result).toBeNull();
   });

@@ -18,11 +18,11 @@ export function Dialog({
   return (
     <BaseDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Portal>
-        <BaseDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 backdrop-blur-sm" />
-        <BaseDialog.Viewport className="settlex-ui-dialog-viewport settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
+        <BaseDialog.Backdrop className="settlehex-ui-dialog-backdrop settlehex-ui-layer-dialog fixed inset-0 backdrop-blur-sm" />
+        <BaseDialog.Viewport className="settlehex-ui-dialog-viewport settlehex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
           <BaseDialog.Popup
             className={cn(
-              "settlex-ui-pane settlex-ui-dialog-popup settlex-ui-dialog-surface w-full",
+              "settlehex-ui-pane settlehex-ui-dialog-popup settlehex-ui-dialog-surface w-full",
               maxWidthClassName,
               className
             )}

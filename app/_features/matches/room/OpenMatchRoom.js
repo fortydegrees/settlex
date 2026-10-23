@@ -6,7 +6,7 @@ import { Button } from "../../../ui/Button";
 import { Input } from "../../../ui/Input";
 import { Panel } from "../../../ui/Panel";
 import { Select } from "../../../ui/Select";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import { sanitizeDisplayName } from "../../../../lib/shared/playerIdentity";
 
 export function seatLabel(seat) {
@@ -36,13 +36,13 @@ export function OpenMatchRoom({
   return (
     <div
       className="min-h-screen"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <div className="mx-auto w-full max-w-4xl px-ui-4 py-ui-10">
         <Panel bodyClassName="p-ui-5 sm:p-ui-6">
           <div className="flex flex-col gap-ui-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <div className="settlex-ui-label">
+              <div className="settlehex-ui-label">
                 Settlehex Room
               </div>
               <h1 className="mt-ui-2 break-all type-title text-ink-primary">
@@ -51,13 +51,13 @@ export function OpenMatchRoom({
               <div className="mt-ui-3 flex flex-wrap gap-ui-2">
                 <Link
                   href="/"
-                  className="settlex-ui-focus inline-flex min-h-[2.75rem] items-center type-label text-ink-link underline underline-offset-4"
+                  className="settlehex-ui-focus inline-flex min-h-[2.75rem] items-center type-label text-ink-link underline underline-offset-4"
                 >
                   Back to lobby
                 </Link>
                 <Link
                   href="/account"
-                  className="settlex-ui-focus inline-flex min-h-[2.75rem] items-center type-label text-ink-link underline underline-offset-4"
+                  className="settlehex-ui-focus inline-flex min-h-[2.75rem] items-center type-label text-ink-link underline underline-offset-4"
                 >
                   Account
                 </Link>
@@ -87,7 +87,7 @@ export function OpenMatchRoom({
 
           <div className="mt-ui-6 grid gap-ui-6 md:grid-cols-2">
             <section className="min-w-0">
-              <h2 className="settlex-ui-heading mb-ui-4">Join Seat</h2>
+              <h2 className="settlehex-ui-heading mb-ui-4">Join Seat</h2>
               <form className="space-y-ui-3" onSubmit={onJoin}>
                 <div>
                   <label
@@ -152,7 +152,7 @@ export function OpenMatchRoom({
             </section>
 
             <section className="min-w-0 border-t border-edge-subtle pt-ui-6 md:border-l md:border-t-0 md:pl-ui-6 md:pt-0">
-              <h2 className="settlex-ui-heading mb-ui-4">Seats</h2>
+              <h2 className="settlehex-ui-heading mb-ui-4">Seats</h2>
               {isLoadingMatch && !match ? (
                 <div className="h-24 animate-pulse rounded-small bg-surface-hover motion-reduce:animate-none" />
               ) : null}
@@ -166,7 +166,7 @@ export function OpenMatchRoom({
                     return (
                       <div
                         key={seat.id}
-                        className={`settlex-ui-inset flex items-center justify-between gap-ui-3 px-ui-3 py-ui-3 ${
+                        className={`settlehex-ui-inset flex items-center justify-between gap-ui-3 px-ui-3 py-ui-3 ${
                           taken
                             ? "text-ink-primary"
                             : "text-ink-secondary"
@@ -183,7 +183,7 @@ export function OpenMatchRoom({
                   })}
                 </div>
               ) : (
-                <div className="settlex-ui-inset p-ui-4 type-body-small text-ink-secondary">
+                <div className="settlehex-ui-inset p-ui-4 type-body-small text-ink-secondary">
                   Match details unavailable.
                 </div>
               )}

@@ -10,7 +10,7 @@ const loadRouteWithScenarioFiles = async (
   files,
   { nodeEnv = "development", createScenariosDir = true } = {}
 ) => {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "settlex-scenarios-"));
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "settlehex-scenarios-"));
   const scenariosDir = path.join(tempRoot, "app", "_features", "dev", "scenarios");
   if (createScenariosDir) {
     fs.mkdirSync(scenariosDir, { recursive: true });

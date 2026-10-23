@@ -31,7 +31,7 @@ encoded-file rebuild or redistribution clearance. The other 12 active files
 MP3 dice lead-ins) retain unresolved creation/terms evidence. Eleven have exact
 root-archive duplicates; excluding the source copies does not clear the public
 copies. See [sampled sound provenance](sounds.md) and the
-[sound guide](../agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md).
+[sound guide](../agent/skills/settlehex-design/SOUND_DESIGN_GUIDE.md).
 
 The current settlement, city and road artwork is David Pratt's original Inkscape
 work, confirmed by its author on 21 October 2026. The earlier blanket uncertainty

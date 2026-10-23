@@ -1,6 +1,6 @@
 # OCI MVP Deployment
 
-This document covers the MVP deployment shape for Settlex on one OCI Ubuntu VM.
+This document covers the MVP deployment shape for SettleHex on one OCI Ubuntu VM.
 
 ## Current target
 
@@ -107,4 +107,4 @@ After bootstrap, the normal release path is:
 
 ## Current limitation to remember
 
-The existing Catana browser clients still have some hardcoded `:8000` / `:8080` assumptions. The one-host Caddy setup in this document is the target production shape, but the client env-driven transport cleanup from the accounts/replay plan still needs to land before public cutover.
+The existing SettleHex browser clients still have some hardcoded `:8000` / `:8080` assumptions. The one-host Caddy setup in this document is the target production shape, but the client env-driven transport cleanup from the accounts/replay plan still needs to land before public cutover.

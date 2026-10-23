@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 import { getMaritimeTradeRateIfTradable } from "../trade";
 
 describe("getMaritimeTradeRateIfTradable", () => {

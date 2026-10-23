@@ -63,7 +63,7 @@ export interface BoardMapping {
   nodeBySource: Record<string, string>;
   edgeBySource: Record<string, string>;
 }
-export function mapSettlexBoard(state: unknown): BoardMapping {
+export function mapSettleHexBoard(state: unknown): BoardMapping {
   if (!isSourceState(state)) throw new Error('source board/topology missing or malformed');
   const tiles = state.G.tiles;
   const topology = state.G.coreTopology;

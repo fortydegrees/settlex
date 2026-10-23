@@ -272,7 +272,7 @@ function DesktopFeedFrame({
   return (
     <section
       className={joinClassNames(
-        "settlex-ui-feed-frame group pointer-events-auto relative",
+        "settlehex-ui-feed-frame group pointer-events-auto relative",
         desktopFeedSlotClassName,
         getDesktopFeedSlotSizeClassName(phase),
         getDesktopFeedSlotMotionClassName(phase),
@@ -302,7 +302,7 @@ function DesktopFeedFrame({
         className={joinClassNames(
           META_PANEL_FRAME_CLASS_NAME,
           "transition-[border-color,box-shadow] duration-150 ease-out motion-reduce:transition-none",
-          isRestoreButton ? "settlex-ui-feed-restore" : null
+          isRestoreButton ? "settlehex-ui-feed-restore" : null
         )}
       >
         <div
@@ -321,7 +321,7 @@ function DesktopFeedFrame({
               ? "h-11 gap-ui-2.5 px-ui-3.5"
               : "h-14 gap-ui-3 px-ui-4",
             shouldShowHeaderDetails
-              ? "settlex-ui-feed-header settlex-ui-feed-minimize cursor-pointer"
+              ? "settlehex-ui-feed-header settlehex-ui-feed-minimize cursor-pointer"
               : "border-b border-transparent bg-transparent"
           )}
           role={shouldShowHeaderDetails ? "button" : undefined}
@@ -386,7 +386,7 @@ function DesktopFeedFrame({
       </div>
       {isRestoreButton
         ? <span
-          className="settlex-ui-pane settlex-ui-tooltip pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap px-ui-3 py-ui-1.5 type-caption text-ink-secondary opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+          className="settlehex-ui-pane settlehex-ui-tooltip pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap px-ui-3 py-ui-1.5 type-caption text-ink-secondary opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
           aria-hidden="true"
           data-meta-feed-tooltip={panel.id}
         >

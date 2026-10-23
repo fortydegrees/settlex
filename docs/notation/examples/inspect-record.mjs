@@ -2,9 +2,9 @@
 // Usage: node docs/notation/examples/inspect-record.mjs [record.json] [position]
 // Tutorial only: full-information local files, no app/server/database imports.
 import { readFile } from 'node:fs/promises';
-import { replayHANTrace, projectHANLog } from '@settlex/game-core';
+import { replayHANTrace, projectHANLog } from '@settlehex/game-core';
 
-const input = process.argv[2] ?? new URL('./settlex-complete.han.json', import.meta.url);
+const input = process.argv[2] ?? new URL('./settlehex-complete.han.json', import.meta.url);
 const record = JSON.parse(await readFile(input, 'utf8'));
 const trace = replayHANTrace(record);
 const positions = [trace.initial, ...trace.steps.map(step => step.after)];

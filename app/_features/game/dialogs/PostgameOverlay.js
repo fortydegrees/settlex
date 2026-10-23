@@ -12,10 +12,10 @@ export function PostgameOverlay({
 }) {
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-surface-game-scrim p-ui-4 backdrop-blur-sm">
-      <div className="settlex-ui-pane max-h-full w-full max-w-4xl overflow-y-auto p-ui-5 sm:p-ui-6">
+      <div className="settlehex-ui-pane max-h-full w-full max-w-4xl overflow-y-auto p-ui-5 sm:p-ui-6">
         <div className="flex flex-col gap-ui-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="settlex-ui-label">
+            <div className="settlehex-ui-label">
               Postgame
             </div>
             <div className="mt-ui-2 type-title text-ink-primary">
@@ -48,8 +48,8 @@ export function PostgameOverlay({
                   key={player.id}
                   className={`flex items-center justify-between gap-ui-3 rounded-small p-ui-3 ${
                     index === 0
-                      ? "settlex-ui-winner"
-                      : "settlex-ui-inset"
+                      ? "settlehex-ui-winner"
+                      : "settlehex-ui-inset"
                   }`}
                 >
                   <div className="flex min-w-0 items-center gap-ui-3">

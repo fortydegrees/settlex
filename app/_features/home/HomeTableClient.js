@@ -14,7 +14,7 @@ import { createHomeDemoPieceState } from "./demo/homeDemoSequence";
 import { useLobbyHomeActions } from "../matches/lobby/useLobbyHomeActions";
 import { useMatchAlerts } from "../matches/alerts/useMatchAlerts.js";
 import { consumePlayOnlineIntent } from "../matches/matchmaking/matchmakingRescue.js";
-import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 import {
   HomeTitleChrome,
   useHomeBrandLogoOptions,
@@ -279,7 +279,7 @@ function HomeTableBoard({ initialAccount = null }) {
   return (
     <main
       className="fixed inset-0 overflow-hidden text-ink-primary"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <HomeTableSurface
         pieceState={pieceState}

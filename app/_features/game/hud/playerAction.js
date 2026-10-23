@@ -4,7 +4,7 @@ import {
   canBuildCity,
   canBuildRoad,
   canBuildSettlement
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 
 const BUILD_ACTIONS = new Set(["placeRoad", "placeSettlement", "placeCity"]);
 const BUILD_PICKUP_PIECE_BY_ACTION = {

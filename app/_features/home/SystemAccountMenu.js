@@ -44,7 +44,7 @@ export function SystemAccountMenu({
   const accountMenuItems = getSystemAccountMenuItems(accountStatus);
   const avatar = (
     <span
-      className={`settlex-ui-avatar settlex-ui-avatar-header grid h-10 w-10 shrink-0 place-items-center rounded-pill bg-gradient-to-br ${colorOption.gradient} sm:h-11 sm:w-11`}
+      className={`settlehex-ui-avatar settlehex-ui-avatar-header grid h-10 w-10 shrink-0 place-items-center rounded-pill bg-gradient-to-br ${colorOption.gradient} sm:h-11 sm:w-11`}
     >
       {displayEmoji}
     </span>
@@ -99,7 +99,7 @@ export function SystemAccountMenu({
       align="end"
       sideOffset={8}
       triggerAriaLabel="Open account menu"
-      triggerClassName="settlex-ui-button settlex-ui-button-secondary settlex-ui-button-utility settlex-ui-focus min-h-[2.75rem] max-w-[3rem] gap-ui-2 p-ui-1 text-left select-none sm:w-auto sm:max-w-[13rem] sm:pr-ui-3"
+      triggerClassName="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-button-utility settlehex-ui-focus min-h-[2.75rem] max-w-[3rem] gap-ui-2 p-ui-1 text-left select-none sm:w-auto sm:max-w-[13rem] sm:pr-ui-3"
       triggerContent={
         <>
           {avatar}
@@ -125,7 +125,7 @@ export function SystemAccountMenu({
         </div>
         <div className="mt-ui-1 flex min-w-0 items-center gap-ui-2">
           <span
-            className={`settlex-ui-avatar grid h-8 w-8 shrink-0 place-items-center rounded-pill bg-gradient-to-br ${colorOption.gradient}`}
+            className={`settlehex-ui-avatar grid h-8 w-8 shrink-0 place-items-center rounded-pill bg-gradient-to-br ${colorOption.gradient}`}
           >
             {displayEmoji}
           </span>
@@ -142,7 +142,7 @@ export function SystemAccountMenu({
               key={item.action}
               type="button"
               role="menuitem"
-              className="settlex-ui-focus flex min-h-[2.75rem] items-center gap-ui-3 rounded-small px-ui-2 text-left hover:bg-surface-inset"
+              className="settlehex-ui-focus flex min-h-[2.75rem] items-center gap-ui-3 rounded-small px-ui-2 text-left hover:bg-surface-inset"
               onClick={() => handleMenuItem(item.action)}
             >
               <span className="grid h-6 w-6 shrink-0 place-items-center text-ink-secondary">

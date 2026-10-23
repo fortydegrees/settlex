@@ -2,7 +2,7 @@
 
 Status: agreed design direction, 20 October 2026. **CGN** is the provisional name for our whole-game interchange format. The current implementation remains `han-prototype`, version 1; this document does not rename existing files, APIs or Hexil's notation, nor declare a public standard or settle naming/licensing clearance.
 
-For the current developer entry point, see [Implement a recorder or viewer](IMPLEMENTERS.md). It includes a runnable reference consumer and recipes for replay controls, logs and board rendering; it does not require adopting Settlex's application architecture.
+For the current developer entry point, see [Implement a recorder or viewer](IMPLEMENTERS.md). It includes a runnable reference consumer and recipes for replay controls, logs and board rendering; it does not require adopting SettleHex's application architecture.
 
 ## A small, complete game record
 
@@ -30,13 +30,13 @@ Extensions may live in the same file. Before freezing their syntax, define versi
 
 The current `annotations?: unknown` field is an experimental placeholder, **not** an implemented extension standard. This task does not invent or ship chat, negotiation or clock schemas. Removing optional additions must leave the same core states and result.
 
-## Reuse inside Settlex
+## Reuse inside SettleHex
 
 The [saved-record proof](LOG-PROOF.md) regenerates and compares the gameplay log with the native log. Derived presentation entries include resource gains and award announcements without adding those redundant facts to storage. Independent shortage notices from one roll are semantically unordered; their displayed order belongs to the renderer. Action order, quantities and which roll caused each notice remain significant. No extra resource priority belongs in the notation.
 
 The [post-game replay consumer](REPLAY-CONSUMER.md) now opens the compact record directly, reconstructs board positions and cursor-limited logs, and reuses the existing perspective controls and log-click seeking. The finished-archive consumers now also prefer supported complete stored records, with legacy controller-history reconstruction as fallback. This integration is implemented locally and not yet deployed.
 
-The portable record should become Settlex’s canonical saved history. The current fallback is a migration mechanism for historical games and unsupported records, not a second permanent notation. Broader conformance, unsupported-ending coverage and structured record emission from the authoritative engine should precede retiring duplicate controller history for new games. The efficient live current-state representation remains separate. Live consumers could share semantic event types and rendering code, but should not repeatedly serialize and parse the entire archive. A live opponent feed still requires server-side information filtering; sending the omniscient file and hiding text in the browser is not filtering.
+The portable record should become SettleHex’s canonical saved history. The current fallback is a migration mechanism for historical games and unsupported records, not a second permanent notation. Broader conformance, unsupported-ending coverage and structured record emission from the authoritative engine should precede retiring duplicate controller history for new games. The efficient live current-state representation remains separate. Live consumers could share semantic event types and rendering code, but should not repeatedly serialize and parse the entire archive. A live opponent feed still requires server-side information filtering; sending the omniscient file and hiding text in the browser is not filtering.
 
 ## What PGN teaches us
 
@@ -46,4 +46,4 @@ Per-move clock commands such as `%clk` are described in the later [Enhanced PGN 
 
 ## Compatibility and credit
 
-[Hexil Action Notation](https://github.com/hexil-org/hexer/blob/main/docs/hexil_action_notation.md) supplies the action-language foundation and retains its name and attribution. CGN describes the proposed whole-game agreement around it: envelope, rules, replay semantics, completeness and extensions. Current wire details are in [FORMAT.md](FORMAT.md). A public release still needs an explicit versioning decision, licensing/provenance review, independent implementations and conformance fixtures. Adoption by Settlex is the first implementation, not evidence that a community standard already exists.
+[Hexil Action Notation](https://github.com/hexil-org/hexer/blob/main/docs/hexil_action_notation.md) supplies the action-language foundation and retains its name and attribution. CGN describes the proposed whole-game agreement around it: envelope, rules, replay semantics, completeness and extensions. Current wire details are in [FORMAT.md](FORMAT.md). A public release still needs an explicit versioning decision, licensing/provenance review, independent implementations and conformance fixtures. Adoption by SettleHex is the first implementation, not evidence that a community standard already exists.

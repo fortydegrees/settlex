@@ -1,4 +1,4 @@
-import { TileTypes } from "@settlex/game-core";
+import { TileTypes } from "@settlehex/game-core";
 
 const HEX_SIZE = 46;
 

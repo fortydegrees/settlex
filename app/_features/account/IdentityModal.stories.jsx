@@ -45,5 +45,5 @@ export const EmojiBrowser = {
 
 export const Mobile = {
   ...ExistingIdentity,
-  parameters: { viewport: { defaultViewport: "catanaMobile" } },
+  parameters: { viewport: { defaultViewport: "settlehexMobile" } },
 };

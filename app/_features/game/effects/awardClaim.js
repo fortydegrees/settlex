@@ -158,7 +158,7 @@ function getAwardHudPosition(playerId, targetSuffix) {
 }
 
 function getRenderedRobberPosition() {
-  const robberEl = document.querySelector("[data-catana-robber-tile-id]");
+  const robberEl = document.querySelector("[data-settlehex-robber-tile-id]");
   const rect = robberEl?.getBoundingClientRect?.() ?? null;
   return rect ? getCenterPosition(rect) : null;
 }

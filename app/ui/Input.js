@@ -9,7 +9,7 @@ export const Input = React.forwardRef(function Input(
     <input
       ref={ref}
       className={cn(
-        "settlex-ui-field",
+        "settlehex-ui-field",
         className
       )}
       {...props}

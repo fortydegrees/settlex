@@ -30,11 +30,11 @@ export function AlertDialog({
   return (
     <BaseAlertDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseAlertDialog.Portal>
-        <BaseAlertDialog.Backdrop className="settlex-ui-dialog-backdrop settlex-ui-layer-dialog fixed inset-0 backdrop-blur-sm" />
-        <BaseAlertDialog.Viewport className="settlex-ui-dialog-viewport settlex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
+        <BaseAlertDialog.Backdrop className="settlehex-ui-dialog-backdrop settlehex-ui-layer-dialog fixed inset-0 backdrop-blur-sm" />
+        <BaseAlertDialog.Viewport className="settlehex-ui-dialog-viewport settlehex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
           <BaseAlertDialog.Popup
             className={cn(
-              "settlex-ui-pane settlex-ui-dialog-popup settlex-ui-dialog-surface w-full max-w-md",
+              "settlehex-ui-pane settlehex-ui-dialog-popup settlehex-ui-dialog-surface w-full max-w-md",
               className
             )}
           >

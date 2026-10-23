@@ -2,8 +2,8 @@
 // Promoted from the locally automated HAN trial; no imported match or account data.
 import { InitializeGame, CreateGameReducer } from 'boardgame.io/dist/cjs/internal.js';
 import { createCatanGame } from '../../../lib/game-runtime/Game.js';
-import { buildableEdges, buildableNodes, canPlaceRobber } from '@settlex/game-core';
-import type { SettlexNotationSourceArchive as SourceArchive } from '@settlex/game-core';
+import { buildableEdges, buildableNodes, canPlaceRobber } from '@settlehex/game-core';
+import type { SettleHexNotationSourceArchive as SourceArchive } from '@settlehex/game-core';
 
 type R=Record<string,any>;
 const target='0';
@@ -61,7 +61,7 @@ function tradingMove(state:R):{give:string[];receive:string[]}|null{
   return give?{give:Array(give.ratio).fill(give.r),receive:[missing[0]]}:null;
 }
 export interface LocalRun {archive:SourceArchive;moves:number;turns:number;seed:string;}
-export function runLocalSettlexGame({seed='notation-roundtrip-2026-10-19',maxMoves=6000}: {seed?:string;maxMoves?:number}={}):LocalRun{
+export function runLocalSettleHexGame({seed='notation-roundtrip-2026-10-19',maxMoves=6000}: {seed?:string;maxMoves?:number}={}):LocalRun{
   const game={...createCatanGame({includeDebugMoves:false,includeEffects:false,includeServerMoves:true}),seed};
   const reducer=CreateGameReducer({game,isClient:false});
   const initialState=InitializeGame({game,numPlayers:3});

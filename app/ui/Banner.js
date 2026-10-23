@@ -4,19 +4,19 @@ import { cn } from "./cn";
 const VARIANT_STYLES = {
   neutral: {
     container:
-      "settlex-ui-banner-neutral",
+      "settlehex-ui-banner-neutral",
     indicator:
-      "settlex-ui-banner-marker",
-    title: "settlex-ui-banner-title",
-    body: "settlex-ui-banner-body",
+      "settlehex-ui-banner-marker",
+    title: "settlehex-ui-banner-title",
+    body: "settlehex-ui-banner-body",
   },
   danger: {
     container:
-      "settlex-ui-banner-danger",
+      "settlehex-ui-banner-danger",
     indicator:
-      "settlex-ui-banner-marker",
-    title: "settlex-ui-banner-title",
-    body: "settlex-ui-banner-body",
+      "settlehex-ui-banner-marker",
+    title: "settlehex-ui-banner-title",
+    body: "settlehex-ui-banner-body",
   },
 };
 

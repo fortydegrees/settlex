@@ -36,13 +36,13 @@ export function SandboxPanel({
 }) {
   return (
     <div className="pointer-events-auto w-full" data-allow-interaction="true">
-      <div className="settlex-ui-pane overflow-hidden">
+      <div className="settlehex-ui-pane overflow-hidden">
         <div className="type-caption flex items-center justify-between gap-ui-3 border-b border-edge-subtle bg-surface-hover px-ui-4 py-ui-3 uppercase text-ink-secondary">
           <span>Dev Sandbox</span>
           <button
             type="button"
             onClick={onToggleCollapsed}
-            className="settlex-ui-button settlex-ui-button-utility settlex-ui-focus type-action-small px-ui-3 py-ui-1"
+            className="settlehex-ui-button settlehex-ui-button-utility settlehex-ui-focus type-action-small px-ui-3 py-ui-1"
           >
             {isCollapsed ? "Expand" : "Collapse"}
           </button>
@@ -57,7 +57,7 @@ export function SandboxPanel({
               <select
                 value={presetId}
                 onChange={(event) => onPresetChange(event.target.value)}
-                className="settlex-ui-field"
+                className="settlehex-ui-field"
               >
                 {presets.map((preset) => (
                   <option key={preset.id} value={preset.id}>
@@ -74,7 +74,7 @@ export function SandboxPanel({
               <select
                 value={viewerSeat}
                 onChange={(event) => onViewerSeatChange(event.target.value)}
-                className="settlex-ui-field"
+                className="settlehex-ui-field"
               >
                 {playerIds.map((playerId, index) => (
                   <option key={playerId} value={playerId}>
@@ -87,7 +87,7 @@ export function SandboxPanel({
             <button
               type="button"
               onClick={onReset}
-              className="settlex-ui-button settlex-ui-button-primary settlex-ui-focus type-action-small px-ui-4 py-ui-2"
+              className="settlehex-ui-button settlehex-ui-button-primary settlehex-ui-focus type-action-small px-ui-4 py-ui-2"
             >
               Reset
             </button>
@@ -102,7 +102,7 @@ export function SandboxPanel({
                     key={resource}
                     type="button"
                     onClick={() => onGiveResource(resource)}
-                    className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus type-action-small px-ui-2 py-ui-2"
+                    className="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-focus type-action-small px-ui-2 py-ui-2"
                   >
                     {resource.slice(0, 2)}
                   </button>
@@ -120,7 +120,7 @@ export function SandboxPanel({
                     key={card.id}
                     type="button"
                     onClick={() => onGiveDevCard(card.id)}
-                    className="settlex-ui-button settlex-ui-button-accent settlex-ui-focus type-action-small px-ui-2 py-ui-2"
+                    className="settlehex-ui-button settlehex-ui-button-accent settlehex-ui-focus type-action-small px-ui-2 py-ui-2"
                   >
                     {card.label}
                   </button>
@@ -138,7 +138,7 @@ export function SandboxPanel({
                     key={`${card.id}-start`}
                     type="button"
                     onClick={() => onOpponentDevCardPlayStart(card.id)}
-                    className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
+                    className="settlehex-ui-button settlehex-ui-button-subtle settlehex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
                   >
                     {`Opponent Plays ${card.label}`}
                   </button>
@@ -148,7 +148,7 @@ export function SandboxPanel({
                     key={`${card.id}-resolve`}
                     type="button"
                     onClick={() => onOpponentDevCardPlayResolve(card.id)}
-                    className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
+                    className="settlehex-ui-button settlehex-ui-button-subtle settlehex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
                   >
                     {`Resolve ${card.label}`}
                   </button>
@@ -156,7 +156,7 @@ export function SandboxPanel({
                 <button
                   type="button"
                   onClick={onDevCardPlayReset}
-                  className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus type-action-small col-span-2 px-ui-3 py-ui-2 text-left"
+                  className="settlehex-ui-button settlehex-ui-button-subtle settlehex-ui-focus type-action-small col-span-2 px-ui-3 py-ui-2 text-left"
                 >
                   Reset Dev Visual
                 </button>
@@ -170,35 +170,35 @@ export function SandboxPanel({
               <button
                 type="button"
                 onClick={onRemoteRobberMoveReplay}
-                className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
+                className="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
               >
                 Replay Remote Robber Move
               </button>
               <button
                 type="button"
                 onClick={onLongestRoadAwardReplay}
-                className="settlex-ui-button settlex-ui-button-accent settlex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
+                className="settlehex-ui-button settlehex-ui-button-accent settlehex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
               >
                 Replay Longest Road Award
               </button>
               <button
                 type="button"
                 onClick={onLongestRoadTakeoverReplay}
-                className="settlex-ui-button settlex-ui-button-accent settlex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
+                className="settlehex-ui-button settlehex-ui-button-accent settlehex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
               >
                 Replay Road Takeover
               </button>
               <button
                 type="button"
                 onClick={onLargestArmyAwardReplay}
-                className="settlex-ui-button settlex-ui-button-danger settlex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
+                className="settlehex-ui-button settlehex-ui-button-danger settlehex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
               >
                 Replay Largest Army Award
               </button>
               <button
                 type="button"
                 onClick={onLargestArmyTakeoverReplay}
-                className="settlex-ui-button settlex-ui-button-danger settlex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
+                className="settlehex-ui-button settlehex-ui-button-danger settlehex-ui-focus type-action-small px-ui-3 py-ui-2 text-left"
               >
                 Replay Army Takeover
               </button>

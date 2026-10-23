@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 const readFile = (relativePath) =>
   fs.readFileSync(path.resolve(process.cwd(), relativePath), "utf8");
 
-describe("Catana UI images", () => {
+describe("SettleHex UI images", () => {
   it("marks NextImage as non-draggable by default", () => {
     const contents = readFile("app/ui/NextImage.js");
     expect(contents).toMatch(/draggable\s*=\s*false/);

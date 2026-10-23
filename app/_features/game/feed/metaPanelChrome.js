@@ -1,5 +1,5 @@
 export const META_PANEL_FRAME_CLASS_NAME =
-  "settlex-ui-hud relative flex h-full flex-col overflow-hidden select-none";
+  "settlehex-ui-hud relative flex h-full flex-col overflow-hidden select-none";
 
 export const META_PANEL_GLASS_STYLE = {
   // The frame owns the material and its transparency fallback. Keep this

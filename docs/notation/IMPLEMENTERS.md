@@ -2,13 +2,13 @@
 
 CGN's goal is a portable game history that different engines and viewers can
 exchange. You should be able to write a recorder in one language and a reader
-in another, without adopting Settlex's UI, database or live engine.
+in another, without adopting SettleHex's UI, database or live engine.
 
 **This guide targets the current experimental contract:** `han-prototype`,
 version 1. CGN is the proposed name, not a new wire identifier. Start with the
 [format contract](FORMAT.md) for exact rules and token meanings. Hexil supplies
 the action-language foundation; the whole-game envelope and rules profiles
-documented here are Settlex's experimental agreement around it.
+documented here are SettleHex's experimental agreement around it.
 
 ## Choose what you are building
 
@@ -22,7 +22,7 @@ documented here are Settlex's experimental agreement around it.
 
 The file contract is portable. `replayHANTrace`, `projectHANLog` and their
 JavaScript return types are reference-library conveniences, not mandatory CGN
-APIs. `@settlex/game-core` is currently a **private workspace package**, not a
+APIs. `@settlehex/game-core` is currently a **private workspace package**, not a
 published standalone SDK. The examples run from this repository with its
 dependencies already installed. No server or database is needed.
 
@@ -33,14 +33,14 @@ From the repository root:
 ```sh
 pnpm -C game-core build
 node docs/notation/examples/inspect-record.mjs
-node docs/notation/examples/inspect-record.mjs docs/notation/examples/settlex-complete.han.json 1
+node docs/notation/examples/inspect-record.mjs docs/notation/examples/settlehex-complete.han.json 1
 ```
 
 The [runnable example](examples/inspect-record.mjs) prints one selected position,
 its board model, and its latest log rows. With no position argument it selects
 the end: winner `1`, points `10–2–2`. Position `0` is the empty initial board;
 position `1` is after the first setup settlement. It never writes to the input.
-The [complete fixture](examples/settlex-complete.han.json) is an actual valid
+The [complete fixture](examples/settlehex-complete.han.json) is an actual valid
 record, with the entire starting board and game, rather than an abbreviated
 JSON sketch.
 
@@ -87,7 +87,7 @@ Resource codes are `B` brick, `G` grain, `L` lumber, `O` ore and `W` wool.
 Development cards are `k` Knight, `m` Monopoly, `r` Road Building, `v` Victory
 Point and `y` Year of Plenty. Your UI may use different display names.
 
-The existing `exportSettlexNotationArchive` API adapts Settlex controller
+The existing `exportSettleHexNotationArchive` API adapts SettleHex controller
 history; it is not a generic exporter for another engine. Another source needs
 its own mapper. Preserve source evidence separately so you can diagnose a
 mapping error without making the portable file depend on it.
@@ -111,7 +111,7 @@ instead of this library's array of checkpoints; its derived game must agree.
 ## Build replay controls
 
 ```js
-import { replayHANTrace, projectHANLog } from '@settlex/game-core';
+import { replayHANTrace, projectHANLog } from '@settlehex/game-core';
 
 // `record` is the parsed JSON file.
 const trace = replayHANTrace(record); // validates gameplay, not just grammar
@@ -222,7 +222,7 @@ for vertexId, resource in board.ports:
 This is a rendering recipe, not a second implemented renderer. For a working
 integrated example, use the [existing local viewer](REPLAY-CONSUMER.md).
 [`lib/replays/notationReplay.js`](../../lib/replays/notationReplay.js) contains
-its stricter geometry/port checks and maps notation state into Settlex's board
+its stricter geometry/port checks and maps notation state into SettleHex's board
 UI. An independent renderer does not need that app-specific state shape.
 
 ## Information and import boundaries

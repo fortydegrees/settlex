@@ -1,6 +1,6 @@
-# Catana Effects Lab
+# SettleHex Effects Lab
 
-`/catana/dev/effects` is the isolated replay surface for deterministic animation and audio tuning.
+`/catana/catana/dev/effects` is the isolated replay surface for deterministic animation and audio tuning.
 
 Use it when the work is about an effect runner, timeline timing, cue placement, sound mapping, or reduced-motion behavior that can be checked without the full game screen.
 
@@ -21,7 +21,7 @@ Use it when the work is about an effect runner, timeline timing, cue placement, 
 ## Verification Defaults
 
 - Use the lab first for isolated runner timing.
-- Use `/catana/dev/sandbox` afterward when the effect depends on live board/HUD anchors or viewer perspective.
+- Use `/catana/catana/dev/sandbox` afterward when the effect depends on live board/HUD anchors or viewer perspective.
 - Run focused lint/tests when changing shared effect helpers, event payloads, registry wiring, or sound mapping.
 
 ## Guardrails

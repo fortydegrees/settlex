@@ -1,7 +1,7 @@
 import React from "react";
 import "../app/globals.css";
 import "../app/_features/theme/hudGlass.css";
-import { CATANA_TABLE_BACKGROUND } from "../app/_features/theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../app/_features/theme/backgrounds";
 import { Outfit } from "next/font/google";
 
 const outfit = Outfit({ subsets: ["latin"] });
@@ -16,8 +16,8 @@ const preview = {
         {
           className: `${outfit.className} min-h-screen text-ink-primary`,
           style: {
-            background: CATANA_TABLE_BACKGROUND,
-            padding: isFullscreen ? 0 : "var(--settlex-ui-space-8)",
+            background: SETTLEHEX_TABLE_BACKGROUND,
+            padding: isFullscreen ? 0 : "var(--settlehex-ui-space-8)",
           },
         },
         // Base UI portals mount beside the story wrapper, so inherit the
@@ -40,12 +40,12 @@ const preview = {
     },
     viewport: {
       viewports: {
-        catanaDesktop: {
-          name: "Catana desktop (1440 × 900)",
+        settlehexDesktop: {
+          name: "SettleHex desktop (1440 × 900)",
           styles: { width: "1440px", height: "900px" },
         },
-        catanaMobile: {
-          name: "Catana mobile (390 × 844)",
+        settlehexMobile: {
+          name: "SettleHex mobile (390 × 844)",
           styles: { width: "390px", height: "844px" },
         },
       },

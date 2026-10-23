@@ -12,13 +12,13 @@ requiring a live match or provider graph.
 ## Scope
 
 Use Storybook for `app/ui` primitives, account/identity UI, homepage/lobby
-chrome, alerts/recovery, postgame, and replay controls. Use the Catana sandbox,
+chrome, alerts/recovery, postgame, and replay controls. Use the SettleHex sandbox,
 effects lab, or real route for board, gameplay HUD, game-event effects, audio,
 haptics, and provider/network behavior.
 
 ## Adding Standard UI
 
-1. Read `docs/agent/UI_CONTEXT.md` and the Catana design skill.
+1. Read `docs/agent/UI_CONTEXT.md` and the SettleHex design skill.
 2. Find the owning component or pattern in `docs/agent/UI_CATALOG.md`.
 3. Inspect its primitive and composed stories.
 4. Reuse or extend the shared production component.

@@ -21,7 +21,7 @@ See [architecture](docs/architecture/overview.md) and
 - Follow [the testing guide](docs/agent/TESTING.md). Test behavior and contracts,
   not source-text implementation details. Use focused manual checks for visual
   or sound tuning, and regression tests for shared logic or state-flow changes.
-- For UI work, start with [UI context](docs/agent/UI_CONTEXT.md) and the existing
+- For UI work, start with [UI context](docs/agent/UI_CONTEXT.md), [design system](docs/agent/DESIGN_SYSTEM.md) and the existing
   [component catalog](docs/agent/UI_CATALOG.md). Reuse existing components and
   verify their meaningful states in Storybook or the game dev surfaces.
 - Record significant architectural decisions in

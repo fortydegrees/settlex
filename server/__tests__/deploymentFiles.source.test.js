@@ -31,7 +31,7 @@ const validDeploymentEnv = {
 
 const runProductionDeployPreflight = (env) => {
   const tempRoot = fs.mkdtempSync(
-    path.join(os.tmpdir(), "settlex-deploy-preflight-")
+    path.join(os.tmpdir(), "settlehex-deploy-preflight-")
   );
   const scriptDir = path.join(tempRoot, "infra", "scripts");
   fs.mkdirSync(scriptDir, { recursive: true });
@@ -59,7 +59,7 @@ const runProductionDeployPreflight = (env) => {
 
 const runProductionDeployWithRecordedCommands = ({ preflightExit = 0 } = {}) => {
   const tempRoot = fs.mkdtempSync(
-    path.join(os.tmpdir(), "settlex-deploy-commands-")
+    path.join(os.tmpdir(), "settlehex-deploy-commands-")
   );
   const scriptDir = path.join(tempRoot, "infra", "scripts");
   const binDir = path.join(tempRoot, "bin");
@@ -254,7 +254,7 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("read_only: true");
     expect(compose).toContain("create_host_path: false");
     expect(compose).not.toContain("SETTLEX_SETTLEGRAPH_V2_MODEL:");
-    expect(compose.match(/SETTLEX_BOT_MODEL_MANIFEST: \/opt\/settlex\/models\/current.json/g)).toHaveLength(2);
+    expect(compose.match(/SETTLEX_BOT_MODEL_MANIFEST: \/opt\/settlehex\/models\/current.json/g)).toHaveLength(2);
     expect(compose.match(/read_only: true/g)).toHaveLength(2);
     expect(startup.indexOf("check-production-bot.mjs")).toBeLessThan(
       startup.indexOf("server/server.js")

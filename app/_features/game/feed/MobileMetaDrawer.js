@@ -4,11 +4,11 @@ import { Drawer } from "vaul";
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
 const drawerContentClassName =
-  "settlex-ui-pane settlex-ui-feed-drawer fixed inset-x-0 bottom-0 z-[65] mx-auto flex h-[min(52vh,26rem)] min-h-[15rem] w-full max-w-[28rem] flex-col overflow-hidden outline-none select-text";
+  "settlehex-ui-pane settlehex-ui-feed-drawer fixed inset-x-0 bottom-0 z-[65] mx-auto flex h-[min(52vh,26rem)] min-h-[15rem] w-full max-w-[28rem] flex-col overflow-hidden outline-none select-text";
 const drawerTabClassName =
-  "settlex-ui-feed-tab settlex-ui-focus min-h-[2.75rem] rounded-pill px-ui-3 py-ui-2 type-action-small transition-colors duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none";
+  "settlehex-ui-feed-tab settlehex-ui-focus min-h-[2.75rem] rounded-pill px-ui-3 py-ui-2 type-action-small transition-colors duration-[var(--settlehex-ui-duration-fast)] motion-reduce:transition-none";
 const drawerTabActiveClassName =
-  "settlex-ui-feed-tab-selected";
+  "settlehex-ui-feed-tab-selected";
 const drawerTabIdleClassName =
   "text-ink-secondary hover:bg-surface-hover";
 
@@ -53,9 +53,9 @@ export function MobileMetaDrawer({
           data-meta-mobile-drawer="true"
           data-allow-interaction="true"
         >
-          <div className="settlex-ui-feed-header px-ui-3 pb-ui-2.5 pt-ui-2.5">
+          <div className="settlehex-ui-feed-header px-ui-3 pb-ui-2.5 pt-ui-2.5">
             <div className="relative flex items-center justify-center">
-              <Drawer.Handle className="settlex-ui-feed-handle !my-ui-0 !h-1.5 !w-14" />
+              <Drawer.Handle className="settlehex-ui-feed-handle !my-ui-0 !h-1.5 !w-14" />
             </div>
 
             <Drawer.Title className="sr-only">Game feed</Drawer.Title>

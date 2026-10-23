@@ -66,7 +66,7 @@ function MetaDisclosureHarness() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div className="settlex-ui-hud p-ui-5">
+    <div className="settlehex-ui-hud p-ui-5">
       <MetaDisclosure
         open={open}
         onOpenChange={setOpen}

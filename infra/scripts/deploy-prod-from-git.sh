@@ -28,7 +28,7 @@ ensure_git_checkout() {
     git init
   fi
 
-  if ! git remote get-url "$REMOTE" >/dev/null 2>&1; then
+  if ! git remote get-url "$REMOTE" >/catana/catana/dev/null 2>&1; then
     git remote add "$REMOTE" "$REPO_URL"
   fi
 }
@@ -72,7 +72,7 @@ done
 ensure_git_checkout
 
 has_head=false
-if git rev-parse --verify HEAD >/dev/null 2>&1; then
+if git rev-parse --verify HEAD >/catana/catana/dev/null 2>&1; then
   has_head=true
 else
   # A pre-existing source tree may have stale untracked files. Preserve only
@@ -133,5 +133,5 @@ export SETTLEX_BUILD_DATE="${SETTLEX_BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ"
 infra/scripts/deploy-prod.sh
 
 docker compose --env-file .env.prod -f "$COMPOSE_FILE" ps
-curl --fail --silent --show-error --location "$HEALTH_URL" >/dev/null
+curl --fail --silent --show-error --location "$HEALTH_URL" >/catana/catana/dev/null
 echo "Live health check passed: ${HEALTH_URL}"

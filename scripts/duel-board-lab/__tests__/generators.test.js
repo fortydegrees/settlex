@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ResourceType, TileTypes } from "@settlex/game-core";
+import { ResourceType, TileTypes } from "@settlehex/game-core";
 import {
   BOARD_FAMILIES,
   generateCandidate

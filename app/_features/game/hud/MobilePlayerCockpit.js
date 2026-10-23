@@ -4,7 +4,7 @@ import {
   getPublicVictoryPoints,
   getLongestRoadLength,
   getVictoryPoints,
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { DockCard } from "./ActionsDock/DockCard";
 import { AnimatedCount } from "../cards/AnimatedCount";
 import { MobileDevCardButton } from "./MobileDevCardButton";
@@ -81,8 +81,8 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
   >
     <button
       type="button"
-      className={`catana-mobile-feed-control flex items-center justify-center border-r transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
-        activePanel === "log" ? "catana-mobile-feed-control--active" : ""
+      className={`settlehex-mobile-feed-control flex items-center justify-center border-r transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
+        activePanel === "log" ? "settlehex-mobile-feed-control--active" : ""
       }`}
       onClick={() => onOpen?.("log")}
       aria-label="Open game log"
@@ -92,8 +92,8 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
     </button>
     <button
       type="button"
-      className={`catana-mobile-feed-control flex items-center justify-center transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
-        activePanel === "chat" ? "catana-mobile-feed-control--active" : ""
+      className={`settlehex-mobile-feed-control flex items-center justify-center transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
+        activePanel === "chat" ? "settlehex-mobile-feed-control--active" : ""
       }`}
       onClick={() => onOpen?.("chat")}
       aria-label="Open chat"

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const readCatanaSource = (fileName) =>
+const readSettleHexSource = (fileName) =>
   fs.readFileSync(path.resolve(process.cwd(), "app/_features/game", fileName), "utf8");
 const devCardSource = fs.readFileSync(
   path.resolve(process.cwd(), "app/_features/game/cards/DevCardDisplay.js"),
@@ -31,11 +31,11 @@ const expectPlacementPointerBatching = (source) => {
 
 describe("pointer frame batching", () => {
   it("batches build placement target synchronization", () => {
-    expectPlacementPointerBatching(readCatanaSource("board/BuildPlacementPreview.js"));
+    expectPlacementPointerBatching(readSettleHexSource("board/BuildPlacementPreview.js"));
   });
 
   it("batches robber placement target synchronization", () => {
-    expectPlacementPointerBatching(readCatanaSource("board/RobberPlacementPreview.js"));
+    expectPlacementPointerBatching(readSettleHexSource("board/RobberPlacementPreview.js"));
   });
 
   it("batches and cleans up development-card pointer updates", () => {

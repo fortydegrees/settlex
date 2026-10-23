@@ -1,4 +1,4 @@
-import { getNumDots, ResourceType, TileTypes } from "@settlex/game-core";
+import { getNumDots, ResourceType, TileTypes } from "@settlehex/game-core";
 import { STANDARD_RESOURCES } from "../constants.mjs";
 
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));

@@ -5,6 +5,59 @@ foundations; board/card artwork, identity colours and coordinate geometry retain
 explicit owned contracts in `UI_STYLE_EXCEPTIONS.md`. A passing policy check means
 **no new tracked styling drift**, not exhaustive visual/accessibility conformance.
 
+## Product intent and authority
+
+SettleHex is a playable strategy game with a bright blue atmosphere, light glass,
+confident colour and purposeful, responsive feedback. The board/table leads;
+account, lobby and replay controls support play. Preserve the modern, smooth
+Clarity direction, player-colour identity and distinctive game artwork. Do not
+substitute a neutral SaaS skin, dark theme, or wood/paper material.
+
+This document owns the current foundation contract. `UI_CONTEXT.md`
+routes work; `UI_CATALOG.md` and production stories identify owners and
+states. The old `settlehex-design/SKILL.md` is a compatibility pointer, not a parallel
+source of styling recipes. Historical specs and verification reports describe
+what was done then. Newer explicit user decisions supersede them.
+
+The game screen is a reference for game feel, not an instruction to preserve
+unfinished controls. Sharing tokens or appearing in Storybook does not establish
+that trade/discard, game-over or any other flow has had its composition designed.
+
+Light controls are the starting family for neutral utilities such as replay
+reveal. Choose ink for the actual surface: light homepage copy over blue and
+readable darker ink inside light panels are separate roles. Never infer a global
+all-white or all-dark text rule. Emphasis, shadow and motion follow the control's
+job; similar jobs should share an owner rather than copy classes.
+
+## Interaction responsibilities
+
+Every new or changed control needs an intentional response, including a deliberate
+choice to stay still. Evaluate applicable hover, press, focus, selected, disabled,
+pending and result states, and the transitions between them. Do not add motion
+simply to satisfy a checklist or replay game-event effects on ordinary controls.
+
+- Shared controls and CSS recipes own reusable feedback; callers own task state
+  and composition. Fix a missing shared interaction at its owner after checking
+  its consumers, rather than patching each page independently.
+- Existing motion tokens are starting values, not evidence that a transition
+  feels right. Judge timing, easing, travel, origin, continuity and interruption
+  together. Input must remain responsive during repeat/reversed interactions.
+- Inspect control families (buttons, selectors, fields, disclosures, overlays,
+  feedback) and user journeys (enter/play, account, recover, select resources,
+  finish/replay). Mark states observed, source-only, or unreviewed.
+- Production Storybook provides reproducible control/composed states. Use the
+  integrated sandbox or route for board occlusion, game state and real transitions.
+  Check pointer and keyboard, desktop and phone layouts, and reduced motion.
+  A screenshot cannot establish motion quality; a static policy pass cannot either.
+- External examples such as TypeUI can inform a specific interaction. Record what
+  was borrowed and why. Their palette, timings, scoring and blanket animation
+  rules do not override SettleHex's design or reduced-motion choices.
+
+Approved interaction examples should live in real shared components and named
+stories. When a user corrects a repeated default, update the owning recipe and
+nearest maintained guidance in the same task. A skill-review recommendation is
+not applied until the actual skill/routing files change and are verified.
+
 ## Ownership
 
 - `app/ui/theme.cjs`: canonical spacing, corner, semantic colour, motion, layer,
@@ -34,7 +87,7 @@ override individual font properties on a consumer.
 Use semantic HTML independently: `<h2 className="type-title">` is normal.
 Choose tone separately: `text-ink-primary`, `text-ink-secondary`,
 `text-ink-muted` or `text-ink-danger`.
-The exposed homepage title chrome uses `--settlex-ui-text-home-chrome` and its
+The exposed homepage title chrome uses `--settlehex-ui-text-home-chrome` and its
 muted companion for small sky-layer copy; product controls and light panels
 keep their normal ink roles.
 

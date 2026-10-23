@@ -132,7 +132,7 @@ function createRobberEl({ size, x, y, themeId }) {
 
 function getRobberStaticEl(tileId) {
   if (tileId == null || typeof document === "undefined") return null;
-  return document.querySelector(`[data-catana-robber-tile-id="${tileId}"]`);
+  return document.querySelector(`[data-settlehex-robber-tile-id="${tileId}"]`);
 }
 
 function temporarilyHideStaticRobbers(payload) {

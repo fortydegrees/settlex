@@ -154,7 +154,7 @@ export function ReplayScoreChart({
   return (
     <section aria-label="Victory points over the replay">
       <div
-        className="settlex-ui-focus relative h-40 w-full cursor-pointer"
+        className="settlehex-ui-focus relative h-40 w-full cursor-pointer"
         data-replay-score-chart="true"
         role="slider"
         tabIndex={0}
@@ -176,7 +176,7 @@ export function ReplayScoreChart({
             accessibilityLayer
           >
             <CartesianGrid
-              stroke="var(--settlex-ui-chart-grid)"
+              stroke="var(--settlehex-ui-chart-grid)"
               vertical={false}
             />
             <XAxis
@@ -188,7 +188,7 @@ export function ReplayScoreChart({
               tickFormatter={(eventIndex) =>
                 `T${turnByEventIndex[eventIndex] ?? ""}`
               }
-              tick={{ className: "settlex-ui-chart-tick" }}
+              tick={{ className: "settlehex-ui-chart-tick" }}
               axisLine={false}
               tickLine={false}
             />
@@ -197,14 +197,14 @@ export function ReplayScoreChart({
               allowDataOverflow
               domain={[0, maxScore]}
               ticks={yTicks}
-              tick={{ className: "settlex-ui-chart-tick" }}
+              tick={{ className: "settlehex-ui-chart-tick" }}
               axisLine={false}
               tickLine={false}
               width={30}
             />
             <ReferenceLine
               x={currentEventIndex}
-              stroke="var(--settlex-ui-chart-cursor)"
+              stroke="var(--settlehex-ui-chart-cursor)"
               strokeWidth={2}
             />
             {players.map((player, playerIndex) => (
@@ -225,7 +225,7 @@ export function ReplayScoreChart({
         </ResponsiveContainer>
         <div
           data-replay-chart-clip="true"
-          className="settlex-ui-replay-future pointer-events-none absolute inset-y-0"
+          className="settlehex-ui-replay-future pointer-events-none absolute inset-y-0"
           style={{
             ...getReplayChartClipStyle({ currentEventIndex, eventCount }),
           }}

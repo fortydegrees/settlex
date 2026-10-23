@@ -301,8 +301,8 @@ export const DevCardDisplay = ({
   const isEmptyShell = cards.length === 0;
   const boxClassName = [
     "devcard-box",
-    embedded ? "devcard-box--embedded" : "catana-hud-glass",
-    !embedded ? "catana-hud-glass--compact" : "",
+    embedded ? "devcard-box--embedded" : "settlehex-hud-glass",
+    !embedded ? "settlehex-hud-glass--compact" : "",
     "inline-flex",
     "origin-bottom-left",
     "relative",

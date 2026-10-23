@@ -49,7 +49,7 @@ export function SystemTopChrome({
           <a
             key={link.label}
             href={link.href}
-            className={`settlex-ui-focus inline-flex min-h-[2.75rem] items-center rounded-small px-ui-2 hover:underline ${skyTextStyles.link}`}
+            className={`settlehex-ui-focus inline-flex min-h-[2.75rem] items-center rounded-small px-ui-2 hover:underline ${skyTextStyles.link}`}
           >
             <span>
               {link.label}

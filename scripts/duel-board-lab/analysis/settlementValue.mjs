@@ -1,4 +1,4 @@
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 
 export function valueSettlements(facts) {
   return facts.nodes.map((node) => {

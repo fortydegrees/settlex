@@ -10,7 +10,7 @@ import { buildDocsIndex, writeDocsIndex } from "../write-docs-index.mjs";
 const tempRoots = [];
 
 async function makeDocsRoot() {
-  const root = mkdtempSync(join(tmpdir(), "settlex-docs-index-"));
+  const root = mkdtempSync(join(tmpdir(), "settlehex-docs-index-"));
   const docsRoot = join(root, "docs");
   await mkdir(join(docsRoot, "agent"), { recursive: true });
   await mkdir(join(docsRoot, "plans"), { recursive: true });
@@ -33,7 +33,7 @@ describe("write-docs-index", () => {
 
     const index = await buildDocsIndex(docsRoot);
 
-    expect(index).toContain("# Settlex Docs Index");
+    expect(index).toContain("# SettleHex Docs Index");
     expect(index).toContain("agent/HANDOFF.md - Agent Handoff");
     expect(index).toContain("plans/Roadmap.md - No top-level heading");
     expect(index).not.toContain("INDEX.md");

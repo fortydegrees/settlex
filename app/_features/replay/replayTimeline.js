@@ -1,6 +1,6 @@
 import { maskGameLogEntries } from "../../../lib/game-runtime/log/gameLogPrivacy.js";
 import { buildReplayPurchaseDetails } from "./replayPurchaseDetails";
-import { getPublicVictoryPoints } from "@settlex/game-core";
+import { getPublicVictoryPoints } from "@settlehex/game-core";
 import {
   formatLogEntryText,
   getGameLogEntryKey,

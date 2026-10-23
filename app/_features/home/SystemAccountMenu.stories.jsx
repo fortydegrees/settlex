@@ -4,7 +4,7 @@ import {
   matchAlertErrors,
   matchAlertFixtures,
   savedIdentity,
-} from "../dev/storybook/accountFixtures";
+} from "../catana/catana/dev/storybook/accountFixtures";
 import { SystemAccountMenu } from "./SystemAccountMenu";
 
 const callbacks = {

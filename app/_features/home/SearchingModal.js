@@ -48,7 +48,7 @@ export function SearchingModal({
 
   return (
     <div className="pointer-events-auto absolute inset-0 z-[60] grid place-items-center overflow-y-auto bg-surface-search-scrim p-ui-4 backdrop-blur-md">
-      <div className="settlex-ui-pane max-h-full w-full max-w-sm overflow-y-auto p-ui-5 text-center sm:p-ui-6">
+      <div className="settlehex-ui-pane max-h-full w-full max-w-sm overflow-y-auto p-ui-5 text-center sm:p-ui-6">
         <div className="mx-auto mb-ui-3 grid h-14 w-14 place-items-center rounded-control bg-surface-positive type-action text-ink-positive">
           Sx
         </div>

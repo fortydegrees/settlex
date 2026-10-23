@@ -93,7 +93,7 @@ export function UiShowcaseClient() {
                   <a
                     key={link.href}
                     href={link.href}
-                    className="settlex-ui-button settlex-ui-button-utility settlex-ui-focus block px-ui-3 py-ui-2 type-action-small"
+                    className="settlehex-ui-button settlehex-ui-button-utility settlehex-ui-focus block px-ui-3 py-ui-2 type-action-small"
                   >
                     {link.label}
                   </a>
@@ -107,14 +107,14 @@ export function UiShowcaseClient() {
 
               <div className="space-y-ui-2 type-body-small text-ink-secondary">
                 <Link
-                  href="/catana/lobby"
-                  className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus block px-ui-3 py-ui-2 type-action-small"
+                  href="/settlehex/lobby"
+                  className="settlehex-ui-button settlehex-ui-button-subtle settlehex-ui-focus block px-ui-3 py-ui-2 type-action-small"
                 >
                   Open lobby
                 </Link>
                 <Link
-                  href="/catana/dev/sandbox"
-                  className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus block px-ui-3 py-ui-2 type-action-small"
+                  href="/catana/catana/dev/sandbox"
+                  className="settlehex-ui-button settlehex-ui-button-subtle settlehex-ui-focus block px-ui-3 py-ui-2 type-action-small"
                 >
                   Open board sandbox
                 </Link>
@@ -129,7 +129,7 @@ export function UiShowcaseClient() {
                 <div className="relative grid gap-ui-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(260px,1fr)]">
                   <div>
                     <div className="type-caption uppercase text-ink-secondary">
-                      Settlex Standard UI
+                      SettleHex Standard UI
                     </div>
                     <h1 className="type-page mt-ui-3 max-w-2xl text-ink-primary">
                       Shared product surfaces with one motion language and one styling contract.
@@ -181,7 +181,7 @@ export function UiShowcaseClient() {
                     ].map((item) => (
                       <div
                         key={item.title}
-                        className="settlex-ui-inset p-ui-4"
+                        className="settlehex-ui-inset p-ui-4"
                       >
                         <div className="type-caption uppercase text-ink-secondary">
                           {item.title}
@@ -205,7 +205,7 @@ export function UiShowcaseClient() {
                 }
               >
                 <div className="grid gap-ui-3 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="settlex-ui-inset p-ui-4">
+                  <div className="settlehex-ui-inset p-ui-4">
                     <div className="type-caption uppercase text-ink-secondary">
                       Primary
                     </div>
@@ -215,7 +215,7 @@ export function UiShowcaseClient() {
                     </p>
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-4">
+                  <div className="settlehex-ui-inset p-ui-4">
                     <div className="type-caption uppercase text-ink-secondary">
                       Secondary
                     </div>
@@ -227,8 +227,8 @@ export function UiShowcaseClient() {
                     </p>
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-4">
-                    <div className="settlex-ui-label">Floating utility</div>
+                  <div className="settlehex-ui-inset p-ui-4">
+                    <div className="settlehex-ui-label">Floating utility</div>
                     <Button variant="utility" size="sm" className="mt-ui-3" onClick={() => setDialogOpen(true)}>
                       Account
                     </Button>
@@ -237,7 +237,7 @@ export function UiShowcaseClient() {
                     </p>
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-4">
+                  <div className="settlehex-ui-inset p-ui-4">
                     <div className="type-caption uppercase text-ink-secondary">
                       Accent + Subtle
                     </div>
@@ -257,7 +257,7 @@ export function UiShowcaseClient() {
                     </p>
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-4">
+                  <div className="settlehex-ui-inset p-ui-4">
                     <div className="type-caption uppercase text-ink-secondary">
                       Danger
                     </div>
@@ -269,7 +269,7 @@ export function UiShowcaseClient() {
                     </p>
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-4">
+                  <div className="settlehex-ui-inset p-ui-4">
                     <div className="type-caption uppercase text-ink-secondary">
                       Tooltip
                     </div>
@@ -351,7 +351,7 @@ export function UiShowcaseClient() {
                     </div>
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-4">
+                  <div className="settlehex-ui-inset p-ui-4">
                     <div className="type-caption uppercase text-ink-secondary">
                       Live Summary
                     </div>
@@ -393,7 +393,7 @@ export function UiShowcaseClient() {
                     />
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-4">
+                  <div className="settlehex-ui-inset p-ui-4">
                     <div className="type-caption uppercase text-ink-secondary">
                       Shared use cases
                     </div>
@@ -401,7 +401,7 @@ export function UiShowcaseClient() {
                       {SAMPLE_LOG.map((item) => (
                         <div
                           key={item.title}
-                          className="settlex-ui-inset px-ui-3 py-ui-3 type-body-small"
+                          className="settlehex-ui-inset px-ui-3 py-ui-3 type-body-small"
                         >
                           <div className="type-label text-ink-primary">{item.title}</div>
                           <div className="mt-ui-1 text-ink-secondary">{item.body}</div>
@@ -416,7 +416,7 @@ export function UiShowcaseClient() {
             <section id="metadata">
               <Panel title="Ambient Metadata">
                 <div className="grid gap-ui-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)]">
-                  <div className="settlex-ui-inset p-ui-5">
+                  <div className="settlehex-ui-inset p-ui-5">
                     <div className="type-caption uppercase text-ink-secondary">
                       Role
                     </div>
@@ -427,7 +427,7 @@ export function UiShowcaseClient() {
                     </p>
                   </div>
 
-                  <div className="settlex-ui-hud p-ui-4">
+                  <div className="settlehex-ui-hud p-ui-4">
                     <div className="relative min-h-36 rounded-panel bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.22),_rgba(37,99,235,0.24)_46%,_rgba(29,78,216,0.42)_100%)]">
                       <div className="absolute bottom-4 right-4">
                         <MetaDisclosure
@@ -460,7 +460,7 @@ export function UiShowcaseClient() {
                   {SHARED_SURFACES.map((surface) => (
                     <div
                       key={surface.title}
-                      className="settlex-ui-inset p-ui-5"
+                      className="settlehex-ui-inset p-ui-5"
                     >
                       <div className="type-caption uppercase text-ink-secondary">
                         {surface.title}
@@ -478,7 +478,7 @@ export function UiShowcaseClient() {
               <Panel title="Overlay Preview">
                 <div className="grid gap-ui-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)]">
                   <div className="space-y-ui-4">
-                    <div className="settlex-ui-inset p-ui-5">
+                    <div className="settlehex-ui-inset p-ui-5">
                       <div className="type-caption uppercase text-ink-secondary">
                         Dialog trigger
                       </div>
@@ -495,7 +495,7 @@ export function UiShowcaseClient() {
                       </div>
                     </div>
 
-                    <div className="settlex-ui-inset p-ui-5">
+                    <div className="settlehex-ui-inset p-ui-5">
                       <div className="type-caption uppercase text-ink-secondary">
                         Room join sample
                       </div>
@@ -511,7 +511,7 @@ export function UiShowcaseClient() {
                     </div>
                   </div>
 
-                  <div className="settlex-ui-inset p-ui-5">
+                  <div className="settlehex-ui-inset p-ui-5">
                     <div className="type-caption uppercase text-ink-secondary">
                       Why this page exists
                     </div>

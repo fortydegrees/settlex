@@ -9,7 +9,7 @@ export const Select = React.forwardRef(function Select(
     <select
       ref={ref}
       className={cn(
-        "settlex-ui-field",
+        "settlehex-ui-field",
         className
       )}
       {...props}

@@ -1,4 +1,4 @@
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 import { createHash } from "node:crypto";
 import { DUEL_FAIR_V2_PROFILE } from "./analysis/duelFairV2Profile.mjs";
 import { DUEL_FAIR_V3_PROFILE } from "./analysis/duelFairV3Profile.mjs";

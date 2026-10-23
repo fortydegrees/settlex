@@ -1,7 +1,7 @@
 import React from "react";
-import { buildTopology, createEmptyState, ResourceType } from "@settlex/game-core";
+import { buildTopology, createEmptyState, ResourceType } from "@settlehex/game-core";
 import { expect, fn, userEvent, within } from "@storybook/test";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
 import { MobilePlayerCockpit } from "./MobilePlayerCockpit";
 import { OpponentPlayerBox } from "./OpponentPlayerBox";
 import { DockCard } from "./ActionsDock/DockCard";
@@ -40,13 +40,13 @@ function gameFixture({ resources = [], devCards = [], boughtCards = [], stage = 
 
 const meta = {
   title: "Composed Surfaces/Gameplay/Compact HUD",
-  parameters: { layout: "fullscreen", viewport: { defaultViewport: "catanaMobile" } },
+  parameters: { layout: "fullscreen", viewport: { defaultViewport: "settlehexMobile" } },
 };
 export default meta;
 
 function MobileFixture(args) {
   return (
-    <div className="min-h-screen" style={{ background: CATANA_TABLE_BACKGROUND }}>
+    <div className="min-h-screen" style={{ background: SETTLEHEX_TABLE_BACKGROUND }}>
       <MobilePlayerCockpit
         {...args}
         setPlayerAction={fn()}
@@ -123,11 +123,11 @@ export const WaitingReadOnly = {
 };
 
 export const LongOpponentNameAndHiddenResources = {
-  parameters: { viewport: { defaultViewport: "catanaDesktop" } },
+  parameters: { viewport: { defaultViewport: "settlehexDesktop" } },
   render: () => {
     const { player, bgioProps } = gameFixture({ resources: denseResources });
     return (
-      <div className="min-h-screen p-ui-12" style={{ background: CATANA_TABLE_BACKGROUND }}>
+      <div className="min-h-screen p-ui-12" style={{ background: SETTLEHEX_TABLE_BACKGROUND }}>
         <OpponentPlayerBox
           player={{ ...player, id: "1", name: "MountainBuilderWithoutSpaces", resources: denseResources }}
           core={bgioProps.G.core}
@@ -141,11 +141,11 @@ export const LongOpponentNameAndHiddenResources = {
 };
 
 export const OverLimitOpponentAtRest = {
-  parameters: { viewport: { defaultViewport: "catanaDesktop" } },
+  parameters: { viewport: { defaultViewport: "settlehexDesktop" } },
   render: () => {
     const { player, bgioProps } = gameFixture({ resources: denseResources });
     return (
-      <div className="min-h-screen p-ui-12" style={{ background: CATANA_TABLE_BACKGROUND }}>
+      <div className="min-h-screen p-ui-12" style={{ background: SETTLEHEX_TABLE_BACKGROUND }}>
         <OpponentPlayerBox
           player={{ ...player, id: "1", name: "HarbourFox", resources: denseResources }}
           core={bgioProps.G.core}
@@ -160,7 +160,7 @@ export const OverLimitOpponentAtRest = {
 export const NamedDockAction = {
   args: { onAction: fn() },
   render: (args) => (
-    <div className="min-h-screen p-ui-12" style={{ background: CATANA_TABLE_BACKGROUND }}>
+    <div className="min-h-screen p-ui-12" style={{ background: SETTLEHEX_TABLE_BACKGROUND }}>
       <DockCard action={{ name: "road", img: "/svgs/icon_road.svg", count: 3, enabled: true, action: args.onAction }} />
     </div>
   ),
@@ -177,7 +177,7 @@ export const NamedDockAction = {
 export const DesktopQuickTradeKeyboard = {
   args: { onTrade: fn() },
   render: (args) => (
-    <div className="min-h-screen p-ui-12" style={{ background: CATANA_TABLE_BACKGROUND }}>
+    <div className="min-h-screen p-ui-12" style={{ background: SETTLEHEX_TABLE_BACKGROUND }}>
       <CardIcon resourceCount={4} resource="Wood" player="0" onResourceClick={args.onTrade} themeId="classic" />
       <CardIcon resourceCount={1} resource="Ore" player="0" themeId="classic" />
     </div>

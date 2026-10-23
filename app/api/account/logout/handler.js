@@ -20,7 +20,7 @@ export const createAccountLogoutRoute =
       });
       appendHeaders(response, result?.headers);
     } catch (error) {
-      // Sign-out should be idempotent from the Settlex UI's point of view.
+      // Sign-out should be idempotent from the SettleHex UI's point of view.
     }
 
     clearSessionCookie(response);

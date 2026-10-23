@@ -27,7 +27,7 @@ export const CardIcon = ({
 
   return (
     <Container
-      className={`flex items-center ${isLast ? "" : compact ? "mr-ui-1" : "mr-ui-6"} ${onResourceClick ? "cursor-pointer settlex-ui-focus" : ""}`}
+      className={`flex items-center ${isLast ? "" : compact ? "mr-ui-1" : "mr-ui-6"} ${onResourceClick ? "cursor-pointer settlehex-ui-focus" : ""}`}
       id={`p${player}-${resource}`}
       type={onResourceClick ? "button" : undefined}
       aria-label={onResourceClick ? `Trade ${resource}` : undefined}

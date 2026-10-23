@@ -1,6 +1,6 @@
-# Catana Dev Sandbox
+# SettleHex Dev Sandbox
 
-`/catana/dev/sandbox` is the default live-board surface for Catana UI, HUD, animation, and audio iteration.
+`/catana/catana/dev/sandbox` is the default live-board surface for SettleHex UI, HUD, animation, and audio iteration.
 
 Use it when the change needs the real board screen, player perspective, HUD anchors, or board-state-driven layout.
 
@@ -14,7 +14,7 @@ Use it when the change needs the real board screen, player perspective, HUD anch
 ## Before Editing
 
 - Read `docs/agent/UI_CONTEXT.md`.
-- Read `docs/agent/skills/catana-brand/SKILL.md` before changing visual styling.
+- Read `docs/agent/skills/settlehex-design/SKILL.md` before changing visual styling.
 - Use the owning surface guides and UI context for current HUD/effect guidance; record new decisions in `docs/agent/PROJECT_RECORD.md`.
 - Identify the exact preset, viewer seat, and viewport that proves the change.
 

@@ -4,8 +4,8 @@ import {
   matchAlertErrors,
   matchAlertFixtures,
   savedIdentity,
-} from "../dev/storybook/accountFixtures";
-import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+} from "../catana/catana/dev/storybook/accountFixtures";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 import { SystemTopChrome } from "./SystemTopChrome";
 
 const callbacks = {
@@ -37,7 +37,7 @@ function TopChromeHarness(args) {
   return (
     <div
       className="relative min-h-[20rem] overflow-hidden rounded-[1.5rem]"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <SystemTopChrome {...callbacks} {...args} />
     </div>
@@ -80,6 +80,6 @@ export const ClaimedAlertsActive = {
 export const Mobile = {
   args: guestResumeFailedArgs,
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };

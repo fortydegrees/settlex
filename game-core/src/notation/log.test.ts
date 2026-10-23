@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { replayHAN, replayHANTrace } from './reader';
 import { projectHANLog } from './log';
 import type { HANRecord } from './types';
-const record: HANRecord = JSON.parse(readFileSync(resolve(__dirname, '../../../docs/notation/examples/settlex-complete.han.json'), 'utf8'));
+const record: HANRecord = JSON.parse(readFileSync(resolve(__dirname, '../../../docs/notation/examples/settlehex-complete.han.json'), 'utf8'));
 const prefix = (n: number): HANRecord => ({ ...structuredClone(record), coverage: 'prefix', result: null, actions: record.actions.slice(0, n) });
 
 describe('saved-record post-game log', () => {

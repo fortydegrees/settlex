@@ -33,7 +33,7 @@ const logEntries = [
 // Only fixture transport/state is local; panels, formatting and scroll behavior
 // are the production owners. Surrounding chrome is cataloged in GameChrome;
 // integrated placement and board coexistence are checked in the sandbox.
-const frameClassName = "settlex-ui-hud flex h-[26rem] min-h-0 flex-col overflow-hidden select-text";
+const frameClassName = "settlehex-ui-hud flex h-[26rem] min-h-0 flex-col overflow-hidden select-text";
 const stage = (children) => (
   <div className="mx-auto w-full max-w-md p-ui-4 sm:p-ui-6">{children}</div>
 );

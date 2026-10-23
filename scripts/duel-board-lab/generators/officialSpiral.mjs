@@ -2,7 +2,7 @@ import {
   generateBoard,
   makeDeterministicRng,
   resolveBoardConfig
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 import { BOARD_FAMILIES, GENERATOR_VERSIONS } from "../constants.mjs";
 
 export function generateOfficialSpiral(seed) {

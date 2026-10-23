@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "../../../ui/Button";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
 
 const COPY = {
   preparing: [
@@ -39,9 +39,9 @@ export function ReplayStatusPage({ matchID, status }) {
   return (
     <main
       className="grid min-h-screen place-items-center p-ui-6"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
-      <section className="settlex-ui-pane w-full max-w-md p-ui-5 text-center sm:p-ui-6">
+      <section className="settlehex-ui-pane w-full max-w-md p-ui-5 text-center sm:p-ui-6">
         <h1 className="type-title text-ink-primary">{title}</h1>
         <p className="mt-ui-2 type-body-small text-ink-secondary">
           {description}

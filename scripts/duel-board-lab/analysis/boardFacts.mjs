@@ -4,7 +4,7 @@ import {
   resolveBoardSpec,
   ResourceType,
   TileTypes
-} from "@settlex/game-core";
+} from "@settlehex/game-core";
 
 const STANDARD_RESOURCES = Object.freeze([
   ResourceType.WOOD,

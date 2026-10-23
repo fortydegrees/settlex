@@ -52,11 +52,11 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
           open={isOpen}
           onOpenChange={setIsOpen}
           triggerAriaLabel="Browse emoji options"
-          triggerClassName="settlex-ui-focus group relative flex flex-col items-center rounded-small"
+          triggerClassName="settlehex-ui-focus group relative flex flex-col items-center rounded-small"
           triggerContent={
             <>
               <span
-                className={`settlex-ui-avatar-preview relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-panel bg-gradient-to-t ${colorGradient || ""}`}
+                className={`settlehex-ui-avatar-preview relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-panel bg-gradient-to-t ${colorGradient || ""}`}
               >
                 <span
                   className="relative z-10 block motion-reduce:!animate-none"
@@ -71,7 +71,7 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
                   </span>
                 </span>
                 <div
-                  className="settlex-ui-emoji-shadow absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-pill motion-reduce:!animate-none"
+                  className="settlehex-ui-emoji-shadow absolute bottom-2 inset-x-0 mx-auto h-2 w-10 rounded-pill motion-reduce:!animate-none"
                   style={{
                     animation: "emojiShadow 2s ease-in-out infinite",
                   }}
@@ -96,7 +96,7 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
                 }}
                 className="h-12 w-12 !p-0"
               >
-                <span className="settlex-ui-emoji-option">{emojiOption}</span>
+                <span className="settlehex-ui-emoji-option">{emojiOption}</span>
               </Button>
             ))}
           </div>

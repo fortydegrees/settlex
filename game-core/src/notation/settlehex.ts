@@ -2,7 +2,7 @@ import { getVictoryPoints } from '../rules/victory';
 import type { HANRecord, Card, Counts, Event, Resource, State } from './types';
 import { replayHAN } from './reader';
 import { toHAN } from './encoder';
-import { mapSettlexBoard, sourceResource, type BoardMapping } from './board';
+import { mapSettleHexBoard, sourceResource, type BoardMapping } from './board';
 type AnyRecord = Record<string, any>;
 export type SourceFrame = {
   index: number;
@@ -397,13 +397,13 @@ function translate(before: SourceFrame, after: SourceFrame, m: BoardMapping): Ev
         break;
       }
     default:
-      throw new Error(`unsupported Settlex move ${String(move)}`);
+      throw new Error(`unsupported SettleHex move ${String(move)}`);
   }
   const known = new Set(['build:settlement', 'build:road', 'build:city', 'roll', 'discard', 'robber:move', 'robber:steal', 'dev:buy', 'dev:play', 'dev:monopolyResult', 'trade:maritime', 'turn:end', 'phase:main', 'resource:gain', 'resource:shortage', 'award:longestRoad', 'award:largestArmy', 'game:over', 'forced:discardSelection', 'forced:moveRobber', 'forced:devCardResolution', 'forced:placeRoad', 'forced:placeSettlement', 'forced:placeRoad']);
   for (const e of added) insist(known.has(e.type), `unsupported source gameLog event ${String(e.type)}`);
   return events;
 }
-export interface SettlexExport {
+export interface SettleHexExport {
   record: HANRecord;
   checkpoints: {
     sourceFrame: number;
@@ -413,12 +413,12 @@ export interface SettlexExport {
   }[];
   sourceFrames: number;
 }
-function exportSettlexFrames(frames: SourceFrame[]): SettlexExport {
+function exportSettleHexFrames(frames: SourceFrame[]): SettleHexExport {
   insist(Array.isArray(frames) && frames.length > 0, 'source replay frames missing');
   insist(frames[0].index === 0 && Number.isSafeInteger(frames[0].state?._stateID) && frames[0].state._stateID >= 0, 'initial source frame/state ID missing or invalid');
   const initial = frames[0].state,
     final = frames[frames.length - 1].state,
-    m = mapSettlexBoard(initial);
+    m = mapSettleHexBoard(initial);
   const rules = validateRules(initial);
   const winner = final.G.core.gameOver?.winnerId;
   insist(winner == null === (final.ctx.gameover == null), 'source core/context terminal result mismatch');
@@ -474,7 +474,7 @@ function exportSettlexFrames(frames: SourceFrame[]): SettlexExport {
     sourceFrames: frames.length
   };
 }
-export function exportSettlexNotationArchive(archive: SourceArchive, buildFrames: (archive: SourceArchive) => SourceFrame[]): SettlexExport {
+export function exportSettleHexNotationArchive(archive: SourceArchive, buildFrames: (archive: SourceArchive) => SourceFrame[]): SettleHexExport {
   insist(archive && archive.initialState && Array.isArray(archive.log), 'archive requires initialState and contiguous log array');
   const firstId = archive.initialState._stateID;
   insist(Number.isSafeInteger(firstId) && firstId >= 0, 'initial state ID missing or invalid');
@@ -491,7 +491,7 @@ export function exportSettlexNotationArchive(archive: SourceArchive, buildFrames
   insist(frames.length === archive.log.length + 1, 'archive contains non-action replay entries');
   insist(archive.finalState || !frames[frames.length - 1].state.G.core.gameOver, 'complete archive requires archived final state');
   if (archive.finalState) {
-    const mapping = mapSettlexBoard(archive.initialState);
+    const mapping = mapSettleHexBoard(archive.initialState);
     const actual = project({
       index: frames.length - 1,
       state: archive.finalState,
@@ -501,5 +501,5 @@ export function exportSettlexNotationArchive(archive: SourceArchive, buildFrames
     for (const key of projectionKeys) insist(JSON.stringify(canonical(actual[key])) === JSON.stringify(canonical(reconstructed[key])), `archived final state differs from reconstructed log at ${key}`);
     insist(JSON.stringify(canonical(archive.finalState.ctx?.gameover ?? null)) === JSON.stringify(canonical(frames[frames.length - 1].state.ctx?.gameover ?? null)), 'archived final gameover differs from reconstructed log');
   }
-  return exportSettlexFrames(frames);
+  return exportSettleHexFrames(frames);
 }

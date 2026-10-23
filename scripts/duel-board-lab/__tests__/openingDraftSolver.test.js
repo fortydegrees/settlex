@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ResourceType } from "@settlex/game-core";
+import { ResourceType } from "@settlehex/game-core";
 import { solveOpeningDraft } from "../analysis/openingDraftSolver.mjs";
 import { valueOpeningPortfolio } from "../analysis/openingPolicy.mjs";
 

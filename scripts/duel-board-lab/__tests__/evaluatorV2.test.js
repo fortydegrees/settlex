@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ResourceType, TileTypes } from "@settlex/game-core";
+import { ResourceType, TileTypes } from "@settlehex/game-core";
 import { readFileSync } from "node:fs";
 import { buildBoardFacts } from "../analysis/boardFacts.mjs";
 import { DUEL_FAIR_V2_PROFILE } from "../analysis/duelFairV2Profile.mjs";

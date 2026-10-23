@@ -29,11 +29,11 @@ export function Tooltip({
           side={side}
           sideOffset={sideOffset}
           align={align}
-          className="settlex-ui-layer-tooltip"
+          className="settlehex-ui-layer-tooltip"
         >
           <BaseTooltip.Popup
             className={cn(
-              "settlex-ui-pane settlex-ui-tooltip settlex-ui-overlay-motion px-ui-3 py-ui-2 type-caption text-ink-secondary",
+              "settlehex-ui-pane settlehex-ui-tooltip settlehex-ui-overlay-motion px-ui-3 py-ui-2 type-caption text-ink-secondary",
               className
             )}
           >

@@ -1,6 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { buildTopology, createEmptyState, ResourceType } from "@settlex/game-core";
+import { buildTopology, createEmptyState, ResourceType } from "@settlehex/game-core";
 import { describe, expect, it, vi } from "vitest";
 import { applyReadOnlyDockState, useLocalPlayerDockModel } from "../useLocalPlayerDockModel";
 

@@ -20,7 +20,7 @@ import {
 } from "./replayPanelLayout";
 
 const replayRestoreClassName =
-  "settlex-ui-hud settlex-ui-focus group relative flex min-h-[2.75rem] w-full items-center overflow-hidden rounded-control py-ui-0 pl-ui-3.5 pr-ui-1.5 transition hover:bg-surface-hover";
+  "settlehex-ui-hud settlehex-ui-focus group relative flex min-h-[2.75rem] w-full items-center overflow-hidden rounded-control py-ui-0 pl-ui-3.5 pr-ui-1.5 transition hover:bg-surface-hover";
 
 export function ReplayPanel({
   timeline,
@@ -73,7 +73,7 @@ export function ReplayPanel({
   const renderPerspectiveControl = () =>
     useSegmentedPerspective ? (
       <div
-        className="settlex-ui-inset flex min-w-0 rounded-pill p-ui-1"
+        className="settlehex-ui-inset flex min-w-0 rounded-pill p-ui-1"
         role="group"
         aria-label="Replay perspective"
       >
@@ -83,7 +83,7 @@ export function ReplayPanel({
             <button
               key={option.id ?? "board"}
               type="button"
-              className="settlex-ui-segment settlex-ui-focus min-h-[2.75rem] min-w-0 flex-1 truncate rounded-pill px-ui-1 type-caption transition-[background-color,color,box-shadow] duration-[var(--settlex-ui-duration-fast)] motion-reduce:transition-none"
+              className="settlehex-ui-segment settlehex-ui-focus min-h-[2.75rem] min-w-0 flex-1 truncate rounded-pill px-ui-1 type-caption transition-[background-color,color,box-shadow] duration-[var(--settlehex-ui-duration-fast)] motion-reduce:transition-none"
               onClick={() => onPerspectiveChange(option.id)}
               aria-pressed={selected}
             >
@@ -121,7 +121,7 @@ export function ReplayPanel({
       role="switch"
       aria-checked={revealAllHands}
       onClick={() => onRevealAllHandsChange?.(!revealAllHands)}
-      className="settlex-ui-focus mt-ui-2 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control px-ui-2 text-left hover:bg-surface-hover"
+      className="settlehex-ui-focus mt-ui-2 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control px-ui-2 text-left hover:bg-surface-hover"
     >
       <span className="type-action-small text-ink-primary">Reveal all hands</span>
       <span aria-hidden="true" className={`flex h-6 w-11 shrink-0 items-center rounded-pill p-ui-0.5 transition-colors motion-reduce:transition-none ${revealAllHands ? "bg-surface-positive" : "bg-surface-inset"}`}>
@@ -222,7 +222,7 @@ export function ReplayPanel({
                   </Button>
                   <button
                     type="button"
-                    className="settlex-ui-focus grid h-11 w-11 place-items-center rounded-control text-ink-secondary transition hover:bg-surface-hover hover:text-ink-primary"
+                    className="settlehex-ui-focus grid h-11 w-11 place-items-center rounded-control text-ink-secondary transition hover:bg-surface-hover hover:text-ink-primary"
                     onClick={() => onOpenChange(false)}
                     aria-label="Minimize replay panel"
                   >
@@ -339,7 +339,7 @@ export function ReplayPanel({
                     aria-hidden="true"
                   >
                     <div
-                      className="absolute inset-y-0 left-0 rounded-pill settlex-ui-replay-progress"
+                      className="absolute inset-y-0 left-0 rounded-pill settlehex-ui-replay-progress"
                       style={{ width: `${progressPercent}%` }}
                     />
                   </div>
@@ -348,7 +348,7 @@ export function ReplayPanel({
                 <Drawer.Trigger asChild>
                   <button
                     type="button"
-                    className="settlex-ui-button settlex-ui-button-subtle settlex-ui-focus grid h-11 w-11 shrink-0 place-items-center text-ink-secondary"
+                    className="settlehex-ui-button settlehex-ui-button-subtle settlehex-ui-focus grid h-11 w-11 shrink-0 place-items-center text-ink-secondary"
                     aria-label="Open replay tray"
                   >
                     <ChevronUpIcon className="h-5 w-5" aria-hidden="true" />
@@ -360,11 +360,11 @@ export function ReplayPanel({
 
           <Drawer.Portal>
             <Drawer.Content
-              className="settlex-ui-pane fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-b-none p-ui-4 outline-none motion-reduce:!animate-none motion-reduce:!transition-none motion-reduce:!duration-0"
+              className="settlehex-ui-pane fixed inset-x-0 bottom-0 z-[70] mx-auto flex h-[min(68vh,34rem)] w-full max-w-[30rem] flex-col overflow-hidden rounded-b-none p-ui-4 outline-none motion-reduce:!animate-none motion-reduce:!transition-none motion-reduce:!duration-0"
               onPointerDownOutside={preserveBoardPointerDown}
               data-allow-interaction="true"
             >
-              <Drawer.Handle className="!mx-auto !mb-ui-3 !mt-ui-0 !h-1.5 !w-14 !rounded-pill settlex-ui-replay-handle" />
+              <Drawer.Handle className="!mx-auto !mb-ui-3 !mt-ui-0 !h-1.5 !w-14 !rounded-pill settlehex-ui-replay-handle" />
               <div className="flex items-center justify-between gap-ui-3">
                 <Drawer.Title className="type-section text-ink-primary">
                   Replay
@@ -383,7 +383,7 @@ export function ReplayPanel({
                   <Drawer.Close asChild>
                     <button
                       type="button"
-                      className="settlex-ui-button settlex-ui-button-ghost settlex-ui-focus grid h-11 w-11 place-items-center text-ink-secondary"
+                      className="settlehex-ui-button settlehex-ui-button-ghost settlehex-ui-focus grid h-11 w-11 place-items-center text-ink-secondary"
                       aria-label="Close replay tray"
                     >
                       <ChevronDownIcon
@@ -409,7 +409,7 @@ export function ReplayPanel({
                 </div>
                 <button
                   type="button"
-                  className="settlex-ui-button settlex-ui-button-secondary settlex-ui-focus mt-ui-3 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-2 px-ui-3.5 text-left"
+                  className="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-focus mt-ui-3 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-2 px-ui-3.5 text-left"
                   onClick={onChartToggle}
                   aria-expanded={chartOpen}
                 >

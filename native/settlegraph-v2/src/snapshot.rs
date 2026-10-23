@@ -422,7 +422,7 @@ pub fn import_snapshot(
             "website core/context current-player mismatch: {core_current_player} != {context_player}"
         ));
     }
-    // Catana's authoritative setup actor lives in ctx.currentPlayer; the core
+    // SettleHex's authoritative setup actor lives in ctx.currentPlayer; the core
     // turn owner stays at seat zero until normal play begins.
     let current_player = if is_setup {
         context_player

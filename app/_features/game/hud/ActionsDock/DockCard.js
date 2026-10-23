@@ -207,7 +207,7 @@ export const DockCard = ({ action }) => {
         ref={cardRef}
         type="button"
         aria-label={action.name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (first) => first.toUpperCase())}
-        className={`catana-hud-dock-card dock-card ${
+        className={`settlehex-hud-dock-card dock-card ${
           action.enabled ? "enabled" : ""
         } ${action.selected ? "selected" : ""}`}
         disabled={!action.enabled}
@@ -306,10 +306,10 @@ export const DockCard = ({ action }) => {
 
           {action.count > 0 && (
             <span
-              className="catana-hud-piece-count-badge"
+              className="settlehex-hud-piece-count-badge"
               data-enabled={action.enabled ? "true" : "false"}
             >
-              <span className="catana-hud-piece-count-badge__value">
+              <span className="settlehex-hud-piece-count-badge__value">
                 {action.count}
               </span>
             </span>

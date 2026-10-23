@@ -10,9 +10,9 @@ import {
   guestIdentity,
   matchAlertFixtures,
   savedIdentity,
-} from "../dev/storybook/accountFixtures";
+} from "../catana/catana/dev/storybook/accountFixtures";
 import { publicReleaseInfo } from "./releaseInfo";
-import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 import {
   buildSystemActions,
   HomeTitleChrome,
@@ -43,7 +43,7 @@ function HomeTitleChromeHarness(args) {
   return (
     <div
       className="relative min-h-screen overflow-hidden"
-      style={{ background: CATANA_TABLE_BACKGROUND }}
+      style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <HomeTitleChrome
         {...args}
@@ -219,7 +219,7 @@ export const Mobile = {
     activeActionId: null,
   },
   parameters: {
-    viewport: { defaultViewport: "catanaMobile" },
+    viewport: { defaultViewport: "settlehexMobile" },
   },
 };
 

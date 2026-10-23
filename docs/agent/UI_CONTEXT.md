@@ -1,6 +1,6 @@
-# Catana UI Context
+# SettleHex UI Context
 
-Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning work. It is a routing layer, not a second design system.
+Use this file before SettleHex UI, HUD, animation, audio, copy, or visual-tuning work. It is a routing layer, not a second design system.
 
 ## Entry Points
 
@@ -10,12 +10,12 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 - `docs/agent/DESIGN_SYSTEM.md`: current enforced foundation contract and staged
   migration boundaries. Use complete `type-*` roles, semantic colours and
   `*-ui-*` spacing; do not introduce new typography fragments or raw corners.
-- `docs/agent/skills/catana-brand/SKILL.md`: current product direction plus brand, component, color, typography, and motion rules. Read this before building or restyling Catana UI.
-- `docs/agent/skills/catana-brand/DESIGN_REVIEW_CHECKLIST.md`: checklist for one-off visual audits and pre-redesign critique.
-- `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`: extra workflow only when adding or extending reusable `app/ui/*` primitives.
+- `docs/agent/skills/settlehex-design/SKILL.md`: compatibility pointer; old styling recipes are retired. Current authority lives in DESIGN_SYSTEM.md.
+- `docs/agent/skills/settlehex-design/DESIGN_REVIEW_CHECKLIST.md`: checklist for one-off visual audits and pre-redesign critique.
+- `docs/agent/skills/settlehex-design/ADDING_SHARED_PRIMITIVES.md`: extra workflow only when adding or extending reusable `app/ui/*` primitives.
 - `app/_features/dev/sandbox/README.md`: real board UI sandbox. Use for gameplay HUD, board, opponent box, turn controls, dev-card, award, robber, and card-transfer presentation.
 - `app/_features/dev/effects/README.md`: isolated effects lab. Use for tuning deterministic animation/audio runners without needing a live game state.
-- `app/_features/game/README.md`: component and HUD context. Use before editing shared Catana components.
+- `app/_features/game/README.md`: component and HUD context. Use before editing shared SettleHex components.
 - `app/_features/dev/ui/`: standard UI showcase for shared product-surface primitives.
 - `docs/agent/UI_CATALOG.md`: production component ownership and the current
   Clarity ButtonFamily/Foundations reference. Its approved role-based corner and
@@ -26,10 +26,10 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 ## Agent Reminders
 
 - Pick the surface role first: gameplay HUD, title surface, standard product control, status, or quiet metadata.
-- Treat the current game screen as the strongest canonical reference for Catana feel. The homepage has useful decisions, but it is not proof that generic landing-page or stock component styling is correct.
-- Preserve existing visual language before introducing a new treatment. For Catana, prefer the current glass/HUD language, player-color identity, and existing motion families.
+- Use the current game screen as a game-feel reference, without treating unfinished controls as approved composition. The homepage has useful decisions, but it is not proof that generic landing-page or stock component styling is correct.
+- Preserve existing visual language before introducing a new treatment. For SettleHex, prefer the current glass/HUD language, player-color identity, and existing motion families.
 - For homepage work, use the title/client direction: actual table first, bottom mode dock, account-first top-right chrome, quiet metadata, and ambient board life. Avoid active-match HUD chrome unless entering a real match.
-- For shared product UI, inspect `app/ui/*` and `/catana/dev/ui` before adding local one-off controls or external-library patterns.
+- For shared product UI, inspect `UI_CATALOG.md`, production Storybook stories and `app/ui/*` before adding local one-off controls or external-library patterns.
 - Check the relevant dev surface for the exact UI state being changed. Do not generalize from one viewport, one player perspective, or one preset.
 - For presentation-only UI, animation, audio, copy, timing, or CSS tuning, prefer focused manual/dev-surface verification. Add tests only when changing shared logic, reusable helpers, event wiring, state flow, or locking a regression.
 - For game rules, state transitions, sync/race fixes, and server-authoritative behavior, use test-first or focused regression tests.
@@ -45,7 +45,7 @@ Use `app/_features/dev/effects` when the change is an isolated effect runner, cu
 
 Use `app/_features/dev/ui` when the change is a shared product primitive from `app/ui/*`, not bespoke board chrome.
 
-Use focused source tests or Vitest when the change modifies helpers, selectors, event payloads, state gating, or a regression that should stay locked in.
+Use focused behavioral tests or Vitest when the change modifies helpers, selectors, event payloads, state gating, or a regression that should stay locked in.
 
 ## Canonical Viewports
 
