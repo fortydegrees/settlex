@@ -310,7 +310,7 @@ export function getRobberVictims(
     if (building.ownerId === actingPlayerId) {
       continue;
     }
-
+    
     // Check Friendly Robber protection: cannot steal from player with too few VPs
     if (state.ruleset.friendlyRobber.enabled) {
         const vp = getPublicVictoryPoints(state, building.ownerId);
@@ -318,7 +318,7 @@ export function getRobberVictims(
             continue;
         }
     }
-
+    
     victims.add(building.ownerId);
   }
 
@@ -342,7 +342,7 @@ export function applyMoveRobber(
 
   // Handle stealing
   const victims = getRobberVictims(state, board, tileId, actingPlayerId);
-
+  
   const potentialVictims = victims.filter(id => {
       const p = state.playerStateById[id];
       return p && p.resources.length > 0;

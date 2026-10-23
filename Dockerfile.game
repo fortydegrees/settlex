@@ -23,7 +23,6 @@ RUN pnpm -C game-core build
 COPY --from=native /build/target/release/settlegraph-v2-worker /usr/local/bin/settlegraph-v2-worker
 
 ENV NODE_ENV=production
-ENV SETTLEHEX_SETTLEGRAPH_V2_WORKER=/usr/local/bin/settlegraph-v2-worker
 
 EXPOSE 8000 8080
 

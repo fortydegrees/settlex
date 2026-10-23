@@ -1,7 +1,7 @@
 # SettleHex Resource Icon Style Guide
 
-Status: Authoritative draft for production handoff
-Last updated: 2026-02-23
+Status: Authoritative draft for production handoff  
+Last updated: 2026-02-23  
 Applies to: `Wood`, `Brick`, `Sheep`, `Wheat`, `Ore`
 
 ## 1) Purpose
@@ -150,7 +150,7 @@ All 5 icons must align on:
 - silhouette footprint (similar perceived visual mass),
 - lighting model (flat + local accents, not mixed rendering styles).
 
-If one icon is simplified, simplify the others to match.
+If one icon is simplified, simplify the others to match.  
 If one icon uses rich pseudo-3D facets, the entire set must be intentionally harmonized around that choice (current direction favors flatter treatment).
 
 ## 7) In-Game Context Constraints

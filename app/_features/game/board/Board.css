@@ -31,7 +31,7 @@
 }
 .road {
   position: absolute;
-
+  
   width: 100%;
   height: 100%;
 }
@@ -57,7 +57,7 @@
 }
 .settlement,
 
-/*
+/* 
 
 @keyframes pulse-dot {
   0% {

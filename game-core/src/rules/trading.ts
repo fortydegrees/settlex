@@ -78,14 +78,14 @@ export function canMaritimeTrade(
   }
 
   const resourceCounts = countResources(player.resources);
-
+  
   // Iterate through all resource types the player owns
   for (const [resource, count] of Object.entries(resourceCounts)) {
     if (count <= 0) continue;
-
+    
     // Check the rate for this specific resource
     const rate = bestTradeRate(state, board, playerId, resource as Resource);
-
+    
     // If they have enough to trade even once, it's a valid action
     if (count >= rate) {
       return { ok: true };

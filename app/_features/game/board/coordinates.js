@@ -10,7 +10,7 @@ export function tilePixelVector(coordinate, size, centerX, centerY) {
       size * (3 / 2) * hex.r + centerY,
     ];
   }
-
+  
   export function cubeToAxial(cube) {
     return { q: cube[0], r: cube[2] };
   }
@@ -51,7 +51,7 @@ export function tilePixelVector(coordinate, size, centerX, centerY) {
           throw Error("Unkown direction " + direction);
       }
   }
-
+  
   export function getEdgeTransform(direction, size) {
     const distanceToEdge = size * 0.865;
     const translate = (deg) =>
@@ -73,5 +73,5 @@ export function tilePixelVector(coordinate, size, centerX, centerY) {
         throw Error("Unkown direction " + direction);
     }
   }
-
+  
   export const SQRT3 = 1.73205080757;

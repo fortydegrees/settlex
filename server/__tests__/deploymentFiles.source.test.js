@@ -261,6 +261,18 @@ describe("deployment file wiring", () => {
     );
   });
 
+  it("packages the runtime config helper in every web stage that copies Next config", () => {
+    const dockerfile = readRepoFile("Dockerfile.web");
+    const stages = dockerfile.split(/^FROM /m).filter(stage => stage.includes("COPY next.config.js ./"));
+    expect(stages.length).toBeGreaterThan(0);
+    for (const stage of stages) expect(stage).toContain("COPY lib/config/environment.cjs ./lib/config/environment.cjs");
+  });
+
+  it("uses the same absent-only model-store fallback for promotion and normal services", () => {
+    const promotion = readRepoFile("infra", "scripts", "promote-bot.sh");
+    expect(promotion).toContain("source: ${SETTLEHEX_BOT_MODELS_DIR-${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}}");
+  });
+
   it("builds the homepage Bot 009 action from the same deployment flag", () => {
     const webDockerfile = readRepoFile("Dockerfile.web");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
@@ -301,7 +313,7 @@ describe("deployment file wiring", () => {
     expect(compose).toContain("dockerfile: Dockerfile.game");
     expect(compose).toContain("../.env.prod");
     expect(compose).toContain("./Caddyfile:/etc/caddy/Caddyfile:ro");
-    expect(compose).toContain("settlehex-postgres-prod");
+    expect(compose).toContain("settlex-postgres-prod");
   });
 
   it("keeps local AI training artifacts out of the Docker build context", () => {

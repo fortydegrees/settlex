@@ -88,9 +88,10 @@ services:
       retries: 5
     restart: unless-stopped
     volumes:
-      - settlehex-postgres-prod:/var/lib/postgresql/data
+      - settlex-postgres-prod:/var/lib/postgresql/data
 
 volumes:
   caddy-config:
   caddy-data:
-  settlehex-postgres-prod:
+  # Persisted deployment identity: renaming this would attach an empty database.
+  settlex-postgres-prod:

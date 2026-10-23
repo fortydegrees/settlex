@@ -25,7 +25,7 @@ services:
   game:
     volumes:
       - type: bind
-        source: ${SETTLEHEX_BOT_MODELS_DIR:-/srv/settlex-models}
+        source: ${SETTLEHEX_BOT_MODELS_DIR-${SETTLEX_BOT_MODELS_DIR:-/srv/settlex-models}}
         target: /opt/settlex/models
         read_only: false
         bind:

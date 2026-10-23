@@ -10,6 +10,7 @@ FROM base AS deps
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY next.config.js ./
+COPY lib/config/environment.cjs ./lib/config/environment.cjs
 COPY game-core/package.json game-core/package.json
 COPY patches patches
 RUN pnpm install --frozen-lockfile
@@ -39,6 +40,7 @@ ENV NODE_ENV=production
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY next.config.js ./
+COPY lib/config/environment.cjs ./lib/config/environment.cjs
 COPY game-core/package.json game-core/package.json
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/game-core ./game-core

@@ -8,7 +8,7 @@
     position: relative;
     margin-bottom: var(--jk-die-size);
   }
-
+  
   .jk-die-body {
     transform: var(--jk-die-target-rotation, rotateX(20deg) rotateZ(45deg));
     transform-style: preserve-3d;
@@ -16,10 +16,10 @@
     height: var(--jk-die-size);
     will-change: transform;
   }
-
+  
   .jk-shadow {
     --color: rgba(0, 0, 0, 0.1);
-
+  
     position: absolute;
     top: 0;
     left: calc(var(--jk-die-size) * -0.1);
@@ -31,7 +31,7 @@
     height: calc(var(--jk-die-size) * 1.2);
     will-change: transform, opacity, filter;
   }
-
+  
   .jk-face,
   .jk-inner-face,
   .jk-internal {
@@ -40,18 +40,18 @@
     background-color: var(--jk-die-color);
     overflow: hidden;
   }
-
+  
   .jk-face,
   .jk-inner-face {
     width: var(--jk-die-size);
     height: var(--jk-die-size);
   }
-
+  
   .jk-internal {
     width: calc(var(--jk-die-size) * 0.98);
     height: calc(var(--jk-die-size) * 0.98);
   }
-
+  
   .jk-pip-face {
     background: radial-gradient(
         closest-side,

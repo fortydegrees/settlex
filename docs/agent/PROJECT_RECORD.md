@@ -135,3 +135,19 @@ device or deployment evidence.
 DESIGN_SYSTEM owns product intent and interaction responsibilities. The old brand guide is a compatibility pointer; use the catalog, production stories and current owning components. Shared feedback belongs to shared controls; game-event choreography belongs to effects. Review control families and whole journeys, including keyboard order, repeat input and reduced motion. Trade/discard and game-over composition remain design work.
 
 The private UI polish review sampled account, trade/discard, results and replay. Its proposed fixes are not implementation approval or a whole-product audit. Preserve that evidence privately; this naming pass does not implement visual changes.
+
+## 2026-10-23 — current SettleHex identity and compatibility
+
+Current product prose, packages, configuration, browser keys/events and developer
+URLs use SettleHex, `settlehex`, `SETTLEHEX_*` and `/dev/...`. Existing environment
+values remain fallback inputs only when the canonical key is absent, including
+Docker, Compose and promotion scripts. Browser migration preserves preferences,
+identity and recovery hints; per-key deletion barriers prevent a stale tab from
+restoring released credentials even after a partial migration failure. These
+hints never replace server authorization. Old dev bookmarks redirect only in
+development; canonical and old dev pages remain unavailable in production.
+
+Persisted game registration, HAN/CGN schemas, replay envelopes, the production
+database volume and match-lock namespace retain compatibility. Existing deployed
+paths, real remote URLs, captured records and upstream native identities remain
+accurate. No dependency versions, remote state or production services changed.

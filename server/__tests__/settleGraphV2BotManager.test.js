@@ -25,7 +25,7 @@ const baseState = (overrides = {}) => ({
 });
 
 describe("SettleGraphV2BotManager", () => {
-  it("returns the native worker's existing SettleX move plan unchanged", async () => {
+  it("returns the native worker's existing SettleHex move plan unchanged", async () => {
     const client = {
       decide: vi.fn().mockResolvedValue({
         plannedMoves: [
