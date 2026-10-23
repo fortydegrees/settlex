@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import { notFound } from "next/navigation";
 import { getPublicProfile } from "../../../lib/server/profiles/getPublicProfile.js";
-import { PublicProfileView } from "./PublicProfileView.js";
+import { PublicProfileView } from "../../_features/profile/PublicProfileView.js";
 
 export const createProfilePage = ({
   getPublicProfile: getPublicProfileImpl = getPublicProfile,

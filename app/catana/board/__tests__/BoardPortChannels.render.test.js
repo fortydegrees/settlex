@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BoardPortChannels } from "../BoardPortChannels";
-import { TileTypes } from "../../types";
+import { TileTypes } from "../../../_features/theme/gameAssets";
 import { SQRT3, getNodeDelta, tilePixelVector } from "../coordinates";
 import { getPortRenderModel } from "../portLayout";
 

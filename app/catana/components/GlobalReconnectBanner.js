@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../../ui/Button";
-import { GlassPillButton } from "./GlassPillButton";
-import { StatusBanner } from "./StatusBanner";
+import { GlassPillButton } from "../../ui/GlassPillButton";
+import { StatusBanner } from "../../ui/StatusBanner";
 import { resolveReconnectBannerCandidate } from "../utils/reconnectBanner";
 
 export function getReconnectStatusBannerProps(candidate) {

@@ -5,9 +5,9 @@ import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 import { isPointOverRobberBoardLand } from "./robberPlacementPreviewMotion";
-import { getPieceSvgFile } from "../theme/pieceAssets.js";
+import { getPieceSvgFile } from "../../_features/theme/pieceAssets.js";
 import {
   getBuildPickupOrigin,
   getBuildPickupLaunchBias,

@@ -6,8 +6,8 @@ import {
 } from "@react-spring/web";
 
 import "./dockStyles.css";
-import "../hudGlass.css";
-import { handleThemeImageError } from "../../theme/themes";
+import "../../../_features/theme/hudGlass.css";
+import { handleThemeImageError } from "../../../_features/theme/themes";
 
 const INITIAL_WIDTH = 48;
 const HOVER_LIFT_PX = -5;

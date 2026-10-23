@@ -21,7 +21,7 @@ The following files cite Catanatron commit
 `425ccdef04921d1756a1c9bb1f904fceb1f3c3d3` and contain adapted upstream code:
 
 - `app/catana/board/coordinates.js`
-- `app/catana/utils/useWindowSize.js`
+- `lib/client/useWindowSize.js`
 
 The pinned upstream distribution includes the
 [GNU GPL version 3 license](LICENSES/Catanatron-GPL-3.0.txt).

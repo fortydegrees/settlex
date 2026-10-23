@@ -4,9 +4,9 @@ import { fn } from "@storybook/test";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
 import { Tooltip, TooltipProvider } from "./Tooltip";
-import { HomeGameModeDock } from "../catana/home/HomeTitleChrome";
-import { SystemAccountMenu } from "../catana/home/SystemAccountMenu";
-import { AccountEntryModal } from "../catana/lobby/AccountEntryModal";
+import { HomeGameModeDock } from "../_features/home/HomeTitleChrome";
+import { SystemAccountMenu } from "../_features/home/SystemAccountMenu";
+import { AccountEntryModal } from "../_features/account/AccountEntryModal";
 
 const meta = {
   title: "Components/Actions/Button",

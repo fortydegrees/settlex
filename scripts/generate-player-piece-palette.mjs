@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { PLAYER_COLOR_OPTIONS } from "../app/catana/theme/playerColors.js";
+import { PLAYER_COLOR_OPTIONS } from "../app/_features/theme/playerColors.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

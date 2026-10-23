@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../../ui/Button";
-import { getPlayerNameHex } from "../theme/playerColors.js";
+import { getPlayerNameHex } from "../../_features/theme/playerColors.js";
 
 const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
 

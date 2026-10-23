@@ -23,7 +23,7 @@ import {
   writeLastActiveMatch
 } from "../../utils/activeMatchStorage";
 import { clearPendingFriendChallenge } from "../../utils/pendingFriendChallenge";
-import { sanitizeDisplayName } from "../../utils/playerIdentity";
+import { sanitizeDisplayName } from "../../../../lib/shared/playerIdentity";
 import {
   getGameServerOrigin,
 } from "../../utils/serverOrigins";

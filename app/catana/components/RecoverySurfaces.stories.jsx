@@ -1,15 +1,15 @@
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { Button } from "../../ui/Button";
 import { UnavailableMatchPage } from "../../g/[matchID]/UnavailableMatchPage";
-import { HomeErrorBanner } from "../home/HomeErrorBanner";
+import { HomeErrorBanner } from "../../_features/home/HomeErrorBanner";
 import { InterruptedDuelRecovery } from "../lobby/[matchID]/InterruptedDuelRecovery";
 import {
   getReconnectStatusBannerProps,
 } from "./GlobalReconnectBanner";
-import { GlassPillButton } from "./GlassPillButton";
+import { GlassPillButton } from "../../ui/GlassPillButton";
 import { IdlePromptModal } from "./IdlePromptModal";
 import { ResignConfirmDialog } from "./ResignConfirmDialog";
-import { StatusBanner } from "./StatusBanner";
+import { StatusBanner } from "../../ui/StatusBanner";
 
 const meta = {
   title: "Composed Surfaces/Alerts & Recovery/Recovery Surfaces",

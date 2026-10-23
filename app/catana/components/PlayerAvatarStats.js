@@ -1,4 +1,4 @@
-import Image from "./NextImage";
+import Image from "../../ui/NextImage";
 import { useMemo } from "react";
 import longestRoadIcon from "../../../public/svgs/icon_longest_road.svg";
 import largestArmyIcon from "../../../public/svgs/icon_largest_army.svg";
@@ -10,8 +10,8 @@ import {
   getPublicVictoryPoints,
 } from "@settlex/game-core";
 import { getVpDisplay } from "./PlayerAvatarStatsUtils";
-import { getPlayerColorOption } from "../theme/playerColors";
-import "./hudGlass.css";
+import { getPlayerColorOption } from "../../_features/theme/playerColors";
+import "../../_features/theme/hudGlass.css";
 import "./PlayerAvatarStats.css";
 
 const formatPresenceTimer = (ms) => {

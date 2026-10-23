@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const boardContents = fs.readFileSync(
-  path.resolve(__dirname, "..", "Board.js"),
+  path.resolve(process.cwd(), "app/catana/board/Board.js"),
   "utf8"
 );
 

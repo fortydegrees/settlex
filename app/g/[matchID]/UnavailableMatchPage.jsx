@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Panel } from "../../ui/Panel";
-import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
+import { CATANA_TABLE_BACKGROUND } from "../../_features/theme/backgrounds";
 
 export function UnavailableMatchPage({ matchID }) {
   return (

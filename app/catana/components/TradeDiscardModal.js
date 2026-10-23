@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useMemo, useEffect, useId } from "react";
 import { Button } from "../../ui/Button";
-import { STANDARD_RESOURCES, ResourceType } from "../types";
+import { STANDARD_RESOURCES, ResourceType } from "../../_features/theme/gameAssets";
 import {
   bestTradeRate,
   getMaritimeTradeReceiveCount,
@@ -10,7 +10,7 @@ import {
   getClassicResourceIconPath,
   getResourceIconPath,
   handleThemeImageError,
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 
 // Helper to count occurrences of each resource in a list
 const countResources = (resources) => {

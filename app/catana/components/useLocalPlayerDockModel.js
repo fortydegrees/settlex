@@ -15,8 +15,8 @@ import { getTurnControlMode } from "../utils/turnControlMode";
 import {
   getClassicSvgPath,
   getThemedSvgPath,
-} from "../theme/themes";
-import { getPieceSvgFile } from "../theme/pieceAssets.js";
+} from "../../_features/theme/themes";
+import { getPieceSvgFile } from "../../_features/theme/pieceAssets.js";
 
 export const BUILD_PICKUP_PRELAUNCH_DELAY_MS = 132;
 export const DEV_CARD_PRELAUNCH_DELAY_MS = 320;

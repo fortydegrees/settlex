@@ -16,16 +16,16 @@ values must not be mechanically replaced with product typography or colours.
 | `app/catana/board/Port.jsx`, `board/Port.css` | Port resource and ratio artwork | Ratio-label fit is part of the small port graphic. |
 | `app/catana/components/FeedTokenRow.jsx` | Miniature dice, resource and tile tokens | Feed prose uses normal roles; miniature artwork preserves its source token proportions. |
 | `app/catana/components/MiniDiceFace.js`, `app/catana/components/Die.css` | Dice faces and pips | Circular pip geometry and face contrast are graphic marks. |
-| `app/catana/theme/playerColors.js` | Player identity palette and contrast decisions | Player colour is game/user data, not interface emphasis. |
+| `app/_features/theme/playerColors.js` | Player identity palette and contrast decisions | Player colour is game/user data, not interface emphasis. |
 | `app/catana/components/GameOverModal.js`, `PostgameOverlay.js`, `app/replays/components/ReplayScoreChart.jsx` | Player-derived swatch/chart colours | Results and replay retain the player's identity colour. Surrounding copy, charts and controls use shared recipes. |
-| `app/catana/home/HomeTitleChrome.js` | Optional Sx/logo SVG glyph fit | Fixed-coordinate logo artwork, separate from Outfit UI and the opt-in display face. Unused action styling metadata is removed. |
-| `app/catana/homeDemo/HomeDemoBoardPoster.js`, `HomeDemoBoardPoster.module.css`, `homeDemoSequence.js` | Scaled poster number chips and player-colour data | The fallback must visually match the live board and demo sequence. |
+| `app/_features/home/HomeTitleChrome.js` | Optional Sx/logo SVG glyph fit | Fixed-coordinate logo artwork, separate from Outfit UI and the opt-in display face. Unused action styling metadata is removed. |
+| `app/_features/home/demo/HomeDemoBoardPoster.js`, `HomeDemoBoardPoster.module.css`, `homeDemoSequence.js` | Scaled poster number chips and player-colour data | The fallback must visually match the live board and demo sequence. |
 | `app/catana/dev/storybook/*Fixtures.js` | Explicit player-colour fixture data | Identity values are intentionally illustrative, not consumer CSS. |
 | `app/opengraph-image.jsx` | Fixed-format social-share composition | Server-rendered image typography, tile scale and canvas coordinates do not inherit browser UI CSS. |
 | `app/replays/components/ReplayPanel.jsx`, `replayPanelLayout.js` | Flush drawer edge and perspective-seat clearance | Zero joining corners and responsive board-seat exclusion space are integrated layout contracts. |
 | `app/catana/components/AnimatedCount.css` | Unit line height and ±.14em number-roll clip room | These values align and clip animated digits; gain/loss colours use shared aliases. |
 | `app/catana/components/DevCardDisplay.css`, `MobileDevCardButton.js`, `MobileDevCardTray.js` | Mini-card corners and fan-bay padding | They fit card artwork and fan anchors; the surrounding bay/control uses role-based corners. |
-| `app/catana/components/hudGlass.css` | Joined nameplate corners and sub-rem connector padding | The plate joins the avatar rather than behaving as an independent product panel. |
+| `app/_features/theme/hudGlass.css` | Joined nameplate corners and sub-rem connector padding | The plate joins the avatar rather than behaving as an independent product panel. |
 | `app/catana/components/MobilePlayerCockpit.js`, `app/catana/components/PlayerAvatarStats.js`, `app/catana/components/StatusBubble.css` | Emoji glyph sizes, circular status marks and phone safe-area expression | Emoji are graphics; viewport safety and board anchoring are not ordinary content spacing. All adjacent copy/counters use complete HUD roles. |
 | `app/catana/components/TurnControlCluster.js` | 1.45-unit SVG stroke | The turn-control icon's optical stroke belongs to its vector drawing. |
 | `app/catana/dev/effects/DevCardRevealLab.jsx` | 9 reveal-stage lighting, apex, destination-anchor and miniature dock/card sample values | These drawings are the effect comparison under test, not console controls. |

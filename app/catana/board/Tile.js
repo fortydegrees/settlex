@@ -11,7 +11,7 @@ import {
   getTileFile,
   getThemedSvgPath,
   handleThemeImageError,
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 
 // Resource icons now use one shared transform across all resources.
 // Baseline values come from the previous Sheep placement.

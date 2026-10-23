@@ -47,9 +47,9 @@ import { PlayerActionContainer } from "./components/PlayerActionContainer";
 import { MobilePlayerCockpit } from "./components/MobilePlayerCockpit";
 import { MobileMatchMenu } from "./components/MobileMatchMenu";
 import { OpponentPlayerBox } from "./components/OpponentPlayerBox";
-import { GlassPillButton } from "./components/GlassPillButton";
+import { GlassPillButton } from "../ui/GlassPillButton";
 import { LeftMetaRail } from "./components/LeftMetaRail";
-import { StatusBanner } from "./components/StatusBanner";
+import { StatusBanner } from "../ui/StatusBanner";
 import { IdlePromptModal } from "./components/IdlePromptModal";
 import { GameRulesDialog, GameSettingsDialog } from "./components/GameInfoDialogs";
 import { GameOverOverlay } from "./components/GameOverOverlay";
@@ -83,7 +83,7 @@ import {
   removeKnightDisplayOverride,
   upsertKnightDisplayOverride
 } from "./utils/devCardPlayPresentation";
-import useWindowSize from "./utils/useWindowSize";
+import useWindowSize from "../../lib/client/useWindowSize";
 import { getBoardLayout, shouldResetBoardViewport } from "./board/boardLayout";
 import {
   DEFAULT_ROBBER_PLACEMENT_MOTION_MODE
@@ -94,8 +94,8 @@ import { Howler } from "howler";
 import {
   CATANA_THEME_STORAGE_KEY,
   resolveThemeId,
-} from "./theme/themes";
-import { CATANA_TABLE_BACKGROUND } from "./theme/backgrounds";
+} from "../_features/theme/themes";
+import { CATANA_TABLE_BACKGROUND } from "../_features/theme/backgrounds";
 import {
   clearLastActiveMatch,
   readLastActiveMatch
@@ -108,7 +108,7 @@ import {
 } from "./dev/sandbox/effectPayloads";
 import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
 import { getCurrentMatchAlertGameRegistration } from "./matchAlerts/matchAlertProviderActions.js";
-import { tabAttention } from "./utils/tabAttention";
+import { tabAttention } from "../../lib/client/tabAttention";
 import { getGamePageTitle } from "./utils/gamePageTitle";
 import { useMatchClockAndPresence } from "./matchStatus/useMatchClockAndPresence";
 import { useIdleAcknowledgement } from "./matchStatus/useIdleAcknowledgement";

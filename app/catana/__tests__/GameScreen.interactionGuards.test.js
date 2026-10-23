@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const screenPath = path.resolve(__dirname, "..", "GameScreen.js");
+const screenPath = path.resolve(process.cwd(), "app/catana/GameScreen.js");
 
 describe("GameScreen interaction guards", () => {
   it("adds a select-none class to the root container", () => {

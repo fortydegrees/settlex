@@ -1,7 +1,7 @@
 import React from "react";
 import "../app/globals.css";
-import "../app/catana/components/hudGlass.css";
-import { CATANA_TABLE_BACKGROUND } from "../app/catana/theme/backgrounds";
+import "../app/_features/theme/hudGlass.css";
+import { CATANA_TABLE_BACKGROUND } from "../app/_features/theme/backgrounds";
 import { Outfit } from "next/font/google";
 
 const outfit = Outfit({ subsets: ["latin"] });

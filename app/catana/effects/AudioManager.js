@@ -1,6 +1,6 @@
 import { Howl } from "howler";
 import { DEFAULT_THEME } from "./soundThemes";
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 
 export function createAudioManager({ bus, theme = DEFAULT_THEME, soundOverrides, settings = {} } = {}) {
   // Replace whole cue entries; omitted cues retain the selected base map.

@@ -19,7 +19,7 @@ import {
   buildStartPublicMatchmakingRequest,
 } from "../matchmaking/publicMatchmakingClient.js";
 import { clearLastActiveMatch, readLastActiveMatch } from "../utils/activeMatchStorage";
-import { tabAttention } from "../utils/tabAttention";
+import { tabAttention } from "../../../lib/client/tabAttention";
 
 function normalizeMatch(raw) {
   const playersObj = raw?.players || {};

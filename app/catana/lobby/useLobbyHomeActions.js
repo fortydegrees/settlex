@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "../../../lib/client/authClient";
 import { useMatchAlerts } from "../matchAlerts/useMatchAlerts.js";
 import { usePublicMatchmaking } from "./usePublicMatchmaking";
-import { normalizePlayerColorId } from "../theme/playerColors";
+import { normalizePlayerColorId } from "../../_features/theme/playerColors";
 import {
   clearLastActiveMatch,
   getCredentialsStorageKey,
@@ -21,7 +21,7 @@ import {
   buildSuggestedGuestIdentity,
   readStoredPlayerIdentity,
   writeStoredPlayerIdentity
-} from "./playerIdentityStorage";
+} from "../../_features/account/playerIdentityStorage";
 
 const DEFAULT_AUTH_OPTIONS = Object.freeze({
   emailPassword: true,

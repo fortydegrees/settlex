@@ -24,7 +24,7 @@ import {
 import { MatchAlertDialog } from "./MatchAlertDialog.js";
 import { resolveAlertMatch } from "./matchAlertJoin.js";
 import { getMatchAlertDisplayState } from "./matchAlertState.js";
-import { tabAttention } from "../utils/tabAttention.js";
+import { tabAttention } from "../../../lib/client/tabAttention.js";
 
 const OFF_PREFERENCE = Object.freeze({
   enabled: false,

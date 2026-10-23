@@ -1,7 +1,7 @@
 import React from "react";
 import { buildTopology, createEmptyState, ResourceType } from "@settlex/game-core";
 import { expect, fn, userEvent, within } from "@storybook/test";
-import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
+import { CATANA_TABLE_BACKGROUND } from "../../_features/theme/backgrounds";
 import { MobilePlayerCockpit } from "./MobilePlayerCockpit";
 import { OpponentPlayerBox } from "./OpponentPlayerBox";
 import { DockCard } from "./ActionsDock/DockCard";

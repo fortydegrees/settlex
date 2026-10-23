@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const serverPath = path.resolve(__dirname, "..", "server.js");
+const serverPath = path.resolve(process.cwd(), "server/server.js");
 
 describe("server route wiring", () => {
   it("parses JSON bodies for the idle acknowledge route", () => {

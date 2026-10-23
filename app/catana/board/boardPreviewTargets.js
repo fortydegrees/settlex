@@ -1,5 +1,5 @@
 import { canPlaceRobber } from "@settlex/game-core";
-import { TileTypes } from "../types";
+import { TileTypes } from "../../_features/theme/gameAssets";
 import { tilePixelVector } from "./coordinates";
 
 export const getValidRobberTiles = (G) => {

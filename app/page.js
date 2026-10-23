@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { getSessionAccount } from "../lib/server/accounts/getSessionAccount.js";
-import { HomeTableClient } from "./catana/home/HomeTableClient";
+import { HomeTableClient } from "./_features/home/HomeTableClient";
 
 async function getInitialHomeAccount() {
   try {

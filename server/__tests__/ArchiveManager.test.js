@@ -6,7 +6,7 @@ import { createArchivePool } from "./helpers/archiveTestUtils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(__dirname, "..", "..");
+const repoRoot = path.resolve(process.cwd(), ".");
 const archiveRoot = path.join(repoRoot, "server", "archive");
 
 const modulePath = (filename) => path.join(archiveRoot, filename);

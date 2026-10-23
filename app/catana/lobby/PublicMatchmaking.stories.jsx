@@ -3,11 +3,11 @@ import { createRoot } from "react-dom/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { expect, fn, within } from "@storybook/test";
 import { useLobbyHomeActions } from "./useLobbyHomeActions";
-import { HomeTableClient } from "../home/HomeTableClient";
+import { HomeTableClient } from "../../_features/home/HomeTableClient";
 import { MatchAlertContext } from "../matchAlerts/MatchAlertProvider";
 import { matchAlertFixtures } from "../dev/storybook/accountFixtures";
 import { readLastActiveMatch, writeLastActiveMatch } from "../utils/activeMatchStorage";
-import { tabAttention } from "../utils/tabAttention";
+import { tabAttention } from "../../../lib/client/tabAttention";
 import { consumeGameStartTransition, markGameStartTransition } from "../effects/gameStartTransition";
 
 const meta = {

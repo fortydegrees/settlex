@@ -32,7 +32,7 @@ This guide is intentionally prescriptive. Treat all "must" statements as non-neg
 The original `public/svgs/concepts/resource_icon_template_256.svg` study is
 preserved privately and omitted from the curated tree. The geometry contract
 below is self-contained; use the retained runtime icons selected by
-`app/catana/theme/themes.js` when authoring a compatible update. Recover the exact
+`app/_features/theme/themes.js` when authoring a compatible update. Recover the exact
 archived template only for a source-lineage investigation, not routine setup.
 
 Hard constraints:

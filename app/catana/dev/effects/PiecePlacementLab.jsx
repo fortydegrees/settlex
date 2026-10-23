@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { createPiecePlacementRunner } from "../../effects/placePiece";
 import { PLACE_PIECE_DEFAULT_TUNING } from "../../effects/placePieceDefaults";
 import { createSeededRandom } from "../../utils/seededRandom";
-import useWindowSize from "../../utils/useWindowSize";
+import useWindowSize from "../../../../lib/client/useWindowSize";
 import { getBoardLayout } from "../../board/boardLayout";
 import { buildRenderMaps } from "../../board/renderMaps";
 import { generateBoard, resolveBoardConfig } from "@settlex/game-core";

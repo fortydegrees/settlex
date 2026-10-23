@@ -1,5 +1,5 @@
 import React, { createElement as h } from "react";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { CATANA_TABLE_BACKGROUND } from "../../../_features/theme/backgrounds";
 
 export function LiveMatchLoadingShell() {
   return h(

@@ -3,7 +3,7 @@ import confetti from "canvas-confetti";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "../../ui/Button";
 import { DisplayText } from "../../ui/DisplayText";
-import { getPlayerNameHex } from "../theme/playerColors.js";
+import { getPlayerNameHex } from "../../_features/theme/playerColors.js";
 import {
   createGameOverModalActionHandlers,
   getMatchAlertResumeControlState,

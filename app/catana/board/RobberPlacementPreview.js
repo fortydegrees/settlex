@@ -5,7 +5,7 @@ import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 import {
   getRobberPreviewViewportScale,
   getScaledRobberPreviewSize,

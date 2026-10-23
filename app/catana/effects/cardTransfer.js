@@ -1,10 +1,10 @@
 import { gsap } from "gsap";
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 
 const RESOURCE_CARD_BACK_FILE = "cards/resource/card_rescardback.svg";
 const DEV_CARD_BACK_SRC = "/svgs/cards/development/card_devcardback.svg";

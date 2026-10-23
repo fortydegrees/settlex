@@ -1,5 +1,5 @@
 import React from "react";
-import { getBoardUnderlayPath } from "../theme/themes";
+import { getBoardUnderlayPath } from "../../_features/theme/themes";
 import {
   BOARD_UNDERLAY_DESIGN_SIZE,
   BOARD_UNDERLAY_VIEWBOX,

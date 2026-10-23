@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const boardPath = path.resolve(__dirname, "..", "Board.js");
+const boardPath = path.resolve(process.cwd(), "app/catana/board/Board.js");
 const interactionPath = path.resolve(
   __dirname,
   "..",

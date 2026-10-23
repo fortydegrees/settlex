@@ -1,5 +1,5 @@
 import React from "react";
-import Image from "./NextImage";
+import Image from "../../ui/NextImage";
 import { DEFAULT_STACK_MAX_WIDTH, getCardStackLayout } from "./CardStackLayout";
 import { getBadgeClasses } from "./CardStackStyles";
 

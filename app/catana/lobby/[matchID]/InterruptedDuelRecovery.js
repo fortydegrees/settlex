@@ -3,7 +3,7 @@
 import { Banner } from "../../../ui/Banner";
 import { Button } from "../../../ui/Button";
 import { Panel } from "../../../ui/Panel";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { CATANA_TABLE_BACKGROUND } from "../../../_features/theme/backgrounds";
 
 export function InterruptedDuelRecovery({
   pending,

@@ -52,7 +52,7 @@ describe("match-found attention wiring", () => {
   // through the real lobby hook/controller in PublicMatchmaking.stories.jsx.
 
   it("primes the board-ready cue while matchmaking is searching", () => {
-    const source = read("app/catana/home/HomeTableClient.js");
+    const source = read("app/_features/home/HomeTableClient.js");
 
     expect(source).toContain('audio.preload = "auto"');
     expect(source).toContain(

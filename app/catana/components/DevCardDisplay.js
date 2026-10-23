@@ -5,8 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Image from "./NextImage";
-import "./hudGlass.css";
+import Image from "../../ui/NextImage";
+import "../../_features/theme/hudGlass.css";
 import "./DevCardDisplay.css";
 import { getBadgeClasses } from "./CardStackStyles";
 import {

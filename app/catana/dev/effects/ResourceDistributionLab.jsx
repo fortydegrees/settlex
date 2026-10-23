@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { createResourceDistributionRunner } from "../../effects/resourceDistribution";
 import { buildResourceDistributionDemo } from "./resourceDistributionLabUtils";
 import { createSeededRandom } from "../../utils/seededRandom";
-import useWindowSize from "../../utils/useWindowSize";
+import useWindowSize from "../../../../lib/client/useWindowSize";
 import { getBoardLayout } from "../../board/boardLayout";
 
 const DEFAULT_SEED = 1;

@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getPieceSvgPath } from "./catana/theme/pieceAssets.js";
-import { SEAT_FALLBACK_COLOR_IDS } from "./catana/theme/playerColors.js";
-import { getResourceIconPath, getTilePath } from "./catana/theme/themes.js";
+import { getPieceSvgPath } from "./_features/theme/pieceAssets.js";
+import { SEAT_FALLBACK_COLOR_IDS } from "./_features/theme/playerColors.js";
+import { getResourceIconPath, getTilePath } from "./_features/theme/themes.js";
 
 export const SHARE_CARD_THEME_ID = "emoji";
 export const SHARE_CARD_FONT_PATH = "/fonts/Outfit-Medium.ttf";

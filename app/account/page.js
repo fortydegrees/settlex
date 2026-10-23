@@ -1,4 +1,4 @@
-import { AccountPageClient } from "./AccountPageClient";
+import { AccountPageClient } from "../_features/account/AccountPageClient";
 
 export const metadata = { title: "Account" };
 

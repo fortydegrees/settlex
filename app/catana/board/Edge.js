@@ -2,8 +2,8 @@ import React from "react";
 
 import { tilePixelVector, getEdgeTransform } from "./coordinates";
 import { ActionNode } from "./ActionNode";
-import { getBackgroundImageWithFallback } from "../theme/themes";
-import { getPieceSvgFile } from "../theme/pieceAssets.js";
+import { getBackgroundImageWithFallback } from "../../_features/theme/themes";
+import { getPieceSvgFile } from "../../_features/theme/pieceAssets.js";
 
 const EDGE_ROTATION_DEGREES = {
   NORTHEAST: 30,

@@ -1,6 +1,6 @@
 import { gsap } from "gsap";
-import { isDocumentHidden } from "../utils/visibility";
-import { getPlayerNameHex } from "../theme/playerColors";
+import { isDocumentHidden } from "../../../lib/client/visibility";
+import { getPlayerNameHex } from "../../_features/theme/playerColors";
 
 const LONGEST_ROAD_ICON_SRC = "/svgs/icon_longest_road.svg";
 const LARGEST_ARMY_ICON_SRC = "/svgs/icon_largest_army.svg";

@@ -4,8 +4,8 @@ import {
   getResourceIconPath,
   getTilePath,
   handleThemeImageError,
-} from "../theme/themes";
-import { getPlayerNameHex } from "../theme/playerColors";
+} from "../../_features/theme/themes";
+import { getPlayerNameHex } from "../../_features/theme/playerColors";
 import { DEV_CARD_SVGS, DEV_CARD_TEXT } from "./devCardDisplayUtils";
 import { MiniDiceFace } from "./MiniDiceFace";
 

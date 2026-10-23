@@ -6,8 +6,8 @@ import { Button } from "../../../ui/Button";
 import { Input } from "../../../ui/Input";
 import { Panel } from "../../../ui/Panel";
 import { Select } from "../../../ui/Select";
-import { CATANA_TABLE_BACKGROUND } from "../../theme/backgrounds";
-import { sanitizeDisplayName } from "../../utils/playerIdentity";
+import { CATANA_TABLE_BACKGROUND } from "../../../_features/theme/backgrounds";
+import { sanitizeDisplayName } from "../../../../lib/shared/playerIdentity";
 
 export function seatLabel(seat) {
   if (!seat) return "Seat";

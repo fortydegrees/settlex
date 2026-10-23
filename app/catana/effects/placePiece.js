@@ -7,10 +7,10 @@ import {
   SQRT3,
   tilePixelVector
 } from "../board/coordinates";
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 import { PLACE_PIECE_DEFAULT_TUNING } from "./placePieceDefaults";
-import { getBackgroundImageWithFallback } from "../theme/themes";
-import { getPieceSvgFile } from "../theme/pieceAssets.js";
+import { getBackgroundImageWithFallback } from "../../_features/theme/themes";
+import { getPieceSvgFile } from "../../_features/theme/pieceAssets.js";
 
 const PIECE_SCALE = 0.8;
 const PIECE_OFFSET_X = 0.5;

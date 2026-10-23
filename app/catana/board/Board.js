@@ -9,13 +9,13 @@ import { BoardUnderlay } from "./BoardUnderlay";
 import { BoardPortChannels } from "./BoardPortChannels";
 import "./Board.css";
 import { getBoardLayout } from "./boardLayout";
-import useWindowSize from "../utils/useWindowSize";
+import useWindowSize from "../../../lib/client/useWindowSize";
 import {
   useLatestPropsOnEffect,
   useEffectListener,
   useEffectState
 } from "bgio-effects/react";
-import { TileTypes } from "../types";
+import { TileTypes } from "../../_features/theme/gameAssets";
 import { buildRenderMaps } from "./renderMaps";
 import { buildPlayerViewMap } from "../utils/playerView";
 import {
@@ -23,7 +23,7 @@ import {
   resolveRobberPlacementMotionMode
 } from "./robberPlacementMotion";
 import { shouldSuppressBuildActions } from "./passiveBuildMode";
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 import { getBuildPickupPieceType } from "../utils/playerAction";
 import {
   getBoardInteractionState,

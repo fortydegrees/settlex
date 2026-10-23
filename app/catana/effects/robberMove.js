@@ -1,11 +1,11 @@
 import { gsap } from "gsap";
 import { tilePixelVector } from "../board/coordinates";
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 
 const ROBBER_SCALE = 1 / 1.5;
 const ROBBER_OFFSET_X = 0.6;

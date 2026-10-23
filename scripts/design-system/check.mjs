@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const owners = new Set([
   'app/globals.css',
   // Explicitly approved logo fitting and responsive lockup, not general UI type.
-  'app/catana/home/HomeBrand.module.css',
+  'app/_features/home/HomeBrand.module.css',
 ]);
 async function scan(directory) {
   const result = [];

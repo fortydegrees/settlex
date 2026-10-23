@@ -132,7 +132,7 @@ notification infrastructure is needed for these customization examples.
 
 ## Register a compatible board asset theme
 
-`app/catana/theme/themes.js` owns `CATANA_THEMES` and path resolution. The current
+`app/_features/theme/themes.js` owns `CATANA_THEMES` and path resolution. The current
 IDs are `emoji` (default), `palette-b` and `classic`. Classic redirects retired
 base tile/resource artwork to Emoji; it is not a separate complete historical
 asset pack.
@@ -225,7 +225,7 @@ turn hand-off, relevance checks and cancellation on unmount.
 Relevant checks (run only the scope your change needs):
 
 ```sh
-pnpm exec vitest run app/catana/__tests__/effects app/catana/__tests__/themeAssets.test.js
+pnpm exec vitest run app/catana/__tests__/effects app/_features/theme/__tests__/themeAssets.test.js
 pnpm exec eslint app/catana/effects/AudioManager.js app/catana/effects/GameEffects.js
 ```
 

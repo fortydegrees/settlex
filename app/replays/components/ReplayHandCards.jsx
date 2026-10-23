@@ -3,7 +3,7 @@ import { CardIcon } from "../../catana/components/PlayerActionContainer";
 import { CardStack } from "../../catana/components/CardStack";
 import { DevCardDisplay } from "../../catana/components/DevCardDisplay";
 import { DEV_CARD_SVGS } from "../../catana/components/devCardDisplayUtils";
-import { RESOURCE_ICON_FILES_BY_RESOURCE } from "../../catana/theme/themes";
+import { RESOURCE_ICON_FILES_BY_RESOURCE } from "../../_features/theme/themes";
 import resCardBackIcon from "../../../public/svgs/cards/resource/card_rescardback.svg";
 import devCardBackIcon from "../../../public/svgs/cards/development/card_devcardback.svg";
 

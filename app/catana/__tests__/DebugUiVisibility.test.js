@@ -6,14 +6,14 @@ import { describe, expect, it } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const gameScreenPath = path.resolve(__dirname, "..", "GameScreen.js");
+const gameScreenPath = path.resolve(process.cwd(), "app/catana/GameScreen.js");
 const leftMetaRailPath = path.resolve(
   __dirname,
   "..",
   "components",
   "LeftMetaRail.jsx"
 );
-const pagePath = path.resolve(__dirname, "..", "page.js");
+const pagePath = path.resolve(process.cwd(), "app/catana/page.js");
 const lobbyMatchClientPath = path.resolve(
   __dirname,
   "..",

@@ -15,14 +15,14 @@ import { MobilePrimaryTurnButton } from "./MobilePrimaryTurnButton";
 import { useLiveTurnTimer } from "./LiveTurnTimer";
 import { useLocalPlayerDockModel } from "./useLocalPlayerDockModel";
 import { getBuildPickupPieceType } from "../utils/playerAction";
-import { getPlayerColorOption } from "../theme/playerColors";
+import { getPlayerColorOption } from "../../_features/theme/playerColors";
 import {
   RESOURCE_ICON_FILES_BY_RESOURCE,
   getClassicResourceIconPath,
   getResourceIconPath,
   handleThemeImageError,
-} from "../theme/themes";
-import "./hudGlass.css";
+} from "../../_features/theme/themes";
+import "../../_features/theme/hudGlass.css";
 
 const RESOURCE_ORDER = Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE);
 

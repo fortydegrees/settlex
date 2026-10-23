@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { getPlayerNameHex } from "../../catana/theme/playerColors";
+import { getPlayerNameHex } from "../../_features/theme/playerColors";
 
 const FALLBACK_COLORS = ["#f59e0b", "#3b82f6", "#22c55e", "#a855f7"];
 const PLOT_LEFT = 30;

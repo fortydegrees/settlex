@@ -1,4 +1,4 @@
-import { SEAT_FALLBACK_COLOR_IDS } from "../theme/playerColors.js";
+import { SEAT_FALLBACK_COLOR_IDS } from "../../_features/theme/playerColors.js";
 
 export const UI_PLAYER_COLORS = [...SEAT_FALLBACK_COLOR_IDS];
 

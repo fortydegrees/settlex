@@ -1,6 +1,6 @@
 import { getVictoryPoints } from "@settlex/game-core";
-import { resolveEffectivePlayerColors } from "./playerColorsInGame";
-import { mergePlayerMetadata, sanitizeDisplayName } from "./playerIdentity";
+import { resolveEffectivePlayerColors } from "../../_features/theme/playerColorsInGame";
+import { mergePlayerMetadata, sanitizeDisplayName } from "../../../lib/shared/playerIdentity";
 import { buildPlayerViewMap } from "./playerView";
 
 export function buildPlayerMetadataMaps(mergedMatchData = []) {

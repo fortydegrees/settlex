@@ -1,11 +1,11 @@
 import { gsap } from "gsap";
 import { tilePixelVector } from "../board/coordinates";
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError,
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 
 const TOKEN_CLASS = "pointer-events-none drop-shadow-lg";
 const RESOURCE_CARD_BACK_FILE = "cards/resource/card_rescardback.svg";

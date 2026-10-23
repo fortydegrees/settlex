@@ -17,13 +17,13 @@ import {
 } from "@settlex/game-core";
 import { getBuildPickupPieceType } from "../utils/playerAction";
 import { useLocalPlayerDockModel } from "./useLocalPlayerDockModel";
-import "./hudGlass.css";
+import "../../_features/theme/hudGlass.css";
 import {
   RESOURCE_ICON_FILES_BY_RESOURCE,
   getClassicResourceIconPath,
   getResourceIconPath,
   handleThemeImageError,
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 
 const FALLBACK_DICE_ROLL_MS = 1000;
 const FALLBACK_DICE_SLOWDOWN_START_MS = 400;

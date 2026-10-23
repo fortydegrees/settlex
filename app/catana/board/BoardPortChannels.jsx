@@ -1,5 +1,5 @@
 import React from "react";
-import { TileTypes } from "../types";
+import { TileTypes } from "../../_features/theme/gameAssets";
 import { SQRT3, getNodeDelta, tilePixelVector } from "./coordinates";
 import { getPortRenderModel } from "./portLayout";
 

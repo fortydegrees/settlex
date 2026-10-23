@@ -1,4 +1,4 @@
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 import { DEFAULT_HAPTIC_THEME } from "./hapticThemes";
 
 const DEFAULT_MIN_INTERVAL_MS = 80;

@@ -1,10 +1,10 @@
 import { gsap } from "gsap";
-import { isDocumentHidden } from "../utils/visibility";
+import { isDocumentHidden } from "../../../lib/client/visibility";
 import {
   getClassicSvgPath,
   getThemedSvgPath,
   handleThemeImageError
-} from "../theme/themes";
+} from "../../_features/theme/themes";
 
 const DEV_CARD_FACE_SVGS = Object.freeze({
   knight: "/svgs/cards/development/knight.svg",

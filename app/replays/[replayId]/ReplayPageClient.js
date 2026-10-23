@@ -1,7 +1,7 @@
 "use client";
 
 import { createElement as h, useMemo } from "react";
-import { CATANA_TABLE_BACKGROUND } from "../../catana/theme/backgrounds";
+import { CATANA_TABLE_BACKGROUND } from "../../_features/theme/backgrounds";
 import { PostgameGameBoard } from "../PostgameGameBoard";
 import { hydrateArchivedReplayPayload } from "../archivedReplayPayload.js";
 

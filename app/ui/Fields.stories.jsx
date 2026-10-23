@@ -6,7 +6,7 @@ import { Button } from "./Button";
 import {
   DEFAULT_PLAYER_COLOR_ID,
   PLAYER_COLOR_PICKER_OPTIONS,
-} from "../catana/theme/playerColors";
+} from "../_features/theme/playerColors";
 
 function PlayerColourPicker() {
   const [color, setColor] = React.useState(DEFAULT_PLAYER_COLOR_ID);

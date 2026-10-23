@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useMemo } from "react";
-import Image from "./NextImage";
+import Image from "../../ui/NextImage";
 import {
   DEV_CARD_SVGS,
   DEV_CARD_TEXT,

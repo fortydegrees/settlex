@@ -13,9 +13,9 @@ explicit owned contracts in `UI_STYLE_EXCEPTIONS.md`. A passing policy check mea
   It does not redefine existing Tailwind defaults or globally restyle headings.
 - `app/globals.css`: owned material and interaction recipes, font registration,
   focus treatment, motion and reduced-motion/transparency behavior.
-- `app/catana/home/HomeBrand.module.css`: deliberate wordmark-fitting and
+- `app/_features/home/HomeBrand.module.css`: deliberate wordmark-fitting and
   responsive logo-layout exception, owned by the wordmark integration task.
-- `app/catana/home/HomeSkyText.module.css`: title-screen ambient copy over the
+- `app/_features/home/HomeSkyText.module.css`: title-screen ambient copy over the
   blue field, using semantic home-chrome ink tokens; it does not set the
   wordmark, action-button or popover-panel colours.
 - `app/ui/*`: normal product controls over the existing Base UI behavior layer.
