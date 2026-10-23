@@ -49,11 +49,11 @@ export const Complete = {
 export const Middle = {
   render: () => <ReplayPageClient replay={replay} record={record} initialFrameIndex={1200} initialPerspectivePlayerID="0" />,
   play: async ({ canvasElement }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     if (screen.queryByRole("button", { name: "Open replay tray" })) {
       await userEvent.click(screen.getByRole("button", { name: "Open replay tray" }));
     }
-    expect(screen.getByRole("slider", { name: "Seek through the match" })).toHaveValue("1200");
+    expect(await screen.findByRole("slider", { name: "Seek through the match" })).toHaveValue("1200");
   },
 };
 

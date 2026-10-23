@@ -118,3 +118,14 @@ Pure compact replay adapters and shared text/alert models now serve browser and
 server consumers from `lib/`. Rules, notation and authoritative privacy retain
 their existing owners. Runtime tests moved into the server/lib lane without
 changing the runner; the game UI shorthand is now `pnpm test:game-ui`.
+
+The organisation pass retained all 318 test files and 36 story files. Combined
+qualification passed 160 app test files, 169 engine tests, and 614 server/lib
+tests with 18 environment-dependent skips, plus UI policy, lint, Storybook and
+a production build using server placeholders. Production HTTP checks preserved
+the five dev-route and scenario-API guards. Browser checks covered purchase/card
+privacy, home/account/profile, matchmaking/reconnect stories and complete/prefix
+replays at desktop and phone sizes. Independent source review found no behavioral
+or architectural issue; a whitespace check and an existing mobile story's portal
+query were corrected. This is local qualification, not real-PostgreSQL, physical
+device or deployment evidence.

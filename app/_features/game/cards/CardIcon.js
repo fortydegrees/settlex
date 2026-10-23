@@ -32,7 +32,7 @@ export const CardIcon = ({
       type={onResourceClick ? "button" : undefined}
       aria-label={onResourceClick ? `Trade ${resource}` : undefined}
       onClick={onResourceClick ? handleClick : undefined}
-      
+
     >
       <div className={`${compact ? "w-5 type-hud-resource-wide" : "w-7 type-hud-resource-desktop"} text-center select-none text-ink-hud-on-glass mr-ui-1 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]`}>
         <AnimatedCount
