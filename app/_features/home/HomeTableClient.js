@@ -11,9 +11,9 @@ import React, {
 import { markGameStartTransition } from "../../catana/effects/gameStartTransition.js";
 import { HomeDemoBoardPoster } from "./demo/HomeDemoBoardPoster";
 import { createHomeDemoPieceState } from "./demo/homeDemoSequence";
-import { useLobbyHomeActions } from "../../catana/lobby/useLobbyHomeActions";
-import { useMatchAlerts } from "../../catana/matchAlerts/useMatchAlerts.js";
-import { consumePlayOnlineIntent } from "../../catana/matchmaking/matchmakingRescue.js";
+import { useLobbyHomeActions } from "../matches/lobby/useLobbyHomeActions";
+import { useMatchAlerts } from "../matches/alerts/useMatchAlerts.js";
+import { consumePlayOnlineIntent } from "../matches/matchmaking/matchmakingRescue.js";
 import { CATANA_TABLE_BACKGROUND } from "../theme/backgrounds";
 import {
   HomeTitleChrome,

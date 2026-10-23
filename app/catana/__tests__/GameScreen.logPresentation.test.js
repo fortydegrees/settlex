@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const screenPath = path.resolve(process.cwd(), "app/catana/GameScreen.js");
+const screenPath = path.resolve(__dirname, "..", "GameScreen.js");
 
 describe("GameScreen log presentation source", () => {
   it("uses controlled replay entries without changing live presentation", () => {

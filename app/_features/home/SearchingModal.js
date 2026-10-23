@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "../../ui/Button";
-import { MatchAlertControl } from "../../catana/matchAlerts/MatchAlertControl";
+import { MatchAlertControl } from "../matches/alerts/MatchAlertControl";
 import {
   getMatchmakingRescueStage,
   getSearchCancelPresentation,
-} from "../../catana/matchmaking/matchmakingRescue.js";
+} from "../matches/matchmaking/matchmakingRescue.js";
 
 export function SearchingModal({
   searchState,

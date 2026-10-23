@@ -1,7 +1,7 @@
 import {
   HUMAN_GAME_MATCH_ALERT_PAUSE_MESSAGE,
   getMatchAlertDisplayState,
-} from "../../matchAlerts/matchAlertState";
+} from "../../../../lib/shared/matchAlertState";
 
 const supported = { supported: true, permission: "granted" };
 

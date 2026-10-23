@@ -11,7 +11,7 @@ const componentPath = path.resolve(
   "components",
   "devCardDisplayUtils.js"
 );
-const publicSvgDir = path.resolve(process.cwd(), "public/svgs");
+const publicSvgDir = path.resolve(__dirname, "..", "..", "..", "public", "svgs");
 
 describe("DevCardDisplay asset wiring", () => {
   it("uses the current development-card folder SVG names", () => {

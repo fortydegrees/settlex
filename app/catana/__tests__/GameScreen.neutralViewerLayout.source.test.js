@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const gameScreenPath = path.resolve(process.cwd(), "app/catana/GameScreen.js");
+const gameScreenPath = path.resolve(__dirname, "..", "GameScreen.js");
 
 describe("GameScreen neutral viewer layout source", () => {
   it("partitions neutral opponents and renders a public bottom player box", () => {

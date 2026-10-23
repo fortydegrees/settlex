@@ -1,7 +1,7 @@
 import { ReplayPageClient } from "./[replayId]/ReplayPageClient";
 import { PostgameGameBoard } from "./PostgameGameBoard";
 import { buildNotationReplayFile } from "./notationReplay";
-import { MatchAlertContext } from "../catana/matchAlerts/MatchAlertProvider";
+import { MatchAlertContext } from "../_features/matches/alerts/MatchAlertProvider";
 import record from "../../docs/notation/examples/settlex-complete.han.json";
 import { expect, userEvent, waitFor, within } from "@storybook/test";
 

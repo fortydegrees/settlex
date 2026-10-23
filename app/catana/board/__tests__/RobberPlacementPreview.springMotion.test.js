@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const previewPath = path.resolve(process.cwd(), "app/catana/board/RobberPlacementPreview.js");
+const previewPath = path.resolve(__dirname, "..", "RobberPlacementPreview.js");
 
 describe("RobberPlacementPreview spring motion", () => {
   it("uses magnetic target selection with a spring loop", () => {

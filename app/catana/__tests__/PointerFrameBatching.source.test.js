@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const readCatanaSource = (fileName) =>
   fs.readFileSync(path.resolve(__dirname, "..", fileName), "utf8");
 const devCardSource = fs.readFileSync(
-  path.resolve(process.cwd(), "app/catana/components/DevCardDisplay.js"),
+  path.resolve(__dirname, "..", "components", "DevCardDisplay.js"),
   "utf8"
 );
 

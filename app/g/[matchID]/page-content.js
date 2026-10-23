@@ -116,7 +116,7 @@ export const createGMatchPage = ({
       });
       const MatchPageClientResolved =
         MatchPageClientImpl ??
-        (await import("../../catana/lobby/[matchID]/MatchPageClient.js"))
+        (await import("../../_features/matches/room/MatchPageClient.js"))
           .MatchPageClient;
 
       return h(MatchPageClientResolved, {

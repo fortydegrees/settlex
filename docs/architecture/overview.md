@@ -88,7 +88,7 @@ lobby-to-game transition.
 | How does the game register turns and moves? | `lib/game-runtime/Game.js` |
 | How are seeded boards and player/effect views prepared? | `lib/game-runtime/setup/` |
 | Where are authoritative logs and recipient filtering? | `lib/game-runtime/log/` |
-| How are ambiguous requests recovered? | `app/catana/lobby/usePublicMatchmaking.js` and its React stories |
+| How are ambiguous requests recovered? | `app/_features/matches/matchmaking/usePublicMatchmaking.js` and its React stories |
 | How do server timers reach the board? | `server/timers/` and `app/catana/matchStatus/` |
 | Where are board drawing and placement previews? | `app/catana/board/Board.js`, `BuildPlacementPreview.js`, `RobberPlacementPreview.js` |
 | How does an event become animation/audio? | `app/catana/effects/GameEffects.js`, `registry.js`, `placePiece.js` |

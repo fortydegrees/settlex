@@ -6,21 +6,15 @@ import { describe, expect, it } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const gameScreenPath = path.resolve(process.cwd(), "app/catana/GameScreen.js");
+const gameScreenPath = path.resolve(__dirname, "..", "GameScreen.js");
 const leftMetaRailPath = path.resolve(
   __dirname,
   "..",
   "components",
   "LeftMetaRail.jsx"
 );
-const pagePath = path.resolve(process.cwd(), "app/catana/page.js");
-const lobbyMatchClientPath = path.resolve(
-  __dirname,
-  "..",
-  "lobby",
-  "[matchID]",
-  "MatchPageClient.js"
-);
+const pagePath = path.resolve(__dirname, "..", "page.js");
+const lobbyMatchClientPath = path.resolve(process.cwd(), "app/_features/matches/room/MatchPageClient.js");
 
 describe("debug UI visibility", () => {
   it("does not render the in-game debug panel in Catana clients", () => {

@@ -23,7 +23,7 @@ import {
   getGameOverTitle
 } from "./utils/gameScreenDisplayModel";
 import { getOpponentHudLayout } from "./utils/opponentHudLayout";
-import { mergeVisibleLogEntries } from "./utils/disconnectPresence";
+import { mergeVisibleLogEntries } from "../_features/matches/presence/disconnectPresence";
 import {
   buildDevCardBuyTransfer,
   buildDiscardTransfers,
@@ -99,19 +99,19 @@ import { CATANA_TABLE_BACKGROUND } from "../_features/theme/backgrounds";
 import {
   clearLastActiveMatch,
   readLastActiveMatch
-} from "./utils/activeMatchStorage";
+} from "../_features/matches/session/activeMatchStorage";
 import { shouldAutoReady } from "./utils/preGameReady";
 import {
   buildSandboxAwardClaimPayload,
   buildSandboxDevCardPlayPayload,
   buildSandboxRobberMovePayload
 } from "./dev/sandbox/effectPayloads";
-import { useMatchAlerts } from "./matchAlerts/useMatchAlerts.js";
-import { getCurrentMatchAlertGameRegistration } from "./matchAlerts/matchAlertProviderActions.js";
+import { useMatchAlerts } from "../_features/matches/alerts/useMatchAlerts.js";
+import { getCurrentMatchAlertGameRegistration } from "../_features/matches/alerts/matchAlertProviderActions.js";
 import { tabAttention } from "../../lib/client/tabAttention";
 import { getGamePageTitle } from "./utils/gamePageTitle";
-import { useMatchClockAndPresence } from "./matchStatus/useMatchClockAndPresence";
-import { useIdleAcknowledgement } from "./matchStatus/useIdleAcknowledgement";
+import { useMatchClockAndPresence } from "../_features/matches/presence/useMatchClockAndPresence";
+import { useIdleAcknowledgement } from "../_features/matches/presence/useIdleAcknowledgement";
 
 let tradeDiscardModalPromise;
 const loadTradeDiscardModal = () =>

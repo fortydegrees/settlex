@@ -6,8 +6,8 @@ import { describe, expect, it } from "vitest";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const gameScreenPath = path.resolve(process.cwd(), "app/catana/GameScreen.js");
-const gamePath = path.resolve(process.cwd(), "lib/game-runtime/Game.js");
+const gameScreenPath = path.resolve(__dirname, "..", "GameScreen.js");
+const gamePath = path.resolve(__dirname, "..", "..", "..", "lib", "game-runtime", "Game.js");
 
 describe("GameScreen dev card reveal wiring", () => {
   it("starts the reveal from the authoritative buyDevCardReveal effect for the local player only", () => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getTimerRemainingMs } from "../utils/timerSnapshot";
+import { getTimerRemainingMs } from "../../_features/matches/presence/timerSnapshot";
 
 export const LIVE_TURN_TIMER_INTERVAL_MS = 250;
 export const LOW_TIMER_THRESHOLD_SECONDS = 5;

@@ -7,7 +7,7 @@ import { shouldOfferMatchAlertResume } from "../components/gameOverAlertLifecycl
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const screenPath = path.resolve(process.cwd(), "app/catana/GameScreen.js");
+const screenPath = path.resolve(__dirname, "..", "GameScreen.js");
 const displayModelPath = path.resolve(
   __dirname,
   "..",

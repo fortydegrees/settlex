@@ -13,7 +13,7 @@ const gameScreenSource = fs.readFileSync(
 const matchPageSource = fs.readFileSync(
   path.resolve(
     process.cwd(),
-    "app/catana/lobby/[matchID]/MatchPageClient.js"
+    "app/_features/matches/room/MatchPageClient.js"
   ),
   "utf8"
 );

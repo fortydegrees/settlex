@@ -6,7 +6,7 @@ import {
   setMatchAlertEnabled,
 } from "../../../lib/server/matchAlerts/matchAlertStore.js";
 import { getWebPushConfig } from "../../../lib/server/matchAlerts/webPushConfig.js";
-import { HUMAN_GAME_MATCH_ALERT_PAUSE_MESSAGE } from "../../catana/matchAlerts/matchAlertState.js";
+import { HUMAN_GAME_MATCH_ALERT_PAUSE_MESSAGE } from "../../../lib/shared/matchAlertState.js";
 
 const unauthorizedResponse = () =>
   NextResponse.json(

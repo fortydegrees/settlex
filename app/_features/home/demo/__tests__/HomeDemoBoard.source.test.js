@@ -10,7 +10,7 @@ const readAppFile = (...parts) =>
 
 describe("Home demo board source", () => {
   it("has a committed piece layer for demo-owned final state", () => {
-    const source = readAppFile("app/_features/home/demo/HomeDemoPieceLayer.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoPieceLayer.js");
     expect(source).toContain("export function HomeDemoPieceLayer");
     expect(source).toContain("roadsByEdgeId");
     expect(source).toContain("buildingsByNodeId");
@@ -19,7 +19,7 @@ describe("Home demo board source", () => {
   });
 
   it("renders a board-only home demo surface without game moves", () => {
-    const source = readAppFile("app/_features/home/demo/HomeDemoBoard.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoBoard.js");
     expect(source).toContain("export function HomeDemoBoard");
     expect(source).toContain("<BoardUnderlay");
     expect(source).toContain("<BoardPortChannels");
@@ -31,8 +31,8 @@ describe("Home demo board source", () => {
   });
 
   it("hides fallback-sized board geometry until the real viewport is measured", () => {
-    const homeSource = readAppFile("app/_features/home/demo/HomeDemoBoard.js");
-    const boardSource = readAppFile("app/catana/board/Board.js");
+    const homeSource = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoBoard.js");
+    const boardSource = readAppFile("app/catana/app/catana/app/catana/board/Board.js");
 
     expect(homeSource).toContain("isMeasured");
     expect(homeSource).toContain("useBrowserLayoutEffect");
@@ -42,8 +42,8 @@ describe("Home demo board source", () => {
   });
 
   it("renders a static homepage board poster while the measured board hydrates", () => {
-    const homeTableSource = readAppFile("app/_features/home/HomeTableClient.js");
-    const posterSource = readAppFile("app/_features/home/demo/HomeDemoBoardPoster.js");
+    const homeTableSource = readAppFile("app/catana/app/catana/app/_features/home/HomeTableClient.js");
+    const posterSource = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoBoardPoster.js");
 
     expect(homeTableSource).toContain("HomeDemoBoardPoster");
     expect(homeTableSource).toContain("isBoardMeasured");
@@ -57,8 +57,8 @@ describe("Home demo board source", () => {
   });
 
   it("keeps the static homepage board poster visually aligned with live board details", () => {
-    const posterSource = readAppFile("app/_features/home/demo/HomeDemoBoardPoster.js");
-    const posterCssSource = readAppFile("app/_features/home/demo/HomeDemoBoardPoster.module.css");
+    const posterSource = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoBoardPoster.js");
+    const posterCssSource = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoBoardPoster.module.css");
 
     expect(posterSource).toContain("getNodeDelta");
     expect(posterSource).toContain("getPosterConnectorBarStyle");
@@ -87,7 +87,7 @@ describe("Home demo board source", () => {
   });
 
   it("runs homepage placement effects without the full live-game effect stack", () => {
-    const source = readAppFile("app/_features/home/demo/HomeDemoEffectBridge.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoEffectBridge.js");
     expect(source).toContain("export function HomeDemoEffectBridge");
     expect(source).toContain("createPiecePlacementRunner");
     expect(source).toContain("applyHomeDemoEvent");
@@ -98,7 +98,7 @@ describe("Home demo board source", () => {
   });
 
   it("scopes slower homepage placement tuning to scene-start drops only", () => {
-    const source = readAppFile("app/_features/home/demo/HomeDemoEffectBridge.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoEffectBridge.js");
 
     expect(source).toContain("function getHomeDemoPlacementTuning(event)");
     expect(source).toContain("event?.setupPhase");
@@ -112,7 +112,7 @@ describe("Home demo board source", () => {
   });
 
   it("animates scene setup pieces before each scene's normal events", () => {
-    const source = readAppFile("app/_features/home/demo/HomeDemoEffectBridge.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/demo/HomeDemoEffectBridge.js");
 
     expect(source).toContain("getHomeDemoSceneSetupEvents");
     expect(source).toContain("onPieceStateChange(createHomeDemoPieceState())");
@@ -126,7 +126,7 @@ describe("Home demo board source", () => {
   });
 
   it("wires the home table client to the demo board without sandbox game state", () => {
-    const source = readAppFile("app/_features/home/HomeTableClient.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/HomeTableClient.js");
     expect(source).toContain("HomeDemoBoard");
     expect(source).toContain("HomeDemoEffectBridge");
     expect(source).toContain("React.lazy");
@@ -138,8 +138,8 @@ describe("Home demo board source", () => {
   });
 
   it("promotes the home table client to the root homepage with real lobby entrypoints", () => {
-    const rootSource = readAppFile("app/page.js");
-    const source = readAppFile("app/_features/home/HomeTableClient.js");
+    const rootSource = readAppFile("app/catana/app/catana/app/page.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/HomeTableClient.js");
 
     expect(rootSource).toContain('import { headers } from "next/headers";');
     expect(rootSource).toContain("getSessionAccount");
@@ -158,7 +158,7 @@ describe("Home demo board source", () => {
   });
 
   it("renders the shared account entry modal for auth and play username entry", () => {
-    const source = readAppFile("app/_features/home/HomeTableClient.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/home/HomeTableClient.js");
     expect(source).toContain("<LazyAccountEntryModal");
     expect(source).toContain("mode={lobby.entryModal.mode}");
     expect(source).toContain("intent={lobby.entryModal.intent}");
@@ -170,7 +170,7 @@ describe("Home demo board source", () => {
   });
 
   it("loads auth options so unavailable social providers are not shown locally", () => {
-    const source = readAppFile("app/catana/lobby/useLobbyHomeActions.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/matches/lobby/useLobbyHomeActions.js");
 
     expect(source).toContain("initialAccount");
     expect(source).toContain("getAccountIdentity");
@@ -183,7 +183,7 @@ describe("Home demo board source", () => {
   });
 
   it("signs out homepage identity through the server session before clearing local state", () => {
-    const source = readAppFile("app/catana/lobby/useLobbyHomeActions.js");
+    const source = readAppFile("app/catana/app/catana/app/_features/matches/lobby/useLobbyHomeActions.js");
 
     expect(source).toContain('route: "/api/account/logout"');
     expect(source).toContain("writeStoredPlayerIdentity(window.localStorage, {})");

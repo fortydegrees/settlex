@@ -1,7 +1,7 @@
 import './globals.css'
 import { Outfit } from 'next/font/google'
-import { GlobalReconnectBanner } from './catana/components/GlobalReconnectBanner'
-import { MatchAlertProvider } from './catana/matchAlerts/MatchAlertProvider'
+import { GlobalReconnectBanner } from './_features/matches/session/GlobalReconnectBanner'
+import { MatchAlertProvider } from './_features/matches/alerts/MatchAlertProvider'
 import { SITE_METADATA } from './metadata.js'
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })

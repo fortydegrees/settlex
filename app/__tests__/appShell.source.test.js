@@ -35,12 +35,12 @@ describe("match-alert app shell", () => {
 
   it("exposes all provider actions through the tested browser-action module", () => {
     const provider = readSource(
-      "app/catana/matchAlerts/MatchAlertProvider.js"
+      "app/_features/matches/alerts/MatchAlertProvider.js"
     );
     const actions = readSource(
-      "app/catana/matchAlerts/matchAlertProviderActions.js"
+      "app/_features/matches/alerts/matchAlertProviderActions.js"
     );
-    const hook = readSource("app/catana/matchAlerts/useMatchAlerts.js");
+    const hook = readSource("app/_features/matches/alerts/useMatchAlerts.js");
 
     for (const action of [
       "refresh",

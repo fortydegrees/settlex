@@ -8,7 +8,7 @@ import {
 import { Popover } from "../../ui/Popover";
 import { Button } from "../../ui/Button";
 import { EMOJI_OPTIONS } from "../account/playerIdentityStorage";
-import { MatchAlertControl } from "../../catana/matchAlerts/MatchAlertControl";
+import { MatchAlertControl } from "../matches/alerts/MatchAlertControl";
 import { getPlayerColorOption } from "../theme/playerColors";
 import { getSystemAccountMenuItems } from "./systemAccountMenuModel";
 import styles from "./SystemAccountMenu.module.css";

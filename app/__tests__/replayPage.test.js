@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(process.cwd(), ".");
+const repoRoot = path.resolve(__dirname, "..", "..");
 const replayPagePath = path.join(repoRoot, "app", "replays", "[replayId]", "page-content.js");
 
 const loadReplayPageModule = async () => {
