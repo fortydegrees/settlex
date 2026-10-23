@@ -1,6 +1,6 @@
 import React from "react";
-import { Edge } from "../../../catana/board/Edge";
-import { Node } from "../../../catana/board/Node";
+import { Edge } from "../../game/board/Edge";
+import { Node } from "../../game/board/Node";
 
 export function HomeDemoPieceLayer({
   pieceState,

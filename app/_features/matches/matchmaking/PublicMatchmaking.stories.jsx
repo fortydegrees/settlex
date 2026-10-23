@@ -8,7 +8,7 @@ import { MatchAlertContext } from "../alerts/MatchAlertProvider";
 import { matchAlertFixtures } from "../../../catana/dev/storybook/accountFixtures";
 import { readLastActiveMatch, writeLastActiveMatch } from "../session/activeMatchStorage";
 import { tabAttention } from "../../../../lib/client/tabAttention";
-import { consumeGameStartTransition, markGameStartTransition } from "../../../catana/effects/gameStartTransition";
+import { consumeGameStartTransition, markGameStartTransition } from "../../game/effects/gameStartTransition";
 
 const meta = {
   title: "Game State/Public Matchmaking/Lifecycle",

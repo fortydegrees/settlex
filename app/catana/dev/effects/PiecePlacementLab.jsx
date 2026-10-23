@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useMemo, useRef, useState } from "react";
-import { createPiecePlacementRunner } from "../../effects/placePiece";
-import { PLACE_PIECE_DEFAULT_TUNING } from "../../effects/placePieceDefaults";
+import { createPiecePlacementRunner } from "../../../_features/game/effects/placePiece";
+import { PLACE_PIECE_DEFAULT_TUNING } from "../../../_features/game/effects/placePieceDefaults";
 import { createSeededRandom } from "../../utils/seededRandom";
 import useWindowSize from "../../../../lib/client/useWindowSize";
-import { getBoardLayout } from "../../board/boardLayout";
-import { buildRenderMaps } from "../../board/renderMaps";
+import { getBoardLayout } from "../../../_features/game/board/boardLayout";
+import { buildRenderMaps } from "../../../_features/game/board/renderMaps";
 import { generateBoard, resolveBoardConfig } from "@settlex/game-core";
 
 const DEFAULT_SEED = 1;

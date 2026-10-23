@@ -13,14 +13,14 @@ source for a new asset rather than relying on an archived filename.
 
 ## Replace one game cue
 
-The shipped map is `app/catana/effects/soundThemes.js` (`DEFAULT_THEME`).
+The shipped map is `app/_features/game/effects/soundThemes.js` (`DEFAULT_THEME`).
 Place your own licensed clip under `public/sounds/`; reference it as
 `/sounds/your-file.mp3`. Consult the
 [Sound Design Guide](../agent/skills/catana-brand/SOUND_DESIGN_GUIDE.md)
 for the current sound family and audition workflow.
 
 For an application-specific variant, define a stable map outside the component
-and pass it to the existing `GameEffects` call in `app/catana/GameScreen.js`:
+and pass it to the existing `GameEffects` call in `app/_features/game/GameScreen.js`:
 
 ```js
 // At module scope; do not modify DEFAULT_THEME in place.
@@ -51,8 +51,8 @@ bus.emit({ type: "cue", payload: { name: "build:settlement" } });
 // On teardown: audio.destroy();
 ```
 
-Import `createAudioManager` from `app/catana/effects/AudioManager.js` and
-`createEffectBus` from `app/catana/effects/EffectBus.js` when constructing a
+Import `createAudioManager` from `app/_features/game/effects/AudioManager.js` and
+`createEffectBus` from `app/_features/game/effects/EffectBus.js` when constructing a
 standalone preview. The production board already owns both; reuse its bus.
 
 ### Partial-map contract
@@ -93,8 +93,8 @@ extra delay is for exploration; put an approved timing change in the runner.
 | Responsibility | Concrete owner |
 | --- | --- |
 | Authoritative gameplay event and effect payload | `lib/game-runtime/Game.js`, `lib/game-runtime/moves/` and `game-core/`; inspect the move and effects-plugin emission |
-| Consume bgio-effects events and translate to presentation events | `app/catana/effects/GameEffects.js`, e.g. `placePiece` → `build:place`, `roll` → dice cue + visual plan |
-| Route semantic event to a runner | `app/catana/effects/registry.js` |
+| Consume bgio-effects events and translate to presentation events | `app/_features/game/effects/GameEffects.js`, e.g. `placePiece` → `build:place`, `roll` → dice cue + visual plan |
+| Route semantic event to a runner | `app/_features/game/effects/registry.js` |
 | Emit the cue at the visual moment | `placePiece.js`, `resourceDistribution.js`, `cardTransfer.js`, `devCardPlay.js` |
 | Choose file, variants, volume and background permission | `soundThemes.js` |
 | Unlock, mute policy, schedule playback, unload | `AudioManager.js`; global board mute is in `GameScreen.js` |
@@ -226,7 +226,7 @@ Relevant checks (run only the scope your change needs):
 
 ```sh
 pnpm exec vitest run app/catana/__tests__/effects app/_features/theme/__tests__/themeAssets.test.js
-pnpm exec eslint app/catana/effects/AudioManager.js app/catana/effects/GameEffects.js
+pnpm exec eslint app/_features/game/effects/AudioManager.js app/_features/game/effects/GameEffects.js
 ```
 
 Existing assets in this repository were used for local technical experiments;

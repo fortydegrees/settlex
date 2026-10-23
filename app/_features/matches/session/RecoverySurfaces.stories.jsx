@@ -7,8 +7,8 @@ import {
   getReconnectStatusBannerProps,
 } from "./GlobalReconnectBanner";
 import { GlassPillButton } from "../../../ui/GlassPillButton";
-import { IdlePromptModal } from "../../../catana/components/IdlePromptModal";
-import { ResignConfirmDialog } from "../../../catana/components/ResignConfirmDialog";
+import { IdlePromptModal } from "../../game/dialogs/IdlePromptModal";
+import { ResignConfirmDialog } from "../../game/dialogs/ResignConfirmDialog";
 import { StatusBanner } from "../../../ui/StatusBanner";
 
 const meta = {

@@ -7,7 +7,7 @@ import {
   META_PANEL_FRAME_CLASS_NAME,
   META_PANEL_GLASS_STYLE,
   META_PANEL_HEADER_CLASS_NAME,
-} from "../../catana/components/metaPanelChrome";
+} from "../../_features/game/feed/metaPanelChrome";
 import useWindowSize from "../../../lib/client/useWindowSize";
 import { Button } from "../../ui/Button";
 import { Select } from "../../ui/Select";

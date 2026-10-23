@@ -9,7 +9,7 @@ import {
   useReducer,
   useRef,
 } from "react";
-import { GameScreenWithEffects } from "../catana/GameScreen";
+import { GameScreenWithEffects } from "../_features/game/GameScreen";
 import { ReplayPanel } from "./components/ReplayPanel";
 import {
   buildReplayChatMessages,

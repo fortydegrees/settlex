@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { expect, userEvent, waitFor, within } from "@storybook/test";
 import { Drawer as EsmDrawer } from "vaul";
-import { MobileMetaDrawer } from "../../components/MobileMetaDrawer";
+import { MobileMetaDrawer } from "../../../_features/game/feed/MobileMetaDrawer";
 import { ReplayPanel } from "../../../replays/components/ReplayPanel";
 import { Button } from "../../../ui/Button";
 import { replayTimeline } from "./replayFixtures";

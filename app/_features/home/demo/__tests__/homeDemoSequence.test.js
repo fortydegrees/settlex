@@ -12,7 +12,7 @@ import {
   getHomeDemoVisiblePlayerIds,
   prepareHomeDemoEventState
 } from "../homeDemoSequence";
-import { buildRenderMaps } from "../../../../catana/board/renderMaps";
+import { buildRenderMaps } from "../../../game/board/renderMaps";
 
 describe("home demo sequence", () => {
   it("uses four authored demo players", () => {

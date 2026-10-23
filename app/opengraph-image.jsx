@@ -12,7 +12,7 @@ import {
   SQRT3,
   getNodeDelta,
   tilePixelVector,
-} from "./catana/board/coordinates.js";
+} from "./_features/game/board/coordinates.js";
 import {
   readShareCardAsset,
   readShareCardFont,
@@ -61,7 +61,7 @@ const FONT_DATA = readShareCardFont();
 const BOLD_FONT_DATA = readShareCardFont(SHARE_CARD_BOLD_FONT_PATH);
 const BLACK_FONT_DATA = readShareCardFont(SHARE_CARD_BLACK_FONT_PATH);
 
-// Board geometry mirrors app/catana/board/Tile.js and app/catana/board/Node.js so the card
+// Board geometry mirrors app/_features/game/board/Tile.js and app/_features/game/board/Node.js so the card
 // shows the real SettleHex layout rather than a decorative hex arrangement.
 const TILE_SIZE = 64;
 const TILE_W = SQRT3 * TILE_SIZE;

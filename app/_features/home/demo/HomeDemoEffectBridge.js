@@ -2,13 +2,13 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { createPiecePlacementRunner } from "../../../catana/effects/placePiece";
+import { createPiecePlacementRunner } from "../../game/effects/placePiece";
 import {
   PLACE_PIECE_DEFAULT_TUNING,
   getPlacementEffectDuration
-} from "../../../catana/effects/placePieceDefaults";
+} from "../../game/effects/placePieceDefaults";
 import { DEFAULT_THEME_ID } from "../../theme/themes";
-import { getBoardLayout } from "../../../catana/board/boardLayout";
+import { getBoardLayout } from "../../game/board/boardLayout";
 import { isDocumentHidden } from "../../../../lib/client/visibility";
 import useWindowSize from "../../../../lib/client/useWindowSize";
 import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";

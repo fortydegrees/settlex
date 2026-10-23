@@ -173,7 +173,7 @@ Current runtime notes (engineering constraints):
   - `public/svgs/palette-themes/option-b/icon_wheat.svg`
   - `public/svgs/palette-themes/option-b/icon_ore.svg`
 - Tile placement/sizing is tuned in:
-  - `app/catana/board/Tile.js`
+  - `app/_features/game/board/Tile.js`
 
 ## 8) Designer Deliverables
 

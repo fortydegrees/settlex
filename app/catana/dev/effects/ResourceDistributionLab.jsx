@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useMemo, useRef, useState } from "react";
-import { createResourceDistributionRunner } from "../../effects/resourceDistribution";
+import { createResourceDistributionRunner } from "../../../_features/game/effects/resourceDistribution";
 import { buildResourceDistributionDemo } from "./resourceDistributionLabUtils";
 import { createSeededRandom } from "../../utils/seededRandom";
 import useWindowSize from "../../../../lib/client/useWindowSize";
-import { getBoardLayout } from "../../board/boardLayout";
+import { getBoardLayout } from "../../../_features/game/board/boardLayout";
 
 const DEFAULT_SEED = 1;
 const DEFAULT_COUNT = 4;

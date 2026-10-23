@@ -1,0 +1,770 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ReactDOM from "react-dom";
+import { gsap } from "gsap";
+import {
+  getClassicSvgPath,
+  getThemedSvgPath,
+  handleThemeImageError
+} from "../../theme/themes";
+import { isPointOverRobberBoardLand } from "./robberPlacementPreviewMotion";
+import { getPieceSvgFile } from "../../theme/pieceAssets.js";
+import {
+  getBuildPickupOrigin,
+  getBuildPickupLaunchBias,
+  getBuildPickupLaunchMotion,
+  getBuildTargetHandoffDelayMs,
+  getBuildPreviewFrame,
+  getBuildPreviewLeanAngle,
+  getBuildPreviewViewportScale,
+  getMagneticBuildTarget,
+  isBuildTargetHandoffReady,
+  getShortestRotationDelta,
+  getScaledBuildPreviewSize
+} from "./buildPlacementPreviewMotion";
+
+const PREVIEW_BASE_SIZE = 56;
+const PREVIEW_SHADOW_GROUND_OFFSET_FACTOR = 0.42;
+const FREE_FOLLOW_SPRING = {
+  stiffness: 150,
+  damping: 24,
+  mass: 1
+};
+const LOCKED_TARGET_SPRING = {
+  stiffness: 220,
+  damping: 28,
+  mass: 1
+};
+const MAX_SPRING_STEP_SECONDS = 0.032;
+
+const getViewportTargetCenters = (magneticTargets = []) =>
+  magneticTargets
+    .map((target) => {
+      const rect =
+        target?.element?.getBoundingClientRect?.() ??
+        (Number.isFinite(target?.centerX) && Number.isFinite(target?.centerY)
+          ? {
+              left: target.centerX - (target.width ?? 0) / 2,
+              top: target.centerY - (target.height ?? 0) / 2,
+              width: target.width ?? 0,
+              height: target.height ?? 0
+            }
+          : null);
+      if (!rect) {
+        return null;
+      }
+
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
+        return null;
+      }
+
+      return {
+        id: target.id,
+        centerX,
+        centerY,
+        width: rect.width,
+        height: rect.height,
+        rotationDegrees: target.rotationDegrees ?? 0
+      };
+    })
+    .filter(Boolean);
+
+const getPreviewAssetFile = (pieceType, pieceColor) => {
+  if (pieceType === "road") {
+    return getPieceSvgFile("road", pieceColor);
+  }
+
+  if (pieceType === "settlement") {
+    return getPieceSvgFile("settlement", pieceColor);
+  }
+
+  if (pieceType === "city") {
+    return getPieceSvgFile("city", pieceColor);
+  }
+
+  return null;
+};
+
+export function BuildPlacementPreview({
+  active = false,
+  pieceType = null,
+  pieceColor = "red",
+  originRect = null,
+  startedAtMs = null,
+  launchDelayMs = 0,
+  magneticTargets = [],
+  landTileCenters = [],
+  boardTileSize,
+  boardViewportScale = 1,
+  themeId,
+  size = PREVIEW_BASE_SIZE,
+  prefersReducedMotion = false,
+  hasCoarsePointer = false,
+  onPresentationChange = null
+}) {
+  const previewRef = useRef(null);
+  const previewVisualRef = useRef(null);
+  const previewShadowRef = useRef(null);
+  const previewGraphicRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const pointerSyncFrameRef = useRef(null);
+  const handoffTimeoutRef = useRef(null);
+  const launchReadyTimeoutRef = useRef(null);
+  const launchTimelineRef = useRef(null);
+  const launchStartMsRef = useRef(null);
+  const launchReadyRef = useRef(launchDelayMs <= 0);
+  const lastTickMsRef = useRef(null);
+  const pointerRef = useRef({ x: null, y: null });
+  const currentPositionRef = useRef({ x: null, y: null });
+  const desiredPositionRef = useRef({ x: null, y: null });
+  const velocityRef = useRef({ x: 0, y: 0 });
+  const currentRotationRef = useRef(0);
+  const desiredRotationRef = useRef(0);
+  const activeTargetIdRef = useRef(null);
+  const targetLockStartedAtMsRef = useRef(null);
+  const showTargetPreviewRef = useRef(false);
+  const [presentationTargetId, setPresentationTargetId] = useState(null);
+  const [showTargetPreview, setShowTargetPreview] = useState(false);
+  const [hasPosition, setHasPosition] = useState(false);
+  const [launchReady, setLaunchReady] = useState(launchDelayMs <= 0);
+
+  const reduceMotion = prefersReducedMotion || hasCoarsePointer;
+  const normalizedLaunchDelayMs =
+    Number.isFinite(launchDelayMs) && launchDelayMs > 0 ? launchDelayMs : 0;
+  const previewSize = getScaledBuildPreviewSize({
+    baseSize: size,
+    boardViewportScale: getBuildPreviewViewportScale(boardViewportScale)
+  });
+  const previewFrame = useMemo(
+    () => getBuildPreviewFrame(pieceType, previewSize),
+    [pieceType, previewSize]
+  );
+  const assetFile = getPreviewAssetFile(pieceType, pieceColor);
+  const previewSrc = assetFile ? getThemedSvgPath(themeId, assetFile) : null;
+  const previewFallbackSrc = assetFile ? getClassicSvgPath(assetFile) : null;
+  const launchMotion = useMemo(
+    () => getBuildPickupLaunchMotion(pieceType),
+    [pieceType]
+  );
+  const targetPreviewHandoffDelayMs = useMemo(
+    () => getBuildTargetHandoffDelayMs(pieceType),
+    [pieceType]
+  );
+
+  const clearHandoffTimer = useCallback(() => {
+    if (handoffTimeoutRef.current != null) {
+      clearTimeout(handoffTimeoutRef.current);
+      handoffTimeoutRef.current = null;
+    }
+  }, []);
+
+  const clearLaunchReadyTimer = useCallback(() => {
+    if (launchReadyTimeoutRef.current != null) {
+      clearTimeout(launchReadyTimeoutRef.current);
+      launchReadyTimeoutRef.current = null;
+    }
+  }, []);
+
+  const updatePresentationTarget = useCallback(
+    (nextTargetId) => {
+      if (activeTargetIdRef.current === nextTargetId) {
+        return;
+      }
+
+      activeTargetIdRef.current = nextTargetId;
+      targetLockStartedAtMsRef.current =
+        nextTargetId == null
+          ? null
+          : typeof performance !== "undefined"
+            ? performance.now()
+            : Date.now();
+      clearHandoffTimer();
+      setPresentationTargetId(nextTargetId);
+      setShowTargetPreview(false);
+      showTargetPreviewRef.current = false;
+
+      if (nextTargetId == null) {
+        return;
+      }
+
+      if (reduceMotion) {
+        setShowTargetPreview(true);
+        showTargetPreviewRef.current = true;
+        return;
+      }
+
+      if (pieceType === "road") {
+        return;
+      }
+
+      handoffTimeoutRef.current = setTimeout(() => {
+        if (activeTargetIdRef.current !== nextTargetId) {
+          return;
+        }
+
+        setShowTargetPreview(true);
+        showTargetPreviewRef.current = true;
+        handoffTimeoutRef.current = null;
+      }, targetPreviewHandoffDelayMs);
+    },
+    [clearHandoffTimer, pieceType, reduceMotion, targetPreviewHandoffDelayMs]
+  );
+
+  useEffect(() => {
+    launchReadyRef.current = launchReady;
+  }, [launchReady]);
+
+  useEffect(() => {
+    showTargetPreviewRef.current = showTargetPreview;
+  }, [showTargetPreview]);
+
+  useEffect(() => {
+    onPresentationChange?.({
+      targetId: presentationTargetId,
+      showTargetPreview
+    });
+  }, [onPresentationChange, presentationTargetId, showTargetPreview]);
+
+  const syncDesiredPosition = useCallback(() => {
+    const previewNode = previewRef.current;
+    if (!active || !previewNode) {
+      return;
+    }
+
+    const origin = getBuildPickupOrigin(originRect);
+    if (!launchReady) {
+      updatePresentationTarget(null);
+      if (
+        Number.isFinite(pointerRef.current.x) &&
+        Number.isFinite(pointerRef.current.y)
+      ) {
+        desiredPositionRef.current = {
+          x: pointerRef.current.x,
+          y: pointerRef.current.y
+        };
+      } else if (origin) {
+        desiredPositionRef.current = origin;
+      }
+
+      if (origin) {
+        desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+        setHasPosition(true);
+      }
+      return;
+    }
+
+    const viewportTargets = getViewportTargetCenters(magneticTargets);
+    const selectedTarget = getMagneticBuildTarget({
+      pointerX: pointerRef.current.x,
+      pointerY: pointerRef.current.y,
+      targets: viewportTargets,
+      activeTargetId: activeTargetIdRef.current
+    });
+
+    updatePresentationTarget(selectedTarget?.id ?? null);
+    if (selectedTarget) {
+      desiredPositionRef.current = {
+        x: selectedTarget.centerX,
+        y: selectedTarget.centerY
+      };
+      desiredRotationRef.current =
+        pieceType === "road" ? selectedTarget.rotationDegrees ?? 90 : 0;
+      setHasPosition(true);
+      gsap.to(previewNode, { opacity: 1, duration: 0.1, overwrite: "auto" });
+      return;
+    }
+
+    if (
+      Number.isFinite(pointerRef.current.x) &&
+      Number.isFinite(pointerRef.current.y)
+    ) {
+      desiredPositionRef.current = {
+        x: pointerRef.current.x,
+        y: pointerRef.current.y
+      };
+      desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+      setHasPosition(true);
+      gsap.to(previewNode, { opacity: 1, duration: 0.1, overwrite: "auto" });
+      return;
+    }
+
+    if (origin) {
+      desiredPositionRef.current = origin;
+      desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+      setHasPosition(true);
+    }
+  }, [
+    active,
+    launchReady,
+    magneticTargets,
+    originRect,
+    pieceType,
+    updatePresentationTarget
+  ]);
+
+  useEffect(() => {
+    if (active) {
+      return undefined;
+    }
+
+    clearLaunchReadyTimer();
+    clearHandoffTimer();
+    activeTargetIdRef.current = null;
+    targetLockStartedAtMsRef.current = null;
+    setPresentationTargetId(null);
+    setShowTargetPreview(false);
+    showTargetPreviewRef.current = false;
+    setLaunchReady(normalizedLaunchDelayMs === 0);
+    return undefined;
+  }, [active, clearHandoffTimer, clearLaunchReadyTimer, normalizedLaunchDelayMs]);
+
+  useEffect(() => {
+    clearLaunchReadyTimer();
+
+    if (!active) {
+      setLaunchReady(normalizedLaunchDelayMs === 0);
+      return undefined;
+    }
+
+    const elapsedMs = Number.isFinite(startedAtMs)
+      ? Math.max(0, Date.now() - startedAtMs)
+      : 0;
+    const remainingDelayMs = Math.max(0, normalizedLaunchDelayMs - elapsedMs);
+    if (remainingDelayMs === 0) {
+      setLaunchReady(true);
+      return undefined;
+    }
+
+    setLaunchReady(false);
+    launchReadyTimeoutRef.current = setTimeout(() => {
+      setLaunchReady(true);
+      launchReadyTimeoutRef.current = null;
+    }, remainingDelayMs);
+
+    return () => {
+      clearLaunchReadyTimer();
+    };
+  }, [
+    active,
+    clearLaunchReadyTimer,
+    normalizedLaunchDelayMs,
+    startedAtMs
+  ]);
+
+  useEffect(() => {
+    const previewNode = previewRef.current;
+    const visualNode = previewVisualRef.current;
+    const shadowNode = previewShadowRef.current;
+    const graphicNode = previewGraphicRef.current;
+    if (
+      !active ||
+      !previewNode ||
+      !visualNode ||
+      !shadowNode ||
+      !graphicNode ||
+      !assetFile
+    ) {
+      setHasPosition(false);
+      activeTargetIdRef.current = null;
+      targetLockStartedAtMsRef.current = null;
+      currentPositionRef.current = { x: null, y: null };
+      desiredPositionRef.current = { x: null, y: null };
+      velocityRef.current = { x: 0, y: 0 };
+      currentRotationRef.current = pieceType === "road" ? 90 : 0;
+      desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+      launchStartMsRef.current = null;
+      return undefined;
+    }
+
+    const origin = getBuildPickupOrigin(originRect);
+    currentPositionRef.current = origin ?? { x: null, y: null };
+    desiredPositionRef.current = origin ?? { x: null, y: null };
+    currentRotationRef.current = pieceType === "road" ? 90 : 0;
+    desiredRotationRef.current = pieceType === "road" ? 90 : 0;
+    launchStartMsRef.current = null;
+    if (origin) {
+      setHasPosition(true);
+    }
+
+    gsap.set(previewNode, {
+      xPercent: -50,
+      yPercent: -50,
+      opacity: 0,
+      scale: 1
+    });
+    gsap.set(visualNode, {
+      opacity: 1,
+      y: reduceMotion ? 0 : launchMotion.startOffsetY,
+      scale: reduceMotion ? 1 : launchMotion.startScale,
+      transformOrigin: "50% 50%"
+    });
+    gsap.set(shadowNode, {
+      opacity: 0,
+      scaleX: 0.85,
+      scaleY: 0.7
+    });
+    gsap.set(graphicNode, {
+      rotation: pieceType === "road" ? 90 : 0,
+      transformOrigin: "50% 50%"
+    });
+
+    const flushPointerSync = () => {
+      pointerSyncFrameRef.current = null;
+      syncDesiredPosition();
+
+      if (reduceMotion) {
+        if (!launchReadyRef.current) {
+          return;
+        }
+        const nextPosition = desiredPositionRef.current;
+        if (
+          Number.isFinite(nextPosition.x) &&
+          Number.isFinite(nextPosition.y)
+        ) {
+          currentPositionRef.current = nextPosition;
+          const boardShadowVisible = isPointOverRobberBoardLand({
+            pointX: nextPosition.x,
+            pointY:
+              nextPosition.y +
+              previewSize * PREVIEW_SHADOW_GROUND_OFFSET_FACTOR,
+            landTileCenters,
+            tileSize: boardTileSize
+          });
+          gsap.set(previewNode, nextPosition);
+          gsap.set(graphicNode, {
+            rotation: desiredRotationRef.current
+          });
+          gsap.set(shadowNode, {
+            opacity: boardShadowVisible ? 0.44 : 0,
+            scaleX: boardShadowVisible ? 1 : 0.85,
+            scaleY: boardShadowVisible ? 0.92 : 0.7
+          });
+          gsap.to(previewNode, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.08,
+            ease: "power2.out",
+            overwrite: "auto"
+          });
+        }
+      }
+    };
+
+    const updateDesiredFromPointer = (event) => {
+      pointerRef.current = { x: event.clientX, y: event.clientY };
+      if (pointerSyncFrameRef.current == null) {
+        pointerSyncFrameRef.current = requestAnimationFrame(flushPointerSync);
+      }
+    };
+
+    window.addEventListener("pointermove", updateDesiredFromPointer);
+    syncDesiredPosition();
+
+    if (!reduceMotion) {
+      const elapsedLaunchDelayMs = Number.isFinite(startedAtMs)
+        ? Math.max(0, Date.now() - startedAtMs)
+        : 0;
+      const remainingLaunchDelayMs = Math.max(
+        0,
+        normalizedLaunchDelayMs - elapsedLaunchDelayMs
+      );
+      const launchTimeline = gsap.timeline({
+        delay: remainingLaunchDelayMs / 1000,
+        defaults: { overwrite: "auto" }
+      });
+      launchTimelineRef.current = launchTimeline;
+      launchTimeline
+        .to(
+          previewNode,
+          {
+            opacity: 1,
+            duration: 0.08,
+            ease: "power2.out"
+          },
+          0
+        )
+        .to(
+          visualNode,
+          {
+            duration: launchMotion.pressDurationMs / 1000,
+            y: launchMotion.startOffsetY,
+            scale: launchMotion.startScale,
+            ease: "power1.out"
+          },
+          0
+        )
+        .to(visualNode, {
+          duration: launchMotion.liftDurationMs / 1000,
+          y: launchMotion.peakOffsetY,
+          scale: launchMotion.peakScale,
+          ease: launchMotion.liftEase
+        })
+        .to(visualNode, {
+          duration: launchMotion.settleDurationMs / 1000,
+          y: 0,
+          scale: launchMotion.settleScale,
+          ease: launchMotion.settleEase
+        });
+
+      const step = (tickMs) => {
+        if (launchReadyRef.current && launchStartMsRef.current == null) {
+          launchStartMsRef.current = tickMs;
+        }
+
+        const desiredX = desiredPositionRef.current.x;
+        const desiredY = desiredPositionRef.current.y;
+        if (Number.isFinite(desiredX) && Number.isFinite(desiredY)) {
+          const lastTickMs = lastTickMsRef.current ?? tickMs;
+          const deltaSeconds = Math.min(
+            (tickMs - lastTickMs) / 1000,
+            MAX_SPRING_STEP_SECONDS
+          );
+          lastTickMsRef.current = tickMs;
+
+          if (
+            !Number.isFinite(currentPositionRef.current.x) ||
+            !Number.isFinite(currentPositionRef.current.y)
+          ) {
+            currentPositionRef.current = { x: desiredX, y: desiredY };
+            velocityRef.current = { x: 0, y: 0 };
+          }
+
+          const isLocked = activeTargetIdRef.current != null;
+          const spring = isLocked ? LOCKED_TARGET_SPRING : FREE_FOLLOW_SPRING;
+          const nextVelocityX =
+            velocityRef.current.x +
+            ((desiredX - currentPositionRef.current.x) * spring.stiffness -
+              velocityRef.current.x * spring.damping) *
+              (deltaSeconds / spring.mass);
+          const nextVelocityY =
+            velocityRef.current.y +
+            ((desiredY - currentPositionRef.current.y) * spring.stiffness -
+              velocityRef.current.y * spring.damping) *
+              (deltaSeconds / spring.mass);
+          const nextX =
+            currentPositionRef.current.x + nextVelocityX * deltaSeconds;
+          const nextY =
+            currentPositionRef.current.y + nextVelocityY * deltaSeconds;
+          const rotationDelta = getShortestRotationDelta(
+            currentRotationRef.current,
+            desiredRotationRef.current
+          );
+          const nextRotation =
+            currentRotationRef.current + rotationDelta * 0.24;
+          const leanAngle = getBuildPreviewLeanAngle(nextVelocityX);
+          const shouldSnapToRest =
+            Math.abs(desiredX - nextX) < 0.5 &&
+            Math.abs(desiredY - nextY) < 0.5 &&
+            Math.abs(nextVelocityX) < 5 &&
+            Math.abs(nextVelocityY) < 5;
+          const nextPosition = shouldSnapToRest
+            ? { x: desiredX, y: desiredY }
+            : { x: nextX, y: nextY };
+          const boardShadowVisible = isPointOverRobberBoardLand({
+            pointX: nextPosition.x,
+            pointY:
+              nextPosition.y +
+              previewSize * PREVIEW_SHADOW_GROUND_OFFSET_FACTOR,
+            landTileCenters,
+            tileSize: boardTileSize
+          });
+          const launchProgress = Math.max(
+            0,
+            Math.min(
+              1,
+              launchStartMsRef.current == null
+                ? 0
+                :
+              (tickMs - launchStartMsRef.current) /
+                launchMotion.totalDurationMs
+            )
+          );
+          const launchBias =
+            !isLocked && origin
+              ? getBuildPickupLaunchBias({
+                  originX: origin.x,
+                  originY: origin.y,
+                  pointerX: desiredX,
+                  pointerY: desiredY,
+                  progress: launchProgress
+                })
+              : { x: 0, y: 0 };
+
+          velocityRef.current = shouldSnapToRest
+            ? { x: 0, y: 0 }
+            : { x: nextVelocityX, y: nextVelocityY };
+          currentPositionRef.current = nextPosition;
+          currentRotationRef.current = nextRotation;
+
+          if (
+            pieceType === "road" &&
+            !reduceMotion &&
+            activeTargetIdRef.current != null &&
+            !showTargetPreviewRef.current
+          ) {
+            const lockStartedAtMs = targetLockStartedAtMsRef.current ?? tickMs;
+            const elapsedLockedMs = Math.max(0, tickMs - lockStartedAtMs);
+            if (
+              isBuildTargetHandoffReady({
+                pieceType,
+                elapsedMs: elapsedLockedMs,
+                currentRotationDegrees: nextRotation,
+                desiredRotationDegrees: desiredRotationRef.current,
+                currentX: nextPosition.x,
+                currentY: nextPosition.y,
+                desiredX,
+                desiredY
+              })
+            ) {
+              showTargetPreviewRef.current = true;
+              setShowTargetPreview(true);
+            }
+          }
+
+          gsap.set(previewNode, {
+            x: nextPosition.x + launchBias.x,
+            y: nextPosition.y + launchBias.y
+          });
+          gsap.set(graphicNode, {
+            rotation: nextRotation + (pieceType === "road" ? leanAngle * 0.25 : leanAngle)
+          });
+          gsap.set(shadowNode, {
+            opacity: boardShadowVisible ? (isLocked ? 0.52 : 0.36) : 0,
+            scaleX: boardShadowVisible ? (isLocked ? 1.06 : 0.96) : 0.85,
+            scaleY: boardShadowVisible ? (isLocked ? 0.92 : 0.84) : 0.7
+          });
+        } else {
+          lastTickMsRef.current = tickMs;
+        }
+
+        animationFrameRef.current = requestAnimationFrame(step);
+      };
+
+      animationFrameRef.current = requestAnimationFrame(step);
+    }
+
+    return () => {
+      window.removeEventListener("pointermove", updateDesiredFromPointer);
+      if (pointerSyncFrameRef.current != null) {
+        cancelAnimationFrame(pointerSyncFrameRef.current);
+      }
+      pointerSyncFrameRef.current = null;
+      if (animationFrameRef.current != null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = null;
+      lastTickMsRef.current = null;
+      launchStartMsRef.current = null;
+      gsap.killTweensOf(previewNode);
+      gsap.killTweensOf(visualNode);
+      gsap.killTweensOf(shadowNode);
+      gsap.killTweensOf(graphicNode);
+      launchTimelineRef.current?.kill();
+      launchTimelineRef.current = null;
+      clearHandoffTimer();
+    };
+  }, [
+    active,
+    assetFile,
+    boardTileSize,
+    clearHandoffTimer,
+    clearLaunchReadyTimer,
+    landTileCenters,
+    launchMotion,
+    normalizedLaunchDelayMs,
+    originRect,
+    pieceType,
+    previewSize,
+    reduceMotion,
+    startedAtMs,
+    syncDesiredPosition
+  ]);
+
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+
+    syncDesiredPosition();
+  }, [active, magneticTargets, originRect, syncDesiredPosition]);
+
+  useEffect(() => {
+    const visualNode = previewVisualRef.current;
+    if (!visualNode) {
+      return;
+    }
+
+    gsap.to(visualNode, {
+      opacity: showTargetPreview ? 0 : 1,
+      duration: reduceMotion ? 0 : 0.08,
+      ease: "power2.out",
+      overwrite: "auto"
+    });
+
+    return () => {
+      gsap.killTweensOf(visualNode);
+    };
+  }, [reduceMotion, showTargetPreview]);
+
+  if (!active || !assetFile || typeof document === "undefined") {
+    return null;
+  }
+
+  return ReactDOM.createPortal(
+    <div
+      ref={previewRef}
+      aria-hidden="true"
+      style={{
+        position: "fixed",
+        left: 0,
+        top: 0,
+        width: previewFrame.width,
+        height: previewFrame.height,
+        pointerEvents: "none",
+        zIndex: 1001,
+        opacity: hasPosition ? 1 : 0,
+        filter: "drop-shadow(0 8px 18px rgba(15, 23, 42, 0.2))"
+      }}
+    >
+      <div ref={previewVisualRef} style={{ position: "absolute", inset: 0 }}>
+        <div
+          ref={previewShadowRef}
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: "-10%",
+            width: pieceType === "road" ? "74%" : "58%",
+            height: pieceType === "road" ? "32%" : "22%",
+            borderRadius: 999,
+            background:
+              "radial-gradient(ellipse at center, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.18) 56%, rgba(15, 23, 42, 0) 100%)",
+            transform: "translate(-50%, 0)",
+            filter: "blur(6px)"
+          }}
+        />
+        <div
+          ref={previewGraphicRef}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: previewFrame.offsetY,
+            width: "100%",
+            height: "100%",
+            transformOrigin: "50% 50%"
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={previewSrc}
+            alt="Build placement preview"
+            style={{ width: "100%", height: "100%" }}
+            draggable={false}
+            onError={(event) => handleThemeImageError(event, previewFallbackSrc)}
+          />
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}

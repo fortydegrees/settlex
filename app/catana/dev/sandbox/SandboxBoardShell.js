@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { GameScreenWithEffects } from "../../GameScreen";
+import { GameScreenWithEffects } from "../../../_features/game/GameScreen";
 import { TileTypes } from "../../../_features/theme/gameAssets";
 import { buildSandboxMatchMetadata } from "./presets";
 import { SandboxPanel } from "./SandboxPanel";

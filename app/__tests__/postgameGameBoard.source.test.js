@@ -7,7 +7,7 @@ const source = fs.readFileSync(
   "utf8"
 );
 const gameScreenSource = fs.readFileSync(
-  path.resolve(process.cwd(), "app/catana/GameScreen.js"),
+  path.resolve(process.cwd(), "app/_features/game/GameScreen.js"),
   "utf8"
 );
 const matchPageSource = fs.readFileSync(

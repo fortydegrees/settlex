@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { markGameStartTransition } from "../../catana/effects/gameStartTransition.js";
+import { markGameStartTransition } from "../game/effects/gameStartTransition.js";
 import { HomeDemoBoardPoster } from "./demo/HomeDemoBoardPoster";
 import { createHomeDemoPieceState } from "./demo/homeDemoSequence";
 import { useLobbyHomeActions } from "../matches/lobby/useLobbyHomeActions";

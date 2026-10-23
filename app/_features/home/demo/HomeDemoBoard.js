@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { BoardPortChannels } from "../../../catana/board/BoardPortChannels";
-import { BoardUnderlay } from "../../../catana/board/BoardUnderlay";
-import { Port } from "../../../catana/board/Port";
-import { Tile } from "../../../catana/board/Tile";
+import { BoardPortChannels } from "../../game/board/BoardPortChannels";
+import { BoardUnderlay } from "../../game/board/BoardUnderlay";
+import { Port } from "../../game/board/Port";
+import { Tile } from "../../game/board/Tile";
 import { TileTypes } from "../../theme/gameAssets";
 import { DEFAULT_THEME_ID } from "../../theme/themes";
-import { getBoardLayout } from "../../../catana/board/boardLayout";
-import { buildRenderMaps } from "../../../catana/board/renderMaps";
+import { getBoardLayout } from "../../game/board/boardLayout";
+import { buildRenderMaps } from "../../game/board/renderMaps";
 import useWindowSize from "../../../../lib/client/useWindowSize";
 import { HOME_DEMO_BOARD_PRESET } from "./homeDemoPreset";
 import { HOME_DEMO_PLAYER_COLORS } from "./homeDemoSequence";

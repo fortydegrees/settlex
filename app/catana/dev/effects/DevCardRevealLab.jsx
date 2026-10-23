@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Dock } from "../../components/ActionsDock/Dock";
-import { DockCard } from "../../components/ActionsDock/DockCard";
-import { DevCardDisplay } from "../../components/DevCardDisplay";
+import { Dock } from "../../../_features/game/hud/ActionsDock/Dock";
+import { DockCard } from "../../../_features/game/hud/ActionsDock/DockCard";
+import { DevCardDisplay } from "../../../_features/game/cards/DevCardDisplay";
 import { DevCardPurchaseReveal } from "../../../_features/game/effects/dev-card-purchase/DevCardPurchaseReveal";
 
 const DEFAULT_CARD_TYPE = "victoryPoint";

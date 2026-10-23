@@ -2,7 +2,7 @@ import { createEmptyState } from "@settlex/game-core";
 import {
   buildGameScreenDisplayModel,
   buildPostgameSummary,
-} from "../../utils/gameScreenDisplayModel";
+} from "../../../_features/game/model/gameScreenDisplayModel";
 
 const completedMatchData = [
   {

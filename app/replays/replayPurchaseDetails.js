@@ -1,5 +1,5 @@
 import { getGameLogEntryKey } from "../catana/utils/gameText";
-import { DEV_CARD_TEXT } from "../catana/components/devCardDisplayUtils";
+import { DEV_CARD_TEXT } from "../_features/game/cards/devCardDisplayUtils";
 
 // Archives originally logged purchases without identities. Recover a card only
 // from the immediate purchase transition, never from a later reveal or play.

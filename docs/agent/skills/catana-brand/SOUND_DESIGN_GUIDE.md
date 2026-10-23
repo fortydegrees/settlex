@@ -84,7 +84,7 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
 | game:win | game-win.mp3 | "Ta-Da": D–A–B statement → land D5 → crown D6 |
 | game:lose | game-lose.mp3 | exact mirror: D–G–F falling → settle → sink |
 
-Wiring lives in `app/catana/effects/soundThemes.js` (theme map; unknown cue
+Wiring lives in `app/_features/game/effects/soundThemes.js` (theme map; unknown cue
 names no-op; `allowWhenHidden` for cues that must reach background tabs) and
 emitters in `GameEffects.js` (bgio-effect listeners and state-transition
 effects plus fresh-board game-start consumption), `GameScreen.js` (discard

@@ -4,8 +4,8 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 
 ## Entry Points
 
-- `app/catana/board/README.md`: board rendering, geometry, placement previews and
-  colocated tests. `app/catana/GameScreen.js` remains the screen composition owner.
+- `app/_features/game/board/README.md`: board rendering, geometry, placement previews and
+  colocated tests. `app/_features/game/GameScreen.js` remains the screen composition owner.
 
 - `docs/agent/DESIGN_SYSTEM.md`: current enforced foundation contract and staged
   migration boundaries. Use complete `type-*` roles, semantic colours and
@@ -15,7 +15,7 @@ Use this file before Catana UI, HUD, animation, audio, copy, or visual-tuning wo
 - `docs/agent/skills/catana-brand/ADDING_SHARED_PRIMITIVES.md`: extra workflow only when adding or extending reusable `app/ui/*` primitives.
 - `app/catana/dev/sandbox/README.md`: real board UI sandbox. Use for gameplay HUD, board, opponent box, turn controls, dev-card, award, robber, and card-transfer presentation.
 - `app/catana/dev/effects/README.md`: isolated effects lab. Use for tuning deterministic animation/audio runners without needing a live game state.
-- `app/catana/components/README.md`: component and HUD context. Use before editing shared Catana components.
+- `app/_features/game/README.md`: component and HUD context. Use before editing shared Catana components.
 - `app/catana/dev/ui/`: standard UI showcase for shared product-surface primitives.
 - `docs/agent/UI_CATALOG.md`: production component ownership and the current
   Clarity ButtonFamily/Foundations reference. Its approved role-based corner and

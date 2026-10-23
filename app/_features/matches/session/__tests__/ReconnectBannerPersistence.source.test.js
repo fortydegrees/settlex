@@ -23,7 +23,7 @@ describe("reconnect banner persistence wiring", () => {
 
   it("clears the saved match from GameScreen when the match ends", () => {
     const source = readFileSync(
-      resolve(process.cwd(), "app/catana/GameScreen.js"),
+      resolve(process.cwd(), "app/_features/game/GameScreen.js"),
       "utf8"
     );
 

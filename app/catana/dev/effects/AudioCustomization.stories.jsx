@@ -3,9 +3,9 @@ import { createRoot } from "react-dom/client";
 import { EffectsBoardWrapper } from "bgio-effects/react";
 import { Howl } from "howler";
 import { expect, waitFor, within } from "@storybook/test";
-import { GameEffects } from "../../effects/GameEffects";
-import { createEffectBus } from "../../effects/EffectBus";
-import { markGameStartTransition } from "../../effects/gameStartTransition";
+import { GameEffects } from "../../../_features/game/effects/GameEffects";
+import { createEffectBus } from "../../../_features/game/effects/EffectBus";
+import { markGameStartTransition } from "../../../_features/game/effects/gameStartTransition";
 
 const Effects = EffectsBoardWrapper(GameEffects);
 const meta = {

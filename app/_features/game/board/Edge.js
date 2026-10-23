@@ -1,0 +1,283 @@
+import React from "react";
+
+import { tilePixelVector, getEdgeTransform } from "./coordinates";
+import { ActionNode } from "./ActionNode";
+import { getBackgroundImageWithFallback } from "../../theme/themes";
+import { getPieceSvgFile } from "../../theme/pieceAssets.js";
+
+const EDGE_ROTATION_DEGREES = {
+  NORTHEAST: 30,
+  EAST: 90,
+  SOUTHEAST: 150,
+  SOUTHWEST: 210,
+  WEST: 270,
+  NORTHWEST: 330
+};
+
+function Road({ color, size, tileX, tileY, transform, themeId }) {
+  const roadFile = getPieceSvgFile("road", color);
+  return (
+    <div
+      className="opacity-animation"
+      style={{
+        transform,
+        backgroundImage: getBackgroundImageWithFallback(themeId, roadFile),
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        position: "absolute",
+        width: size,
+        height: size * 0.2,
+        left: tileX,
+        top: tileY,
+      }}
+    />
+  );
+}
+
+function PlacedRoad({ id, color, size, tileX, tileY, transform, themeId }) {
+  const roadFile = getPieceSvgFile("road", color);
+  return (
+    <div
+      id={id}
+      style={{
+        transform,
+        backgroundImage: getBackgroundImageWithFallback(themeId, roadFile),
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        position: "absolute",
+        pointerEvents: "none",
+        width: size,
+        height: size * 0.2,
+        left: tileX,
+        top: tileY,
+      }}
+    />
+  );
+}
+
+function PlaceableEdge({
+  id,
+  center,
+  size,
+  coordinate,
+  direction,
+  color,
+  viewportWidth,
+  initialPlacement,
+  hoveredNode,
+  setHoveredNode,
+  onPlace,
+  registerBuildTarget,
+  showRegisteredHoverPreview = false,
+  themeId,
+}) {
+  const [centerX, centerY] = center;
+  const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
+  const transform = getEdgeTransform(direction, size, viewportWidth);
+
+  const showRoadOutline = initialPlacement && !hoveredNode;
+  const isHovered = hoveredNode === id;
+
+  return (
+    <>
+      {showRoadOutline && (
+        <Road
+          color={color}
+          size={size}
+          tileX={tileX}
+          tileY={tileY}
+          transform={transform}
+          themeId={themeId}
+        />
+      )}
+
+      <ActionNode
+        nodeId={id}
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        type="edge"
+        piece={
+          showRegisteredHoverPreview ? (
+            <Road
+              color={color}
+              size={size}
+              tileX={tileX}
+              tileY={tileY}
+              transform={transform}
+              themeId={themeId}
+            />
+          ) : isHovered && !registerBuildTarget ? (
+            <Road
+              color={color}
+              size={size}
+              tileX={tileX}
+              tileY={tileY}
+              transform={transform}
+              themeId={themeId}
+            />
+          ) : null
+        }
+        onClick={(event) => {
+          event.stopPropagation();
+          onPlace(id);
+        }}
+        setHoveredNode={setHoveredNode}
+        hoveredNode={hoveredNode}
+        registerBuildTarget={registerBuildTarget}
+        showRegisteredHoverPreview={showRegisteredHoverPreview}
+        buildTargetMeta={{
+          rotationDegrees: EDGE_ROTATION_DEGREES[direction] ?? 90
+        }}
+      />
+    </>
+  );
+}
+
+// HoverableEdge: shows preview only when this specific edge is hovered
+// Used for passive "hover to preview, click to build" interaction
+function HoverableEdge({
+  id,
+  center,
+  size,
+  coordinate,
+  direction,
+  color,
+  viewportWidth,
+  hoveredEdge,
+  setHoveredEdge,
+  onPlace,
+  themeId,
+}) {
+  const [centerX, centerY] = center;
+  const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
+  const transform = getEdgeTransform(direction, size, viewportWidth);
+
+  const isHovered = hoveredEdge === id;
+
+  // Only render the ActionNode (invisible hit area), show road preview only when hovered
+  return (
+    <>
+      {isHovered && (
+        <Road
+          color={color}
+          size={size}
+          tileX={tileX}
+          tileY={tileY}
+          transform={transform}
+          themeId={themeId}
+        />
+      )}
+
+      <ActionNode
+        nodeId={id}
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        type="edge"
+        piece={null}
+        onClick={(event) => {
+          event.stopPropagation();
+          onPlace(id);
+        }}
+        setHoveredNode={setHoveredEdge}
+        hoveredNode={hoveredEdge}
+        showIdleCircle={false}
+      />
+    </>
+  );
+}
+
+function EdgeImpl({
+  id,
+  center,
+  size,
+  coordinate,
+  direction,
+  color,
+  viewportWidth,
+  placing = false,
+  initialPlacement = false,
+  roadBuilding = false,
+  hoverable = false,
+  hoveredNode,
+  setHoveredNode,
+  moves,
+  setPlayerAction,
+  registerBuildTarget,
+  showRegisteredHoverPreview = false,
+  onPlaceCommitted,
+  themeId,
+}) {
+  const [centerX, centerY] = center;
+  const [tileX, tileY] = tilePixelVector(coordinate, size, centerX, centerY);
+  const transform = getEdgeTransform(direction, size, viewportWidth);
+
+  if (placing) {
+    return (
+      <PlaceableEdge
+        id={id}
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        color={color}
+        viewportWidth={viewportWidth}
+        initialPlacement={initialPlacement}
+        hoveredNode={hoveredNode}
+        setHoveredNode={setHoveredNode}
+        registerBuildTarget={registerBuildTarget}
+        showRegisteredHoverPreview={showRegisteredHoverPreview}
+        themeId={themeId}
+        onPlace={(edgeId) => {
+          onPlaceCommitted?.();
+          if (roadBuilding) {
+            moves.placeRoadFromDevCard(edgeId);
+          } else {
+            moves.placeRoad(edgeId);
+          }
+          setHoveredNode(null);
+          if (setPlayerAction && !roadBuilding) setPlayerAction(null);
+        }}
+      />
+    );
+  }
+
+  if (hoverable) {
+    return (
+      <HoverableEdge
+        id={id}
+        center={center}
+        size={size}
+        coordinate={coordinate}
+        direction={direction}
+        color={color}
+        viewportWidth={viewportWidth}
+        hoveredEdge={hoveredNode}
+        setHoveredEdge={setHoveredNode}
+        themeId={themeId}
+        onPlace={(edgeId) => {
+          onPlaceCommitted?.();
+          moves.placeRoad(edgeId);
+          setHoveredNode(null);
+        }}
+      />
+    );
+  }
+
+  return (
+    <PlacedRoad
+      id={id}
+      color={color}
+      size={size}
+      tileX={tileX}
+      tileY={tileY}
+      transform={transform}
+      themeId={themeId}
+    />
+  );
+}
+
+export const Edge = React.memo(EdgeImpl);

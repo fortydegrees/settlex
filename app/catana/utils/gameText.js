@@ -1,4 +1,4 @@
-import { DEV_CARD_TEXT } from "../components/devCardDisplayUtils";
+import { DEV_CARD_TEXT } from "../../_features/game/cards/devCardDisplayUtils";
 
 export const STATUS_TEXT = {
   PREGAME: "Waiting to start",

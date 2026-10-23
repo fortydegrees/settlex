@@ -13,7 +13,7 @@ vi.mock("react", async (importOriginal) => ({
 vi.mock("../../../../../lib/client/useWindowSize", () => ({
   default: () => ({ width: 1200, height: 800, isMeasured: true }),
 }));
-vi.mock("../../../../catana/effects/placePiece", () => ({
+vi.mock("../../../game/effects/placePiece", () => ({
   createPiecePlacementRunner: () => Object.assign(harness.placement, { cancelAll: harness.cancel }),
 }));
 

@@ -31,7 +31,7 @@ The font and sound records retain their own source identities and limitations. T
 ## Current source owners
 
 `lib/game-runtime/README.md` describes game registration and adapters shared by
-server, browser and replay. `app/catana/board/README.md` describes board rendering,
+server, browser and replay. `app/_features/game/board/README.md` describes board rendering,
 geometry and placement previews; GameScreen remains the screen composition owner.
 See [notation](../notation/README.md) for the maintained experimental reader,
 exporter and additive archive sidecar. Attribution and format limits remain part

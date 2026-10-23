@@ -2,10 +2,10 @@
 
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { gsap } from "gsap";
-import { EffectLayer } from "../../effects/EffectLayer";
-import { createEffectBus } from "../../effects/EffectBus";
-import { createAudioManager } from "../../effects/AudioManager";
-import { DEFAULT_THEME } from "../../effects/soundThemes";
+import { EffectLayer } from "../../../_features/game/effects/EffectLayer";
+import { createEffectBus } from "../../../_features/game/effects/EffectBus";
+import { createAudioManager } from "../../../_features/game/effects/AudioManager";
+import { DEFAULT_THEME } from "../../../_features/game/effects/soundThemes";
 import { EFFECTS_LAB_REGISTRY } from "./registry";
 
 const DEFAULT_TIME_SCALE = 1;

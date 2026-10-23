@@ -14,8 +14,8 @@ Use it when the work is about an effect runner, timeline timing, cue placement, 
 ## Before Editing
 
 - Read `docs/agent/UI_CONTEXT.md`.
-- Check `app/catana/effects/registry.js` and the effect runner before editing the lab.
-- Check `app/catana/effects/soundThemes.js` and `app/catana/effects/AudioManager.js` before changing cue mapping or playback behavior.
+- Check `app/_features/game/effects/registry.js` and the effect runner before editing the lab.
+- Check `app/_features/game/effects/soundThemes.js` and `app/_features/game/effects/AudioManager.js` before changing cue mapping or playback behavior.
 - Use the owning effect runner and UI context for current guidance; record new decisions in `docs/agent/PROJECT_RECORD.md`.
 
 ## Verification Defaults
