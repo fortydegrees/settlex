@@ -169,11 +169,12 @@ export function ReplayScoreChart({
         onClick={handleChartClick}
         onKeyDown={handleChartKeyDown}
       >
+        {/* The enclosing slider owns keyboard seeking and shared focus. */}
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={visibleScoreSeries}
             margin={{ top: 8, right: 8, bottom: 4, left: 0 }}
-            accessibilityLayer
+            accessibilityLayer={false}
           >
             <CartesianGrid
               stroke="var(--settlehex-ui-chart-grid)"

@@ -6,7 +6,7 @@ import { cn } from './cn';
 
 // Base UI owns presence/measurement/reversal; our recipe owns the feel.
 // Children remain live during exit, so privacy/state updates are never frozen.
-export function Disclosure({ open, onOpenChange, trigger, children, className, contentClassName }) {
+export function Disclosure({ open, onOpenChange, trigger, header, children, className, contentClassName }) {
   const triggerRef = useRef(null);
   const contentRef = useRef(null);
   useEffect(() => {
@@ -14,8 +14,10 @@ export function Disclosure({ open, onOpenChange, trigger, children, className, c
       triggerRef.current?.focus();
     }
   }, [open]);
+  // Compose sibling header actions without nesting buttons or replacing the trigger.
+  const control = <Collapsible.Trigger ref={triggerRef} render={trigger} />;
   return <Collapsible.Root open={open} onOpenChange={onOpenChange} className={cn('settlehex-ui-disclosure', className)}>
-    <Collapsible.Trigger ref={triggerRef} render={trigger} />
+    {header ? header(control) : control}
     <Collapsible.Panel className="settlehex-ui-disclosure-panel">
       <div ref={contentRef} inert={open ? undefined : ''} aria-hidden={open ? undefined : true} className={contentClassName}>
         {children}

@@ -212,8 +212,12 @@ export const SharedMotionUpdates = {
     await userEvent.click(screen.getByRole('button', { name: 'Use replay log' }));
     expect(arrivals()).toHaveLength(0);
     await userEvent.click(screen.getByRole('button', { name: 'Seek backward' }));
+    const replayViewport = canvasElement.querySelector('.game-log-scroll');
+    replayViewport.scrollTo({ top: 0, behavior: 'instant' });
     await userEvent.click(screen.getByRole('button', { name: 'Append log row' }));
     expect(arrivals()).toHaveLength(0);
+    // History/replay does not follow the live tail, even without a wheel pause.
+    expect(replayViewport.scrollTop).toBe(0);
     const robber = screen.getByRole('button', { name: /moved the robber/ });
     await userEvent.click(robber);
     expect(robber).toHaveAttribute('aria-current', 'step');

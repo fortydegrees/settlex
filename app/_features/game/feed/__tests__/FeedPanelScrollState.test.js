@@ -143,3 +143,18 @@ describe("FeedPanelScrollState", () => {
     expect(onIdleResume).toHaveBeenCalledOnce();
   });
 });
+
+it("never follows the tail for a replay/history feed, including idle and forced resume", () => {
+  vi.useFakeTimers();
+  const state = createFeedPanelScrollState({ followTail: false });
+  const scrollEl = { scrollTop: 48, scrollHeight: 900, clientHeight: 200, scrollTo: vi.fn() };
+  const resume = vi.fn(() => forceFeedPanelAutoScroll(state, scrollEl));
+  expect(runFeedPanelAutoScrollIfNeeded(state, scrollEl)).toBe(false);
+  expect(forceFeedPanelAutoScroll(state, scrollEl)).toBe(false);
+  handleFeedPanelMouseLeave(state, { onIdleResume: resume });
+  handleFeedPanelBlur(state, { onIdleResume: resume });
+  vi.runAllTimers();
+  expect(resume).not.toHaveBeenCalled();
+  expect(scrollEl.scrollTo).not.toHaveBeenCalled();
+  expect(scrollEl.scrollTop).toBe(48);
+});

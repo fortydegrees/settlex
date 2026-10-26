@@ -2,7 +2,8 @@ export const AUTO_SCROLL_IDLE_MS = 3000;
 
 const createRef = (value) => ({ current: value });
 
-export const createFeedPanelScrollState = () => ({
+export const createFeedPanelScrollState = ({ followTail = true } = {}) => ({
+  followTailRef: createRef(followTail),
   shouldAutoScrollRef: createRef(true),
   idleTimeoutRef: createRef(null),
   isAutoScrollingRef: createRef(false),
@@ -32,7 +33,9 @@ export const scheduleFeedPanelAutoScrollResume = (
   } = {}
 ) => {
   clearFeedPanelIdleTimeout(state, clearTimeoutFn);
+  if (!state.followTailRef.current) return;
   state.idleTimeoutRef.current = setTimeoutFn(() => {
+    if (!state.followTailRef.current) return;
     state.shouldAutoScrollRef.current = true;
     onIdleResume?.();
   }, idleMs);
@@ -82,7 +85,7 @@ export const runFeedPanelAutoScrollIfNeeded = (
         : (callback) => callback(),
   } = {}
 ) => {
-  if (!scrollEl) return false;
+  if (!scrollEl || !state.followTailRef.current) return false;
   if (force) {
     state.shouldAutoScrollRef.current = true;
   }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fn } from "@storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { replayTimeline } from "../../dev/storybook/replayFixtures";
 import { ReplayPanel } from "./ReplayPanel";
 import { useReplayNavigation } from "../useReplayNavigation";
@@ -54,6 +54,7 @@ function ReplayPanelHarness({
   initialChartOpen = false,
   initialEventIndex = 2,
   timeline = replayTimeline,
+  replayMetadata = null,
 }) {
   const [open, setOpen] = useState(initialOpen);
   const [mobileOpen, setMobileOpen] = useState(initialMobileOpen);
@@ -67,6 +68,7 @@ function ReplayPanelHarness({
     <main className="min-h-screen">
       <ReplayPanel
         timeline={timeline}
+        replayMetadata={replayMetadata}
         currentEvent={timeline.events[currentEventIndex]}
         currentEventIndex={currentEventIndex}
         perspectiveId={perspectiveId}
@@ -218,4 +220,33 @@ export const MobileChartExpanded = {
 export const MobileFourPlayersLongNames = {
   ...MobileChartExpanded,
   render: (args) => <ReplayPanelHarness {...args} timeline={fourPlayerTimeline} />,
+};
+
+
+export const DesktopResizeAndChart = {
+  ...DesktopChartExpanded,
+  args: {
+    ...DesktopChartExpanded.args,
+    replayMetadata: { checkpoint: { label: "Recorded match" }, warnings: ["Some recorded messages are not supported in the game log.", "Development cards reconstructed from the postgame purchase order."] },
+  },
+  play: async ({ canvasElement }) => {
+    delete canvasElement.dataset.motionContract;
+    const canvas = within(canvasElement);
+    const chart = await canvas.findByRole('slider', { name: 'Replay victory point timeline' });
+    await userEvent.click(chart);
+    await expect(chart).toHaveFocus();
+    await expect(getComputedStyle(chart).outlineStyle).toBe('none');
+    await userEvent.tab({ shift: true });
+    await userEvent.tab();
+    await expect(chart).toHaveFocus();
+    await expect(getComputedStyle(chart).outlineStyle).toBe('solid');
+    const trigger = canvas.getByRole('button', { name: 'Minimize replay panel' });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
+    await expect(trigger).toHaveFocus();
+    await userEvent.click(trigger);
+    await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'));
+    await waitFor(() => expect(canvas.getByRole('slider', { name: 'Replay victory point timeline' })).toBeVisible());
+    canvasElement.dataset.motionContract = 'passed';
+  },
 };

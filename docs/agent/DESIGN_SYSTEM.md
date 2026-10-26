@@ -315,7 +315,11 @@ so private card identities disappear immediately while empty geometry shrinks.
 It keeps current children live during closing, marks them inert immediately, and
 returns focus to its trigger when closing from inside. Callers must update/remove
 private contents when visibility changes; closing alone is not a privacy filter.
-A trigger must support a DOM ref (native button or shared Button). Use existing
+A trigger must support a DOM ref (native button or shared Button). The optional
+`header(control)` slot composes that same owned trigger beside sibling actions;
+keep it in place across open/closed states. ReplayPanel uses this for whole-panel
+collapse as well as its nested chart disclosure. Bound tall content with a
+scrollable viewport rather than clipping it to a fixed panel height. Use existing
 Dialog/Popover/Drawer owners for overlays; do not substitute Disclosure for them.
 
 Pilot consumers: ReplayPanel's perspective selector, reveal switch and chart;
@@ -357,7 +361,9 @@ explicitly through both rail hosts. ChatPanel accepts the same policy.
 
 Replay selection updates its in-place background/ring over the shared selection
 time. Content is never retained for exit, so removal/privacy changes are immediate.
-Existing manual-scroll, focus pause and sent-message resume policies remain owned
+Quiet/replay feeds disable tail-following, including idle and forced resume;
+current-row seeking can still bring that row into view. Live feeds retain their
+manual-scroll, focus pause and sent-message resume policies, owned
 by FeedPanelScrollState; motion does not change them.
 
 Fixed-layout surfaces can consume `settlehex-ui-motion-layout` for width/height/top

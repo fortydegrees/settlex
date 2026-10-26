@@ -40,6 +40,7 @@ const FeedPanelComponent = ({
   trackPanelInteraction = false,
   activeRowKey = null,
   arrivalMode = "live",
+  followTail = arrivalMode === "live",
 }) => {
   // Keep the last rendered identity list, not row contents or a second history.
   // Adjusting during render avoids a paint before the arrival classification;
@@ -57,8 +58,9 @@ const FeedPanelComponent = ({
   const stateRef = useRef(null);
   const hasMountedAutoScrollRef = useRef(false);
   if (!stateRef.current) {
-    stateRef.current = createFeedPanelScrollState();
+    stateRef.current = createFeedPanelScrollState({ followTail });
   }
+  stateRef.current.followTailRef.current = followTail;
   const forceScrollToBottom = ({ behavior = "smooth" } = {}) => {
     if (!scrollRef.current) return;
     forceFeedPanelAutoScroll(stateRef.current, scrollRef.current, {
@@ -76,7 +78,7 @@ const FeedPanelComponent = ({
       requestAnimationFrameFn: requestAnimationFrame,
     });
     hasMountedAutoScrollRef.current = true;
-  }, [autoScrollKey]);
+  }, [autoScrollKey, followTail]);
 
   useEffect(() => {
     if (resumeAutoScrollKey == null || !scrollRef.current) return;
@@ -87,6 +89,10 @@ const FeedPanelComponent = ({
     if (activeRowKey == null) return;
     scrollFeedPanelRowIntoView(rowRefs.current.get(String(activeRowKey)));
   }, [activeRowKey]);
+
+  useEffect(() => {
+    if (!followTail) cleanupFeedPanelScrollState(stateRef.current);
+  }, [followTail]);
 
   useEffect(
     () => () => {

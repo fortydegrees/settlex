@@ -247,3 +247,13 @@ Other family gaps and source-only observations are recorded in UI_MOTION_CATALOG
 - Compact HUD/SharedFeedControls covers real cockpit-to-drawer selection and
   dismissal. Fields and selectors/SharedSwatchInteraction covers disabled options
   and Enter/Space selection. These named contracts do not certify every game state.
+
+### Replay panel integration regression — 26 October 2026
+
+`composed-surfaces-postgame-replay-replay-panel--desktop-resize-and-chart` uses
+warning-heavy production content and verifies one persistent disclosure trigger,
+chart pointer/keyboard focus and reopen semantics. The full replay panel now uses
+the shared Disclosure header composition slot. Desktop height is viewport-bounded
+with body scrolling; the chart's custom slider is its sole keyboard owner.
+Quiet/replay feeds suppress tail-following; simultaneous-event selection remains
+an explicitly deferred design question. See PROGRESS.md for real-route checks.

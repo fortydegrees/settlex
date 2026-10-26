@@ -22,9 +22,6 @@ import {
   shouldUseSegmentedReplayPerspective,
 } from "./replayPanelLayout";
 
-const replayRestoreClassName =
-  "settlehex-ui-hud settlehex-ui-focus group relative flex min-h-[2.75rem] w-full items-center overflow-hidden rounded-control py-ui-0 pl-ui-3.5 pr-ui-1.5 transition hover:bg-surface-hover";
-
 export function ReplayPanel({
   timeline,
   currentEvent,
@@ -175,37 +172,29 @@ export function ReplayPanel({
           data-replay-panel="desktop"
           data-allow-interaction="true"
         >
-          {open ? (
-            <section
-              className={`${META_PANEL_FRAME_CLASS_NAME} max-h-[min(34rem,calc(100vh-9rem))]`}
-            >
-              <div
-                className="pointer-events-none absolute inset-0 rounded-[inherit]"
-                style={META_PANEL_GLASS_STYLE}
-                aria-hidden="true"
-              />
+          <Disclosure
+            open={open}
+            onOpenChange={onOpenChange}
+            className="settlehex-ui-hud relative max-h-[calc(100dvh-2rem)] overflow-hidden select-none"
+            contentClassName="max-h-[calc(100dvh-6rem)] overflow-y-auto"
+            header={(control) => (
               <header className={META_PANEL_HEADER_CLASS_NAME}>
                 <span className="type-action-small">Replay</span>
-                <div className="flex items-center gap-ui-1.5">
-                  {onLibraryOpen ? <Button size="sm" variant="subtle" onClick={onLibraryOpen} aria-label="Saved games">Games</Button> : null}
-                  <Button
-                    size="sm"
-                    variant={atEnd ? "accent" : "subtle"}
-                    disabled={!canShowResults}
-                    onClick={onResultsOpen}
-                  >
-                    Results
-                  </Button>
-                  <button
-                    type="button"
-                    className="settlehex-ui-focus grid h-11 w-11 place-items-center rounded-control text-ink-secondary transition hover:bg-surface-hover hover:text-ink-primary"
-                    onClick={() => onOpenChange(false)}
-                    aria-label="Minimize replay panel"
-                  >
-                    <ChevronUpIcon className="h-4 w-4" aria-hidden="true" />
-                  </button>
+                <div className="flex min-w-0 flex-1 items-center justify-end gap-ui-1.5">
+                  {open && onLibraryOpen ? <Button size="sm" variant="subtle" onClick={onLibraryOpen} aria-label="Saved games">Games</Button> : null}
+                  {open ? <Button size="sm" variant={atEnd ? "accent" : "subtle"}
+                    disabled={!canShowResults} onClick={onResultsOpen}>Results</Button> : null}
+                  {control}
                 </div>
               </header>
+            )}
+            trigger={<button type="button"
+              className={`settlehex-ui-focus settlehex-ui-motion-feedback flex h-11 min-w-0 items-center gap-ui-2 rounded-control text-ink-secondary hover:bg-surface-hover hover:text-ink-primary ${open ? "w-11 justify-center" : "flex-1 justify-between px-ui-2"}`}
+              aria-label={open ? "Minimize replay panel" : "Restore replay panel"}>
+              {!open ? <span className="truncate text-left type-caption">{turnText} · {currentEvent?.label ?? "Initial setup"}</span> : null}
+              <ChevronDownIcon className={`h-4 w-4 shrink-0 settlehex-ui-disclosure-indicator ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+            </button>}
+          >
               <div className="relative z-10 shrink-0 px-ui-3.5 pb-ui-3 pt-ui-3">
                 {renderPerspectiveControl()}
                 {revealControl}
@@ -239,41 +228,7 @@ export function ReplayPanel({
               </button>}>
                 {scoreChart}
               </Disclosure>
-            </section>
-          ) : (
-            <button
-              type="button"
-              className={replayRestoreClassName}
-              onClick={() => onOpenChange(true)}
-              aria-label="Restore replay panel"
-            >
-              <span
-                className="pointer-events-none absolute inset-0 rounded-[inherit]"
-                style={META_PANEL_GLASS_STYLE}
-                aria-hidden="true"
-              />
-              <span className="relative z-10 flex min-w-0 flex-1 items-center gap-ui-2">
-                <span className="shrink-0 type-action-small text-ink-primary">
-                  Replay
-                </span>
-                <span
-                  className="shrink-0 type-action-small text-ink-muted"
-                  aria-hidden="true"
-                >
-                  ·
-                </span>
-                <span className="min-w-0 flex-1 truncate text-left type-caption text-ink-secondary">
-                  {turnText} · {currentEvent?.label ?? "Initial setup"}
-                </span>
-                <span
-                  className="grid h-8 w-8 shrink-0 place-items-center rounded-pill border border-edge-subtle bg-surface-hover text-ink-secondary transition group-hover:bg-surface-selected"
-                  aria-hidden="true"
-                >
-                  <ChevronDownIcon className="h-4 w-4" />
-                </span>
-              </span>
-            </button>
-          )}
+          </Disclosure>
         </aside>
       ) : null}
 
