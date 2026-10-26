@@ -357,3 +357,39 @@ scroll position while receiving current data. The old width/body phase timers an
 separate bespoke tooltip are removed. Shared Tooltip owns the tooltip; header
 feedback uses the same canonical family. Reduced motion removes all recipe delays.
 There is no whole-game performance or cross-browser qualification implied here.
+
+### Current-position rows: complete interaction ownership
+
+Use `SelectableRow` for a clickable row that activates/locates the current item:
+
+```jsx
+<SelectableRow current={isCurrent ? "step" : false} onActivate={seekToEvent}>
+  <EventContent />
+</SelectableRow>
+```
+
+The owner supplies hover, pointer/keyboard press, visible focus, disabled gating,
+current/deselected transitions and reduced motion. Without `onActivate` it renders
+static content with no control role or tab stop, even when current. `density="compact"`
+preserves transcript geometry; ordinary rows default to a 44px minimum height.
+Children may contain rich display content but no nested links, inputs or buttons.
+Use the appropriate radio/listbox/tab/link owner for those different semantics.
+
+Current appearance and feedback are separate layers. Theme's `surface-row-current`,
+`surface-row-hover` and `surface-row-press` control material; canonical selection
+and feedback tokens control transitions. The current soft white fill is a tunable
+starting point aligned with the parallel highlight review, not a final colour
+approval. No stripe or gold winner outline. Hovering/pressing the current item
+adds feedback without removing its position cue. Selected/deselected rows fade in
+place, preserve text layout and retarget from their current opacity on reversal.
+
+The installed [Base UI Button](https://base-ui.com/react/components/button) supplies
+non-native button handling for rich content; the [APG button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/)
+informs activation/focus semantics. Our owner additionally cancels held Space
+activation on blur/disable so release cannot seek a different row. Feature code
+must not recreate role/tabIndex/key handlers or copy hover/selection CSS.
+
+Acceptance is a complete state interaction, not just an animation or callback
+assertion: exercise hover, press, focus, selected and deselected, disabled,
+read-only, reversal and reduced motion as applicable. A shared duration alone
+does not mean a component has adopted an interaction family.

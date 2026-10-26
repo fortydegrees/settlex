@@ -119,7 +119,6 @@
   .settlehex-ui-feed-composer { background: var(--settlehex-ui-surface-pane); color: var(--settlehex-ui-text-primary); box-shadow: inset 0 0 0 1px var(--settlehex-ui-border-subtle); transition: background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle); }
   .settlehex-ui-feed-composer::placeholder { color: var(--settlehex-ui-text-muted); }
   .settlehex-ui-feed-composer:disabled { background: var(--settlehex-ui-surface-inset); color: var(--settlehex-ui-text-muted); cursor: not-allowed; }
-  .settlehex-ui-feed-current { background: var(--settlehex-ui-surface-winner); box-shadow: 0 0 0 1px var(--settlehex-ui-border-winner); }
   /* Secondary game chrome shares the product rules, with lighter over-board glass. */
   .settlehex-ui-feed-drawer { border-radius: var(--settlehex-ui-radius-panel) var(--settlehex-ui-radius-panel) 0 0; }
   .settlehex-ui-feed-tab-selected { background: var(--settlehex-ui-surface-selected); color: var(--settlehex-ui-text-primary); box-shadow: var(--settlehex-ui-shadow-selected); }
@@ -442,10 +441,6 @@ body {
 .feed-panel-entry[data-feed-arrival="true"] {
   animation: feed-panel-entry-in var(--settlehex-ui-motion-update) var(--settlehex-ui-motion-settle);
 }
-.game-log-entry {
-  transition: background-color var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle),
-    box-shadow var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle);
-}
 
 @keyframes feed-panel-entry-in {
   from {
@@ -560,5 +555,26 @@ body {
   .settlehex-ui-feed-toggle[aria-expanded="false"] .settlehex-ui-feed-toggle-label { opacity: 0; }
   @media (prefers-reduced-motion: reduce) {
     .settlehex-ui-motion-layout, .settlehex-ui-motion-presence, .settlehex-ui-motion-presence[data-open="false"], .settlehex-ui-feed-toggle, .settlehex-ui-feed-toggle-label { transition: none; transform: none; }
+  }
+}
+
+/* A complete current-row family: selection and pointer feedback are separate
+   layers, so hovering the current row never erases its current-position cue. */
+@layer components {
+  .settlehex-ui-selectable-row { position: relative; isolation: isolate; display: block; width: 100%; min-height: 2.75rem; padding: var(--settlehex-ui-space-2) var(--settlehex-ui-space-3); border-radius: var(--settlehex-ui-radius-small); text-align: start; }
+  .settlehex-ui-selectable-row[data-density="compact"] { min-height: 0; padding: var(--settlehex-ui-space-0-5) var(--settlehex-ui-space-1-5); }
+  .settlehex-ui-selectable-row::before, .settlehex-ui-selectable-row::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0; }
+  .settlehex-ui-selectable-row::after { background: var(--settlehex-ui-surface-row-current); transition: opacity var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-selectable-row[data-current="true"]::after { opacity: 1; }
+  .settlehex-ui-selectable-row::before { background: var(--settlehex-ui-surface-row-hover); transition: opacity var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle), background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-selectable-row[role="button"] { cursor: pointer; }
+  .settlehex-ui-selectable-row[data-disabled] { cursor: not-allowed; opacity: .6; }
+  @media (hover: hover) {
+    .settlehex-ui-selectable-row[role="button"]:not([data-disabled]):hover::before { opacity: 1; }
+  }
+  .settlehex-ui-selectable-row[role="button"]:not([data-disabled]):active::before,
+  .settlehex-ui-selectable-row[data-keyboard-pressed="true"]::before { opacity: 1; background: var(--settlehex-ui-surface-row-press); }
+  @media (prefers-reduced-motion: reduce) {
+    .settlehex-ui-selectable-row::before, .settlehex-ui-selectable-row::after { transition: none; }
   }
 }

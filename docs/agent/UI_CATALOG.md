@@ -219,3 +219,16 @@ The pilot's scope, API constraints and reduced-motion policy are in DESIGN_SYSTE
   Browser checks passed at 1440x900 normal/reduced motion, updates at 390x844,
   and the existing Mobile feed drawer flow at 390x664. Vaul choreography unchanged.
 - Local-only slice; no release or cross-browser/performance certification.
+
+### Selectable row family — 26 October 2026
+
+`app/ui/SelectableRow.js` owns current-position action rows. Review
+`components-selectable-row--interaction-contract` and
+`composed-surfaces-gameplay-game-feeds--selectable-replay-log`.
+GameLogPanel declares only current state and activation; no local keyboard or
+motion handlers. Static live rows remain content. The selected fill is soft white
+with separately tunable material tokens; appearance approval remains with the
+highlight review. The primitive contract covers activation count, focus, disabled,
+held-key cancellation, read-only and current state. Browser measurements additionally
+verify real hover/press and opposing selection fades without geometry changes.
+Other family gaps and source-only observations are recorded in UI_MOTION_CATALOGUE.

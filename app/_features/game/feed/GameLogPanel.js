@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { formatLogEntry, getGameLogEntryKey } from "../../../../lib/shared/gameText";
 import { FeedPanel } from "./FeedPanel";
 import { FeedTokenRow } from "./FeedTokenRow";
+import { SelectableRow } from "../../../ui/SelectableRow";
 
 const GameLogPanelComponent = ({
   entries = [],
@@ -53,29 +54,11 @@ const GameLogPanelComponent = ({
       entryClassName="feed-panel-entry"
       contentClassName="space-y-ui-2 type-body-small pt-ui-2"
       renderRow={(entry) => (
-        <div
-          className={`game-log-entry settlehex-ui-focus break-words rounded-small px-ui-1.5 py-ui-0.5 type-body-small ${
-            entry.isActive
-              ? "settlehex-ui-feed-current"
-              : ""
-          } ${
-            entry.isServerEntry ? "italic text-ink-secondary" : "text-ink-primary"
-          }`}
-          role={onEntrySelect ? "button" : undefined}
-          tabIndex={onEntrySelect ? 0 : undefined}
-          aria-current={entry.isActive ? "step" : undefined}
-          onClick={
-            onEntrySelect ? () => onEntrySelect(entry.key) : undefined
-          }
-          onKeyDown={
-            onEntrySelect
-              ? (event) => {
-                  if (event.key !== "Enter" && event.key !== " ") return;
-                  event.preventDefault();
-                  onEntrySelect(entry.key);
-                }
-              : undefined
-          }
+        <SelectableRow
+          density="compact"
+          className={`game-log-entry break-words ${entry.isServerEntry ? "italic text-ink-secondary" : "text-ink-primary"}`}
+          current={entry.isActive ? "step" : false}
+          onActivate={onEntrySelect ? () => onEntrySelect(entry.key) : undefined}
         >
           {entry.tokens.map((token, tokenIndex) => (
             <FeedTokenRow
@@ -84,7 +67,7 @@ const GameLogPanelComponent = ({
               themeId={themeId}
             />
           ))}
-        </div>
+        </SelectableRow>
       )}
     />
   );
