@@ -89,6 +89,13 @@ export const OpponentInventory = {
     await userEvent.click(c.getByRole('switch',{name:'Reveal opponent hand'}));
     await expectSettledWidth();
     const replayWidth = contentWidth();
+    const hand = c.getByLabelText('Opponent hand');
+    const resourceCounters = Array.from(box.querySelector('#p1-resources').querySelectorAll('[id]'));
+    expect(resourceCounters).toHaveLength(5);
+    for (const counter of resourceCounters) {
+      expect(counter.getBoundingClientRect().left).toBeGreaterThanOrEqual(hand.getBoundingClientRect().left);
+      expect(counter.getBoundingClientRect().right).toBeLessThanOrEqual(hand.getBoundingClientRect().right);
+    }
     await userEvent.click(c.getByRole('button',{name:'Four opponent cards'}));
     expect(c.getByLabelText('Development cards')).toBeInTheDocument();
     expect(contentWidth()).toBe(replayWidth);

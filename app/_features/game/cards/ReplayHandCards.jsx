@@ -19,13 +19,14 @@ export function ReplayHandCards({ player, themeId, compact = false }) {
   const knownDevCards = devCards.filter((card) => Object.hasOwn(DEV_CARD_SVGS, card));
   const unknownDevCards = devCards.length - knownDevCards.length;
 
+  // Desktop shows all five counters beside replay controls; phones keep the scrollable strip.
   return (
-    <div tabIndex={0} onKeyDown={(event) => event.stopPropagation()} aria-label={`${player.name ?? "Player"} hand`} className={`settlehex-ui-focus w-40 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
+    <div tabIndex={0} onKeyDown={(event) => event.stopPropagation()} aria-label={`${player.name ?? "Player"} hand`} className={`settlehex-ui-focus ${compact ? "w-40" : "w-72"} overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
       <div className={`flex w-max items-center ${compact ? "py-ui-1" : "py-ui-4"} pr-ui-4`}>
-        <div id={`p${player.id}-resources`} className={`relative flex ${compact ? "h-12" : "h-20"} items-end ${compact ? "" : "pl-ui-4 pr-ui-3"}`} aria-label="Resource cards">
+        <div id={`p${player.id}-resources`} className={`relative flex h-12 items-end ${compact ? "" : "pl-ui-4 pr-ui-3"}`} aria-label="Resource cards">
           <div className="mb-ui-4 flex self-end">
             {resources.map((resource, index) => (
-              <CardIcon key={resource} resource={resource} resourceCount={counts[resource]} player={player.id} themeId={themeId} compact={compact} isLast={index === resources.length - 1} />
+              <CardIcon key={resource} resource={resource} resourceCount={counts[resource]} player={player.id} themeId={themeId} compact isLast={index === resources.length - 1} />
             ))}
           </div>
           {unknownResources > 0 && <CardStack count={unknownResources} src={resCardBackIcon} alt="Unknown resource cards" className="ml-ui-3 self-center" />}
