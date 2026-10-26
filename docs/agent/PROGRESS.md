@@ -12,3 +12,7 @@ legacy fallback; saved response formats/keys remain compatible.
 Focused behavioral checks and UI policy are recorded in the task receipt.
 Integrated browser/motion/reduced-motion checks and broad verification are pending
 at this checkpoint. This is a local candidate; no publication or deployment.
+
+OpponentInventory pilot now verifies the intrinsic hidden-stack resize owner and
+the bounded revealed replay viewport separately. Parent rendered checks passed
+at desktop1440x900 in normal and reduced motion; production geometry is unchanged.

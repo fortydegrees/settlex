@@ -66,19 +66,40 @@ export const OpponentInventory = {
     delete canvasElement.dataset.motionContract;
     const c = within(canvasElement);
     const box = canvasElement.querySelector('#p1-opponent-box');
-    const width = () => box.firstElementChild.getBoundingClientRect().width;
-    const before = width();
+    const region = box.querySelector('[data-axis="width"]');
+    const width = () => region.getBoundingClientRect().width;
+    const contentWidth = () => region.firstElementChild.getBoundingClientRect().width;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const expectSettledWidth = () => waitFor(() => expect(Math.abs(width() - contentWidth())).toBeLessThan(1));
+
+    // Hidden stacks resize intrinsically. The revealed replay hand intentionally
+    // stays in its bounded, keyboard-scrollable viewport.
+    await userEvent.click(c.getByRole('switch',{name:'Reveal opponent hand'}));
+    await expectSettledWidth();
+    const before = contentWidth();
     await userEvent.click(c.getByRole('button',{name:'Four opponent cards'}));
-    await waitFor(() => expect(width()).toBeGreaterThan(before + 100));
-    // Let the geometry settle before testing a complete reverse.
-    await new Promise(resolve => setTimeout(resolve,350));
+    expect(contentWidth()).toBeGreaterThan(before);
+    if (!reducedMotion) expect(width()).toBeLessThan(contentWidth());
+    await expectSettledWidth();
+    await userEvent.click(c.getByRole('button',{name:'No opponent cards'}));
+    expect(contentWidth()).toBe(before);
+    if (!reducedMotion) expect(width()).toBeGreaterThan(contentWidth());
+    await expectSettledWidth();
+
+    await userEvent.click(c.getByRole('switch',{name:'Reveal opponent hand'}));
+    await expectSettledWidth();
+    const replayWidth = contentWidth();
+    await userEvent.click(c.getByRole('button',{name:'Four opponent cards'}));
+    expect(c.getByLabelText('Development cards')).toBeInTheDocument();
+    expect(contentWidth()).toBe(replayWidth);
     await userEvent.click(c.getByRole('button',{name:'No opponent cards'}));
     expect(c.queryByLabelText('Development cards')).not.toBeInTheDocument();
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) expect(width()).toBeGreaterThan(before + 20);
-    await waitFor(() => expect(Math.abs(width()-before)).toBeLessThan(2));
+    expect(contentWidth()).toBe(replayWidth);
     await userEvent.click(c.getByRole('button',{name:'Four opponent cards'}));
     await userEvent.click(c.getByRole('switch',{name:'Reveal opponent hand'}));
     expect(c.queryByLabelText('Opponent hand')).not.toBeInTheDocument();
+    expect(c.queryByLabelText('Development cards')).not.toBeInTheDocument();
+    await expectSettledWidth();
     canvasElement.dataset.motionContract = 'passed';
   },
 };

@@ -10,6 +10,10 @@ Quiet replay/history feeds disable tail-following. Read-only chat has no compose
 Replay score history stays complete while the cursor/legend tracks selection.
 Turn headings stay separate from selectable events and copying text does not seek.
 
+Opponent inventory motion uses the intrinsic hidden-stack resize owner. Revealed
+replay hands keep a fixed scroll viewport; card removal changes live contents
+immediately without requiring the enclosing player box to grow.
+
 Development tool configuration: SETTLEHEX_LOCAL_REPLAY_DIR,
 SETTLEHEX_LOCAL_REPLAY_ADAPTER and SETTLEHEX_DECISION_REVIEW_DIR. Only absent canonical
 settings fall back to SETTLEX names. Inputs and adapter implementations remain
