@@ -164,34 +164,6 @@ const buildMetaPanels = ({
   },
 ];
 
-const getDesktopFeedSlotSizeClassName = (phase) => {
-  if (phase === "open" || phase === "opening-body") {
-    return desktopFeedHeaderSizeClassName;
-  }
-
-  if (phase === "opening-width" || phase === "closing-body") {
-    return desktopFeedHeaderSizeClassName;
-  }
-
-  if (phase === "closing-width") {
-    return desktopFeedCollapsedSizeClassName;
-  }
-
-  return desktopFeedCollapsedSizeClassName;
-};
-
-const getDesktopFeedSlotMotionClassName = (phase) => {
-  if (phase === "closing-body") {
-    return "duration-[170ms] ease-[cubic-bezier(0.4,0,1,1)]";
-  }
-
-  if (phase === "closing-width") {
-    return "duration-[190ms] ease-[cubic-bezier(0.4,0,0.2,1)]";
-  }
-
-  return "duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]";
-};
-
 function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
   return (
     <section
