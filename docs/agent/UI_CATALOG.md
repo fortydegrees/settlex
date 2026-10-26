@@ -232,3 +232,14 @@ highlight review. The primitive contract covers activation count, focus, disable
 held-key cancellation, read-only and current state. Browser measurements additionally
 verify real hover/press and opposing selection fades without geometry changes.
 Other family gaps and source-only observations are recorded in UI_MOTION_CATALOGUE.
+
+### Shared choice family adoption (26 October 2026)
+
+- `app/ui/Tabs.js`: horizontal panel navigation over Base UI. Game Chrome stories
+  SharedFeedTabInteraction and SharedChoiceOwners/SharedChoiceOwnersRtl cover
+  linked panels, roving keyboard navigation, disabled and empty options.
+- `app/ui/ToggleButton.js`: controlled native persistent choice; shared feedback,
+  focus and disabled states. Cockpit feed controls and SwatchPicker are consumers.
+- Compact HUD/SharedFeedControls covers real cockpit-to-drawer selection and
+  dismissal. Fields and selectors/SharedSwatchInteraction covers disabled options
+  and Enter/Space selection. These named contracts do not certify every game state.

@@ -99,9 +99,6 @@
 }
 
 .settlehex-mobile-feed-control { border-color: rgba(255, 255, 255, 0.24); }
-.settlehex-mobile-feed-control:hover { background: rgba(255, 255, 255, 0.24); }
-.settlehex-mobile-feed-control--active,
-.settlehex-mobile-feed-control--active:hover { background: rgba(255, 255, 255, 0.5); }
 
 .mobile-command-row__timer--available {
   border-color: rgba(255, 255, 255, 0.38);

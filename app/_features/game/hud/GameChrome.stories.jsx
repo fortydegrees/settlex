@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
+import { Tabs, TabsList, TabsPanel } from "../../../ui/Tabs";
+import { ToggleButton } from "../../../ui/ToggleButton";
 import { Button } from "../../../ui/Button";
 import { MobileMatchMenu } from "./MobileMatchMenu";
 import { MobileMetaDrawer } from "../feed/MobileMetaDrawer";
@@ -211,3 +214,87 @@ export const SharedMotionDock = {
     canvasElement.dataset.motionContract = 'passed';
   },
 };
+
+export const SharedFeedTabInteraction = {
+  render: () => <DrawerFixture />,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Open game feed" }));
+    const log = await screen.findByRole("tab", { name: "Game Log" });
+    const chat = screen.getByRole("tab", { name: "Chat", exact: true });
+    log.focus();
+    await user.keyboard("{ArrowRight}");
+    await expect(chat).toHaveFocus();
+    await expect(chat).toHaveAttribute("aria-selected", "true");
+    const panel = screen.getByRole("tabpanel", { name: "Chat" });
+    await expect(panel.id).toBe(chat.getAttribute("aria-controls"));
+    await user.keyboard("{Home}");
+    await expect(log).toHaveFocus();
+    await expect(log).toHaveAttribute("aria-selected", "true");
+    await user.keyboard("{End}{ArrowRight}");
+    await expect(log).toHaveFocus();
+    await expect(log).toHaveAttribute("aria-selected", "true");
+    await user.keyboard("{Tab}");
+    await expect(screen.getByRole("tabpanel", { name: "Game Log" })).toHaveFocus();
+    canvasElement.dataset.motionContract = "passed";
+  },
+};
+
+const toggleChanged = fn();
+function ChoiceOwnersFixture({ rtl = false }) {
+  const [value, setValue] = useState("first");
+  const [pressed, setPressed] = useState(false);
+  const options = [{value:"first",label:"First"},{value:"disabled",label:"Unavailable",disabled:true},{value:"last",label:"Last"}];
+  return <DirectionProvider direction={rtl ? "rtl" : "ltr"}>
+    <div dir={rtl ? "rtl" : "ltr"} className="settlehex-ui-pane m-ui-4 space-y-ui-4 p-ui-4">
+      <Tabs value={value} onValueChange={setValue}>
+        <TabsList label="Sections" options={options} />
+        {options.map(option => <TabsPanel key={option.value} value={option.value}>{option.label} content</TabsPanel>)}
+      </Tabs>
+      <div className="flex gap-ui-3">
+        <ToggleButton aria-label="Show feed" pressed={pressed} onPressedChange={next => {toggleChanged(next);setPressed(next);}} className="rounded-control px-ui-3">Feed</ToggleButton>
+        <ToggleButton aria-label="Disabled feed" disabled onPressedChange={toggleChanged}>Disabled</ToggleButton>
+        <ToggleButton aria-label="Unavailable feed" pressed>Unavailable</ToggleButton>
+      </div>
+      <Tabs value={null}><TabsList label="Empty sections" options={[]} /></Tabs>
+    </div>
+  </DirectionProvider>;
+}
+async function verifyChoiceOwners({ canvasElement, args }) {
+  const screen = within(canvasElement);
+  const user = userEvent.setup();
+  const first = screen.getByRole("tab", { name: "First" });
+  const last = screen.getByRole("tab", { name: "Last" });
+  first.focus();
+  await user.keyboard(args.rtl ? "{ArrowLeft}" : "{ArrowRight}");
+  await expect(screen.getByRole("tab", {name:"Unavailable"})).toHaveFocus();
+  await expect(first).toHaveAttribute("aria-selected", "true");
+  await user.keyboard("{Enter} ");
+  await expect(first).toHaveAttribute("aria-selected", "true");
+  await user.keyboard(args.rtl ? "{ArrowLeft}" : "{ArrowRight}");
+  await expect(last).toHaveFocus();
+  await expect(last).toHaveAttribute("aria-selected", "true");
+  await expect(screen.getByRole("tabpanel", {name:"Last"})).toBeVisible();
+  await expect(screen.queryByRole("tabpanel", {name:"First"})).not.toBeInTheDocument();
+  await expect(screen.queryByText("First content")).not.toBeInTheDocument();
+  await user.keyboard("{Home}");
+  await expect(first).toHaveAttribute("aria-selected", "true");
+  await user.click(screen.getByRole("tab", {name:"Unavailable"}));
+  await expect(first).toHaveAttribute("aria-selected", "true");
+  toggleChanged.mockClear();
+  const toggle = screen.getByRole("button", { name: "Show feed" });
+  await user.click(toggle);
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await user.keyboard(" ");
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await user.keyboard("{Enter}");
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(toggleChanged).toHaveBeenCalledTimes(3);
+  await expect(screen.getByRole("button", { name: "Unavailable feed" })).toBeDisabled();
+  await user.click(screen.getByRole("button", { name: "Disabled feed" }));
+  await expect(toggleChanged).toHaveBeenCalledTimes(3);
+  canvasElement.dataset.motionContract = "passed";
+}
+export const SharedChoiceOwners = {args:{rtl:false},render:args => <ChoiceOwnersFixture {...args}/>,play:verifyChoiceOwners};
+export const SharedChoiceOwnersRtl = {args:{rtl:true},render:args => <ChoiceOwnersFixture {...args}/>,play:verifyChoiceOwners};

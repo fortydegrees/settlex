@@ -393,3 +393,38 @@ Acceptance is a complete state interaction, not just an animation or callback
 assertion: exercise hover, press, focus, selected and deselected, disabled,
 read-only, reversal and reduced motion as applicable. A shared duration alone
 does not mean a component has adopted an interaction family.
+
+### Panel tabs and persistent choices
+
+Use `Tabs`, `TabsList` and `TabsPanel` from `app/ui/Tabs.js` for horizontal panel
+navigation. `TabsList` takes labelled `{value, label, disabled}` options; the
+controlled root takes `value`/`onValueChange`. Installed Base UI owns IDs, linked
+panels, roving focus, arrow/Home/End navigation and indicator measurement. Focus
+activates these immediately available panels; no feature keyboard handlers or
+measurement loops. RTL applications supply Base UI DirectionProvider and DOM dir.
+Use SegmentedControl for mutually exclusive actions without associated panels.
+
+The selected tab indicator moves over canonical selection timing; hover/press
+layers use canonical feedback timing. Inactive panel contents are not retained
+for decorative exits. MobileMetaDrawer keeps Vaul dismissal/gesture ownership
+and its existing feed mounting policy; selection changes do not delay data.
+
+Use `ToggleButton pressed={value} onPressedChange={setValue}` for persistent
+native-button selection. It owns aria-pressed, native activation, disabled/no-
+callback gating, shared feedback and inset keyboard focus. Callers may implement
+exclusive selection by ignoring the requested false value and selecting an ID.
+Cockpit Log/Chat do exactly that, preserving existing GameScreen behavior; Vaul
+owns closing. Use Switch for a labelled boolean setting. SwatchPicker composes
+ToggleButton with the swatch material, preserving player colours and selection
+rings, and supports both group and option disabled states.
+
+Shared `settlehex-ui-choice` CSS owns feedback/selection durations, disabled state
+and reduced motion. The canonical press-scale token is .97; no local animation
+classes or handlers are required. Swatch focus remains outside its ring; clipped
+cockpit controls use an inset focus outline. Panel tabs and persistent choices
+share the motion family but retain different keyboard and accessibility roles.
+
+References: [Base UI Tabs](https://base-ui.com/react/components/tabs) and
+[APG tabs](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/). Rendered verification
+covers named Storybook scenarios; installed Vaul outside-content accessibility
+and whole-game gesture/performance qualification remain separate.

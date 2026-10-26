@@ -33,7 +33,6 @@
   .settlehex-ui-dialog-backdrop { background: radial-gradient(circle at top, rgb(255 255 255 / .12), transparent 32%), rgb(15 23 42 / .42); }
   .settlehex-ui-button-sheen { background: linear-gradient(120deg, transparent 20%, rgb(255 255 255 / .24) 45%, transparent 70%); }
   .settlehex-ui-swatch { box-shadow: 0 0 0 1px rgb(255 255 255 / .6); }
-  .settlehex-ui-swatch:hover { box-shadow: 0 0 0 1px var(--settlehex-ui-text-muted); }
   .settlehex-ui-swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--settlehex-ui-surface-selected), 0 0 0 4px var(--settlehex-ui-text-secondary); }
   .settlehex-ui-banner-neutral { background: var(--settlehex-ui-feedback-neutral-face); border-color: var(--settlehex-ui-feedback-neutral-border); --banner-marker: var(--settlehex-ui-feedback-neutral-marker); --banner-title: var(--settlehex-ui-text-primary); --banner-body: var(--settlehex-ui-text-secondary); }
   .settlehex-ui-banner-danger { background: var(--settlehex-ui-feedback-danger-face); border-color: var(--settlehex-ui-feedback-danger-border); --banner-marker: var(--settlehex-ui-feedback-danger-marker); --banner-title: var(--settlehex-ui-feedback-danger-ink); --banner-body: var(--settlehex-ui-feedback-danger-body); }
@@ -121,7 +120,6 @@
   .settlehex-ui-feed-composer:disabled { background: var(--settlehex-ui-surface-inset); color: var(--settlehex-ui-text-muted); cursor: not-allowed; }
   /* Secondary game chrome shares the product rules, with lighter over-board glass. */
   .settlehex-ui-feed-drawer { border-radius: var(--settlehex-ui-radius-panel) var(--settlehex-ui-radius-panel) 0 0; }
-  .settlehex-ui-feed-tab-selected { background: var(--settlehex-ui-surface-selected); color: var(--settlehex-ui-text-primary); box-shadow: var(--settlehex-ui-shadow-selected); }
   .settlehex-ui-feed-handle { border-radius: var(--settlehex-ui-radius-pill) !important; background: var(--settlehex-ui-text-muted) !important; opacity: .4; }
   .settlehex-ui-feed-minimize:hover,
   .settlehex-ui-feed-frame:hover > .settlehex-ui-feed-restore { background: var(--settlehex-ui-surface-solid); }
@@ -130,8 +128,7 @@
     .settlehex-ui-feed-frame:hover > .settlehex-ui-feed-restore { background: var(--settlehex-ui-surface-pane); }
   }
   .settlehex-ui-feed-frame[role="button"]:focus-visible,
-  .settlehex-ui-feed-minimize:focus-visible,
-  .settlehex-ui-feed-tab:focus-visible { outline: 2px solid var(--settlehex-ui-focus); outline-offset: -3px; }
+  .settlehex-ui-feed-minimize:focus-visible { outline: 2px solid var(--settlehex-ui-focus); outline-offset: -3px; }
   .settlehex-ui-game-menu-item { border-color: var(--settlehex-ui-border-subtle); }
   .settlehex-ui-game-menu-item-neutral { background: var(--settlehex-ui-surface-hover); color: var(--settlehex-ui-text-primary); }
   .settlehex-ui-game-menu-item-neutral:hover { background: var(--settlehex-ui-surface-selected); }
@@ -295,8 +292,7 @@
   @media (prefers-reduced-transparency: reduce) {
     .settlehex-ui-feed-frame:hover > .settlehex-ui-feed-restore,
     .settlehex-ui-feed-minimize:hover,
-    .settlehex-ui-game-menu-item-neutral,
-    .settlehex-ui-feed-tab:not([aria-selected="true"]):hover { background: var(--settlehex-ui-surface-solid); }
+    .settlehex-ui-game-menu-item-neutral { background: var(--settlehex-ui-surface-solid); }
     .settlehex-ui-feed-header, .settlehex-ui-feed-footer, .settlehex-ui-feed-composer, .settlehex-ui-feed-composer:disabled { background: var(--settlehex-ui-surface-solid); }
     .settlehex-ui-pane, .settlehex-ui-hud { background: var(--settlehex-ui-surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
     .settlehex-ui-button-secondary:not(:disabled) { background: var(--settlehex-ui-surface-solid); backdrop-filter: none; -webkit-backdrop-filter: none; }
@@ -348,13 +344,6 @@
 .settlehex-mobile-feed-control {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-  outline: none;
-}
-
-.settlehex-mobile-feed-control:focus,
-.settlehex-mobile-feed-control:focus-visible {
-  outline: none;
-  box-shadow: none;
 }
 
 /* Base UI owns presence; state transitions preserve the current frame on reversal. */
@@ -576,5 +565,50 @@ body {
   .settlehex-ui-selectable-row[data-keyboard-pressed="true"]::before { opacity: 1; background: var(--settlehex-ui-surface-row-press); }
   @media (prefers-reduced-motion: reduce) {
     .settlehex-ui-selectable-row::before, .settlehex-ui-selectable-row::after { transition: none; }
+  }
+}
+
+/* Complete shared choice feedback. Geometry/material variants stay separate
+   from the canonical timing; selected state remains visible under feedback. */
+@layer components {
+  .settlehex-ui-choice {
+    position: relative; isolation: isolate; min-height: 2.75rem; min-width: 2.75rem;
+    cursor: pointer;
+    transition: transform var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle),
+      background-color var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle),
+      color var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle),
+      box-shadow var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle);
+  }
+  .settlehex-ui-choice::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+    pointer-events: none; background: var(--settlehex-ui-surface-row-hover); opacity: 0;
+    transition: opacity var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle),
+      background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle);
+  }
+  @media (hover: hover) {
+    .settlehex-ui-choice:hover:not(:disabled):not([aria-disabled="true"])::before { opacity: 1; }
+  }
+  .settlehex-ui-choice:active:not(:disabled):not([aria-disabled="true"]) { transform: scale(var(--settlehex-ui-motion-press-scale)); }
+  .settlehex-ui-choice:active:not(:disabled):not([aria-disabled="true"])::before { opacity: 1; background: var(--settlehex-ui-surface-row-press); }
+  .settlehex-ui-choice:disabled, .settlehex-ui-choice[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+  .settlehex-ui-toggle[aria-pressed="true"] { background: var(--settlehex-ui-surface-selected); }
+  /* Inset focus survives the cockpit's clipped, adjoining targets. */
+  .settlehex-ui-toggle:focus-visible { outline-offset: -3px; }
+  .settlehex-ui-tabs { display: flex; position: relative; isolation: isolate; gap: var(--settlehex-ui-space-2); }
+  .settlehex-ui-tab { flex: 1; min-width: 0; padding: var(--settlehex-ui-space-2) var(--settlehex-ui-space-3); border-radius: var(--settlehex-ui-radius-pill); color: var(--settlehex-ui-text-secondary); }
+  .settlehex-ui-tab[aria-selected="true"] { color: var(--settlehex-ui-text-primary); }
+  .settlehex-ui-tab-indicator {
+    position: absolute; z-index: -1; pointer-events: none; left: 0; top: 0;
+    width: var(--active-tab-width); height: var(--active-tab-height);
+    transform: translate(var(--active-tab-left), var(--active-tab-top));
+    border-radius: var(--settlehex-ui-radius-pill); background: var(--settlehex-ui-surface-selected);
+    box-shadow: var(--settlehex-ui-shadow-selected);
+    transition: transform var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle),
+      width var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle),
+      height var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .settlehex-ui-choice, .settlehex-ui-choice::before, .settlehex-ui-tab-indicator { transition: none; }
+    .settlehex-ui-choice:active:not(:disabled):not([aria-disabled="true"]) { transform: none; }
   }
 }

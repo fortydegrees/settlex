@@ -1,7 +1,10 @@
 import React from "react";
 import { buildTopology, createEmptyState, ResourceType } from "@settlehex/game-core";
-import { expect, fn, userEvent, within } from "@storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
+import { MobileMetaDrawer } from "../feed/MobileMetaDrawer";
+import { GameLogPanel } from "../feed/GameLogPanel";
+import { ChatPanel } from "../feed/ChatPanel";
 import { MobilePlayerCockpit } from "./MobilePlayerCockpit";
 import { OpponentPlayerBox } from "./OpponentPlayerBox";
 import { DockCard } from "./ActionsDock/DockCard";
@@ -53,7 +56,7 @@ function MobileFixture(args) {
         setBuildPickup={fn()}
         onTradeClick={fn()}
         onDevCardPurchaseStart={fn()}
-        onMobileMetaPanelOpen={fn()}
+        onMobileMetaPanelOpen={args.onMobileMetaPanelOpen ?? fn()}
         themeId="classic"
         isActive={args.isActive ?? true}
       />
@@ -191,5 +194,43 @@ export const DesktopQuickTradeKeyboard = {
     await userEvent.keyboard("{Enter}");
     expect(args.onTrade).toHaveBeenCalledOnce();
     expect(args.onTrade).toHaveBeenCalledWith("Wood");
+  },
+};
+
+function SharedFeedFixture() {
+  const [activePanel, setActivePanel] = React.useState(null);
+  const fixture = gameFixture({ resources: [R.WOOD, R.BRICK] });
+  const players = { "0": fixture.player };
+  const panels = [
+    {id:"log",label:"Game Log",renderMobile:() => <GameLogPanel entries={[{id:"roll",type:"roll",actorId:"0",data:{dice:[3,4]}}]} playerMap={players} themeId="classic" rootClassName="h-full" headerClassName="sr-only" />},
+    {id:"chat",label:"Chat",renderMobile:() => <ChatPanel playerID={null} playerMap={players} chatMessages={[]} themeId="classic" rootClassName="h-full" headerClassName="sr-only" />},
+  ];
+  return <>
+    <MobileFixture {...fixture} canEnd activeMobileMetaPanel={activePanel}
+      onMobileMetaPanelOpen={setActivePanel} />
+    <MobileMetaDrawer panels={panels} activePanel={activePanel} onActivePanelChange={setActivePanel} />
+  </>;
+}
+export const SharedFeedControls = {
+  render: () => <SharedFeedFixture />,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    const user = userEvent.setup();
+    const log = screen.getByRole("button", {name:"Open game log"});
+    const chat = screen.getByRole("button", {name:"Open chat"});
+    await user.click(log);
+    await expect(log).toHaveAttribute("aria-pressed", "true");
+    const chatTab = await screen.findByRole("tab", {name:"Chat",exact:true});
+    await user.click(chatTab);
+    await expect(chat).toHaveAttribute("aria-pressed", "true");
+    await expect(log).toHaveAttribute("aria-pressed", "false");
+    await user.keyboard("{Escape}");
+    await expect(chat).toHaveAttribute("aria-pressed", "false");
+    await waitFor(() => expect(screen.queryByRole("tab", {name:"Chat",exact:true})).not.toBeInTheDocument());
+    await expect(screen.getByRole("button", {name:"Hold to end turn"})).toBeVisible();
+    log.focus();
+    await user.keyboard(" ");
+    await expect(log).toHaveAttribute("aria-pressed", "true");
+    canvasElement.dataset.motionContract = "passed";
   },
 };

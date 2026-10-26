@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ToggleButton } from "./ToggleButton";
 import { cn } from "./cn";
 
 function formatSwatchLabel(option) {
@@ -15,6 +16,7 @@ export function SwatchPicker({
   onChange,
   className = "",
   swatchClassName = "",
+  disabled = false,
 }) {
   return (
     <div
@@ -27,14 +29,15 @@ export function SwatchPicker({
         const isActive = value === option.id;
 
         return (
-          <button
+          <ToggleButton
             key={option.id}
-            type="button"
+            appearance="swatch"
             aria-label={formatSwatchLabel(option)}
-            aria-pressed={isActive}
-            onClick={() => onChange(option.id)}
+            pressed={isActive}
+            disabled={disabled || option.disabled || !onChange}
+            onPressedChange={() => onChange?.(option.id)}
             className={cn(
-              "settlehex-ui-swatch settlehex-ui-focus h-11 w-11 cursor-pointer rounded-pill transition-transform duration-[var(--settlehex-ui-duration-fast)] motion-reduce:transition-none",
+              "h-11 w-11 rounded-pill",
               option.swatch,
               swatchClassName
             )}

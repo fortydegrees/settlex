@@ -23,6 +23,7 @@ import {
   handleThemeImageError,
 } from "../../theme/themes";
 import "../../theme/hudGlass.css";
+import { ToggleButton } from "../../../ui/ToggleButton";
 
 const RESOURCE_ORDER = Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE);
 
@@ -79,28 +80,24 @@ const MobileMetaFeedTrigger = ({ activePanel, onOpen }) => (
     data-mobile-meta-feed-trigger="true"
     data-allow-interaction="true"
   >
-    <button
-      type="button"
-      className={`settlehex-mobile-feed-control flex items-center justify-center border-r transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
-        activePanel === "log" ? "settlehex-mobile-feed-control--active" : ""
-      }`}
-      onClick={() => onOpen?.("log")}
+    <ToggleButton
+      className="settlehex-mobile-feed-control flex items-center justify-center border-r"
+      onPressedChange={() => onOpen?.("log")}
+      disabled={!onOpen}
       aria-label="Open game log"
-      aria-pressed={activePanel === "log" ? "true" : "false"}
+      pressed={activePanel === "log"}
     >
       <LogIcon />
-    </button>
-    <button
-      type="button"
-      className={`settlehex-mobile-feed-control flex items-center justify-center transition-[background-color,transform] duration-150 ease-out active:scale-[0.94] motion-reduce:transition-none ${
-        activePanel === "chat" ? "settlehex-mobile-feed-control--active" : ""
-      }`}
-      onClick={() => onOpen?.("chat")}
+    </ToggleButton>
+    <ToggleButton
+      className="settlehex-mobile-feed-control flex items-center justify-center"
+      onPressedChange={() => onOpen?.("chat")}
+      disabled={!onOpen}
       aria-label="Open chat"
-      aria-pressed={activePanel === "chat" ? "true" : "false"}
+      pressed={activePanel === "chat"}
     >
       <ChatIcon />
-    </button>
+    </ToggleButton>
   </div>
 );
 

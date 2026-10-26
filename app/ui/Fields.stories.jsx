@@ -1,4 +1,5 @@
 import React from "react";
+import { expect, fn, userEvent, within } from "@storybook/test";
 import { Input } from "./Input";
 import { Select } from "./Select";
 import { SwatchPicker } from "./SwatchPicker";
@@ -91,4 +92,40 @@ export const ClarityControls = {
       </div>
     </div>
   ),
+};
+
+const chooseSwatch = fn();
+function SwatchContractFixture() {
+  const [value, setValue] = React.useState("blue");
+  return <><SwatchPicker value={value} onChange={(next) => { chooseSwatch(next); setValue(next); }}
+    options={[{ id: "blue", swatch: "bg-blue-500" }, { id: "red", swatch: "bg-red-500" }, { id: "green", swatch: "bg-green-500", disabled: true }]} />
+    <SwatchPicker disabled value="purple" onChange={chooseSwatch} options={[{id:"purple",swatch:"bg-purple-500"}]} />
+  </>;
+}
+export const SharedSwatchInteraction = {
+  render: () => <SwatchContractFixture />,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement);
+    const user = userEvent.setup();
+    chooseSwatch.mockClear();
+    const disabled = screen.getByRole("button", { name: "Choose green player color" });
+    await expect(disabled).toBeDisabled();
+    const disabledGroup = screen.getByRole("button", {name:"Choose purple player color"});
+    await expect(disabledGroup).toBeDisabled();
+    await user.click(disabledGroup);
+    await user.click(disabled);
+    await expect(chooseSwatch).not.toHaveBeenCalled();
+    const red = screen.getByRole("button", { name: "Choose red player color" });
+    red.focus();
+    await user.keyboard(" ");
+    await expect(red).toHaveAttribute("aria-pressed", "true");
+    await expect(chooseSwatch).toHaveBeenCalledTimes(1);
+    const blue = screen.getByRole("button", { name: "Choose blue player color" });
+    blue.focus();
+    await user.keyboard("{Enter}");
+    await expect(blue).toHaveAttribute("aria-pressed", "true");
+    await expect(red).toHaveAttribute("aria-pressed", "false");
+    await expect(chooseSwatch).toHaveBeenCalledTimes(2);
+    canvasElement.dataset.motionContract = "passed";
+  },
 };
