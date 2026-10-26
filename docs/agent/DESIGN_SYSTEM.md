@@ -31,8 +31,8 @@ job; similar jobs should share an owner rather than copy classes.
 
 Current transcript items use a quiet translucent-white `surface-current` wash
 with existing small corners, unchanged text/player colours and no enclosing
-border, left stripe or raised shadow. The replay log owns the first use through
-`settlehex-ui-feed-current`. Keep keyboard focus independently visible; winner
+border, left stripe or raised shadow. The replay log adopts this through shared
+`SelectableRow`. Keep keyboard focus independently visible; winner
 colours and selected-control elevation are separate treatments.
 
 Focus outlines appear during keyboard navigation, not pointer interaction.

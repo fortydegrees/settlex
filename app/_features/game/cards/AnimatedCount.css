@@ -27,11 +27,11 @@
 }
 
 .animated-count__value--enter {
-  animation: settlehex-animated-count-enter var(--settlehex-animated-count-enter-duration, 220ms) var(--settlehex-ui-ease-standard, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation: settlehex-animated-count-enter var(--settlehex-animated-count-enter-duration, var(--settlehex-ui-motion-update)) var(--settlehex-ui-motion-settle) both;
 }
 
 .animated-count__value--exit {
-  animation: settlehex-animated-count-exit var(--settlehex-animated-count-exit-duration, 180ms) ease-out both;
+  animation: settlehex-animated-count-exit var(--settlehex-animated-count-exit-duration, var(--settlehex-ui-motion-update)) var(--settlehex-ui-motion-settle) both;
 }
 
 .resource-dock-count {
@@ -41,6 +41,10 @@
   color: var(--settlehex-ui-text-hud-on-glass);
   font-variant-numeric: normal;
 }
+
+/* Resource gain/loss is existing game-event choreography, not generic feedback. */
+.resource-dock-count .animated-count__value--enter { animation-timing-function: var(--settlehex-ui-ease-standard); }
+.resource-dock-count .animated-count__value--exit { animation-timing-function: ease-out; }
 
 .resource-dock-count .animated-count__stack {
   overflow: visible;
