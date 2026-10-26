@@ -95,7 +95,7 @@ export default meta;
 
 export const Winner = {
   play: async ({ canvasElement, args }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     await waitFor(() => expect(screen.getByText(args.title)).toBeVisible());
     args.onClose.mockClear();
     await userEvent.click(
@@ -108,7 +108,7 @@ export const Winner = {
 export const Loser = {
   args: loserProps,
   play: async ({ canvasElement, args }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     await waitFor(() => expect(screen.getByText(args.title)).toBeVisible());
     expect(screen.getByText(args.subtitle)).toBeVisible();
   },
@@ -133,7 +133,7 @@ export const FinishedHumanMatch = {
     onMatchAlertResumeCheckedChange: fn(),
   },
   play: async ({ canvasElement, args }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     const checkbox = await screen.findByRole("checkbox", {
       name: "Turn match alerts back on",
     });
@@ -149,7 +149,7 @@ export const ArchivedMatch = {
     onWatchReplay: fn(),
   },
   play: async ({ canvasElement, args }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     await waitFor(() => expect(screen.getByText(args.subtitle)).toBeVisible());
     args.onWatchReplay.mockClear();
     await userEvent.click(screen.getByRole("button", { name: "Replay" }));
@@ -164,7 +164,7 @@ export const ReplayAvailable = {
     replayStatus: "ready",
   },
   play: async ({ canvasElement, args }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     args.onWatchReplay.mockClear();
     await userEvent.click(
       await screen.findByRole("button", { name: "Replay" })
@@ -182,7 +182,7 @@ export const ActionPending = {
     onWatchReplay: fn(),
   },
   play: async ({ canvasElement }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     await waitFor(() =>
       expect(
         screen.getByRole("button", { name: "Returning…" })
@@ -216,7 +216,7 @@ export const DenseResumeError = {
 export const ReplayPreparing = {
   args: { ...winnerProps, onWatchReplay: fn(), replayStatus: "loading" },
   play: async ({ canvasElement }) => {
-    expect(await within(canvasElement).findByRole("button", { name: "Preparing replay..." })).toBeDisabled();
+    expect(await within(canvasElement.ownerDocument.body).findByRole("button", { name: "Preparing replay..." })).toBeDisabled();
   },
 };
 

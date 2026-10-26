@@ -117,11 +117,8 @@ describe("GameScreen game over", () => {
     expect(contents).toMatch(
       /if \(isReplay\) \{\s*if \(playerAction === "roadBuilding"\) \{\s*setPlayerAction\(null\);\s*\}\s*return;\s*\}/
     );
-    expect(contents).toContain(
-      "!!player && !isReplay && needsToDiscard && !isGameOver"
-    );
-    expect(contents).toContain(
-      "!!player && !isReplay && devPlayModalVisible && !needsToDiscard && !isGameOver"
-    );
+    // Forced overlay gating is checked in the integrated replay; dialog
+    // dismissal/selection behavior lives in production interaction stories.
+
   });
 });

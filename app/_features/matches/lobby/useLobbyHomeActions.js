@@ -322,7 +322,7 @@ export function useLobbyHomeActions({
   const finishEntryAction = useCallback(() => {
     const action = pendingEntryActionRef.current;
     pendingEntryActionRef.current = null;
-    setEntryModal(CLOSED_ENTRY_MODAL);
+    setEntryModal((current) => ({ ...current, open: false }));
 
     if (action) {
       setTimeout(action, 0);
@@ -331,7 +331,7 @@ export function useLobbyHomeActions({
 
   const closeEntryModal = useCallback(() => {
     pendingEntryActionRef.current = null;
-    setEntryModal(CLOSED_ENTRY_MODAL);
+    setEntryModal((current) => ({ ...current, open: false }));
   }, []);
 
   const openSignIn = useCallback(() => {

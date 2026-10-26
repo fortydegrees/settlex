@@ -1,4 +1,6 @@
 import React from "react";
+import { Button } from "../../../ui/Button";
+import { LazyDialog } from "../../../ui/LazyDialog";
 import { createEmptyState, ResourceType } from "@settlehex/game-core";
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { TradeDiscardModal } from "./TradeDiscardModal";
@@ -59,6 +61,8 @@ export const ForcedDiscard = {
     const screen = within(canvasElement.ownerDocument.body);
     args.onConfirm.mockClear();
     expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("dialog")).toBeVisible();
     expect(screen.getByRole("button", { name: "Discard" })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "Increase give Wood" }));
     expect(screen.getByRole("button", { name: "Discard" })).toBeDisabled();
@@ -74,6 +78,8 @@ export const YearOfPlentyShortBank = {
     const screen = within(canvasElement.ownerDocument.body);
     args.onConfirm.mockClear();
     expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("dialog")).toBeVisible();
     expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Increase selection Ore" })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "Increase selection Wood" }));
@@ -90,6 +96,8 @@ export const Monopoly = {
     const screen = within(canvasElement.ownerDocument.body);
     args.onConfirm.mockClear();
     expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("dialog")).toBeVisible();
     expect(screen.getByRole("button", { name: "Claim", exact: true })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "Claim Sheep" }));
     await userEvent.click(screen.getByRole("button", { name: "Claim", exact: true }));
@@ -104,5 +112,34 @@ export const CancelableDiscard = {
     args.onCancel.mockClear();
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(args.onCancel).toHaveBeenCalledOnce();
+  },
+};
+
+function TradeLifecycleFixture() {
+  const [open, setOpen] = React.useState(false);
+  return <><Button onClick={() => setOpen(true)}>Open trade</Button>
+    <LazyDialog component={TradeDiscardModal} open={open} mode="trade" {...tradeFixture}
+      themeId="classic" onConfirm={() => setOpen(false)} onCancel={() => setOpen(false)} />
+  </>;
+}
+export const CloseAndReset = {
+  render: () => <TradeLifecycleFixture />,
+  play: async ({canvasElement}) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    await userEvent.click(screen.getByRole('button',{name:'Open trade'}));
+    await screen.findByRole('dialog');
+    await userEvent.click(screen.getByRole('button',{name:'Increase give Wood'}));
+    await userEvent.click(screen.getByRole('button',{name:'Increase receive Brick'}));
+    expect(screen.getByRole('button',{name:'Trade',exact:true})).toBeEnabled();
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(screen.getByRole('button',{name:'Cancel',exact:true}));
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) expect(dialog).toHaveAttribute('data-ending-style');
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button',{name:'Open trade'}));
+    await screen.findByRole('dialog');
+    expect(screen.getByRole('button',{name:'Trade',exact:true})).toBeDisabled();
+    await userEvent.click(screen.getByRole('button',{name:'Cancel',exact:true}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    canvasElement.dataset.motionContract = 'passed';
   },
 };

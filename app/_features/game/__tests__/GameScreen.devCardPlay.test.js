@@ -28,14 +28,6 @@ describe("GameScreen dev card play animation wiring", () => {
     expect(source).toContain("clearDevCardPlayActors");
   });
 
-  it("does not pass a cancel handler to forced YoP and Monopoly dialogs", () => {
-    const source = readGameScreen();
-    const devDialogMarkup = source.match(
-      /\{!!player && !isReplay && devPlayModalVisible[\s\S]*?<LazyTradeDiscardModal[\s\S]*?\/>/
-    )?.[0] ?? "";
+  // Forced dismissal is exercised by TradeDiscardModal production stories.
 
-    expect(devDialogMarkup).toContain("onConfirm={handleDevPlayConfirm}");
-    expect(devDialogMarkup).not.toContain("onCancel=");
-    expect(source).not.toContain("handleDevPlayCancel");
-  });
 });

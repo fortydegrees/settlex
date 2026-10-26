@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useMemo, useEffect, useId } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { Dialog } from "../../../ui/Dialog";
 import { Button } from "../../../ui/Button";
 import { STANDARD_RESOURCES, ResourceType } from "../../theme/gameAssets";
 import {
@@ -21,7 +22,7 @@ const countResources = (resources) => {
   return counts;
 };
 
-export const TradeDiscardModal = ({ 
+const TradeDiscardForm = ({
   mode, // 'discard' | 'trade' | 'dev-yop' | 'dev-monopoly'
   player, // The current player object (with resources)
   onConfirm, 
@@ -36,7 +37,6 @@ export const TradeDiscardModal = ({
   // Format: { [ResourceType]: number }
   const [selected, setSelected] = useState({});
   const [selectedReceive, setSelectedReceive] = useState({});
-  const titleId = useId();
 
   const isDiscard = mode === "discard";
   const isTrade = mode === "trade";
@@ -226,23 +226,8 @@ export const TradeDiscardModal = ({
     }
   };
 
-  const title = isDiscard
-    ? `Discard ${requiredDiscardCount} Cards`
-    : isTrade
-    ? "Maritime Trade"
-    : isDevYop
-    ? "Select Two Resources"
-    : "Select a Resource to Claim";
-
   return (
-    <div className="settlehex-ui-dialog-backdrop settlehex-ui-layer-dialog settlehex-ui-dialog-viewport fixed inset-0 flex items-center justify-center pointer-events-auto">
-      <div role="dialog" aria-labelledby={titleId} className="settlehex-ui-pane settlehex-ui-dialog-surface w-[520px] max-w-full max-h-full flex flex-col gap-ui-4">
-        
-        {/* Header */}
-        <h2 id={titleId} className="type-title text-center text-ink-primary">
-          {title}
-        </h2>
-
+    <div className="flex flex-col gap-ui-4">
         {/* Content */}
         <div className="flex flex-col gap-ui-4">
           
@@ -592,7 +577,16 @@ export const TradeDiscardModal = ({
                   : "Confirm"}
           </Button>
         </div>
-      </div>
     </div>
   );
 };
+
+export function TradeDiscardModal({ open = true, mode, ...props }) {
+  const title = mode === "discard" ? `Discard ${props.requiredDiscardCount} Cards`
+    : mode === "trade" ? "Maritime Trade"
+    : mode === "dev-yop" ? "Select Two Resources" : "Select a Resource to Claim";
+  return <Dialog open={open} title={title} titleClassName="type-title text-center text-ink-primary"
+    dismissible={false} maxWidthClassName="max-w-[520px]">
+    <TradeDiscardForm {...props} mode={mode} />
+  </Dialog>;
+}

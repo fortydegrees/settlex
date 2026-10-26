@@ -54,12 +54,11 @@ export function MatchAlertDialog({
   const joiningRef = useRef(false);
 
   useEffect(() => {
-    if (joiningRef.current) return;
+    if (!alert || joiningRef.current) return;
     joiningRef.current = false;
     setState(initialDialogState(alert));
   }, [alert]);
 
-  if (!alert) return null;
 
   const isJoining = state === "joining";
 
@@ -69,7 +68,7 @@ export function MatchAlertDialog({
   };
 
   const handleJoin = async () => {
-    if (joiningRef.current) return;
+    if (!alert || joiningRef.current) return;
     joiningRef.current = true;
     onJoiningChange(true);
     setState("joining");
@@ -102,11 +101,10 @@ export function MatchAlertDialog({
     window.location.assign("/?playOnline=1");
   };
 
-  const { title, description } = getMatchAlertDialogCopy({
-    state,
-    alert,
-    currentGame,
-  });
+  // Retain public display copy during exit, never a stale actionable alert.
+  const displayCopy = useRef(null);
+  if (alert) displayCopy.current = getMatchAlertDialogCopy({ state, alert, currentGame });
+  const { title, description } = displayCopy.current ?? getMatchAlertDialogCopy({ state, alert, currentGame });
 
   const actions =
     state === "confirm" || state === "joining" ? (
@@ -133,7 +131,7 @@ export function MatchAlertDialog({
 
   return (
     <Dialog
-      open
+      open={Boolean(alert)}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) close();
       }}

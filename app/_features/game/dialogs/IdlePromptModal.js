@@ -11,6 +11,7 @@ const formatTimer = (ms) => {
 };
 
 export function IdlePromptModal({
+  open = true,
   remainingMs,
   onAcknowledge,
   isSubmitting = false,
@@ -18,7 +19,8 @@ export function IdlePromptModal({
 }) {
   return (
     <Dialog
-      open
+      open={open}
+      dismissible={false}
       title="Are you still there?"
       actions={
         <Button

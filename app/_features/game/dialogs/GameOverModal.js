@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import confetti from "canvas-confetti";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Dialog } from "../../../ui/Dialog";
 import { Button } from "../../../ui/Button";
 import { DisplayText } from "../../../ui/DisplayText";
 import { getPlayerNameHex } from "../../theme/playerColors.js";
@@ -12,6 +13,7 @@ import {
 const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
 
 export function GameOverModal({
+  open = true,
   title,
   subtitle,
   scoreboard = [],
@@ -53,7 +55,7 @@ export function GameOverModal({
   });
 
   useEffect(() => {
-    if (!isWinner || !shouldFireConfetti) return;
+    if (!open || !isWinner || !shouldFireConfetti) return;
     confetti({
       particleCount: 140,
       spread: 70,
@@ -61,10 +63,12 @@ export function GameOverModal({
       colors: ["#fbbf24", "#f59e0b", "#d97706", "#ffffff", "#fef3c7"],
     });
     onConfettiFired?.();
-  }, [isWinner, shouldFireConfetti, onConfettiFired]);
+  }, [open, isWinner, shouldFireConfetti, onConfettiFired]);
 
   return (
-    <div className="settlehex-ui-pane relative max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto p-ui-5 sm:p-ui-6">
+    <Dialog open={open} title="Match results" titleClassName="sr-only" dismissible={false}
+      maxWidthClassName="max-w-xl" bodyClassName="!mt-0" className="p-ui-5 sm:p-ui-6">
+    <div className="relative">
       <button
         onClick={actions.close}
         disabled={matchAlertResume.pending}
@@ -218,5 +222,6 @@ export function GameOverModal({
         </Button>
       </div>
     </div>
+    </Dialog>
   );
 }

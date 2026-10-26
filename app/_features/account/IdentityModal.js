@@ -113,9 +113,8 @@ export function EmojiPicker({ value, onChange, colorGradient }) {
   );
 }
 
-export function IdentityModal({
+function IdentityForm({
   onSubmit,
-  onClose,
   initialName,
   initialEmoji,
   initialColor,
@@ -146,20 +145,8 @@ export function IdentityModal({
     });
   };
 
-  const handleOpenChange = (nextOpen) => {
-    if (!nextOpen) {
-      onClose();
-    }
-  };
-
   return (
-    <Dialog
-      open
-      onOpenChange={handleOpenChange}
-      title="Pick a username"
-      description="Choose the emoji, color, and name you want to take into the match."
-      maxWidthClassName="max-w-sm"
-    >
+    <>
       <form className="grid gap-ui-4" onSubmit={handleSubmit}>
         <div>
           <EmojiPicker
@@ -219,6 +206,13 @@ export function IdentityModal({
           100% { transform: translateX(0); opacity: 1; }
         }
       `}</style>
-    </Dialog>
+    </>
   );
+}
+
+export function IdentityModal({ open = true, onClose, ...props }) {
+  return <Dialog open={open} onOpenChange={(next) => { if (!next) onClose?.(); }}
+    title="Pick a username" description="Choose the emoji, color, and name you want to take into the match." maxWidthClassName="max-w-sm">
+    <IdentityForm {...props} />
+  </Dialog>;
 }

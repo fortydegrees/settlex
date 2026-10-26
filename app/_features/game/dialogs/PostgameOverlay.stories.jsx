@@ -21,7 +21,7 @@ export default meta;
 
 export const RankedScoreboard = {
   play: async ({ canvasElement, args }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     args.onWatchReplay.mockClear();
     await userEvent.click(
       screen.getByRole("button", { name: "Watch replay" })
@@ -55,7 +55,7 @@ export const FinalScoresUnavailable = {
     summary: [],
   },
   play: async ({ canvasElement, args }) => {
-    const screen = within(canvasElement);
+    const screen = within(canvasElement.ownerDocument.body);
     expect(screen.getByText("Final scores unavailable.")).toBeVisible();
     args.onClose.mockClear();
     await userEvent.click(screen.getByRole("button", { name: "Close" }));

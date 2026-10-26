@@ -1,6 +1,8 @@
 "use client";
 import { readBrowserStorage } from "../../../lib/client/browserStorage.js";
 
+import { LazyDialog } from "../../ui/LazyDialog";
+
 import { useRouter } from "next/navigation";
 import React, {
   useCallback,
@@ -312,24 +314,21 @@ function HomeTableBoard({ initialAccount = null }) {
         onDismiss={lobby.actions.dismissError}
       />
 
-      {lobby.entryModal.open ? (
-        <React.Suspense fallback={null}>
-          <LazyAccountEntryModal
-            open={lobby.entryModal.open}
-            mode={lobby.entryModal.mode}
-            intent={lobby.entryModal.intent}
-            identity={lobby.identity}
-            authOptions={lobby.authOptions}
-            onClose={lobby.overlays.closeEntryModal}
-            onSwitchToAuth={lobby.actions.switchEntryToAuth}
-            onPlayUsernameSubmit={lobby.overlays.handlePlayUsernameSubmit}
-            onEmailSignIn={lobby.overlays.handleAuthEmailSignIn}
-            onEmailSignUp={lobby.overlays.handleAuthEmailSignUp}
-            onSignInProvider={lobby.actions.signInWithProvider}
-            onContinueAsGuest={lobby.actions.continueAsGuest}
-          />
-        </React.Suspense>
-      ) : null}
+      <LazyDialog
+        component={LazyAccountEntryModal}
+        open={lobby.entryModal.open}
+        mode={lobby.entryModal.mode}
+        intent={lobby.entryModal.intent}
+        identity={lobby.identity}
+        authOptions={lobby.authOptions}
+        onClose={lobby.overlays.closeEntryModal}
+        onSwitchToAuth={lobby.actions.switchEntryToAuth}
+        onPlayUsernameSubmit={lobby.overlays.handlePlayUsernameSubmit}
+        onEmailSignIn={lobby.overlays.handleAuthEmailSignIn}
+        onEmailSignUp={lobby.overlays.handleAuthEmailSignUp}
+        onSignInProvider={lobby.actions.signInWithProvider}
+        onContinueAsGuest={lobby.actions.continueAsGuest}
+      />
 
       {isBoardLayoutReady && isHomeDemoReady ? (
         <React.Suspense fallback={null}>
@@ -343,17 +342,15 @@ function HomeTableBoard({ initialAccount = null }) {
         </React.Suspense>
       ) : null}
 
-      {lobby.showIdentity ? (
-        <React.Suspense fallback={null}>
-          <LazyIdentityModal
-            onSubmit={lobby.overlays.handleIdentitySubmit}
-            onClose={lobby.overlays.closeIdentity}
-            initialName={lobby.identity.name}
-            initialEmoji={lobby.identity.emoji}
-            initialColor={lobby.identity.color}
-          />
-        </React.Suspense>
-      ) : null}
+      <LazyDialog
+        component={LazyIdentityModal}
+        open={lobby.showIdentity}
+        onSubmit={lobby.overlays.handleIdentitySubmit}
+        onClose={lobby.overlays.closeIdentity}
+        initialName={lobby.identity.name}
+        initialEmoji={lobby.identity.emoji}
+        initialColor={lobby.identity.color}
+      />
 
       <SearchingModal
         searchState={lobby.searchState}

@@ -1,3 +1,4 @@
+import React from "react";
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { MatchAlertDialog } from "./MatchAlertDialog";
 
@@ -95,4 +96,24 @@ export const JoinFailed = {
       ...context,
       title: "We couldn’t join that table",
     }),
+};
+
+function DismissalFixture() {
+  const [alert, setAlert] = React.useState(openAlert);
+  return <MatchAlertDialog alert={alert} onClose={() => setAlert(null)} />;
+}
+export const DismissalLifecycle = {
+  render: () => <DismissalFixture />,
+  play: async ({canvasElement}) => {
+    const screen = within(canvasElement.ownerDocument.body);
+    const dialog = await screen.findByRole('dialog',{name:'HarbourFox is looking for a duel'});
+    await userEvent.click(screen.getByRole('button',{name:'Not now'}));
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      expect(dialog).toBeInTheDocument();
+      expect(dialog).toHaveAttribute('data-ending-style');
+      expect(dialog).toHaveAccessibleName('HarbourFox is looking for a duel');
+    }
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    canvasElement.dataset.motionContract = 'passed';
+  },
 };

@@ -1,18 +1,21 @@
 import React from "react";
+import { Dialog } from "../../../ui/Dialog";
 import { Button } from "../../../ui/Button";
 import { getPlayerNameHex } from "../../theme/playerColors.js";
 
 const getSwatchColor = (color) => getPlayerNameHex(color) ?? color ?? "#888";
 
 export function PostgameOverlay({
+  open = true,
   summary = [],
   scoreboard = [],
   onWatchReplay,
   onClose,
 }) {
   return (
-    <div className="fixed inset-0 z-30 flex items-center justify-center overflow-y-auto bg-surface-game-scrim p-ui-4 backdrop-blur-sm">
-      <div className="settlehex-ui-pane max-h-full w-full max-w-4xl overflow-y-auto p-ui-5 sm:p-ui-6">
+    <Dialog open={open} title="Match summary" titleClassName="sr-only" dismissible={false}
+      maxWidthClassName="max-w-4xl" bodyClassName="!mt-0" className="p-ui-5 sm:p-ui-6">
+      <div>
         <div className="flex flex-col gap-ui-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="settlehex-ui-label">
@@ -91,6 +94,6 @@ export function PostgameOverlay({
           </div>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }
