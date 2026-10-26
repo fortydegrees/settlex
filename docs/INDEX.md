@@ -6,11 +6,13 @@ Open the exact doc you need. Each line maps a Markdown path under `docs/` to its
 
 agent/BOT_MODELS.md - Selecting the Play vs Bot model
 agent/DESIGN_SYSTEM.md - Enforced Clarity foundations
+agent/NOTES.md - Current implementation notes
+agent/PROGRESS.md - Current integration progress
 agent/PROJECT_RECORD.md - Project record and provenance
-agent/skills/settlehex-design/ADDING_SHARED_PRIMITIVES.md - Adding Shared UI Primitives
+agent/skills/settlehex-design/ADDING_SHARED_PRIMITIVES.md - Adding or extending shared UI primitives
 agent/skills/settlehex-design/DESIGN_REVIEW_CHECKLIST.md - SettleHex Design Review Checklist
 agent/skills/settlehex-design/RESOURCE_ICON_STYLE_GUIDE.md - SettleHex Resource Icon Style Guide
-agent/skills/settlehex-design/SKILL.md - SettleHex Design System
+agent/skills/settlehex-design/SKILL.md - SettleHex brand guide — superseded
 agent/skills/settlehex-design/SOUND_DESIGN_GUIDE.md - SettleHex Sound Design Guide
 agent/STORYBOOK.md - Storybook UI Catalog
 agent/TESTING.md - Testing
@@ -28,10 +30,10 @@ notation/IMPLEMENTERS.md - Implementing a game recorder or replay viewer
 notation/LOG-PROOF.md - Saved-record post-game log proof
 notation/README.md - SettleHex game records
 notation/REPLAY-CONSUMER.md - Open a saved record in the replay viewer
-provenance/art-and-fonts.md - Artwork authorship and font provenance
-provenance/asset-disposition.md - Current assets and privately preserved studies
-provenance/assets.md - Asset and source-material inventory
-provenance/sounds.md - Older sound provenance — unresolved
-provenance/source-references.md - Source references and unresolved derivation
+provenance/art-and-fonts.md - Artwork and fonts
+provenance/asset-disposition.md - Current assets and archived files
+provenance/assets.md - Asset identities
+provenance/sounds.md - Sound sources
+provenance/source-references.md - Source references
 README.md - Documentation
 VERIFICATION.md - Verification record and limits

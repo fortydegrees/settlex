@@ -1,77 +1,42 @@
-//https://github.com/bcollazo/catanatron/blob/425ccdef04921d1756a1c9bb1f904fceb1f3c3d3/ui/src/utils/coordinates.js
+// Point-up hex geometry: https://www.redblobgames.com/grids/hexagons/
+export const SQRT3 = Math.sqrt(3);
 
-// Helpers for implementing https://www.redblobgames.com/grids/hexagons/
+export function cubeToAxial(cube) {
+  return { q: cube[0], r: cube[2] };
+}
 
-// Gives center coordinate for tile.
-export function tilePixelVector(coordinate, size, centerX, centerY) {
-    const hex = cubeToAxial(coordinate);
-    return [
-      size * (SQRT3 * hex.q + (SQRT3 / 2) * hex.r) + centerX,
-      size * (3 / 2) * hex.r + centerY,
-    ];
-  }
-  
-  export function cubeToAxial(cube) {
-    return { q: cube[0], r: cube[2] };
-  }
-  export function getNodeDelta(direction, w, h) {
-    switch (direction) {
-      case "NORTH":
-        return [0, -h / 2];
-      case "NORTHEAST":
-        return [w / 2, -h / 4];
-      case "SOUTHEAST":
-        return [w / 2, h / 4];
-      case "SOUTH":
-        return [0, h / 2];
-      case "SOUTHWEST":
-        return [-w / 2, h / 4];
-      case "NORTHWEST":
-        return [-w / 2, -h / 4];
-      default:
-        throw Error("Unkown direction " + direction);
-    }
-  }
+export function tilePixelVector(cube, radius, centerX, centerY) {
+  const { q, r } = cubeToAxial(cube);
+  const width = SQRT3 * radius;
+  return [centerX + width * (q + r / 2), centerY + radius * 1.5 * r];
+}
 
-  export function getEdgeDelta(direction, w, h){
-    switch (direction) {
-        case "NORTHEAST":
-          return [w / 4, -h * 0.375];
-        case "EAST":
-          return [w /2, 0];
-        case "SOUTHEAST":
-          return [w /4, h * 0.375];
-        case "SOUTHWEST":
-          return [-w/4, h * 0.375];
-        case "WEST":
-          return [-w / 2, 0];
-        case "NORTHWEST":
-          return [-w/4, -h * 0.375];
-        default:
-          throw Error("Unkown direction " + direction);
-      }
-  }
-  
-  export function getEdgeTransform(direction, size) {
-    const distanceToEdge = size * 0.865;
-    const translate = (deg) =>
-      `translateX(-50%) translateY(-50%) rotate(${deg}deg) translateY(${-distanceToEdge}px)`;
-    switch (direction) {
-      case "NORTHEAST":
-        return `${translate(30)}`;
-      case "EAST":
-        return `${translate(90)}`;
-      case "SOUTHEAST":
-        return `${translate(150)}`;
-      case "SOUTHWEST":
-        return `${translate(210)}`;
-      case "WEST":
-        return `${translate(270)}`;
-      case "NORTHWEST":
-        return `${translate(330)}`;
-      default:
-        throw Error("Unkown direction " + direction);
-    }
-  }
-  
-  export const SQRT3 = 1.73205080757;
+// Clockwise vertices, in units of half-width and quarter-height.
+const VERTICES = [[0, -2], [1, -1], [1, 1], [0, 2], [-1, 1], [-1, -1]];
+const NODE_DIRECTIONS = ["NORTH", "NORTHEAST", "SOUTHEAST", "SOUTH", "SOUTHWEST", "NORTHWEST"];
+const EDGE_DIRECTIONS = ["NORTHEAST", "EAST", "SOUTHEAST", "SOUTHWEST", "WEST", "NORTHWEST"];
+
+function directionIndex(directions, direction) {
+  const index = directions.indexOf(direction);
+  if (index < 0) throw new Error(`Unknown hex direction: ${direction}`);
+  return index;
+}
+
+export function getNodeDelta(direction, width, height) {
+  const [x, y] = VERTICES[directionIndex(NODE_DIRECTIONS, direction)];
+  return [x * width / 2, y * height / 4];
+}
+
+export function getEdgeDelta(direction, width, height) {
+  const index = directionIndex(EDGE_DIRECTIONS, direction);
+  const start = VERTICES[index];
+  const end = VERTICES[(index + 1) % VERTICES.length];
+  return [(start[0] + end[0]) * width / 4, (start[1] + end[1]) * height / 8];
+}
+
+export function getEdgeTransform(direction, radius) {
+  const rotation = 30 + 60 * directionIndex(EDGE_DIRECTIONS, direction);
+  // Preserve the road artwork's tuned inset from the tile centre.
+  const inset = radius * 0.865;
+  return `translateX(-50%) translateY(-50%) rotate(${rotation}deg) translateY(${-inset}px)`;
+}

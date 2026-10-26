@@ -11,17 +11,14 @@ This maintained record links contributor guidance and source identity. Add conci
 
 The runtime source, observation/action contracts, model identities and rollback instructions remain in those maintained guides. Removing historical research logs does not establish model strength or change the serving contract.
 
-## Attribution and unresolved origins
+## Source and artwork records
 
-Preserve [third-party notices](../../THIRD_PARTY_NOTICES.md), [source-reference findings](../provenance/source-references.md), [asset identities](../provenance/assets.md), [sound provenance](../provenance/sounds.md) and the font source README. Those records include unresolved ownership and redistribution questions; no project license or asset clearance is implied here.
-
-The current settlement, city and road artwork in `public/svgs/pieces/` is
-original artwork by David Pratt, created in Inkscape, as he confirmed on
-21 October 2026. Earlier audit text incorrectly applied historical reference
-notes to these finished pieces. [Artwork authorship](../provenance/art-and-fonts.md)
-and the inventory now record the correction for all 60 piece files.
-
-The font and sound records retain their own source identities and limitations. The current source-reference follow-up also retains pinned upstream board-spec references and their notices. Do not erase attribution while separating private operational narrative.
+[Third-party notices](../../THIRD_PARTY_NOTICES.md) preserve the bundled font and
+adapted board-spec notices. [Source references](../provenance/source-references.md),
+[asset identities](../provenance/assets.md), [sounds](../provenance/sounds.md) and
+[artwork and fonts](../provenance/art-and-fonts.md) describe their corresponding
+records. David Pratt created the current 60 settlement, city and road SVGs in
+Inkscape. Native source and model identities remain in their own provenance guide.
 
 ## Verification and historical records
 
@@ -167,3 +164,17 @@ recovery story passed in development Storybook with controlled external
 boundaries. Independent review findings were fixed and reviewed again. Local
 qualification does not establish real-PostgreSQL or production deployment
 readiness.
+
+## 2026-10-26 — board geometry and viewport helpers
+
+Board geometry now derives vertices and edge midpoints from one clockwise hex
+polygon, with the existing road-art inset. Viewport measurement keeps the
+1280×720 unmeasured SSR fallback, measures before visible browser layout and
+removes its resize subscription on unmount. Unused named viewport helpers were
+removed after checking their consumers. Public provenance pages now describe
+current source, artwork and bundled notices; detailed historical comparisons
+and earlier documents remain privately preserved.
+
+Focused qualification passed 160 tests, lint and UI policy. Browser checks covered
+SSR fallback, hook lifecycle, home/game/replay resizing and Open Graph rendering.
+This follow-up did not repeat database, full-build or deployment qualification.
