@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { formatLogEntry, getGameLogEntryKey } from "../../../../lib/shared/gameText";
+import { buildGameLogRows } from "./gameLogRows";
 import { FeedPanel } from "./FeedPanel";
 import { FeedTokenRow } from "./FeedTokenRow";
 import { SelectableRow } from "../../../ui/SelectableRow";
@@ -16,24 +16,10 @@ const GameLogPanelComponent = ({
   panelClassName = "settlehex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col select-text overflow-hidden",
 }) => {
   const formattedEntries = useMemo(
-    () =>
-      entries
-        .map((entry, entryIndex) => {
-          const tokens = formatLogEntry(entry, playerMap);
-          if (!tokens || tokens.length === 0) return null;
-
-          return {
-            key: getGameLogEntryKey(entry, entryIndex),
-            entry,
-            tokens,
-            isActive:
-              activeEntryKey != null &&
-              String(activeEntryKey) === getGameLogEntryKey(entry, entryIndex),
-            isServerEntry:
-              typeof entry?.type === "string" && entry.type.startsWith("server:"),
-          };
-        })
-        .filter(Boolean),
+    () => buildGameLogRows(entries, playerMap).map((row) => ({
+      ...row,
+      isActive: !row.isDivider && activeEntryKey != null && String(activeEntryKey) === row.key,
+    })),
     [entries, playerMap, activeEntryKey]
   );
 
@@ -48,17 +34,30 @@ const GameLogPanelComponent = ({
       headerClassName={headerClassName}
       autoScrollIdleMs={12000}
       trackPanelInteraction
-      contentWrapClassName="min-h-0 flex-1 pb-ui-4"
+      contentWrapClassName="min-h-0 flex-1"
       scrollClassName="feed-panel-scroll game-log-scroll"
       fadeClassName="feed-panel-fade game-log-fade"
       entryClassName="feed-panel-entry"
-      contentClassName="space-y-ui-2 type-body-small pt-ui-2"
-      renderRow={(entry) => (
+      contentClassName="space-y-ui-2 type-body-small py-ui-2"
+      renderRow={(entry) => entry.isDivider ? (
+        <div className="game-log-turn flex items-center gap-ui-2 py-ui-2 select-none cursor-default type-caption text-ink-muted">
+          <span className="h-px min-w-0 flex-1 bg-edge-subtle" aria-hidden="true" />
+          <span className="min-w-0 text-center break-words">
+            <FeedTokenRow token={{ ...entry.player, emoji: null, variant: "turn" }} themeId={themeId} />’s turn
+          </span>
+          <span className="h-px min-w-0 flex-1 bg-edge-subtle" aria-hidden="true" />
+        </div>
+      ) : (
         <SelectableRow
           density="compact"
           className={`game-log-entry break-words ${entry.isServerEntry ? "italic text-ink-secondary" : "text-ink-primary"}`}
           current={entry.isActive ? "step" : false}
-          onActivate={onEntrySelect ? () => onEntrySelect(entry.key) : undefined}
+          onActivate={onEntrySelect ? (event) => {
+            // Dragging text should copy it without seeking.
+            const selection = event.currentTarget.ownerDocument.getSelection();
+            if (event.detail > 0 && selection && !selection.isCollapsed) return;
+            onEntrySelect(entry.key);
+          } : undefined}
         >
           {entry.tokens.map((token, tokenIndex) => (
             <FeedTokenRow

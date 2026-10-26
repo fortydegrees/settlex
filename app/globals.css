@@ -614,3 +614,12 @@ body {
     .settlehex-ui-choice:active:not(:disabled):not([aria-disabled="true"]) { transform: none; }
   }
 }
+
+/* Transcript text opts back into native selection, including replay action rows. */
+.game-log-entry,
+.settlehex-game-screen .game-log-entry[role="button"] {
+  cursor: text;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { flushSync } from "react-dom";
 import { expect, fireEvent, userEvent, waitFor, within } from "@storybook/test";
 import { ChatPanel } from "./ChatPanel";
 import { GameLogPanel } from "./GameLogPanel";
@@ -224,4 +225,73 @@ export const SharedMotionUpdates = {
     expect(arrivals()).toHaveLength(0);
     canvasElement.dataset.motionContract = 'passed';
   },
+};
+
+const winningTurnEntries = [
+  { id: 'earlier-roll', type: 'roll', actorId: '1', turn: 11, data: { dice: [2, 3] } },
+  { id: 'earlier-end', type: 'turn:end', actorId: '1', turn: 11 },
+  { id: 'knight', type: 'dev:play', actorId: '0', turn: 12, data: { cardType: 'knight' } },
+  { id: 'last-roll', type: 'roll', actorId: '0', turn: 12, data: { dice: [6, 5] } },
+  { id: 'last-trade', type: 'trade:maritime', actorId: '0', turn: 12, data: { give: { Sheep: 2 }, receive: { Wheat: 1 } } },
+  { id: 'last-buy', type: 'dev:buy', actorId: '0', turn: 12, data: { cardType: 'victoryPoint' } },
+  { id: 'imported-end', type: 'turn:end', actorId: '0', turn: 12 },
+  { id: 'win', type: 'game:over', actorId: '0', turn: 13, data: { winnerId: '0' } },
+  { id: 'trailing-end', type: 'turn:end', actorId: '0', turn: 13 },
+];
+function TurnLogFixture({ phone = false, entries = winningTurnEntries, initialActive = 'last-buy' }) {
+  const [active, setActive] = useState(initialActive);
+  return <div className="settlehex-game-screen select-none mx-auto p-ui-4" style={{ maxWidth: phone ? 390 : 480 }}>
+    <GameLogPanel entries={entries} playerMap={playerMap} themeId="classic"
+      activeEntryKey={active} onEntrySelect={setActive} rootClassName="w-full"
+      panelClassName={frameClassName} />
+    <p role="status" className="mt-ui-3 type-caption text-ink-secondary">Selected event: {active}</p>
+  </div>;
+}
+const verifyTurnLog = async ({ canvasElement }) => {
+  delete canvasElement.dataset.logContract;
+  const screen = within(canvasElement);
+  const headers = canvasElement.querySelectorAll('.game-log-turn');
+  expect(headers).toHaveLength(2);
+  headers.forEach((header) => expect(header.closest('[role="button"]')).toBeNull());
+  expect(getComputedStyle(headers[0]).userSelect).toBe('none');
+  const win = screen.getByRole('button', { name: /wins!/ });
+  const trade = screen.getByRole('button', { name: /traded/ });
+  expect(getComputedStyle(trade).cursor).toBe('text');
+  expect(getComputedStyle(trade).userSelect).toBe('text');
+  // Simulate the click delivered at the end of a text-selection drag.
+  const selection = canvasElement.ownerDocument.getSelection();
+  const range = canvasElement.ownerDocument.createRange();
+  range.selectNodeContents(trade);
+  selection.removeAllRanges();
+  selection.addRange(range);
+  flushSync(() => {
+    trade.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+  });
+  expect(screen.getByRole('status')).toHaveTextContent('Selected event: last-buy');
+  selection.removeAllRanges();
+  await userEvent.click(trade);
+  expect(screen.getByRole('status')).toHaveTextContent('Selected event: last-trade');
+  win.focus();
+  await userEvent.keyboard('{Enter}');
+  expect(win).toHaveAttribute('aria-current', 'step');
+  expect(screen.getByRole('status')).toHaveTextContent('Selected event: win');
+  canvasElement.dataset.logContract = 'passed';
+};
+export const TurnLabelsAndCopyableReplay = { render: () => <TurnLogFixture />, play: verifyTurnLog };
+export const TurnLabelsPhone = { render: () => <TurnLogFixture phone />, play: verifyTurnLog };
+
+// Overflowing history exposes both the mid-scroll clipping edge and the final row.
+export const LongTurnLog = {
+  render: () => <TurnLogFixture initialActive={null} entries={[
+    ...Array.from({ length: 10 }, (_, index) => {
+      const actorId = String(index % 2);
+      const turn = index + 1;
+      return [
+        { id: `history-roll-${turn}`, type: 'roll', actorId, turn, data: { dice: [2, 4] } },
+        { id: `history-build-${turn}`, type: 'build:settlement', actorId, turn },
+        { id: `history-end-${turn}`, type: 'turn:end', actorId, turn },
+      ];
+    }).flat(),
+    ...winningTurnEntries,
+  ]} />,
 };

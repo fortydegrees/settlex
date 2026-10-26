@@ -40,7 +40,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
     const nameColor = token.color ? getPlayerNameHex(token.color) ?? token.color : null;
     const nameStyle = nameColor ? { color: nameColor } : undefined;
     return (
-      <span className="inline-flex max-w-full items-center gap-ui-1 type-action-small align-baseline">
+      <span className={`inline-flex max-w-full items-center gap-ui-1 ${token.variant === "turn" ? "type-caption" : "type-action-small"} align-baseline`}>
         {token.emoji ? <span aria-hidden="true">{token.emoji}</span> : null}
         <span
           className={nameColor ? "min-w-0" : "min-w-0 text-ink-primary"}
