@@ -449,3 +449,27 @@ References: [Base UI Tabs](https://base-ui.com/react/components/tabs) and
 [APG tabs](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/). Rendered verification
 covers named Storybook scenarios; installed Vaul outside-content accessibility
 and whole-game gesture/performance qualification remain separate.
+
+
+### Production overlay lifecycle
+
+Keep Dialog/AlertDialog mounted and change their `open` prop. An outer
+`open && <Dialog ...>` bypasses the shared exit. For lazy imports use
+`<LazyDialog component={LazyFeatureDialog} open={open} ... />`: it delays first
+activation, then retains the lightweight owner. Base UI unmounts popup content
+when its transition completes. Put disposable form state below that popup
+boundary (IdentityForm and TradeDiscardForm are production examples), so a
+completed close resets a session and a reversed close retains continuity.
+No feature timers or cloned private-content snapshots are needed.
+
+`Dialog dismissible={false}` blocks backdrop/Escape dismissal, while explicit
+feature actions still control `open`. Forced discard/dev selection and mandatory
+idle acknowledgement use this contract. `titleClassName="sr-only"` lets a custom
+result composition keep an accessible dialog name without a duplicate heading.
+During exit the popup is inert. Keep payloads live; cancel commands when their
+underlying alert/permission disappears. Match alerts retain display copy only.
+
+Verify the actual parent closing the feature, not only a permanently mounted
+Storybook instance. Include cold lazy cancellation, exit/reversal, form reset,
+keyboard focus, forced dismissal and reduced motion. Record source-only paths
+as source-only in UI_MOTION_ADOPTION_AUDIT.md.

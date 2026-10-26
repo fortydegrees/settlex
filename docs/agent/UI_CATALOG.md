@@ -257,3 +257,14 @@ the shared Disclosure header composition slot. Desktop height is viewport-bounde
 with body scrolling; the chart's custom slider is its sole keyboard owner.
 Quiet/replay feeds suppress tail-following; simultaneous-event selection remains
 an explicitly deferred design question. See PROGRESS.md for real-route checks.
+
+
+## Motion adoption follow-up — 26 October 2026
+
+LazyDialog is the standard cold-load adapter for Dialog/AlertDialog consumers;
+its named lifecycle stories cover exit, reset, cancelled load and identity/resign.
+Trade And Resource Selection/CloseAndReset, Match Alert Dialog/DismissalLifecycle,
+Motion Review/Production pilot/OpponentInventory and Compact HUD/LastCardRemoval
+exercise production owners. Postgame Summary now shares Dialog presence; its
+composition and explicit action policy are unchanged. See
+UI_MOTION_ADOPTION_AUDIT.md for per-family verification and outstanding boundaries.
