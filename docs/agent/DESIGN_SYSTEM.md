@@ -29,6 +29,21 @@ readable darker ink inside light panels are separate roles. Never infer a global
 all-white or all-dark text rule. Emphasis, shadow and motion follow the control's
 job; similar jobs should share an owner rather than copy classes.
 
+Current transcript items use a quiet translucent-white `surface-current` wash
+with existing small corners, unchanged text/player colours and no enclosing
+border, left stripe or raised shadow. The replay log owns the first use through
+`settlehex-ui-feed-current`. Keep keyboard focus independently visible; winner
+colours and selected-control elevation are separate treatments.
+
+Focus outlines appear during keyboard navigation, not pointer interaction.
+`FocusModality` mounts once in the app root and Storybook preview and tracks
+input on the document so portalled controls inherit the same policy. Mouse,
+touch and pen presses hide the shared outline without blurring the control;
+Tab/Shift+Tab and control-navigation keys restore it. Typing or moving the caret
+in a clicked text field does not restore the outline. Existing `:focus-visible`
+rules remain the fallback before the owner mounts. Keep the input-mode behaviour
+shared rather than adding per-control blur handlers or removing keyboard focus.
+
 ## Interaction responsibilities
 
 Every new or changed control needs an intentional response, including a deliberate

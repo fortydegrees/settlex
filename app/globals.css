@@ -13,6 +13,9 @@
 /* Foundation variables and complete type roles are emitted from ui/theme.cjs.
    No global h1/p/body reset: legacy game geometry keeps its existing metrics. */
 
+/* Keep native :focus-visible as the fallback before the client owner mounts. */
+:root[data-settlehex-input="pointer"] { --settlehex-ui-focus-style: none; }
+
 @layer components {
   /* Dev-only dark consoles keep their controls legible beside effect stages. */
   .settlehex-dev-console { background: var(--settlehex-ui-surface-console); color: var(--settlehex-ui-text-console-primary); }
@@ -21,7 +24,7 @@
   .settlehex-dev-console-field { @apply type-body-small; min-height: 36px; border: 1px solid var(--settlehex-ui-border-console); border-radius: var(--settlehex-ui-radius-small); background: var(--settlehex-ui-surface-console); padding: var(--settlehex-ui-space-1) var(--settlehex-ui-space-2); color: var(--settlehex-ui-text-console-primary); }
   .settlehex-dev-console-field:focus-visible,
   .settlehex-dev-console-file:focus-visible,
-  .settlehex-dev-console-button:focus-visible { outline: 2px solid var(--settlehex-ui-focus); outline-offset: 2px; }
+  .settlehex-dev-console-button:focus-visible { outline: 2px var(--settlehex-ui-focus-style, solid) var(--settlehex-ui-focus); outline-offset: 2px; }
   .settlehex-dev-console-field:disabled,
   .settlehex-dev-console-file:disabled,
   .settlehex-dev-console-button:disabled { cursor: not-allowed; opacity: .5; }
@@ -128,7 +131,7 @@
     .settlehex-ui-feed-frame:hover > .settlehex-ui-feed-restore { background: var(--settlehex-ui-surface-pane); }
   }
   .settlehex-ui-feed-frame[role="button"]:focus-visible,
-  .settlehex-ui-feed-minimize:focus-visible { outline: 2px solid var(--settlehex-ui-focus); outline-offset: -3px; }
+  .settlehex-ui-feed-minimize:focus-visible { outline: 2px var(--settlehex-ui-focus-style, solid) var(--settlehex-ui-focus); outline-offset: -3px; }
   .settlehex-ui-game-menu-item { border-color: var(--settlehex-ui-border-subtle); }
   .settlehex-ui-game-menu-item-neutral { background: var(--settlehex-ui-surface-hover); color: var(--settlehex-ui-text-primary); }
   .settlehex-ui-game-menu-item-neutral:hover { background: var(--settlehex-ui-surface-selected); }
@@ -144,7 +147,7 @@
   }
   .settlehex-ui-focus:focus-visible,
   .settlehex-ui-field:focus-visible {
-    outline: 2px solid var(--settlehex-ui-focus);
+    outline: 2px var(--settlehex-ui-focus-style, solid) var(--settlehex-ui-focus);
     outline-offset: 3px;
   }
   .settlehex-ui-button {

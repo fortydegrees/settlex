@@ -3,6 +3,7 @@ import { Outfit } from 'next/font/google'
 import { GlobalReconnectBanner } from './_features/matches/session/GlobalReconnectBanner'
 import { MatchAlertProvider } from './_features/matches/alerts/MatchAlertProvider'
 import { SITE_METADATA } from './metadata.js'
+import { FocusModality } from './ui/FocusModality'
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 
@@ -12,6 +13,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={outfit.variable}>
       <body className={outfit.className}>
+        <FocusModality />
         <div className="settlehex-ui-root">
           <MatchAlertProvider>
             {children}

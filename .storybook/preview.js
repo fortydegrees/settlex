@@ -3,6 +3,7 @@ import "../app/globals.css";
 import "../app/_features/theme/hudGlass.css";
 import { SETTLEHEX_TABLE_BACKGROUND } from "../app/_features/theme/backgrounds";
 import { Outfit } from "next/font/google";
+import { FocusModality } from "../app/ui/FocusModality";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ const preview = {
         // Base UI portals mount beside the story wrapper, so inherit the
         // production UI face from the preview document as well.
         React.createElement("style", null, `:root { --font-outfit: ${outfit.style.fontFamily}; } body { font-family: ${outfit.style.fontFamily}; }`),
+        React.createElement(FocusModality),
         React.createElement(Story)
       );
     },

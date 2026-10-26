@@ -34,6 +34,7 @@ const colours = {
   'surface-row-hover': 'rgb(255 255 255 / .14)',
   'surface-row-press': 'rgb(255 255 255 / .24)',
   'surface-selected': '#fff', 'surface-hover': 'rgb(255 255 255 / .48)',
+  'surface-current': 'rgb(255 255 255 / .3)',
   'surface-search-scrim': 'rgb(3 105 161 / .18)',
   'decoration-fill': 'rgb(255 255 255 / .18)', 'decoration-wash': 'rgb(255 255 255 / .08)',
   'decoration-ring': 'rgb(255 255 255 / .28)', 'decoration-edge': 'rgb(255 255 255 / .38)',

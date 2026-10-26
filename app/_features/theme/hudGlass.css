@@ -10,7 +10,7 @@
 }
 
 .mobile-primary-turn-button:focus-visible {
-  outline: 2px solid var(--settlehex-ui-surface-selected);
+  outline: 2px var(--settlehex-ui-focus-style, solid) var(--settlehex-ui-surface-selected);
   outline-offset: 2px;
 }
 
@@ -43,7 +43,7 @@
 }
 
 .mobile-devcard-button:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline: 2px var(--settlehex-ui-focus-style, solid) rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
 }
 .mobile-devcard-collapse-handle {
@@ -53,7 +53,7 @@
 }
 .mobile-devcard-collapse-chevron { border-color: rgba(255, 255, 255, 0.82); }
 
-.mobile-devcard-group:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.8); outline-offset: 2px; }
+.mobile-devcard-group:focus-visible { outline: 2px var(--settlehex-ui-focus-style, solid) rgba(255, 255, 255, 0.8); outline-offset: 2px; }
 .mobile-devcard-group--playable { color: var(--settlehex-ui-text-hud-on-glass); }
 .mobile-devcard-group--playable:hover { background: rgba(255, 255, 255, 0.08); }
 .mobile-devcard-group--inactive { color: var(--settlehex-ui-text-hud-on-glass-muted); }
@@ -119,7 +119,7 @@
 
 .mobile-resource-count-trigger:hover { background: rgba(255, 255, 255, 0.14); }
 .mobile-resource-count-trigger:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline: 2px var(--settlehex-ui-focus-style, solid) rgba(255, 255, 255, 0.75);
   outline-offset: 2px;
 }
 

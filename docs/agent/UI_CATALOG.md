@@ -81,6 +81,10 @@ calculation, audio preferences and modal-blocking flags stay with GameScreen.
 
 ## Current control-family reference
 
+`Foundations/Keyboard focus/PointerAndKeyboard` exercises the shared input-mode
+policy with real fields, buttons and a portalled popover: pointer focus stays
+quiet, text editing stays quiet, and Tab restores the visible focus outline.
+
 `Components/Actions/Button/ButtonFamily` compares the real homepage dock,
 account trigger, standard form actions and launchable account-entry modal. Use
 it with `Foundations` as the current Clarity visual reference, not older bespoke
