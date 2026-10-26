@@ -1,0 +1,17 @@
+# Current implementation notes
+
+Shared motion follows DESIGN_SYSTEM.md and the production stories listed in
+UI_CATALOG.md. ResizeRegion retains dimensions only; Disclosure/Dialog callers
+must remove private contents immediately. LazyDialog keeps the lifecycle owner
+mounted through exit and cancelled imports; popup-owned form state resets on a
+completed close.
+
+Quiet replay/history feeds disable tail-following. Read-only chat has no composer.
+Replay score history stays complete while the cursor/legend tracks selection.
+Turn headings stay separate from selectable events and copying text does not seek.
+
+Development tool configuration: SETTLEHEX_LOCAL_REPLAY_DIR,
+SETTLEHEX_LOCAL_REPLAY_ADAPTER and SETTLEHEX_DECISION_REVIEW_DIR. Only absent canonical
+settings fall back to SETTLEX names. Inputs and adapter implementations remain
+external; no recordings or review packages are bundled. The decision-review
+settlex-decision-review-v1 storage namespace and existing schema names are stable.

@@ -181,90 +181,37 @@ No live auth, matchmaking, push subscription or production deployment was tested
 
 Notation archive stories in `app/_features/replay/ArchivedNotation.stories.jsx` exercise compact complete records, middle/terminal positions and a setup prefix through the production replay client and board. They complement the replay panel stories; private recording import remains separate.
 
-### Shared motion pilot — 26 October 2026
+## Shared interaction owners
 
-| Owner | Production consumers | Verification surface |
+The cleaned production owners below retain the shared quick, connected, lightly
+tactile family. The stories exercise real components. Their presence records
+coverage, while runtime qualification remains specific to the checked candidate,
+viewport, viewer and interaction. Historical preview harnesses are excluded.
+
+| Owner | Production consumers | Named Storybook contract |
 | --- | --- | --- |
-| `app/ui/theme.cjs`, shared globals recipes | Button/IconButton feedback; shared selection | Components/Motion/Shared owners/Interaction contract |
-| `app/ui/Switch.js`, `SegmentedControl.js` | Replay perspective and reveal hands | Replay Panel desktop/phone stories |
-| `app/ui/Disclosure.js` | Replay score chart | Replay Panel and close-from-inside contract |
-| `app/ui/ResizeRegion.js`, `observeElementSize.js` | PlayerActionContainer dev-card bay | Motion Review/Production pilot/Resource bar; integrated sandbox |
+| `app/ui/theme.cjs`, globals recipes | Shared feedback, reveal, resize, update and reduced motion | Components/Motion/Shared owners/Interaction contract |
+| `Switch`, `SegmentedControl` | Replay perspective/reveal; account choices | Replay Panel desktop/phone; Account Entry |
+| `Disclosure` | Replay whole-panel and chart collapse | Replay Panel/DesktopResizeAndChart; close-from-inside focus |
+| `ResizeRegion`, `observeElementSize` | Account forms, local/opponent inventories, mobile tray/card button | Motion Review/Production pilot/ResourceBar and OpponentInventory; Compact HUD/LastCardRemoval |
+| `SelectableRow` | Replay log current-position action | Components/Selectable Row/InteractionContract; Game Feeds/SelectableReplayLog |
+| `Tabs` | Mobile feed panel navigation | Game Chrome/SharedFeedTabInteraction; SharedChoiceOwners and RTL |
+| `ToggleButton`, `SwatchPicker` | Cockpit Log/Chat and identity colours | Compact HUD/SharedFeedControls; Fields/SharedSwatchInteraction |
+| `LazyDialog`, `Dialog` | Account/identity, resign, trade/dev/discard, results/summary, idle and alerts | Lazy dialog lifecycle; Trade And Resource Selection/CloseAndReset; Match Alert Dialog/DismissalLifecycle |
+| `FocusModality`, `focusInputMode` | Document and portalled pointer/keyboard focus | Shared focus modality stories and behavioral test |
+| `FeedPanel`, `feedArrival`, `FeedPanelScrollState` | Quiet history/replay, single live arrivals and manual reading | Game Feeds/SharedMotionUpdates and SendingResumesScrolling; Game Chrome/SharedMotionDock |
 
-Use these production owners for new consumers. Motion Review/Shared family is a
-historical comparison, with preview-only CSS; do not copy it into a feature.
-The pilot's scope, API constraints and reduced-motion policy are in DESIGN_SYSTEM.
+Keep lifecycle owners mounted while changing open; put disposable form state
+inside popup presence. Current card identities and commands must update/remove
+immediately even while geometry or exit transitions run. Forced dismissal rules
+remain feature-owned. The replay chart shows the full available score history,
+with one labelled seek slider and current-event legend/cursor values. Read-only
+chat omits the composer. Quiet feeds do not follow the tail; seeking may bring the
+current row into view. Turn headings are non-selectable boundaries; transcript
+text can be copied without seeking.
 
-### Shared overlay adoption — 26 October 2026
-
-- Dialog/AlertDialog/Popover/Tooltip consume canonical motion recipes in globals;
-  Base UI keeps lifecycle, focus and dismissal ownership. Fields, meta links and
-  game-menu rows share feedback timing.
-- AccountEntryModal and AccountPageView use ResizeRegion for changing content.
-  Review `product-patterns-account-identity-account-entry--shared-motion-rollout` for
-  stable auth fields, error growth/shrink, guest/auth switching and focus return.
-- `components-overlays--repeated-dialog-reversal` covers repeated dismissal and
-  reopening. `--game-log-tooltip` verifies keyboard focus/Escape (click deliberately
-  dismisses Base UI tooltips). Existing alert/popover/settings stories retain their
-  callback and dismissal checks.
-- Browser verification covered normal/reduced motion and desktop/short phone
-  account layouts, including tall scrolled errors shrinking to the guest form.
-  Local worktree only; no merge or deployment.
-
-### Shared feed adoption — 26 October 2026
-
-- FeedPanel + feedArrival.js own one live-row cue and quiet history/batches;
-  GameLogPanel highlights replay selection in place. GameScreen explicitly routes
-  quiet replay policy through desktop and phone hosts. ChatPanel exposes the same
-  arrival policy. Existing scroll state remains the scroll owner.
-- DesktopMetaDock uses shared layout/presence recipes and a persistent native
-  toggle; no animation-stage timers or private content snapshots. Drafts and
-  middle reading position survive full collapse and rapid reversal.
-- Review Game Feeds/Shared motion updates and Game Chrome/Shared motion dock.
-  Browser checks passed at 1440x900 normal/reduced motion, updates at 390x844,
-  and the existing Mobile feed drawer flow at 390x664. Vaul choreography unchanged.
-- Local-only slice; no release or cross-browser/performance certification.
-
-### Selectable row family — 26 October 2026
-
-`app/ui/SelectableRow.js` owns current-position action rows. Review
-`components-selectable-row--interaction-contract` and
-`composed-surfaces-gameplay-game-feeds--selectable-replay-log`.
-GameLogPanel declares only current state and activation; no local keyboard or
-motion handlers. Static live rows remain content. The selected fill is soft white
-with separately tunable material tokens; appearance approval remains with the
-highlight review. The primitive contract covers activation count, focus, disabled,
-held-key cancellation, read-only and current state. Browser measurements additionally
-verify real hover/press and opposing selection fades without geometry changes.
-Other family gaps and source-only observations are recorded in UI_MOTION_CATALOGUE.
-
-### Shared choice family adoption (26 October 2026)
-
-- `app/ui/Tabs.js`: horizontal panel navigation over Base UI. Game Chrome stories
-  SharedFeedTabInteraction and SharedChoiceOwners/SharedChoiceOwnersRtl cover
-  linked panels, roving keyboard navigation, disabled and empty options.
-- `app/ui/ToggleButton.js`: controlled native persistent choice; shared feedback,
-  focus and disabled states. Cockpit feed controls and SwatchPicker are consumers.
-- Compact HUD/SharedFeedControls covers real cockpit-to-drawer selection and
-  dismissal. Fields and selectors/SharedSwatchInteraction covers disabled options
-  and Enter/Space selection. These named contracts do not certify every game state.
-
-### Replay panel integration regression — 26 October 2026
-
-`composed-surfaces-postgame-replay-replay-panel--desktop-resize-and-chart` uses
-warning-heavy production content and verifies one persistent disclosure trigger,
-chart pointer/keyboard focus and reopen semantics. The full replay panel now uses
-the shared Disclosure header composition slot. Desktop height is viewport-bounded
-with body scrolling; the chart's custom slider is its sole keyboard owner.
-Quiet/replay feeds suppress tail-following; simultaneous-event selection remains
-an explicitly deferred design question. See PROGRESS.md for real-route checks.
-
-
-## Motion adoption follow-up — 26 October 2026
-
-LazyDialog is the standard cold-load adapter for Dialog/AlertDialog consumers;
-its named lifecycle stories cover exit, reset, cancelled load and identity/resign.
-Trade And Resource Selection/CloseAndReset, Match Alert Dialog/DismissalLifecycle,
-Motion Review/Production pilot/OpponentInventory and Compact HUD/LastCardRemoval
-exercise production owners. Postgame Summary now shares Dialog presence; its
-composition and explicit action policy are unchanged. See
-UI_MOTION_ADOPTION_AUDIT.md for per-family verification and outstanding boundaries.
+Use integrated sandbox/replay routes for gameplay state, privacy and board
+coexistence. Check normal/reduced motion, desktop/phone, reversal, zero/nonzero
+content, focus return and caller reset. Vaul gestures, simultaneous-event
+highlight design, unresolved trade/game-over composition, cross-browser and
+performance claims require their own evidence.

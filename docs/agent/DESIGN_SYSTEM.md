@@ -322,10 +322,10 @@ collapse as well as its nested chart disclosure. Bound tall content with a
 scrollable viewport rather than clipping it to a fixed panel height. Use existing
 Dialog/Popover/Drawer owners for overlays; do not substitute Disclosure for them.
 
-Pilot consumers: ReplayPanel's perspective selector, reveal switch and chart;
+Production consumers: ReplayPanel's perspective selector, reveal switch and chart;
 PlayerActionContainer's embedded dev-card bay. The forced purchase shell and
 card/resource anchors remain owned by gameplay. GSAP flights, dice, audio and
-mobile cockpit choreography are unchanged.
+mobile drawer choreography retain their separate owners.
 
 Dialog and AlertDialog share a 220ms opacity/6px travel/.985 scale recipe; Popover
 uses the same reveal timing with travel toward its trigger. Tooltip uses quieter
@@ -396,11 +396,10 @@ preserves transcript geometry; ordinary rows default to a 44px minimum height.
 Children may contain rich display content but no nested links, inputs or buttons.
 Use the appropriate radio/listbox/tab/link owner for those different semantics.
 
-Current appearance and feedback are separate layers. Theme's `surface-row-current`,
+Current appearance and feedback are separate layers. Theme's `surface-current`,
 `surface-row-hover` and `surface-row-press` control material; canonical selection
-and feedback tokens control transitions. The current soft white fill is a tunable
-starting point aligned with the parallel highlight review, not a final colour
-approval. No stripe or gold winner outline. Hovering/pressing the current item
+and feedback tokens control transitions. The current soft white fill shares the
+transcript-position material. No stripe or gold winner outline. Hovering/pressing the current item
 adds feedback without removing its position cue. Selected/deselected rows fade in
 place, preserve text layout and retarget from their current opacity on reversal.
 
@@ -446,8 +445,9 @@ cockpit controls use an inset focus outline. Panel tabs and persistent choices
 share the motion family but retain different keyboard and accessibility roles.
 
 References: [Base UI Tabs](https://base-ui.com/react/components/tabs) and
-[APG tabs](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/). Rendered verification
-covers named Storybook scenarios; installed Vaul outside-content accessibility
+[APG tabs](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/). The named Storybook
+scenarios exercise these contracts; each integration
+needs its own rendered verification. Installed Vaul outside-content accessibility
 and whole-game gesture/performance qualification remain separate.
 
 
@@ -472,4 +472,4 @@ underlying alert/permission disappears. Match alerts retain display copy only.
 Verify the actual parent closing the feature, not only a permanently mounted
 Storybook instance. Include cold lazy cancellation, exit/reversal, form reset,
 keyboard focus, forced dismissal and reduced motion. Record source-only paths
-as source-only in UI_MOTION_ADOPTION_AUDIT.md.
+as source-only in the qualification receipt for the work.

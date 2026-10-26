@@ -555,7 +555,7 @@ body {
   .settlehex-ui-selectable-row { position: relative; isolation: isolate; display: block; width: 100%; min-height: 2.75rem; padding: var(--settlehex-ui-space-2) var(--settlehex-ui-space-3); border-radius: var(--settlehex-ui-radius-small); text-align: start; }
   .settlehex-ui-selectable-row[data-density="compact"] { min-height: 0; padding: var(--settlehex-ui-space-0-5) var(--settlehex-ui-space-1-5); }
   .settlehex-ui-selectable-row::before, .settlehex-ui-selectable-row::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0; }
-  .settlehex-ui-selectable-row::after { background: var(--settlehex-ui-surface-row-current); transition: opacity var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-selectable-row::after { background: var(--settlehex-ui-surface-current); transition: opacity var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
   .settlehex-ui-selectable-row[data-current="true"]::after { opacity: 1; }
   .settlehex-ui-selectable-row::before { background: var(--settlehex-ui-surface-row-hover); transition: opacity var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle), background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle); }
   .settlehex-ui-selectable-row[role="button"] { cursor: pointer; }
