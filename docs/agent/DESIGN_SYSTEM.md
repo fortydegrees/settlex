@@ -263,14 +263,14 @@ The user-approved white-on-bright-lime button palette still has a contrast
 limitation. This work does not claim accessibility conformance or silently alter
 that approved palette.
 
-## Shared motion pilot (26 October 2026)
+## Shared motion owners (26 October 2026)
 
 The approved family is **quick, connected and lightly tactile**. Its canonical
 numbers live in `app/ui/theme.cjs`: feedback 140ms, selection 190ms, reveal 220ms,
 resize 240ms, update 180ms, with `cubic-bezier(.2,.8,.2,1)` settling. Recipes and
 reduced-motion overrides live in `app/globals.css`; feature components do not
 copy durations, observers, timers or reverse animations. Legacy motion tokens
-remain for unmigrated surfaces; update/travel tokens are reserved for later owners.
+remain for unmigrated surfaces; the update token is reserved for the feed family.
 
 Use the existing `Button`/`IconButton` for feedback, `SegmentedControl` for
 mutually exclusive actions, and `Switch` for a labelled boolean. These controls
@@ -289,8 +289,8 @@ RTL; compact density is for narrow replay controls, not a separate motion style.
 
 `ResizeRegion` measures intrinsic content and transitions one outer dimension in
 both directions. Keep the wrapper mounted when its children disappear. Height
-(the default) clips overflow while resizing; width preserves overflow for card
-hover. Width content is intrinsic/max-content; use height mode for wrapping
+(the default) clips overflow while resizing with a shared 6px breathing room
+for the existing focus outline; width preserves overflow for card hover. Width content is intrinsic/max-content; use height mode for wrapping
 content. The measured axis is owned by the primitive, including when passing
 other inline style props. Avoid conflicting fixed sizes on that axis. Without
 ResizeObserver it falls back to intrinsic layout. It keeps no removed children,
@@ -306,8 +306,22 @@ Dialog/Popover/Drawer owners for overlays; do not substitute Disclosure for them
 Pilot consumers: ReplayPanel's perspective selector, reveal switch and chart;
 PlayerActionContainer's embedded dev-card bay. The forced purchase shell and
 card/resource anchors remain owned by gameplay. GSAP flights, dice, audio and
-mobile cockpit choreography are unchanged. Account dialogs, feed entry motion
-and other families are not yet migrated. No Motion dependency was needed here.
+mobile cockpit choreography are unchanged.
+
+Dialog and AlertDialog share a 220ms opacity/6px travel/.985 scale recipe; Popover
+uses the same reveal timing with travel toward its trigger. Tooltip uses quieter
+140ms/3px travel. Base UI owns their lifecycle, focus and dismissal; starting/ending
+CSS transitions retarget from the current frame on reversal. Reduced motion removes
+duration, travel and scale. Field borders, meta links and game-menu rows inherit
+shared feedback timing. Feature components must not add their own overlay timers.
+
+AccountEntryModal and AccountPageView wrap changing content in ResizeRegion. Keep
+fields mounted across sign-in/create-account mode changes; do not key/remount the
+form for a decorative transition. Error and guest/auth content resize in both
+directions. Existing dialog scrolling still owns tall phone content. These changes
+also reach in-game settings/rules and confirmations through existing shared owners.
+Feed entry/highlight policy and phone drawer consistency remain separate work.
+No Motion dependency was needed for the pilot or overlay adoption.
 
 Reference choices: [Base UI Collapsible](https://base-ui.com/react/components/collapsible)
 provides lifecycle; [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)

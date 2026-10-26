@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "../../ui/Button";
 import { Input } from "../../ui/Input";
+import { ResizeRegion } from "../../ui/ResizeRegion";
 import { EmailAuthModeToggle } from "./EmailAuthModeToggle";
 import { SETTLEHEX_TABLE_BACKGROUND } from "../theme/backgrounds";
 
@@ -102,87 +103,89 @@ export function AccountPageView({
       style={{ background: SETTLEHEX_TABLE_BACKGROUND }}
     >
       <div className="settlehex-ui-pane mx-auto max-w-xl p-ui-5 sm:p-ui-6">
-        <div className="flex items-start justify-between gap-ui-4">
-          <div className="min-w-0">
-            <p className="settlehex-ui-label">
-              Settlehex account
-            </p>
-            <h1 className="mt-ui-2 break-words type-title text-ink-primary">
-              {profileCopy.title}
-            </h1>
-            <p className="mt-ui-2 type-body-small text-ink-secondary">
-              {profileCopy.description}
-            </p>
-          </div>
-          <Link
-            href="/"
-            className="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-focus min-h-[2.75rem] shrink-0 px-ui-4 py-ui-2 type-action-small"
-          >
-            Back
-          </Link>
-        </div>
-
-        {authOptions.emailPassword ? (
-          <form className="mt-ui-6 grid gap-ui-3" onSubmit={handleEmailAuth}>
-            <EmailAuthModeToggle value={authMode} onChange={setAuthMode} />
-            <label className="grid gap-ui-2 type-label text-ink-secondary">
-              Email
-              <Input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
-              />
-            </label>
-            <label className="grid gap-ui-2 type-label text-ink-secondary">
-              Password
-              <Input
-                type="password"
-                autoComplete={
-                  authMode === "signUp" ? "new-password" : "current-password"
-                }
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Password"
-              />
-            </label>
-            <Button
-              type="submit"
-              size="md"
-              className="w-full"
-              disabled={Boolean(isSubmitting)}
+        <ResizeRegion>
+          <div className="flex items-start justify-between gap-ui-4">
+            <div className="min-w-0">
+              <p className="settlehex-ui-label">
+                Settlehex account
+              </p>
+              <h1 className="mt-ui-2 break-words type-title text-ink-primary">
+                {profileCopy.title}
+              </h1>
+              <p className="mt-ui-2 type-body-small text-ink-secondary">
+                {profileCopy.description}
+              </p>
+            </div>
+            <Link
+              href="/"
+              className="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-focus min-h-[2.75rem] shrink-0 px-ui-4 py-ui-2 type-action-small"
             >
-              {isSubmitting === "email" ? "Working..." : emailSubmitLabel}
-            </Button>
-          </form>
-        ) : null}
+              Back
+            </Link>
+          </div>
 
-        {socialProviders.length > 0 ? (
-          <div className="mt-ui-6 grid gap-ui-2 border-t border-edge-subtle pt-ui-6">
-            {socialProviders.map((provider) => (
+          {authOptions.emailPassword ? (
+            <form className="mt-ui-6 grid gap-ui-3" onSubmit={handleEmailAuth}>
+              <EmailAuthModeToggle value={authMode} onChange={setAuthMode} />
+              <label className="grid gap-ui-2 type-label text-ink-secondary">
+                Email
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                />
+              </label>
+              <label className="grid gap-ui-2 type-label text-ink-secondary">
+                Password
+                <Input
+                  type="password"
+                  autoComplete={
+                    authMode === "signUp" ? "new-password" : "current-password"
+                  }
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="Password"
+                />
+              </label>
               <Button
-                key={provider}
-                type="button"
-                variant="secondary"
+                type="submit"
                 size="md"
-                className="w-full justify-start"
+                className="w-full"
                 disabled={Boolean(isSubmitting)}
-                onClick={() => signInWithProvider(provider)}
               >
-                {isSubmitting === provider
-                  ? `Opening ${provider}...`
-                  : AUTH_PROVIDER_LABELS[provider]}
+                {isSubmitting === "email" ? "Working..." : emailSubmitLabel}
               </Button>
-            ))}
-          </div>
-        ) : null}
+            </form>
+          ) : null}
 
-        {statusMessage ? (
-          <div className="settlehex-ui-inset mt-ui-4 break-words px-ui-4 py-ui-3 type-body-small text-ink-secondary">
-            {statusMessage}
-          </div>
-        ) : null}
+          {socialProviders.length > 0 ? (
+            <div className="mt-ui-6 grid gap-ui-2 border-t border-edge-subtle pt-ui-6">
+              {socialProviders.map((provider) => (
+                <Button
+                  key={provider}
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  className="w-full justify-start"
+                  disabled={Boolean(isSubmitting)}
+                  onClick={() => signInWithProvider(provider)}
+                >
+                  {isSubmitting === provider
+                    ? `Opening ${provider}...`
+                    : AUTH_PROVIDER_LABELS[provider]}
+                </Button>
+              ))}
+            </div>
+          ) : null}
+
+          {statusMessage ? (
+            <div className="settlehex-ui-inset mt-ui-4 break-words px-ui-4 py-ui-3 type-body-small text-ink-secondary">
+              {statusMessage}
+            </div>
+          ) : null}
+        </ResizeRegion>
       </div>
     </main>
   );

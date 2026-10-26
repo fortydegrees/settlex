@@ -189,3 +189,19 @@ Notation archive stories in `app/_features/replay/ArchivedNotation.stories.jsx` 
 Use these production owners for new consumers. Motion Review/Shared family is a
 historical comparison, with preview-only CSS; do not copy it into a feature.
 The pilot's scope, API constraints and reduced-motion policy are in DESIGN_SYSTEM.
+
+### Shared overlay adoption — 26 October 2026
+
+- Dialog/AlertDialog/Popover/Tooltip consume canonical motion recipes in globals;
+  Base UI keeps lifecycle, focus and dismissal ownership. Fields, meta links and
+  game-menu rows share feedback timing.
+- AccountEntryModal and AccountPageView use ResizeRegion for changing content.
+  Review `product-patterns-account-identity-account-entry--shared-motion-rollout` for
+  stable auth fields, error growth/shrink, guest/auth switching and focus return.
+- `components-overlays--repeated-dialog-reversal` covers repeated dismissal and
+  reopening. `--game-log-tooltip` verifies keyboard focus/Escape (click deliberately
+  dismisses Base UI tooltips). Existing alert/popover/settings stories retain their
+  callback and dismissal checks.
+- Browser verification covered normal/reduced motion and desktop/short phone
+  account layouts, including tall scrolled errors shrinking to the guest form.
+  Local worktree only; no merge or deployment.

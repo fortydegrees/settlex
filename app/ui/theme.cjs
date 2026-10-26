@@ -104,6 +104,7 @@ const variables = {
   '--settlehex-ui-motion-feedback': '140ms', '--settlehex-ui-motion-selection': '190ms',
   '--settlehex-ui-motion-reveal': '220ms', '--settlehex-ui-motion-resize': '240ms',
   '--settlehex-ui-motion-update': '180ms', '--settlehex-ui-motion-travel': '6px',
+  '--settlehex-ui-motion-reveal-scale': '.985',
   '--settlehex-ui-motion-settle': 'cubic-bezier(.2, .8, .2, 1)',
   '--settlehex-ui-duration-fast': '140ms', '--settlehex-ui-duration-dialog': '220ms', '--settlehex-ui-duration-exit': '160ms',
   '--settlehex-ui-ease-standard': 'cubic-bezier(.2, .9, .24, 1)', '--settlehex-ui-ease-bounce': 'cubic-bezier(0.34, 1.56, 0.64, 1)',

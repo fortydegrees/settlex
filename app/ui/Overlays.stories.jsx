@@ -18,6 +18,7 @@ function DialogHarness() {
         onOpenChange={setOpen}
         title="Account settings"
         description="Choose how SettleHex keeps this table personal."
+        actions={<Button onClick={() => setOpen(false)}>Close settings</Button>}
       />
     </>
   );
@@ -147,11 +148,36 @@ export const ReleaseMetaDisclosure = {
 export const GameLogTooltip = {
   render: () => <TooltipHarness />,
   play: async ({ canvasElement }) => {
+    delete canvasElement.dataset.motionContract;
     const canvas = within(canvasElement.ownerDocument.body);
     const trigger = canvas.getByRole("button", { name: "Open game log" });
-    await userEvent.click(trigger);
+    // Base UI closes tooltips on click; keyboard focus is the opening contract.
+    await userEvent.tab();
+    await waitFor(() => expect(trigger).toHaveFocus());
     await waitFor(() => expect(canvas.getByText("Open the game log")).toBeVisible());
     await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(canvas.queryByText("Open the game log")).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());
+    canvasElement.dataset.motionContract = "passed";
+  },
+};
+
+
+export const RepeatedDialogReversal = {
+  render: () => <DialogHarness />,
+  play: async ({canvasElement}) => {
+    delete canvasElement.dataset.motionContract;
+    const screen = within(canvasElement.ownerDocument.body);
+    const trigger = screen.getByRole('button',{name:'Open account settings'});
+    for (let i = 0; i < 3; i++) {
+      await userEvent.click(trigger);
+      await userEvent.click(await screen.findByRole('button',{name:'Close settings'}));
+    }
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog',{name:'Account settings'})).toBeVisible());
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+    canvasElement.dataset.motionContract = 'passed';
   },
 };

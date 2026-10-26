@@ -12,7 +12,7 @@ import { Popover } from "../../../ui/Popover";
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 
 const menuItemClassName =
-  "settlehex-ui-game-menu-item settlehex-ui-focus flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control border px-ui-3 py-ui-2.5 text-left type-action-small transition-colors duration-[var(--settlehex-ui-duration-fast)] motion-reduce:transition-none";
+  "settlehex-ui-game-menu-item settlehex-ui-focus flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control border px-ui-3 py-ui-2.5 text-left type-action-small motion-reduce:transition-none";
 const neutralItemClassName =
   "settlehex-ui-game-menu-item-neutral";
 const dangerItemClassName =

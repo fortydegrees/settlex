@@ -6,6 +6,7 @@ import {
   LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { Button } from "../../ui/Button";
+import { ResizeRegion } from "../../ui/ResizeRegion";
 import { Dialog } from "../../ui/Dialog";
 import { Input } from "../../ui/Input";
 import { EmailAuthModeToggle } from "./EmailAuthModeToggle";
@@ -415,23 +416,25 @@ export function AccountEntryModal({
       maxWidthClassName="max-w-md"
       className={`p-ui-5 sm:p-ui-6 ${styles.entry}`}
     >
-      {isPlayMode ? (
-        <PlayUsernameForm
-          intent={intent}
-          identity={identity}
-          onPlayUsernameSubmit={onPlayUsernameSubmit}
-          onSwitchToAuth={onSwitchToAuth}
-        />
-      ) : (
-        <AccountAuthForm
-          mode={mode}
-          authOptions={authOptions}
-          onEmailSignIn={onEmailSignIn}
-          onEmailSignUp={onEmailSignUp}
-          onSignInProvider={onSignInProvider}
-          onContinueAsGuest={onContinueAsGuest}
-        />
-      )}
+      <ResizeRegion>
+        {isPlayMode ? (
+          <PlayUsernameForm
+            intent={intent}
+            identity={identity}
+            onPlayUsernameSubmit={onPlayUsernameSubmit}
+            onSwitchToAuth={onSwitchToAuth}
+          />
+        ) : (
+          <AccountAuthForm
+            mode={mode}
+            authOptions={authOptions}
+            onEmailSignIn={onEmailSignIn}
+            onEmailSignUp={onEmailSignUp}
+            onSignInProvider={onSignInProvider}
+            onContinueAsGuest={onContinueAsGuest}
+          />
+        )}
+      </ResizeRegion>
     </Dialog>
   );
 }
