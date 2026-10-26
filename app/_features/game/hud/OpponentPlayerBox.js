@@ -1,4 +1,5 @@
 import React from "react";
+import { ResizeRegion } from "../../../ui/ResizeRegion";
 import resCardBackIcon from "../../../../public/svgs/cards/resource/card_rescardback.svg";
 import devCardBackIcon from "../../../../public/svgs/cards/development/card_devcardback.svg";
 import { CardStack } from "../cards/CardStack";
@@ -22,8 +23,6 @@ const OpponentPlayerBoxComponent = ({
 
   const resourceCount = player.resources?.length ?? 0;
   const devCount = player.devCards?.length ?? 0;
-  const stackMotionClass =
-    "transition-[width] duration-200 ease-out motion-reduce:transition-none";
   const isSeatWarning =
     presence?.status === "disconnected" || presence?.status === "idle";
   const discardLimit = core?.ruleset?.discardLimit ?? 7;
@@ -62,7 +61,8 @@ const OpponentPlayerBoxComponent = ({
         avatarClassName={dangerAvatarClassName}
         statsPanelChildrenClassName={revealHand ? "flex min-w-0 flex-1 items-center justify-start gap-x-ui-3" : undefined}
         statsPanelChildren={
-          revealHand ? <ReplayHandCards player={player} themeId={themeId} compact={compact} /> : <div className="contents">
+          <ResizeRegion axis="width">
+          {revealHand ? <ReplayHandCards player={player} themeId={themeId} compact={compact} /> : <div className="flex items-center gap-x-ui-3">
             <div id={`p${player.id}-resources`}>
               <CardStack
                 count={resourceCount}
@@ -70,7 +70,6 @@ const OpponentPlayerBoxComponent = ({
                 alt="Resource cards"
                 badgeTone={resourceBadgeTone}
                 imageClassName="object-contain"
-                className={stackMotionClass}
               />
             </div>
             <div id={`p${player.id}-devcards`}>
@@ -78,10 +77,10 @@ const OpponentPlayerBoxComponent = ({
                 count={devCount}
                 src={devCardBackIcon}
                 alt="Dev cards"
-                className={stackMotionClass}
               />
             </div>
-          </div>
+          </div>}
+          </ResizeRegion>
         }
       />
     </div>

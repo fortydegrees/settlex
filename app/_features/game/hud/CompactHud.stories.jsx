@@ -1,4 +1,5 @@
 import React from "react";
+import { Button } from "../../../ui/Button";
 import { buildTopology, createEmptyState, ResourceType } from "@settlehex/game-core";
 import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
 import { SETTLEHEX_TABLE_BACKGROUND } from "../../theme/backgrounds";
@@ -98,12 +99,18 @@ export const PlayableAndSleepingCards = {
     canEnd: true,
   },
   render: (args) => <MobileFixture {...args} />,
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, args }) => {
     const screen = within(canvasElement.ownerDocument.body);
     await userEvent.click(screen.getByRole("button", { name: "Development cards: 4" }));
     expect(screen.getByRole("dialog", { name: "Development cards" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Knight x2" })).toHaveAttribute("aria-disabled", "false");
     expect(screen.getByRole("button", { name: "Victory Point" })).toHaveAttribute("aria-disabled", "true");
+    args.bgioProps.moves.playDevCardStart.mockClear();
+    await userEvent.click(screen.getByRole("button", { name: "Knight x2" }));
+    expect(args.bgioProps.moves.playDevCardStart).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("dialog", { name: "Development cards" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Development cards: 4" })).toHaveFocus();
+    canvasElement.dataset.motionContract = 'passed';
   },
 };
 
@@ -232,5 +239,30 @@ export const SharedFeedControls = {
     await user.keyboard(" ");
     await expect(log).toHaveAttribute("aria-pressed", "true");
     canvasElement.dataset.motionContract = "passed";
+  },
+};
+
+function InventoryRemovalFixture() {
+  const [cards, setCards] = React.useState(['knight']);
+  return <>
+    <div className="p-ui-4"><Button onClick={() => setCards([])}>Remove last card</Button><Button onClick={() => setCards(['knight'])}>Restore card</Button></div>
+    <MobileFixture {...gameFixture({ devCards: cards })} showTurnControls readOnly />
+  </>;
+}
+export const LastCardRemoval = {
+  render: () => <InventoryRemovalFixture />,
+  play: async ({canvasElement}) => {
+    delete canvasElement.dataset.motionContract;
+    const screen = within(canvasElement);
+    await userEvent.click(screen.getByRole('button',{name:'Development cards: 1'}));
+    await screen.findByRole('dialog',{name:'Development cards'});
+    await new Promise(resolve => setTimeout(resolve,350));
+    const cockpit = canvasElement.querySelector('[data-mobile-player-cockpit]');
+    const before = cockpit.getBoundingClientRect().height;
+    await userEvent.click(screen.getByRole('button',{name:'Remove last card'}));
+    expect(screen.queryByRole('dialog',{name:'Development cards'})).not.toBeInTheDocument();
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) expect(cockpit.getBoundingClientRect().height).toBeGreaterThan(before - 20);
+    await waitFor(() => expect(cockpit.getBoundingClientRect().height).toBeLessThan(before - 30));
+    canvasElement.dataset.motionContract = 'passed';
   },
 };

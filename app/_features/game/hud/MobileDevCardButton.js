@@ -52,8 +52,7 @@ export function MobileDevCardButton({
   const previewSrc = previewType ? DEV_CARD_SVGS[previewType] : DEV_CARD_BACK_SVG;
   const showStack = totalCount > 1;
   const buttonClassName = [
-    "mobile-devcard-button relative flex h-[3.6rem] w-[2.85rem] shrink-0 items-center justify-center overflow-visible rounded-control bg-transparent p-ui-0 transition duration-150 ease-out active:scale-[0.98]",
-    isOpen ? "" : "hover:brightness-105",
+    "mobile-devcard-button relative flex h-[3.6rem] w-[2.85rem] shrink-0 items-center justify-center overflow-visible rounded-control bg-transparent p-ui-0 settlehex-ui-choice settlehex-ui-focus",
   ]
     .filter(Boolean)
     .join(" ");

@@ -16,7 +16,7 @@ function MobileDevCardGroupButton({ group, activeCardType, onPlayCard, onClose }
   const isPlayable = group.isPlayable;
   const cardCountLabel = group.count > 1 ? ` x${group.count}` : "";
   const className = [
-    "mobile-devcard-group relative flex min-w-[3.25rem] items-center justify-center rounded-small px-ui-1.5 py-ui-0.5 transition duration-150 ease-out",
+    "mobile-devcard-group relative flex min-w-[3.25rem] items-center justify-center rounded-small px-ui-1.5 py-ui-0.5 settlehex-ui-choice settlehex-ui-focus",
     isPlayable
       ? "mobile-devcard-group--playable"
       : "mobile-devcard-group--inactive",

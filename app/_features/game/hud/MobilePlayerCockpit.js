@@ -1,10 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getPublicVictoryPoints,
   getLongestRoadLength,
   getVictoryPoints,
 } from "@settlehex/game-core";
+import { ResizeRegion } from "../../../ui/ResizeRegion";
 import { DockCard } from "./ActionsDock/DockCard";
 import { AnimatedCount } from "../cards/AnimatedCount";
 import { MobileDevCardButton } from "./MobileDevCardButton";
@@ -256,6 +257,12 @@ export function MobilePlayerCockpit({
   const { G, ctx, moves } = bgioProps;
   const clientPlayerID = bgioProps.playerID;
   const [isDevTrayOpen, setIsDevTrayOpen] = useState(false);
+  const devCardButtonRef = useRef(null);
+  const setDevCardButtonNode = useCallback((node) => {
+    devCardButtonRef.current = node;
+    if (typeof devCardDisplayRef === "function") devCardDisplayRef(node);
+    else if (devCardDisplayRef) devCardDisplayRef.current = node;
+  }, [devCardDisplayRef]);
   const emitHaptic = useCallback(
     (payload) => {
       const name = typeof payload === "string" ? payload : payload?.name;
@@ -397,6 +404,7 @@ export function MobilePlayerCockpit({
   }, [emitHaptic, hasVisibleDevCards]);
 
   const handleDevTrayClose = useCallback(() => {
+    devCardButtonRef.current?.focus();
     setIsDevTrayOpen(false);
   }, []);
 
@@ -427,7 +435,7 @@ export function MobilePlayerCockpit({
           data-allow-interaction="true"
         >
           <div
-            className={`relative flex h-[3.15rem] items-end justify-center gap-ui-4 overflow-visible transition-[margin,transform] duration-200 ease-out ${
+            className={`relative flex h-[3.15rem] items-end justify-center gap-ui-4 overflow-visible ${
               isDevTrayOpen
                 ? "z-[70] -mb-ui-5"
                 : "z-20 -mb-ui-5"
@@ -440,7 +448,7 @@ export function MobilePlayerCockpit({
           </div>
 
           <div
-            className={`mobile-player-inventory relative flex min-w-0 flex-col border px-ui-2.5 pb-ui-2.5 pt-ui-5 transition-[background-color,border-color,box-shadow,padding] duration-200 ease-out ${
+            className={`mobile-player-inventory relative flex min-w-0 flex-col border px-ui-2.5 pb-ui-2.5 pt-ui-5 settlehex-ui-motion-feedback ${
               isOverLimit
                 ? "mobile-player-inventory--danger"
                 : ""
@@ -449,16 +457,8 @@ export function MobilePlayerCockpit({
           >
             {isActive ? <MobileInventoryBorderGlide /> : null}
 
-            {hasVisibleDevCards ? (
-              <div
-                className={`grid w-full transition-[grid-template-rows,opacity,margin] duration-200 ease-out ${
-                  isDevTrayOpen
-                    ? "mb-ui-1 grid-rows-[1fr] opacity-100"
-                    : "mb-0 grid-rows-[0fr] opacity-0"
-                }`}
-                data-mobile-devcard-expander={isDevTrayOpen ? "open" : "closed"}
-              >
-                <div className="min-h-0 overflow-hidden">
+            <ResizeRegion data-mobile-devcard-expander={isDevTrayOpen && hasVisibleDevCards ? "open" : "closed"}>
+              {isDevTrayOpen && hasVisibleDevCards ? <div className="pb-ui-1">
                   <MobileDevCardTray
                     cards={visibleDevCards}
                     playableCountsByType={devPlayableCountsByType}
@@ -467,9 +467,8 @@ export function MobilePlayerCockpit({
                     onPlayCard={readOnly ? undefined : handleMobileDevCardPlay}
                     onClose={handleDevTrayClose}
                   />
-                </div>
-              </div>
-            ) : null}
+              </div> : null}
+            </ResizeRegion>
 
             <div className="flex w-full min-w-0 items-center gap-ui-1.5 min-[400px]:gap-ui-2.5">
             <div className="relative flex shrink-0 items-center">
@@ -542,6 +541,7 @@ export function MobilePlayerCockpit({
               ))}
             </div>
 
+            <ResizeRegion axis="width">
             {showMobileDevCardButton ? (
               <MobileDevCardButton
                 cards={visibleDevCards}
@@ -549,10 +549,11 @@ export function MobilePlayerCockpit({
                 playableCountsByType={devPlayableCountsByType}
                 isOpen={isDevTrayOpen}
                 onToggle={handleDevTrayToggle}
-                containerRef={devCardDisplayRef}
+                containerRef={setDevCardButtonNode}
                 forceMount={Boolean(keepDevCardShellMounted)}
               />
             ) : null}
+            </ResizeRegion>
             </div>
 
           </div>

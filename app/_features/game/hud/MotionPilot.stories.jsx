@@ -3,6 +3,7 @@ import { buildTopology, createEmptyState, ResourceType } from '@settlehex/game-c
 import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
 import { EffectsBoardWrapper } from 'bgio-effects/react';
 import { PlayerActionContainer } from './PlayerActionContainer';
+import { OpponentPlayerBox } from './OpponentPlayerBox';
 import { Button } from '../../../ui/Button';
 import { Switch } from '../../../ui/Switch';
 
@@ -43,5 +44,41 @@ export const ResourceBar = {
     await userEvent.click(c.getByRole('switch',{name:'Keep purchase target mounted'}));
     await waitFor(() => expect(canvasElement.querySelector('#p0-devcards')).not.toBeNull());
     await userEvent.click(c.getByRole('switch',{name:'Keep purchase target mounted'}));
+  },
+};
+
+function OpponentInventoryFixture() {
+  const [cards, setCards] = useState([]);
+  const [reveal, setReveal] = useState(true);
+  const player = {id:'1',name:'Opponent',emoji:'🦊',color:'blue',resources:['Wood'],devCards:cards};
+  return <main className="p-ui-6">
+    <div className="mb-ui-6 flex flex-wrap gap-ui-2">
+      <Button onClick={() => setCards([])}>No opponent cards</Button>
+      <Button onClick={() => setCards(['knight','yearOfPlenty','monopoly','roadBuilding'])}>Four opponent cards</Button>
+      <Switch checked={reveal} onCheckedChange={setReveal}>Reveal opponent hand</Switch>
+    </div>
+    <OpponentPlayerBox player={player} revealHand={reveal} themeId="classic" />
+  </main>;
+}
+export const OpponentInventory = {
+  render: () => <OpponentInventoryFixture />,
+  play: async ({canvasElement}) => {
+    delete canvasElement.dataset.motionContract;
+    const c = within(canvasElement);
+    const box = canvasElement.querySelector('#p1-opponent-box');
+    const width = () => box.firstElementChild.getBoundingClientRect().width;
+    const before = width();
+    await userEvent.click(c.getByRole('button',{name:'Four opponent cards'}));
+    await waitFor(() => expect(width()).toBeGreaterThan(before + 100));
+    // Let the geometry settle before testing a complete reverse.
+    await new Promise(resolve => setTimeout(resolve,350));
+    await userEvent.click(c.getByRole('button',{name:'No opponent cards'}));
+    expect(c.queryByLabelText('Development cards')).not.toBeInTheDocument();
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) expect(width()).toBeGreaterThan(before + 20);
+    await waitFor(() => expect(Math.abs(width()-before)).toBeLessThan(2));
+    await userEvent.click(c.getByRole('button',{name:'Four opponent cards'}));
+    await userEvent.click(c.getByRole('switch',{name:'Reveal opponent hand'}));
+    expect(c.queryByLabelText('Opponent hand')).not.toBeInTheDocument();
+    canvasElement.dataset.motionContract = 'passed';
   },
 };
