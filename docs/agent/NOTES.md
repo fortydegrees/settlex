@@ -27,3 +27,7 @@ scrolling. Replay's compact HUD, cockpit and bottom tray apply below 1024px;
 the desktop panel and its reserved opponent lane start together at 1024px.
 Live-game layout keeps its existing 640px breakpoint. Private hand contents still
 unmount immediately when reveal is disabled.
+
+Compact replay opponent rows use intrinsic width with an available-width cap.
+Keep centring for content that fits and start-accessible scrolling for overflow;
+a full-width row with default flex alignment left-aligns even a single opponent.

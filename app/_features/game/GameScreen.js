@@ -1851,7 +1851,7 @@ TODO: accurately colour it
               aria-label={isPhoneLayout && isReplay ? "Replay players" : undefined}
               onKeyDown={isPhoneLayout && isReplay ? (event) => event.stopPropagation() : undefined}
               tabIndex={isPhoneLayout && isReplay ? 0 : undefined}
-              className={`pointer-events-auto flex items-start gap-ui-4 ${isReplay ? "max-w-full" : ""} ${isPhoneLayout && isReplay ? "settlehex-ui-focus w-full flex-nowrap overflow-x-auto pb-ui-3 pt-ui-5" : isReplay ? "flex-wrap justify-center" : ""}`}
+              className={`pointer-events-auto flex items-start gap-ui-4 ${isReplay ? "max-w-full" : ""} ${isPhoneLayout && isReplay ? "settlehex-ui-focus w-max flex-nowrap overflow-x-auto pb-ui-3 pt-ui-5" : isReplay ? "flex-wrap justify-center" : ""}`}
             >
               {displayedOpponents.map((opponent) => (
                 <OpponentPlayerBox

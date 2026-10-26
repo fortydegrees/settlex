@@ -25,3 +25,8 @@ panel from covering the opponent hand. Rendered checks cover 750px, the
 scrolling, including keyboard access without seeking the replay; masking still
 removes revealed identities immediately. These changes are local verification,
 not publication or deployment.
+
+2026-10-26: compact replay opponent rows now take their content width, capped
+by the available space, so a single opponent centres instead of anchoring left.
+Verified the real replay at 750px, 375px, 390px, 430px and 1056px, including phone
+hand scrolling. This is a layout correction, not full integration qualification.
