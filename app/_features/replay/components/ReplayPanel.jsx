@@ -48,7 +48,8 @@ export function ReplayPanel({
   onSeek,
 }) {
   const { width, isMeasured } = useWindowSize();
-  const isPhoneLayout = isMeasured && width < 640;
+  // Match the game screen's compact replay HUD below its reserved lg side lane.
+  const isPhoneLayout = isMeasured && width < 1024;
   const eventCount = timeline.events.length;
   const atEnd = currentEventIndex >= Math.max(eventCount - 1, 0);
   const preserveBoardPointerDown = useCallback((event) => {

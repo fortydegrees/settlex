@@ -263,7 +263,8 @@ export function GameScreen(bgioProps) {
   const currentResourcesByPlayerIdRef = useRef(new Map());
   const effectsBus = useMemo(() => createEffectBus(), []);
   const { width, height, isMeasured } = useWindowSize();
-  const isPhoneLayout = width > 0 && width < 640;
+  // Replay's side panel only has a reserved HUD lane from lg upwards.
+  const isPhoneLayout = width > 0 && width < (bgioProps.isReplay === true ? 1024 : 640);
   const boardLayoutReservedHeight = isPhoneLayout ? 0 : undefined;
   const leftMetaRailLayoutInset = 0;
 
