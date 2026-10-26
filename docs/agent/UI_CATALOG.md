@@ -205,3 +205,17 @@ The pilot's scope, API constraints and reduced-motion policy are in DESIGN_SYSTE
 - Browser verification covered normal/reduced motion and desktop/short phone
   account layouts, including tall scrolled errors shrinking to the guest form.
   Local worktree only; no merge or deployment.
+
+### Shared feed adoption — 26 October 2026
+
+- FeedPanel + feedArrival.js own one live-row cue and quiet history/batches;
+  GameLogPanel highlights replay selection in place. GameScreen explicitly routes
+  quiet replay policy through desktop and phone hosts. ChatPanel exposes the same
+  arrival policy. Existing scroll state remains the scroll owner.
+- DesktopMetaDock uses shared layout/presence recipes and a persistent native
+  toggle; no animation-stage timers or private content snapshots. Drafts and
+  middle reading position survive full collapse and rapid reversal.
+- Review Game Feeds/Shared motion updates and Game Chrome/Shared motion dock.
+  Browser checks passed at 1440x900 normal/reduced motion, updates at 390x844,
+  and the existing Mobile feed drawer flow at 390x664. Vaul choreography unchanged.
+- Local-only slice; no release or cross-browser/performance certification.

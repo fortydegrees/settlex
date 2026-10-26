@@ -9,6 +9,7 @@ const GameLogPanelComponent = ({
   themeId,
   activeEntryKey = null,
   onEntrySelect,
+  arrivalMode = onEntrySelect || activeEntryKey != null ? "quiet" : "live",
   headerClassName = "settlehex-ui-feed-header px-ui-4 py-ui-2 type-action-small text-ink-secondary",
   rootClassName = "fixed left-ui-4 bottom-ui-4 w-72 md:w-80 xl:w-96 z-30 pointer-events-auto",
   panelClassName = "settlehex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col select-text overflow-hidden",
@@ -39,6 +40,7 @@ const GameLogPanelComponent = ({
     <FeedPanel
       title="Game Log"
       rows={formattedEntries}
+      arrivalMode={arrivalMode}
       activeRowKey={activeEntryKey}
       rootClassName={rootClassName}
       panelClassName={panelClassName}

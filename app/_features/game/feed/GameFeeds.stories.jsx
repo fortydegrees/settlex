@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { expect, fireEvent, userEvent, waitFor, within } from "@storybook/test";
 import { ChatPanel } from "./ChatPanel";
 import { GameLogPanel } from "./GameLogPanel";
+import { Button } from "../../../ui/Button";
 
 const meta = {
   title: "Composed Surfaces/Gameplay/Game Feeds",
@@ -160,5 +161,63 @@ export const SendingResumesScrolling = {
     await waitFor(() => expect(
       transcript.scrollTop + transcript.clientHeight
     ).toBeGreaterThanOrEqual(transcript.scrollHeight - 1));
+  },
+};
+
+function FeedMotionFixture() {
+  const [chat, setChat] = useState(Array.from({ length: 25 }, (_, i) => ({
+    id: `history-${i}`, sender: String(i % 2), payload: `Earlier message ${i + 1}: considering the wheat port.`,
+  })));
+  const [log, setLog] = useState(logEntries);
+  const [replay, setReplay] = useState(false);
+  const [active, setActive] = useState('roll');
+  return <div className="mx-auto max-w-5xl p-ui-4">
+    <div className="mb-ui-4 flex flex-wrap gap-ui-2">
+      <Button onClick={() => setChat((rows) => [...rows, { id: `live-${rows.length}`, sender: '1', payload: 'New live message' }])}>Receive message</Button>
+      <Button onClick={() => setChat((rows) => [...rows, ...[1, 2].map((n) => ({ id: `batch-${rows.length}-${n}`, sender: '0', payload: `Loaded history ${n}` }))])}>Load history batch</Button>
+      <Button onClick={() => setReplay((value) => !value)}>{replay ? 'Use live log' : 'Use replay log'}</Button>
+      <Button onClick={() => setLog((rows) => [...rows, { id: `roll-${rows.length}`, type: 'roll', actorId: '0', data: { dice: [2, 5] } }])}>Append log row</Button>
+      <Button onClick={() => setLog((rows) => rows.slice(0, -1))}>Seek backward</Button>
+    </div>
+    <div className="grid gap-ui-4 md:grid-cols-2">
+      <ChatPanel playerID="0" playerMap={playerMap} themeId="classic" chatMessages={chat}
+        sendChatMessage={(payload) => setChat((rows) => [...rows, { id: `sent-${rows.length}`, sender: '0', payload }])}
+        panelClassName={frameClassName} />
+      <GameLogPanel entries={log} playerMap={playerMap} themeId="classic" rootClassName="w-full"
+        arrivalMode={replay ? 'quiet' : 'live'} activeEntryKey={replay ? active : null}
+        onEntrySelect={replay ? setActive : undefined} panelClassName={frameClassName} />
+    </div>
+  </div>;
+}
+
+export const SharedMotionUpdates = {
+  render: () => <FeedMotionFixture />,
+  play: async ({ canvasElement }) => {
+    delete canvasElement.dataset.motionContract;
+    const screen = within(canvasElement);
+    const arrivals = () => canvasElement.querySelectorAll('[data-feed-arrival="true"]');
+    expect(arrivals()).toHaveLength(0);
+    const viewport = canvasElement.querySelector('.chat-panel-scroll');
+    // Simulate reading earlier messages, including the existing manual-scroll signal.
+    viewport.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: -400 }));
+    viewport.scrollTo({ top: 0, behavior: 'instant' });
+    await userEvent.click(screen.getByRole('button', { name: 'Receive message' }));
+    expect(arrivals()).toHaveLength(1);
+    expect(viewport.scrollTop).toBe(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Load history batch' }));
+    expect(arrivals()).toHaveLength(0);
+    expect(viewport.scrollTop).toBe(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Append log row' }));
+    expect(arrivals()).toHaveLength(1);
+    await userEvent.click(screen.getByRole('button', { name: 'Use replay log' }));
+    expect(arrivals()).toHaveLength(0);
+    await userEvent.click(screen.getByRole('button', { name: 'Seek backward' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Append log row' }));
+    expect(arrivals()).toHaveLength(0);
+    const robber = screen.getByRole('button', { name: /moved the robber/ });
+    await userEvent.click(robber);
+    expect(robber).toHaveAttribute('aria-current', 'step');
+    expect(arrivals()).toHaveLength(0);
+    canvasElement.dataset.motionContract = 'passed';
   },
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   cleanupFeedPanelScrollState,
   createFeedPanelScrollState,
@@ -11,6 +11,8 @@ import {
   runFeedPanelAutoScrollIfNeeded,
   scrollFeedPanelRowIntoView,
 } from "./FeedPanelScrollState";
+
+import { getFeedArrivalKey } from "./feedArrival";
 
 const joinClassNames = (...parts) => parts.filter(Boolean).join(" ");
 const readPrefersReducedMotion = () =>
@@ -37,7 +39,19 @@ const FeedPanelComponent = ({
   contentClassName = "space-y-ui-2 type-body-small pt-ui-2",
   trackPanelInteraction = false,
   activeRowKey = null,
+  arrivalMode = "live",
 }) => {
+  // Keep the last rendered identity list, not row contents or a second history.
+  // Adjusting during render avoids a paint before the arrival classification;
+  // unchanged keys retain the cue without restarting it on unrelated rerenders.
+  const keys = rows.filter((row) => row?.animateArrival !== false)
+    .map((row, index) => String(row?.key ?? row?.id ?? index));
+  const [arrival, setArrival] = useState(() => ({ keys, mode: arrivalMode, key: null }));
+  if (arrival.mode !== arrivalMode || keys.length !== arrival.keys.length ||
+      keys.some((key, index) => key !== arrival.keys[index])) {
+    setArrival({ keys, mode: arrivalMode,
+      key: getFeedArrivalKey(arrival.keys, keys, arrivalMode === "live" && arrival.mode === "live") });
+  }
   const scrollRef = useRef(null);
   const rowRefs = useRef(new Map());
   const stateRef = useRef(null);
@@ -137,6 +151,7 @@ const FeedPanelComponent = ({
                         else rowRefs.current.delete(rowKey);
                       }}
                       className={entryClassName}
+                      data-feed-arrival={arrival.key === rowKey ? "true" : undefined}
                       data-feed-row-active={
                         String(activeRowKey) === rowKey ? "true" : undefined
                       }

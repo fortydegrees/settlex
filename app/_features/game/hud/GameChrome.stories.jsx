@@ -146,3 +146,68 @@ export const DesktopFeedDock = {
   render: () => <DesktopMetaDock entries={entries} logPlayerMap={players} themeId="classic"
     playerID={null} bgioProps={{ chatMessages: messages }} />,
 };
+
+function DockMotionFixture() {
+  const [chatMessages, setChatMessages] = useState(Array.from({ length: 20 }, (_, index) => ({
+    id: `earlier-${index}`, sender: String(index % 2), payload: `Earlier message ${index + 1}: considering the wheat port.`,
+  })));
+  return <>
+    <p className="p-ui-4 type-body text-ink-primary lg:hidden">Widen the preview to view the desktop dock. Game Feeds / Shared motion updates also works at phone widths.</p>
+    <DesktopMetaDock entries={entries} logPlayerMap={players} themeId="classic"
+    playerID="0" bgioProps={{ chatMessages, sendChatMessage: (payload) => setChatMessages((current) => [
+      ...current, { id: `local-${current.length}`, sender: "0", payload },
+    ]) }} />
+  </>;
+}
+
+export const SharedMotionDock = {
+  parameters: { viewport: { defaultViewport: "settlehexDesktop" } },
+  render: () => <DockMotionFixture />,
+  play: async ({ canvasElement }) => {
+    delete canvasElement.dataset.motionContract;
+    if (!canvasElement.ownerDocument.defaultView.matchMedia('(min-width: 1024px)').matches) {
+      canvasElement.dataset.motionContract = 'desktop-required';
+      return;
+    }
+    const screen = within(canvasElement);
+    // Saved preferences are real; normalize through the actual controls.
+    for (const label of ['Game Log', 'Chat']) {
+      const restore = screen.queryByRole('button', { name: label, exact: true });
+      if (restore) await userEvent.click(restore);
+    }
+    const composer = await screen.findByRole('textbox', { name: 'Chat message' });
+    await userEvent.type(composer, 'Keep this draft');
+    const toggle = screen.getByRole('button', { name: 'Minimize Chat', exact: true });
+    await userEvent.click(toggle);
+    // No animation timeout may delay the next valid input.
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('textbox', { name: 'Chat message' })).not.toBeInTheDocument();
+    expect(toggle).toHaveFocus();
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('textbox', { name: 'Chat message' })).toBe(composer);
+    expect(composer).toHaveValue('Keep this draft');
+    for (let i = 0; i < 3; i++) { await userEvent.click(toggle); await userEvent.click(toggle); }
+    expect(composer).toHaveValue('Keep this draft');
+    await userEvent.type(composer, '{enter}');
+    await waitFor(() => expect(screen.getByText('Keep this draft')).toBeVisible());
+    expect(composer).toHaveValue('');
+    const frame = canvasElement.querySelector('[data-meta-feed-frame="chat"]');
+    const viewport = canvasElement.querySelector('.chat-panel-scroll');
+    const settled = () => waitFor(() => expect(frame.parentElement.getAnimations({ subtree: true })).toHaveLength(0));
+    await settled();
+    viewport.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: -400 }));
+    viewport.scrollTo({ top: 120, behavior: 'instant' });
+    const readingPosition = viewport.scrollTop;
+    await userEvent.click(toggle);
+    await settled();
+    await userEvent.click(toggle);
+    await settled();
+    expect(viewport.scrollTop).toBe(readingPosition);
+    await userEvent.click(toggle);
+    await userEvent.click(toggle);
+    await settled();
+    expect(viewport.scrollTop).toBe(readingPosition);
+    canvasElement.dataset.motionContract = 'passed';
+  },
+};

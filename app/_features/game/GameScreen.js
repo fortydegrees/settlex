@@ -1599,6 +1599,7 @@ export function GameScreen(bgioProps) {
 
       <LeftMetaRail
         entries={visibleLogEntries}
+        logArrivalMode={isReplay ? "quiet" : "live"}
         activeEntryKey={
           isReplay ? bgioProps.replayActiveLogEntryKey : null
         }

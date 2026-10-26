@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { GameLogPanel } from "./GameLogPanel";
 import { ChatPanel } from "./ChatPanel";
+import { Tooltip } from "../../../ui/Tooltip";
 import {
   META_PANEL_FRAME_CLASS_NAME,
-  META_PANEL_GLASS_STYLE,
 } from "./metaPanelChrome";
 import {
   normalizeLeftMetaRailDesktopPrefs,
@@ -32,20 +32,14 @@ const desktopFeedLaneClassName =
   "pointer-events-auto w-[min(clamp(18rem,20vw,25rem),calc(100vw-2rem))]";
 const desktopFeedLogOpenHeight = "clamp(15rem,38vh,23rem)";
 const desktopFeedChatOpenHeight = "clamp(13rem,34vh,20rem)";
-const desktopFeedCollapsedSizeClassName = "h-full w-14";
-const desktopFeedHeaderSizeClassName = "h-full w-full";
 const desktopFeedCollapsedHeight = "3.5rem";
 const desktopFeedStackGap = "0.5rem";
-const desktopFeedSlotClassName =
-  "transition-[width,height,opacity,transform,border-radius] [will-change:width,height,opacity,transform] motion-reduce:transition-none";
 
 const desktopFeedPanelClassName =
   "flex h-full min-h-0 flex-col overflow-hidden bg-transparent select-text";
 const desktopFeedHeaderClassName = "sr-only";
 const mobileFeedContentPanelClassName =
   "flex h-full min-h-0 flex-col overflow-hidden bg-transparent select-text";
-const desktopFeedWidthStageMs = 210;
-const desktopFeedBodyStageMs = 190;
 
 const normalizePanelId = (panelId) =>
   typeof panelId === "string" && panelIds.has(panelId) ? panelId : null;
@@ -91,6 +85,7 @@ const buildMetaPanels = ({
   entries,
   activeEntryKey,
   onEntrySelect,
+  logArrivalMode,
   logPlayerMap,
   themeId,
   playerID,
@@ -107,6 +102,7 @@ const buildMetaPanels = ({
     defaultOpenDesktop: true,
     renderDesktop: () => (
       <GameLogPanel
+        arrivalMode={logArrivalMode}
         entries={entries}
         activeEntryKey={activeEntryKey}
         onEntrySelect={onEntrySelect}
@@ -119,6 +115,7 @@ const buildMetaPanels = ({
     ),
     renderMobile: () => (
       <GameLogPanel
+        arrivalMode={logArrivalMode}
         entries={entries}
         activeEntryKey={activeEntryKey}
         onEntrySelect={onEntrySelect}
@@ -140,6 +137,7 @@ const buildMetaPanels = ({
     defaultOpenDesktop: true,
     renderDesktop: () => (
       <ChatPanel
+        arrivalMode={logArrivalMode}
         playerID={playerID}
         playerMap={logPlayerMap}
         themeId={themeId}
@@ -152,6 +150,7 @@ const buildMetaPanels = ({
     ),
     renderMobile: () => (
       <ChatPanel
+        arrivalMode={logArrivalMode}
         playerID={playerID}
         playerMap={logPlayerMap}
         themeId={themeId}
@@ -193,206 +192,44 @@ const getDesktopFeedSlotMotionClassName = (phase) => {
   return "duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]";
 };
 
-function DesktopFeedFrame({
-  panel,
-  isOpen,
-  onMinimize,
-  onRestore,
-  onPhaseChange,
-}) {
-  const [phase, setPhase] = useState(() => (isOpen ? "open" : "closed"));
-  const hasMountedRef = useRef(false);
-  const isRestoreButton = phase === "closed";
-  const shouldShowPanelBody = phase === "opening-body" || phase === "open";
-  const shouldShowHeaderDetails =
-    phase === "opening-body" || phase === "open" || phase === "closing-body";
-  const handleRestoreKeyDown = useCallback(
-    (event) => {
-      if (!isRestoreButton) return;
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      onRestore(panel.id);
-    },
-    [isRestoreButton, onRestore, panel.id]
-  );
-  const handleHeaderKeyDown = useCallback(
-    (event) => {
-      if (!shouldShowHeaderDetails) return;
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      onMinimize(panel.id);
-    },
-    [onMinimize, panel.id, shouldShowHeaderDetails]
-  );
-
-  useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      setPhase(isOpen ? "open" : "closed");
-      return undefined;
-    }
-
-    const timers = [];
-
-    if (isOpen) {
-      setPhase("opening-width");
-      timers.push(
-        setTimeout(() => setPhase("opening-body"), desktopFeedWidthStageMs)
-      );
-      timers.push(
-        setTimeout(
-          () => setPhase("open"),
-          desktopFeedWidthStageMs + desktopFeedBodyStageMs
-        )
-      );
-    } else {
-      setPhase("closing-body");
-      timers.push(
-        setTimeout(() => setPhase("closing-width"), desktopFeedBodyStageMs)
-      );
-      timers.push(
-        setTimeout(
-          () => setPhase("closed"),
-          desktopFeedBodyStageMs + desktopFeedWidthStageMs
-        )
-      );
-    }
-
-    return () => {
-      timers.forEach((timer) => clearTimeout(timer));
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (typeof onPhaseChange === "function") {
-      onPhaseChange(panel.id, phase);
-    }
-  }, [onPhaseChange, panel.id, phase]);
-
+function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
   return (
     <section
-      className={joinClassNames(
-        "settlehex-ui-feed-frame group pointer-events-auto relative",
-        desktopFeedSlotClassName,
-        getDesktopFeedSlotSizeClassName(phase),
-        getDesktopFeedSlotMotionClassName(phase),
-        !isRestoreButton
-          ? "overflow-hidden rounded-panel opacity-100 translate-y-0"
-          : "overflow-visible rounded-panel opacity-95 translate-y-0.5 cursor-pointer hover:scale-[1.035] hover:opacity-100 active:translate-y-0 active:scale-[0.96] focus:outline-none"
-      )}
-      role={isRestoreButton ? "button" : undefined}
-      tabIndex={isRestoreButton ? 0 : undefined}
-      onClick={isRestoreButton ? () => onRestore(panel.id) : undefined}
-      onKeyDown={isRestoreButton ? handleRestoreKeyDown : undefined}
+      className="settlehex-ui-feed-frame pointer-events-auto relative h-full settlehex-ui-motion-layout"
+      style={{ width: isOpen ? "100%" : desktopFeedCollapsedHeight }}
       aria-label={panel.label}
-      aria-expanded={isRestoreButton ? "false" : undefined}
-      aria-controls={
-        isRestoreButton
-          ? `desktop-meta-panel-${panel.id}`
-          : undefined
-      }
       data-meta-feed-frame={panel.id}
       data-meta-feed-frame-state={isOpen ? "open" : "minimized"}
-      data-meta-feed-frame-phase={phase}
-      data-meta-feed-toggle={isRestoreButton ? panel.id : undefined}
-      data-meta-sidebar-button={isRestoreButton ? panel.id : undefined}
       data-allow-interaction="true"
     >
-      <div
-        className={joinClassNames(
-          META_PANEL_FRAME_CLASS_NAME,
-          "transition-[border-color,box-shadow] duration-150 ease-out motion-reduce:transition-none",
-          isRestoreButton ? "settlehex-ui-feed-restore" : null
-        )}
-      >
-        <div
-          className="pointer-events-none absolute inset-0 rounded-[inherit]"
-          style={META_PANEL_GLASS_STYLE}
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute inset-0 rounded-[inherit] bg-transparent transition-colors duration-150 ease-out group-hover:bg-decoration-wash group-active:bg-decoration-fill motion-reduce:transition-none"
-          aria-hidden="true"
-        />
-        <div
-          className={joinClassNames(
-            "relative z-10 flex shrink-0 items-center justify-between overflow-hidden text-ink-secondary transition-[height,background-color,border-color] duration-150 ease-out motion-reduce:transition-none",
-            shouldShowHeaderDetails
-              ? "h-11 gap-ui-2.5 px-ui-3.5"
-              : "h-14 gap-ui-3 px-ui-4",
-            shouldShowHeaderDetails
-              ? "settlehex-ui-feed-header settlehex-ui-feed-minimize cursor-pointer"
-              : "border-b border-transparent bg-transparent"
-          )}
-          role={shouldShowHeaderDetails ? "button" : undefined}
-          tabIndex={shouldShowHeaderDetails ? 0 : undefined}
-          onClick={
-            shouldShowHeaderDetails
-              ? () => onMinimize(panel.id)
-              : undefined
-          }
-          onKeyDown={shouldShowHeaderDetails ? handleHeaderKeyDown : undefined}
-          aria-label={
-            shouldShowHeaderDetails
-              ? `Minimize ${panel.label}`
-              : undefined
-          }
-          data-meta-feed-minimize={
-            shouldShowHeaderDetails
-              ? panel.id
-              : undefined
-          }
-          data-allow-interaction={
-            shouldShowHeaderDetails
-              ? "true"
-              : undefined
-          }
-        >
-          <div
-            className="flex min-w-0 items-center gap-ui-2.5"
+      <div className={META_PANEL_FRAME_CLASS_NAME}>
+        <Tooltip label={isOpen ? `Minimize ${panel.label}` : panel.label} side="right">
+          <button
+            type="button"
+            className={joinClassNames("settlehex-ui-feed-toggle settlehex-ui-feed-minimize settlehex-ui-focus relative z-10 text-ink-secondary", isOpen && "settlehex-ui-feed-header")}
+            aria-label={isOpen ? `Minimize ${panel.label}` : panel.label}
+            aria-expanded={isOpen}
+            aria-controls={`desktop-meta-panel-${panel.id}`}
+            data-meta-feed-toggle={panel.id}
+            data-meta-feed-minimize={isOpen ? panel.id : undefined}
+            data-meta-sidebar-button={!isOpen ? panel.id : undefined}
+            onClick={() => isOpen ? onMinimize(panel.id) : onRestore(panel.id)}
           >
-            {React.cloneElement(panel.icon, {
-              className: joinClassNames(
-                desktopButtonIconClassName,
-                isRestoreButton
-                  ? "text-ink-secondary transition duration-150 ease-out group-hover:scale-110 group-hover:text-ink-primary motion-reduce:transform-none"
-                  : null
-              ),
-            })}
-            <span
-              className={joinClassNames(
-                "truncate type-action-small text-ink-secondary transition-[max-width,opacity,transform] duration-150 ease-out motion-reduce:transition-none",
-                shouldShowHeaderDetails
-                  ? "max-w-[11rem] translate-x-0 opacity-100"
-                  : "max-w-0 -translate-x-1 opacity-0"
-              )}
-            >
-              {panel.label}
-            </span>
-          </div>
-        </div>
+            {React.cloneElement(panel.icon, { className: desktopButtonIconClassName })}
+            <span className="settlehex-ui-feed-toggle-label truncate type-action-small">{panel.label}</span>
+          </button>
+        </Tooltip>
         <div
           id={`desktop-meta-panel-${panel.id}`}
-          className={joinClassNames(
-            "relative z-10 min-h-0 flex-1 transition duration-[150ms] ease-out motion-reduce:transition-none",
-            shouldShowPanelBody
-              ? "translate-y-0 opacity-100 delay-[45ms]"
-              : "-translate-y-1 opacity-0 delay-0"
-          )}
+          className="settlehex-ui-motion-presence relative z-10 min-h-0 flex-1"
+          data-open={String(isOpen)}
           data-meta-feed-panel={panel.id}
+          inert={isOpen ? undefined : ""}
+          aria-hidden={isOpen ? undefined : true}
         >
           {panel.renderDesktop()}
         </div>
       </div>
-      {isRestoreButton
-        ? <span
-          className="settlehex-ui-pane settlehex-ui-tooltip pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 -translate-y-1/2 scale-[0.96] whitespace-nowrap px-ui-3 py-ui-1.5 type-caption text-ink-secondary opacity-0 transition-[opacity,transform] duration-150 ease-out group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
-          aria-hidden="true"
-          data-meta-feed-tooltip={panel.id}
-        >
-          {panel.label}
-        </span>
-        : null}
     </section>
   );
 }
@@ -401,6 +238,7 @@ const DesktopMetaDockComponent = ({
   entries = [],
   activeEntryKey = null,
   onEntrySelect,
+  logArrivalMode,
   logPlayerMap = {},
   themeId,
   playerID,
@@ -471,6 +309,7 @@ const DesktopMetaDockComponent = ({
         entries,
         activeEntryKey,
         onEntrySelect,
+        logArrivalMode,
         logPlayerMap,
         themeId,
         playerID,
@@ -481,6 +320,7 @@ const DesktopMetaDockComponent = ({
       entries,
       activeEntryKey,
       onEntrySelect,
+      logArrivalMode,
       logPlayerMap,
       themeId,
       playerID,
@@ -490,31 +330,14 @@ const DesktopMetaDockComponent = ({
   );
   const logPanel = panels.find((panel) => panel.id === "log") ?? panels[0];
   const chatPanel = panels.find((panel) => panel.id === "chat") ?? panels[1];
-  const [logFramePhase, setLogFramePhase] = useState(
-    openPanels.includes("log") ? "open" : "closed"
-  );
-  const [chatFramePhase, setChatFramePhase] = useState(
-    openPanels.includes("chat") ? "open" : "closed"
-  );
-  const handleLogFramePhaseChange = useCallback((panelId, nextPhase) => {
-    if (panelId !== "log") return;
-    setLogFramePhase(nextPhase);
-  }, []);
-  const handleChatFramePhaseChange = useCallback((panelId, nextPhase) => {
-    if (panelId !== "chat") return;
-    setChatFramePhase(nextPhase);
-  }, []);
-  const isLogOpenBodyPhase =
-    logFramePhase === "opening-body" || logFramePhase === "open";
+  const isLogOpenBodyPhase = openPanels.includes("log");
   const currentLogHeight = isLogOpenBodyPhase
     ? desktopFeedLogOpenHeight
     : desktopFeedCollapsedHeight;
   const currentLogTop = isLogOpenBodyPhase
     ? `calc(${desktopFeedCollapsedHeight} - ${desktopFeedLogOpenHeight})`
     : "0px";
-  const isChatOpenBodyPhase =
-    chatFramePhase === "opening-body" ||
-    chatFramePhase === "open";
+  const isChatOpenBodyPhase = openPanels.includes("chat");
   const currentChatHeight = isChatOpenBodyPhase
     ? desktopFeedChatOpenHeight
     : desktopFeedCollapsedHeight;
@@ -547,7 +370,7 @@ const DesktopMetaDockComponent = ({
         ].map(({ panel, top, height, transform }) => (
           <div
             key={panel.id}
-            className="absolute inset-x-0 transition-[top,height,opacity,transform] duration-[210ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] motion-reduce:transition-none"
+            className="absolute inset-x-0 settlehex-ui-motion-layout"
             style={{ top, height, transform }}
           >
             <DesktopFeedFrame
@@ -555,11 +378,6 @@ const DesktopMetaDockComponent = ({
               isOpen={openPanels.includes(panel.id)}
               onMinimize={minimizePanel}
               onRestore={restorePanel}
-              onPhaseChange={
-                panel.id === "log"
-                  ? handleLogFramePhaseChange
-                  : handleChatFramePhaseChange
-              }
             />
           </div>
         ))}
@@ -572,6 +390,7 @@ const MobileMetaRailComponent = ({
   entries = [],
   activeEntryKey = null,
   onEntrySelect,
+  logArrivalMode,
   logPlayerMap = {},
   themeId,
   playerID,
@@ -648,6 +467,7 @@ const MobileMetaRailComponent = ({
         entries,
         activeEntryKey,
         onEntrySelect,
+        logArrivalMode,
         logPlayerMap,
         themeId,
         playerID,
@@ -658,6 +478,7 @@ const MobileMetaRailComponent = ({
       entries,
       activeEntryKey,
       onEntrySelect,
+      logArrivalMode,
       logPlayerMap,
       themeId,
       playerID,

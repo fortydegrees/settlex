@@ -116,7 +116,7 @@
   /* Feed content shares product roles while its desktop/mobile hosts own layout. */
   .settlehex-ui-feed-header { border-bottom: 1px solid var(--settlehex-ui-decoration-edge); background: var(--settlehex-ui-surface-hover); }
   .settlehex-ui-feed-footer { border-top: 1px solid var(--settlehex-ui-decoration-ring); background: var(--settlehex-ui-decoration-fill); }
-  .settlehex-ui-feed-composer { background: var(--settlehex-ui-surface-pane); color: var(--settlehex-ui-text-primary); box-shadow: inset 0 0 0 1px var(--settlehex-ui-border-subtle); transition: background-color var(--settlehex-ui-duration-fast) var(--settlehex-ui-ease-standard); }
+  .settlehex-ui-feed-composer { background: var(--settlehex-ui-surface-pane); color: var(--settlehex-ui-text-primary); box-shadow: inset 0 0 0 1px var(--settlehex-ui-border-subtle); transition: background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle); }
   .settlehex-ui-feed-composer::placeholder { color: var(--settlehex-ui-text-muted); }
   .settlehex-ui-feed-composer:disabled { background: var(--settlehex-ui-surface-inset); color: var(--settlehex-ui-text-muted); cursor: not-allowed; }
   .settlehex-ui-feed-current { background: var(--settlehex-ui-surface-winner); box-shadow: 0 0 0 1px var(--settlehex-ui-border-winner); }
@@ -439,16 +439,18 @@ body {
       #000 100%);
 }
 
-.feed-panel-entry,
+.feed-panel-entry[data-feed-arrival="true"] {
+  animation: feed-panel-entry-in var(--settlehex-ui-motion-update) var(--settlehex-ui-motion-settle);
+}
 .game-log-entry {
-  animation: feed-panel-entry-in 180ms ease-out both;
-  transform-origin: left center;
+  transition: background-color var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle),
+    box-shadow var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle);
 }
 
 @keyframes feed-panel-entry-in {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(calc(var(--settlehex-ui-motion-travel) / 2));
   }
 
   to {
@@ -508,8 +510,9 @@ body {
     scroll-behavior: auto;
   }
 
-  .feed-panel-entry,
+  .feed-panel-entry[data-feed-arrival="true"],
   .game-log-entry {
+    transition: none;
     animation: none;
   }
 }
@@ -543,5 +546,19 @@ body {
   .settlehex-ui-disclosure-panel[data-starting-style], .settlehex-ui-disclosure-panel[data-ending-style] { height: 0; opacity: 0; }
   @media (prefers-reduced-motion: reduce) {
     .settlehex-ui-game-menu-item, .settlehex-ui-motion-feedback, .settlehex-ui-disclosure-indicator, .settlehex-ui-resize, .settlehex-ui-disclosure-panel, .settlehex-ui-segments > .settlehex-ui-segment, .settlehex-ui-segment-indicator, .settlehex-ui-switch, .settlehex-ui-switch-track, .settlehex-ui-switch-thumb { transition: none; }
+  }
+}
+
+/* Fixed-layout regions use the same family as intrinsic ResizeRegion content. */
+@layer components {
+  .settlehex-ui-motion-layout { transition: width var(--settlehex-ui-motion-resize) var(--settlehex-ui-motion-settle), height var(--settlehex-ui-motion-resize) var(--settlehex-ui-motion-settle), top var(--settlehex-ui-motion-resize) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-motion-presence { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity var(--settlehex-ui-motion-reveal) var(--settlehex-ui-motion-settle), transform var(--settlehex-ui-motion-reveal) var(--settlehex-ui-motion-settle), visibility 0s; }
+  .settlehex-ui-motion-presence[data-open="false"] { opacity: 0; visibility: hidden; transform: translateY(calc(-1 * var(--settlehex-ui-motion-travel))); transition-delay: 0s, 0s, var(--settlehex-ui-motion-reveal); }
+  .settlehex-ui-feed-toggle { width: 100%; height: 2.75rem; flex-shrink: 0; display: flex; align-items: center; gap: var(--settlehex-ui-space-2-5); padding: 0 var(--settlehex-ui-space-3-5); text-align: start; overflow: hidden; transition: height var(--settlehex-ui-motion-resize) var(--settlehex-ui-motion-settle), background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-feed-toggle[aria-expanded="false"] { height: 3.5rem; padding: 0 var(--settlehex-ui-space-4); }
+  .settlehex-ui-feed-toggle-label { opacity: 1; transition: opacity var(--settlehex-ui-motion-reveal) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-feed-toggle[aria-expanded="false"] .settlehex-ui-feed-toggle-label { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .settlehex-ui-motion-layout, .settlehex-ui-motion-presence, .settlehex-ui-motion-presence[data-open="false"], .settlehex-ui-feed-toggle, .settlehex-ui-feed-toggle-label { transition: none; transform: none; }
   }
 }

@@ -270,7 +270,7 @@ numbers live in `app/ui/theme.cjs`: feedback 140ms, selection 190ms, reveal 220m
 resize 240ms, update 180ms, with `cubic-bezier(.2,.8,.2,1)` settling. Recipes and
 reduced-motion overrides live in `app/globals.css`; feature components do not
 copy durations, observers, timers or reverse animations. Legacy motion tokens
-remain for unmigrated surfaces; the update token is reserved for the feed family.
+remain for unmigrated surfaces; live feed arrivals now consume the update token.
 
 Use the existing `Button`/`IconButton` for feedback, `SegmentedControl` for
 mutually exclusive actions, and `Switch` for a labelled boolean. These controls
@@ -320,7 +320,8 @@ fields mounted across sign-in/create-account mode changes; do not key/remount th
 form for a decorative transition. Error and guest/auth content resize in both
 directions. Existing dialog scrolling still owns tall phone content. These changes
 also reach in-game settings/rules and confirmations through existing shared owners.
-Feed entry/highlight policy and phone drawer consistency remain separate work.
+Feed arrival/highlight and desktop panel adoption are described below; phone
+drawer choreography remains owned by Vaul.
 No Motion dependency was needed for the pilot or overlay adoption.
 
 Reference choices: [Base UI Collapsible](https://base-ui.com/react/components/collapsible)
@@ -328,3 +329,31 @@ provides lifecycle; [ResizeObserver](https://developer.mozilla.org/en-US/docs/We
 provides intrinsic geometry; [TypeUI](https://www.typeui.sh/micro-interactions)
 informed the shared feel, not an assumed implementation. Verify new consumers
 with rapid reversal, removal, keyboard/focus, reduced motion and their real layout.
+
+### Quiet feeds and reversible desktop panels
+
+`FeedPanel` owns arrival classification through `feedArrival.js`. Initial history,
+batches, prepend/replacement/removal and unchanged-key rerenders stay quiet. One
+appended live row gets one 180ms cue with half the shared travel; GameLogPanel's
+inner row does not animate again. Stable row keys are required for meaningful
+identity. Empty-state rows use `animateArrival: false`. Use `arrivalMode="quiet"`
+for history/replay changes, even a single forward seek; GameScreen passes this
+explicitly through both rail hosts. ChatPanel accepts the same policy.
+
+Replay selection updates its in-place background/ring over the shared selection
+time. Content is never retained for exit, so removal/privacy changes are immediate.
+Existing manual-scroll, focus pause and sent-message resume policies remain owned
+by FeedPanelScrollState; motion does not change them.
+
+Fixed-layout surfaces can consume `settlehex-ui-motion-layout` for width/height/top
+with canonical resize timing, and `settlehex-ui-motion-presence` with `data-open`
+for reversible opacity/travel/visibility. These CSS recipes do not own semantics:
+the consumer must make closed content inert/aria-hidden and keep a reachable toggle.
+Use ResizeRegion for intrinsic content; do not add measurement for known geometry.
+
+DesktopMetaDock derives width/height directly from open state. The same native
+button toggles both directions immediately; its mounted body retains drafts and
+scroll position while receiving current data. The old width/body phase timers and
+separate bespoke tooltip are removed. Shared Tooltip owns the tooltip; header
+feedback uses the same canonical family. Reduced motion removes all recipe delays.
+There is no whole-game performance or cross-browser qualification implied here.

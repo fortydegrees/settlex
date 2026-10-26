@@ -12,6 +12,7 @@ const defaultFooterClassName =
 const emptyRows = [
   {
     key: "chat-empty",
+    animateArrival: false,
     tokens: [{ kind: "text", variant: "server", text: "No messages yet." }],
   },
 ];
@@ -21,6 +22,7 @@ const ChatPanelComponent = ({
   playerMap = {},
   themeId,
   chatMessages = [],
+  arrivalMode = "live",
   sendChatMessage,
   rootClassName = "w-full",
   headerClassName = "settlehex-ui-feed-header px-ui-4 py-ui-2 type-action-small text-ink-secondary",
@@ -74,6 +76,7 @@ const ChatPanelComponent = ({
 
   return (
     <FeedPanel
+      arrivalMode={arrivalMode}
       title="Chat"
       rows={rows}
       footer={footer}
