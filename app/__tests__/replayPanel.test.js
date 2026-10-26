@@ -5,7 +5,6 @@ import {
   getSegmentedReplayPerspectiveOptions,
   shouldUseSegmentedReplayPerspective,
 } from "../_features/replay/components/replayPanelLayout";
-import { getReplayChartClipStyle } from "../_features/replay/components/ReplayScoreChart";
 
 const duel = [
   { id: "0", name: "Nora" },
@@ -53,23 +52,6 @@ describe("replay seek rail geometry", () => {
     expect(getReplayRailOffset(-2)).toBe(getReplayRailOffset(0));
     expect(getReplayRailOffset(4)).toBe(getReplayRailOffset(1));
     expect(getReplayRailOffset(Number.NaN)).toBe(getReplayRailOffset(0));
-  });
-});
-
-describe("replay chart spoiler clip", () => {
-  it("starts at the playhead and runs to the edge of the plot", () => {
-    expect(
-      getReplayChartClipStyle({ currentEventIndex: 5, eventCount: 11 })
-    ).toEqual({ left: "calc(30px + 0.5 * (100% - 38px))", right: "8px" });
-  });
-
-  it("collapses to nothing once the replay reaches the end", () => {
-    expect(
-      getReplayChartClipStyle({ currentEventIndex: 10, eventCount: 11 })
-    ).toEqual({ left: "calc(30px + 1 * (100% - 38px))", right: "8px" });
-    expect(
-      getReplayChartClipStyle({ currentEventIndex: 0, eventCount: 1 })
-    ).toEqual({ left: "calc(30px + 1 * (100% - 38px))", right: "8px" });
   });
 });
 

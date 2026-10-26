@@ -29,10 +29,10 @@ describe("ChatPanel", () => {
     expect(markup).toContain('placeholder="Message..."');
   });
 
-  it("renders a disabled read-only composer for spectators", () => {
+  it.each([null, "1"])("omits the composer when sending is unavailable (player %s)", (playerID) => {
     const markup = renderToStaticMarkup(
       React.createElement(ChatPanel, {
-        playerID: null,
+        playerID,
         chatMessages: [],
         playerMap: {
           "1": { name: "Ada", emoji: "🦊", color: "blue" },
@@ -42,17 +42,10 @@ describe("ChatPanel", () => {
     );
 
     expect(markup).toContain("No messages yet.");
-    expect(markup).toContain('placeholder="Read-only"');
-    expect(markup).toContain("disabled");
+    expect(markup).not.toContain("<input");
+    expect(markup).not.toContain("<form");
+    expect(markup).not.toContain("Spectators can read chat only");
+    expect(markup).not.toContain('placeholder="Read-only"');
   });
 
-  it("keeps the composer read-only when a seated player has no send transport", () => {
-    const markup = renderToStaticMarkup(
-      React.createElement(ChatPanel, { playerID: "1" })
-    );
-
-    expect(markup).toContain('aria-label="Chat message"');
-    expect(markup).toContain('placeholder="Read-only"');
-    expect(markup).toContain("disabled");
-  });
 });

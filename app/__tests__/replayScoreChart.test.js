@@ -5,23 +5,13 @@ import {
   getVisibleReplayScoreData,
 } from "../_features/replay/components/ReplayScoreChart";
 
-it("hides future score samples and future turn labels", () => {
-  const result = getVisibleReplayScoreData({
-    scoreSeries: [0, 1, 2, 3].map((eventIndex) => ({ eventIndex })),
-    turnStarts: [
-      { turn: 1, eventIndex: 0 },
-      { turn: 2, eventIndex: 2 },
-      { turn: 3, eventIndex: 3 },
-    ],
-    currentEventIndex: 2,
-  });
-  expect(result.visibleScoreSeries.map((row) => row.eventIndex)).toEqual([
-    0, 1, 2,
-  ]);
-  expect(result.visibleTurnStarts).toEqual([
-    { turn: 1, eventIndex: 0 },
-    { turn: 2, eventIndex: 2 },
-  ]);
+it.each([0, 2, 3])("shows the complete score series and turn labels at event %s", (currentEventIndex) => {
+  const scoreSeries = [0, 1, 2, 3].map((eventIndex) => ({ eventIndex, scoresByPlayerId: { a: eventIndex + 2 } }));
+  const turnStarts = [{ turn: 1, eventIndex: 0 }, { turn: 2, eventIndex: 2 }, { turn: 3, eventIndex: 3 }];
+  const result = getVisibleReplayScoreData({ scoreSeries, turnStarts, currentEventIndex });
+  expect(result.visibleScoreSeries).toEqual(scoreSeries);
+  expect(result.visibleTurnStarts).toEqual(turnStarts);
+  expect(result.currentScores).toEqual({ a: currentEventIndex + 2 });
 });
 
 describe("ReplayScoreChart seeking", () => {

@@ -250,3 +250,19 @@ export const DesktopResizeAndChart = {
     canvasElement.dataset.motionContract = 'passed';
   },
 };
+
+
+export const DesktopWholeTimeline = {
+  ...DesktopChartExpanded,
+  args: { ...DesktopChartExpanded.args, initialEventIndex: 0 },
+  play: async ({ canvasElement }) => {
+    const chart = await within(canvasElement).findByRole('slider', { name: 'Replay victory point timeline' });
+    await expect(chart).toHaveAttribute('aria-valuenow', '0');
+    await waitFor(() => {
+      const curves = [...chart.querySelectorAll('.recharts-line-curve')];
+      expect(curves.length).toBeGreaterThan(0);
+      expect(Math.max(...curves.map(curve => curve.getBBox().width))).toBeGreaterThan(chart.clientWidth / 2);
+    });
+    canvasElement.dataset.motionContract = 'passed';
+  },
+};

@@ -53,37 +53,16 @@ export const getReplayChartKeyboardSeekIndex = ({
   );
 };
 
-// The series simply stop at the playhead, which on its own reads as "the match
-// ended here". Hatching the rest of the plot says the opposite — there is more,
-// it just hasn't been replayed yet — without leaking who ends up ahead.
-export const getReplayChartClipStyle = ({
-  currentEventIndex = 0,
-  eventCount = 0,
-}) => {
-  const finalEventIndex = Math.max(eventCount - 1, 0);
-  const ratio =
-    finalEventIndex === 0
-      ? 1
-      : Math.min(Math.max(currentEventIndex / finalEventIndex, 0), 1);
-  return {
-    left: `calc(${PLOT_LEFT}px + ${ratio} * (100% - ${
-      PLOT_LEFT + PLOT_RIGHT
-    }px))`,
-    right: `${PLOT_RIGHT}px`,
-  };
-};
-
 export const getVisibleReplayScoreData = ({
   scoreSeries = [],
   turnStarts = [],
   currentEventIndex = 0,
 }) => ({
-  visibleScoreSeries: scoreSeries.filter(
-    (sample) => sample.eventIndex <= currentEventIndex
-  ),
-  visibleTurnStarts: turnStarts.filter(
-    (marker) => marker.eventIndex <= currentEventIndex
-  ),
+  visibleScoreSeries: scoreSeries,
+  visibleTurnStarts: turnStarts,
+  currentScores:
+    scoreSeries.filter((sample) => sample.eventIndex <= currentEventIndex).at(-1)
+      ?.scoresByPlayerId ?? {},
 });
 
 export function ReplayScoreChart({
@@ -96,14 +75,12 @@ export function ReplayScoreChart({
   perspectiveId = null,
   onSeek,
 }) {
-  const { visibleScoreSeries, visibleTurnStarts } =
+  const { visibleScoreSeries, visibleTurnStarts, currentScores } =
     getVisibleReplayScoreData({
       scoreSeries,
       turnStarts,
       currentEventIndex,
     });
-  const currentScores =
-    visibleScoreSeries.at(-1)?.scoresByPlayerId ?? {};
   const turnByEventIndex = useMemo(
     () =>
       Object.fromEntries(
@@ -224,14 +201,6 @@ export function ReplayScoreChart({
             ))}
           </LineChart>
         </ResponsiveContainer>
-        <div
-          data-replay-chart-clip="true"
-          className="settlehex-ui-replay-future pointer-events-none absolute inset-y-0"
-          style={{
-            ...getReplayChartClipStyle({ currentEventIndex, eventCount }),
-          }}
-          aria-hidden="true"
-        />
       </div>
 
       <ul className="mt-ui-2.5 space-y-ui-0.5 type-caption text-ink-secondary">

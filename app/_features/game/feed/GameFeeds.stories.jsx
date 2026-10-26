@@ -79,7 +79,7 @@ export const EmptyChat = {
 export const ReadOnlyChat = {
   render: () => <ChatFixture readOnly />,
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole("textbox", { name: "Chat message" })).toBeDisabled();
+    await expect(within(canvasElement).queryByRole("textbox", { name: "Chat message" })).not.toBeInTheDocument();
   },
 };
 

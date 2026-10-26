@@ -44,9 +44,7 @@ const ChatPanelComponent = ({
     return liveRows.length > 0 ? liveRows : emptyRows;
   }, [chatMessages, playerMap]);
 
-  const placeholder = canSend ? "Message..." : "Read-only";
-
-  const footer = (
+  const footer = canSend ? (
     <form
       onSubmit={(event) => {
         event.preventDefault();
@@ -64,15 +62,14 @@ const ChatPanelComponent = ({
       <input
         type="text"
         value={draft}
-        disabled={!canSend}
-        placeholder={placeholder}
+        placeholder="Message..."
         maxLength={280}
         onChange={(event) => setDraft(event.target.value)}
         className={composerInputClassName}
         aria-label="Chat message"
       />
     </form>
-  );
+  ) : null;
 
   return (
     <FeedPanel
