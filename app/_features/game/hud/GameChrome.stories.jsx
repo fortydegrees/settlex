@@ -140,7 +140,7 @@ export const MobileFeedDrawerReadOnly = {
     const screen = within(canvasElement.ownerDocument.body);
     await userEvent.click(screen.getByRole("button", { name: "Open game feed" }));
     await userEvent.click(await screen.findByRole("tab", { name: "Chat", exact: true }));
-    await expect(screen.getByRole("textbox", { name: "Chat message" })).toBeDisabled();
+    await expect(screen.queryByRole("textbox", { name: "Chat message" })).not.toBeInTheDocument();
   },
 };
 
