@@ -100,6 +100,11 @@ const variables = {
   '--settlehex-ui-font-ui': 'var(--font-outfit, Outfit, sans-serif)',
   '--settlehex-ui-font-code': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
   '--settlehex-ui-font-display': '"SettleHex Display", var(--settlehex-ui-font-ui)',
+  // Approved shared motion family. Semantic recipes avoid per-component timing.
+  '--settlehex-ui-motion-feedback': '140ms', '--settlehex-ui-motion-selection': '190ms',
+  '--settlehex-ui-motion-reveal': '220ms', '--settlehex-ui-motion-resize': '240ms',
+  '--settlehex-ui-motion-update': '180ms', '--settlehex-ui-motion-travel': '6px',
+  '--settlehex-ui-motion-settle': 'cubic-bezier(.2, .8, .2, 1)',
   '--settlehex-ui-duration-fast': '140ms', '--settlehex-ui-duration-dialog': '220ms', '--settlehex-ui-duration-exit': '160ms',
   '--settlehex-ui-ease-standard': 'cubic-bezier(.2, .9, .24, 1)', '--settlehex-ui-ease-bounce': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
   '--settlehex-ui-z-dialog': '80', '--settlehex-ui-z-popover': '90', '--settlehex-ui-z-tooltip': '100', '--settlehex-ui-z-status': '120',

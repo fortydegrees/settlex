@@ -1,0 +1,47 @@
+import React, { useRef, useState } from 'react';
+import { buildTopology, createEmptyState, ResourceType } from '@settlehex/game-core';
+import { expect, fn, userEvent, waitFor, within } from '@storybook/test';
+import { EffectsBoardWrapper } from 'bgio-effects/react';
+import { PlayerActionContainer } from './PlayerActionContainer';
+import { Button } from '../../../ui/Button';
+import { Switch } from '../../../ui/Switch';
+
+const meta = { title: 'Motion Review/Production pilot', parameters: { layout: 'fullscreen' } };
+export default meta;
+const PlayerBarWithEffects = EffectsBoardWrapper(({ barProps }) => <PlayerActionContainer {...barProps} />);
+function Pilot() {
+  const [cards, setCards] = useState([]);
+  const [shell, setShell] = useState(false);
+  const cardRef = useRef(null);
+  const core = createEmptyState(['0','1']);
+  core.phase = 'normal';
+  const player = { ...core.playerStateById['0'], id:'0', name:'HarbourFox', emoji:'🦊', color:'blue', resources:[ResourceType.WOOD,ResourceType.BRICK], devCards:cards };
+  core.playerStateById['0'] = player;
+  const bgioProps = { plugins:{}, G:{core,coreTopology:buildTopology([]),diceRoll:[1,1],devCardPlay:null}, ctx:{currentPlayer:'0',activePlayers:{'0':'postRoll'}}, playerID:'0', moves:{buyDevCard:fn(),playDevCardStart:fn(),rollDice:fn(),endTurn:fn()} };
+  return <main className="min-h-screen p-ui-6">
+    <div className="settlehex-ui-pane grid max-w-lg gap-ui-4 p-ui-5">
+      <h1 className="type-section">Shared motion · real player bar</h1>
+      <p className="type-body text-ink-secondary">Switch quickly between empty, one and several cards. The bar keeps moving from its current size in either direction.</p>
+      <div className="flex flex-wrap gap-ui-2">
+        <Button onClick={() => setCards([])}>No cards</Button>
+        <Button onClick={() => setCards(['knight'])}>One card</Button>
+        <Button onClick={() => setCards(['knight','yearOfPlenty','monopoly','roadBuilding'])}>Four cards</Button>
+      </div>
+      <Switch checked={shell} onCheckedChange={setShell}>Keep purchase target mounted</Switch>
+    </div>
+    <PlayerBarWithEffects {...bgioProps} barProps={{bgioProps, player, readOnly:true, showTurnControls:false, displayDevCards:cards, keepDevCardShellMounted:shell, devCardDisplayRef:cardRef, themeId:"classic"}} />
+  </main>;
+}
+export const ResourceBar = {
+  render: () => <Pilot />,
+  play: async ({canvasElement}) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole('button',{name:'Four cards',exact:true}));
+    await waitFor(() => expect(canvasElement.querySelector('#p0-devcards')).not.toBeNull());
+    await userEvent.click(c.getByRole('button',{name:'No cards',exact:true}));
+    expect(canvasElement.querySelector('#p0-devcards')).toBeNull();
+    await userEvent.click(c.getByRole('switch',{name:'Keep purchase target mounted'}));
+    await waitFor(() => expect(canvasElement.querySelector('#p0-devcards')).not.toBeNull());
+    await userEvent.click(c.getByRole('switch',{name:'Keep purchase target mounted'}));
+  },
+};

@@ -10,6 +10,9 @@ import {
 } from "../../game/feed/metaPanelChrome";
 import useWindowSize from "../../../../lib/client/useWindowSize";
 import { Button } from "../../../ui/Button";
+import { Disclosure } from "../../../ui/Disclosure";
+import { SegmentedControl } from "../../../ui/SegmentedControl";
+import { Switch } from "../../../ui/Switch";
 import { Select } from "../../../ui/Select";
 import { ReplayScoreChart } from "./ReplayScoreChart";
 import { ReplayStepControls } from "./ReplayStepControls";
@@ -72,26 +75,9 @@ export function ReplayPanel({
   );
   const renderPerspectiveControl = () =>
     useSegmentedPerspective ? (
-      <div
-        className="settlehex-ui-inset flex min-w-0 rounded-pill p-ui-1"
-        role="group"
-        aria-label="Replay perspective"
-      >
-        {segmentedPerspectiveOptions.map((option) => {
-          const selected = (option.id ?? null) === (perspectiveId ?? null);
-          return (
-            <button
-              key={option.id ?? "board"}
-              type="button"
-              className="settlehex-ui-segment settlehex-ui-focus min-h-[2.75rem] min-w-0 flex-1 truncate rounded-pill px-ui-1 type-caption transition-[background-color,color,box-shadow] duration-[var(--settlehex-ui-duration-fast)] motion-reduce:transition-none"
-              onClick={() => onPerspectiveChange(option.id)}
-              aria-pressed={selected}
-            >
-              {option.name}
-            </button>
-          );
-        })}
-      </div>
+      <SegmentedControl label="Replay perspective" density="compact"
+        value={perspectiveId ?? null} onValueChange={onPerspectiveChange}
+        options={segmentedPerspectiveOptions.map(option => ({ value: option.id ?? null, label: option.name }))} />
     ) : (
       <label className="block">
         <span className="sr-only">Replay perspective</span>
@@ -116,18 +102,9 @@ export function ReplayPanel({
     );
   const actorId = currentEvent?.logEntry?.actorId;
   const revealControl = (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={revealAllHands}
-      onClick={() => onRevealAllHandsChange?.(!revealAllHands)}
-      className="settlehex-ui-focus mt-ui-2 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-3 rounded-control px-ui-2 text-left hover:bg-surface-hover"
-    >
-      <span className="type-action-small text-ink-primary">Reveal all hands</span>
-      <span aria-hidden="true" className={`flex h-6 w-11 shrink-0 items-center rounded-pill p-ui-0.5 transition-colors motion-reduce:transition-none ${revealAllHands ? "bg-surface-positive" : "bg-surface-inset"}`}>
-        <span className={`h-5 w-5 rounded-pill bg-surface-solid shadow-sm transition-transform motion-reduce:transition-none ${revealAllHands ? "translate-x-5" : "translate-x-0"}`} />
-      </span>
-    </button>
+    <Switch checked={revealAllHands} onCheckedChange={onRevealAllHandsChange} className="mt-ui-2">
+      Reveal all hands
+    </Switch>
   );
   const actorName =
     actorId == null
@@ -183,7 +160,6 @@ export function ReplayPanel({
       onSeek={onSeek}
     />
   );
-  const onChartToggle = () => onChartOpenChange?.(!chartOpen);
   // The compact dock hides the rail, so this thin bar is the only cue to how
   // far through the match the collapsed dock is sitting.
   const progressPercent =
@@ -241,31 +217,28 @@ export function ReplayPanel({
                   <ReplayStepControls {...stepProps} />
                 </div>
               </div>
-              <button
+              <Disclosure open={chartOpen} onOpenChange={onChartOpenChange}
+                className="relative z-10" contentClassName="border-t border-edge-subtle bg-decoration-fill px-ui-3.5 pb-ui-3.5 pt-ui-3"
+                trigger={<button
                 type="button"
-                className={`relative z-10 flex shrink-0 items-center justify-between gap-ui-2 border-t border-edge-subtle px-ui-3.5 py-ui-2.5 text-left transition hover:bg-surface-hover ${
+                className={`relative z-10 flex shrink-0 items-center justify-between gap-ui-2 border-t border-edge-subtle px-ui-3.5 py-ui-2.5 text-left settlehex-ui-motion-feedback hover:bg-surface-hover ${
                   chartOpen ? "bg-surface-hover" : "bg-decoration-fill"
                 }`}
-                onClick={onChartToggle}
-                aria-expanded={chartOpen}
               >
                 <span className="type-action-small text-ink-primary">
                   Score over time
                 </span>
                 <span
-                  className={`grid h-[1.625rem] w-[1.625rem] place-items-center rounded-small bg-surface-hover text-ink-secondary transition-transform duration-150 motion-reduce:transition-none ${
+                  className={`grid h-[1.625rem] w-[1.625rem] place-items-center rounded-small bg-surface-hover text-ink-secondary settlehex-ui-disclosure-indicator ${
                     chartOpen ? "rotate-180" : ""
                   }`}
                   aria-hidden="true"
                 >
                   <ChevronDownIcon className="h-3.5 w-3.5" />
                 </span>
-              </button>
-              {chartOpen ? (
-                <div className="relative z-10 min-h-0 flex-1 overflow-y-auto border-t border-edge-subtle bg-decoration-fill px-ui-3.5 pb-ui-3.5 pt-ui-3">
-                  {scoreChart}
-                </div>
-              ) : null}
+              </button>}>
+                {scoreChart}
+              </Disclosure>
             </section>
           ) : (
             <button
@@ -407,20 +380,18 @@ export function ReplayPanel({
                 >
                   <ReplayStepControls {...stepProps} touchLabels />
                 </div>
-                <button
+                <Disclosure open={chartOpen} onOpenChange={onChartOpenChange}
+                  contentClassName="mt-ui-3" trigger={<button
                   type="button"
                   className="settlehex-ui-button settlehex-ui-button-secondary settlehex-ui-focus mt-ui-3 flex min-h-[2.75rem] w-full items-center justify-between gap-ui-2 px-ui-3.5 text-left"
-                  onClick={onChartToggle}
-                  aria-expanded={chartOpen}
                 >
                   <span className="type-action-small text-ink-primary">
                     Score over time
                   </span>
-                  <span className="type-caption text-ink-muted">
-                    {chartOpen ? "Hide" : "Show"}
-                  </span>
-                </button>
-                {chartOpen ? <div className="mt-ui-3">{scoreChart}</div> : null}
+                  <span className="type-caption text-ink-muted">{chartOpen ? "Hide" : "Show"}</span>
+                </button>}>
+                  {scoreChart}
+                </Disclosure>
               </div>
             </Drawer.Content>
           </Drawer.Portal>

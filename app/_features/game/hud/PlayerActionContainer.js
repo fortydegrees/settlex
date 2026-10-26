@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { Dock } from "./ActionsDock/Dock";
 import { DockCard } from "./ActionsDock/DockCard";
+import { ResizeRegion } from "../../../ui/ResizeRegion";
 import { DevCardDisplay } from "../cards/DevCardDisplay";
 import { PlayerAvatarStats } from "./PlayerAvatarStats";
 import { TurnControlCluster } from "./TurnControlCluster";
@@ -242,10 +243,6 @@ export const PlayerActionContainer = ({
     },
     [effectsBus, playDiceRoll]
   );
-  const devCardBayClassName = [
-    "local-devcard-bay",
-    showDevCardBay ? "local-devcard-bay--visible" : "local-devcard-bay--empty",
-  ].join(" ");
   const localDockStyle = localDockAnchorStyle
     ? {
         left: `${localDockAnchorStyle.left}px`,
@@ -338,7 +335,7 @@ export const PlayerActionContainer = ({
                     </div>
                   )}
                 </div>
-                <div className={devCardBayClassName}>
+                <ResizeRegion axis="width">
                   {showDevCardBay && (
                     <>
                       <span
@@ -363,7 +360,7 @@ export const PlayerActionContainer = ({
                       />
                     </>
                   )}
-                </div>
+                </ResizeRegion>
               </>
             }
           />

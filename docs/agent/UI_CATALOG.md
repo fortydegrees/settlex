@@ -176,3 +176,16 @@ No live auth, matchmaking, push subscription or production deployment was tested
   scrollable when its chart extends beyond the visible drawer body.
 
 Notation archive stories in `app/_features/replay/ArchivedNotation.stories.jsx` exercise compact complete records, middle/terminal positions and a setup prefix through the production replay client and board. They complement the replay panel stories; private recording import remains separate.
+
+### Shared motion pilot — 26 October 2026
+
+| Owner | Production consumers | Verification surface |
+| --- | --- | --- |
+| `app/ui/theme.cjs`, shared globals recipes | Button/IconButton feedback; shared selection | Components/Motion/Shared owners/Interaction contract |
+| `app/ui/Switch.js`, `SegmentedControl.js` | Replay perspective and reveal hands | Replay Panel desktop/phone stories |
+| `app/ui/Disclosure.js` | Replay score chart | Replay Panel and close-from-inside contract |
+| `app/ui/ResizeRegion.js`, `observeElementSize.js` | PlayerActionContainer dev-card bay | Motion Review/Production pilot/Resource bar; integrated sandbox |
+
+Use these production owners for new consumers. Motion Review/Shared family is a
+historical comparison, with preview-only CSS; do not copy it into a feature.
+The pilot's scope, API constraints and reduced-motion policy are in DESIGN_SYSTEM.

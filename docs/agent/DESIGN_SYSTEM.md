@@ -262,3 +262,55 @@ Never infer integrated gameplay verification from Storybook alone.
 The user-approved white-on-bright-lime button palette still has a contrast
 limitation. This work does not claim accessibility conformance or silently alter
 that approved palette.
+
+## Shared motion pilot (26 October 2026)
+
+The approved family is **quick, connected and lightly tactile**. Its canonical
+numbers live in `app/ui/theme.cjs`: feedback 140ms, selection 190ms, reveal 220ms,
+resize 240ms, update 180ms, with `cubic-bezier(.2,.8,.2,1)` settling. Recipes and
+reduced-motion overrides live in `app/globals.css`; feature components do not
+copy durations, observers, timers or reverse animations. Legacy motion tokens
+remain for unmigrated surfaces; update/travel tokens are reserved for later owners.
+
+Use the existing `Button`/`IconButton` for feedback, `SegmentedControl` for
+mutually exclusive actions, and `Switch` for a labelled boolean. These controls
+inherit their recipes. The segmented indicator supports any option count and
+RTL; compact density is for narrow replay controls, not a separate motion style.
+
+```jsx
+<ResizeRegion axis="width">
+  {showCards && <CurrentCards cards={visibleCards} />}
+</ResizeRegion>
+<Disclosure open={open} onOpenChange={setOpen} trigger={<Button>Details</Button>}>
+  <CurrentDetails />
+</Disclosure>
+<Switch checked={reveal} onCheckedChange={setReveal}>Reveal all hands</Switch>
+```
+
+`ResizeRegion` measures intrinsic content and transitions one outer dimension in
+both directions. Keep the wrapper mounted when its children disappear. Height
+(the default) clips overflow while resizing; width preserves overflow for card
+hover. Width content is intrinsic/max-content; use height mode for wrapping
+content. The measured axis is owned by the primitive, including when passing
+other inline style props. Avoid conflicting fixed sizes on that axis. Without
+ResizeObserver it falls back to intrinsic layout. It keeps no removed children,
+so private card identities disappear immediately while empty geometry shrinks.
+
+`Disclosure` uses the installed Base UI Collapsible for lifecycle and measurement.
+It keeps current children live during closing, marks them inert immediately, and
+returns focus to its trigger when closing from inside. Callers must update/remove
+private contents when visibility changes; closing alone is not a privacy filter.
+A trigger must support a DOM ref (native button or shared Button). Use existing
+Dialog/Popover/Drawer owners for overlays; do not substitute Disclosure for them.
+
+Pilot consumers: ReplayPanel's perspective selector, reveal switch and chart;
+PlayerActionContainer's embedded dev-card bay. The forced purchase shell and
+card/resource anchors remain owned by gameplay. GSAP flights, dice, audio and
+mobile cockpit choreography are unchanged. Account dialogs, feed entry motion
+and other families are not yet migrated. No Motion dependency was needed here.
+
+Reference choices: [Base UI Collapsible](https://base-ui.com/react/components/collapsible)
+provides lifecycle; [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+provides intrinsic geometry; [TypeUI](https://www.typeui.sh/micro-interactions)
+informed the shared feel, not an assumed implementation. Verify new consumers
+with rapid reversal, removal, keyboard/focus, reduced motion and their real layout.

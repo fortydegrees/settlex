@@ -176,8 +176,8 @@
     background: var(--settlehex-ui-button-face);
     color: var(--settlehex-ui-button-ink);
     box-shadow: inset 0 1px 0 var(--settlehex-ui-button-highlight), 0 2px 0 var(--settlehex-ui-button-base), 0 8px 16px -12px var(--settlehex-ui-button-shadow);
-    transition: transform var(--settlehex-ui-duration-fast) var(--settlehex-ui-ease-standard), box-shadow var(--settlehex-ui-duration-fast), background-color var(--settlehex-ui-duration-fast);
-    transition-timing-function: var(--settlehex-ui-ease-standard);
+    transition: transform var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle), box-shadow var(--settlehex-ui-motion-feedback), background-color var(--settlehex-ui-motion-feedback);
+    transition-timing-function: var(--settlehex-ui-motion-settle);
   }
   .settlehex-ui-button::before {
     content: "";
@@ -188,7 +188,7 @@
     background: var(--settlehex-ui-button-hover-wash);
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--settlehex-ui-duration-fast) ease-out;
+    transition: opacity var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle);
   }
   /* One material palette for compact controls and the larger play dock.
      Geometry and depth belong to the surface; colours do not fork by caller. */
@@ -246,6 +246,9 @@
   .settlehex-ui-button-ghost { background: transparent; }
   .settlehex-ui-button-subtle { background: var(--settlehex-ui-surface-inset); }
   .settlehex-ui-button:hover:not(:disabled) { transform: none; }
+  @media (hover: hover) {
+    .settlehex-ui-button-primary:hover:not(:disabled) { transform: translateY(-1px); }
+  }
   .settlehex-ui-button:hover:not(:disabled)::before { opacity: 1; }
   .settlehex-ui-button-ghost:hover:not(:disabled),
   .settlehex-ui-button-subtle:hover:not(:disabled) { background: rgb(219 234 254 / .7); transform: none; }
@@ -538,5 +541,36 @@ body {
   .feed-panel-entry,
   .game-log-entry {
     animation: none;
+  }
+}
+
+/* Shared motion pilot: semantic owners, no caller-specific timing. */
+@layer components {
+  .settlehex-ui-segments { display: grid; position: relative; isolation: isolate; grid-template-columns: repeat(var(--segment-count), minmax(0, 1fr)); gap: var(--settlehex-ui-space-1); }
+  .settlehex-ui-segments > .settlehex-ui-segment { position: relative; z-index: 1; transition: color var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle), background-color var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-segments > .settlehex-ui-segment[aria-pressed=true] { background: transparent; box-shadow: none; }
+  .settlehex-ui-segment-indicator { position: absolute; pointer-events: none; top: var(--settlehex-ui-space-1); bottom: var(--settlehex-ui-space-1); inset-inline-start: var(--settlehex-ui-space-1); width: calc((100% - (var(--segment-count) + 1) * var(--settlehex-ui-space-1)) / var(--segment-count)); border-radius: var(--settlehex-ui-radius-pill); background: var(--settlehex-ui-surface-selected); box-shadow: var(--settlehex-ui-shadow-selected); transform: translateX(calc(var(--segment-index) * (100% + var(--settlehex-ui-space-1)))); transition: transform var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-segments:dir(rtl) > .settlehex-ui-segment-indicator { transform: translateX(calc(-1 * var(--segment-index) * (100% + var(--settlehex-ui-space-1)))); }
+  .settlehex-ui-switch { display: flex; align-items: center; justify-content: space-between; gap: var(--settlehex-ui-space-3); width: 100%; min-height: 2.75rem; border-radius: var(--settlehex-ui-radius-control); padding: 0 var(--settlehex-ui-space-2); text-align: start; transition: background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-switch:hover:not(:disabled) { background: var(--settlehex-ui-surface-hover); }
+  .settlehex-ui-switch:disabled { opacity: .5; cursor: not-allowed; }
+  .settlehex-ui-switch-track { display: flex; flex: none; width: 2.75rem; height: 1.5rem; padding: var(--settlehex-ui-space-0-5); border-radius: var(--settlehex-ui-radius-pill); background: var(--settlehex-ui-surface-inset); transition: background-color var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-switch-thumb { width: 1.25rem; height: 1.25rem; border-radius: var(--settlehex-ui-radius-pill); background: var(--settlehex-ui-surface-solid); box-shadow: var(--settlehex-ui-shadow-selected); transition: transform var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-switch[aria-checked=true] .settlehex-ui-switch-track { background: var(--settlehex-ui-surface-positive); }
+  .settlehex-ui-switch[aria-checked=true] .settlehex-ui-switch-thumb { transform: translateX(1.25rem); }
+  .settlehex-ui-switch:dir(rtl)[aria-checked=true] .settlehex-ui-switch-thumb { transform: translateX(-1.25rem); }
+  .settlehex-ui-resize { min-width: 0; transition: width var(--settlehex-ui-motion-resize) var(--settlehex-ui-motion-settle), height var(--settlehex-ui-motion-resize) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-resize[data-axis=height] { overflow: hidden; }
+  .settlehex-ui-resize[data-axis=width] { flex: none; }
+  .settlehex-ui-resize-content { display: flow-root; }
+  .settlehex-ui-resize[data-axis=width] > .settlehex-ui-resize-content { display: flex; align-items: flex-end; width: max-content; }
+  .settlehex-ui-motion-feedback { transition: background-color var(--settlehex-ui-motion-feedback) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-disclosure-indicator { transition: transform var(--settlehex-ui-motion-selection) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-disclosure { display: flex; flex-direction: column; min-height: 0; }
+  .settlehex-ui-disclosure-panel { min-height: 0; height: var(--collapsible-panel-height); overflow: hidden; opacity: 1; transition: height var(--settlehex-ui-motion-resize) var(--settlehex-ui-motion-settle), opacity var(--settlehex-ui-motion-reveal) var(--settlehex-ui-motion-settle); }
+  .settlehex-ui-disclosure-panel:not([data-starting-style]):not([data-ending-style]) { overflow-y: auto; }
+  .settlehex-ui-disclosure-panel[data-starting-style], .settlehex-ui-disclosure-panel[data-ending-style] { height: 0; opacity: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .settlehex-ui-motion-feedback, .settlehex-ui-disclosure-indicator, .settlehex-ui-resize, .settlehex-ui-disclosure-panel, .settlehex-ui-segments > .settlehex-ui-segment, .settlehex-ui-segment-indicator, .settlehex-ui-switch, .settlehex-ui-switch-track, .settlehex-ui-switch-thumb { transition: none; }
   }
 }

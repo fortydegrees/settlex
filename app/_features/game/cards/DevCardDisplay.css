@@ -50,26 +50,12 @@
   display: none;
 }
 
-.local-devcard-bay {
-  display: flex;
-  align-items: flex-end;
-  max-width: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    max-width 360ms cubic-bezier(0.42, 0, 0.18, 1),
-    opacity 180ms ease-out 90ms;
-}
-
-.local-devcard-bay--visible {
-  max-width: 18rem;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.local-devcard-bay--empty {
-  max-width: 0;
-  opacity: 0;
+/* The shared ResizeRegion owns embedded rail width. Keep the live destination
+   node and card-hover transforms, without competing entry/width animation. */
+.devcard-box--embedded {
+  transition: opacity var(--settlehex-ui-motion-reveal) var(--settlehex-ui-motion-settle);
+  animation: none;
+  transform: none;
 }
 
 .devcard-dock-track {
