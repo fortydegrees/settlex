@@ -313,6 +313,7 @@ export function PostgameGameBoard(props) {
     ? {
         ...buildReplayGameScreenProps({
           event: currentEvent,
+          logEntries: timeline.events.at(-1)?.visibleLogEntries ?? [],
           perspectiveId: displaySession.perspectiveId,
           revealAllHands: displaySession.revealAllHands,
           matchID,

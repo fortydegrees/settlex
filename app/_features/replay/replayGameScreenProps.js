@@ -23,6 +23,7 @@ export const READ_ONLY_REPLAY_MOVES = Object.freeze({
 
 export const buildReplayGameScreenProps = ({
   event,
+  logEntries = event?.visibleLogEntries ?? [],
   perspectiveId,
   matchID,
   matchData,
@@ -46,8 +47,9 @@ export const buildReplayGameScreenProps = ({
   replayTurn: event?.turn ?? null,
   replayResultsOpen: resultsOpen,
   replayCanShowResults: isComplete,
+  // The transcript is a navigation surface; only the board and highlight follow the cursor.
   replayLogEntries: revealAllHands
-    ? event?.visibleLogEntries ?? []
-    : maskGameLogEntries(event?.visibleLogEntries ?? [], perspectiveId),
+    ? logEntries
+    : maskGameLogEntries(logEntries, perspectiveId),
   replayActiveLogEntryKey: event?.logEntryKey ?? null,
 });

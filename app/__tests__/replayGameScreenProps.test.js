@@ -3,7 +3,7 @@ import { buildReplayGameScreenProps } from "../_features/replay/replayGameScreen
 import { buildReplayTimeline } from "../_features/replay/replayTimeline";
 
 it.each([false, true])(
-  "keeps future log entries out of an earlier board position (annotated %s)",
+  "keeps the full transcript navigable while showing the selected board position (annotated %s)",
   (annotated) => {
     const roll = { id: "roll", type: "roll", actorId: "1", data: { dice: [2, 3] } };
     const steal = {
@@ -21,7 +21,7 @@ it.each([false, true])(
     const props = buildReplayGameScreenProps({
       event: first, logEntries: fullLog, perspectiveId: "1",
     });
-    expect(props.replayLogEntries.map((entry) => entry.id)).toEqual([]);
+    expect(props.replayLogEntries.map((entry) => entry.id)).toEqual(["roll", "steal"]);
     expect(props.G).toBe(first.state.G);
     expect(props.replayTurn).toBe(1);
     expect(props.replayActiveLogEntryKey).toBe(first.logEntryKey);
@@ -30,7 +30,14 @@ it.each([false, true])(
     const hidden = buildReplayGameScreenProps({
       event: first, logEntries: fullLog, perspectiveId: null, revealAllHands: false,
     });
-    expect(hidden.replayLogEntries).toEqual([]);
+    expect(hidden.replayLogEntries.map((entry) => entry.id)).toEqual(["roll", "steal"]);
+    expect(hidden.replayLogEntries[1].data.resource).toBeUndefined();
+    const selected = buildReplayGameScreenProps({
+      event: target, logEntries: fullLog, perspectiveId: "1",
+    });
+    expect(selected.G).toBe(target.state.G);
+    expect(selected.replayActiveLogEntryKey).toBe("steal");
+    expect(selected.replayLogEntries).toEqual(props.replayLogEntries);
     expect(fullLog[1].data.resource).toBe("Ore");
   }
 );
@@ -78,4 +85,14 @@ it.each([["0", "Ore"], ["1", "Ore"], ["2", undefined], [null, undefined]])(
 it("suppresses result entry for a partial capture while keeping archived defaults", () => {
   expect(buildReplayGameScreenProps({event:{state:{}},isComplete:false}).replayCanShowResults).toBe(false);
   expect(buildReplayGameScreenProps({event:{state:{}}}).replayCanShowResults).toBe(true);
+});
+
+// A partial capture still exposes all recorded entries; it must not invent a result.
+it("keeps a partial capture's transcript browsable without exposing results", () => {
+  const entries = [{ id: "later", type: "roll", actorId: "0" }];
+  const props = buildReplayGameScreenProps({
+    event: { state: {}, visibleLogEntries: [] }, logEntries: entries, isComplete: false,
+  });
+  expect(props.replayLogEntries).toEqual(entries);
+  expect(props.replayCanShowResults).toBe(false);
 });

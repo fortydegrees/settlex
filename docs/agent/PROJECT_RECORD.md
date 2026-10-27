@@ -86,7 +86,8 @@ winner and drawable geometry, then sends the record for browser reconstruction.
 Old, unavailable or invalid records retain controller-history fallback. Native
 archives remain stored; this is a consumer integration, not a storage cutover.
 
-Replay positions share their resulting board and log prefix. Finished replays
+This batch initially tied the visible transcript to the selected log prefix;
+that decision was superseded by the 27 October full-transcript restoration below. Finished replays
 reveal recorded hands by default, with a perspective toggle; masking is a viewer
 policy, not an information-access boundary. Incomplete prefixes have no results.
 Replay dice follow the selected position, and phone players scroll horizontally.
@@ -178,3 +179,24 @@ and earlier documents remain privately preserved.
 Focused qualification passed 160 tests, lint and UI policy. Browser checks covered
 SSR fallback, hook lifecycle, home/game/replay resizing and Open Graph rendering.
 This follow-up did not repeat database, full-build or deployment qualification.
+
+## Full replay transcript restored — 27 October 2026
+
+The replay log is a full-record navigation surface, independent of the selected
+board position. Keep every recorded entry available while seeking, highlight
+the selected event, and apply the existing perspective masking to the full
+transcript when reveal is off. An incomplete capture exposes all of its recorded
+entries without enabling results. Live-game logs are unchanged.
+
+Consolidation had retained the compact-archive branch's prefix-only consumer and
+its tests, losing the former primary's full-transcript override. Restored the
+consumer boundary and changed the tests to protect user intent. Native and
+annotated timeline tests failed before the fix; the partial-record case also
+failed. All pass after repair. Actual desktop and phone replay navigation from
+early to later rows and back is verified. Winning-row highlight is a separately
+recorded pre-existing limitation, not fixed by this repair.
+
+Future consolidation review must account for every prior runtime owner and its
+consumers, including unchanged files inherited from another branch. Agent-written
+notes and green tests are not approval to alter existing product behaviour.
+Private audit receipts: .superpowers/sdd/consolidation-behaviour-audit-20261027/.

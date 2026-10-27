@@ -42,3 +42,22 @@ Only the additional-card bay scrolls. Preserve immediate identity removal when
 reveal is disabled, and verify both the full HUD and the dense-hand story when
 changing these widths. The extra-card bay is kept beside resources because a
 second row obscured the board on short phones during verification.
+
+## 27 October — full replay transcript and consolidation audit
+
+Restored the full recorded transcript independently of the selected board frame;
+kept perspective masking, active event keys and incomplete-record result gating.
+Tests now protect the desired full-log contract rather than the integrated prefix
+implementation. Red/green: three failing cases then nine passing props tests;
+19 focused props/notation/log-row tests pass, and the complete app runner passes.
+Rendered desktop and 390x844 phone: future-row seeking and rewind work; desktop
+rewind to Event3 retains247 rows including final win, and current settlement row
+is highlighted. Board perspective with reveal off hides stolen resource identity.
+Known separate existing issue: final win may map to a hidden trailing turn marker
+and have no highlighted row. Local Next dev indicator can cover the phone log
+button; this is not production qualification.
+
+The broader source inventory and behavioural coverage ledger are private at
+.superpowers/sdd/consolidation-behaviour-audit-20261027/. They explicitly distinguish
+reviewed retirements, exact source matches, behavioural differences and unverified
+flows. This is ongoing consolidation assurance, not a repository-wide all-clear.
