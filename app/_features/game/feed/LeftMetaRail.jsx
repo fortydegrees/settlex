@@ -196,7 +196,7 @@ function DesktopFeedFrame({ panel, isOpen, onMinimize, onRestore }) {
           className="settlehex-ui-motion-presence relative z-10 min-h-0 flex-1"
           data-open={String(isOpen)}
           data-meta-feed-panel={panel.id}
-          inert={isOpen ? undefined : ""}
+          inert={isOpen ? undefined : true}
           aria-hidden={isOpen ? undefined : true}
         >
           {panel.renderDesktop()}
