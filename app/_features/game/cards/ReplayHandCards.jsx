@@ -1,5 +1,6 @@
 import React from "react";
 import { StackedResourceCount } from "./StackedResourceCount";
+import { CardIcon } from "./CardIcon";
 import { CardStack } from "./CardStack";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { DEV_CARD_SVGS } from "./devCardDisplayUtils";
@@ -7,7 +8,7 @@ import { RESOURCE_ICON_FILES_BY_RESOURCE } from "../../theme/themes";
 import resCardBackIcon from "../../../../public/svgs/cards/resource/card_rescardback.svg";
 import devCardBackIcon from "../../../../public/svgs/cards/development/card_devcardback.svg";
 
-export function ReplayHandCards({ player, themeId }) {
+export function ReplayHandCards({ player, themeId, compact = false }) {
   const resources = Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE);
   const counts = Object.fromEntries(resources.map((resource) => [resource, 0]));
   let unknownResources = 0;
@@ -21,10 +22,12 @@ export function ReplayHandCards({ player, themeId }) {
 
   // Resources never scroll out of view. Extra cards have a separate bounded bay.
   return (
-    <div aria-label={`${player.name ?? "Player"} hand`} className="replay-hand">
+    <div aria-label={`${player.name ?? "Player"} hand`} className={`replay-hand ${compact ? "replay-hand--compact" : ""}`}>
       <div id={`p${player.id}-resources`} className="replay-hand__resources" aria-label="Resource cards">
-        {resources.map((resource) => (
+        {resources.map((resource, index) => compact ? (
           <StackedResourceCount key={resource} resource={resource} count={counts[resource]} playerId={player.id} themeId={themeId} />
+        ) : (
+          <CardIcon key={resource} resource={resource} resourceCount={counts[resource]} player={player.id} themeId={themeId} isLast={index === resources.length - 1} />
         ))}
       </div>
       {(unknownResources > 0 || devCards.length > 0) && (

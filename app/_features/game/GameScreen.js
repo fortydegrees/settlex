@@ -1838,7 +1838,7 @@ TODO: accurately colour it
           className={
             isPhoneLayout
               ? `pointer-events-none fixed inset-x-0 z-30 flex flex-col items-center gap-ui-2 ${isReplay ? "top-14 px-ui-4" : "top-11 px-ui-14"}`
-              : `pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-ui-3 px-ui-4 ${isReplay ? "lg:left-48 lg:right-[23rem]" : ""}`
+              : "pointer-events-none fixed inset-x-0 top-10 z-30 flex flex-col items-center gap-ui-3 px-ui-4"
           }
           style={{
             transform: playfieldCenterOffsetX

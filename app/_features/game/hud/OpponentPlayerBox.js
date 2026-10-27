@@ -44,7 +44,7 @@ const OpponentPlayerBoxComponent = ({
       id={`p${player.id}-opponent-box`}
       className={`flex shrink-0 items-start ${
         revealHand
-          ? "opponent-player-box--revealed"
+          ? `opponent-player-box--revealed ${compact ? "opponent-player-box--compact" : ""}`
           : compact ? "origin-top scale-[0.78]" : ""
       }`}
     >
@@ -65,7 +65,7 @@ const OpponentPlayerBoxComponent = ({
         statsPanelChildrenClassName={revealHand ? "flex min-w-0 flex-1 items-center justify-start gap-x-ui-3" : undefined}
         statsPanelChildren={
           revealHand ? (
-            <ReplayHandCards player={player} themeId={themeId} />
+            <ReplayHandCards player={player} themeId={themeId} compact={compact} />
           ) : (
             <ResizeRegion axis="width">
               <div className="flex items-center gap-x-ui-3">

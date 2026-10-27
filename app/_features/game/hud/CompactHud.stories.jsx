@@ -10,6 +10,7 @@ import { MobilePlayerCockpit } from "./MobilePlayerCockpit";
 import { OpponentPlayerBox } from "./OpponentPlayerBox";
 import { DockCard } from "./ActionsDock/DockCard";
 import { CardIcon } from "../cards/CardIcon";
+import useWindowSize from "../../../../lib/client/useWindowSize";
 
 const R = ResourceType;
 const denseResources = [
@@ -270,8 +271,9 @@ export const LastCardRemoval = {
 
 // Exercise the production owner at the actual space available in each HUD,
 // including double-digit counts and unavailable recorded card identities.
-export const RevealedOpponentResources = {
-  render: () => (
+function RevealedOpponentResourceFixtures() {
+  const { width: viewportWidth } = useWindowSize();
+  return (
     <div className="flex flex-col items-start gap-ui-12 py-ui-8">
       {[343, 358, 448, 704].map((width) => (
         <div key={width} style={{ width, maxWidth: "100%" }} data-resource-fixture>
@@ -279,12 +281,16 @@ export const RevealedOpponentResources = {
             player={{ id: `opponent-${width}`, name: "AssassinsN", emoji: "🤠", color: "red",
               resources: [...Array(12).fill(R.WOOD), ...denseResources, "unknown"],
               devCards: ["knight", "yearOfPlenty", "monopoly", "roadBuilding", "unknown"] }}
-            revealHand themeId="classic" compact={width < 600}
+            revealHand themeId="classic" compact={width < 600 || viewportWidth < 1024}
           />
         </div>
       ))}
     </div>
-  ),
+  );
+}
+
+export const RevealedOpponentResources = {
+  render: () => <RevealedOpponentResourceFixtures />,
   play: async ({ canvasElement }) => {
     for (const fixture of canvasElement.querySelectorAll('[data-resource-fixture]')) {
       const hand = within(fixture).getByLabelText('AssassinsN hand');

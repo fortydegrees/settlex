@@ -13,8 +13,13 @@
 .opponent-player-box--revealed .player-avatar-stats__panel {
   flex: 1;
   min-width: 0;
-  height: auto;
+  height: 5rem;
   min-height: 5rem;
+}
+
+.opponent-player-box--compact .player-avatar-stats__panel {
+  height: auto;
+  min-height: 4.5rem;
 }
 
 .replay-hand {
@@ -26,14 +31,27 @@
 }
 
 .replay-hand__resources {
+  @apply pl-ui-4 pr-ui-3;
   flex: 1;
   min-width: 0;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: center;
+  height: 5rem;
 }
 
-.replay-hand__resources > span {
+.replay-hand:not(.replay-hand--compact) .replay-hand__resources > div {
+  @apply mb-ui-4;
+  align-self: flex-end;
+  margin-inline-end: 0;
+}
+
+.replay-hand--compact .replay-hand__resources {
+  padding-inline: 0;
+  height: auto;
+}
+
+.replay-hand--compact .replay-hand__resources > span {
   min-width: 0;
   padding-inline: 0;
 }
@@ -50,16 +68,6 @@
 
 .replay-hand__extra .devcard-box--embedded {
   padding: 0;
-}
-
-@container opponent-hud (min-width: 38rem) {
-  .replay-hand__resources > span > img {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-  .replay-hand__resources > span > span {
-    @apply type-hud-resource-desktop;
-  }
 }
 
 /* Match the local cockpit's unscaled avatar, awards and stacked counters when
