@@ -50,6 +50,11 @@ below 1440px, replay controls start below the top HUD to avoid hiding counters
 and scroll within the remaining viewport height when the chart is expanded;
 the compact replay breakpoint remains 1024px. Additional cards can change panel
 width, but must not move its centre or scroll resource counters out of view.
+Desktop revealed rails also retain CardIcon's normal flex spacing and match the
+local dock's intrinsic/shrink-to-fit width, rather than stretching a separate grid.
+Between the phone breakpoint and the wide desktop layout, the revealed rail uses
+smaller horizontal count/icon pairs in five fixed slots so double-digit resources
+remain visible beside the separate scrolling extra-card bay.
 
 ## 27 October — full replay transcript and consolidation audit
 

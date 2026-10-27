@@ -6,6 +6,13 @@
   max-width: 100%;
 }
 
+.opponent-player-box--revealed:not(.opponent-player-box--compact) {
+  /* Match the centred local dock's intrinsic/shrink-to-fit width. */
+  container-type: normal;
+  width: max-content;
+  max-width: calc(50vw - 1rem);
+}
+
 .opponent-player-box--revealed .player-avatar-stats {
   width: 100%;
 }
@@ -30,6 +37,11 @@
   min-width: 0;
 }
 
+.replay-hand:not(.replay-hand--compact) {
+  /* Match the local rail's gap before its (possibly empty) card bay. */
+  @apply pr-ui-3;
+}
+
 .replay-hand__resources {
   @apply pl-ui-4 pr-ui-3;
   flex: 1;
@@ -43,7 +55,10 @@
 .replay-hand:not(.replay-hand--compact) .replay-hand__resources > div {
   @apply mb-ui-4;
   align-self: flex-end;
-  margin-inline-end: 0;
+}
+
+.replay-hand:not(.replay-hand--compact) .replay-hand__resources {
+  display: flex;
 }
 
 .replay-hand--compact .replay-hand__resources {
@@ -68,6 +83,35 @@
 
 .replay-hand__extra .devcard-box--embedded {
   padding: 0;
+}
+
+/* The desktop dock shrinks before the phone cockpit takes over. Keep each
+   count/icon pair together, including when the extra-card bay is occupied. */
+@media (min-width: 64rem) and (max-width: 89.999rem) {
+  .opponent-player-box--revealed:not(.opponent-player-box--compact) {
+    width: calc(50vw - 1rem);
+  }
+
+  .replay-hand:not(.replay-hand--compact) .replay-hand__resources {
+    display: grid;
+    padding-inline: 0;
+  }
+
+  .replay-hand:not(.replay-hand--compact) .replay-hand__resources > div {
+    margin-inline-end: 0;
+  }
+
+  .replay-hand:not(.replay-hand--compact) .replay-hand__resources > div > div {
+    @apply type-hud-resource-wide;
+    flex: 0 0 1.25rem;
+    width: 1.25rem;
+  }
+
+  .replay-hand:not(.replay-hand--compact) .replay-hand__resources > div > img {
+    flex: 0 0 1.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
 }
 
 /* Match the local cockpit's unscaled avatar, awards and stacked counters when
