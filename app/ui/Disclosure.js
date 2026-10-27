@@ -19,7 +19,7 @@ export function Disclosure({ open, onOpenChange, trigger, header, children, clas
   return <Collapsible.Root open={open} onOpenChange={onOpenChange} className={cn('settlehex-ui-disclosure', className)}>
     {header ? header(control) : control}
     <Collapsible.Panel className="settlehex-ui-disclosure-panel">
-      <div ref={contentRef} inert={open ? undefined : ''} aria-hidden={open ? undefined : true} className={contentClassName}>
+      <div ref={contentRef} inert={!open} aria-hidden={open ? undefined : true} className={contentClassName}>
         {children}
       </div>
     </Collapsible.Panel>

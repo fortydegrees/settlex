@@ -33,7 +33,7 @@ export function Dialog({
         <BaseDialog.Backdrop className="settlehex-ui-dialog-backdrop settlehex-ui-layer-dialog fixed inset-0 backdrop-blur-sm" />
         <BaseDialog.Viewport className="settlehex-ui-dialog-viewport settlehex-ui-layer-dialog fixed inset-0 flex items-center justify-center">
           <BaseDialog.Popup
-            inert={open ? undefined : ""}
+            inert={!open}
             className={cn(
               "settlehex-ui-pane settlehex-ui-dialog-popup settlehex-ui-dialog-surface w-full",
               maxWidthClassName,

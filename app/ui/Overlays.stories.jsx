@@ -181,3 +181,37 @@ export const RepeatedDialogReversal = {
     canvasElement.dataset.motionContract = 'passed';
   },
 };
+
+// React 19 treats inert as boolean. Exit content must stop accepting focus
+// immediately, while Base UI still owns its presence and reversal.
+export const DialogExitInteraction = {
+  render: () => <DialogHarness />,
+  play: async ({ canvasElement }) => {
+    delete canvasElement.dataset.inertContract;
+    const screen = within(canvasElement.ownerDocument.body);
+    const trigger = screen.getByRole('button', { name: 'Open account settings' });
+    await userEvent.click(trigger);
+    const popup = await screen.findByRole('dialog', { name: 'Account settings' });
+    const close = screen.getByRole('button', { name: 'Close settings' });
+    await waitFor(() => expect(getComputedStyle(popup).opacity).toBe('1'));
+    await expect(popup.inert).toBe(false);
+    await userEvent.click(close);
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      await expect(popup).toBeInTheDocument();
+      await expect(popup.inert).toBe(true);
+      close.focus();
+      await expect(close).not.toHaveFocus();
+    }
+    await waitFor(() => expect(trigger).toHaveFocus());
+    await userEvent.click(trigger);
+    const reopened = await screen.findByRole('dialog', { name: 'Account settings' });
+    await expect(reopened.inert).toBe(false);
+    const reopenedClose = screen.getByRole('button', { name: 'Close settings' });
+    reopenedClose.focus();
+    await expect(reopenedClose).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger).toHaveFocus());
+    canvasElement.dataset.inertContract = 'passed';
+  },
+};

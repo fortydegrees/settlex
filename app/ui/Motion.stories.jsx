@@ -62,3 +62,43 @@ export const InteractionContract = {
     canvasElement.dataset.motionContract = 'passed';
   },
 };
+
+function DisclosureExitHarness() {
+  const [open, setOpen] = useState(false);
+  return <Disclosure open={open} onOpenChange={setOpen} trigger={<Button>Details</Button>}>
+    <Button onClick={() => setOpen(false)}>Close details</Button>
+  </Disclosure>;
+}
+
+export const DisclosureExitInteraction = {
+  render: () => <DisclosureExitHarness />,
+  play: async ({ canvasElement }) => {
+    delete canvasElement.dataset.inertContract;
+    const screen = within(canvasElement);
+    const trigger = screen.getByRole('button', { name: 'Details', exact: true });
+    await userEvent.click(trigger);
+    const close = await screen.findByRole('button', { name: 'Close details' });
+    // This is the element carrying the public inert/aria-hidden boundary.
+    const content = close.closest('[aria-hidden]') ?? close.parentElement;
+    await expect(content.inert).toBe(false);
+    await userEvent.click(close);
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      await expect(content).toBeInTheDocument();
+      await expect(content.inert).toBe(true);
+      close.focus();
+      await expect(close).not.toHaveFocus();
+    }
+    await expect(trigger).toHaveFocus();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(trigger);
+    const reopenedClose = await screen.findByRole('button', { name: 'Close details' });
+    const reopenedContent = reopenedClose.parentElement;
+    await expect(reopenedContent.inert).toBe(false);
+    reopenedClose.focus();
+    await expect(reopenedClose).toHaveFocus();
+    await userEvent.click(reopenedClose);
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close details' })).not.toBeInTheDocument());
+    await expect(trigger).toHaveFocus();
+    canvasElement.dataset.inertContract = 'passed';
+  },
+};
