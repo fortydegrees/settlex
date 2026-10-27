@@ -1,5 +1,5 @@
 import React from "react";
-import { CardIcon } from "./CardIcon";
+import { StackedResourceCount } from "./StackedResourceCount";
 import { CardStack } from "./CardStack";
 import { DevCardDisplay } from "./DevCardDisplay";
 import { DEV_CARD_SVGS } from "./devCardDisplayUtils";
@@ -7,7 +7,7 @@ import { RESOURCE_ICON_FILES_BY_RESOURCE } from "../../theme/themes";
 import resCardBackIcon from "../../../../public/svgs/cards/resource/card_rescardback.svg";
 import devCardBackIcon from "../../../../public/svgs/cards/development/card_devcardback.svg";
 
-export function ReplayHandCards({ player, themeId, compact = false }) {
+export function ReplayHandCards({ player, themeId }) {
   const resources = Object.keys(RESOURCE_ICON_FILES_BY_RESOURCE);
   const counts = Object.fromEntries(resources.map((resource) => [resource, 0]));
   let unknownResources = 0;
@@ -19,30 +19,29 @@ export function ReplayHandCards({ player, themeId, compact = false }) {
   const knownDevCards = devCards.filter((card) => Object.hasOwn(DEV_CARD_SVGS, card));
   const unknownDevCards = devCards.length - knownDevCards.length;
 
-  // Tablets and desktop show all five counters; phones keep the scrollable strip.
+  // Resources never scroll out of view. Extra cards have a separate bounded bay.
   return (
-    <div tabIndex={0} onKeyDown={(event) => event.stopPropagation()} aria-label={`${player.name ?? "Player"} hand`} className={`settlehex-ui-focus ${compact ? "w-40 sm:w-72" : "w-72"} overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
-      <div className={`flex w-max items-center ${compact ? "py-ui-1" : "py-ui-4"} pr-ui-4`}>
-        <div id={`p${player.id}-resources`} className={`relative flex h-12 items-end ${compact ? "" : "pl-ui-4 pr-ui-3"}`} aria-label="Resource cards">
-          <div className="mb-ui-4 flex self-end">
-            {resources.map((resource, index) => (
-              <CardIcon key={resource} resource={resource} resourceCount={counts[resource]} player={player.id} themeId={themeId} compact isLast={index === resources.length - 1} />
-            ))}
-          </div>
-          {unknownResources > 0 && <CardStack count={unknownResources} src={resCardBackIcon} alt="Unknown resource cards" className="ml-ui-3 self-center" />}
-        </div>
-        {devCards.length > 0 && (
-          <div className="flex shrink-0 items-center" aria-label="Development cards">
-            <span className="settlehex-hud-divider mr-ui-4 h-14 w-px shrink-0 rounded-pill" aria-hidden="true" />
-            {knownDevCards.length > 0 && <DevCardDisplay cards={knownDevCards} playerId={player.id} showCountBadge={false} embedded />}
-            {unknownDevCards > 0 && (
-              <div title="These card identities are unavailable in this recording.">
-                <CardStack count={unknownDevCards} src={devCardBackIcon} alt="Development card identity unavailable in this recording" />
-              </div>
-            )}
-          </div>
-        )}
+    <div aria-label={`${player.name ?? "Player"} hand`} className="replay-hand">
+      <div id={`p${player.id}-resources`} className="replay-hand__resources" aria-label="Resource cards">
+        {resources.map((resource) => (
+          <StackedResourceCount key={resource} resource={resource} count={counts[resource]} playerId={player.id} themeId={themeId} />
+        ))}
       </div>
+      {(unknownResources > 0 || devCards.length > 0) && (
+        <div tabIndex={0} onKeyDown={(event) => event.stopPropagation()} className="replay-hand__extra settlehex-ui-focus" aria-label="Additional hand cards">
+          {unknownResources > 0 && <CardStack count={unknownResources} src={resCardBackIcon} alt="Unknown resource cards" />}
+          {devCards.length > 0 && (
+            <div className="flex shrink-0 items-center gap-ui-3" aria-label="Development cards">
+              {knownDevCards.length > 0 && <DevCardDisplay cards={knownDevCards} playerId={player.id} showCountBadge={false} embedded />}
+              {unknownDevCards > 0 && (
+                <div title="These card identities are unavailable in this recording.">
+                  <CardStack count={unknownDevCards} src={devCardBackIcon} alt="Development card identity unavailable in this recording" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

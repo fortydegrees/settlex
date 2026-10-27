@@ -1,4 +1,5 @@
 import React from "react";
+import "./OpponentPlayerBox.css";
 import { ResizeRegion } from "../../../ui/ResizeRegion";
 import resCardBackIcon from "../../../../public/svgs/cards/resource/card_rescardback.svg";
 import devCardBackIcon from "../../../../public/svgs/cards/development/card_devcardback.svg";
@@ -42,7 +43,9 @@ const OpponentPlayerBoxComponent = ({
     <div
       id={`p${player.id}-opponent-box`}
       className={`flex shrink-0 items-start ${
-        compact ? "origin-top scale-[0.78]" : ""
+        revealHand
+          ? "opponent-player-box--revealed"
+          : compact ? "origin-top scale-[0.78]" : ""
       }`}
     >
       <PlayerAvatarStats
@@ -61,26 +64,30 @@ const OpponentPlayerBoxComponent = ({
         avatarClassName={dangerAvatarClassName}
         statsPanelChildrenClassName={revealHand ? "flex min-w-0 flex-1 items-center justify-start gap-x-ui-3" : undefined}
         statsPanelChildren={
-          <ResizeRegion axis="width">
-          {revealHand ? <ReplayHandCards player={player} themeId={themeId} compact={compact} /> : <div className="flex items-center gap-x-ui-3">
-            <div id={`p${player.id}-resources`}>
-              <CardStack
-                count={resourceCount}
-                src={resCardBackIcon}
-                alt="Resource cards"
-                badgeTone={resourceBadgeTone}
-                imageClassName="object-contain"
-              />
-            </div>
-            <div id={`p${player.id}-devcards`}>
-              <CardStack
-                count={devCount}
-                src={devCardBackIcon}
-                alt="Dev cards"
-              />
-            </div>
-          </div>}
-          </ResizeRegion>
+          revealHand ? (
+            <ReplayHandCards player={player} themeId={themeId} />
+          ) : (
+            <ResizeRegion axis="width">
+              <div className="flex items-center gap-x-ui-3">
+                <div id={`p${player.id}-resources`}>
+                  <CardStack
+                    count={resourceCount}
+                    src={resCardBackIcon}
+                    alt="Resource cards"
+                    badgeTone={resourceBadgeTone}
+                    imageClassName="object-contain"
+                  />
+                </div>
+                <div id={`p${player.id}-devcards`}>
+                  <CardStack
+                    count={devCount}
+                    src={devCardBackIcon}
+                    alt="Dev cards"
+                  />
+                </div>
+              </div>
+            </ResizeRegion>
+          )
         }
       />
     </div>

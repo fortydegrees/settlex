@@ -623,3 +623,13 @@ body {
   user-select: text;
   -webkit-touch-callout: default;
 }
+
+/* Shared compact HUD avatar artwork; resource rows keep their own typography. */
+.settlehex-hud-avatar-compact-glyph {
+  font-size: var(--settlehex-hud-avatar-compact-glyph);
+}
+@container opponent-hud (max-width: 37.999rem) {
+  .opponent-player-box--revealed .settlehex-hud-avatar {
+    font-size: var(--settlehex-hud-avatar-compact-glyph);
+  }
+}

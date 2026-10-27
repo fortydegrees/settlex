@@ -31,3 +31,14 @@ unmount immediately when reveal is disabled.
 Compact replay opponent rows use intrinsic width with an available-width cap.
 Keep centring for content that fits and start-accessible scrolling for overflow;
 a full-width row with default flex alignment left-aligns even a single opponent.
+
+
+2026-10-27 resource-rail correction supersedes the 26 October scrolling-resource
+contract above: all five revealed counters must be visible without horizontal
+scrolling. StackedResourceCount is shared by the local cockpit and revealed
+opponent hand. OpponentPlayerBox owns the available-width container; its scoped
+layout adapts avatar/awards/resource sizes without scaling the entire HUD.
+Only the additional-card bay scrolls. Preserve immediate identity removal when
+reveal is disabled, and verify both the full HUD and the dense-hand story when
+changing these widths. The extra-card bay is kept beside resources because a
+second row obscured the board on short phones during verification.

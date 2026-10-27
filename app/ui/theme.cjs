@@ -115,6 +115,7 @@ const variables = {
   '--settlehex-ui-z-dialog': '80', '--settlehex-ui-z-popover': '90', '--settlehex-ui-z-tooltip': '100', '--settlehex-ui-z-status': '120',
   '--settlehex-ui-shadow-panel': 'inset 0 1px 0 #fff, 0 16px 40px -24px rgb(30 64 175 / .28), 0 2px 6px rgb(30 64 175 / .06)',
   '--settlehex-ui-shadow-selected': '0 1px 2px rgb(15 23 42 / .08)',
+  '--settlehex-hud-avatar-compact-glyph': '2.45rem',
   '--settlehex-ui-avatar-preview-glyph': '3rem',
   '--settlehex-ui-avatar-profile-glyph': '2rem',
   '--settlehex-ui-avatar-small-glyph': '.875rem',

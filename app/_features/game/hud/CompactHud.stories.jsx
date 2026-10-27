@@ -266,3 +266,40 @@ export const LastCardRemoval = {
     canvasElement.dataset.motionContract = 'passed';
   },
 };
+
+
+// Exercise the production owner at the actual space available in each HUD,
+// including double-digit counts and unavailable recorded card identities.
+export const RevealedOpponentResources = {
+  render: () => (
+    <div className="flex flex-col items-start gap-ui-12 py-ui-8">
+      {[343, 358, 448, 704].map((width) => (
+        <div key={width} style={{ width, maxWidth: "100%" }} data-resource-fixture>
+          <OpponentPlayerBox
+            player={{ id: `opponent-${width}`, name: "AssassinsN", emoji: "🤠", color: "red",
+              resources: [...Array(12).fill(R.WOOD), ...denseResources, "unknown"],
+              devCards: ["knight", "yearOfPlenty", "monopoly", "roadBuilding", "unknown"] }}
+            revealHand themeId="classic" compact={width < 600}
+          />
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const fixture of canvasElement.querySelectorAll('[data-resource-fixture]')) {
+      const hand = within(fixture).getByLabelText('AssassinsN hand');
+      const rail = within(hand).getByLabelText('Resource cards');
+      const counters = Array.from(rail.children);
+      expect(counters).toHaveLength(5);
+      expect(within(rail).getByLabelText('16 Wood')).toBeInTheDocument();
+      expect(within(hand).queryByRole('button', {name: /Trade/})).not.toBeInTheDocument();
+      const bounds = fixture.getBoundingClientRect();
+      for (const counter of counters) {
+        expect(counter.getBoundingClientRect().left).toBeGreaterThanOrEqual(bounds.left);
+        expect(counter.getBoundingClientRect().right).toBeLessThanOrEqual(bounds.right);
+      }
+      expect(within(hand).getByLabelText('Additional hand cards')).toHaveAttribute('tabindex', '0');
+    }
+    canvasElement.dataset.resourceLayout = 'passed';
+  },
+};

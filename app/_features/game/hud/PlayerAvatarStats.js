@@ -92,7 +92,7 @@ export const PlayerAvatarStats = ({
       ? "settlehex-hud-vp-badge absolute bottom-0 right-0 z-20 translate-x-1/2 translate-y-1/2 transform"
       : "settlehex-hud-vp-badge absolute right-0 top-0 z-10 -translate-y-1/2 translate-x-1/2 transform";
   const statsBlock = (
-    <div className="flex shrink-0 flex-col gap-y-ui-1">
+    <div className="player-avatar-stats__awards flex shrink-0 flex-col gap-y-ui-1">
       <div className="flex items-center" id={`p${player.id}-longest-road`}>
         <div className="w-8 h-8 flex items-center justify-center">
           <Image
@@ -133,13 +133,13 @@ export const PlayerAvatarStats = ({
   );
 
   return (
-    <div className="relative">
+    <div className="player-avatar-stats relative">
       <div
         className={`flex items-start ${
           isSeatWarning ? "seat-disconnected-pulse" : ""
         }`}
       >
-        <div className="flex w-20 items-center justify-center">
+        <div className="player-avatar-stats__avatar flex w-20 items-center justify-center">
           <span className="flex relative">
             {isActive && (
               <span className="absolute left-[-1.4rem] top-1/2 -translate-y-1/2">
@@ -172,7 +172,7 @@ export const PlayerAvatarStats = ({
           </span>
         </div>
         <span
-          className={`${statsPanelBaseClassName} ${
+          className={`player-avatar-stats__panel ${statsPanelBaseClassName} ${
             isSeatWarning
               ? "settlehex-hud-glass--warning seat-disconnected-panel"
               : ""

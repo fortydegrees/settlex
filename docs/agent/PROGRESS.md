@@ -30,3 +30,17 @@ not publication or deployment.
 by the available space, so a single opponent centres instead of anchoring left.
 Verified the real replay at 750px, 375px, 390px, 430px and 1056px, including phone
 hand scrolling. This is a layout correction, not full integration qualification.
+
+
+2026-10-27: repaired revealed opponent resource rails in the everyday checkout.
+All five counters now use the local cockpit's shared stacked resource component,
+with larger desktop artwork/type when the HUD has room. Revealed bars use actual
+responsive layout instead of scaling a fixed-width scrolling hand. Extra known or
+unavailable cards stay in a separate bounded keyboard-scrollable bay; they do not
+push resource counters out of view. Hidden hands retain card-back stacks.
+Rendered checks: real imported replay at 375×667, 390×844, 430×932, 750×959,
+1056×1408 and 1440×900; empty/full resources, known development card, reveal off/on.
+Storybook RevealedOpponentResources passed at phone and desktop viewport widths
+(double-digit counts and unknown resources/cards); OpponentInventory passed;
+DenseResources and WaitingReadOnly passed at their intended phone viewport.
+UI policy and focused lint passed. Local change only; no push/deployment.

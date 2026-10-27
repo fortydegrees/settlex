@@ -1,0 +1,102 @@
+/* Size the revealed HUD in layout, not with transform scaling: scaled children
+   still reserve their original width and can hide the last resource counters. */
+.opponent-player-box--revealed {
+  container: opponent-hud / inline-size;
+  width: 44rem;
+  max-width: 100%;
+}
+
+.opponent-player-box--revealed .player-avatar-stats {
+  width: 100%;
+}
+
+.opponent-player-box--revealed .player-avatar-stats__panel {
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  min-height: 5rem;
+}
+
+.replay-hand {
+  @apply gap-ui-2;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.replay-hand__resources {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: center;
+}
+
+.replay-hand__resources > span {
+  min-width: 0;
+  padding-inline: 0;
+}
+
+.replay-hand__extra {
+  @apply gap-ui-3 py-ui-1;
+  flex: 0 0 3.25rem;
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  max-width: 3.25rem;
+}
+
+.replay-hand__extra .devcard-box--embedded {
+  padding: 0;
+}
+
+@container opponent-hud (min-width: 38rem) {
+  .replay-hand__resources > span > img {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .replay-hand__resources > span > span {
+    @apply type-hud-resource-desktop;
+  }
+}
+
+/* Match the local cockpit's unscaled avatar, awards and stacked counters when
+   the available HUD space is narrow, including beside the desktop replay dock. */
+@container opponent-hud (max-width: 37.999rem) {
+  .player-avatar-stats__avatar,
+  .player-avatar-stats__avatar .settlehex-hud-avatar {
+    width: 3.65rem;
+    height: 3.65rem;
+  }
+  .player-avatar-stats__panel {
+    @apply pl-ui-6 pr-ui-2 py-ui-1;
+    min-height: 4.5rem;
+  }
+  .player-avatar-stats__awards > div > div {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .player-avatar-stats__awards img {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .player-avatar-stats__awards > div > span {
+    @apply type-hud-award;
+    width: 1.25rem;
+  }
+  .player-avatar-stats__panel .settlehex-hud-divider {
+    @apply mx-ui-2;
+    height: 2.5rem;
+  }
+  .player-avatar-stats__panel .settlehex-hud-nameplate {
+    max-width: 100%;
+    left: -2.65rem;
+  }
+  .settlehex-hud-vp-badge {
+    @apply type-hud-vp-mobile;
+    min-width: 1.25rem;
+    height: 1.25rem;
+  }
+}

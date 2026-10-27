@@ -66,7 +66,6 @@
   "app/_features/game/hud/MobileDevCardTray.js | radius | rounded-[0.32rem]": 1,
   "app/_features/game/hud/MobileDevCardTray.js | radius | rounded-[0.38rem]": 1,
   "app/_features/game/hud/MobilePlayerCockpit.js | arbitrary-style | text-[0.9rem]": 1,
-  "app/_features/game/hud/MobilePlayerCockpit.js | arbitrary-style | text-[2.45rem]": 1,
   "app/_features/game/hud/MobilePlayerCockpit.js | spacing | pb-[calc(0.6rem+env(safe-area-inset-bottom))]": 1,
   "app/_features/game/hud/MobilePlayerCockpit.js | type | leading-none": 1,
   "app/_features/game/hud/PlayerAvatarStats.js | arbitrary-style | text-[1rem]": 1,

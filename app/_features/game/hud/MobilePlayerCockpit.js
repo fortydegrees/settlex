@@ -7,6 +7,7 @@ import {
 } from "@settlehex/game-core";
 import { ResizeRegion } from "../../../ui/ResizeRegion";
 import { DockCard } from "./ActionsDock/DockCard";
+import { StackedResourceCount } from "../cards/StackedResourceCount";
 import { AnimatedCount } from "../cards/AnimatedCount";
 import { MobileDevCardButton } from "./MobileDevCardButton";
 import { MobileDevCardTray } from "./MobileDevCardTray";
@@ -19,9 +20,6 @@ import { getBuildPickupPieceType } from "./playerAction";
 import { getPlayerColorOption } from "../../theme/playerColors";
 import {
   RESOURCE_ICON_FILES_BY_RESOURCE,
-  getClassicResourceIconPath,
-  getResourceIconPath,
-  handleThemeImageError,
 } from "../../theme/themes";
 import "../../theme/hudGlass.css";
 import { ToggleButton } from "../../../ui/ToggleButton";
@@ -171,59 +169,6 @@ const MobileStatChip = ({ id, iconSrc, label, value, isAwarded }) => (
   </span>
 );
 
-const MobileResourceCount = ({
-  playerId,
-  resource,
-  count,
-  canQuickTrade,
-  onResourceClick,
-  themeId,
-}) => {
-  const iconSrc = getResourceIconPath(themeId, resource);
-  const iconFallback = getClassicResourceIconPath(resource);
-  const content = (
-    <>
-      <img
-        src={iconSrc}
-        alt=""
-        className="h-6 w-6 object-contain drop-shadow-[0_1px_1px_rgba(15,23,42,0.38)] min-[400px]:h-7 min-[400px]:w-7"
-        draggable={false}
-        onError={(event) => handleThemeImageError(event, iconFallback)}
-      />
-      <span className="type-hud-resource text-ink-hud-on-glass drop-shadow-[0_1px_1px_rgba(15,23,42,0.48)] min-[400px]:type-hud-resource-wide">
-        <AnimatedCount
-          value={count}
-          className="resource-dock-count"
-          ariaLabel={`${count} ${resource}`}
-        />
-      </span>
-    </>
-  );
-
-  if (canQuickTrade) {
-    return (
-      <button
-        type="button"
-        id={`p${playerId}-${resource}`}
-        className="mobile-resource-count-trigger flex min-w-[1.9rem] flex-col items-center justify-end gap-ui-0.5 rounded-small px-ui-0.5 py-ui-1 transition min-[400px]:min-w-[2.2rem]"
-        onClick={() => onResourceClick(resource)}
-        aria-label={`Trade ${resource}`}
-        data-allow-interaction="true"
-      >
-        {content}
-      </button>
-    );
-  }
-
-  return (
-    <span
-      id={`p${playerId}-${resource}`}
-      className="flex min-w-[1.9rem] flex-col items-center justify-end gap-ui-0.5 px-ui-0.5 py-ui-1 min-[400px]:min-w-[2.2rem]"
-    >
-      {content}
-    </span>
-  );
-};
 
 export function MobilePlayerCockpit({
   setPlayerAction,
@@ -478,7 +423,7 @@ export function MobilePlayerCockpit({
                 </span>
               ) : null}
               <div
-                className={`mobile-player-avatar relative flex h-[3.65rem] w-[3.65rem] items-center justify-center bg-gradient-to-t text-[2.45rem] ring-2 ${
+                className={`mobile-player-avatar relative flex h-[3.65rem] w-[3.65rem] items-center justify-center bg-gradient-to-t settlehex-hud-avatar-compact-glyph ring-2 ${
                   isSeatWarning ? "seat-disconnected-avatar" : ""
                 } ${
                   isOverLimit
@@ -529,7 +474,7 @@ export function MobilePlayerCockpit({
               className="flex min-w-0 flex-1 items-end justify-around gap-ui-0 min-[400px]:gap-ui-0.5"
             >
               {RESOURCE_ORDER.map((resource) => (
-                <MobileResourceCount
+                <StackedResourceCount
                   key={resource}
                   playerId={player.id}
                   resource={resource}
