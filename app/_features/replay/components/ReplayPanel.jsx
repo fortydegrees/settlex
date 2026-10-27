@@ -169,7 +169,7 @@ export function ReplayPanel({
     <>
       {!isPhoneLayout ? (
         <aside
-          className="pointer-events-auto fixed right-4 top-[8.5rem] min-[1440px]:top-4 z-[45] w-[min(21rem,calc(100vw-2rem))]"
+          className="pointer-events-auto fixed right-4 top-[8.5rem] min-[1440px]:top-4 z-[45] max-h-[calc(100dvh-9.5rem)] min-[1440px]:max-h-[calc(100dvh-2rem)] w-[min(21rem,calc(100vw-2rem))] overflow-y-auto"
           data-replay-panel="desktop"
           data-allow-interaction="true"
         >

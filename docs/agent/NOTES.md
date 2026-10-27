@@ -46,7 +46,8 @@ second row obscured the board on short phones during verification.
 
 2026-10-27 alignment follow-up: replay opponent and local HUDs use the same screen
 centre. Revealed desktop panels keep the local 80px height. At desktop widths
-below 1440px, replay controls start below the top HUD to avoid hiding counters;
+below 1440px, replay controls start below the top HUD to avoid hiding counters
+and scroll within the remaining viewport height when the chart is expanded;
 the compact replay breakpoint remains 1024px. Additional cards can change panel
 width, but must not move its centre or scroll resource counters out of view.
 
