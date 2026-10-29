@@ -22,6 +22,7 @@ agent/UI_STYLE_EXCEPTIONS.md - Owned artwork and geometry contracts
 architecture/overview.md - Architecture and source reading path
 customization/themes-and-sounds.md - Customize board art and game sounds
 deploy/oci-mvp.md - OCI MVP Deployment
+getting-started.md - Getting started
 notation/CGN-DIRECTION.md - CGN direction
 notation/examples/cgn-log-proof/comparison-semantic.md - Saved-record log comparison
 notation/examples/cgn-log-proof/comparison.md - Saved-record log comparison
@@ -30,10 +31,6 @@ notation/IMPLEMENTERS.md - Implementing a game recorder or replay viewer
 notation/LOG-PROOF.md - Saved-record post-game log proof
 notation/README.md - SettleHex game records
 notation/REPLAY-CONSUMER.md - Open a saved record in the replay viewer
-provenance/art-and-fonts.md - Artwork and fonts
-provenance/asset-disposition.md - Current assets and archived files
-provenance/assets.md - Asset identities
-provenance/sounds.md - Sound sources
-provenance/source-references.md - Source references
 README.md - Documentation
+third-party-notices.md - Third-party notices
 VERIFICATION.md - Verification record and limits

@@ -26,7 +26,7 @@ pnpm serve  # game server; run pnpm dev in another shell with the same flags
 
 After a selection change restart game/web. Roll back with `pnpm bot:promote -- --rollback`, then restart both. An installed model can also be selected again with its original model path/checkpoint/hash. A checkpoint directory cannot be overwritten with different bytes. Failed validation leaves current.json unchanged; unused candidate bytes may remain in their version directory. A per-store lock prevents simultaneous CLI installations; after a killed installer, verify no installer is running before removing its stale `.promotion-lock` directory.
 
-If no local/external selection exists, `release/bot-model.json` provides bootstrap metadata. The old `SETTLEHEX_SETTLEGRAPH_V2_MODEL` override applies only to that bootstrap. An explicitly configured missing manifest fails startup; it never silently selects a fallback. An external current.json takes precedence over the checked-in release metadata.
+If no local/external selection exists, `lib/server/bots/bot-model.json` provides bootstrap metadata. The old `SETTLEHEX_SETTLEGRAPH_V2_MODEL` override applies only to that bootstrap. An explicitly configured missing manifest fails startup; it never silently selects a fallback. An external current.json takes precedence over the checked-in release metadata.
 
 ## Production: routine model upgrade
 

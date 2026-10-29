@@ -9,7 +9,7 @@
 - `lib/server/` and `app/api/`: accounts, database access and website APIs.
 
 See [architecture](docs/architecture/overview.md) and
-[contributing](CONTRIBUTING.md) for setup and a source reading path.
+[getting started](docs/getting-started.md) for setup and a source reading path.
 
 ## Changes and verification
 

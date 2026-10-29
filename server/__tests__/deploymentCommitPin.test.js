@@ -16,8 +16,8 @@ describe("verified deployment commit pin", () => {
     fs.mkdirSync(scripts, { recursive: true });
     fs.mkdirSync(path.join(root, ".git"));
     fs.writeFileSync(path.join(root, "infra/docker-compose.prod.yml"), "services: {}\n");
-    fs.mkdirSync(path.join(root, "release"));
-    fs.writeFileSync(path.join(root, "release/release-notes.json"), "{}");
+    fs.mkdirSync(path.join(root, "app/_features/home"), { recursive: true });
+    fs.writeFileSync(path.join(root, "app/_features/home/release-notes.json"), "{}");
     const keys = ["DATABASE_URL", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "PUBLIC_APP_URL", "NEXT_PUBLIC_GAME_SERVER_ORIGIN", "GAME_SERVER_INTERNAL_URL", "SITE_HOST", "SESSION_SECRET", "BETTER_AUTH_SECRET", "BETTER_AUTH_URL", "VAPID_SUBJECT", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"];
     fs.writeFileSync(path.join(root, ".env.prod"), keys.map(key => `${key}=test`).join("\n"));
     fs.writeFileSync(path.join(scripts, "deploy-prod-from-git.sh"), script);

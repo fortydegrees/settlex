@@ -1,6 +1,6 @@
 import environment from "../../../lib/config/environment.cjs";
 const { readEnvironment } = environment;
-import releaseNotesData from "../../../release/release-notes.json";
+import releaseNotesData from "./release-notes.json";
 
 const toTrimmedString = (value) =>
   typeof value === "string" ? value.trim() : "";

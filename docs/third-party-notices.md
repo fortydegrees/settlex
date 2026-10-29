@@ -12,7 +12,7 @@ Copyright 2021 The Outfit Project Authors
 (https://github.com/Outfitio/Outfit-Fonts).
 
 The files identify SIL Open Font License 1.1 in their embedded metadata.
-The complete notice is included in [Outfit-OFL.txt](public/fonts/Outfit-OFL.txt),
+The complete notice is included in [Outfit-OFL.txt](../public/fonts/Outfit-OFL.txt),
 retrieved from the [Google Fonts Outfit distribution](https://github.com/google/fonts/tree/main/ofl/outfit).
 
 ## settlers-setup board specification
@@ -23,14 +23,12 @@ The resource-count construction, board-spec fields and roll-number list retain
 recognizable upstream structure; local geometry, ports and bank setup differ.
 
 Copyright (c) 2020 Cory Gagliardi. The pinned upstream
-[MIT notice](LICENSES/settlers-setup-MIT.txt) is preserved in full. This is the
+[MIT notice](../LICENSES/settlers-setup-MIT.txt) is preserved in full. This is the
 notice for that source, not a selection of the overall project's license.
 
 ## Other source and assets
 
 David Pratt created the current settlement, city and road artwork in Inkscape.
-See [artwork and fonts](docs/provenance/art-and-fonts.md),
-[sounds](docs/provenance/sounds.md), the custom
-[display font source](public/fonts/settlehex-display/README.md) and
-[native source provenance](native/settlegraph-v2/PROVENANCE.md) for their records.
-These records do not select an overall project license or resolve all asset terms.
+See the custom [display font source](../public/fonts/settlehex-display/README.md)
+and [native source provenance](../native/settlegraph-v2/PROVENANCE.md).
+These notices do not select an overall project license or resolve all asset terms.

@@ -2,6 +2,7 @@
 
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 
 import {
   validateReleaseApproval,
@@ -115,7 +116,9 @@ export function getReleaseStatus({
     problems.push(error.message);
   }
 
-  const releaseNotesChanged = hasReleaseNotesChanged(changedPaths);
+  // Moving or reformatting the file does not publish new release-note content.
+  const releaseNotesChanged = hasReleaseNotesChanged(changedPaths) &&
+    !isDeepStrictEqual(currentNotes, previousNotes);
   const deploymentInfraChanged = hasDeploymentInfraChanged(changedPaths);
 
   if (releaseNotesChanged && previousNotes) {

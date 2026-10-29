@@ -6,11 +6,11 @@ This public-facing record retains useful implementation evidence while detailed 
 
 The implementation completed cumulative verification through `e084dc1`: UI policy checks, engine and server checks, all 201 application test files and lint passed in the recorded run. The stated environment-dependent PostgreSQL/native skip split remains material; separate earlier qualification exercised the 13 database cases and two real-auth cases. A Linux/arm64 production image build/HTTP smoke, Storybook build and clean tracked-source/cache-backed onboarding were recorded. Two rendered clients completed setup and reconnection. OAuth, amd64, hosted CI, empty-cache installation and some opt-in native gameplay remain outside that evidence. These are earlier recorded results; the later legacy fixes have the bounded qualification below. The earlier broad application checks were not rerun for this refreshed candidate.
 
-The local development-card effect privacy fix redacts purchased card faces for other viewers at the server effects-plugin boundary; update/sync/patch regressions exercised that behavior. The Vaul 1.1.2 nonmodal forwarding patch is included with its package/lockfile wiring; its bounded browser qualification is recorded below. Dependency advisories are not all resolved. No statement here asserts current production deployment or live security clearance. See [testing guidance](agent/TESTING.md), [contributor setup](../CONTRIBUTING.md) and [architecture](architecture/overview.md).
+The local development-card effect privacy fix redacts purchased card faces for other viewers at the server effects-plugin boundary; update/sync/patch regressions exercised that behavior. The Vaul 1.1.2 nonmodal forwarding patch is included with its package/lockfile wiring; its bounded browser qualification is recorded below. Dependency advisories are not all resolved. No statement here asserts current production deployment or live security clearance. See [testing guidance](agent/TESTING.md), [contributor setup](getting-started.md) and [architecture](architecture/overview.md).
 
 ## Provenance and publication limits
 
-[Source references](provenance/source-references.md), [native provenance](../native/settlegraph-v2/PROVENANCE.md), [asset inventory](provenance/assets.md), [sound evidence](provenance/sounds.md), [art/font lineage](provenance/art-and-fonts.md) and [third-party notices](../THIRD_PARTY_NOTICES.md) preserve source identities and unresolved rights. No blanket license has been selected.
+[Native provenance](../native/settlegraph-v2/PROVENANCE.md) and [third-party notices](third-party-notices.md) record source attribution and unresolved terms. No blanket license has been selected.
 
 Earlier merge-aware and curated-root Gitleaks scans reported zero findings in
 their recorded scopes. This refreshed root has not yet had an exact-identity
@@ -35,7 +35,7 @@ uses a retained emoji desert CSS fallback. Direct URL consumers lack that fallba
 This pre-existing gap is recorded rather than silently replaced or omitted from
 verification. This is targeted command/source evidence, not a new browser playback,
 production-image, full-suite or playing-strength result. Optional archived URLs
-are explicitly outside the retained contract; see [asset disposition](provenance/asset-disposition.md).
+are explicitly outside the retained contract.
 
 
 ## Integrated notation and source organisation

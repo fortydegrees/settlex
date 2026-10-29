@@ -230,7 +230,7 @@ describe("deployment file wiring", () => {
   });
 
   it("pins and packages only the verified direct-play Bot 009 runtime", () => {
-    const model = JSON.parse(readRepoFile("release", "bot-model.json"));
+    const model = JSON.parse(readRepoFile("lib", "server", "bots", "bot-model.json"));
     const gameDockerfile = readRepoFile("Dockerfile.game");
     const compose = readRepoFile("infra", "docker-compose.prod.yml");
     const startup = readRepoFile("infra", "scripts", "start-game.sh");
@@ -363,7 +363,7 @@ describe("deployment file wiring", () => {
     expect(script).toContain("SETTLEHEX_RELEASE_VERSION");
     expect(script).toContain("command -v node");
     expect(script).toContain("scripts/release/read-release-notes.mjs");
-    expect(script).toContain("release/release-notes.json");
+    expect(script).toContain("app/_features/home/release-notes.json");
     expect(script).toContain("Could not determine SETTLEHEX_RELEASE_VERSION.");
     expect(script).toContain('docker compose --env-file .env.prod -f "$COMPOSE_FILE" "$@"');
     const buildIndex = script.indexOf('compose build web game');

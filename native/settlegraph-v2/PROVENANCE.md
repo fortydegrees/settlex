@@ -8,7 +8,7 @@ The initial import on 25 August 2026 came from SettleGraph source commit `a1fdc9
 
 The V3 refresh imported `rust/catan-env/src/obs_v3.rs` and `settlegraph_net.rs` from source commit `2cee77fa789fc4af8665e0be57e199928a7e965c`. Their import-time SHA-256 identities were respectively `581eb971837ea6959022da0e16262677b7e184c1e361e4543d32fceded4b5fcc` and `2e662d81439407fc472e8c67c28a62b35204d6c1c143cafb213a073fdbc34e85`. The later 009 wider inference wrapper/shared FP32 kernel came from source commit `55f4b3663ad980c367c70aa709163160e3dec378`. Normal 64/128/16 and wide 128/256/32 widths are supported.
 
-[Current tracked native source identities](../../docs/provenance/native-source.tsv) give file modes, Git blob IDs and SHA-256 hashes for the actual candidate files. The original source commits and imported module names remain attributable without exposing a maintainer's private filesystem or study receipts. Vendored code publication/license scope and external-model distribution terms remain unresolved; this file grants no license.
+The original source commits and imported module names remain attributable without exposing a maintainer's private filesystem or study receipts. Vendored code publication/license scope and external-model distribution terms remain unresolved; this file grants no license.
 
 ## Serving compatibility
 

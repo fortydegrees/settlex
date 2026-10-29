@@ -43,3 +43,9 @@ public/svgs/colonist/
 **/.env
 **/.env.*
 !.env.example
+
+# Private creative tools, local state and agent scratch work
+/.local/
+/work/
+/design/
+/sounds/

@@ -5,7 +5,7 @@ import { checkProductionBot } from "../../scripts/bots/check-production-bot.mjs"
 const MODEL_009 = "d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf";
 const enabledEnv = {
   SETTLEHEX_SETTLEGRAPH_V2_ENABLED: "1",
-  SETTLEHEX_BOT_MODEL_MANIFEST: path.resolve("release/bot-model.json"),
+  SETTLEHEX_BOT_MODEL_MANIFEST: path.resolve("lib/server/bots/bot-model.json"),
   SETTLEHEX_SETTLEGRAPH_V2_MODEL: "/models/incumbent-009/model.ctnn",
   SETTLEHEX_SETTLEGRAPH_V2_WORKER: "/usr/local/bin/settlegraph-v2-worker",
 };

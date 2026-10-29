@@ -9,7 +9,7 @@ export const repoRoot = path.resolve(
   ".."
 );
 
-export const releaseNotesRelativePath = path.join("release", "release-notes.json");
+export const releaseNotesRelativePath = path.join("app", "_features", "home", "release-notes.json");
 export const releaseNotesPath = path.join(repoRoot, releaseNotesRelativePath);
 
 const parseReleaseNotes = (raw, source) => {
@@ -38,7 +38,13 @@ export function readReleaseNotesFromGitRef(
     });
     return parseReleaseNotes(raw, `${ref}:${relativePath}`);
   } catch (error) {
-    if (error.status === 128) return null;
+    if (error.status === 128) {
+      // Older deployed commits predate the relocation; retain their version baseline.
+      if (relativePath === releaseNotesRelativePath) {
+        return readReleaseNotesFromGitRef(ref, "release/release-notes.json");
+      }
+      return null;
+    }
     throw error;
   }
 }

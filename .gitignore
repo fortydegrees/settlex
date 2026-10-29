@@ -72,3 +72,9 @@ storybook-static/
 /.design-sync/
 /.ds-sync/
 /ds-bundle/
+
+# Private creative tools, local state and agent scratch work
+/.local/
+/work/
+/design/
+/sounds/

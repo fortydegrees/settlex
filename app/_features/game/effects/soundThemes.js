@@ -1,6 +1,6 @@
 // Before adding or revising cues, read
 // docs/agent/skills/settlehex-design/SOUND_DESIGN_GUIDE.md — the sound identity's
-// grammar, the audition workflow, and the synthesis kit (sounds/soundkit/).
+// grammar and the audition workflow. Sound-authoring tools are maintained privately.
 export const DEFAULT_THEME = {
   "game:start": {
     src: "/sounds/game-start.mp3",

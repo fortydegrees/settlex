@@ -65,7 +65,7 @@ if [ -z "${SETTLEHEX_RELEASE_VERSION:-}" ]; then
     SETTLEHEX_RELEASE_VERSION="$(node scripts/release/read-release-notes.mjs)"
   else
     SETTLEHEX_RELEASE_VERSION="$(
-      sed -n 's/.*"currentVersion"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' release/release-notes.json | head -n 1
+      sed -n 's/.*"currentVersion"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' app/_features/home/release-notes.json | head -n 1
     )"
   fi
 fi

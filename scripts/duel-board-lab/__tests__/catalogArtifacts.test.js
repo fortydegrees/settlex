@@ -8,7 +8,7 @@ import { generateCandidate } from "../generators/generateCandidate.mjs";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const dataPath = resolve(
   repoRoot,
-  "data/board-catalogs/duel-fair-official-v1.json"
+  "lib/game-runtime/setup/catalogs/duel-fair-official-v1.json"
 );
 const runtimePath = resolve(
   repoRoot,

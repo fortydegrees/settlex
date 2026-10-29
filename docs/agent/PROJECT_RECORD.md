@@ -4,7 +4,7 @@ This maintained record links contributor guidance and source identity. Add conci
 
 ## Contributor guidance
 
-- [Repository overview](../../README.md) and [contributing](../../CONTRIBUTING.md)
+- [Repository overview](../../README.md) and [contributing](../getting-started.md)
 - [Architecture](../architecture/overview.md) and [theme and sound customization](../customization/themes-and-sounds.md)
 - [Testing](TESTING.md), [UI context](UI_CONTEXT.md) and [Storybook](STORYBOOK.md)
 - [Bot model installation and rollback](BOT_MODELS.md), [native runtime](../../native/settlegraph-v2/README.md) and [source and model provenance](../../native/settlegraph-v2/PROVENANCE.md)
@@ -13,11 +13,8 @@ The runtime source, observation/action contracts, model identities and rollback 
 
 ## Source and artwork records
 
-[Third-party notices](../../THIRD_PARTY_NOTICES.md) preserve the bundled font and
-adapted board-spec notices. [Source references](../provenance/source-references.md),
-[asset identities](../provenance/assets.md), [sounds](../provenance/sounds.md) and
-[artwork and fonts](../provenance/art-and-fonts.md) describe their corresponding
-records. David Pratt created the current 60 settlement, city and road SVGs in
+[Third-party notices](../third-party-notices.md) preserve the bundled font and
+adapted board-spec notices. David Pratt created the current 60 settlement, city and road SVGs in
 Inkscape. Native source and model identities remain in their own provenance guide.
 
 ## Verification and historical records
@@ -200,3 +197,16 @@ Future consolidation review must account for every prior runtime owner and its
 consumers, including unchanged files inherited from another branch. Agent-written
 notes and green tests are not approval to alter existing product behaviour.
 Private audit receipts: .superpowers/sdd/consolidation-behaviour-audit-20261027/.
+
+## 2026-10-29: simplify root ownership
+
+Moved the full duel board catalogue beside its generated runtime catalogue in
+`lib/game-runtime/setup/catalogs/`. Homepage release notes now live in
+`app/_features/home/`, and default bot metadata beside its loader in
+`lib/server/bots/`; release/deployment consumers follow those paths. Historical
+release comparisons still read the previous path when needed.
+
+Sound-authoring recipes and auditions are preserved outside the repository;
+`public/sounds/` remains the shipped audio library. Private local state, agent
+scratch work and design/audio studies are explicitly ignored. No release copy,
+game rules, asset rights or deployed services changed.

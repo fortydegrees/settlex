@@ -37,7 +37,7 @@ const approvedRelease2 = {
 
 describe("release status", () => {
   it("detects release-note and deployment-infra changes", () => {
-    expect(hasReleaseNotesChanged(["release/release-notes.json"])).toBe(true);
+    expect(hasReleaseNotesChanged(["app/_features/home/release-notes.json"])).toBe(true);
     expect(hasReleaseNotesChanged(["app/_features/home/VersionBadge.js"])).toBe(
       false
     );
@@ -62,10 +62,21 @@ describe("release status", () => {
     expect(sameReleaseInfraFix.releaseNotesChanged).toBe(false);
     expect(sameReleaseInfraFix.deploymentInfraChanged).toBe(true);
 
-    const unchangedVersionWithReleaseNotesChange = getReleaseStatus({
-      currentNotes: approvedRelease1,
+    const relocatedNotes = getReleaseStatus({
+      currentNotes: structuredClone(approvedRelease1),
       previousNotes: approvedRelease1,
-      changedPaths: ["release/release-notes.json"]
+      changedPaths: ["app/_features/home/release-notes.json"]
+    });
+    expect(relocatedNotes.ok).toBe(true);
+    expect(relocatedNotes.releaseNotesChanged).toBe(false);
+
+    const unchangedVersionWithReleaseNotesChange = getReleaseStatus({
+      currentNotes: {
+        ...approvedRelease1,
+        releases: [{ ...approvedRelease1.releases[0], highlights: ["Changed public copy."] }]
+      },
+      previousNotes: approvedRelease1,
+      changedPaths: ["app/_features/home/release-notes.json"]
     });
 
     expect(unchangedVersionWithReleaseNotesChange.ok).toBe(false);
@@ -76,7 +87,7 @@ describe("release status", () => {
     const bumpedRelease = getReleaseStatus({
       currentNotes: approvedRelease2,
       previousNotes: approvedRelease1,
-      changedPaths: ["release/release-notes.json"]
+      changedPaths: ["app/_features/home/release-notes.json"]
     });
 
     expect(bumpedRelease.ok).toBe(true);
@@ -97,7 +108,7 @@ describe("release status", () => {
         ]
       },
       previousNotes: approvedRelease1,
-      changedPaths: ["release/release-notes.json"]
+      changedPaths: ["app/_features/home/release-notes.json"]
     });
 
     expect(status.ok).toBe(false);

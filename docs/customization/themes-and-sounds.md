@@ -7,8 +7,7 @@ these examples. Keep your change in its owning map and check the real preview.
 
 The tree retains all current default sounds and registered theme assets.
 Optional sample collections, concept previews and unselected studies are privately
-preserved; their old URLs are not supported customization inputs. See the
-[exact asset disposition](../provenance/asset-disposition.md). Bring a reviewed
+preserved; their old URLs are not supported customization inputs. Bring a reviewed
 source for a new asset rather than relying on an archived filename.
 
 ## Replace one game cue

@@ -12,7 +12,7 @@ done < <(compgen -v SETTLEX_)
 
 if [ -n "${SETTLEHEX_ROOT_DIR:-}" ]; then
   ROOT_DIR="$SETTLEHEX_ROOT_DIR"
-elif [ -f infra/docker-compose.prod.yml ] && [ -f release/release-notes.json ]; then
+elif [ -f infra/docker-compose.prod.yml ] && [ -f app/_features/home/release-notes.json ]; then
   ROOT_DIR="$(pwd)"
 else
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

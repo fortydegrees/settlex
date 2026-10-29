@@ -6,17 +6,15 @@ learned, so new cues extend the system instead of reinventing it.
 
 The living reference is the audition artifact ("SettleHex Start Cues",
 https://claude.ai/code/artifact/04f03bf5-327c-4752-8c49-97dc41c92fb4) — every
-decided cue playable with its rationale, plus parked proposals. Recipes live in
-`sounds/soundkit/` (see its README for render/promote mechanics).
+decided cue playable with its rationale, plus parked proposals. Sound-generation recipes and auditions are maintained privately outside this
+repository; they are not required to run or customize SettleHex.
 
-The curated public tree retains the active `public/sounds/` clips and
-`sounds/soundkit/` recipes. Older root sample collections and unselected public
+The public tree retains the active `public/sounds/` clips. Older root sample collections and unselected public
 audio studies are preserved privately; historical sample names are not current
 checkout instructions. Extend the cue map and audition a reviewed source rather
 than recovering an arbitrary old clip. The material layer's original creation
 method and redistribution terms remain unresolved; “recording” below describes
-the design account, not verified provenance. The kit README records its current
-render-command limitation.
+the design account, not verified provenance. The private kit does not reproduce every shipped clip.
 
 ## The two-layer soundscape
 
@@ -60,7 +58,7 @@ Everything is in **D major**, built from the Glasslift game-start anchor.
   octave = victory · repeated notes = herald (reserved for awards) · a pitch
   *droop* = deflation (discard, robber block). The discard sigh's quarter-tone
   sag is the family's one deliberately out-of-tune note — keep it unique.
-- **Voices** (in `sounds/soundkit/synth.py`): `beep_glass` (detuned sine
+- **Voices** (from the private synthesis toolkit): `beep_glass` (detuned sine
   unison — the core voice, Sonic Pi `:beep` DNA), `sine_pluck` (motion),
   `sine_bloom` (octave-bloom arrivals), `beep_droop` (deflation), `sub_thump`
   + 700 Hz knock (ground that survives laptop speakers), filtered-noise
