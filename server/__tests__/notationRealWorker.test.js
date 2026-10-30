@@ -3,6 +3,7 @@ import { replayHAN } from "@settlehex/game-core";
 import { runLocalSettleHexGame } from "./helpers/notationGame.ts";
 import { getArchivedNotation } from "../../lib/server/replays/getArchivedNotation.js";
 import { archiveFinishedMatch } from "../archive/archiveFinishedMatch.js";
+import { createNotationConverter } from "../archive/notation/convertNotation.js";
 import { createArchivePool } from "./helpers/archiveTestUtils.js";
 
 describe("real worker and finished archive", () => {
@@ -19,8 +20,15 @@ describe("real worker and finished archive", () => {
         state: run.archive.finalState,
       }) },
       matchID: "real-worker-1",
+      // This checks a full-game round trip, not worker speed on shared CI CPUs.
+      // Timeout handling is tested separately in notationWorker.test.js.
+      convertNotation: createNotationConverter({ timeoutMs: 90_000 }),
     });
-    expect(state.archivedMatchReplays[0].notationStatus).toBe("ready");
+    const archivedReplay = state.archivedMatchReplays[0];
+    expect({
+      status: archivedReplay.notationStatus,
+      errorCode: archivedReplay.notationErrorCode,
+    }).toEqual({ status: "ready", errorCode: null });
     expect(state.archivedMatchReplays[0].logJson).toHaveLength(run.moves);
     const stored = await getArchivedNotation(result.replayId, { pool });
     expect(stored.status).toBe("ready");
