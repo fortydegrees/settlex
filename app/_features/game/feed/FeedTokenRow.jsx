@@ -113,6 +113,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
 
   if (token.kind === "tileDestination") {
     const value = Number(token.number);
+    const hasNumber = token.number != null && value >= 2 && value <= 12;
     const isHot = value === 6 || value === 8;
     const colorClassName = isHot ? "text-red-600" : "text-slate-900";
     const icon = getResourceIconPath(themeId, token.resource);
@@ -122,7 +123,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
     return (
       <span
         role="img"
-        aria-label={`${token.resource} tile, number ${value}`}
+        aria-label={`${token.resource} tile${hasNumber ? `, number ${value}` : ""}`}
         className="relative mx-ui-0.5 inline-block h-8 w-7 shrink-0 align-[-0.7em]"
       >
         <img
@@ -143,7 +144,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
         ) : (
           <span aria-hidden="true" className="text-[10px]">{token.resource}</span>
         )}
-        <span
+        {hasNumber ? <span
           aria-hidden="true"
           className={`absolute bottom-[3px] left-1/2 inline-flex h-3.5 w-3.5 -translate-x-1/2 flex-col items-center justify-center rounded-[2px] bg-slate-100 shadow-sm ring-1 ring-slate-300/70 ${colorClassName}`}
         >
@@ -151,7 +152,7 @@ export const FeedTokenRow = ({ token, themeId }) => {
           <span className="text-[3px] font-bold leading-[3px] tracking-[-0.08em]">
             {TILE_NUMBER_PIPS[value] ?? ""}
           </span>
-        </span>
+        </span> : null}
       </span>
     );
   }

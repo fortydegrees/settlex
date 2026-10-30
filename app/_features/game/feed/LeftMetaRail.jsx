@@ -83,6 +83,8 @@ const EMPTY_CHAT_MESSAGES = [];
 
 const buildMetaPanels = ({
   entries,
+  boardTiles,
+  phase,
   activeEntryKey,
   onEntrySelect,
   logArrivalMode,
@@ -104,6 +106,8 @@ const buildMetaPanels = ({
       <GameLogPanel
         arrivalMode={logArrivalMode}
         entries={entries}
+        boardTiles={boardTiles}
+        phase={phase}
         activeEntryKey={activeEntryKey}
         onEntrySelect={onEntrySelect}
         playerMap={logPlayerMap}
@@ -117,6 +121,8 @@ const buildMetaPanels = ({
       <GameLogPanel
         arrivalMode={logArrivalMode}
         entries={entries}
+        boardTiles={boardTiles}
+        phase={phase}
         activeEntryKey={activeEntryKey}
         onEntrySelect={onEntrySelect}
         playerMap={logPlayerMap}
@@ -279,6 +285,8 @@ const DesktopMetaDockComponent = ({
     () =>
       buildMetaPanels({
         entries,
+        boardTiles: bgioProps?.G?.tiles,
+        phase: bgioProps?.ctx?.phase,
         activeEntryKey,
         onEntrySelect,
         logArrivalMode,
@@ -290,6 +298,8 @@ const DesktopMetaDockComponent = ({
       }),
     [
       entries,
+      bgioProps?.G?.tiles,
+      bgioProps?.ctx?.phase,
       activeEntryKey,
       onEntrySelect,
       logArrivalMode,
@@ -437,6 +447,8 @@ const MobileMetaRailComponent = ({
     () =>
       buildMetaPanels({
         entries,
+        boardTiles: bgioProps?.G?.tiles,
+        phase: bgioProps?.ctx?.phase,
         activeEntryKey,
         onEntrySelect,
         logArrivalMode,
@@ -448,6 +460,8 @@ const MobileMetaRailComponent = ({
       }),
     [
       entries,
+      bgioProps?.G?.tiles,
+      bgioProps?.ctx?.phase,
       activeEntryKey,
       onEntrySelect,
       logArrivalMode,

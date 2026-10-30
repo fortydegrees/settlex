@@ -34,3 +34,12 @@ Board drawing, geometry and placement previews live in [the board feature](board
 - Do not duplicate core state in UI-only state unless it is a deliberate presentation freeze or animation bridge.
 - Keep player identity/color treatment consistent across local and opponent HUDs.
 - Keep hidden opponent resources and dev cards hidden.
+
+Game-log phase markers are neutral, non-selectable headings; player-turn markers
+keep a dimmed player colour and appear only during normal play. Omit the marker
+directly after a phase heading, since the first action names the player. Setup
+uses only the placement-phase heading. Starting settlement entries derive adjacent
+land hexes from the public board and logged node ID, including unnumbered deserts.
+This is a display projection for live games and archives; persisted events and
+replay seek keys stay unchanged. `Game Feeds/PlacementPhases` covers the phase
+boundary and one-, two- and three-hex placements.

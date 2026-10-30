@@ -295,3 +295,39 @@ export const LongTurnLog = {
     ...winningTurnEntries,
   ]} />,
 };
+
+const placementTiles = [
+  { type: 'Land', tile: { id: 1, resource: 'Wheat', number: 6, nodes: { N: 10, S: 11, E: 12 } } },
+  { type: 'Land', tile: { id: 2, resource: 'Ore', number: 9, nodes: { N: 10, S: 11 } } },
+  { type: 'Land', tile: { id: 3, resource: 'Desert', number: null, nodes: { N: 10 } } },
+];
+const placementEntries = [
+  { id: 'setup-three', type: 'build:settlement', actorId: '0', turn: 1, data: { nodeId: 10, initialPlacement: true } },
+  { id: 'setup-end-one', type: 'turn:end' },
+  { id: 'setup-two', type: 'build:settlement', actorId: '1', turn: 2, data: { nodeId: 11, initialPlacement: true } },
+  { id: 'setup-end-two', type: 'turn:end' },
+  { id: 'setup-one', type: 'build:settlement', actorId: '1', turn: 3, data: { nodeId: 12, initialPlacement: true } },
+  { id: 'main-phase', type: 'phase:main' },
+  { id: 'main-roll', type: 'roll', actorId: '0', turn: 4, data: { dice: [2, 4] } },
+];
+export const PlacementPhases = {
+  render: () => <div className="settlehex-game-screen select-none mx-auto max-w-sm p-ui-4">
+    <GameLogPanel entries={placementEntries} boardTiles={placementTiles} playerMap={playerMap} themeId="emoji"
+      rootClassName="w-full" panelClassName="settlehex-ui-hud flex h-[38rem] flex-col overflow-hidden select-text" />
+  </div>,
+  play: async ({ canvasElement }) => {
+    const screen = within(canvasElement);
+    expect(screen.getByText('Placement phase')).toBeVisible();
+    expect(screen.getByText('Main game')).toBeVisible();
+    expect(screen.getAllByRole('img', { name: /tile/ })).toHaveLength(6);
+    expect(screen.getByRole('img', { name: 'Desert tile' })).toBeVisible();
+    for (const marker of canvasElement.querySelectorAll('.game-log-phase')) {
+      expect(marker.closest('[role="button"]')).toBeNull();
+      expect(getComputedStyle(marker).userSelect).toBe('none');
+    }
+    canvasElement.dataset.phaseContract = 'passed';
+  },
+};
+export const PlacementBeforeFirstMove = {
+  render: () => stage(<GameLogPanel phase="placement" themeId="emoji" rootClassName="w-full" panelClassName={frameClassName} />),
+};

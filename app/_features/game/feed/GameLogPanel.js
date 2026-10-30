@@ -7,6 +7,8 @@ import { SelectableRow } from "../../../ui/SelectableRow";
 const GameLogPanelComponent = ({
   entries = [],
   playerMap = {},
+  boardTiles,
+  phase,
   themeId,
   activeEntryKey = null,
   onEntrySelect,
@@ -16,11 +18,11 @@ const GameLogPanelComponent = ({
   panelClassName = "settlehex-ui-hud flex h-[20vh] xl:h-[24vh] flex-col select-text overflow-hidden",
 }) => {
   const formattedEntries = useMemo(
-    () => buildGameLogRows(entries, playerMap).map((row) => ({
+    () => buildGameLogRows(entries, playerMap, { tiles: boardTiles, phase }).map((row) => ({
       ...row,
       isActive: !row.isDivider && activeEntryKey != null && String(activeEntryKey) === row.key,
     })),
-    [entries, playerMap, activeEntryKey]
+    [entries, playerMap, boardTiles, phase, activeEntryKey]
   );
 
   return (
@@ -39,13 +41,19 @@ const GameLogPanelComponent = ({
       fadeClassName="feed-panel-fade game-log-fade"
       entryClassName="feed-panel-entry"
       contentClassName="space-y-ui-2 type-body-small py-ui-2"
-      renderRow={(entry) => entry.isDivider ? (
+      renderRow={(entry) => entry.isPhase ? (
+        <div className="game-log-phase flex items-center gap-ui-2 py-ui-2 select-none cursor-default type-caption text-ink-secondary">
+          <span className="h-0.5 min-w-0 flex-1 bg-ink-muted opacity-50" aria-hidden="true" />
+          <span>{entry.phase === "placement" ? "Placement phase" : "Main game"}</span>
+          <span className="h-0.5 min-w-0 flex-1 bg-ink-muted opacity-50" aria-hidden="true" />
+        </div>
+      ) : entry.isDivider ? (
         <div className="game-log-turn flex items-center gap-ui-2 py-ui-2 select-none cursor-default type-caption text-ink-muted">
-          <span className="h-px min-w-0 flex-1 bg-edge-subtle" aria-hidden="true" />
-          <span className="min-w-0 text-center break-words">
+          <span className="h-px min-w-0 flex-1 bg-ink-muted opacity-30" aria-hidden="true" />
+          <span className="min-w-0 text-center break-words opacity-60 saturate-50">
             <FeedTokenRow token={{ ...entry.player, emoji: null, variant: "turn" }} themeId={themeId} />’s turn
           </span>
-          <span className="h-px min-w-0 flex-1 bg-edge-subtle" aria-hidden="true" />
+          <span className="h-px min-w-0 flex-1 bg-ink-muted opacity-30" aria-hidden="true" />
         </div>
       ) : (
         <SelectableRow

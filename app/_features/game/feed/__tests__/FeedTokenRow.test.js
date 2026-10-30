@@ -38,3 +38,12 @@ describe("FeedTokenRow", () => {
     expect(markup).toContain("••");
   });
 });
+
+ it("renders a desert hex without a fabricated number", () => {
+  const markup = renderToStaticMarkup(React.createElement(FeedTokenRow, {
+    token: { kind: "tileDestination", resource: "Desert", number: null }, themeId: "emoji"
+  }));
+  expect(markup).toContain('aria-label="Desert tile"');
+  expect(markup).not.toContain('>0<');
+  expect(markup).not.toContain('>NaN<');
+});
