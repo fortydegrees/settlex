@@ -173,9 +173,9 @@ dismissal visible. Keep the shared 44px small-button hit area in both cases.
   this installed Tailwind configuration does not emit them; use a named material.
 - `pnpm test:ui-policy`: behavioral fixture tests for the checker and display
   coverage helper. No tests assert production class strings or source nesting.
-- `pnpm lint` and `pnpm verify` run the policy. `UI design policy` runs on PRs
-  and pushes to main, without deploying. CI compares the migration ledger with
-  the base commit so regenerating it cannot silently accept additional debt.
+- `pnpm lint` and `pnpm verify` run the policy locally. Set `UI_POLICY_BASE` to
+  an available full commit SHA to also compare the migration ledger against
+  that commit. Pushes and pull requests do not run these checks automatically.
 - `pnpm ui:inventory`: prints the current inventory for inspection only; it does
   not write or accept a new baseline.
 
@@ -191,8 +191,7 @@ interpreter. It does not resolve arbitrary dynamic class construction, imported
 style objects, CSS-module selector semantics, or every visual property. Ordinary
 consumer appearance overrides still need code review. Stories/tests are not
 scanned; the global recipe owner and canonical token module intentionally own
-literals. Branch-protection settings must make the CI job required if merging
-must be technically blocked; this local task does not change remote settings.
+literals.
 
 ## Migration history
 

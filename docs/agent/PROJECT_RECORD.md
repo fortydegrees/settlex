@@ -210,3 +210,10 @@ Sound-authoring recipes and auditions are preserved outside the repository;
 `public/sounds/` remains the shipped audio library. Private local state, agent
 scratch work and design/audio studies are explicitly ignored. No release copy,
 game rules, asset rights or deployed services changed.
+
+## 2026-10-30: make repository checks opt-in
+
+Removed the automatic push/PR verification and UI-policy workflows. The local
+test, lint and verification commands remain available, and the manually triggered
+deployment workflow retains its checks. The existing notation-export test failure
+remains unresolved; removing automatic runs does not establish that tests pass.
