@@ -2,7 +2,7 @@
 
 1v1 Catan with balanced boards. I spent far too long on this.
 
-To play locally, install [Docker](https://docs.docker.com/get-started/get-docker/) and run:
+To play locally:
 
 ```sh
 git clone https://github.com/fortydegrees/settlex.git
@@ -25,6 +25,4 @@ disabled in this setup.
 | `infra/` | Docker Compose, reverse proxy and deployment scripts. |
 | `scripts/` | Database migrations, tests, board generation and maintenance commands. |
 | `patches/` | Small fixes applied to third-party dependencies during installation. |
-| `docs/` | Setup, architecture and development guides. |
-
-[Run locally](docs/getting-started.md) · [Documentation](docs/README.md)
+| `docs/` | Setup, architecture and development guides (AI Generated, for now). |
