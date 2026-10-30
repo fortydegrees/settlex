@@ -7,7 +7,7 @@ This maintained record links contributor guidance and source identity. Add conci
 - [Repository overview](../../README.md) and [contributing](../getting-started.md)
 - [Architecture](../architecture/overview.md) and [theme and sound customization](../customization/themes-and-sounds.md)
 - [Testing](TESTING.md), [UI context](UI_CONTEXT.md) and [Storybook](STORYBOOK.md)
-- [Bot model installation and rollback](BOT_MODELS.md), [native runtime](../../native/settlegraph-v2/README.md) and [source and model provenance](../../native/settlegraph-v2/PROVENANCE.md)
+- [Bot model installation and rollback](BOT_MODELS.md), [native runtime](../../native/settlegraph/README.md) and [source and model provenance](../../native/settlegraph/PROVENANCE.md)
 
 The runtime source, observation/action contracts, model identities and rollback instructions remain in those maintained guides. Removing historical research logs does not establish model strength or change the serving contract.
 
@@ -217,3 +217,10 @@ Removed the automatic push/PR verification and UI-policy workflows. The local
 test, lint and verification commands remain available, and the manually triggered
 deployment workflow retains its checks. The existing notation-export test failure
 remains unresolved; removing automatic runs does not establish that tests pass.
+
+## 2026-10-30: use an unversioned native source directory
+
+Renamed the native source directory to `native/settlegraph/` because the worker
+supports both V2 and V3 models. Updated Docker, local worker-path defaults,
+commands, tests and documentation. Binary names, environment variables and model
+contracts remain unchanged; this is a source-directory rename.

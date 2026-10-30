@@ -30,5 +30,5 @@ notice for that source, not a selection of the overall project's license.
 
 David Pratt created the current settlement, city and road artwork in Inkscape.
 See the custom [display font source](../public/fonts/settlehex-display/README.md)
-and [native source provenance](../native/settlegraph-v2/PROVENANCE.md).
+and [native source provenance](../native/settlegraph/PROVENANCE.md).
 These notices do not select an overall project license or resolve all asset terms.

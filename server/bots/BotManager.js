@@ -91,7 +91,7 @@ export function createBotManagerFromEnv({ logger = console } = {}) {
   if (readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_ENABLED") === "1") {
     const fileDir = path.dirname(fileURLToPath(import.meta.url));
     const workerPath = readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_WORKER") ??
-      path.resolve(fileDir, "../../native/settlegraph-v2/target/release/settlegraph-v2-worker");
+      path.resolve(fileDir, "../../native/settlegraph/target/release/settlegraph-v2-worker");
     const client = new SettleGraphV2Client({
       workerPath,
       modelPath: getBotModelSelection().modelPath,

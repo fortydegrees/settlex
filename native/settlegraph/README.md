@@ -1,4 +1,4 @@
-# SettleGraph V2/V3 product worker
+# SettleGraph product worker
 
 This crate is the product-owned runtime boundary for the sealed SettleGraph
 bot. It preserves the original CTNN-v2 runtime and adds direct inference for
@@ -44,20 +44,20 @@ The original V2, 005, 006 and 007 remain accepted for explicit rollback; product
 ## Build and verify
 
 ```bash
-cargo build --release --locked --manifest-path native/settlegraph-v2/Cargo.toml
-cargo fmt --manifest-path native/settlegraph-v2/Cargo.toml -- --check
-cargo clippy --manifest-path native/settlegraph-v2/Cargo.toml --all-targets -- -D warnings
-cargo test --manifest-path native/settlegraph-v2/Cargo.toml
+cargo build --release --locked --manifest-path native/settlegraph/Cargo.toml
+cargo fmt --manifest-path native/settlegraph/Cargo.toml -- --check
+cargo clippy --manifest-path native/settlegraph/Cargo.toml --all-targets -- -D warnings
+cargo test --manifest-path native/settlegraph/Cargo.toml
 SETTLEHEX_SETTLEGRAPH_V2_MODEL=/absolute/path/to/accepted-v2.ctnn \
-cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test contract \
+cargo test --manifest-path native/settlegraph/Cargo.toml --test contract \
   sealed_ctnn_matches_hash_contract_and_embedded_probe -- --ignored --exact --nocapture
 SETTLEHEX_INCUMBENT_005_MODEL=/absolute/path/to/incumbent-005/model.ctnn \
 SETTLEHEX_005_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
-cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test incumbent_005 \
+cargo test --manifest-path native/settlegraph/Cargo.toml --test incumbent_005 \
   -- --ignored --nocapture
 SETTLEHEX_INCUMBENT_006_MODEL=/absolute/path/to/incumbent-006/model.ctnn \
 SETTLEHEX_006_REFERENCE_PROBES=/absolute/path/to/reference-probes.json \
-cargo test --manifest-path native/settlegraph-v2/Cargo.toml --test incumbent_006 \
+cargo test --manifest-path native/settlegraph/Cargo.toml --test incumbent_006 \
   -- --ignored --nocapture
 ```
 
@@ -120,7 +120,7 @@ pnpm dev
 
 Open `http://localhost:3000`, choose **Play vs Bot**, and play normally. The
 default worker path is
-`native/settlegraph-v2/target/release/settlegraph-v2-worker`; override it with
+`native/settlegraph/target/release/settlegraph-v2-worker`; override it with
 `SETTLEHEX_SETTLEGRAPH_V2_WORKER`. With the public and server native-bot flags enabled, the single homepage bot
 action uses the startup selection; bootstrap metadata currently selects 009.
 With the public flag disabled, the homepage hides the bot action.

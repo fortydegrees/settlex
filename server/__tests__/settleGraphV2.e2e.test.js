@@ -50,7 +50,7 @@ describe("SettleGraph sealed-runtime integration", () => {
     "plays setup and a main-turn action through Master, router, native worker, and sealed model",
     async () => {
       const workerPath = process.env.SETTLEHEX_SETTLEGRAPH_V2_WORKER ??
-        path.resolve("native/settlegraph-v2/target/release/settlegraph-v2-worker");
+        path.resolve("native/settlegraph/target/release/settlegraph-v2-worker");
       const selection = readBotModelSelection();
       const modelPath = process.env.SETTLEHEX_SETTLEGRAPH_V2_MODEL ?? selection.modelPath;
       const expectedModelSha256 = process.env.SETTLEHEX_EXPECTED_MODEL_SHA256 ?? selection.sha256;

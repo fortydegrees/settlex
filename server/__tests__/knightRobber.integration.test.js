@@ -170,7 +170,7 @@ describe("knight robber native worker integration", () => {
       const client = seedKnightClient(stage, { nativeRules: true });
       const worker = new SettleGraphV2Client({
         workerPath: process.env.SETTLEHEX_SETTLEGRAPH_V2_WORKER ??
-          path.resolve("native/settlegraph-v2/target/release/settlegraph-v2-worker"),
+          path.resolve("native/settlegraph/target/release/settlegraph-v2-worker"),
         modelPath: process.env.SETTLEHEX_SETTLEGRAPH_V2_MODEL,
         timeoutMs: 10_000
       });

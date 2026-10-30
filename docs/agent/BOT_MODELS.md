@@ -1,6 +1,6 @@
 # Selecting the Play vs Bot model
 
-Current release metadata selects SettleGraph 009, SHA-256 `d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf`, with V3 observations and direct legal-greedy play. The native runtime supports normal 64/128/16 and wide 128/256/32 families. 008 is the immediate rollback identity at SHA-256 `d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35`. These are serving identities, not playing-strength or study-qualification claims. See [native provenance](../../native/settlegraph-v2/PROVENANCE.md) for source revisions and schema.
+Current release metadata selects SettleGraph 009, SHA-256 `d87d121a332766667fb65481593472ba937c35386c2cc3478a654127115ecccf`, with V3 observations and direct legal-greedy play. The native runtime supports normal 64/128/16 and wide 128/256/32 families. 008 is the immediate rollback identity at SHA-256 `d3896b710bd8d90ad98838ca89aa298800039c73efaff0fbb5a2435ac21f7e35`. These are serving identities, not playing-strength or study-qualification claims. See [native provenance](../../native/settlegraph/PROVENANCE.md) for source revisions and schema.
 
 A compatible checkpoint upgrade changes the model store, not app source. The store contains retained `models/007/model.ctnn`, `models/008/model.ctnn` and current `models/009/model.ctnn`, `current.json` and `previous.json`. Current selection records checkpoint/name, expected SHA-256, supported observation/action contract and relative model path. Models are external to Git and images.
 
@@ -11,7 +11,7 @@ The web server uses the selected name for new matches. The game server passes th
 From this checkout, build the native worker once (again only when runtime code changes):
 
 ```sh
-cargo build --release --locked --manifest-path native/settlegraph-v2/Cargo.toml
+cargo build --release --locked --manifest-path native/settlegraph/Cargo.toml
 pnpm bot:promote -- --model /absolute/promoted-model.ctnn --checkpoint 009 --sha256 EXPECTED_SHA256
 pnpm bot:check
 ```

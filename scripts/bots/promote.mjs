@@ -21,7 +21,7 @@ function writeAtomicJson(filename, contents) {
 
 export async function promoteBotModel({
   modelPath, checkpoint, sha256, directory = path.join(repoRoot, ".local/bot"),
-  workerPath = readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_WORKER") ?? path.join(repoRoot, "native/settlegraph-v2/target/release/settlegraph-v2-worker"),
+  workerPath = readEnvironment(process.env, "SETTLEHEX_SETTLEGRAPH_V2_WORKER") ?? path.join(repoRoot, "native/settlegraph/target/release/settlegraph-v2-worker"),
   observationVersion = 3,
   createClient = (options) => new SettleGraphV2Client(options)
 }) {

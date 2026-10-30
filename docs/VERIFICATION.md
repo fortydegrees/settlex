@@ -10,7 +10,7 @@ The local development-card effect privacy fix redacts purchased card faces for o
 
 ## Provenance and publication limits
 
-[Native provenance](../native/settlegraph-v2/PROVENANCE.md) and [third-party notices](third-party-notices.md) record source attribution and unresolved terms. No blanket license has been selected.
+[Native provenance](../native/settlegraph/PROVENANCE.md) and [third-party notices](third-party-notices.md) record source attribution and unresolved terms. No blanket license has been selected.
 
 Earlier merge-aware and curated-root Gitleaks scans reported zero findings in
 their recorded scopes. This refreshed root has not yet had an exact-identity

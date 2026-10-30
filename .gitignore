@@ -16,7 +16,7 @@ node_modules/
 # production
 /build
 /game-core/dist
-/native/settlegraph-v2/target/
+/native/settlegraph/target/
 
 # Local research artifacts
 .venv/

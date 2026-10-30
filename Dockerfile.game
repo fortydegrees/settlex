@@ -1,7 +1,7 @@
 FROM rust:1.85.1-bookworm AS native
 
 WORKDIR /build
-COPY native/settlegraph-v2 ./
+COPY native/settlegraph ./
 RUN cargo build --release --locked && strip target/release/settlegraph-v2-worker
 
 FROM node:20-bookworm-slim AS base
