@@ -100,16 +100,17 @@ echo "Wrote database backup: ${backup_path}"
 compose run --rm --no-deps web pnpm db:migrate
 compose up -d --no-build web game
 compose up -d --force-recreate proxy --remove-orphans
-compose exec -T -w /etc/caddy proxy \
-  caddy reload --config /etc/caddy/Caddyfile
+# Recreating Caddy already loads the mounted config. Probe HTTP readiness rather
+# than reloading through its admin socket while the new process is still starting.
+probe() {
+  curl --fail --silent --show-error \
+    --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 30 --max-time 10 \
+    "$@" >/dev/null
+}
 
-curl --fail --silent --show-error --location "$HEALTH_BASE_URL" >/dev/null
-curl --fail --silent --show-error --location \
-  "$HEALTH_BASE_URL/api/auth/options" >/dev/null
-curl --fail --silent --show-error --location \
-  "$HEALTH_BASE_URL/socket.io/?EIO=4&transport=polling" >/dev/null
-curl --fail --silent --show-error --request OPTIONS \
-  "$HEALTH_BASE_URL/timer/settlehex-route-check" >/dev/null
-curl --fail --silent --show-error --request OPTIONS \
-  "$HEALTH_BASE_URL/idle/settlehex-route-check/ack" >/dev/null
+probe --location "$HEALTH_BASE_URL"
+probe --location "$HEALTH_BASE_URL/api/auth/options"
+probe --location "$HEALTH_BASE_URL/socket.io/?EIO=4&transport=polling"
+probe --request OPTIONS "$HEALTH_BASE_URL/timer/settlehex-route-check"
+probe --request OPTIONS "$HEALTH_BASE_URL/idle/settlehex-route-check/ack"
 echo "Live health check passed: ${HEALTH_URL}"

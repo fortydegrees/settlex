@@ -403,7 +403,7 @@ describe("deployment file wiring", () => {
     expect(script).toContain("https://settlehex.com");
   });
 
-  it("recreates the proxy before reloading its synced Caddyfile", () => {
+  it("recreates the proxy before probing readiness without a redundant reload", () => {
     const { result, commands } = runProductionDeployWithRecordedCommands();
     const proxyStart = commands.indexOf(
       "docker compose --env-file .env.prod -f infra/docker-compose.prod.yml up -d --force-recreate proxy --remove-orphans"
@@ -414,10 +414,11 @@ describe("deployment file wiring", () => {
 
     expect(result.status).toBe(0);
     expect(proxyStart).toBeGreaterThanOrEqual(0);
-    expect(caddyReload).toBeGreaterThan(proxyStart);
+    expect(caddyReload).toBe(-1);
+    expect(commands.indexOf("curl --fail")).toBeGreaterThan(proxyStart);
   });
 
-  it("probes every public production listener after reloading Caddy", () => {
+  it("probes every public production listener with bounded startup retries", () => {
     const { result, commands } = runProductionDeployWithRecordedCommands();
     const curlCommands = commands
       .split("\n")
@@ -425,11 +426,11 @@ describe("deployment file wiring", () => {
 
     expect(result.status).toBe(0);
     expect(curlCommands).toEqual([
-      "curl --fail --silent --show-error --location https://settlehex.com",
-      "curl --fail --silent --show-error --location https://settlehex.com/api/auth/options",
-      "curl --fail --silent --show-error --location https://settlehex.com/socket.io/?EIO=4&transport=polling",
-      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/timer/settlehex-route-check",
-      "curl --fail --silent --show-error --request OPTIONS https://settlehex.com/idle/settlehex-route-check/ack",
+      "curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 30 --max-time 10 --location https://settlehex.com",
+      "curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 30 --max-time 10 --location https://settlehex.com/api/auth/options",
+      "curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 30 --max-time 10 --location https://settlehex.com/socket.io/?EIO=4&transport=polling",
+      "curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 30 --max-time 10 --request OPTIONS https://settlehex.com/timer/settlehex-route-check",
+      "curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 30 --max-time 10 --request OPTIONS https://settlehex.com/idle/settlehex-route-check/ack",
     ]);
   });
 
