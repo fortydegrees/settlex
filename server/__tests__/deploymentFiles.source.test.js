@@ -131,6 +131,30 @@ const expectPatchFilesAvailableBeforeInstall = (dockerfile) => {
 };
 
 describe("deployment file wiring", () => {
+  it.each(["command", "stdin"])("finds an older deployment root when launched through %s", (mode) => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "settlehex-old-deploy-"));
+    try {
+      fs.mkdirSync(path.join(tempRoot, "infra"));
+      fs.mkdirSync(path.join(tempRoot, "release"));
+      fs.writeFileSync(path.join(tempRoot, "infra", "docker-compose.prod.yml"), "services: {}\n");
+      fs.writeFileSync(path.join(tempRoot, "release", "release-notes.json"), "{}\n");
+      // Stop at configuration validation, before any Git or Docker operation.
+      fs.writeFileSync(path.join(tempRoot, ".env.prod"), "");
+      const script = readRepoFile("infra", "scripts", "deploy-prod-from-git.sh");
+      const env = { ...process.env };
+      delete env.SETTLEHEX_ROOT_DIR;
+      delete env.SETTLEX_ROOT_DIR;
+      const result = spawnSync("bash", mode === "command" ? ["-c", script] : ["-s"], {
+        cwd: tempRoot, env, encoding: "utf8", input: mode === "stdin" ? script : undefined,
+      });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("Missing required production env key in .env.prod: DATABASE_URL");
+      expect(result.stderr).not.toContain("BASH_SOURCE");
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it("authenticates the bot before replacing app services", () => {
     const { result, commands } = runProductionDeployWithRecordedCommands();
     expect(result.status).toBe(0);
