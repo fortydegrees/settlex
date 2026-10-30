@@ -1,6 +1,33 @@
 # Getting started
 
-## Run locally
+## Play locally with Docker
+
+With Docker running:
+
+```sh
+git clone https://github.com/fortydegrees/settlex.git
+cd settlex
+docker compose up --build
+```
+
+Open [localhost:3000](http://localhost:3000). Use a second browser profile or a
+private window for the other player, then use matchmaking or a friend challenge.
+Both players connect to this local installation, not the public website.
+
+This starts the normal website and game server, prepares a local PostgreSQL
+database, and disables the native bot. No environment file or model download is
+needed. Docker uses development mode and binds only to this computer; this is
+not a production deployment configuration. Ports 3000, 8000 and 8080 must be free.
+
+Press Ctrl-C to stop, or run `docker compose down`. Accounts and archived games
+remain in the local database volume. `docker compose down --volumes` deletes that
+local database for a fresh start. Active games are held in server memory and end
+when the game server stops.
+
+The image contains a copy of the source. After changing files, rerun
+`docker compose up --build`, or use the development setup below for live editing.
+
+## Develop with Node and pnpm
 
 Use Node.js 20.19 or newer within the Node 20 line and pnpm 9.13.2 (the version
 recorded in `package.json`). PostgreSQL 16 is required for accounts and full
@@ -139,5 +166,4 @@ require additional inputs and do not become qualified merely by running the
 ordinary suite. General tests also check default connection configuration, so
 unset an inherited `DATABASE_URL` and use the dedicated test opt-in instead.
 For the combined checks, run `env -u DATABASE_URL pnpm verify` with the same
-`MATCH_ALERT_POSTGRES_URL` exported. The PR verification workflow provisions its own PostgreSQL
-service and does not deploy or use production credentials.
+`MATCH_ALERT_POSTGRES_URL` exported.

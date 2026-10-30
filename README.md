@@ -2,6 +2,18 @@
 
 1v1 Catan with balanced boards. I spent far too long on this.
 
+To play locally, install [Docker](https://docs.docker.com/get-started/get-docker/) and run:
+
+```sh
+git clone https://github.com/fortydegrees/settlex.git
+cd settlex
+docker compose up --build
+```
+
+Then open [localhost:3000](http://localhost:3000). Use a second browser or a private
+window for the other player. The first build takes a few minutes; bot play is
+disabled in this setup.
+
 | Folder | What's inside |
 | --- | --- |
 | `app/` | Frontend: website, game board and UI, plus website API routes. |

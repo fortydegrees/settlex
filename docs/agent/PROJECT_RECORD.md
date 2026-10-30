@@ -224,3 +224,15 @@ Renamed the native source directory to `native/settlegraph/` because the worker
 supports both V2 and V3 models. Updated Docker, local worker-path defaults,
 commands, tests and documentation. Binary names, environment variables and model
 contracts remain unchanged; this is a source-directory rename.
+
+## 2026-10-30: Docker quickstart for local play
+
+Root `compose.yaml` starts the existing website and game server with PostgreSQL
+and a one-shot migration service. A shared local development image omits the
+native bot build and model mounts. All published ports bind to localhost;
+production Dockerfiles and deployment configuration are unchanged.
+
+Verified a source-only build, automatic database setup, browser-to-browser friend
+joining and settlement propagation, public matchmaking, timer/idle API access,
+and restart with accounts retained and no pending migrations. This qualifies
+the local quickstart on Linux arm64, not a production release or a full game audit.
